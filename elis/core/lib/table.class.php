@@ -1,0 +1,307 @@
+<?php
+/**
+ * Common code to display a table.
+ *
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    elis
+ * @subpackage core
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ */
+
+class display_table {
+    private $table = null;
+    private $items;
+    private $columns;
+    private $base_url;
+
+    const ASC = 'ASC';
+    const DESC = 'DESC';
+
+    /**
+     * Create a new table object.
+     *
+     * @param array $items array (or other iterable) of items to be displayed
+     * in the table.  Each element in the array should be an object, with
+     * fields matching the names in {@var $columns} containing the data.
+     * @param array $columns mapping of column IDs to column configuration.
+     * The column configuration is an array with the following entries:
+     * - header (optional): the plain-text name, used for the table header.
+     *   Can either be a string or an array (for headers that allow sorting on
+     *   multiple values, e.g. first-name/last-name).  If it is an array, then
+     *   the key is an ID used for sorting (if applicable), and the value is
+     *   an array of similar form to the $columns array, but only the 'header'
+     *   and 'sortable' keys are used.  (Defaults to empty.)
+     * - display_function (optional): the function used to display the column
+     *   entry.  This can either be the name of a method, or a PHP callback.
+     *   Takes two arguments: the column ID, and the item (from the $items
+     *   array).  Returns a string (or something that can be cast to a string).
+     *   (Defaults to the get_item_display_default method, which just returns
+     *   htmlspecialchars($item->$column), where $column is the column ID.)
+     * - decorator (optional): a function used to decorate the column entry
+     *   (e.g. add links, change the text style, etc).  This is a PHP callback
+     *   that takes three arguments: the column contents (the return value from
+     *   display_function), the column ID, and the item.  (Defaults to doing
+     *   nothing.)
+     * - sortable (optional): whether the column can be used for sorting.  Can
+     *   be either true, false, display_table::ASC (which indicates that
+     *   the table is sorted by this column in the ascending direction), or
+     *   display_table::DESC.  This has no effect if the header entry is an
+     *   array.  (Defaults to the return value of is_sortable_default, which
+     *   defaults to true unless overridden by a  subclass.)
+     * - wrapped (optional): whether the column data should be wrapped if it is
+     *   too long.  (Defaults to the return value of is_column_wrapped_default,
+     *   which defaults to true unless overridden by a subclass.)
+     * - align (optional): how the column data should be aligned (left, right,
+     *   center).  (Defaults to the return value of get_column_align_default(),
+     *   which defaults to left unless overridden by a subclass.)
+     * @param moodle_url $base_url base url to the page, for changing sort
+     * order. Only needed if the table can be sorted.
+     * @param string $sort_param the name of the sort URL parameter to add to
+     * $pageurl to change sorting.  The value of the parameter will be the
+     * column ID and the direction ('ASC' or 'DESC') separated by a space.
+     */
+    public function __construct($items, $columns, moodle_url $base_url=null, $sort_param='sort') {
+        $this->items = $items;
+        $this->columns = $columns;
+        $this->base_url = $base_url;
+        $this->sort_param = $sort_param;
+    }
+
+    protected function column_to_header($columnid, $column) {
+        global $OUTPUT;
+        if (is_string($column['header'])) {
+            if (isset($column['sortable'])) {
+                if ($column['sortable'] === true) {
+                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => "{$columnid} ASC")), $column['header']);
+                } elseif ($column['sortable'] === display_table::ASC) {
+                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => "{$columnid} DESC")), $column['header']) . ' ' . html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/up')));
+                } elseif ($column['sortable'] === display_table::DESC) {
+                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => "{$columnid} ASC")), $column['header']) . ' ' . html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/down')));
+                } else {
+                    return $column['header'];
+                }
+            } elseif ($this->is_sortable_default()) {
+                return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => "{$columnid} ASC")), $column['header']);
+            } else {
+                return $column['header'];
+            }
+        } elseif (is_array($column['header'])) {
+            $subheaders = array();
+            foreach ($column['header'] as $headerid => $header) {
+                $subheaders[] = $this->column_to_header($headerid, $header);
+            }
+            return implode(' / ', $subheaders);
+        } else {
+            return '';
+        }
+    }
+
+    /**
+     * Creates the Moodle html_table object to display the table.
+     */
+    private function build_table() {
+        if ($this->table !== null) {
+            return;
+        }
+
+        $table = new html_table;
+        $table->width = '90%';
+        $head = array();
+        $align = array();
+        $wrap = array();
+
+        foreach ($this->columns as $columnid => $column) {
+            $head[] = $this->column_to_header($columnid, $column);
+            $align[] = $this->get_column_align($columnid);
+            $wrap[] = $this->is_column_wrapped($columnid) ? null : 'nowrap';
+        }
+        $table->head = $head;
+        $table->align = $align;
+        $table->wrap = $wrap;
+
+        $table->data = array();
+        // FIXME: Eventually, we may want to set $table->data to a new iterable
+        // class, so that we don't have to construct the whole array in
+        // advance.  Maybe.  If we need to display massive tables...
+        foreach ($this->items as $item) {
+            $row = array();
+
+            foreach (array_keys($this->columns) as $column) {
+                $row[] = $this->get_item_display($column, $item);
+            }
+
+            $table->data[] = $row;
+        }
+        $this->table = $table;
+    }
+
+    /**
+     * Gets the HTML for the table.
+     */
+    public function get_html() {
+        $this->build_table();
+        return html_writer::table($this->table);
+    }
+
+    /**
+     * Gets the string (i.e. HTML) representation.  This is just a convenience
+     * wrapper around get_html.
+     */
+    public function __toString() {
+        return $this->get_html();
+    }
+
+    /**
+     * Returns the alignment for a given column.
+     */
+    protected function get_column_align($column) {
+        return isset($this->columns[$column]['align']) ? isset($columns[$column]['align']) : $this->get_column_align_default();
+    }
+
+    /**
+     * Returns the default column alignment.
+     */
+    protected function get_column_align_default() {
+        return 'left';
+    }
+
+    /**
+     * Returns whether a given column is wrapped.
+     */
+    protected function is_column_wrapped($column) {
+        return isset($this->columns[$column]['wrapped']) ? isset($columns[$column]['wrapped']) : $this->is_column_wrapped_default();
+    }
+
+    /**
+     * Returns the default column wrapping.
+     */
+    function is_column_wrapped_default() {
+        return true;
+    }
+
+    /**
+     * Returns whether the table can be sorted by the given column.
+     */
+    protected function is_sortable($column) {
+        return isset($this->columns[$column]['sortable']) ? isset($columns[$column]['sortable']) : $this->is_sortable_default();
+    }
+
+    /**
+     * Returns the default column sortability.
+     */
+    function is_sortable_default() {
+        return true;
+    }
+
+    /**
+     * Gets the display text for a column, for an item.
+     */
+    function get_item_display($column, $item) {
+        if (isset($this->columns[$column]['display_function'])) {
+            if (is_string($this->columns[$column]['display_function'])
+                && method_exists($this, $this->columns[$column]['display_function'])) {
+                $text = call_user_func(array($this, $this->columns[$column]['display_function']), $column, $item);
+            } else {
+                $text = call_user_func($this->columns[$column]['display_function'], $column, $item);
+            }
+        } else {
+            $text = $this->get_item_display_default($column, $item);
+        }
+        if(isset($this->columns[$column]['decorator'])) {
+            $text = call_user_func($this->columns[$column]['decorator'], $text, $column, $item);
+        }
+        return $text;
+    }
+
+    /**
+     * The default item display function.
+     */
+    function get_item_display_default($column, $item) {
+        return htmlspecialchars($item->$column);
+    }
+
+    /**
+     * Display function for a yes/no element.
+     */
+    static function display_yesno_item($column, $item) {
+        if ($item->$column) {
+            return get_string('yes');
+        } else {
+            return get_string('no');
+        }
+    }
+
+    /**
+     * Display function for a country code element
+     */
+    static function display_country_item($column, $item) {
+        static $countries;
+
+        if (!isset($countries)) {
+            $countries = get_string_manager()->get_list_of_countries();
+        }
+
+        return isset($countries[$item->$column]) ? $countries[$item->$column] : '';
+    }
+}
+
+/**
+ * Display function for a date element
+ */
+class display_date_item {
+    public function __construct($format = "M j, Y") {
+        $this->format = $format;
+    }
+
+    public function display($column, $item) {
+        if (empty($item->$column)) {
+            return '-';
+        } else {
+            return date($this->format, $item->$column);
+        }
+    }
+}
+
+/**
+ * Converts an item to a link to a page to view the item, if the user has
+ * capabilities to view.
+ */
+class record_link_decorator {
+    function __construct($page, $id_field_name, $param_name='id') {
+        $this->page = $page;
+        $this->id_field_name = $id_field_name;
+        $this->param_name = $param_name;
+    }
+
+    function decorate($text, $column, $item) {
+        $id_field_name = $this->id_field_name;
+
+        if (isset($item->$id_field_name) && $item->$id_field_name) {
+            $page = $this->page->get_new_page(array($this->param_name => $item->$id_field_name));
+            if ($page->can_do()) {
+                return html_writer::link($page->get_url(), $text);
+            }
+        }
+        return $text;
+    }
+}
+
+?>
