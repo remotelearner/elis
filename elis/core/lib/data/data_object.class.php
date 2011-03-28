@@ -825,7 +825,10 @@ function validate_is_unique(elis_data_object $record, array $fields) {
  * Helper function for validating that a field is not empty.
  */
 function validate_not_empty(elis_data_object $record, $field) {
-    if (empty($record->$field)) {
+    // if it's an existing record, and the field is set but empty, or if it's a
+    // new record and the field is empty, then we have an error
+    if ((isset($record->id) && isset($record->$field) && empty($record->$field))
+        || (!isset($record->id) && empty($record->$field))) {
         throw new ErrorException('Empty');
         // FIXME: new exception
     }
