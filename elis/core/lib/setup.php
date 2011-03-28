@@ -24,12 +24,22 @@
  *
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once (dirname(__FILE__) . '/../../../config.php');
 
 /**
  * Global ELIS management object.
  */
 class elis {
+    /**
+     * The ELIS DB version
+     */
+    static $version;
+
+    /**
+     * The ELIS human-readable release
+     */
+    static $release;
+
     /**
      * The base directory for the ELIS code.
      */
@@ -52,8 +62,9 @@ class elis {
     /**
      * Return the full path name for a file in a plugin.
      */
-    static function plugin_file($component, $plugin, $file) {
-        return elis::file("{$component}/plugins/{$plugin}/{$file}");
+    static function plugin_file($plugin, $file) {
+        list($type,$name) = normalize_component($plugin);
+        return get_plugin_directory($plugintype, $name)."/{$file}";
     }
 
     /**
@@ -80,3 +91,10 @@ elis::$libdir = elis::file('core/lib');
 
 global $DB;
 elis::$db = $DB;
+
+{
+    $plugin = new stdClass;
+    include elis::file('core/version.php');
+    elis::$version = $plugin->version;
+    elis::$release = $plugin->release;
+}
