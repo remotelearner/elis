@@ -168,18 +168,26 @@ abstract class elis_page extends moodle_page {
         if ($this->can_do($action)) {
             if (method_exists($this, "do_{$action}")) {
                 return call_user_func(array($this, "do_{$action}"));
+            } else if (method_exists($this, 'display_' . $action)) {
+                $this->display($action);
             } else {
-                if (method_exists($this, 'display_' . $action)) {
-                    echo $OUTPUT->header();
-                    call_user_func(array($this, 'display_' . $action));
-                    echo $OUTPUT->footer();
-                } else {
-                    print_error('unknown_action', 'elis_core', '', $action);
-                }
+                print_error('unknown_action', 'elis_core', '', $action);
             }
         } else {
             print_error('nopermissions', '', '', $action);
         }
+    }
+
+    /**
+     * Display the page.
+     */
+    public function display($action=null) {
+        if ($action === null) {
+            $action = $this->optional_param('action', '', PARAM_ACTION);
+        }
+        echo $OUTPUT->header();
+        call_user_func(array($this, 'display_' . $action));
+        echo $OUTPUT->footer();
     }
 
     /**
