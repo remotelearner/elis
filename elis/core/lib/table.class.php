@@ -78,28 +78,31 @@ class display_table {
      * $pageurl to change sorting.  The value of the parameter will be the
      * column ID and the direction ('ASC' or 'DESC') separated by a space.
      */
-    public function __construct($items, $columns, moodle_url $base_url=null, $sort_param='sort') {
+    public function __construct($items, $columns, moodle_url $base_url=null, $sort_param='sort', $sortdir_param='dir') {
         $this->items = $items;
         $this->columns = $columns;
         $this->base_url = $base_url;
         $this->sort_param = $sort_param;
+        $this->sortdir_param = $sortdir_param;
     }
 
     protected function column_to_header($columnid, $column) {
         global $OUTPUT;
-        if (is_string($column['header'])) {
+        if (empty($column['header'])) {
+            return '';
+        } elseif (is_string($column['header'])) {
             if (isset($column['sortable'])) {
                 if ($column['sortable'] === true) {
-                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => "{$columnid} ASC")), $column['header']);
+                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => $columnid, $this->sortdir_param => display_table::ASC)), $column['header']);
                 } elseif ($column['sortable'] === display_table::ASC) {
-                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => "{$columnid} DESC")), $column['header']) . ' ' . html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/up')));
+                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => $columnid, $this->sortdir_param => display_table::DESC)), $column['header']) . ' ' . html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/down')));
                 } elseif ($column['sortable'] === display_table::DESC) {
-                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => "{$columnid} ASC")), $column['header']) . ' ' . html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/down')));
+                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => $columnid, $this->sortdir_param => display_table::ASC)), $column['header']) . ' ' . html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/up')));
                 } else {
                     return $column['header'];
                 }
             } elseif ($this->is_sortable_default()) {
-                return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => "{$columnid} ASC")), $column['header']);
+                return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => $columnid, $this->sortdir_param => display_table::ASC)), $column['header']);
             } else {
                 return $column['header'];
             }
@@ -222,6 +225,9 @@ class display_table {
             } else {
                 $text = call_user_func($this->columns[$column]['display_function'], $column, $item);
             }
+        } elseif (method_exists($this, "get_item_display_$column")) {
+            // old-style mechanism
+            $text = call_user_func(array($this,"get_item_display_$column"), $column, $item);
         } else {
             $text = $this->get_item_display_default($column, $item);
         }

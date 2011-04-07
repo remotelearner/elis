@@ -86,7 +86,7 @@ class elis_data_object {
      * Cache of objects retrieved for associations.  These objects are loaded
      * on-demand.
      */
-    private $_associated_objects = array();
+    protected $_associated_objects = array();
 
     /**
      * Whether deleting a record requires extra steps.
@@ -111,7 +111,14 @@ class elis_data_object {
      */
     protected $_db;
 
+    /**
+     * Whether missing fields should be loaded from the database.
+     */
     private $_is_loaded = false;
+
+    /**
+     * Whether the data has not been changed since loading from the database.
+     */
     private $_is_saved = false;
 
     /**
@@ -147,10 +154,14 @@ class elis_data_object {
      * field names.
      * @param array $associations pre-fetched associated objects (to avoid
      * needing to re-fetch)
+     * @param boolean $from_db whether or not the record source object/array
+     * comes from the database
      * @param moodle_database $database database object to use (null for the
      * default database)
      */
-    public function __construct($src=false, $field_map=null, array $associations=array(), moodle_database $database=null) {
+    public function __construct($src=false, $field_map=null, array $associations=array(), $from_db=false, moodle_database $database=null) {
+        global $DB;
+
         if (!isset(self::$_unset)) {
             self::$_unset = new stdClass;
         }
@@ -166,7 +177,7 @@ class elis_data_object {
         }
 
         if ($database === null) {
-            $this->_db = elis::$db;
+            $this->_db = $DB;
         } else {
             $this->_db = $database;
         }
@@ -177,11 +188,9 @@ class elis_data_object {
         } elseif (is_numeric($src)) {
             $this->_field_id = $src;
         } elseif (is_object($src)) {
-            $this->_load_data_from_record($src, false, $field_map);
-            // FIXME: should $_is_loaded and $_is_saved be set to true?
+            $this->_load_data_from_record($src, false, $field_map, $from_db);
         } elseif (is_array($src)) {
-            $this->_load_data_from_record((object)$src, false, $field_map);
-            // FIXME: should $_is_loaded and $_is_saved be set to true?
+            $this->_load_data_from_record((object)$src, false, $field_map, $from_db);
         } else {
             throw new ErrorException('Invalid argument');
             // FIXME: error
@@ -200,6 +209,17 @@ class elis_data_object {
     }
 
     /**
+     * Force loading the record from the database.
+     */
+    public function load($overwrite=true) {
+        if (!$this->_is_loaded && $this->_field_id !== self::$_unset) {
+            $record = $this->_db->get_record($this->_get_const('TABLE_NAME'),
+                                             array('id' => $this->_field_id));
+            $this->_load_data_from_record($record, $overwrite, null, true);
+        }
+    }
+
+    /**
      * Save the record to the database.  This method is used to both create a
      * new record, and to update an existing record.
      */
@@ -208,19 +228,8 @@ class elis_data_object {
         if (!$this->_is_saved) {
             $this->validate();
             // create a dumb object for Moodle
-            $record = new stdClass;
-            $reflect = new ReflectionClass(get_class($this));
-            $prefix_len = strlen(self::FIELD_PREFIX);
-            foreach($reflect->getProperties() as $prop) {
-                if (strncmp($prop->getName(), self::FIELD_PREFIX, $prefix_len) === 0) {
-                    $field_name = $prop->getName();
-                    $name = substr($field_name, $prefix_len);
-                    if ($this->$field_name !== self::$_unset) {
-                        $record->$name = $this->$field_name;
-                    }
-                }
-            }
-            if ($this->_field_id !== self::$_unset) {
+            $record = $this->to_object();
+            if ($this->_field_id !== self::$_unset && !empty($this->_field_id)) {
                 $this->_db->update_record($this->_get_const('TABLE_NAME'), $record);
             } else {
                 $this->_field_id = $this->_db->insert_record($this->_get_const('TABLE_NAME'), $record);
@@ -282,9 +291,11 @@ class elis_data_object {
      * @return data_collection a collection
      */
     public static function find($classname, $filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {
+        global $DB;
+
         $tablename = eval("return $classname::TABLE_NAME;");
         if ($db === null) {
-            $db = elis::$db;
+            $db = $DB;
         }
 
         $sortclause = array();
@@ -334,7 +345,7 @@ class elis_data_object {
                                             $sql_clauses['where_parameters'],
                                             $sortclause, '*', $limitfrom, $limitnum);
         }
-        return new data_collection($rs, $classname);
+        return new data_collection($rs, $classname, null, array(), true, $db);
     }
 
     /**
@@ -347,9 +358,11 @@ class elis_data_object {
      * @return integer
      */
     public static function count($classname, $filter=null, moodle_database $db=null) {
+        global $DB;
+
         $tablename = eval("return $classname::TABLE_NAME;");
         if ($db === null) {
-            $db = elis::$db;
+            $db = $DB;
         }
 
         require_once elis::lib('data/data_filter.class.php');
@@ -372,7 +385,7 @@ class elis_data_object {
             return $db->count_records_sql($sql, $parameters);
         } else {
             if ($filter === null) {
-            } elseif (is_object($sql_clauses)) {
+            } elseif (is_object($filter)) {
                 $sql_clauses = $filter->get_sql(true);
             } else {
                 $sql_clauses = AND_filter::get_combined_sql($filter, true);
@@ -397,9 +410,11 @@ class elis_data_object {
      * @return bool true if a matching record exists, else false.
      */
     public static function exists($classname, $filter=null, moodle_database $db=null) {
+        global $DB;
+
         $tablename = eval("return $classname::TABLE_NAME;");
         if ($db === null) {
-            $db = elis::$db;
+            $db = $DB;
         }
 
         require_once elis::lib('data/data_filter.class.php');
@@ -446,6 +461,8 @@ class elis_data_object {
      * @param moodle_database $db database object to use
      */
     public static function delete_records($classname, $filter, moodle_database $db=null) {
+        global $DB;
+
         if (eval("return !empty($classname::delete_is_complex);")) {
             // deleting involves more than just removing the DB records
             $items = eval ("return $classname::find(\$classname, \$filter, array(), 0, 0, \$db);");
@@ -457,7 +474,7 @@ class elis_data_object {
 
         $tablename = eval("return $classname::TABLE_NAME;");
         if ($db === null) {
-            $db = elis::$db;
+            $db = $DB;
         }
 
         require_once elis::lib('data/data_filter.class.php');
@@ -479,6 +496,34 @@ class elis_data_object {
         return $this->_db;
     }
 
+    /**
+     * Converts the data_object a dumb object representation (without
+     * associations).  This is required when using the Moodle *_record
+     * functions, or get_string.
+     */
+    public function to_object() {
+        $obj = new object;
+        $reflect = new ReflectionClass(get_class($this));
+        $prefix_len = strlen(self::FIELD_PREFIX);
+        foreach($reflect->getProperties() as $prop) {
+            if (strncmp($prop->getName(), self::FIELD_PREFIX, $prefix_len) === 0) {
+                $field_name = $prop->getName();
+                $name = substr($field_name, $prefix_len);
+                if ($this->$field_name !== self::$_unset) {
+                    $obj->$name = $this->$field_name;
+                }
+            }
+        }
+        return $obj;
+    }
+
+    /**
+     * Converts the data_object an array representation (without associations).
+     */
+    public function to_array() {
+        return (array)($this->to_object());
+    }
+
     /***************************************************************************
      * Magic Methods
      **************************************************************************/
@@ -494,13 +539,7 @@ class elis_data_object {
                 if ($name === 'id') {
                     return null;
                 }
-                if (!$this->_is_loaded && $this->_field_id !== self::$_unset) {
-                    $record = $this->_db->get_record($this->_get_const('TABLE_NAME'),
-                                                     array('id' => $this->_field_id));
-                    $this->_load_data_from_record($record);
-                    $this->_is_loaded = true;
-                    $this->_is_saved = true;
-                }
+                $this->load();
             }
             if ($this->$field_name === self::$_unset) {
                 return null;
@@ -675,8 +714,10 @@ class elis_data_object {
      * string, then it will be treated as a prefix for field names.  If it is
      * an array, then it is a mapping of destination field names to source
      * field names.
+     * @param boolean $from_db whether or not the record source object/array
+     * comes from the database
      */
-    protected function _load_data_from_record($rec, $overwrite=false, $field_map=null) {
+    protected function _load_data_from_record($rec, $overwrite=false, $field_map=null, $from_db=false) {
         // find all the fields from the current object
         $reflect = new ReflectionClass(get_class($this));
         $prefix_len = strlen(self::FIELD_PREFIX);
@@ -706,6 +747,12 @@ class elis_data_object {
                     $this->$field_name = $rec->$rec_name;
                 }
             }
+        }
+        $this->_is_loaded = true;
+        if ($from_db) {
+            $this->_is_saved = true;
+        } else {
+            $this->_is_saved = false;
         }
     }
 
@@ -764,18 +811,21 @@ class data_collection implements Iterator {
      * @param string $dataclass the class to create the data objects from
      * @param mixed $field_map see elis_data_object constructor
      * @param array $associations see elis_data_object constructor
+     * @param boolean $from_db whether or not the record source object/array
+     * comes from the database
      * @param moodle_database $database see elis_data_object constructor
      */
-    public function __construct($rs, $dataclass, $field_map=null, array $associations=array(), moodle_database $database=null) {
+    public function __construct($rs, $dataclass, $field_map=null, array $associations=array(), $from_db=false, moodle_database $database=null) {
         $this->rs = $rs;
         $this->dataclass = $dataclass;
         $this->field_map = $field_map;
         $this->associations = $associations;
+        $this->from_db = $from_db;
         $this->database = $database;
     }
 
     public function current() {
-        return new $this->dataclass($this->rs->current(), $this->field_map, $this->associations, $this->database);
+        return new $this->dataclass($this->rs->current(), $this->field_map, $this->associations, $this->from_db, $this->database);
     }
 
     public function key() {

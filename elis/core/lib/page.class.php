@@ -61,8 +61,9 @@ abstract class elis_page extends moodle_page {
         $this->set_context($this->_get_page_context());
         $this->set_url($this->_get_page_url(), $this->_get_page_params());
         $this->set_pagetype($this->_get_page_type());
-        $this->set_title($this->_get_page_title());
-        $this->set_heading($this->_get_page_heading());
+        $this->set_title($this->get_page_title());
+        $this->set_heading($this->get_page_heading());
+        $this->build_navbar();
     }
 
     /**
@@ -87,9 +88,12 @@ abstract class elis_page extends moodle_page {
     /**
      * Return the page parameters for the page.  Used by the constructor for
      * calling $this->set_url().
+     *
+     * @return array
      */
     protected function _get_page_params() {
-        return null;
+        $params = isset($this->params) ? $this->params : $_GET;
+        return $params;
     }
 
     /**
@@ -98,22 +102,6 @@ abstract class elis_page extends moodle_page {
      */
     protected function _get_page_type() {
         return 'elis';
-    }
-
-    /**
-     * Return the page title.  Used by the constructor for calling
-     * $this->set_title().
-     */
-    protected function _get_page_title() {
-        return get_string('elis', 'elis_core');
-    }
-
-    /**
-     * Return the page heading.  Used by the constructor for calling
-     * $this->set_heading().
-     */
-    protected function _get_page_heading() {
-        return $this->_get_page_title();
     }
 
     /**
@@ -137,7 +125,7 @@ abstract class elis_page extends moodle_page {
             if (isset($this->params[$name])) {
                 return clean_param($this->params[$name], $type);
             } else {
-                print_error('missingparam', '', '', $parname);
+                print_error('missingparam', '', '', $name);
             }
         } else {
             return required_param($name, $type);
@@ -158,6 +146,52 @@ abstract class elis_page extends moodle_page {
             return optional_param($name, $default, $type);
         }
     }
+
+    /**
+     * Return the page title.  Used by the constructor for calling
+     * $this->set_title().
+     */
+    public function get_page_title($action=null) {
+        if ($action === null) {
+            $action = $this->optional_param('action', '', PARAM_ACTION);
+        }
+        if (method_exists($this, "get_page_title_{$action}")) {
+            return call_user_func(array($this, "get_page_title_{$action}"));
+        } else {
+            return $this->get_page_title_default();
+        }
+    }
+
+    public function get_page_title_default() {
+        return get_string('elis', 'elis_core');
+    }
+
+    /**
+     * Build the navigation bar object
+     */
+    public function build_navbar($action=null) {
+        if ($action === null) {
+            $action = $this->optional_param('action', '', PARAM_ACTION);
+        }
+        if (method_exists($this, "build_navbar_{$action}")) {
+            return call_user_func(array($this, "build_navbar_{$action}"));
+        } else {
+            return $this->build_navbar_default();
+        }
+    }
+
+    public function build_navbar_default() {
+        // Do nothing (default to empty navbar)
+    }
+
+    /**
+     * Return the page heading.  Used by the constructor for calling
+     * $this->set_heading().
+     */
+    protected function get_page_heading($action=null) {
+        return $this->get_page_title();
+    }
+
 
     /**
      * Main page entry point.  Dispatches based on the action parameter.
@@ -182,6 +216,7 @@ abstract class elis_page extends moodle_page {
      * Display the page.
      */
     public function display($action=null) {
+        global $OUTPUT;
         if ($action === null) {
             $action = $this->optional_param('action', '', PARAM_ACTION);
         }

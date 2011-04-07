@@ -78,19 +78,11 @@ class elis {
     static function lib($file) {
         return elis::file("core/lib/{$file}");
     }
-
-    /**
-     * The default database object.
-     */
-    static $db;
 }
 
 global $CFG;
 elis::$basedir = "{$CFG->dirroot}/elis";
 elis::$libdir = elis::file('core/lib');
-
-global $DB;
-elis::$db = $DB;
 
 {
     $plugin = new stdClass;
