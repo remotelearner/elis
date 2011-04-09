@@ -311,9 +311,9 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } elseif (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd');
+            $sql_clauses = $filter->get_sql(true, 'd', $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd');
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', $db);
         }
         if (isset($sql_clauses['join'])) {
             $sql = "SELECT DISTINCT d.*
@@ -332,9 +332,9 @@ class elis_data_object {
             if ($filter === null) {
                 // nothing
             } elseif (is_object($filter)) {
-                $sql_clauses = $filter->get_sql(true);
+                $sql_clauses = $filter->get_sql(false, null, $db);
             } else {
-                $sql_clauses = AND_filter::get_combined_sql($filters, true);
+                $sql_clauses = AND_filter::get_combined_sql($filters, false, null, $db);
             }
             if (!isset($sql_clauses['where'])) {
                 $sql_clauses['where'] = '';
@@ -369,9 +369,9 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } elseif (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd');
+            $sql_clauses = $filter->get_sql(true, 'd', $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd');
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', $db);
         }
         if (isset($sql_clauses['join'])) {
             $sql = "SELECT COUNT(DISTINCT d.id)
@@ -386,9 +386,9 @@ class elis_data_object {
         } else {
             if ($filter === null) {
             } elseif (is_object($filter)) {
-                $sql_clauses = $filter->get_sql(true);
+                $sql_clauses = $filter->get_sql(false, null, $db);
             } else {
-                $sql_clauses = AND_filter::get_combined_sql($filter, true);
+                $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
             }
             if (!isset($sql_clauses['where'])) {
                 $sql_clauses['where'] = '';
@@ -421,9 +421,9 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } elseif (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd');
+            $sql_clauses = $filter->get_sql(true, 'd', $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd');
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', $db);
         }
         if (isset($sql_clauses['join'])) {
             $sql = "SELECT 'x'
@@ -438,9 +438,9 @@ class elis_data_object {
         } else {
             if ($filter === null) {
             } elseif (is_object($sql_clauses)) {
-                $sql_clauses = $filter->get_sql(true);
+                $sql_clauses = $filter->get_sql(false, null, $db);
             } else {
-                $sql_clauses = AND_filter::get_combined_sql($filter, true);
+                $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
             }
             if (!isset($sql_clauses['where'])) {
                 $sql_clauses['where'] = '';
@@ -479,9 +479,9 @@ class elis_data_object {
 
         require_once elis::lib('data/data_filter.class.php');
         if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true);
+            $sql_clauses = $filter->get_sql(false, null, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter);
+            $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
         }
         if (!isset($sql_clauses['where'])) {
             $sql_clauses['where'] = '';
