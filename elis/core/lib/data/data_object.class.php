@@ -31,7 +31,7 @@ require_once $CFG->dirroot . '/elis/core/lib/setup.php';
 
 /**
  * Represents a database record as an object.  Fields are identified as
- * protected members with the name '_field_<name>', where <name> is the database
+ * protected members with the name '_dbfield_<name>', where <name> is the database
  * field name.
  */
 class elis_data_object {
@@ -126,14 +126,14 @@ class elis_data_object {
      */
     private static $_unset;
 
-    const FIELD_PREFIX = '_field_';
+    const FIELD_PREFIX = '_dbfield_';
 
     /**
      * Autoincrement ID field
      * @var    integer
      * @length 10
      */
-    protected $_field_id;
+    protected $_dbfield_id;
 
     /***************************************************************************
      * High-level methods
@@ -186,7 +186,7 @@ class elis_data_object {
         if ($src === false) {
             // do nothing
         } elseif (is_numeric($src)) {
-            $this->_field_id = $src;
+            $this->_dbfield_id = $src;
         } elseif (is_object($src)) {
             $this->_load_data_from_record($src, false, $field_map, $from_db);
         } elseif (is_array($src)) {
@@ -203,8 +203,8 @@ class elis_data_object {
      * Delete the record from the database.
      */
     public function delete() {
-        if ($this->_field_id !== self::$_unset) {
-            $this->_db->delete_records($this->_get_const('TABLE_NAME'), array('id' => $this->_field_id));
+        if ($this->_dbfield_id !== self::$_unset) {
+            $this->_db->delete_records($this->_get_const('TABLE_NAME'), array('id' => $this->_dbfield_id));
         }
     }
 
@@ -212,9 +212,9 @@ class elis_data_object {
      * Force loading the record from the database.
      */
     public function load($overwrite=true) {
-        if (!$this->_is_loaded && $this->_field_id !== self::$_unset) {
+        if (!$this->_is_loaded && $this->_dbfield_id !== self::$_unset) {
             $record = $this->_db->get_record($this->_get_const('TABLE_NAME'),
-                                             array('id' => $this->_field_id));
+                                             array('id' => $this->_dbfield_id));
             $this->_load_data_from_record($record, $overwrite, null, true);
         }
     }
@@ -229,10 +229,10 @@ class elis_data_object {
             $this->validate();
             // create a dumb object for Moodle
             $record = $this->to_object();
-            if ($this->_field_id !== self::$_unset && !empty($this->_field_id)) {
+            if ($this->_dbfield_id !== self::$_unset && !empty($this->_dbfield_id)) {
                 $this->_db->update_record($this->_get_const('TABLE_NAME'), $record);
             } else {
-                $this->_field_id = $this->_db->insert_record($this->_get_const('TABLE_NAME'), $record);
+                $this->_dbfield_id = $this->_db->insert_record($this->_get_const('TABLE_NAME'), $record);
             }
             $this->_is_saved = true;
         }
@@ -246,13 +246,13 @@ class elis_data_object {
         $objs = array('_errors' => array());
         $classname = get_class($this);
         $clone = new $classname($this);
-        $clone->_field_id = self::$_unset;
+        $clone->_dbfield_id = self::$_unset;
         if (!$clone->add()) {
             $objs['_errors'][] = get_string('failed_duplicate', 'elis_cm', $this);
             return $objs;
         }
 
-        $objs[$classname] = array($this->_field_id => $clone->_field_id);
+        $objs[$classname] = array($this->_dbfield_id => $clone->_dbfield_id);
         return $objs;
     }
 
@@ -559,7 +559,7 @@ class elis_data_object {
                 return $this->_associated_objects[$name];
             } elseif (isset($association['foreignidfield'])) {
                 require_once elis::lib('data/data_filter.class.php');
-                return elis_data_object::find($classname, new field_filter($association['foreignidfield'], $this->_field_id));
+                return elis_data_object::find($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
             } elseif (isset($association['filtermethod'])) {
                 return elis_data_object::find($classname, call_user_func(array($classname,$association['filtermethod']),$this));
             } else {
@@ -627,7 +627,7 @@ class elis_data_object {
                     if (isset($args[0])) {
                         // $filters specified
                         require_once elis::lib('data/data_filter.class.php');
-                        $foreign_filter = new field_filter($association['foreignidfield'], $this->_field_id);
+                        $foreign_filter = new field_filter($association['foreignidfield'], $this->_dbfield_id);
                         if (is_array($args[0])) {
                             $args[0][] = $foreign_filter;
                         } else {
@@ -636,7 +636,7 @@ class elis_data_object {
                         return elis_data_object::find($classname,$args);
                     } else {
                         require_once elis::lib('data/data_filter.class.php');
-                        return elis_data_object::find($classname, new field_filter($association['foreignidfield'], $this->_field_id));
+                        return elis_data_object::find($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
                     }
                 } elseif (isset($association['filtermethod'])) {
                     if (isset($args[0])) {
@@ -665,7 +665,7 @@ class elis_data_object {
                 if (isset($association['foreignidfield'])) {
                     if (isset($args[0])) {
                         require_once elis::lib('data/data_filter.class.php');
-                        $foreign_filter = new field_filter($association['foreignidfield'], $this->_field_id);
+                        $foreign_filter = new field_filter($association['foreignidfield'], $this->_dbfield_id);
                         if (is_array($args[0])) {
                             $args[0][] = $foreign_filter;
                         } else {
@@ -674,7 +674,7 @@ class elis_data_object {
                         return elis_data_object::count($classname,$args);
                     } else {
                         require_once elis::lib('data/data_filter.class.php');
-                        return elis_data_object::count($classname, new field_filter($association['foreignidfield'], $this->_field_id));
+                        return elis_data_object::count($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
                     }
                 } elseif (isset($association['filtermethod'])) {
                     if (isset($args[0])) {

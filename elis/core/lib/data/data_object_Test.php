@@ -35,7 +35,7 @@ class test_data_object extends elis_data_object {
      * @var string
      * @length 255
      */
-    protected $_field_name;
+    protected $_dbfield_name;
 }
 
 class data_objectTest extends PHPUnit_Framework_TestCase {
