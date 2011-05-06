@@ -81,7 +81,7 @@ class AND_filter extends data_filter {
         $this->filters = $filters;
     }
 
-    public function get_sql($use_join=false, $tablename=null, $db=null, moodle_database $db=null) {
+    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
         $where_clauses = array();
         $where_parameters = array();
         $join_clauses = array();
