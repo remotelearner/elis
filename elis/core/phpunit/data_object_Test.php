@@ -24,7 +24,7 @@
  *
  */
 
-require_once dirname(__FILE__) . '/../../../test_config.php';
+require_once dirname(__FILE__) . '/../test_config.php';
 require_once $CFG->dirroot . '/elis/core/lib/data/data_object.class.php';
 
 class test_data_object extends elis_data_object {
@@ -39,6 +39,8 @@ class test_data_object extends elis_data_object {
 }
 
 class data_objectTest extends PHPUnit_Framework_TestCase {
+    protected $backupGlobalsBlacklist = array('DB');
+
     public function baseConstructorProvider() {
         $obj = new stdClass;
         $obj->id = 1;
