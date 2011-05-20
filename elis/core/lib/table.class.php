@@ -38,7 +38,7 @@ class display_table {
     /**
      * Create a new table object.
      *
-     * @param array $items array (or other iterable) of items to be displayed
+     * @param mixed $items array (or other iterable) of items to be displayed
      * in the table.  Each element in the array should be an object, with
      * fields matching the names in {@var $columns} containing the data.
      * @param array $columns mapping of column IDs to column configuration.
@@ -74,9 +74,10 @@ class display_table {
      *   which defaults to left unless overridden by a subclass.)
      * @param moodle_url $base_url base url to the page, for changing sort
      * order. Only needed if the table can be sorted.
-     * @param string $sort_param the name of the sort URL parameter to add to
-     * $pageurl to change sorting.  The value of the parameter will be the
-     * column ID and the direction ('ASC' or 'DESC') separated by a space.
+     * @param string $sort_param the name of the URL parameter to add to
+     * $pageurl to specify the column to sort by.
+     * @param string $sortdir_param the name of the URL parameter to add to
+     * $pageurl to specify the direction of the sort.
      */
     public function __construct($items, $columns, moodle_url $base_url=null, $sort_param='sort', $sortdir_param='dir') {
         $this->items = $items;
@@ -265,7 +266,20 @@ class display_table {
             $countries = get_string_manager()->get_list_of_countries();
         }
 
-        return isset($countries[$item->$column]) ? $countries[$item->$column] : '';
+        return isset($countries[$item->$column]) ? $countries[$item->$column] : '?';
+    }
+
+    /**
+     * Display function for a country code element
+     */
+    static function display_language_item($column, $item) {
+        static $languages;
+
+        if (!isset($languages)) {
+            $languages = get_string_manager()->get_list_of_languages(null, 'iso6391');
+        }
+
+        return isset($languages[$item->$column]) ? $languages[$item->$column] : '?';
     }
 }
 
@@ -291,7 +305,14 @@ class display_date_item {
  * capabilities to view.
  */
 class record_link_decorator {
-    function __construct($page, $id_field_name, $param_name='id') {
+    /**
+     * @param elis_page $page the base page object to use for constructing the
+     * link
+     * $param string $id_field_name the field in the item data that contains
+     * the ID to use
+     * $param string $param_name the URL parameter to use to specify the ID
+     */
+    function __construct(elis_page $page, $id_field_name, $param_name='id') {
         $this->page = $page;
         $this->id_field_name = $id_field_name;
         $this->param_name = $param_name;
