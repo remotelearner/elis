@@ -86,7 +86,7 @@ elis::$libdir = elis::file('core/lib');
 
 {
     $plugin = new stdClass;
-    include elis::file('core/version.php');
+    require elis::file('core/version.php');
     elis::$version = $plugin->version;
     elis::$release = $plugin->release;
 }
