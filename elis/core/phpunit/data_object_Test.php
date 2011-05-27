@@ -25,10 +25,13 @@
  */
 
 require_once dirname(__FILE__) . '/../test_config.php';
-require_once $CFG->dirroot . '/elis/core/lib/data/data_object.class.php';
+require_once $CFG->dirroot . '/elis/core/lib/setup.php';
+require_once elis::lib('data/data_object.class.php');
+require_once elis::lib('testlib.php');
+require_once 'PHPUnit/Extensions/Database/DataSet/CsvDataSet.php';
 
-class test_data_object extends elis_data_object {
-    static $table_name = 'test';
+class config_object extends elis_data_object {
+    const TABLE = 'config';
 
     /**
      * Some name
@@ -36,6 +39,7 @@ class test_data_object extends elis_data_object {
      * @length 255
      */
     protected $_dbfield_name;
+    protected $_dbfield_value;
 }
 
 class data_objectTest extends PHPUnit_Framework_TestCase {
@@ -57,7 +61,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
      *
      * @dataProvider baseConstructorProvider
      */
-    public function testBaseConstructor($init, $expected) {
+    public function testCanInitializeBaseClassFromArrayAndObject($init, $expected) {
         $dataobj = new elis_data_object($init);
         $this->assertEquals($dataobj->id, $expected);
     }
@@ -79,8 +83,8 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
      *
      * @dataProvider derivedConstructorProvider
      */
-    public function testDerivedConstructor($init, $expectedId, $expectedName) {
-        $dataobj = new test_data_object($init);
+    public function testCanInitializeDerivedClassFromArrayAndObject($init, $expectedId, $expectedName) {
+        $dataobj = new config_object($init);
         $this->assertEquals($dataobj->id, $expectedId);
         $this->assertEquals($dataobj->name, $expectedName);
     }
@@ -88,7 +92,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
     /**
      * Test the isset and unset magic methods
      */
-    public function testIsSetAndUnSet() {
+    public function testCanTestAndUnsetFields() {
         $dataobj = new elis_data_object(array('id' => 2));
         $this->assertFalse(isset($dataobj->notafield));
         $this->assertTrue(isset($dataobj->id));
@@ -99,11 +103,31 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
     /**
      * Test the get and set magic methods
      */
-    public function testGetAndSet() {
+    public function testCanGetAndSetFields() {
         $dataobj = new elis_data_object();
         $this->assertEquals($dataobj->id, NULL);
         $dataobj->id = 3;
         $this->assertEquals($dataobj->id, 3);
+    }
+
+    public function testCanFindRecords() {
+        global $DB;
+        require_once elis::lib('data/data_filter.class.php');
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+
+        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+
+        load_phpunit_data_set($dataset, true, $overlaydb);
+
+        $configs = config_object::find('config_object', new field_filter('name', 'foo'), array(), 0, 0, $overlaydb);
+
+        // should only find one record, with value foooo
+        $this->assertEquals($configs->current()->value, 'foooo');
+        $configs->next();
+        $this->assertFalse($configs->valid());
+
+        $overlaydb->cleanup();
     }
 
     /**
