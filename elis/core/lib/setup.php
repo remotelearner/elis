@@ -63,7 +63,7 @@ class elis {
      * Return the full path name for a file in a plugin.
      */
     static function plugin_file($plugin, $file) {
-        list($type,$name) = normalize_component($plugin);
+        list($plugintype,$name) = normalize_component($plugin);
         return get_plugin_directory($plugintype, $name)."/{$file}";
     }
 
