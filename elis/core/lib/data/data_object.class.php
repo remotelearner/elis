@@ -216,7 +216,7 @@ class elis_data_object {
      */
     public function delete() {
         if ($this->_dbfield_id !== self::$_unset) {
-            $this->_db->delete_records($this->_get_const('TABLE'), array('id' => $this->_dbfield_id));
+            $this->_db->delete_records(static::TABLE, array('id' => $this->_dbfield_id));
         }
     }
 
@@ -225,7 +225,7 @@ class elis_data_object {
      */
     public function load($overwrite=true) {
         if (!$this->_is_loaded && $this->_dbfield_id !== self::$_unset) {
-            $record = $this->_db->get_record($this->_get_const('TABLE'),
+            $record = $this->_db->get_record(static::TABLE,
                                              array('id' => $this->_dbfield_id));
             $this->_load_data_from_record($record, $overwrite, null, true);
         }
@@ -242,9 +242,9 @@ class elis_data_object {
             // create a dumb object for Moodle
             $record = $this->to_object();
             if ($this->_dbfield_id !== self::$_unset && !empty($this->_dbfield_id)) {
-                $this->_db->update_record($this->_get_const('TABLE'), $record);
+                $this->_db->update_record(static::TABLE, $record);
             } else {
-                $this->_dbfield_id = $this->_db->insert_record($this->_get_const('TABLE'), $record);
+                $this->_dbfield_id = $this->_db->insert_record(static::TABLE, $record);
             }
             $this->_is_saved = true;
         }
@@ -274,7 +274,7 @@ class elis_data_object {
      * should throw an exception if the data fails validation.
      */
     public function validate() {
-        $validation_rules = $this->_get_static('validation_rules');
+        $validation_rules = static::$validation_rules;
         foreach ($validation_rules as $name => $function) {
             if (!in_array($name, $this->validation_overrides)) {
                 // The validation function can either be a method name or some
@@ -306,7 +306,7 @@ class elis_data_object {
         require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
-        $tablename = eval("return $classname::TABLE;");
+        $tablename = $classname::TABLE;
         if ($db === null) {
             $db = $DB;
         }
@@ -373,7 +373,7 @@ class elis_data_object {
         require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
-        $tablename = eval("return $classname::TABLE;");
+        $tablename = $classname::TABLE;
         if ($db === null) {
             $db = $DB;
         }
@@ -425,7 +425,7 @@ class elis_data_object {
         require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
-        $tablename = eval("return $classname::TABLE;");
+        $tablename = $classname::TABLE;
         if ($db === null) {
             $db = $DB;
         }
@@ -476,16 +476,16 @@ class elis_data_object {
         require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
-        if (eval("return !empty($classname::delete_is_complex);")) {
+        if (!empty($classname::$delete_is_complex)) {
             // deleting involves more than just removing the DB records
-            $items = eval ("return $classname::find(\$classname, \$filter, array(), 0, 0, \$db);");
+            $items = static::find($classname, $filter, array(), 0, 0, $db);
             foreach ($items as $item) {
                 $item->delete();
             }
             return;
         }
 
-        $tablename = eval("return $classname::TABLE;");
+        $tablename = $classname::TABLE;
         if ($db === null) {
             $db = $DB;
         }
@@ -561,7 +561,7 @@ class elis_data_object {
                 return $this->$field_name;
             }
         } else if ($this->_has_association($name)) {
-            $associations = $this->_get_static('associations');
+            $associations = static::$associations;
             $association = $associations[$name];
             $classname = $associations['class'];
             if (isset($association['idfield'])) {
@@ -641,7 +641,7 @@ class elis_data_object {
         if (strncmp($name, 'get_', 4) === 0) {
             $name = substr($name, 4);
             if ($this->_has_association($name)) {
-                $associations = $this->_get_static('associations');
+                $associations = static::$associations;
                 $association = $associations[$name];
                 $classname = $associations['class'];
                 if (isset($association['foreignidfield'])) {
@@ -678,7 +678,7 @@ class elis_data_object {
         } else if (strncmp($name, 'count_', 6) === 0) {
             $name = substr($name, 4);
             if ($this->_has_association($name)) {
-                $associations = $this->_get_static('associations');
+                $associations = static::$associations;
                 $association = $associations[$name];
                 $classname = $associations['class'];
                 if (isset($association['foreignidfield'])) {
@@ -788,47 +788,12 @@ class elis_data_object {
     }
 
     /**
-     * Get the static variable for the object's class (workaround until we can
-     * use "static::" from PHP 5.3)
-     *
-     * @param string $field the name of the static variable
-     */
-    protected function _get_static($field) {
-        $classname = get_class($this);
-        return eval("return $classname::\$$field;");
-    }
-
-    /**
-     * Set the static variable for the object's class (workaround until we can
-     * use "static::" from PHP 5.3)
-     *
-     * @param string $field the name of the static variable
-     * @param mixed $value the value to set the variable to
-     */
-    protected function _set_static($field, $value) {
-        $classname = get_class($this);
-        eval("$classname::\$$field = \$value;");
-    }
-
-    /**
-     * Get the static variable for the object's class (workaround until we can
-     * use "static::" from PHP 5.3)
-     *
-     * @param string $field the name of the static variable
-     */
-    protected function _get_const($field) {
-        $classname = get_class($this);
-        return eval("return $classname::$field;");
-    }
-
-    /**
      * Convenience function to check if an association exists.
      *
      * @param string $name the name of the association to check
      */
     protected function _has_association($name) {
-        $associations = $this->_get_static('associations');
-        return isset($associations[$name]);
+        return isset(static::$associations[$name]);
     }
 }
 
@@ -909,7 +874,7 @@ function validate_is_unique(elis_data_object $record, array $fields) {
     require_once(elis::lib('data/data_filter.class.php'));
 
     $classname = get_class($record);
-    $tablename = eval("return $classname::TABLE;");
+    $tablename = $classname::TABLE;
     $db = $record->get_db();
     $filters = array();
     foreach ($fields as $field) {
@@ -918,7 +883,7 @@ function validate_is_unique(elis_data_object $record, array $fields) {
     if (isset($record->id)) {
         $filters[] = new field_filter('id', $record->id, field_filter::NEQ);
     }
-    if (eval("return $classname::exists(\$classname, \$filters, \$record->get_db());")) {
+    if ($classname::exists($classname, $filters, $record->get_db())) {
         throw new ErrorException('Not unique');
         // FIXME: new exception
     }
