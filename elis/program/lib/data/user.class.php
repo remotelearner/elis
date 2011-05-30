@@ -162,13 +162,13 @@ class user extends data_object_with_custom_fields {
             // delete associated data
             require_once elis::lib('data/data_filter.class.php');
             $filter = new field_filter('userid', $this->id);
-            curriculumstudent::delete_records('curriculumstudent', $filter);
-            instructor::delete_reconds('instructor', $filter);
-            student::delete_records('student', $filter);
-            student_grade::delete_records('student_grade', $filter);
-            usertrack::delete_records('usertrack', $filter);
-            usercluster::delete_records('usercluster', $filter);
-            waitlist::delete_records('waitlist', $filter);
+            curriculumstudent::delete_records('curriculumstudent', $filter, $this->_db);
+            instructor::delete_reconds('instructor', $filter, $this->_db);
+            student::delete_records('student', $filter, $this->_db);
+            student_grade::delete_records('student_grade', $filter, $this->_db);
+            usertrack::delete_records('usertrack', $filter, $this->_db);
+            usercluster::delete_records('usercluster', $filter, $this->_db);
+            waitlist::delete_records('waitlist', $filter, $this->_db);
 
             $level = context_level_base::get_custom_context_level('user', 'elis_program');
             delete_context($level,$this->id);
