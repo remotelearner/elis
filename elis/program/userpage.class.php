@@ -135,10 +135,6 @@ class userpage extends managementpage {
         return !is_primary_admin($muser->id) && $muser->id != $USER->id && $this->_has_capability('block/curr_admin:user:delete');
     }
 
-    function can_do_confirm() {
-        return $this->can_do_delete();
-    }
-
     function can_do_add() {
         $context = get_context_instance(CONTEXT_SYSTEM);
         return has_capability('block/curr_admin:user:create', $context);
