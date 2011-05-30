@@ -362,7 +362,7 @@ class field_owner extends elis_data_object {
      * @param field the field to get the owners for
      */
     public static function get_for_field(field $field) {
-        $owners = self::find('field_owner', new field_filter('fieldid', $field->id));
+        $owners = self::find(new field_filter('fieldid', $field->id));
         return $owners->to_array('plugin');
     }
 
@@ -397,7 +397,7 @@ class field_category extends elis_data_object {
     protected $_dbfield_sortorder;
 
     public static function get_all() {
-        return self::find('field_category', null, array('sortorder' => 'ASC'));
+        return self::find(null, array('sortorder' => 'ASC'));
     }
 
     /**
@@ -410,9 +410,9 @@ class field_category extends elis_data_object {
         if (!is_numeric($contextlevel)) {
             $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
         }
-        return self::find('field_category', new join_filter('contextlevel',
-                                                            field_category_contextlevel::TABLE, 'categoryid',
-                                                            new field_filter('contextlevel', $contextlevel)),
+        return self::find(new join_filter('contextlevel',
+                                          field_category_contextlevel::TABLE, 'categoryid',
+                                          new field_filter('contextlevel', $contextlevel)),
                           array('sortorder' => 'ASC'));
     }
 
@@ -464,9 +464,9 @@ abstract class field_data extends elis_data_object {
         $values = array();
         $default_values = array();
         foreach ($data_types as $datatype => $unused) {
-            $records = self::find("field_data_{$record->data_type()}",
-                                  new OR_filter(new field_filter('contextid', $context->id),
-                                                new field_filter('contextid', null)));
+            $fielddatatype = "field_data_{$record->data_type()}";
+            $records = $fielddatatype::find(new OR_filter(new field_filter('contextid', $context->id),
+                                                          new field_filter('contextid', null)));
             foreach ($records as $record) {
                 if (!isset($fields[$record->fieldid]) || $fields[$record->fieldid]->data_type() != $datatype) {
                     // nonexistent field, or this data isn't supposed to come from this table
@@ -518,10 +518,10 @@ abstract class field_data extends elis_data_object {
      */
     public static function get_for_context_and_field($context, $field) {
         if (is_string($field)) {
-            $find = field::find('field', array(new field_filter('shortname', $field),
-                                               new join_filter('id',
-                                                               field_contextlevel::TABLE, 'fieldid',
-                                                               new field_filter('contextlevel', $context->contextlevel))));
+            $find = field::find(array(new field_filter('shortname', $field),
+                                      new join_filter('id',
+                                                      field_contextlevel::TABLE, 'fieldid',
+                                                      new field_filter('contextlevel', $context->contextlevel))));
             foreach ($find as $rec) {
                 $field = $rec;
             }
@@ -537,11 +537,11 @@ abstract class field_data extends elis_data_object {
             $filter[] = new field_filter('fieldid', $field->id);
             $count = $fielddatatype::count($fielddatatype, $filter);
             if ($count) {
-                return $fielddatatype::find($fielddatatype, $filter);
+                return $fielddatatype::find($filter);
             }
         }
-        return $fielddatatype::find($fielddatatype, array(new field_filter('contextid', null),
-                                                          new field_filter('fieldid', $field->id)));
+        return $fielddatatype::find(array(new field_filter('contextid', null),
+                                          new field_filter('fieldid', $field->id)));
     }
 
     /**

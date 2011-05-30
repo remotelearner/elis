@@ -120,7 +120,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
-        $configs = config_object::find('config_object', new field_filter('name', 'foo'), array(), 0, 0, $overlaydb);
+        $configs = config_object::find(new field_filter('name', 'foo'), array(), 0, 0, $overlaydb);
 
         // should only find one record, with value foooo
         $this->assertEquals($configs->current()->value, 'foooo');

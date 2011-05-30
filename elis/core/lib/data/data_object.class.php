@@ -292,7 +292,6 @@ class elis_data_object {
     /**
      * Load the records corresponding to some criteria.
      *
-     * @param string $classname the name of the data object class to use
      * @param mixed $filter a filter object, or an array of filter objects.  If
      * omitted, all records will be loaded.
      * @param array $sort sort order for the records.  This is an array of
@@ -302,11 +301,11 @@ class elis_data_object {
      * @param moodle_database $db database object to use
      * @return data_collection a collection
      */
-    public static function find($classname, $filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {
+    public static function find($filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {
         require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
-        $tablename = $classname::TABLE;
+        $tablename = static::TABLE;
         if ($db === null) {
             $db = $DB;
         }
@@ -357,23 +356,22 @@ class elis_data_object {
                                             $sql_clauses['where_parameters'],
                                             $sortclause, '*', $limitfrom, $limitnum);
         }
-        return new data_collection($rs, $classname, null, array(), true, array(), $db);
+        return new data_collection($rs, get_called_class(), null, array(), true, array(), $db);
     }
 
     /**
      * Count the records corresponding to some criteria.
      *
-     * @param string $classname the name of the data object class to use
      * @param mixed $filter a filter object or an array of filter objects.  If
      * omitted, all records will be counted.
      * @param moodle_database $db database object to use
      * @return integer
      */
-    public static function count($classname, $filter=null, moodle_database $db=null) {
+    public static function count($filter=null, moodle_database $db=null) {
         require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
-        $tablename = $classname::TABLE;
+        $tablename = static::TABLE;
         if ($db === null) {
             $db = $DB;
         }
@@ -415,17 +413,16 @@ class elis_data_object {
     /**
      * Test whether records satisfying the given filters exist
      *
-     * @param string $classname the name of the data object class to use
      * @param mixed $filter a filter object or an array of filter objects.  If
      * omitted, all records will be counted.
      * @param moodle_database $db database object to use
      * @return bool true if a matching record exists, else false.
      */
-    public static function exists($classname, $filter=null, moodle_database $db=null) {
+    public static function exists($filter=null, moodle_database $db=null) {
         require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
-        $tablename = $classname::TABLE;
+        $tablename = static::TABLE;
         if ($db === null) {
             $db = $DB;
         }
@@ -467,25 +464,24 @@ class elis_data_object {
     /**
      * Delete the records corresponding to some criteria.
      *
-     * @param string $classname the name of the data object class to use
      * @param mixed $filter a filter or an array of filter objects.  (Note:
      * unlike in the find and count methods, this parameter is not optional)
      * @param moodle_database $db database object to use
      */
-    public static function delete_records($classname, $filter, moodle_database $db=null) {
+    public static function delete_records($filter, moodle_database $db=null) {
         require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
-        if (!empty($classname::$delete_is_complex)) {
+        if (!empty(static::$delete_is_complex)) {
             // deleting involves more than just removing the DB records
-            $items = static::find($classname, $filter, array(), 0, 0, $db);
+            $items = static::find($filter, array(), 0, 0, $db);
             foreach ($items as $item) {
                 $item->delete();
             }
             return;
         }
 
-        $tablename = $classname::TABLE;
+        $tablename = static::TABLE;
         if ($db === null) {
             $db = $DB;
         }
@@ -572,9 +568,9 @@ class elis_data_object {
                 }
                 return $this->_associated_objects[$name];
             } else if (isset($association['foreignidfield'])) {
-                return self::find($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
+                return static::find(new field_filter($association['foreignidfield'], $this->_dbfield_id));
             } else if (isset($association['filtermethod'])) {
-                return self::find($classname, call_user_func(array($classname, $association['filtermethod']), $this));
+                return static::find(call_user_func(array($classname, $association['filtermethod']), $this));
             } else {
                 return call_user_func(array($classname, $association['listmethod']), $this);
             }
@@ -653,9 +649,9 @@ class elis_data_object {
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return self::find($classname, $args);
+                        return static::find($args);
                     } else {
-                        return self::find($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
+                        return static::find(new field_filter($association['foreignidfield'], $this->_dbfield_id));
                     }
                 } else if (isset($association['filtermethod'])) {
                     if (isset($args[0])) {
@@ -666,9 +662,9 @@ class elis_data_object {
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return self::find($classname, $args);
+                        return static::find($args);
                     } else {
-                        return self::find($classname, call_user_func(array($classname, $association['filtermethod']), $this));
+                        return static::find(call_user_func(array($classname, $association['filtermethod']), $this));
                     }
                 } else if (isset($association['listmethod'])) {
                     array_unshift($args, $this);
@@ -689,9 +685,9 @@ class elis_data_object {
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return self::count($classname, $args);
+                        return static::count($args);
                     } else {
-                        return self::count($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
+                        return static::count(new field_filter($association['foreignidfield'], $this->_dbfield_id));
                     }
                 } else if (isset($association['filtermethod'])) {
                     if (isset($args[0])) {
@@ -702,9 +698,9 @@ class elis_data_object {
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return self::count($classname, $args);
+                        return static::count($args);
                     } else {
-                        return self::count($classname, call_user_func(array($classname, $association['filtermethod']), $this));
+                        return static::count(call_user_func(array($classname, $association['filtermethod']), $this));
                     }
                 } else if (isset($association['countmethod'])) {
                     array_unshift($args, $this);
@@ -883,7 +879,7 @@ function validate_is_unique(elis_data_object $record, array $fields) {
     if (isset($record->id)) {
         $filters[] = new field_filter('id', $record->id, field_filter::NEQ);
     }
-    if ($classname::exists($classname, $filters, $record->get_db())) {
+    if ($classname::exists($filters, $record->get_db())) {
         throw new ErrorException('Not unique');
         // FIXME: new exception
     }
