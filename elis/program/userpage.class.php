@@ -187,8 +187,8 @@ class userpage extends managementpage {
         // Get list of users
         $contextset = userpage::get_contexts('block/curr_admin:user:view');
         $userfilter = new AND_filter(array(new select_filter($extrasql[0], $extrasql[1]), $contextset->get_filter('id')));
-        $items    = user::find('user', $userfilter, array($sort => $dir), $page*$perpage, $page);
-        $numitems = user::count('user', $userfilter);
+        $items    = user::find($userfilter, array($sort => $dir), $page*$perpage, $page);
+        $numitems = user::count($userfilter);
 
         // cache the context capabilities
         userpage::get_contexts('block/curr_admin:user:edit');

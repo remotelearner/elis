@@ -162,13 +162,13 @@ class user extends data_object_with_custom_fields {
             // delete associated data
             require_once elis::lib('data/data_filter.class.php');
             $filter = new field_filter('userid', $this->id);
-            curriculumstudent::delete_records('curriculumstudent', $filter, $this->_db);
-            instructor::delete_reconds('instructor', $filter, $this->_db);
-            student::delete_records('student', $filter, $this->_db);
-            student_grade::delete_records('student_grade', $filter, $this->_db);
-            usertrack::delete_records('usertrack', $filter, $this->_db);
-            usercluster::delete_records('usercluster', $filter, $this->_db);
-            waitlist::delete_records('waitlist', $filter, $this->_db);
+            curriculumstudent::delete_records($filter, $this->_db);
+            instructor::delete_reconds($filter, $this->_db);
+            student::delete_records($filter, $this->_db);
+            student_grade::delete_records($filter, $this->_db);
+            usertrack::delete_records($filter, $this->_db);
+            usercluster::delete_records($filter, $this->_db);
+            waitlist::delete_records($filter, $this->_db);
 
             $level = context_level_base::get_custom_context_level('user', 'elis_program');
             delete_context($level,$this->id);
@@ -182,7 +182,7 @@ class user extends data_object_with_custom_fields {
         }
     }
 
-    public static function find($classname, $filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {
+    public static function find($filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {
         // if we're sorting by "name", sort by lastname, then firstname
         $newsort = array();
         foreach ($sort as $field => $dir) {
@@ -194,7 +194,7 @@ class user extends data_object_with_custom_fields {
             }
         }
 
-        return parent::find($classname, $filter, $newsort, $limitfrom, $limitnum, $db);
+        return parent::find($filter, $newsort, $limitfrom, $limitnum, $db);
     }
 
     /**
@@ -1055,12 +1055,12 @@ function user_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $na
         $sort = array();
     }
 
-    return user::find('user', new AND_filter($filters), $sort, $startrec, $perpage);
+    return user::find(new AND_filter($filters), $sort, $startrec, $perpage);
 }
 
 
 function user_count_records() {
-    return data_record::count('user');
+    return data_record::count();
 }
 
 ?>
