@@ -240,7 +240,7 @@ class field extends elis_data_object {
         }
 
         // see if we need to create a new field
-        $fields = self::::get_for_context_level($contextlevel);
+        $fields = self::get_for_context_level($contextlevel);
         if (!empty($fields)) {
             foreach ($fields as $f) {
                 if ($f->shortname === $field->shortname) {
