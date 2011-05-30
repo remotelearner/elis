@@ -24,11 +24,11 @@
  *
  */
 
-require_once dirname(__FILE__) . '/../test_config.php';
-require_once $CFG->dirroot . '/elis/core/lib/setup.php';
-require_once elis::lib('data/data_object.class.php');
-require_once elis::lib('testlib.php');
-require_once 'PHPUnit/Extensions/Database/DataSet/CsvDataSet.php';
+require_once(dirname(__FILE__) . '/../test_config.php');
+require_once($CFG->dirroot . '/elis/core/lib/setup.php');
+require_once(elis::lib('data/data_object.class.php'));
+require_once(elis::lib('testlib.php'));
+require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 
 class config_object extends elis_data_object {
     const TABLE = 'config';
@@ -83,10 +83,10 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
      *
      * @dataProvider derivedConstructorProvider
      */
-    public function testCanInitializeDerivedClassFromArrayAndObject($init, $expectedId, $expectedName) {
+    public function testCanInitializeDerivedClassFromArrayAndObject($init, $expectedid, $expectedname) {
         $dataobj = new config_object($init);
-        $this->assertEquals($dataobj->id, $expectedId);
-        $this->assertEquals($dataobj->name, $expectedName);
+        $this->assertEquals($dataobj->id, $expectedid);
+        $this->assertEquals($dataobj->name, $expectedname);
     }
 
     /**
@@ -105,14 +105,14 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
      */
     public function testCanGetAndSetFields() {
         $dataobj = new elis_data_object();
-        $this->assertEquals($dataobj->id, NULL);
+        $this->assertEquals($dataobj->id, null);
         $dataobj->id = 3;
         $this->assertEquals($dataobj->id, 3);
     }
 
     public function testCanFindRecords() {
         global $DB;
-        require_once elis::lib('data/data_filter.class.php');
+        require_once(elis::lib('data/data_filter.class.php'));
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
@@ -134,7 +134,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
      * @expectedException PHPUnit_Framework_Error
      */
     /*
-    public function testIsSet2() {
+    public function testCannotGetANonField() {
         $dataobj = new elis_data_object();
         $dataobj->notafield;
     }

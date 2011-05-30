@@ -305,7 +305,7 @@ class overlay_database extends moodle_database {
         return $result;
     }
 
-// SQL constructs -- just hand everything over to the base DB
+    // SQL constructs -- just hand everything over to the base DB
     public function sql_null_from_clause() {
         return $this->basedb->sql_null_from_clause();
     }
@@ -406,7 +406,7 @@ class overlay_database extends moodle_database {
         return $this->basedb->sql_regex($positivematch);
     }
 
-// transactions -- just hand everything over to the base DB
+    // transactions -- just hand everything over to the base DB
     protected function transactions_supported() {
         return $this->basedb->transactions_supported();
     }
@@ -447,7 +447,7 @@ class overlay_database extends moodle_database {
         return $this->basedb->force_transaction_rollback();
     }
 
-// session locking -- just hand everything over to the base DB
+    // session locking -- just hand everything over to the base DB
     public function session_lock_supported() {
         return $this->basedb->session_lock_supported();
     }
@@ -460,7 +460,7 @@ class overlay_database extends moodle_database {
         return $this->basedb->release_session_lock($rowid);
     }
 
-// performance and logging -- for now, just use the base DB's numbers
+    // performance and logging -- for now, just use the base DB's numbers
     public function perf_get_reads() {
         return $this->basedb->perf_get_reads();
     }

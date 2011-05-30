@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once $CFG->dirroot . '/elis/core/lib/setup.php';
+require_once($CFG->dirroot . '/elis/core/lib/setup.php');
 
 /**
  * Base class for filters.
@@ -230,7 +230,7 @@ class field_filter extends data_filter {
      * @param string $value the value of the field to match
      * @param string $comparison the comparison operator to use
      */
-    public function __construct($name, $value, $comparison=field_filter::EQ) {
+    public function __construct($name, $value, $comparison=self::EQ) {
         $this->name = $name;
         $this->value = $value;
         $this->comparison = $comparison;
@@ -245,20 +245,20 @@ class field_filter extends data_filter {
         }
         if ($this->value === null) {
             // do the Right Thing with null values (i.e. use IS (NOT) NULL)
-            if ($this->comparison == field_filter::NEQ) {
+            if ($this->comparison == self::NEQ) {
                 return array('where' => "{$name} IS NOT NULL",
                              'where_parameters' => array());
             } else {
                 return array('where' => "{$name} IS NULL",
                              'where_parameters' => array());
             }
-        } elseif ($this->comparison === field_filter::LIKE) {
+        } else if ($this->comparison === self::LIKE) {
             if ($db === null) {
                 $db = $DB;
             }
             return array('where' => $db->sql_like($name, '?', false),
                          'where_parameters' => array($this->value));
-        } elseif ($this->comparison === field_filter::NOTLIKE) {
+        } else if ($this->comparison === self::NOTLIKE) {
             if ($db === null) {
                 $db = $DB;
             }
@@ -309,7 +309,8 @@ class join_filter extends data_filter {
                 $add_filter = empty($filter_sql) ? '' : "AND ({$filter_sql['where']})";
 
                 // and create the join
-                $rv['join'] = "LEFT JOIN {{$this->foreign_table}} {$jointablename} ON {$jointablename}.{$this->foreign_field} = {$local_field} {$add_filter}";
+                $rv['join'] = "LEFT JOIN {{$this->foreign_table}} {$jointablename}
+                               ON {$jointablename}.{$this->foreign_field} = {$local_field} {$add_filter}";
                 $rv['join_parameters'] = isset($filter_sql['where_parameters']) ? $filter_sql['where_parameters'] : array();
                 $rv['where'] = "{$jointablename}.id IS NULL";
                 $rv['where_parameters'] = array();

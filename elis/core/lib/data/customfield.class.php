@@ -24,7 +24,7 @@
  *
  */
 
-require_once elis::lib('data/data_object.class.php');
+require_once(elis::lib('data/data_object.class.php'));
 
 /**
  * Custom fields.
@@ -47,7 +47,9 @@ class field extends elis_data_object {
     const TEXT = 'text';
     const TEXTAREA = 'textarea';
 
-    public function __construct($src=false, $field_map=null, array $associations=array(), $from_db=false, array $extradatafields=array(), moodle_database $database=null) {
+    public function __construct($src=false, $field_map=null, array $associations=array(),
+                                $from_db=false, array $extradatafields=array(),
+                                moodle_database $database=null) {
         parent::__construct($src, $field_map, $associations, $from_db, $extradatafields, $database);
 
         if (empty($this->params)) {
@@ -58,9 +60,9 @@ class field extends elis_data_object {
     /**
      * Magic getter to get parameter values
      */
-    function __get($name) {
-        if (strncmp($name,'param_',6) == 0) {
-            $paramname = substr($name,6);
+    public function __get($name) {
+        if (strncmp($name, 'param_', 6) == 0) {
+            $paramname = substr($name, 6);
             $params = unserialize($this->params);
             return $params[$paramname];
         }
@@ -75,9 +77,9 @@ class field extends elis_data_object {
     /**
      * Magic setter to set parameter values
      */
-    function __set($name, $value) {
-        if (strncmp($name,'param_',6) == 0) {
-            $paramname = substr($name,6);
+    public function __set($name, $value) {
+        if (strncmp($name, 'param_', 6) == 0) {
+            $paramname = substr($name, 6);
             $params = unserialize($this->params);
             $params[$paramname] = $value;
             $this->params = serialize($params);
@@ -89,12 +91,12 @@ class field extends elis_data_object {
     /**
      * Magic isset to test parameter values
      */
-    function __isset($name) {
-        if (strncmp($name,'param_',6) == 0) {
-            $paramname = substr($name,6);
+    public function __isset($name) {
+        if (strncmp($name, 'param_', 6) == 0) {
+            $paramname = substr($name, 6);
             $params = unserialize($this->params);
             return isset($params[$paramname]);
-        } elseif ($name == 'owners') {
+        } else if ($name == 'owners') {
             return true;
         } else {
             return parent::__isset($name);
@@ -104,9 +106,9 @@ class field extends elis_data_object {
     /**
      * Magic unset function for parameter values
      */
-    function __unset($name) {
-        if (strncmp($name,'param_',6) == 0) {
-            $paramname = substr($name,6);
+    public function __unset($name) {
+        if (strncmp($name, 'param_', 6) == 0) {
+            $paramname = substr($name, 6);
             $params = unserialize($this->params);
             unset($params[$paramname]);
             $this->params = serialize($params);
@@ -120,7 +122,7 @@ class field extends elis_data_object {
 
         $data = (array)$rec;
         foreach ($data as $key => $value) {
-            if (strncmp($key,'param_',6) === 0) {
+            if (strncmp($key, 'param_', 6) === 0) {
                 $this->$key = $value;
             }
         }
@@ -141,7 +143,7 @@ class field extends elis_data_object {
      * @param mixed $contextlevel the context level.  Either a numeric value,
      * or the name of the context level from the ELIS Program Manager
      */
-    static function get_for_context_level($contextlevel) {
+    public static function get_for_context_level($contextlevel) {
         global $DB;
         if (!$contextlevel) {
             return array();
@@ -152,7 +154,7 @@ class field extends elis_data_object {
         if ($contextlevel == context_level_base::get_custom_context_level('user', 'elis_program')) {
             // need to include extra fields for PM users
             $sql = 'SELECT field.*, category.name AS categoryname, mfield.id AS mfieldid, owner.exclude AS syncwithmoodle
-                      FROM {'.field::TABLE.'} field
+                      FROM {'.self::TABLE.'} field
                  LEFT JOIN {user_info_field} mfield ON field.shortname = mfield.shortname
                  LEFT JOIN {'.field_category::TABLE.'} category ON field.categoryid = category.id
                  LEFT JOIN {'.field_owner::TABLE.'} owner ON field.id = owner.fieldid AND owner.plugin = \'moodle_profile\'
@@ -160,12 +162,13 @@ class field extends elis_data_object {
                   ORDER BY category.sortorder, field.sortorder";
         } else {
             $sql = 'SELECT field.*, category.name AS categoryname
-                      FROM {'.field::TABLE.'} field
+                      FROM {'.self::TABLE.'} field
                  LEFT JOIN {'.field_category::TABLE.'} category ON field.categoryid = category.id
                       JOIN {'.field_contextlevel::TABLE."} ctx ON ctx.fieldid = field.id AND ctx.contextlevel = {$contextlevel}
                   ORDER BY category.sortorder, field.sortorder";
         }
-        return new data_collection($DB->get_recordset_sql($sql), 'field', null, array(), true, array('categoryname', 'mfieldid', 'syncwithmoodle'));
+        return new data_collection($DB->get_recordset_sql($sql), 'field', null, array(), true,
+                                   array('categoryname', 'mfieldid', 'syncwithmoodle'));
     }
 
     /**
@@ -176,7 +179,7 @@ class field extends elis_data_object {
      * or the name of the context level from the ELIS Program Manager
      * @param string $name the shortname of the field
      */
-    static function get_for_context_level_with_name($contextlevel, $name) {
+    public static function get_for_context_level_with_name($contextlevel, $name) {
         global $DB;
         if (!$contextlevel) {
             return false;
@@ -188,33 +191,33 @@ class field extends elis_data_object {
                             FROM {'.field_context::TABLE."} fctx
                            WHERE fctx.contextlevel = {$contextlevel})
                AND shortname=?";
-        return new field($DB->get_record_select(field::TABLE, $select, array($name)), null, array(), true);
+        return new field($DB->get_record_select(self::TABLE, $select, array($name)), null, array(), true);
     }
 
     /**
      * Get the storage data type for the field.
      */
-    function data_type() {
+    public function data_type() {
         switch ($this->datatype) {
-        case 'int':
-        case 'bool':
-            return 'int';
-            break;
-        case 'num':
-            return 'num';
-            break;
-        case 'char':
-            return 'char';
-            break;
-        default:
-            return 'text';
+            case 'int':
+            case 'bool':
+                return 'int';
+                break;
+            case 'num':
+                return 'num';
+                break;
+            case 'char':
+                return 'char';
+                break;
+            default:
+                return 'text';
         }
     }
 
     /**
      * Get the database table used to store data for the field.
      */
-    function data_table() {
+    public function data_table() {
         return field_data::TABLE.'_'.$this->data_type();
     }
 
@@ -231,13 +234,13 @@ class field extends elis_data_object {
      * category configuration if a new category is created
      * @return object a field object
      */
-    static function ensure_field_exists_for_context_level(field $field, $contextlevel, field_category $category) {
+    public static function ensure_field_exists_for_context_level(field $field, $contextlevel, field_category $category) {
         if (!is_numeric($contextlevel)) {
             $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
         }
 
         // see if we need to create a new field
-        $fields = field::get_for_context_level($contextlevel);
+        $fields = self::::get_for_context_level($contextlevel);
         if (!empty($fields)) {
             foreach ($fields as $f) {
                 if ($f->shortname === $field->shortname) {
@@ -290,7 +293,9 @@ class field_owner extends elis_data_object {
     protected $_dbfield_exclude;
     protected $_dbfield_params;
 
-    public function __construct($src=false, $field_map=null, array $associations=array(), $from_db=false, array $extradatafields=array(), moodle_database $database=null) {
+    public function __construct($src=false, $field_map=null, array $associations=array(),
+                                $from_db=false, array $extradatafields=array(),
+                                moodle_database $database=null) {
         parent::__construct($src, $field_map, $associations, $from_db, $extradatafields, $database);
 
         if (empty($this->params)) {
@@ -301,9 +306,9 @@ class field_owner extends elis_data_object {
     /**
      * Magic getter to get parameter values
      */
-    function __get($name) {
-        if (strncmp($name,'param_',6) == 0) {
-            $paramname = substr($name,6);
+    public function __get($name) {
+        if (strncmp($name, 'param_', 6) == 0) {
+            $paramname = substr($name, 6);
             $params = unserialize($this->params);
             return $params[$paramname];
         }
@@ -314,9 +319,9 @@ class field_owner extends elis_data_object {
     /**
      * Magic setter to set parameter values
      */
-    function __set($name, $value) {
-        if (strncmp($name,'param_',6) == 0) {
-            $paramname = substr($name,6);
+    public function __set($name, $value) {
+        if (strncmp($name, 'param_', 6) == 0) {
+            $paramname = substr($name, 6);
             $params = unserialize($this->params);
             $params[$paramname] = $value;
             $this->params = serialize($params);
@@ -328,9 +333,9 @@ class field_owner extends elis_data_object {
     /**
      * Magic isset to test parameter values
      */
-    function __isset($name) {
-        if (strncmp($name,'param_',6) == 0) {
-            $paramname = substr($name,6);
+    public function __isset($name) {
+        if (strncmp($name, 'param_', 6) == 0) {
+            $paramname = substr($name, 6);
             $params = unserialize($this->params);
             return isset($params[$paramname]);
         } else {
@@ -341,9 +346,9 @@ class field_owner extends elis_data_object {
     /**
      * Magic unset function for parameter values
      */
-    function __unset($name) {
-        if (strncmp($name,'param_',6) == 0) {
-            $paramname = substr($name,6);
+    public function __unset($name) {
+        if (strncmp($name, 'param_', 6) == 0) {
+            $paramname = substr($name, 6);
             $params = unserialize($this->params);
             unset($params[$paramname]);
             $this->params = serialize($params);
@@ -356,8 +361,8 @@ class field_owner extends elis_data_object {
      * Get the owners for a given field
      * @param field the field to get the owners for
      */
-    static function get_for_field(field $field) {
-        $owners = $this->find('field_owner', new field_filter('fieldid', $field->id));
+    public static function get_for_field(field $field) {
+        $owners = self::find('field_owner', new field_filter('fieldid', $field->id));
         return $owners->to_array('plugin');
     }
 
@@ -368,7 +373,7 @@ class field_owner extends elis_data_object {
      * @param   string  $plugin  The plugin used for the owner field
      * @param   array   $params  Any additional parameters to pass to the owner record
      */
-    static function ensure_field_owner_exists(field $field, $plugin, array $params = array()) {
+    public static function ensure_field_owner_exists(field $field, $plugin, array $params = array()) {
         $owners = $field->owners;
         if (!empty($owners[$plugin])) {
             return;
@@ -391,24 +396,24 @@ class field_category extends elis_data_object {
     protected $_dbfield_name;
     protected $_dbfield_sortorder;
 
-    static function get_all() {
-        return field_category::find('field_category', null, array('sortorder' => 'ASC'));
+    public static function get_all() {
+        return self::find('field_category', null, array('sortorder' => 'ASC'));
     }
 
     /**
      * Gets the custom field categories for a given context level.
      */
-    static function get_for_context_level($contextlevel) {
+    public static function get_for_context_level($contextlevel) {
         if (!$contextlevel) {
             return array();
         }
         if (!is_numeric($contextlevel)) {
             $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
         }
-        return field_category::find('field_category', new join_filter('contextlevel',
-                                                                      field_category_contextlevel::TABLE, 'categoryid',
-                                                                      new field_filter('contextlevel', $contextlevel)),
-                                    array('sortorder' => 'ASC'));
+        return self::find('field_category', new join_filter('contextlevel',
+                                                            field_category_contextlevel::TABLE, 'categoryid',
+                                                            new field_filter('contextlevel', $contextlevel)),
+                          array('sortorder' => 'ASC'));
     }
 
     /*
@@ -443,7 +448,7 @@ abstract class field_data extends elis_data_object {
      * where value is an array if the field is multivalued, or a single value
      * if not.
      */
-    static function get_for_context($context) {
+    public static function get_for_context($context) {
         // find out which fields we have, and what tables to look for the values
         // in
         $fields = field::get_for_context_level($context->contextlevel);
@@ -459,9 +464,9 @@ abstract class field_data extends elis_data_object {
         $values = array();
         $default_values = array();
         foreach ($data_types as $datatype => $unused) {
-            $records = field_data::find("field_data_{$record->data_type()}",
-                                        new OR_filter(new field_filter('contextid', $context->id),
-                                                      new field_filter('contextid', null)));
+            $records = self::find("field_data_{$record->data_type()}",
+                                  new OR_filter(new field_filter('contextid', $context->id),
+                                                new field_filter('contextid', null)));
             foreach ($records as $record) {
                 if (!isset($fields[$record->fieldid]) || $fields[$record->fieldid]->data_type() != $datatype) {
                     // nonexistent field, or this data isn't supposed to come from this table
@@ -490,13 +495,13 @@ abstract class field_data extends elis_data_object {
             if ($field->multivalued) {
                 if (!empty($values[$field->id])) {
                     $result[$field->shortname] = $values[$field->id];
-                } elseif (!empty($default_values[$field->id])) {
+                } else if (!empty($default_values[$field->id])) {
                     $result[$field->shortname] = $default_values[$field->id];
                 }
             } else {
                 if (!empty($values[$field->id])) {
                     $result[$field->shortname] = $values[$field->id][0];
-                } elseif (!empty($default_values[$field->id])) {
+                } else if (!empty($default_values[$field->id])) {
                     $result[$field->shortname] = $default_values[$field->id][0];
                 }
             }
@@ -511,7 +516,7 @@ abstract class field_data extends elis_data_object {
      * @param object $context the context to get the field data from
      * @param mixed $field the field shortname, or a field object
      */
-    static function get_for_context_and_field($context, $field) {
+    public static function get_for_context_and_field($context, $field) {
         if (is_string($field)) {
             $find = field::find('field', array(new field_filter('shortname', $field),
                                                new join_filter('id',
@@ -530,13 +535,13 @@ abstract class field_data extends elis_data_object {
             $filter = array();
             $filter[] = new field_filter('contextid', $context->id);
             $filter[] = new field_filter('fieldid', $field->id);
-            $count = field_data::count($fielddatatype, $filter);
+            $count = $fielddatatype::count($fielddatatype, $filter);
             if ($count) {
-                return field_data::find($fielddatatype, $filter);
+                return $fielddatatype::find($fielddatatype, $filter);
             }
         }
-        return field_data::find($fielddatatype, array(new field_filter('contextid', null),
-                                                      new field_filter('fieldid', $field->id)));
+        return $fielddatatype::find($fielddatatype, array(new field_filter('contextid', null),
+                                                          new field_filter('fieldid', $field->id)));
     }
 
     /**
@@ -549,7 +554,7 @@ abstract class field_data extends elis_data_object {
      * @param string $plugin
      * @return boolean whether or not the data was modified
      */
-    static function set_for_context_and_field($context, field $field, $data) {
+    public static function set_for_context_and_field($context, field $field, $data) {
         global $DB;
         if ($context) {
             $contextid = $context->id;
@@ -560,7 +565,7 @@ abstract class field_data extends elis_data_object {
         // FIXME: check exclude, unique, etc
         if ($field->multivalued) {
             // find what data already exists
-            $records = field_data::get_for_context_and_field($context, $field);
+            $records = self::get_for_context_and_field($context, $field);
             $records = $records ? $records : array();
             $todelete = array();
             $existing = array();
@@ -588,7 +593,7 @@ abstract class field_data extends elis_data_object {
         } else {
             if (($rec = $DB->get_record($data_table, array('contextid' => $contextid, 'fieldid' => $field->id)))) {
                 $fielddata = new field_data($rec, $field->data_type());
-                if ($data === NULL) {
+                if ($data === null) {
                     $fielddata->delete();
                     return true;
                 }
@@ -599,7 +604,7 @@ abstract class field_data extends elis_data_object {
                 $fielddata->data = $data;
                 $fielddata->update();
                 return true;
-            } elseif ($data !== NULL) {
+            } else if ($data !== null) {
                 $rec = new field_data(false, $field->data_type());
                 $rec->contextid = $contextid;
                 $rec->fieldid = $field->id;
@@ -617,7 +622,7 @@ abstract class field_data extends elis_data_object {
      * or the name of the context level from the ELIS Program Manager
      * @param object $record the data_object to fetch the field values from
      */
-    function set_for_context_from_datarecord($contextlevel, $record) {
+    public function set_for_context_from_datarecord($contextlevel, $record) {
         if (!isnumeric($contextlevel)) {
             $contextlevel = context_level_base::get_custom_context_level($level, 'elis_program');
             if (!$contextlevel) {
@@ -632,7 +637,7 @@ abstract class field_data extends elis_data_object {
         foreach ($fields as $field) {
             $fieldname = "field_{$field->shortname}";
             if (isset($record->$fieldname)) {
-                field_data::set_for_context_and_field($context, $field, $record->$fieldname);
+                self::set_for_context_and_field($context, $field, $record->$fieldname);
             }
         }
 

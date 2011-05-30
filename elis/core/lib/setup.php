@@ -24,7 +24,7 @@
  *
  */
 
-require_once (dirname(__FILE__) . '/../../../config.php');
+require_once(dirname(__FILE__) . '/../../../config.php');
 
 /**
  * Global ELIS management object.
@@ -33,50 +33,50 @@ class elis {
     /**
      * The ELIS DB version
      */
-    static $version;
+    public static $version;
 
     /**
      * The ELIS human-readable release
      */
-    static $release;
+    public static $release;
 
     /**
      * The base directory for the ELIS code.
      */
-    static $basedir;
+    public static $basedir;
 
     /**
      * Return the full path name for a ELIS file.
      */
-    static function file($file) {
-        return elis::$basedir . '/' . $file;
+    public static function file($file) {
+        return self::$basedir . '/' . $file;
     }
 
     /**
      * Return the full path name for a file in a component.
      */
-    static function component_file($component, $file) {
-        return elis::file("{$component}/{$file}");
+    public static function component_file($component, $file) {
+        return self::file("{$component}/{$file}");
     }
 
     /**
      * Return the full path name for a file in a plugin.
      */
-    static function plugin_file($plugin, $file) {
-        list($plugintype,$name) = normalize_component($plugin);
+    public static function plugin_file($plugin, $file) {
+        list($plugintype, $name) = normalize_component($plugin);
         return get_plugin_directory($plugintype, $name)."/{$file}";
     }
 
     /**
      * The base directory for the ELIS libraries.
      */
-    static $libdir;
+    public static $libdir;
 
     /**
      * Return the full path name for a ELIS library file.
      */
-    static function lib($file) {
-        return elis::file("core/lib/{$file}");
+    public static function lib($file) {
+        return self::file("core/lib/{$file}");
     }
 }
 
@@ -86,7 +86,7 @@ elis::$libdir = elis::file('core/lib');
 
 {
     $plugin = new stdClass;
-    require elis::file('core/version.php');
+    require(elis::file('core/version.php'));
     elis::$version = $plugin->version;
     elis::$release = $plugin->release;
 }

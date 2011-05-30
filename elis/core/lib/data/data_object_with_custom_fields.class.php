@@ -27,9 +27,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once $CFG->dirroot . '/elis/core/lib/setup.php';
-require_once elis::lib('data/data_object.class.php');
-require_once elis::lib('data/customfield.class.php');
+require_once($CFG->dirroot . '/elis/core/lib/setup.php');
+require_once(elis::lib('data/data_object.class.php'));
+require_once(elis::lib('data/customfield.class.php'));
 
 /**
  * Represents a database record object that may have associated custom fields.
@@ -122,7 +122,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
                 if (isset($this->_field_data[$shortname])) {
                     // we have data
                     return $this->_field_data[$shortname];
-                } elseif (!$this->_fields_loaded && empty($this->_field_changed[$shortname])) {
+                } else if (!$this->_fields_loaded && empty($this->_field_changed[$shortname])) {
                     // custom fields haven't been loaded yet (and the field
                     // hasn't been unset)
                     $this->_load_field_data();
@@ -185,7 +185,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
                 if (isset($this->_field_data[$shortname])) {
                     // we have data
                     return true;
-                } elseif (!$this->_fields_loaded && empty($this->_field_changed[$shortname])) {
+                } else if (!$this->_fields_loaded && empty($this->_field_changed[$shortname])) {
                     // custom fields haven't been loaded yet (and the field
                     // hasn't been unset)
                     $this->_load_field_data();
@@ -271,7 +271,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
             if (is_string($field_map)) {
                 // just a simple prefix
                 $rec_name = $field_map.$rec_name;
-            } elseif (is_array($field_map)) {
+            } else if (is_array($field_map)) {
                 if (!isset($field_map[$rec_name])) {
                     // field isn't mapped -- skip it
                     continue;

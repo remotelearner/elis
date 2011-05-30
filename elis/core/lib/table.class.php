@@ -91,23 +91,37 @@ class display_table {
         global $OUTPUT;
         if (empty($column['header'])) {
             return '';
-        } elseif (is_string($column['header'])) {
+        } else if (is_string($column['header'])) {
             if (isset($column['sortable'])) {
                 if ($column['sortable'] === true) {
-                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => $columnid, $this->sortdir_param => display_table::ASC)), $column['header']);
-                } elseif ($column['sortable'] === display_table::ASC) {
-                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => $columnid, $this->sortdir_param => display_table::DESC)), $column['header']) . ' ' . html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/down')));
-                } elseif ($column['sortable'] === display_table::DESC) {
-                    return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => $columnid, $this->sortdir_param => display_table::ASC)), $column['header']) . ' ' . html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/up')));
+                    return html_writer::link(new moodle_url($this->base_url,
+                                                            array($this->sort_param => $columnid,
+                                                                  $this->sortdir_param => self::ASC)),
+                                             $column['header']);
+                } else if ($column['sortable'] === self::ASC) {
+                    return html_writer::link(new moodle_url($this->base_url,
+                                                            array($this->sort_param => $columnid,
+                                                                  $this->sortdir_param => self::DESC)),
+                                             $column['header'])
+                        . ' ' . html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/down')));
+                } else if ($column['sortable'] === self::DESC) {
+                    return html_writer::link(new moodle_url($this->base_url,
+                                                            array($this->sort_param => $columnid,
+                                                                  $this->sortdir_param => self::ASC)),
+                                             $column['header'])
+                        . ' ' . html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/up')));
                 } else {
                     return $column['header'];
                 }
-            } elseif ($this->is_sortable_default()) {
-                return html_writer::link(new moodle_url($this->base_url, array($this->sort_param => $columnid, $this->sortdir_param => display_table::ASC)), $column['header']);
+            } else if ($this->is_sortable_default()) {
+                return html_writer::link(new moodle_url($this->base_url,
+                                                        array($this->sort_param => $columnid,
+                                                              $this->sortdir_param => self::ASC)),
+                                         $column['header']);
             } else {
                 return $column['header'];
             }
-        } elseif (is_array($column['header'])) {
+        } else if (is_array($column['header'])) {
             $subheaders = array();
             foreach ($column['header'] as $headerid => $header) {
                 $subheaders[] = $this->column_to_header($headerid, $header);
@@ -197,7 +211,7 @@ class display_table {
     /**
      * Returns the default column wrapping.
      */
-    function is_column_wrapped_default() {
+    protected function is_column_wrapped_default() {
         return true;
     }
 
@@ -211,14 +225,14 @@ class display_table {
     /**
      * Returns the default column sortability.
      */
-    function is_sortable_default() {
+    protected function is_sortable_default() {
         return true;
     }
 
     /**
      * Gets the display text for a column, for an item.
      */
-    function get_item_display($column, $item) {
+    protected function get_item_display($column, $item) {
         if (isset($this->columns[$column]['display_function'])) {
             if (is_string($this->columns[$column]['display_function'])
                 && method_exists($this, $this->columns[$column]['display_function'])) {
@@ -226,13 +240,13 @@ class display_table {
             } else {
                 $text = call_user_func($this->columns[$column]['display_function'], $column, $item);
             }
-        } elseif (method_exists($this, "get_item_display_$column")) {
+        } else if (method_exists($this, "get_item_display_$column")) {
             // old-style mechanism
-            $text = call_user_func(array($this,"get_item_display_$column"), $column, $item);
+            $text = call_user_func(array($this, "get_item_display_$column"), $column, $item);
         } else {
             $text = $this->get_item_display_default($column, $item);
         }
-        if(isset($this->columns[$column]['decorator'])) {
+        if (isset($this->columns[$column]['decorator'])) {
             $text = call_user_func($this->columns[$column]['decorator'], $text, $column, $item);
         }
         return $text;
@@ -241,14 +255,14 @@ class display_table {
     /**
      * The default item display function.
      */
-    function get_item_display_default($column, $item) {
+    protected function get_item_display_default($column, $item) {
         return htmlspecialchars($item->$column);
     }
 
     /**
      * Display function for a yes/no element.
      */
-    static function display_yesno_item($column, $item) {
+    public static function display_yesno_item($column, $item) {
         if ($item->$column) {
             return get_string('yes');
         } else {
@@ -259,7 +273,7 @@ class display_table {
     /**
      * Display function for a country code element
      */
-    static function display_country_item($column, $item) {
+    public static function display_country_item($column, $item) {
         static $countries;
 
         if (!isset($countries)) {
@@ -272,7 +286,7 @@ class display_table {
     /**
      * Display function for a country code element
      */
-    static function display_language_item($column, $item) {
+    public static function display_language_item($column, $item) {
         static $languages;
 
         if (!isset($languages)) {
@@ -312,13 +326,13 @@ class record_link_decorator {
      * the ID to use
      * $param string $param_name the URL parameter to use to specify the ID
      */
-    function __construct(elis_page $page, $id_field_name, $param_name='id') {
+    public function __construct(elis_page $page, $id_field_name, $param_name='id') {
         $this->page = $page;
         $this->id_field_name = $id_field_name;
         $this->param_name = $param_name;
     }
 
-    function decorate($text, $column, $item) {
+    public function decorate($text, $column, $item) {
         $id_field_name = $this->id_field_name;
 
         if (isset($item->$id_field_name) && $item->$id_field_name) {
@@ -330,5 +344,3 @@ class record_link_decorator {
         return $text;
     }
 }
-
-?>

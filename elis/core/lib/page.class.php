@@ -29,7 +29,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once $CFG->dirroot . '/elis/core/lib/setup.php';
+require_once($CFG->dirroot . '/elis/core/lib/setup.php');
 
 /**
  * Base ELIS page class.  Provides a framework for displaying a standard page

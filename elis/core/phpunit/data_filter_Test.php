@@ -24,8 +24,8 @@
  *
  */
 
-require_once dirname(__FILE__) . '/../test_config.php';
-require_once $CFG->dirroot . '/elis/core/lib/data/data_filter.class.php';
+require_once(dirname(__FILE__) . '/../test_config.php');
+require_once($CFG->dirroot . '/elis/core/lib/data/data_filter.class.php');
 
 class field_filterTest extends PHPUnit_Framework_TestCase {
     protected $backupGlobalsBlacklist = array('DB');

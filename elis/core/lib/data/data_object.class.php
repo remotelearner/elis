@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once $CFG->dirroot . '/elis/core/lib/setup.php';
+require_once($CFG->dirroot . '/elis/core/lib/setup.php');
 
 /**
  * Represents a database record as an object.  Fields are identified as
@@ -80,7 +80,7 @@ class elis_data_object {
      * - $this->count_tracks(filters) (count associated tracks subject to
      *   filters)
      */
-    static $associations = array();
+    public static $associations = array();
 
     /**
      * Cache of objects retrieved for associations.  These objects are loaded
@@ -91,14 +91,14 @@ class elis_data_object {
     /**
      * Whether deleting a record requires extra steps.
      */
-    static protected $delete_is_complex = false;
+    protected static $delete_is_complex = false;
 
     /**
      * Functions to use for validating data.  Each validation function must
      * either be the name of a method (taking no arguments), or a PHP callback
      * (taking one argument: $this).
      */
-    static $validation_rules = array();
+    public static $validation_rules = array();
 
     /**
      * Validation rules to ignore.  These entries should be the keys for the
@@ -131,7 +131,7 @@ class elis_data_object {
      * database record (e.g. counts for related records).  This is only used
      * when loading the data from an object/array.
      */
-    var $_extradata = array();
+    private $_extradata = array();
 
     const FIELD_PREFIX = '_dbfield_';
 
@@ -169,7 +169,9 @@ class elis_data_object {
      * @param moodle_database $database database object to use (null for the
      * default database)
      */
-    public function __construct($src=false, $field_map=null, array $associations=array(), $from_db=false, array $extradatafields=array(), moodle_database $database=null) {
+    public function __construct($src=false, $field_map=null, array $associations=array(),
+                                $from_db=false, array $extradatafields=array(),
+                                moodle_database $database=null) {
         global $DB;
 
         if (!isset(self::$_unset)) {
@@ -179,7 +181,7 @@ class elis_data_object {
         // mark all the fields as unset
         $reflect = new ReflectionClass(get_class($this));
         $prefix_len = strlen(self::FIELD_PREFIX);
-        foreach($reflect->getProperties() as $prop) {
+        foreach ($reflect->getProperties() as $prop) {
             if (strncmp($prop->getName(), self::FIELD_PREFIX, $prefix_len) === 0) {
                 $field_name = $prop->getName();
                 $this->$field_name = self::$_unset;
@@ -195,11 +197,11 @@ class elis_data_object {
         // initialize the object fields
         if ($src === false) {
             // do nothing
-        } elseif (is_numeric($src)) {
+        } else if (is_numeric($src)) {
             $this->_dbfield_id = $src;
-        } elseif (is_object($src)) {
+        } else if (is_object($src)) {
             $this->_load_data_from_record($src, false, $field_map, $from_db, $extradatafields);
-        } elseif (is_array($src)) {
+        } else if (is_array($src)) {
             $this->_load_data_from_record((object)$src, false, $field_map, $from_db, $extradatafields);
         } else {
             throw new ErrorException('Invalid argument');
@@ -301,6 +303,7 @@ class elis_data_object {
      * @return data_collection a collection
      */
     public static function find($classname, $filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {
+        require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
         $tablename = eval("return $classname::TABLE;");
@@ -317,10 +320,9 @@ class elis_data_object {
         }
         $sortclause = implode(', ', $sortclause);
 
-        require_once elis::lib('data/data_filter.class.php');
         if ($filter === null) {
             $sql_clauses = array();
-        } elseif (is_object($filter)) {
+        } else if (is_object($filter)) {
             $sql_clauses = $filter->get_sql(true, 'd', $db);
         } else {
             $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', $db);
@@ -341,7 +343,7 @@ class elis_data_object {
         } else {
             if ($filter === null) {
                 // nothing
-            } elseif (is_object($filter)) {
+            } else if (is_object($filter)) {
                 $sql_clauses = $filter->get_sql(false, null, $db);
             } else {
                 $sql_clauses = AND_filter::get_combined_sql($filters, false, null, $db);
@@ -368,6 +370,7 @@ class elis_data_object {
      * @return integer
      */
     public static function count($classname, $filter=null, moodle_database $db=null) {
+        require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
         $tablename = eval("return $classname::TABLE;");
@@ -375,10 +378,9 @@ class elis_data_object {
             $db = $DB;
         }
 
-        require_once elis::lib('data/data_filter.class.php');
         if ($filter === null) {
             $sql_clauses = array();
-        } elseif (is_object($filter)) {
+        } else if (is_object($filter)) {
             $sql_clauses = $filter->get_sql(true, 'd', $db);
         } else {
             $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', $db);
@@ -395,7 +397,7 @@ class elis_data_object {
             return $db->count_records_sql($sql, $parameters);
         } else {
             if ($filter === null) {
-            } elseif (is_object($filter)) {
+            } else if (is_object($filter)) {
                 $sql_clauses = $filter->get_sql(false, null, $db);
             } else {
                 $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
@@ -420,6 +422,7 @@ class elis_data_object {
      * @return bool true if a matching record exists, else false.
      */
     public static function exists($classname, $filter=null, moodle_database $db=null) {
+        require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
         $tablename = eval("return $classname::TABLE;");
@@ -427,10 +430,9 @@ class elis_data_object {
             $db = $DB;
         }
 
-        require_once elis::lib('data/data_filter.class.php');
         if ($filter === null) {
             $sql_clauses = array();
-        } elseif (is_object($filter)) {
+        } else if (is_object($filter)) {
             $sql_clauses = $filter->get_sql(true, 'd', $db);
         } else {
             $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', $db);
@@ -447,7 +449,7 @@ class elis_data_object {
             return $db->record_exists($sql, $parameters);
         } else {
             if ($filter === null) {
-            } elseif (is_object($sql_clauses)) {
+            } else if (is_object($sql_clauses)) {
                 $sql_clauses = $filter->get_sql(false, null, $db);
             } else {
                 $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
@@ -471,6 +473,7 @@ class elis_data_object {
      * @param moodle_database $db database object to use
      */
     public static function delete_records($classname, $filter, moodle_database $db=null) {
+        require_once(elis::lib('data/data_filter.class.php'));
         global $DB;
 
         if (eval("return !empty($classname::delete_is_complex);")) {
@@ -487,7 +490,6 @@ class elis_data_object {
             $db = $DB;
         }
 
-        require_once elis::lib('data/data_filter.class.php');
         if (is_object($filter)) {
             $sql_clauses = $filter->get_sql(false, null, $db);
         } else {
@@ -515,7 +517,7 @@ class elis_data_object {
         $obj = new object;
         $reflect = new ReflectionClass(get_class($this));
         $prefix_len = strlen(self::FIELD_PREFIX);
-        foreach($reflect->getProperties() as $prop) {
+        foreach ($reflect->getProperties() as $prop) {
             if (strncmp($prop->getName(), self::FIELD_PREFIX, $prefix_len) === 0) {
                 $field_name = $prop->getName();
                 $name = substr($field_name, $prefix_len);
@@ -543,6 +545,8 @@ class elis_data_object {
      * $this->fieldname and $this->associationname.
      */
     public function __get($name) {
+        require_once(elis::lib('data/data_filter.class.php'));
+
         $field_name = self::FIELD_PREFIX.$name;
         if (property_exists(get_class($this), $field_name)) {
             if ($this->$field_name === self::$_unset) {
@@ -567,15 +571,14 @@ class elis_data_object {
                     $this->_associated_objects[$name] = new $classname($this->$id_field_name);
                 }
                 return $this->_associated_objects[$name];
-            } elseif (isset($association['foreignidfield'])) {
-                require_once elis::lib('data/data_filter.class.php');
-                return elis_data_object::find($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
-            } elseif (isset($association['filtermethod'])) {
-                return elis_data_object::find($classname, call_user_func(array($classname,$association['filtermethod']),$this));
+            } else if (isset($association['foreignidfield'])) {
+                return self::find($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
+            } else if (isset($association['filtermethod'])) {
+                return self::find($classname, call_user_func(array($classname, $association['filtermethod']), $this));
             } else {
-                return call_user_func(array($classname,$association['listmethod']),$this);
+                return call_user_func(array($classname, $association['listmethod']), $this);
             }
-        } elseif (array_key_exists($name, $this->_extradata)) {
+        } else if (array_key_exists($name, $this->_extradata)) {
             return $this->_extradata[$name];
         } else {
             $trace = debug_backtrace();
@@ -595,7 +598,7 @@ class elis_data_object {
         if (property_exists(get_class($this), $field_name)) {
             $this->$field_name = $value;
             $this->_is_saved = false;
-        } elseif (array_key_exists($this->_extradata, $name)) {
+        } else if (array_key_exists($this->_extradata, $name)) {
             $this->_extradata[$name] = $value;
         } else {
             throw new ErrorException('Invalid access');
@@ -620,7 +623,7 @@ class elis_data_object {
         $field_name = self::FIELD_PREFIX.$name;
         if (property_exists(get_class($this), $field_name)) {
             $this->$field_name = self::$_unset;
-        } elseif (array_key_exists($this->_extradata, $name)) {
+        } else if (array_key_exists($this->_extradata, $name)) {
             unset($this->_extradata[$name]);
         }
         // FIXME: handle associations?
@@ -633,6 +636,8 @@ class elis_data_object {
      * filter or array of filter objects.
      */
     public function __call($name, $args) {
+        require_once(elis::lib('data/data_filter.class.php'));
+
         if (strncmp($name, 'get_', 4) === 0) {
             $name = substr($name, 4);
             if ($this->_has_association($name)) {
@@ -642,37 +647,35 @@ class elis_data_object {
                 if (isset($association['foreignidfield'])) {
                     if (isset($args[0])) {
                         // $filters specified
-                        require_once elis::lib('data/data_filter.class.php');
                         $foreign_filter = new field_filter($association['foreignidfield'], $this->_dbfield_id);
                         if (is_array($args[0])) {
                             $args[0][] = $foreign_filter;
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return elis_data_object::find($classname,$args);
+                        return self::find($classname, $args);
                     } else {
-                        require_once elis::lib('data/data_filter.class.php');
-                        return elis_data_object::find($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
+                        return self::find($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
                     }
-                } elseif (isset($association['filtermethod'])) {
+                } else if (isset($association['filtermethod'])) {
                     if (isset($args[0])) {
                         // $filters specified
-                        $foreign_filter = call_user_func(array($classname,$association['filtermethod']),$this);
+                        $foreign_filter = call_user_func(array($classname, $association['filtermethod']), $this);
                         if (is_array($args[0])) {
                             $args[0][] = $foreign_filter;
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return elis_data_object::find($classname, $args);
+                        return self::find($classname, $args);
                     } else {
-                        return elis_data_object::find($classname, call_user_func(array($classname,$association['filtermethod']),$this));
+                        return self::find($classname, call_user_func(array($classname, $association['filtermethod']), $this));
                     }
                 } else if (isset($association['listmethod'])) {
                     array_unshift($args, $this);
-                    return call_user_func_array(array($classname,$association['listmethod']), $args);
+                    return call_user_func_array(array($classname, $association['listmethod']), $args);
                 }
             }
-        } else if (strncmp($name,'count_', 6) === 0) {
+        } else if (strncmp($name, 'count_', 6) === 0) {
             $name = substr($name, 4);
             if ($this->_has_association($name)) {
                 $associations = $this->_get_static('associations');
@@ -680,34 +683,32 @@ class elis_data_object {
                 $classname = $associations['class'];
                 if (isset($association['foreignidfield'])) {
                     if (isset($args[0])) {
-                        require_once elis::lib('data/data_filter.class.php');
                         $foreign_filter = new field_filter($association['foreignidfield'], $this->_dbfield_id);
                         if (is_array($args[0])) {
                             $args[0][] = $foreign_filter;
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return elis_data_object::count($classname,$args);
+                        return self::count($classname, $args);
                     } else {
-                        require_once elis::lib('data/data_filter.class.php');
-                        return elis_data_object::count($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
+                        return self::count($classname, new field_filter($association['foreignidfield'], $this->_dbfield_id));
                     }
-                } elseif (isset($association['filtermethod'])) {
+                } else if (isset($association['filtermethod'])) {
                     if (isset($args[0])) {
                         // $filters specified
-                        $foreign_filter = call_user_func(array($classname,$association['filtermethod']),$this);
+                        $foreign_filter = call_user_func(array($classname, $association['filtermethod']), $this);
                         if (is_array($args[0])) {
                             $args[0][] = $foreign_filter;
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return elis_data_object::count($classname, $args);
+                        return self::count($classname, $args);
                     } else {
-                        return elis_data_object::count($classname, call_user_func(array($classname,$association['filtermethod']),$this));
+                        return self::count($classname, call_user_func(array($classname, $association['filtermethod']), $this));
                     }
                 } else if (isset($association['countmethod'])) {
                     array_unshift($args, $this);
-                    return call_user_func_array(array($classname,$association['countmethod']), $args);
+                    return call_user_func_array(array($classname, $association['countmethod']), $args);
                 }
             }
         }
@@ -749,7 +750,7 @@ class elis_data_object {
                 if (is_string($field_map)) {
                     // just a simple prefix
                     $rec_name = $field_map.$rec_name;
-                } elseif (is_array($field_map)) {
+                } else if (is_array($field_map)) {
                     if (!isset($field_map[$rec_name])) {
                         // field isn't mapped -- skip it
                         continue;
@@ -848,7 +849,9 @@ class data_collection implements Iterator {
      * as counts of related records)
      * @param moodle_database $database see elis_data_object constructor
      */
-    public function __construct($rs, $dataclass, $field_map=null, array $associations=array(), $from_db=false, array $extradatafields=array(), moodle_database $database=null) {
+    public function __construct($rs, $dataclass, $field_map=null,
+                                array $associations=array(), $from_db=false,
+                                array $extradatafields=array(), moodle_database $database=null) {
         $this->rs = $rs;
         $this->dataclass = $dataclass;
         $this->field_map = $field_map;
@@ -859,7 +862,9 @@ class data_collection implements Iterator {
     }
 
     public function current() {
-        return new $this->dataclass($this->rs->current(), $this->field_map, $this->associations, $this->from_db, $this->extradatafields, $this->database);
+        return new $this->dataclass($this->rs->current(), $this->field_map,
+                                    $this->associations, $this->from_db,
+                                    $this->extradatafields, $this->database);
     }
 
     public function key() {
@@ -901,7 +906,8 @@ class data_collection implements Iterator {
  * fields.
  */
 function validate_is_unique(elis_data_object $record, array $fields) {
-    require_once elis::lib('data/data_filter.class.php');
+    require_once(elis::lib('data/data_filter.class.php'));
+
     $classname = get_class($record);
     $tablename = eval("return $classname::TABLE;");
     $db = $record->get_db();
