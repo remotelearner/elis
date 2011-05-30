@@ -58,12 +58,22 @@ function load_phpunit_data_set(PHPUnit_Extensions_Database_DataSet_IDataSet $dat
  * Overlay certain tables in a Moodle database with dummy tables that can be
  * modified without affecting the original tables.
  *
- * WARNING: this will only affect database calls made through this database
- * object
+ * WARNING: This will only affect database calls made through this database
+ * object.  So you either need to be able to pass a database object to
+ * function/object that you are testing, or you need to replace the global $DB
+ * object.
  */
 class overlay_database extends moodle_database {
     /**
+     * Create a new object.
+     *
      * @param moodle_database $basedb the base database object
+     * @param array $overlaytables an array of tables that will be overlayed
+     * with the dummy tables.  The array is an associative array where the key
+     * is the table name (without prefix), and the value is the component where
+     * the table's structure is defined (in its db/install.xml file),
+     * e.g. 'moodle', or 'block_foo'.
+     * @param string $overlayprefix the prefix to use for the dummy tables
      */
     public function __construct(moodle_database $basedb, array $overlaytables, $overlayprefix='ovr_') {
         parent::__construct($basedb->external);
