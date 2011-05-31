@@ -446,7 +446,7 @@ class elis_data_object {
             return $db->record_exists($sql, $parameters);
         } else {
             if ($filter === null) {
-            } else if (is_object($sql_clauses)) {
+            } else if (is_object($filter)) {
                 $sql_clauses = $filter->get_sql(false, null, $db);
             } else {
                 $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
@@ -559,18 +559,18 @@ class elis_data_object {
         } else if ($this->_has_association($name)) {
             $associations = static::$associations;
             $association = $associations[$name];
-            $classname = $associations['class'];
+            $classname = $association['class'];
             if (isset($association['idfield'])) {
                 if (!isset($this->_associated_objects[$name])) {
                     // we don't have a cached copy, so load it and cache
                     $id_field_name = self::FIELD_PREFIX.$association['idfield'];
-                    $this->_associated_objects[$name] = new $classname($this->$id_field_name);
+                    $this->_associated_objects[$name] = new $classname($this->$id_field_name, null, array(), false, array(), $this->_db);
                 }
                 return $this->_associated_objects[$name];
             } else if (isset($association['foreignidfield'])) {
-                return static::find(new field_filter($association['foreignidfield'], $this->_dbfield_id));
+                return $classname::find(new field_filter($association['foreignidfield'], $this->_dbfield_id), array(), 0, 0, $this->_db);
             } else if (isset($association['filtermethod'])) {
-                return static::find(call_user_func(array($classname, $association['filtermethod']), $this));
+                return $classname::find(call_user_func(array($classname, $association['filtermethod']), $this), array(), 0, 0, $this->_db);
             } else {
                 return call_user_func(array($classname, $association['listmethod']), $this);
             }
@@ -639,7 +639,7 @@ class elis_data_object {
             if ($this->_has_association($name)) {
                 $associations = static::$associations;
                 $association = $associations[$name];
-                $classname = $associations['class'];
+                $classname = $association['class'];
                 if (isset($association['foreignidfield'])) {
                     if (isset($args[0])) {
                         // $filters specified
@@ -649,9 +649,9 @@ class elis_data_object {
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return static::find($args);
+                        return $classname::find($args, array(), 0, 0, $this->_db);
                     } else {
-                        return static::find(new field_filter($association['foreignidfield'], $this->_dbfield_id));
+                        return $classname::find(new field_filter($association['foreignidfield'], $this->_dbfield_id), array(), 0, 0, $this->_db);
                     }
                 } else if (isset($association['filtermethod'])) {
                     if (isset($args[0])) {
@@ -662,9 +662,9 @@ class elis_data_object {
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return static::find($args);
+                        return $classname::find($args, array(), 0, 0, $this->_db);
                     } else {
-                        return static::find(call_user_func(array($classname, $association['filtermethod']), $this));
+                        return $classname::find(call_user_func(array($classname, $association['filtermethod']), $this), array(), 0, 0, $this->_db);
                     }
                 } else if (isset($association['listmethod'])) {
                     array_unshift($args, $this);
@@ -672,11 +672,11 @@ class elis_data_object {
                 }
             }
         } else if (strncmp($name, 'count_', 6) === 0) {
-            $name = substr($name, 4);
+            $name = substr($name, 6);
             if ($this->_has_association($name)) {
                 $associations = static::$associations;
                 $association = $associations[$name];
-                $classname = $associations['class'];
+                $classname = $association['class'];
                 if (isset($association['foreignidfield'])) {
                     if (isset($args[0])) {
                         $foreign_filter = new field_filter($association['foreignidfield'], $this->_dbfield_id);
@@ -685,9 +685,9 @@ class elis_data_object {
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return static::count($args);
+                        return $classname::count($args, $this->_db);
                     } else {
-                        return static::count(new field_filter($association['foreignidfield'], $this->_dbfield_id));
+                        return $classname::count(new field_filter($association['foreignidfield'], $this->_dbfield_id), $this->_db);
                     }
                 } else if (isset($association['filtermethod'])) {
                     if (isset($args[0])) {
@@ -698,9 +698,9 @@ class elis_data_object {
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return static::count($args);
+                        return $classname::count($args, $this->_db);
                     } else {
-                        return static::count(call_user_func(array($classname, $association['filtermethod']), $this));
+                        return $classname::count(call_user_func(array($classname, $association['filtermethod']), $this), $this->_db);
                     }
                 } else if (isset($association['countmethod'])) {
                     array_unshift($args, $this);

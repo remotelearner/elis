@@ -31,6 +31,8 @@ require_once(elis::lib('data/data_object.class.php'));
 require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 
+// Object classes for Moodle database records.  We only model the minimum
+// needed for the tests in this file
 class config_object extends elis_data_object {
     const TABLE = 'config';
 
@@ -41,6 +43,32 @@ class config_object extends elis_data_object {
      */
     protected $_dbfield_name;
     protected $_dbfield_value;
+}
+
+class user_object extends elis_data_object {
+    const TABLE = 'user';
+
+    public static $associations = array(
+        'role_assignments' => array(
+            'class' => 'role_assignment_object',
+            'foreignidfield' => 'userid',
+        ),
+    );
+}
+
+class role_assignment_object extends elis_data_object {
+    const TABLE = 'role_assignments';
+
+    public static $associations = array(
+        'user' => array(
+            'class' => 'user_object',
+            'idfield' => 'userid',
+        ),
+    );
+
+    protected $_dbfield_userid;
+    protected $_dbfield_roleid;
+    protected $_dbfield_contextid;
 }
 
 class data_objectTest extends PHPUnit_Framework_TestCase {
@@ -190,6 +218,44 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * Test the exists method
+     */
+    public function testCanCheckRecordsExist() {
+        global $DB;
+        require_once(elis::lib('data/data_filter.class.php'));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+
+        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+
+        load_phpunit_data_set($dataset, true, $overlaydb);
+
+        $this->assertTrue(config_object::exists(new field_filter('name', 'foo'), $overlaydb));
+        $this->assertFalse(config_object::exists(new field_filter('name', 'fooo'), $overlaydb));
+
+        $overlaydb->cleanup();
+    }
+
+    /**
+     * Test loading from the database by record ID
+     */
+    public function testCanLoadRecordsById() {
+        global $DB;
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+
+        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+
+        load_phpunit_data_set($dataset, true, $overlaydb);
+
+        $config = new config_object(1, null, array(), false, array(), $overlaydb);
+        $this->assertEquals($config->name, 'foo');
+        $this->assertEquals($config->value, 'foooo');
+
+        $overlaydb->cleanup();
+    }
+
+    /**
      * Test the save method
      */
     public function testCanSaveRecords() {
@@ -239,6 +305,40 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $config->delete();
 
         $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $overlaydb), 0);
+
+        $overlaydb->cleanup();
+    }
+
+    public function testGetAssociatedRecords() {
+        global $DB, $USER;
+
+        $overlaydb = new overlay_database($DB, array('role_assignments' => 'moodle'));
+
+        // get some random user
+        $user = $DB->get_record('user', array(), '*', IGNORE_MULTIPLE);
+        // get some random role
+        $role = $DB->get_record('role', array(), '*', IGNORE_MULTIPLE);
+        // add a role assignment
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $ra = new stdClass;
+        $ra->userid = $user->id;
+        $ra->roleid = $role->id;
+        $ra->contextid = $syscontext->id;
+        $ra->timemodified = time();
+        $ra->modifierid = $USER->id;
+        $ra->id = $overlaydb->insert_record('role_assignments', $ra);
+
+        $user = new user_object($user, null, array(), true, array(), $overlaydb);
+        $this->assertEquals($user->count_role_assignments(), 1);
+
+        $roleassignments = $user->role_assignments->to_array();
+        $this->assertEquals(count($roleassignments), 1);
+        $ra = current($roleassignments);
+        $this->assertEquals($ra->userid, $user->id);
+        $this->assertEquals($ra->roleid, $role->id);
+        $this->assertEquals($ra->contextid, $syscontext->id);
+
+        $this->assertEquals($ra->user->id, $user->id);
 
         $overlaydb->cleanup();
     }
