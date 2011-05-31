@@ -25,6 +25,7 @@
  */
 
 require_once elispm::lib('data/course.class.php');
+require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('form/courseform.class.php');
