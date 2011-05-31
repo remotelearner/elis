@@ -115,8 +115,8 @@ $pages = array(
                        'file' => 'rolepage.class.php'),
 
     // Manage Classes
-    'cls' => array('class' => 'cmclasspage',
-                   'file' => 'cmclasspage.class.php'),
+    'cls' => array('class' => 'pmclasspage',
+                   'file' => 'pmclasspage.class.php'),
     'ins' => array('class' => 'instructorpage',
                    'file' => 'instructorpage.class.php'),
     'stu' => array('class' => 'studentpage',
