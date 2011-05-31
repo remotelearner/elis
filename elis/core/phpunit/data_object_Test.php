@@ -25,6 +25,7 @@
  */
 
 require_once(dirname(__FILE__) . '/../test_config.php');
+global $CFG;
 require_once($CFG->dirroot . '/elis/core/lib/setup.php');
 require_once(elis::lib('data/data_object.class.php'));
 require_once(elis::lib('testlib.php'));
@@ -110,6 +111,9 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($dataobj->id, 3);
     }
 
+    /**
+     * Test the find method
+     */
     public function testCanFindRecords() {
         global $DB;
         require_once(elis::lib('data/data_filter.class.php'));
@@ -121,11 +125,120 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         load_phpunit_data_set($dataset, true, $overlaydb);
 
         $configs = config_object::find(new field_filter('name', 'foo'), array(), 0, 0, $overlaydb);
-
         // should only find one record, with value foooo
         $this->assertEquals($configs->current()->value, 'foooo');
         $configs->next();
         $this->assertFalse($configs->valid());
+
+        $configs = config_object::find(null, array('name' => 'ASC'), 0, 0, $overlaydb);
+        // should find all three records, ordered by name
+        $configs = $configs->to_array();
+        $this->assertEquals(count($configs), 3);
+        $config = current($configs);
+        $this->assertEquals($config->name, 'bar');
+        $config = next($configs);
+        $this->assertEquals($config->name, 'baz');
+        $config = next($configs);
+        $this->assertEquals($config->name, 'foo');
+        $config = next($configs);
+        $this->assertEquals($config, false);
+
+        $overlaydb->cleanup();
+    }
+
+    /**
+     * Test the count method
+     */
+    public function testCanCountRecords() {
+        global $DB;
+        require_once(elis::lib('data/data_filter.class.php'));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+
+        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+
+        load_phpunit_data_set($dataset, true, $overlaydb);
+
+        $configs = config_object::find(new field_filter('name', 'foo'), array(), 0, 0, $overlaydb);
+
+        // should only find one record
+        $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $overlaydb), 1);
+        // should find all three records
+        $this->assertEquals(config_object::count(null, $overlaydb), 3);
+
+        $overlaydb->cleanup();
+    }
+
+    /**
+     * Test the delete method
+     */
+    public function testCanDeleteRecords() {
+        global $DB;
+        require_once(elis::lib('data/data_filter.class.php'));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+
+        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+
+        load_phpunit_data_set($dataset, true, $overlaydb);
+
+        config_object::delete_records(new field_filter('name', 'foo'), $overlaydb);
+        $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $overlaydb), 0);
+        $this->assertEquals(config_object::count(null, $overlaydb), 2);
+
+        $overlaydb->cleanup();
+    }
+
+    /**
+     * Test the save method
+     */
+    public function testCanSaveRecords() {
+        global $DB;
+
+        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+
+        // create a new record
+        $config = new config_object(false, null, array(), false, array(), $overlaydb);
+        $config->name = 'foo';
+        $config->value = 'foovalue';
+        $config->save();
+
+        $config = config_object::find(null, array(), 0, 0, $overlaydb);
+        $config = $config->to_array();
+        $this->assertEquals(count($config), 1);
+        $config = current($config);
+        $this->assertEquals($config->name, 'foo');
+        $this->assertEquals($config->value, 'foovalue');
+
+        // modify an existing record
+        $config->value = 'newfoovalue';
+        $config->save();
+
+        $config = config_object::find(null, array(), 0, 0, $overlaydb);
+        $config = $config->to_array();
+        $this->assertEquals(count($config), 1);
+        $config = current($config);
+        $this->assertEquals($config->name, 'foo');
+        $this->assertEquals($config->value, 'newfoovalue');
+
+        $overlaydb->cleanup();
+    }
+
+    public function testCanDeleteASingleRecord() {
+        global $DB;
+        require_once(elis::lib('data/data_filter.class.php'));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+
+        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+
+        load_phpunit_data_set($dataset, true, $overlaydb);
+
+        $config = config_object::find(new field_filter('name', 'foo'), array(), 0, 0, $overlaydb);
+        $config = $config->current();
+        $config->delete();
+
+        $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $overlaydb), 0);
 
         $overlaydb->cleanup();
     }
