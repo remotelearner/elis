@@ -36,7 +36,7 @@ class cmCourseForm extends cmform {
 
         global $CFG;
 
-        require_js($CFG->wwwroot . '/curriculum/js/courseform.js');
+        require_js($CFG->wwwroot . '/elis/program/js/courseform.js');
 
         $this->set_data($this->_customdata['obj']);
 
@@ -44,47 +44,47 @@ class cmCourseForm extends cmform {
 
         $mform->addElement('hidden', 'id');
 
-        $mform->addElement('text', 'name', get_string('course_name', 'block_curr_admin') . ':');
+        $mform->addElement('text', 'name', get_string('course_name', 'elis_program') . ':');
         $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', get_string('required_field', 'block_curr_admin', get_string('course_name', 'block_curr_admin')), 'required', null, 'client');
+        $mform->addRule('name', get_string('required_field', 'elis_program', get_string('course_name', 'elis_program')), 'required', null, 'client');
         $mform->addRule('name', null, 'maxlength', 255);
-        $mform->setHelpButton('name', array('courseform/name', get_string('course_name', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('name', 'courseform:course_name', 'elis_program');
 
-        $mform->addElement('text', 'code', get_string('course_code', 'block_curr_admin') . ':');
+        $mform->addElement('text', 'code', get_string('course_code', 'elis_program') . ':');
         $mform->setType('code', PARAM_TEXT);
         $mform->addRule('code', null, 'maxlength', 100);
-        $mform->setHelpButton('code', array('courseform/code', get_string('course_code', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('code', 'courseform:course_code', 'elis_program');
 
-        $mform->addElement('text', 'idnumber', get_string('course_idnumber', 'block_curr_admin') . ':');
+        $mform->addElement('text', 'idnumber', get_string('course_idnumber', 'elis_program') . ':');
         $mform->setType('idnumber', PARAM_TEXT);
-        $mform->addRule('idnumber', get_string('required_field', 'block_curr_admin', get_string('course_idnumber', 'block_curr_admin')), 'required', null, 'client');
+        $mform->addRule('idnumber', get_string('required_field', 'elis_program', get_string('course_idnumber', 'elis_program')), 'required', null, 'client');
         $mform->addRule('idnumber', null, 'maxlength', 100);
-        $mform->setHelpButton('idnumber', array('courseform/idnumber', get_string('course_idnumber', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('idnumber', 'courseform:course_idnumber', 'elis_program');
 
         $attributes = array('cols'=>40, 'rows'=>2);
-        $mform->addElement('textarea', 'syllabus', get_string('course_syllabus', 'block_curr_admin') . ':', $attributes);
+        $mform->addElement('textarea', 'syllabus', get_string('course_syllabus', 'elis_program') . ':', $attributes);
         $mform->setType('syllabus', PARAM_CLEAN);
-        $mform->setHelpButton('syllabus', array('courseform/description', get_string('course_syllabus', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('syllabus', 'courseform:course_syllabus', 'elis_program');
 
-        $mform->addElement('text', 'lengthdescription', get_string('length_description', 'block_curr_admin'));
+        $mform->addElement('text', 'lengthdescription', get_string('length_description', 'elis_program'));
         $mform->setType('lengthdescription', PARAM_TEXT);
         $mform->addRule('lengthdescription', null, 'maxlength', 100);
-        $mform->setHelpButton('lengthdescription', array('courseform/lengthdescription', get_string('length_description', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('lengthdescription', 'courseform:length_description', 'elis_program');
 
-        $mform->addElement('text', 'length', get_string('duration', 'block_curr_admin') . ':');
+        $mform->addElement('text', 'length', get_string('duration', 'elis_program') . ':');
         $mform->setType('length', PARAM_INT);
-        $mform->setHelpButton('length', array('courseform/duration', get_string('duration', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('length', 'courseform:duration', 'elis_program');
 
-        $mform->addElement('text', 'credits', get_string('credits', 'block_curr_admin') . ':');
+        $mform->addElement('text', 'credits', get_string('credits', 'elis_program') . ':');
         $mform->setType('credits', PARAM_TEXT);
         $mform->addRule('credits', null, 'maxlength', 10);
-        $mform->setHelpButton('credits', array('courseform/credits', get_string('credits', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('credits', 'courseform:credits', 'elis_program');
 
         $grades = range(0,100,1);
-        $mform->addElement('select', 'completion_grade', get_string('completion_grade', 'block_curr_admin') . ':', $grades);
-        $mform->setHelpButton('completion_grade', array('courseform/completion_grade', get_string('completion_grade', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addElement('select', 'completion_grade', get_string('completion_grade', 'elis_program') . ':', $grades);
+        $mform->addHelpButton('completion_grade', 'courseform:completion_grade', 'elis_program');
 
-        $environments = array('- ' . get_string('none', 'block_curr_admin') . ' -');
+        $environments = array('- ' . get_string('none', 'elis_program') . ' -');
         $envs = environment_get_listing();
 
         if(empty($envs)) {
@@ -95,27 +95,27 @@ class cmCourseForm extends cmform {
             $environments[$e->id] = $e->name;
         }
 
-        $mform->addElement('select', 'environmentid', get_string('environment', 'block_curr_admin'), $environments);
-        $mform->setHelpButton('environmentid', array('courseform/environmentid', get_string('environment', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addElement('select', 'environmentid', get_string('environment', 'elis_program'), $environments);
+        $mform->addHelpButton('environmentid', 'courseform:environment', 'elis_program');
 
-        $mform->addElement('text', 'cost', get_string('cost', 'block_curr_admin') . ':');
+        $mform->addElement('text', 'cost', get_string('cost', 'elis_program') . ':');
         $mform->setType('cost', PARAM_TEXT);
         $mform->addRule('cost', null, 'maxlength', 10);
-        $mform->setHelpButton('cost', array('courseform/cost', get_string('cost', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('cost', 'courseform:cost', 'elis_program');
 
-        $mform->addElement('text', 'version', get_string('course_version', 'block_curr_admin') . ':');
+        $mform->addElement('text', 'version', get_string('course_version', 'elis_program') . ':');
         $mform->setType('version', PARAM_TEXT);
         $mform->addRule('version', null, 'maxlength', 100);
-        $mform->setHelpButton('version', array('courseform/version', get_string('course_version', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('version', 'courseform:course_version', 'elis_program');
 
         // Print form items for course template browsing
 
         $mform->addElement('html', '<br />');
         $mform->addElement('hidden', 'templateclass', 'moodlecourseurl', array('id'=>'id_templateclass'));
 
-        $mform->addElement('text', 'locationlabel', get_string('coursetemplate', 'block_curr_admin'), array('readonly'=>'readonly'));
+        $mform->addElement('text', 'locationlabel', get_string('coursetemplate', 'elis_program'), array('readonly'=>'readonly'));
         $mform->setType('locationlabel', PARAM_TEXT);
-        $mform->setHelpButton('locationlabel', array('courseform/coursetemplate', get_string('coursetemplate', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('locationlabel', 'courseform:coursetemplate', 'elis_program');
 
         if(empty($id)) {
             $mform->addElement('hidden', 'location', '', array('id'=>'id_location'));
@@ -131,8 +131,8 @@ class cmCourseForm extends cmform {
         }
 
         $templateButtons = array();
-        $templateButtons[] =& $mform->createElement('button', 'submit1', get_string('browse', 'block_curr_admin'), array('onClick'=>'openNewWindow();'));
-        $templateButtons[] =& $mform->createElement('button', 'submit1', get_string('clear', 'block_curr_admin'), array('onClick'=>'cleartext();'));
+        $templateButtons[] =& $mform->createElement('button', 'submit1', get_string('browse', 'elis_program'), array('onClick'=>'openNewWindow();'));
+        $templateButtons[] =& $mform->createElement('button', 'submit1', get_string('clear', 'elis_program'), array('onClick'=>'cleartext();'));
         $mform->addGroup($templateButtons, 'templateButtons', '', '', false);
 
         // Multi select box for choosing curricula (only when creating a course)
@@ -147,16 +147,16 @@ class cmCourseForm extends cmform {
                 $values[$key] = $val->name;
             }
 
-            $strcur = get_string("curricula", "block_curr_admin");
+            $strcur = get_string("curricula", "elis_program");
 
             // Set an explicit width if the select box will have no elements.
             $attributes = empty($values) ? array('style' => 'width: 200px;') : array();
 
             $multiSelect =& $mform->addElement('select', 'curriculum', $strcur . ':', $values, $attributes);
             $multiSelect->setMultiple(true);
-            $mform->setHelpButton('curriculum', array('courseform/curriculum', get_string('curriculum', 'block_curr_admin'), 'block_curr_admin'));
+            $mform->addHelpButton('curriculum', 'courseform:curriculum', 'elis_program');
 
-            $mform->addElement('submit', 'makecurcourse', get_string('makecurcourse', 'block_curr_admin'));
+            $mform->addElement('submit', 'makecurcourse', get_string('makecurcourse', 'elis_program'));
         }
 
         // custom fields
@@ -165,7 +165,7 @@ class cmCourseForm extends cmform {
 
         $lastcat = null;
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? get_context_instance(context_level_base::get_custom_context_level('course', 'block_curr_admin'), $this->_customdata['obj']->id)
+            ? get_context_instance(context_level_base::get_custom_context_level('course', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
         require_once CURMAN_DIRLOCATION.'/plugins/manual/custom_fields.php';
         foreach ($fields as $rec) {
@@ -192,7 +192,7 @@ class cmCourseForm extends cmform {
 
         $counttext = "Passed: {$counts[2]}, Failed: {$counts[1]}, In Progress: {$counts[0]}";
 
-        $this->_form->addElement('static', 'test', get_string('completion_status', 'block_curr_admin'), $counttext);
+        $this->_form->addElement('static', 'test', get_string('completion_status', 'elis_program'), $counttext);
 
         parent::freeze();
     }
@@ -202,7 +202,7 @@ class cmCourseForm extends cmform {
         $errors = parent::validation($data, $files);
 
         if ($CURMAN->db->record_exists_select(CRSTABLE, "idnumber = '{$data['idnumber']}'".($data['id'] ? " AND id != {$data['id']}" : ''))) {
-            $errors['idnumber'] = get_string('idnumber_already_used', 'block_curr_admin');
+            $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
         }
 
         return $errors;
@@ -221,28 +221,28 @@ class completionform extends moodleform {
         $mform->addElement('hidden', 'id');
         $mform->addElement('hidden', 'elemid');
 
-        $mform->addElement('text', 'idnumber', get_string('course_idnumber', 'block_curr_admin') . ':');
+        $mform->addElement('text', 'idnumber', get_string('course_idnumber', 'elis_program') . ':');
         $mform->setType('idnumber', PARAM_TEXT);
         $mform->addRule('idnumber', null, 'maxlength', 100);
         $mform->addRule('idnumber', null, 'required', null, 'client');
-        $mform->setHelpButton('idnumber', array('completionform/idnumber', get_string('course_idnumber', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('idnumber', 'completionform:course_idnumber', 'elis_program');
 
-        $mform->addElement('text', 'name', get_string('course_name', 'block_curr_admin'));
+        $mform->addElement('text', 'name', get_string('course_name', 'elis_program'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'maxlength', 255);
-        $mform->setHelpButton('name', array('completionform/name', get_string('course_name', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('name', 'completionform:course_name', 'elis_program');
 
         $attributes = array('rows'=>2, 'cols'=>40);
-        $mform->addElement('textarea', 'description', get_string('course_syllabus', 'block_curr_admin') . ':', $attributes);
+        $mform->addElement('textarea', 'description', get_string('course_syllabus', 'elis_program') . ':', $attributes);
         $mform->setType('description', PARAM_CLEAN);
-        $mform->setHelpButton('description', array('completionform/description', get_string('course_syllabus', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('description', 'completionform:course_syllabus', 'elis_program');
 
         $grades = range(0,100,1);
-        $mform->addElement('select', 'completion_grade', get_string('completion_grade', 'block_curr_admin') . ':', $grades);
-        $mform->setHelpButton('completion_grade', array('completionform/completion_grade', get_string('completion_grade', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addElement('select', 'completion_grade', get_string('completion_grade', 'elis_program') . ':', $grades);
+        $mform->addHelpButton('completion_grade', 'completionform:completion_grade', 'elis_program');
 
-        $mform->addElement('checkbox', 'required', get_string('required', 'block_curr_admin') . ':');
-        $mform->setHelpButton('required', array('completionform/required', get_string('required', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addElement('checkbox', 'required', get_string('required', 'elis_program') . ':');
+        $mform->addHelpButton('required', 'completionform:required', 'elis_program');
 
         $this->add_action_buttons();
     }

@@ -45,7 +45,7 @@ $string['completion_grade'] = 'Completion grade';
 $string['completion_idnumber'] = 'ID Number';
 $string['completion_name'] = 'Name';
 $string['completion_status'] = 'Completion Status';
-$string['confirm_delete_completion'] = 'Are you sure you want to delete the completion element \"name: $a\"?';
+$string['confirm_delete_completion'] = 'Are you sure you want to delete the completion element \"name: {$a}\"?';
 $string['confirm_delete_course'] = 'Are you sure you want to delete the course named {$a->name} (ID number: {$a->idnumber})?';
 $string['confirm_delete_user'] = 'Are you sure you want to delete the user named {$a->firstname} {$a->lastname} (ID number: {$a->idnumber})?';
 $string['cost'] = 'Cost';
@@ -91,6 +91,7 @@ accessing this course, please contact your sales representative.';
 $string['email2'] = 'Email address 2';
 $string['environment'] = 'Environment';
 
+$string['failclustcpycurrcrs'] = 'Failed to copy course {$a->name}';
 $string['fax'] = 'Fax';
 $string['female'] = 'Female';
 
@@ -112,6 +113,8 @@ $string['manage_user'] = 'Manage users';
 $string['no_completion_elements'] = 'There are no completion elements defined.';
 $string['none'] = 'None';
 $string['notice_course_deleted'] = 'Deleted the course named {$a->name} (ID number: {$a->idnumber})';
+$string['notifycourserecurrencemessagedef'] = "%%%%userenrolname%%%% is due to re-take the course %%%%coursename%%%%.";
+$string['nouser'] = 'No user found for specified user id.';
 $string['num_course_found'] = '{$a} course(s) found';
 $string['num_user_found'] = '{$a} users found';
 

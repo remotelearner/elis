@@ -102,7 +102,7 @@ class course extends data_object_with_custom_fields {
             }
 
             // custom fields
-            $level = context_level_base::get_custom_context_level('course', 'block_curr_admin');
+            $level = context_level_base::get_custom_context_level('course', 'elis_program');
             if ($level) {
                 $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
                 $fielddata = $fielddata ? $fielddata : array();
@@ -592,7 +592,7 @@ class course extends data_object_with_custom_fields {
         /// Make sure this is a valid user.
         $enroluser = new user($user->id);
         if (empty($enroluser->id)) {
-            print_error('nouser', 'block_curr_admin');
+            print_error('nouser', 'elis_program');
             return true;
         }
 
@@ -600,7 +600,7 @@ class course extends data_object_with_custom_fields {
 
         /// Set up the text of the message
         $text = empty($CURMAN->config->notify_courserecurrence_message) ?
-                    get_string('notifycourserecurrencemessagedef', 'block_curr_admin') :
+                    get_string('notifycourserecurrencemessagedef', 'elis_program') :
                     $CURMAN->config->notify_courserecurrence_message;
         $search = array('%%userenrolname%%', '%%coursename%%');
         $replace = array(fullname($user), $user->coursename);
@@ -637,7 +637,7 @@ class course extends data_object_with_custom_fields {
     }
 
 	public function delete() {
-        $level = context_level_base::get_custom_context_level('course', 'block_curr_admin');
+        $level = context_level_base::get_custom_context_level('course', 'elis_program');
 		$return = curriculumcourse::delete_for_course($this->id);
 		$return = $return && cmclass::delete_for_course($this->id);
 		$return = $return && taginstance::delete_for_course($this->id);
@@ -647,8 +647,8 @@ class course extends data_object_with_custom_fields {
     	return $return && $this->data_delete_record();
     }
 
-    public static function find($classname, $filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {
-        return parent::find($classname, $filter, $sort, $limitfrom, $limitnum, $db);
+    public static function find($filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {
+        return parent::find($filter, $sort, $limitfrom, $limitnum, $db);
     }
 
     public function set_from_data($data) {
@@ -661,7 +661,7 @@ class course extends data_object_with_custom_fields {
             $this->templateclass = $data->templateclass;
         }
 
-        $fields = field::get_for_context_level('course', 'block_curr_admin');
+        $fields = field::get_for_context_level('course', 'elis_program');
         $fields = $fields ? $fields : array();
         foreach ($fields as $field) {
             $fieldname = "field_{$field->shortname}";
@@ -764,7 +764,7 @@ class course extends data_object_with_custom_fields {
         }
         $clone = new course(addslashes_recursive($clone));
         if (!$clone->add()) {
-            $objs['errors'][] = get_string('failclustcpycurrcrs', 'block_curr_admin', $this);
+            $objs['errors'][] = get_string('failclustcpycurrcrs', 'elis_program', $this);
             return $objs;
         }
 

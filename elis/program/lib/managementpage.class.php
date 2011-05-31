@@ -286,9 +286,9 @@ abstract class managementpage extends pm_page {
      */
     public function print_search() {
         // FIXME:
-        $searchbox = new cmsearchbox($this);
+        //$searchbox = new cmsearchbox($this);
 
-        $searchbox->display();
+        //$searchbox->display();
     }
 
     /**

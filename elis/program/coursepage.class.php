@@ -130,10 +130,6 @@ class coursepage extends managementpage {
         return $this->_has_capability('block/curr_admin:course:delete');
     }
 
-    function can_do_confirm() {
-        return $this->can_do_delete();
-    }
-
     function can_do_add() {
         $context = get_context_instance(CONTEXT_SYSTEM);
         return has_capability('block/curr_admin:course:create', $context);
@@ -173,8 +169,8 @@ class coursepage extends managementpage {
         }
 
         // Get list of courses
-        $items    = course::find('course', null, array($sort => $dir), $page*$perpage, $page);
-        $numitems = course::count('course', null);
+        $items    = course::find(null, array($sort => $dir), $page*$perpage, $page);
+        $numitems = course::count(null);
 
         // Cache the context capabilities
         coursepage::get_contexts('block/curr_admin:course:edit');
@@ -301,7 +297,7 @@ class coursepage extends managementpage {
                     $newarr[] = $editbutton . ' ' . $deletebutton;
                     $table->data[] = $newarr;
                 }
-                $output .= print_table($table, true);
+                $output .= print_table($table, true); // need to still convert this to html_writer (althought migration instructions say to use "echo $table" which I don't think makes sense)
 
         } else {
             $output .= '<div align="center">' . get_string('no_completion_elements', 'elis_program') . '</div>';
@@ -400,9 +396,7 @@ class coursepage extends managementpage {
     }
 
     function get_delete_element_form($elemid) {
-        global $CURMAN;
-
-        $elemrecord = $CURMAN->db->get_record(CRSCOMPTABLE, 'id', $elemid);
+        $elemrecord = $this->_db->get_record(coursecompletion::TABLE, 'id', $elemid);
 
         if (!($elemrecord)) {
             error ('Undefined completion element.');
