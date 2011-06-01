@@ -32,7 +32,7 @@ MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/curriculu
 
 class pmclassform extends cmform {
     function definition() {
-        global $USER, $CFG, $COURSE, $CURMAN;
+        global $USER, $CFG, $CURMAN;
 
         parent::definition();
 
@@ -172,9 +172,7 @@ class pmclassform extends cmform {
         if (empty($this->_customdata['obj']->moodlecourseid)) {
             $this->add_moodle_course_select();
         } else {
-            global $CURMAN;
-
-            $coursename = $CURMAN->db->get_field('course', 'fullname', 'id', $this->_customdata['obj']->moodlecourseid);
+            $coursename = $this->_db->get_field('course', 'fullname', 'id', $this->_customdata['obj']->moodlecourseid);
             $mform->addElement('static', 'class_attached_course', get_string('class_attached_course', 'elis_program') . ':',  "<a href=\"$CFG->wwwroot/course/view.php?id={$this->_customdata['obj']->moodlecourseid}\">$coursename</a>");
             $mform->addHelpButton('class_attached_course', 'pmclassform:moodlecourse', 'elis_program');
             $mform->addElement('hidden', 'moodlecourseid');
@@ -191,7 +189,7 @@ class pmclassform extends cmform {
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
             ? get_context_instance(context_level_base::get_custom_context_level('class', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
-        require_once CURMAN_DIRLOCATION.'/plugins/manual/custom_fields.php';
+            require_once elispm::file('plugins/manual/custom_fields.php');
         foreach ($fields as $rec) {
             $field = new field($rec);
             if (!isset($field->owners['manual'])) {
@@ -297,7 +295,6 @@ class pmclassform extends cmform {
      * adds a moodle course selection box to the form
      *
      * @uses $CFG
-     * @uses $CURMAN
      * @param $formid string A suffix to put on all 'id' and index for all 'name' attributes.
      *                       This should be unique if being used more than once in a form.
      * @param $extraclass string Any extra class information to add to the output.
@@ -305,18 +302,16 @@ class pmclassform extends cmform {
      * @return string The form HTML, without the form.
      */
     function add_moodle_course_select() {
-        global $CFG, $CURMAN;
-
         $mform =& $this->_form;
 
-        $categoryid = $CURMAN->db->get_field('course_categories', 'id', 'parent', '0');
-        $sitename   = $CURMAN->db->get_field('course', 'shortname', 'id', SITEID);
+        //$categoryid = $this->_db->get_field('course_categories', 'id', 'parent', '0');
+        //$sitename   = $this->_db->get_field('course', 'shortname', 'id', SITEID);
 
         $select = 'id != \'' . SITEID . '\' AND fullname NOT LIKE \'.%\'';
 
         $cselect = array(get_string('none', 'elis_program'));
 
-        $crss = $CURMAN->db->get_records_select('course', $select, 'fullname');
+        $crss = $this->_db->get_records_select('course', $select, 'fullname');
         if(!empty($crss)) {
             foreach ($crss as $crs) {
                 $cselect[$crs->id] = $crs->fullname;
@@ -358,10 +353,9 @@ class pmclassform extends cmform {
      * @return array
      */
     function validation($data, $files) {
-        global $CURMAN;
         $errors = parent::validation($data, $files);
 
-        if ($CURMAN->db->record_exists_select(CLSTABLE, "idnumber = '{$data['idnumber']}'".($data['id'] ? " AND id != {$data['id']}" : ''))) {
+        if ($this->_db->record_exists_select(CLSTABLE, "idnumber = '{$data['idnumber']}'".($data['id'] ? " AND id != {$data['id']}" : ''))) {
             $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
         }
 
@@ -407,8 +401,6 @@ class pmclassform extends cmform {
     }
 
     function get_data(){
-        global $CFG;
-
         $data = parent::get_data();
 
         if (!empty($data)) {

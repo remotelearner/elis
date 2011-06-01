@@ -25,7 +25,9 @@
  */
 
 $string['add'] = 'Add';
+$string['add_class'] = 'Add Class';
 $string['add_course'] = 'Add Course';
+$string['add_pmclass'] = 'Add Class';
 $string['add_user'] = 'Add user';
 $string['adding_completion_element'] = 'Adding Completion Element';
 $string['address'] = 'Address';
@@ -64,8 +66,10 @@ $string['completion_idnumber'] = 'ID Number';
 $string['completion_grade'] = 'Completion grade';
 $string['completion_name'] = 'Name';
 $string['completion_status'] = 'Completion Status';
+$string['confirm_delete_class'] = 'Are you sure you want to delete the class {$a->idnumber}?';
 $string['confirm_delete_completion'] = 'Are you sure you want to delete the completion element \"name: {$a}\"?';
 $string['confirm_delete_course'] = 'Are you sure you want to delete the course named {$a->name} (ID number: {$a->idnumber})?';
+$string['confirm_delete_pmclass'] = 'Are you sure you want to delete the class {$a->idnumber}?';
 $string['confirm_delete_user'] = 'Are you sure you want to delete the user named {$a->firstname} {$a->lastname} (ID number: {$a->idnumber})?';
 $string['cost'] = 'Cost';
 $string['course'] = 'Course';
@@ -108,7 +112,10 @@ $string['credits'] = 'Credits';
 $string['curriculum'] = 'Curriculum';
 
 $string['delete'] = 'Delete';
+$string['delete_class'] = 'Delete Class';
+$string['delete_course'] = 'Delete Course';
 $string['delete_label'] = 'Delete';
+$string['delete_pmclass'] = 'Delete Class';
 $string['delete_user'] = 'Delete user';
 $string['deleting_completion_element'] = 'Deleting Completion Element';
 $string['detail'] = 'Detail';
@@ -147,6 +154,7 @@ $string['length_description'] = 'Length Description';
 
 $string['makecurcourse'] = 'Make a curriculum for this course';
 $string['male'] = 'Male';
+$string['manage_class'] = 'Manage Classes';
 $string['manage_course'] = 'Manage Courses';
 $string['manage_pmclass'] = 'Manage Classes';
 $string['manage_user'] = 'Manage users';
@@ -155,10 +163,14 @@ $string['moodlecourse'] = 'Moodle course';
 $string['no_completion_elements'] = 'There are no completion elements defined.';
 $string['no_moodlecourse'] = 'No Moodle courses on this site';
 $string['none'] = 'None';
+$string['notice_class_deleted'] = 'Deleted the class {$a->idnumber}';
 $string['notice_course_deleted'] = 'Deleted the course named {$a->name} (ID number: {$a->idnumber})';
+$string['notice_pmclass_deleted'] = 'Deleted the class {$a->idnumber}';
 $string['notifycourserecurrencemessagedef'] = "%%%%userenrolname%%%% is due to re-take the course %%%%coursename%%%%.";
 $string['nouser'] = 'No user found for specified user id.';
+$string['num_class_found'] = '{$a} class(es) found';
 $string['num_course_found'] = '{$a} course(s) found';
+$string['num_pmclass_found'] = '{$a} class(es) found';
 $string['num_user_found'] = '{$a} users found';
 
 $string['o_active'] = 'Only active';

@@ -72,7 +72,6 @@ class pmclasspage extends managementpage {
      * Check the cached capabilities for the current track.
      */
     static function check_cached($capability, $id) {
-        global $CURMAN;
         if (isset(pmclasspage::$contexts[$capability])) {
             // we've already cached which contexts the user has delete
             // capabilities in
@@ -211,8 +210,6 @@ class pmclasspage extends managementpage {
      * Constructs navigational breadcrumbs
      */
     function build_navigation_default() {
-        global $CFG, $CURMAN;
-
         //get the parent courseid if possible
         $parent = $this->get_cm_id();
 
@@ -240,7 +237,7 @@ class pmclasspage extends managementpage {
     function display_savenew() {
         $target = $this->get_new_page(array('action' => 'savenew'));
 
-        $form = new $this->form_class($target->get_moodle_url());
+        $form = new $this->form_class($target->url);
 
         if ($form->is_cancelled()) {
             $this->display_default();
@@ -267,7 +264,7 @@ class pmclasspage extends managementpage {
             $obj->set_from_data($data);
             $obj->add();
             $target = $this->get_new_page(array('action' => 'view', 'id' => $obj->id));
-            redirect($target->get_url(), ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' saved.');
+            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' saved.');
         } else {
             // Validation must have failed, redisplay form
             $form->display();
@@ -293,15 +290,15 @@ class pmclasspage extends managementpage {
 
         // Define columns
         $columns = array(
-            'crsname'      => get_string('class_course', 'elis_program'),
-            'idnumber'     => get_string('class_idnumber', 'elis_program'),
-            'moodlecourse' => get_string('class_moodle_course', 'elis_program'),
-            'startdate'    => get_string('class_startdate', 'elis_program'),
-            'enddate'      => get_string('class_enddate', 'elis_program'),
-            'starttime'    => get_string('class_starttime', 'elis_program'),
-            'endtime'      => get_string('class_endtime', 'elis_program'),
-            'maxstudents'  => get_string('class_maxstudents', 'elis_program'),
-            'envname'      => get_string('environment', 'elis_program'),
+            'crsname'      => array('header' => get_string('class_course', 'elis_program')),
+            'idnumber'     => array('header' => get_string('class_idnumber', 'elis_program')),
+            'moodlecourse' => array('header' => get_string('class_moodle_course', 'elis_program')),
+            'startdate'    => array('header' => get_string('class_startdate', 'elis_program')),
+            'enddate'      => array('header' => get_string('class_enddate', 'elis_program')),
+            'starttime'    => array('header' => get_string('class_starttime', 'elis_program')),
+            'endtime'      => array('header' => get_string('class_endtime', 'elis_program')),
+            'maxstudents'  => array('header' => get_string('class_maxstudents', 'elis_program')),
+            'envname'      => array('header' => get_string('environment', 'elis_program')),
         );
 
         $items    = pmclass_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, false, pmclasspage::get_contexts('block/curr_admin:class:view'), $parent_clusterid);
@@ -325,7 +322,7 @@ class pmclasspage extends managementpage {
         if(count_records(STUTABLE, 'classid', $id) && $force != 1) {
             $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1));
             notify(get_string('pmclass_delete_warning', 'elis_program'), 'errorbox');
-            echo '<center><a href="' . $target->get_url() . '">'. get_string('pmclass_delete_warning_continue', 'elis_program') . '</a></center>';
+            echo '<center><a href="' . $target->url . '">'. get_string('pmclass_delete_warning_continue', 'elis_program') . '</a></center>';
         }
         else {
             parent::do_delete();
@@ -359,9 +356,6 @@ class pmclasspage extends managementpage {
      * @return  stdClass  Form data, or null if none
      */
     function get_default_object_for_add() {
-        // get site-wide default values
-        global $CURMAN;
-
         $obj = (object) pmclass::get_default();
 
         $parent = $this->optional_param('parent', 0, PARAM_INT);
