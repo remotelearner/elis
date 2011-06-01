@@ -158,17 +158,17 @@ class pmclasspage extends managementpage {
 
     function __construct(array $params=null) {
         $this->tabs = array(
-        array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'block_curr_admin'), 'showtab' => true),
-        array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'block_curr_admin'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
+        array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
+        array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
 
-        array('tab_id' => 'studentpage', 'page' => 'studentpage', 'name' => get_string('enrolments', 'block_curr_admin'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
-        array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'block_curr_admin'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting.png'),
-        array('tab_id' => 'instructorpage', 'page' => 'instructorpage', 'name' => get_string('instructors', 'block_curr_admin'), 'showtab' => true, 'showbutton' => true, 'image' => 'instructor.gif'),
-        array('tab_id' => 'clstaginstancepage', 'page' => 'clstaginstancepage', 'name' => get_string('tags', 'block_curr_admin'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag.gif'),
+        array('tab_id' => 'studentpage', 'page' => 'studentpage', 'name' => get_string('enrolments', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
+        array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting.png'),
+        array('tab_id' => 'instructorpage', 'page' => 'instructorpage', 'name' => get_string('instructors', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'instructor.gif'),
+        array('tab_id' => 'clstaginstancepage', 'page' => 'clstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag.gif'),
         array('tab_id' => 'class_rolepage', 'page' => 'class_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
 
-        array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'block_curr_admin'), 'showbutton' => true, 'image' => 'delete.gif'),
-        array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'block_curr_admin'), 'showtab' => true, 'showbutton' => true, 'image' => 'report.gif')
+        array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete.gif'),
+        array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'report.gif')
         );
 
         parent::__construct($params);
@@ -293,15 +293,15 @@ class pmclasspage extends managementpage {
 
         // Define columns
         $columns = array(
-            'crsname'      => get_string('class_course', 'block_curr_admin'),
-            'idnumber'     => get_string('class_idnumber', 'block_curr_admin'),
-            'moodlecourse' => get_string('class_moodle_course', 'block_curr_admin'),
-            'startdate'    => get_string('class_startdate', 'block_curr_admin'),
-            'enddate'      => get_string('class_enddate', 'block_curr_admin'),
-            'starttime'    => get_string('class_starttime', 'block_curr_admin'),
-            'endtime'      => get_string('class_endtime', 'block_curr_admin'),
-            'maxstudents'  => get_string('class_maxstudents', 'block_curr_admin'),
-            'envname'      => get_string('environment', 'block_curr_admin'),
+            'crsname'      => get_string('class_course', 'elis_program'),
+            'idnumber'     => get_string('class_idnumber', 'elis_program'),
+            'moodlecourse' => get_string('class_moodle_course', 'elis_program'),
+            'startdate'    => get_string('class_startdate', 'elis_program'),
+            'enddate'      => get_string('class_enddate', 'elis_program'),
+            'starttime'    => get_string('class_starttime', 'elis_program'),
+            'endtime'      => get_string('class_endtime', 'elis_program'),
+            'maxstudents'  => get_string('class_maxstudents', 'elis_program'),
+            'envname'      => get_string('environment', 'elis_program'),
         );
 
         $items    = pmclass_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, false, pmclasspage::get_contexts('block/curr_admin:class:view'), $parent_clusterid);
@@ -324,8 +324,8 @@ class pmclasspage extends managementpage {
 
         if(count_records(STUTABLE, 'classid', $id) && $force != 1) {
             $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1));
-            notify(get_string('pmclass_delete_warning', 'block_curr_admin'), 'errorbox');
-            echo '<center><a href="' . $target->get_url() . '">'. get_string('pmclass_delete_warning_continue', 'block_curr_admin') . '</a></center>';
+            notify(get_string('pmclass_delete_warning', 'elis_program'), 'errorbox');
+            echo '<center><a href="' . $target->get_url() . '">'. get_string('pmclass_delete_warning_continue', 'elis_program') . '</a></center>';
         }
         else {
             parent::do_delete();
@@ -349,7 +349,7 @@ class pmclasspage extends managementpage {
             $options['parent'] = $parent;
         }
         // FIXME: change to language string
-        echo print_single_button('index.php', $options, get_string('add','block_curr_admin').' ' . get_string($obj->get_verbose_name(),'block_curr_admin'), 'get', '_self', true, get_string('add','block_curr_admin').' ' . get_string($obj->get_verbose_name(),'block_curr_admin'));
+        echo print_single_button('index.php', $options, get_string('add','elis_program').' ' . get_string($obj->get_verbose_name(),'elis_program'), 'get', '_self', true, get_string('add','elis_program').' ' . get_string($obj->get_verbose_name(),'elis_program'));
         echo '</div>';
     }
 
@@ -385,7 +385,7 @@ class pmclasspage extends managementpage {
         if(!empty($CURMAN->config->default_class_role_id) && record_exists('role', 'id', $CURMAN->config->default_class_role_id)) {
 
             //get the context instance for capability checking
-            $context_level = context_level_base::get_custom_context_level('class', 'block_curr_admin');
+            $context_level = context_level_base::get_custom_context_level('class', 'elis_program');
             $context_instance = get_context_instance($context_level, $cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability

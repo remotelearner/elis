@@ -24,15 +24,29 @@
  *
  */
 
+$string['add'] = 'Add';
 $string['add_course'] = 'Add Course';
 $string['add_user'] = 'Add user';
 $string['adding_completion_element'] = 'Adding Completion Element';
 $string['address'] = 'Address';
 $string['address2'] = 'Address 2';
 $string['admin_dashboard'] = 'Administrator Dashboard';
+$string['autocreate'] = 'Auto Create Moodle course from template';
 
 $string['browse'] = 'Browse';
 
+$string['classreportlinks'] = 'Reports';
+$string['class_assigntrackhead'] = 'Assigned Tracks';
+$string['class_attached_course'] = 'This class is already attached to the Moodle course';
+$string['class_course'] = 'Course';
+$string['class_enddate'] = 'End Date';
+$string['class_endtime'] = 'End Time';
+$string['class_idnumber'] = 'ID Number';
+$string['class_maxstudents'] = 'Max # of Students';
+$string['class_moodle_course'] = 'Moodle Course';
+$string['class_startdate'] = 'Start Date';
+$string['class_starttime'] = 'Start Time';
+$string['class_unassigntrackhead'] = 'Unassigned Tracks';
 $string['clear'] = 'Clear';
 $string['completionform:completion_grade'] = 'Completion grade';
 $string['completionform:completion_grade_help'] = '<p>Minimum grade the learner must received to identify the element as &ldquo;completed&rdquo;.</p>';
@@ -54,6 +68,7 @@ $string['confirm_delete_completion'] = 'Are you sure you want to delete the comp
 $string['confirm_delete_course'] = 'Are you sure you want to delete the course named {$a->name} (ID number: {$a->idnumber})?';
 $string['confirm_delete_user'] = 'Are you sure you want to delete the user named {$a->firstname} {$a->lastname} (ID number: {$a->idnumber})?';
 $string['cost'] = 'Cost';
+$string['course'] = 'Course';
 $string['courseform:completion_grade'] = 'Completion grade';
 $string['courseform:completion_grade_help'] = '<p>Minimum grade to complete/pass the course.</p>';
 $string['courseform:cost'] = 'Cost';
@@ -107,8 +122,14 @@ pages of documentation for ELIS in our <a href="http://training.remote-learner.n
 You can access this course by logging in as a guest.  If you have problems
 accessing this course, please contact your sales representative.';
 $string['email2'] = 'Email address 2';
+$string['enrolment'] = 'Enrollment';
+$string['enrolments'] = 'Enrollments';
 $string['environment'] = 'Environment';
+$string['error_date_range'] = 'Start date must be before the end date.';
+$string['error_duration'] = 'Start time must be before the end time.';
+$string['error_n_overenrol'] = 'The over enrol capability is required for this';
 
+$string['failclustcpycls'] = 'Failed to copy class with idnumber {$a->idnumber}';
 $string['failclustcpycurrcrs'] = 'Failed to copy course {$a->name}';
 $string['fax'] = 'Fax';
 $string['female'] = 'Female';
@@ -119,6 +140,7 @@ $string['id'] = 'ID';
 $string['idnumber_already_used'] = 'ID Number is already in use';
 $string['id_same_as_user'] = 'Same as username';
 $string['inactive'] = 'Inactive';
+$string['instructors'] = 'Instructors';
 
 $string['learningplan'] = 'Learning Plan';
 $string['length_description'] = 'Length Description';
@@ -126,9 +148,12 @@ $string['length_description'] = 'Length Description';
 $string['makecurcourse'] = 'Make a curriculum for this course';
 $string['male'] = 'Male';
 $string['manage_course'] = 'Manage Courses';
+$string['manage_pmclass'] = 'Manage Classes';
 $string['manage_user'] = 'Manage users';
+$string['moodlecourse'] = 'Moodle course';
 
 $string['no_completion_elements'] = 'There are no completion elements defined.';
+$string['no_moodlecourse'] = 'No Moodle courses on this site';
 $string['none'] = 'None';
 $string['notice_course_deleted'] = 'Deleted the course named {$a->name} (ID number: {$a->idnumber})';
 $string['notifycourserecurrencemessagedef'] = "%%%%userenrolname%%%% is due to re-take the course %%%%coursename%%%%.";
@@ -140,6 +165,28 @@ $string['o_active'] = 'Only active';
 $string['o_inactive'] = 'Only inactive';
 
 $string['phone2'] = 'Phone 2';
+$string['pmclassform:class_idnumber'] = 'ID Number';
+$string['pmclassform:class_idnumber_help'] = '<p>Class ID number.</p>';
+$string['pmclassform:class_startdate'] = 'Start Date';
+$string['pmclassform:class_startdate_help'] = '<p>Enter the course start and end date, if applicable.</p>';
+$string['pmclassform:class_starttime'] = 'Start Time';
+$string['pmclassform:class_starttime_help'] = '<p>Enter the course start and end time, if applicable.  This is appropriate for synchronous online sessions, as well as face-to-face classes.</p>';
+$string['pmclassform:class_maxstudents'] = 'Max # of Students';
+$string['pmclassform:class_maxstudents_help'] = '';
+$string['pmclassform:class_unassigntrackhead'] = 'Unassigned Tracks';
+$string['pmclassform:class_unassigntrackhead_help'] = '<p>If tracks have been created in the system, tracks will be displayed here. If this class should be included in a track, select the appropriate track.</p>';
+$string['pmclassform:course'] = 'Course';
+$string['pmclassform:course_help'] = '<p>Select the course this class is an instance of. The drop down menu will show all courses created in the system.</p>';
+$string['pmclassform:environment'] = 'Environment';
+$string['pmclassform:environment_help'] = '<p>Select the appropriate environment from the drop down menu. If no
+environments have been entered into the system, they can be entered by going to
+Curriculum Administration &gt; Information Elements &gt; Environments.</p>';
+$string['pmclassform:moodlecourse'] = 'Moodle course';
+$string['pmclassform:moodlecourse_help'] = '<p>The Moodle course that this class is attached to and is an instance of.</p>';
+$string['pmclassform:waitlistenrol'] = 'Auto enrol from waitlist';
+$string['pmclassform:waitlistenrol_help'] = '<p>on to automatically enrol students from the waitlist into the course when an erolled student completes (passes or fails) the course.</p>';
+$string['pmclass_delete_warning'] = 'Warning!  Deleting this class will also delete all stored enrollment information for the class.';
+$string['pmclass_delete_warning_continue'] = 'I understand all enrollments for the class will be deleted, continue ...';
 $string['postalcode'] = 'Postal code';
 $string['progman'] = 'Program Manager';
 
@@ -158,4 +205,7 @@ $string['usermi'] = 'Middle initials';
 $string['useridnumber'] = 'ID number';
 $string['useridnumber_help'] = 'An id number is a unique value used to identify you within your organization.
 It also serves as way to tie Curriculum Management users to Moodle users.';
+
+$string['waiting'] = 'Waiting';
+$string['waitlistenrol'] = 'Auto enrol from waitlist';
 

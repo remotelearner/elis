@@ -260,7 +260,7 @@ class pmclass extends data_object_with_custom_fields {
 
         $this->oldmax = $this->maxstudents;
 
-        $fields = field::get_for_context_level('class', 'block_curr_admin');
+        $fields = field::get_for_context_level('class', 'elis_program');
         $fields = $fields ? $fields : array();
         foreach ($fields as $field) {
             $fieldname = "field_{$field->shortname}";
@@ -326,7 +326,7 @@ class pmclass extends data_object_with_custom_fields {
             waitlist::delete_for_class($this->id);
             classmoodlecourse::delete_for_class($this->id);
 
-            $level = context_level_base::get_custom_context_level('class', 'block_curr_admin');
+            $level = context_level_base::get_custom_context_level('class', 'elis_program');
             $result = delete_context($level,$this->id);
 
             $status = $this->data_delete_record();
@@ -1068,7 +1068,7 @@ class pmclass extends data_object_with_custom_fields {
         $clone = new pmclass(addslashes_recursive($clone));
         $clone->autocreate = false; // avoid warnings
         if (!$clone->add()) {
-            $objs['errors'][] = get_string('failclustcpycls', 'block_curr_admin', $this);
+            $objs['errors'][] = get_string('failclustcpycls', 'elis_program', $this);
             return $objs;
         }
         $objs['classes'] = array($this->id => $clone->id);

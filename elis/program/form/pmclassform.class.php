@@ -83,8 +83,8 @@ class pmclassform extends cmform {
                 }
             }
 
-            $mform->addElement('select', 'courseid', get_string('course', 'block_curr_admin') . ':', $selections, $attributes);
-            $mform->setHelpButton('courseid', array('pmclassform/course', get_string('course', 'block_curr_admin'), 'block_curr_admin'));
+            $mform->addElement('select', 'courseid', get_string('course', 'elis_program') . ':', $selections, $attributes);
+            $mform->addHelpButton('courseid', 'pmclassform:course', 'elis_program');
 
             $firstcourse = reset($courses);
             $this->firstcourse = $firstcourse;
@@ -96,7 +96,7 @@ class pmclassform extends cmform {
             }
         } else {
             $extra_params = array();
-            $mform->addElement('static', 'courseid', get_string('course', 'block_curr_admin') . ':');
+            $mform->addElement('static', 'courseid', get_string('course', 'elis_program') . ':');
 
             // Get current action and set param accordingly
             $current_action    = optional_param('action','view',PARAM_ALPHA);
@@ -107,7 +107,7 @@ class pmclassform extends cmform {
 
             $course_name = '(' . $this->_customdata['obj']->course->idnumber . ')'.'<a href="'.$course_url.'" >'.$this->_customdata['obj']->course->name.'</a>';
             $this->set_data(array('courseid' => $course_name));
-            $mform->setHelpButton('courseid', array('pmclassform/course', get_string('course', 'block_curr_admin'), 'block_curr_admin'));
+            $mform->addHelpButton('courseid', 'pmclassform:course', 'elis_program');
 
             $this->add_track_multi_select($this->_customdata['obj']->courseid);
         }
@@ -120,53 +120,53 @@ class pmclassform extends cmform {
         // Done adding course select
 
 
-        $mform->addElement('text', 'idnumber', get_string('class_idnumber', 'block_curr_admin') . ':');
+        $mform->addElement('text', 'idnumber', get_string('class_idnumber', 'elis_program') . ':');
         $mform->addRule('idnumber', get_string('required'), 'required', NULL, 'client');
         $mform->setType('idnumber', PARAM_TEXT);
-        $mform->setHelpButton('idnumber', array('pmclassform/idnumber', get_string('class_idnumber', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('idnumber', 'pmclassform:class_idnumber', 'elis_program');
 
-        $mform->addElement('date_selector', 'startdate', get_string('class_startdate', 'block_curr_admin') . ':', array('optional'=>true, 'disabled'=>'disabled'));
-        $mform->setHelpButton('startdate', array('pmclassform/startdate', get_string('class_startdate', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addElement('date_selector', 'startdate', get_string('class_startdate', 'elis_program') . ':', array('optional'=>true, 'disabled'=>'disabled'));
+        $mform->addHelpButton('startdate', 'pmclassform:class_startdate', 'elis_program');
 
-        $mform->addElement('date_selector', 'enddate', get_string('class_enddate', 'block_curr_admin') . ':', array('optional'=>true));
+        $mform->addElement('date_selector', 'enddate', get_string('class_enddate', 'elis_program') . ':', array('optional'=>true));
 
         // They may very likely be a much better way of checking for this...
         if (empty($obj->starttimehour) and empty($obj->starttimeminute)) {
-            $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'block_curr_admin') . ':',
+            $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'checked', 'display_12h'=>$CURMAN->config->time_format_12h));
         } else {
-            $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'block_curr_admin') . ':',
+            $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>$CURMAN->config->time_format_12h));
         }
 
-        $mform->setHelpButton('starttime', array('pmclassform/starttime', get_string('class_starttime', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('starttime', 'pmclassform:class_starttime', 'elis_program');
 
         // Do the same thing for the endtime
         if (empty($obj->endtimehour) and empty($obj->endtimeminute)) {
-            $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'block_curr_admin') . ':',
+            $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'checked', 'display_12h'=>$CURMAN->config->time_format_12h));
         } else {
-            $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'block_curr_admin') . ':',
+            $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>$CURMAN->config->time_format_12h));
         }
 
-        $mform->addElement('text', 'maxstudents', get_string('class_maxstudents', 'block_curr_admin') . ':');
+        $mform->addElement('text', 'maxstudents', get_string('class_maxstudents', 'elis_program') . ':');
         $mform->setType('maxstudents', PARAM_INT);
-        $mform->setHelpButton('maxstudents', array('pmclassform/maxstudents', get_string('class_maxstudents', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('maxstudents', 'pmclassform:class_maxstudents', 'elis_program');
 
         // Environment selector
         $envs = environment_get_listing();
         $envs = $envs ? $envs : array();
 
-        $o_envs = array(get_string('none', 'block_curr_admin'));
+        $o_envs = array(get_string('none', 'elis_program'));
 
         foreach ($envs as $env) {
             $o_envs[$env->id] = $env->name;
         }
 
-        $mform->addElement('select', 'environmentid', get_string('environment', 'block_curr_admin') . ':',
+        $mform->addElement('select', 'environmentid', get_string('environment', 'elis_program') . ':',
                            $o_envs);
-        $mform->setHelpButton('environmentid', array('pmclassform/environment', get_string('environment', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('environmentid', 'pmclassform:environment', 'elis_program');
 
         // Course selector
         if (empty($this->_customdata['obj']->moodlecourseid)) {
@@ -175,13 +175,13 @@ class pmclassform extends cmform {
             global $CURMAN;
 
             $coursename = $CURMAN->db->get_field('course', 'fullname', 'id', $this->_customdata['obj']->moodlecourseid);
-            $mform->addElement('static', 'class_attached_course', get_string('class_attached_course', 'block_curr_admin') . ':',  "<a href=\"$CFG->wwwroot/course/view.php?id={$this->_customdata['obj']->moodlecourseid}\">$coursename</a>");
-            $mform->setHelpButton('class_attached_course', array('pmclassform/moodlecourseid', get_string('moodlecourse', 'block_curr_admin'), 'block_curr_admin'));
+            $mform->addElement('static', 'class_attached_course', get_string('class_attached_course', 'elis_program') . ':',  "<a href=\"$CFG->wwwroot/course/view.php?id={$this->_customdata['obj']->moodlecourseid}\">$coursename</a>");
+            $mform->addHelpButton('class_attached_course', 'pmclassform:moodlecourse', 'elis_program');
             $mform->addElement('hidden', 'moodlecourseid');
         }
 
-        $mform->addElement('checkbox', 'enrol_from_waitlist', get_string('waitlistenrol', 'block_curr_admin') . ':');
-        $mform->setHelpButton('enrol_from_waitlist', array('pmclassform/waitlistenrol', get_string('waitlistenrol', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addElement('checkbox', 'enrol_from_waitlist', get_string('waitlistenrol', 'elis_program') . ':');
+        $mform->addHelpButton('enrol_from_waitlist', 'pmclassform:waitlistenrol', 'elis_program');
 
         // custom fields
         $fields = field::get_for_context_level('class');
@@ -189,7 +189,7 @@ class pmclassform extends cmform {
 
         $lastcat = null;
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? get_context_instance(context_level_base::get_custom_context_level('class', 'block_curr_admin'), $this->_customdata['obj']->id)
+            ? get_context_instance(context_level_base::get_custom_context_level('class', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
         require_once CURMAN_DIRLOCATION.'/plugins/manual/custom_fields.php';
         foreach ($fields as $rec) {
@@ -284,13 +284,13 @@ class pmclassform extends cmform {
 
         $mform =& $this->_form;
 
-        $assignedSelection = &$mform->addElement('select', 'assignedtrack', get_string('class_assigntrackhead', 'block_curr_admin') . ':', array());
+        $assignedSelection = &$mform->addElement('select', 'assignedtrack', get_string('class_assigntrackhead', 'elis_program') . ':', array());
         $mform->freeze('assignedtrack');
         $assignedSelection->setMultiple(true);
 
-        $unassignedSelections = &$mform->addElement('select', 'track', get_string('class_unassigntrackhead', 'block_curr_admin') . ':', array());
+        $unassignedSelections = &$mform->addElement('select', 'track', get_string('class_unassigntrackhead', 'elis_program') . ':', array());
         $unassignedSelections->setMultiple(true);
-        $mform->setHelpButton('track', array('pmclassform/track', get_string('class_unassigntrackhead', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addHelpButton('track', 'pmclassform:class_unassigntrackhead', 'elis_program');
     }
 
     /**
@@ -314,7 +314,7 @@ class pmclassform extends cmform {
 
         $select = 'id != \'' . SITEID . '\' AND fullname NOT LIKE \'.%\'';
 
-        $cselect = array(get_string('none', 'block_curr_admin'));
+        $cselect = array(get_string('none', 'elis_program'));
 
         $crss = $CURMAN->db->get_records_select('course', $select, 'fullname');
         if(!empty($crss)) {
@@ -325,10 +325,10 @@ class pmclassform extends cmform {
 
         $moodleCourses = array();
         if (count($cselect) != 1) {
-            $moodleCourses[] = $mform->createElement('select', 'moodlecourseid', get_string('moodlecourse', 'block_curr_admin'), $cselect);
+            $moodleCourses[] = $mform->createElement('select', 'moodlecourseid', get_string('moodlecourse', 'elis_program'), $cselect);
         } else {
-            $mform->addElement('static', 'no_moodle_courses', get_string('moodlecourse', 'block_curr_admin') . ':', get_string('no_moodlecourse', 'block_curr_admin'));
-            $mform->setHelpButton('no_moodle_courses', array('pmclassform/moodlecourseid', get_string('moodlecourse', 'block_curr_admin'), 'block_curr_admin'));
+            $mform->addElement('static', 'no_moodle_courses', get_string('moodlecourse', 'elis_program') . ':', get_string('no_moodlecourse', 'elis_program'));
+            $mform->addHelpButton('no_moodle_courses', 'pmclassform:moodlecourse', 'elis_program');
         }
 
         // Add auto create checkbox if CM course uses a template
@@ -341,13 +341,13 @@ class pmclassform extends cmform {
         $template = new coursetemplate();
 
         if (empty($courseid) || false !== $template->data_load_record($courseid) && !empty($template->location)) {
-            $moodleCourses[] = $mform->createElement('checkbox', 'autocreate', '', get_string('autocreate', 'block_curr_admin'));
+            $moodleCourses[] = $mform->createElement('checkbox', 'autocreate', '', get_string('autocreate', 'elis_program'));
         }
 
         if(count($cselect) != 1) {
-            $mform->addGroup($moodleCourses, 'moodleCourses', get_string('moodlecourse', 'block_curr_admin') . ':');
+            $mform->addGroup($moodleCourses, 'moodleCourses', get_string('moodlecourse', 'elis_program') . ':');
             $mform->disabledIf('moodleCourses', 'moodleCourses[autocreate]', 'checked');
-            $mform->setHelpButton('moodleCourses', array('pmclassform/moodlecourseid', get_string('moodlecourse', 'block_curr_admin'), 'block_curr_admin'));
+            $mform->addHelpButton('moodleCourses', 'pmclassform:moodlecourse', 'elis_program');
         }
     }
 
@@ -362,16 +362,16 @@ class pmclassform extends cmform {
         $errors = parent::validation($data, $files);
 
         if ($CURMAN->db->record_exists_select(CLSTABLE, "idnumber = '{$data['idnumber']}'".($data['id'] ? " AND id != {$data['id']}" : ''))) {
-            $errors['idnumber'] = get_string('idnumber_already_used', 'block_curr_admin');
+            $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
         }
 
         if($data['starttime'] > $data['endtime']) {
-            $errors['starttime'] = get_string('error_duration', 'block_curr_admin');
+            $errors['starttime'] = get_string('error_duration', 'elis_program');
         }
 
         if(!empty($data['startdate']) && !empty($data['enddate']) && !empty($data['disablestart']) && !empty($data['disableend'])) {
             if($data['startdate'] > $data['enddate']) {
-                $errors['start'] = get_string('error_date_range', 'block_curr_admin');
+                $errors['start'] = get_string('error_date_range', 'elis_program');
             }
         }
 
@@ -379,7 +379,7 @@ class pmclassform extends cmform {
             if($data['maxstudents'] < $this->_customdata['obj']->maxstudents && $data['maxstudents'] < student::count_enroled($this->_customdata['obj']->id)) {
                 $context = get_context_instance(CONTEXT_SYSTEM);
                 if(!has_capability('block/curr_admin:overrideclasslimit', $context)) {
-                    $errors['maxstudents'] = get_string('error_n_overenrol', 'block_curr_admin');
+                    $errors['maxstudents'] = get_string('error_n_overenrol', 'elis_program');
                 }
             }
         }
@@ -452,7 +452,7 @@ class pmclassform extends cmform {
 
         $counttext = "Passed: {$counts[2]}, Failed: {$counts[1]}, In Progress: {$counts[0]}";
 
-        $this->_form->addElement('static', 'test', get_string('completion_status', 'block_curr_admin'), $counttext);
+        $this->_form->addElement('static', 'test', get_string('completion_status', 'elis_program'), $counttext);
 
         parent::freeze();
     }
