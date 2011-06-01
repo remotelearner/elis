@@ -29,7 +29,6 @@ require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('managementpage.class.php');
 
-
 /*
 require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
 require_once CURMAN_DIRLOCATION . '/lib/course.class.php';
@@ -60,22 +59,43 @@ class pmclass extends data_object_with_custom_fields {
     var $verbose_name = 'class';
     static $config_default_prefix = 'clsdft';
 
-/*
-    var $id;            // INT - The data id if in the database.
-    var $idnumber;      // STRING - A unique ID number for this class.
-    var $courseid;      // INT - The course this class is based off.
-    var $course;        // OBJECT - The actual course object associated with the ID.
-    var $startdate;     // INT - Time the class begings - timestamp.
-    var $enddate;       // INT - Time the class ends - timestamp.
-    var $duration;      // INT -
-    var $maxstudents;   // INT - The maximum number of students this class can hold.
-    var $environmentid; // INT - Intended environment for this course.
-    var $environment;   // OBJECT - Actual environment object associated with ID.
-
-    var $_dbloaded;     // BOOLEAN - True if loaded from database.
-*/
+    static $associations = array(
+        'classenrolments' => array(
+            'class' => 'student',
+            'foreignkey' => 'classid'
+        ),
+        'classgraded' => array(
+            'class' => 'classgraded',
+            'foreignkey' => 'classid'
+        ),
+        'classinstructor' => array(
+            'class' => 'instructor',
+            'foreignkey' => 'classid'
+        ),
+        'classmoodle' => array(
+            'class' => 'classmoodle',
+            'foreignkey' => 'classid'
+        ),
+        'trackclass' => array(
+            'class' => 'trackclass',
+            'foreignkey' => 'classid'
+        ),
+    );
 
     private $form_url = null;  //moodle_url object
+
+    protected $_dbfield_idnumber;
+    protected $_dbfield_courseid;
+    protected $_dbfield_startdate;
+    protected $_dbfield_enddate;
+    protected $_dbfield_duration;
+    protected $_dbfield_starttimehour;
+    protected $_dbfield_starttimeminute;
+    protected $_dbfield_endtimehour;
+    protected $_dbfield_endtimeminute;
+    protected $_dbfield_maxstudents;
+    protected $_dbfield_environmentid;
+    protected $_dbfield_enrol_from_waitlist;
 
     /**
      * Contructor.
@@ -155,17 +175,13 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     function get_moodle_course_id() {
-        global $CURMAN;
-
-        $mdlrec = $CURMAN->db->get_record(CLSMDLTABLE, 'classid', $this->id);
+        $mdlrec = $this->_db->get_record(classmoodle::TABLE, 'classid', $this->id);
         return !empty($mdlrec) ? $mdlrec->moodlecourseid : 0;
         //$this->moodlesiteid = !empty($mdlrec->siteid) ? $mdlrec->siteid : 0;
     }
 
     public static function delete_for_course($id) {
-        global $CURMAN;
-
-        return $CURMAN->db->delete_records(CLSTABLE, 'courseid', $id);
+        return $this->_db->delete_records(pmclass::TABLE, 'courseid', $id);
     }
 
     /*
@@ -174,15 +190,13 @@ class pmclass extends data_object_with_custom_fields {
      * @see course::get_completion_counts()
      */
     public function get_completion_counts() {
-        global $CURMAN;
+        $sql = 'SELECT cce.completestatusid status, COUNT(cce.completestatusid) count
+        FROM {'.student::TABLE.'} cce
+        INNER JOIN {'.pmclass::TABLE.'} cc ON cc.id = cce.classid
+        WHERE cc.id = '.$this->id.'
+        GROUP BY cce.completestatusid';
 
-        $sql = "SELECT cce.completestatusid status, COUNT(cce.completestatusid) count
-        FROM {$CURMAN->db->prefix_table(STUTABLE)} cce
-        INNER JOIN {$CURMAN->db->prefix_table(CLSTABLE)} cc ON cc.id = cce.classid
-        WHERE cc.id = {$this->id}
-        GROUP BY cce.completestatusid";
-
-        $rows = $CURMAN->db->get_records_sql($sql);
+        $rows = $this->_db->get_records_sql($sql);
 
         $ret = array(STUSTATUS_NOTCOMPLETE=>0, STUSTATUS_FAILED=>0, STUSTATUS_PASSED=>0);
 
@@ -272,43 +286,6 @@ class pmclass extends data_object_with_custom_fields {
         parent::set_from_data($data);
     }
 
-    public function add() {
-        $status = parent::add();
-
-        if ($this->moodlecourseid || $this->autocreate) {
-            moodle_attach_class($this->id, $this->moodlecourseid, '', true, true, $this->autocreate);
-        }
-
-        $status = $status && field_data::set_for_context_from_datarecord('class', $this);
-
-        return $status;
-    }
-
-    public function update() {
-        $status = parent::update();
-
-        if ($this->moodlecourseid || $this->autocreate) {
-            moodle_attach_class($this->id, $this->moodlecourseid, '', true, true, $this->autocreate);
-        }
-
-
-        if(!empty($this->oldmax) && $this->oldmax < $this->maxstudents && waitlist::count_records($this->id) > 0) {
-            for($i = $this->oldmax; $i < $this->maxstudents; $i++) {
-                $next_student = waitlist::get_next($this->id);
-
-                if(!empty($next_student)) {
-                    $next_student->enrol();
-                } else {
-                    break;
-                }
-            }
-        }
-
-        $status = $status && field_data::set_for_context_from_datarecord('class', $this);
-
-        return $status;
-    }
-
 /*
  * Perform all the necessary steps to delete all aspects of a class.
  *
@@ -335,7 +312,7 @@ class pmclass extends data_object_with_custom_fields {
         return $status;
     }
 
-    function to_string() {
+    function __toString() {
         $coursename = isset($this->course) ? $this->course->name : '';
         return $this->idnumber . ' ' . $coursename;
     }
@@ -347,10 +324,8 @@ class pmclass extends data_object_with_custom_fields {
      * @return bool Status of operation.
      */
     public static function remove_environment($envid) {
-    	global $CURMAN;
-
-    	$sql = 'UPDATE ' . $CURMAN->db->prefix_table(CLSTABLE) . ' SET environmentid=0 where environmentid=' . $envid;
-    	return $CURMAN->db->execute_sql($sql, "");
+    	$sql = 'UPDATE {'.pmclass::TABLE.'} SET environmentid=0 where environmentid='.$envid;
+    	return $this->_db->execute_sql($sql, "");
     }
 
     /**
@@ -366,7 +341,7 @@ class pmclass extends data_object_with_custom_fields {
         if ($courseid == 0) {
             return true;
         }
-        $course = $CURMAN->db->get_record('course', 'id', $courseid);
+        $course = $this->_db->get_record('course', 'id', $courseid);
         // check that this is a valid course to enrol into
         if (!$course || $course->metacourse || $course->id == SITEID) {
             return false;
@@ -423,23 +398,24 @@ class pmclass extends data_object_with_custom_fields {
         if (!empty($elements)) {
             // for each student, find out how many required completion elements are
             // incomplete, and when the last completion element was graded
-            $sql = "SELECT s.*, grades.incomplete, grades.maxtime
-                      FROM {$CURMAN->db->prefix_table(STUTABLE)} s
+            $sql = 'SELECT s.*, grades.incomplete, grades.maxtime
+                      FROM {'.student::TABLE.'} s
                       JOIN (SELECT s.userid, COUNT(CASE WHEN grades.id IS NULL AND cc.required = 1 THEN 1
                                                         ELSE NULL END) AS incomplete,
                                     MAX(timegraded) AS maxtime
-                              FROM {$CURMAN->db->prefix_table(STUTABLE)} s
-                              JOIN {$CURMAN->db->prefix_table(CRSCOMPTABLE)} cc
-                                   ON cc.courseid = {$this->courseid}
-                         LEFT JOIN {$CURMAN->db->prefix_table(CLSGRTABLE)} grades
+                              FROM {'.student::TABLE.'} s
+                              JOIN {'.coursecompletion::TABLE.'} cc
+                                   ON cc.courseid = '.$this->courseid.'
+                         LEFT JOIN {'.classgrade::TABLE.'} grades
                                    ON grades.userid = s.userid
                                       AND grades.completionid = cc.id
-                                      AND grades.classid = {$this->id}
+                                      AND grades.classid = '.$this->id.'
                                       AND grades.grade >= cc.completion_grade
-                             WHERE s.classid = {$this->id} AND s.locked = 0
+                             WHERE s.classid = '.$this->id.' AND s.locked = 0
                           GROUP BY s.userid
                            ) grades ON grades.userid = s.userid
-                     WHERE s.classid = {$this->id} AND s.locked = 0";
+                     WHERE s.classid = '.$this->id.' AND s.locked = 0';
+
             $rs = get_recordset_sql($sql);
             if ($rs) {
                 while ($rec = rs_fetch_next_record($rs)) {
@@ -460,7 +436,7 @@ class pmclass extends data_object_with_custom_fields {
 
             /// Get all unlocked enrolments
             $select  = "classid = {$this->id} AND locked = 0";
-            $rs = get_recordset_select(STUTABLE, $select, 'userid');
+            $rs = get_recordset_select(student::TABLE, $select, 'userid');
             if ($rs) {
                 while ($rec = rs_fetch_next_record($rs)) {
                     if ($rec->grade > 0 && $rec->grade >= $this->course->completion_grade) {
@@ -483,9 +459,7 @@ class pmclass extends data_object_with_custom_fields {
      * @param int curriculumid Curriculum id
      */
     function count_course_assignments($courseid) {
-        global $CURMAN;
-
-        $assignments = $CURMAN->db->count_records(CLSTABLE, 'courseid', $courseid);
+        $assignments = $this->_db->count_records(pmclass::TABLE, 'courseid', $courseid);
         return $assignments;
     }
 
@@ -514,14 +488,12 @@ class pmclass extends data_object_with_custom_fields {
      * note: output is expected and treated as boolean please ensure return values are boolean
      */
     function duplicate_check($record=null) {
-        global $CURMAN;
-
         if(empty($record)) {
             $record = $this;
         }
 
         /// Check for valid idnumber - it can't already exist in the user table.
-        if ($CURMAN->db->record_exists($this->table, 'idnumber', $record->idnumber)) {
+        if ($this->_db->record_exists($this->table, 'idnumber', $record->idnumber)) {
             return true;
         }
 
@@ -529,19 +501,19 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     public static function check_for_moodle_courses() {
-        global $CURMAN;
+        global $CFG;
 
         //crlm_class_moodle moodlecourseid
         $sql = 'SELECT cm.id
-                FROM ' . $CURMAN->db->prefix_table(CLSMOODLETABLE) . ' AS cm
-                LEFT JOIN ' . $CURMAN->db->prefix_table('course') . ' AS c ON cm.moodlecourseid = c.id
+                FROM '.classmoodle::TABLE.' AS cm
+                LEFT JOIN '.$CFG->prefix.'course AS c ON cm.moodlecourseid = c.id
                 WHERE c.id IS NULL';
 
-        $broken_classes = $CURMAN->db->get_records_sql($sql);
+        $broken_classes = $this->_db->get_records_sql($sql);
 
         if(!empty($broken_classes)) {
             foreach($broken_classes as $class) {
-                $CURMAN->db->delete_records(CLSMOODLETABLE, 'id', $class->id);
+                $this->_db->delete_records(classmoodle::TABLE, 'id', $class->id);
             }
         }
 
@@ -618,23 +590,23 @@ class pmclass extends data_object_with_custom_fields {
         // enrolled for at least [notify_classnotstarted_days] days
         $startdate = $timenow - $timedelta;
 
-        $select = "SELECT ccl.*,
+        $select = 'SELECT ccl.*,
                           ccm.moodlecourseid as mcourseid,
                           cce.id as studentid, cce.classid, cce.userid,
                           cce.enrolmenttime, cce.completetime, cce.completestatusid, cce.grade, cce.credits, cce.locked,
-                          u.id as muserid ";
-        $from   = "FROM {$CFG->prefix}crlm_class ccl ";
-        $join   = "INNER JOIN {$CFG->prefix}crlm_class_enrolment cce ON cce.classid = ccl.id
-                    LEFT JOIN {$CFG->prefix}crlm_class_moodle ccm ON ccm.classid = ccl.id
-                   INNER JOIN {$CFG->prefix}crlm_user cu ON cu.id = cce.userid
-                    LEFT JOIN {$CFG->prefix}user u ON u.idnumber = cu.idnumber
-                    LEFT JOIN {$CFG->prefix}user_lastaccess ul ON ul.userid = u.id AND ul.courseid = ccm.moodlecourseid
-                    LEFT JOIN {$CFG->prefix}crlm_notification_log cnl ON cnl.userid = cu.id AND cnl.instance = ccl.id AND cnl.event = 'class_notstarted' ";
-        $where  = "WHERE cce.completestatusid = ".STUSTATUS_NOTCOMPLETE."
+                          u.id as muserid ';
+        $from   = 'FROM '.pmclass::TABLE.' ccl ';
+        $join   = 'INNER JOIN {'.classenrolment::TABLE.'} cce ON cce.classid = ccl.id
+                    LEFT JOIN {'.classmoodle::TABLE.'} ccm ON ccm.classid = ccl.id
+                   INNER JOIN {'.user::TABLE.'} cu ON cu.id = cce.userid
+                    LEFT JOIN '.$CFG->prefix.'user u ON u.idnumber = cu.idnumber
+                    LEFT JOIN '.$CFG->prefix.'user_lastaccess ul ON ul.userid = u.id AND ul.courseid = ccm.moodlecourseid
+                    LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = ccl.id AND cnl.event = \'class_notstarted\' ';
+        $where  = 'WHERE cce.completestatusid = '.STUSTATUS_NOTCOMPLETE.'
                      AND cnl.id IS NULL
                      AND ul.id IS NULL
-                     AND cce.enrolmenttime < $startdate ";
-        $order  = "ORDER BY ccl.id ASC ";
+                     AND cce.enrolmenttime < '.$startdate.' ';
+        $order  = 'ORDER BY ccl.id ASC ';
         $sql    = $select . $from . $join . $where . $order;
 
         $classid = 0;
@@ -694,21 +666,21 @@ class pmclass extends data_object_with_custom_fields {
         // within [notify_classnotcompleted_days] days
         $enddate = $timenow + $timedelta;
 
-        $select = "SELECT ccl.*,
+        $select = 'SELECT ccl.*,
                           ccm.moodlecourseid as mcourseid,
                           cce.id as studentid, cce.classid, cce.userid, cce.enrolmenttime,
                           cce.completetime, cce.completestatusid, cce.grade, cce.credits, cce.locked,
-                          u.id as muserid ";
-        $from   = "FROM {$CFG->prefix}crlm_class ccl ";
-        $join   = "INNER JOIN {$CFG->prefix}crlm_class_enrolment cce ON cce.classid = ccl.id
-                    LEFT JOIN {$CFG->prefix}crlm_class_moodle ccm ON ccm.classid = ccl.id
-                   INNER JOIN {$CFG->prefix}crlm_user cu ON cu.id = cce.userid
-                    LEFT JOIN {$CFG->prefix}user u ON u.idnumber = cu.idnumber
-                    LEFT JOIN {$CFG->prefix}crlm_notification_log cnl ON cnl.userid = cu.id AND cnl.instance = ccl.id AND cnl.event = 'class_notcompleted' ";
-        $where  = "WHERE cce.completestatusid = ".STUSTATUS_NOTCOMPLETE."
+                          u.id as muserid ';
+        $from   = 'FROM {'.pmclass::TABLE.'} ccl ';
+        $join   = 'INNER JOIN {'.classenrolment::TABLE.'} cce ON cce.classid = ccl.id
+                    LEFT JOIN {'.classmoodle::TABLE.'} ccm ON ccm.classid = ccl.id
+                   INNER JOIN {'.user::TABLE.'} cu ON cu.id = cce.userid
+                    LEFT JOIN '.$CFG->prefix.'user u ON u.idnumber = cu.idnumber
+                    LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = ccl.id AND cnl.event = \'class_notcompleted\' ';
+        $where  = 'WHERE cce.completestatusid = '.STUSTATUS_NOTCOMPLETE.'
                      AND cnl.id IS NULL
-                     AND ccl.enddate <= $enddate ";
-        $order  = "ORDER BY ccl.id ASC ";
+                     AND ccl.enddate <= '.$enddate.' ';
+        $order  = 'ORDER BY ccl.id ASC ';
         $sql    = $select . $from . $join . $where . $order;
 
         $classid = 0;
@@ -761,14 +733,11 @@ class pmclass extends data_object_with_custom_fields {
     /**
      * returns a class object given the class idnumber
      *
-     * @global object $CURMAN
      * @param string $idnumber class idnumber
      * @return object pmclass corresponding to the idnumber or null
      */
     public static function get_by_idnumber($idnumber) {
-        global $CURMAN;
-
-        $retval = $CURMAN->db->get_record(CLSTABLE, 'idnumber', $idnumber);
+        $retval = $this->_db->get_record(pmclass::TABLE, 'idnumber', $idnumber);
 
         if(!empty($retval)) {
             $retval = new pmclass($retval->id);
@@ -819,7 +788,6 @@ class pmclass extends data_object_with_custom_fields {
 
             $tracks = track_get_list_from_curr($curid);
 
-//print_object($curlist);
             if (is_array($tracks)) {
 
                 foreach ($courselist as $courseid => $temp) {
@@ -896,12 +864,9 @@ class pmclass extends data_object_with_custom_fields {
      * update records with fields that aren't handled by the parent class
      * tracks because they are multi select and require relations be made in a separate table
      * moodlecourseid because they require relations be made in a separate table
-     * @global object $CURMAN
      * @param bool $createnew
      */
     public function data_update_record($createnew = false) {
-        global $CURMAN;
-
         $status = parent::data_update_record($createnew);
 
         if (isset($this->track) && is_array($this->track)) {
@@ -927,7 +892,6 @@ class pmclass extends data_object_with_custom_fields {
      *
      * @param $record object If present, uses the contents of it rather than the object.
      * @return boolean Status of the operation.
-     * @uses  $CURMAN global.
      */
     function data_insert_record($record = false) {
         $status = parent::data_insert_record($record);
@@ -962,8 +926,6 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     public function count_students_by_section($clsid = 0){
-        global $CURMAN;
-
         if(!$clsid) {
             if(empty($this->id)) {
                 return array();
@@ -973,13 +935,13 @@ class pmclass extends data_object_with_custom_fields {
         }
 
         $select     = 'SELECT stu.completestatusid, COUNT(stu.id) as c ';
-        $from       = 'FROM ' . $CURMAN->db->prefix_table(STUTABLE) . ' stu ';
+        $from       = 'FROM {'.student::TABLE.'} stu ';
         $where      = 'WHERE stu.classid = ' . $clsid . ' ';
         $groupby    = 'GROUP BY stu.completestatusid ';
 
         $sql = $select . $from . $where . $groupby;
 
-        return $CURMAN->db->get_records_sql($sql);
+        return $this->_db->get_records_sql($sql);
     }
 
     /**
@@ -997,10 +959,9 @@ class pmclass extends data_object_with_custom_fields {
         $allowed_clusters = array();
 
         if (pmclasspage::_has_capability('block/curr_admin:class:enrol_cluster_user', $clsid)) {
-            global $CURMAN;
-            require_once CURMAN_DIRLOCATION.'/lib/usercluster.class.php';
+            require_once elispm::lib('data/usercluster.class.php');
             $cmuserid = cm_get_crlmuserid($USER->id);
-            $userclusters = $CURMAN->db->get_records(CLSTUSERTABLE, 'userid', $cmuserid);
+            $userclusters = $this->_db->get_records(CLSTUSERTABLE, 'userid', $cmuserid);
             foreach ($userclusters as $usercluster) {
                 $allowed_clusters[] = $usercluster->clusterid;
             }
@@ -1073,7 +1034,7 @@ class pmclass extends data_object_with_custom_fields {
         }
         $objs['classes'] = array($this->id => $clone->id);
 
-        $cmc = $CURMAN->db->get_record(CLSMDLTABLE, 'classid', $this->id);
+        $cmc = $this->_db->get_record(CLSMDLTABLE, 'classid', $this->id);
         if ($cmc) {
             if ($cmc->autocreated == -1) {
                 $cmc->autocreated = $CURMAN->config->autocreated_unknown_is_yes;
@@ -1086,7 +1047,7 @@ class pmclass extends data_object_with_custom_fields {
                 $restore->id = $moodlecourseid;
                 $restore->fullname = addslashes($clone->course->name . '_' . $clone->idnumber);
                 $restore->shortname = addslashes($clone->idnumber);
-                $CURMAN->db->update_record('course', $restore);
+                $this->_db->update_record('course', $restore);
                 moodle_attach_class($clone->id, $moodlecourseid);
             } elseif ($options['moodlecourses'] == 'link' ||
                       ($options['moodlecourses'] == 'copyautocreated' && !$cmc->autocreated)) {
@@ -1103,6 +1064,46 @@ class pmclass extends data_object_with_custom_fields {
 
         return $objs;
     }
+
+    static $validation_rules = array(
+        'validate_idnumber_not_empty',
+        'validate_unique_idnumber'
+    );
+
+    function validate_idnumber_not_empty() {
+        return validate_not_empty($this, 'idnumber');
+    }
+
+    function validate_unique_idnumber() {
+        return validate_is_unique($this, array('idnumber'));
+    }
+
+    public function save() {
+        $isnew = empty($this->id);
+
+        parent::save();
+
+        if ($this->moodlecourseid || $this->autocreate) {
+            moodle_attach_class($this->id, $this->moodlecourseid, '', true, true, $this->autocreate);
+        }
+
+        if (!$isnew) {
+            if(!empty($this->oldmax) && $this->oldmax < $this->maxstudents && waitlist::count_records($this->id) > 0) {
+                for($i = $this->oldmax; $i < $this->maxstudents; $i++) {
+                    $next_student = waitlist::get_next($this->id);
+
+                    if(!empty($next_student)) {
+                        $next_student->enrol();
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+
+        field_data::set_for_context_from_datarecord('class', $this);
+    }
+
 }
 
 /// Non-class supporting functions. (These may be able to replaced by a generic container/listing class)
@@ -1126,36 +1127,37 @@ class pmclass extends data_object_with_custom_fields {
 function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
                              $perpage = 0, $namesearch = '', $alpha = '', $id = 0, $onlyopen=false,
                              $contexts=null, $clusterid = 0, $extrafilters = array()) {
-    global $CURMAN, $USER;
+    global $CFG, $USER;
 
-    $LIKE = $CURMAN->db->sql_compare();
+    //$LIKE = $this->_db->sql_compare();
+    $LIKE = 'LIKE';
 
     $select = 'SELECT cls.*, cls.starttimehour as starttimehour, cls.starttimeminute as starttimeminute, ' .
               'cls.endtimehour as endtimehour, cls.endtimeminute as endtimeminute, crs.name as crsname, env.name as envname, ' .
               'env.description as envdescription, clsmoodle.moodlecourseid as moodlecourseid ';
-    $tables = 'FROM '.$CURMAN->db->prefix_table(CLSTABLE).' cls ';
-    $join   = 'JOIN ' . $CURMAN->db->prefix_table(CRSTABLE) . ' crs ' .
+    $tables = 'FROM {'.pmclass::TABLE.'} cls ';
+    $join   = 'JOIN {'.course::TABLE.'} crs ' .
               'ON crs.id = cls.courseid ' .
-              'LEFT JOIN ' . $CURMAN->db->prefix_table(ENVTABLE) . ' env ' .
+              'LEFT JOIN {'.environment::TABLE.'} env ' .
               'ON env.id = cls.environmentid ' .
-              'LEFT JOIN ' . $CURMAN->db->prefix_table(CLSMOODLETABLE) . ' clsmoodle ' .
+              'LEFT JOIN {'.classmoodle::TABLE.'} clsmoodle ' .
               'ON clsmoodle.classid = cls.id ';
 
     //class associated to a particular cluster via a track
     if(!empty($clusterid)) {
-        $join .= "JOIN {$CURMAN->db->prefix_table(CLSTRACKCLS)} clstrk
+        $join .= 'JOIN {'.trackclass::TABLE.'} clstrk
                   ON clstrk.classid = cls.id
-                  JOIN {$CURMAN->db->prefix_table(CLSTTRKTABLE)} clsttrk
+                  JOIN {'.clustertrack::TABLE.'} clsttrk
                   ON clsttrk.trackid = clstrk.trackid
-                  AND clsttrk.clusterid = {$clusterid} ";
+                  AND clsttrk.clusterid = '.$clusterid.' ';
     }
 
     //assert that classes returned were requested by the current user using the course / class
     //request block and approved
     if (!empty($extrafilters['show_my_approved_classes'])) {
-        $join .= "JOIN {$CURMAN->db->prefix_table('block_course_request')} request
+        $join .= 'JOIN '.$CFG->prefix.'block_course_request request
                   ON cls.id = request.classid
-                  AND request.userid = {$USER->id} ";
+                  AND request.userid = '.$USER->id.' ';
     }
 
     $where = array();
@@ -1199,7 +1201,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     }
 
     if (!empty($perpage)) {
-        if ($CURMAN->db->_dbconnection->databaseType == 'postgres7') {
+        if ($this->_db->_dbconnection->databaseType == 'postgres7') {
             $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
         } else {
             $limit = 'LIMIT '.$startrec.', '.$perpage;
@@ -1210,7 +1212,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
 
     $sql = $select.$tables.$join.$where.$sort.$limit;
 
-    return $CURMAN->db->get_records_sql($sql);
+    return $this->_db->get_records_sql($sql);
 }
 
 /**
@@ -1225,20 +1227,18 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
  * @return  int                          The number of records
  */
 function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen = false, $contexts = null, $clusterid = 0) {
-    global $CURMAN;
-
     $select = 'SELECT COUNT(cls.id) ';
-    $tables = 'FROM '.$CURMAN->db->prefix_table(CLSTABLE).' cls ';
-    $join   = 'LEFT JOIN ' . $CURMAN->db->prefix_table(CRSTABLE) . ' crs ' .
+    $tables = 'FROM {'.pmclass::TABLE.'} cls ';
+    $join   = 'LEFT JOIN {'.course::TABLE.'} crs ' .
               'ON crs.id = cls.courseid ';
 
     //class associated to a particular cluster via a track
     if(!empty($clusterid)) {
-        $join .= "JOIN {$CURMAN->db->prefix_table(CLSTRACKCLS)} clstrk
+        $join .= 'JOIN {'.classtrack::TABLE.'} clstrk
                   ON clstrk.classid = cls.id
-                  JOIN {$CURMAN->db->prefix_table(CLSTTRKTABLE)} clsttrk
+                  JOIN {'.clustertrack::TABLE.'} clsttrk
                   ON clsttrk.trackid = clstrk.trackid
-                  AND clsttrk.clusterid = {$clusterid} ";
+                  AND clsttrk.clusterid = '.$clusterid.' ';
     }
 
     $where  = array();
@@ -1273,13 +1273,12 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
     }
 
     $sql = $select . $tables . $join . $where;
-    return $CURMAN->db->count_records_sql($sql);
+
+    return $this->_db->count_records_sql($sql);
 }
 
 function pmclass_get_record_by_courseid($courseid) {
-    global $CURMAN;
-
-    $records = $CURMAN->db->get_records(CLSTABLE, 'courseid', $courseid);
+    $records = $this->_db->get_records(pmclass::TABLE, 'courseid', $courseid);
     return $records;
 }
 
