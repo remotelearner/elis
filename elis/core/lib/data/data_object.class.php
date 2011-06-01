@@ -345,7 +345,7 @@ class elis_data_object {
             } else if (is_object($filter)) {
                 $sql_clauses = $filter->get_sql(false, null, $db);
             } else {
-                $sql_clauses = AND_filter::get_combined_sql($filters, false, null, $db);
+                $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
             }
             if (!isset($sql_clauses['where'])) {
                 $sql_clauses['where'] = '';
@@ -640,32 +640,36 @@ class elis_data_object {
                 $associations = static::$associations;
                 $association = $associations[$name];
                 $classname = $association['class'];
-                if (isset($association['foreignidfield'])) {
-                    if (isset($args[0])) {
-                        // $filters specified
+                if (isset($association['foreignidfield']) || isset($association['filtermethod'])) {
+                    if (isset($association['foreignidfield'])) {
                         $foreign_filter = new field_filter($association['foreignidfield'], $this->_dbfield_id);
-                        if (is_array($args[0])) {
-                            $args[0][] = $foreign_filter;
-                        } else {
-                            $args[0] = array($args[0], $foreign_filter);
-                        }
-                        return $classname::find($args, array(), 0, 0, $this->_db);
                     } else {
-                        return $classname::find(new field_filter($association['foreignidfield'], $this->_dbfield_id), array(), 0, 0, $this->_db);
+                        $foreign_filter = call_user_func(array($classname, $association['filtermethod']), $this);
                     }
-                } else if (isset($association['filtermethod'])) {
                     if (isset($args[0])) {
                         // $filters specified
-                        $foreign_filter = call_user_func(array($classname, $association['filtermethod']), $this);
                         if (is_array($args[0])) {
                             $args[0][] = $foreign_filter;
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return $classname::find($args, array(), 0, 0, $this->_db);
                     } else {
-                        return $classname::find(call_user_func(array($classname, $association['filtermethod']), $this), array(), 0, 0, $this->_db);
+                        $args[0] = $foreign_filter;
                     }
+                    // fill in the default arguments
+                    if (!isset($args[1])) {
+                        $args[1] = array();
+                    }
+                    if (!isset($args[2])) {
+                        $args[2] = 0;
+                    }
+                    if (!isset($args[3])) {
+                        $args[3] = 0;
+                    }
+                    if (!isset($args[4])) {
+                        $args[4] = $this->_db;
+                    }
+                    return call_user_func_array(array($classname, 'find'), $args);
                 } else if (isset($association['listmethod'])) {
                     array_unshift($args, $this);
                     return call_user_func_array(array($classname, $association['listmethod']), $args);
@@ -677,31 +681,25 @@ class elis_data_object {
                 $associations = static::$associations;
                 $association = $associations[$name];
                 $classname = $association['class'];
-                if (isset($association['foreignidfield'])) {
-                    if (isset($args[0])) {
+                if (isset($association['foreignidfield']) || isset($association['filtermethod'])) {
+                    if (isset($association['foreignidfield'])) {
                         $foreign_filter = new field_filter($association['foreignidfield'], $this->_dbfield_id);
-                        if (is_array($args[0])) {
-                            $args[0][] = $foreign_filter;
-                        } else {
-                            $args[0] = array($args[0], $foreign_filter);
-                        }
-                        return $classname::count($args, $this->_db);
                     } else {
-                        return $classname::count(new field_filter($association['foreignidfield'], $this->_dbfield_id), $this->_db);
-                    }
-                } else if (isset($association['filtermethod'])) {
-                    if (isset($args[0])) {
-                        // $filters specified
                         $foreign_filter = call_user_func(array($classname, $association['filtermethod']), $this);
+                    }
+                    if (isset($args[0])) {
                         if (is_array($args[0])) {
                             $args[0][] = $foreign_filter;
                         } else {
                             $args[0] = array($args[0], $foreign_filter);
                         }
-                        return $classname::count($args, $this->_db);
                     } else {
-                        return $classname::count(call_user_func(array($classname, $association['filtermethod']), $this), $this->_db);
+                        $args[0] = $foreign_filter;
                     }
+                    if (!isset($args[1])) {
+                        $args[1] = $this->_db;
+                    }
+                    return call_user_func_array(array($classname, 'count'), $args);
                 } else if (isset($association['countmethod'])) {
                     array_unshift($args, $this);
                     return call_user_func_array(array($classname, $association['countmethod']), $args);

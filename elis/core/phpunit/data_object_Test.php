@@ -43,6 +43,19 @@ class config_object extends elis_data_object {
      */
     protected $_dbfield_name;
     protected $_dbfield_value;
+
+    public static $validation_rules = array(
+        'validate_name_not_empty',
+        'validate_unique_name'
+    );
+
+    function validate_name_not_empty() {
+        return validate_not_empty($this, 'name');
+    }
+
+    function validate_unique_name() {
+        return validate_is_unique($this, array('name'));
+    }
 }
 
 class user_object extends elis_data_object {
@@ -73,6 +86,12 @@ class role_assignment_object extends elis_data_object {
 
 class data_objectTest extends PHPUnit_Framework_TestCase {
     protected $backupGlobalsBlacklist = array('DB');
+
+    protected function tearDown() {
+        if (isset($this->overlaydb)) {
+            $this->overlaydb->cleanup();
+        }
+    }
 
     public function baseConstructorProvider() {
         $obj = new stdClass;
@@ -149,6 +168,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
         $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+        $this->overlaydb = $overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
@@ -170,8 +190,6 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($config->name, 'foo');
         $config = next($configs);
         $this->assertEquals($config, false);
-
-        $overlaydb->cleanup();
     }
 
     /**
@@ -184,6 +202,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
         $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+        $this->overlaydb = $overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
@@ -193,8 +212,6 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $overlaydb), 1);
         // should find all three records
         $this->assertEquals(config_object::count(null, $overlaydb), 3);
-
-        $overlaydb->cleanup();
     }
 
     /**
@@ -207,14 +224,13 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
         $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+        $this->overlaydb = $overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
         config_object::delete_records(new field_filter('name', 'foo'), $overlaydb);
         $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $overlaydb), 0);
         $this->assertEquals(config_object::count(null, $overlaydb), 2);
-
-        $overlaydb->cleanup();
     }
 
     /**
@@ -227,13 +243,12 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
         $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+        $this->overlaydb = $overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
         $this->assertTrue(config_object::exists(new field_filter('name', 'foo'), $overlaydb));
         $this->assertFalse(config_object::exists(new field_filter('name', 'fooo'), $overlaydb));
-
-        $overlaydb->cleanup();
     }
 
     /**
@@ -245,14 +260,13 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
         $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+        $this->overlaydb = $overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
         $config = new config_object(1, null, array(), false, array(), $overlaydb);
         $this->assertEquals($config->name, 'foo');
         $this->assertEquals($config->value, 'foooo');
-
-        $overlaydb->cleanup();
     }
 
     /**
@@ -262,6 +276,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         global $DB;
 
         $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+        $this->overlaydb = $overlaydb;
 
         // create a new record
         $config = new config_object(false, null, array(), false, array(), $overlaydb);
@@ -286,10 +301,11 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $config = current($config);
         $this->assertEquals($config->name, 'foo');
         $this->assertEquals($config->value, 'newfoovalue');
-
-        $overlaydb->cleanup();
     }
 
+    /**
+     * Test the single record delete method
+     */
     public function testCanDeleteASingleRecord() {
         global $DB;
         require_once(elis::lib('data/data_filter.class.php'));
@@ -297,6 +313,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
         $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+        $this->overlaydb = $overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
@@ -305,14 +322,16 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $config->delete();
 
         $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $overlaydb), 0);
-
-        $overlaydb->cleanup();
     }
 
+    /**
+     * Test the magic methods for getting associated records
+     */
     public function testGetAssociatedRecords() {
         global $DB, $USER;
 
         $overlaydb = new overlay_database($DB, array('role_assignments' => 'moodle'));
+        $this->overlaydb = $overlaydb;
 
         // get some random user
         $user = $DB->get_record('user', array(), '*', IGNORE_MULTIPLE);
@@ -320,6 +339,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $role = $DB->get_record('role', array(), '*', IGNORE_MULTIPLE);
         // add a role assignment
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        // create a new role assignment
         $ra = new stdClass;
         $ra->userid = $user->id;
         $ra->roleid = $role->id;
@@ -328,9 +348,11 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $ra->modifierid = $USER->id;
         $ra->id = $overlaydb->insert_record('role_assignments', $ra);
 
+        // count the role assignments for the user
         $user = new user_object($user, null, array(), true, array(), $overlaydb);
         $this->assertEquals($user->count_role_assignments(), 1);
 
+        // verify that we can get the role assignment via the magic get method
         $roleassignments = $user->role_assignments->to_array();
         $this->assertEquals(count($roleassignments), 1);
         $ra = current($roleassignments);
@@ -338,9 +360,58 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($ra->roleid, $role->id);
         $this->assertEquals($ra->contextid, $syscontext->id);
 
-        $this->assertEquals($ra->user->id, $user->id);
+        // verify that we can get the role assignment via the magic call method
+        $roleassignments = $user->get_role_assignments()->to_array();
+        $this->assertEquals(count($roleassignments), 1);
+        $ra = current($roleassignments);
+        $this->assertEquals($ra->userid, $user->id);
+        $this->assertEquals($ra->roleid, $role->id);
+        $this->assertEquals($ra->contextid, $syscontext->id);
 
-        $overlaydb->cleanup();
+        // test the filtered get and count methods
+        $roleassignments = $user->get_role_assignments(new field_filter('userid', $user->id, field_filter::NEQ))->to_array();
+        $this->assertEquals(count($roleassignments), 0);
+
+        $this->assertEquals($roleassignments = $user->count_role_assignments(new field_filter('userid', $user->id, field_filter::NEQ)), 0);
+
+        $this->assertEquals($ra->user->id, $user->id);
+    }
+
+    /**
+     * Test validation of duplicates
+     *
+     * @expectedException ErrorException
+     */
+    public function testValidationPreventsDuplicates() {
+        global $DB;
+
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+
+        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+        $this->overlaydb = $overlaydb;
+
+        load_phpunit_data_set($dataset, true, $overlaydb);
+
+        $config = new config_object(false, null, array(), false, array(), $overlaydb);
+        $config->name = 'foo';
+        $config->value = 'foovalue';
+        $config->save();
+    }
+
+    /**
+     * Test validation of required fields
+     *
+     * @expectedException ErrorException
+     */
+    public function testValidationPreventsEmptyValues() {
+        global $DB;
+
+        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
+        $this->overlaydb = $overlaydb;
+
+        $config = new config_object(false, null, array(), false, array(), $overlaydb);
+        $config->save();
     }
 
     /**
