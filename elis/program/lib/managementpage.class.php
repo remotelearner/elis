@@ -254,7 +254,7 @@ abstract class managementpage extends pm_page {
     public function print_alpha() {
         $alpha        = optional_param('alpha', null, PARAM_ALPHA);
 
-        $alphabet = explode(',', get_string('alphabet'));
+        $alphabet = explode(',', get_string('alphabet', 'langconfig'));
         $strall = get_string('all');
 
         echo html_writer::start_tag('div', array('style' => 'text-align:center'));
