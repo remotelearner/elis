@@ -1133,15 +1133,14 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     $LIKE = 'LIKE';
 
     $select = 'SELECT cls.*, cls.starttimehour as starttimehour, cls.starttimeminute as starttimeminute, ' .
-              'cls.endtimehour as endtimehour, cls.endtimeminute as endtimeminute, crs.name as crsname, env.name as envname, ' .
-              'env.description as envdescription, clsmoodle.moodlecourseid as moodlecourseid ';
+              'cls.endtimehour as endtimehour, cls.endtimeminute as endtimeminute, crs.name as crsname, ' .
+              'clsmoodle.moodlecourseid as moodlecourseid ';
     $tables = 'FROM {'.pmclass::TABLE.'} cls ';
-    $join   = 'JOIN {'.course::TABLE.'} crs ' .
-              'ON crs.id = cls.courseid ' .
-              'LEFT JOIN {'.environment::TABLE.'} env ' .
-              'ON env.id = cls.environmentid ' .
-              'LEFT JOIN {'.classmoodle::TABLE.'} clsmoodle ' .
-              'ON clsmoodle.classid = cls.id ';
+    $join   = 'JOIN {'.course::TABLE.'} crs
+               ON crs.id = cls.courseid
+               LEFT JOIN {'.classmoodle::TABLE.'} clsmoodle
+               ON clsmoodle.classid = cls.id
+              ';
 
     //class associated to a particular cluster via a track
     if(!empty($clusterid)) {
@@ -1149,7 +1148,8 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
                   ON clstrk.classid = cls.id
                   JOIN {'.clustertrack::TABLE.'} clsttrk
                   ON clsttrk.trackid = clstrk.trackid
-                  AND clsttrk.clusterid = '.$clusterid.' ';
+                  AND clsttrk.clusterid = '.$clusterid.'
+                 ';
     }
 
     //assert that classes returned were requested by the current user using the course / class
@@ -1157,7 +1157,8 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     if (!empty($extrafilters['show_my_approved_classes'])) {
         $join .= 'JOIN '.$CFG->prefix.'block_course_request request
                   ON cls.id = request.classid
-                  AND request.userid = '.$USER->id.' ';
+                  AND request.userid = '.$USER->id.'
+                 ';
     }
 
     $where = array();

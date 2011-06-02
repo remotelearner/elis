@@ -298,7 +298,6 @@ class pmclasspage extends managementpage {
             'starttime'    => array('header' => get_string('class_starttime', 'elis_program')),
             'endtime'      => array('header' => get_string('class_endtime', 'elis_program')),
             'maxstudents'  => array('header' => get_string('class_maxstudents', 'elis_program')),
-            'envname'      => array('header' => get_string('environment', 'elis_program')),
         );
 
         $items    = pmclass_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, false, pmclasspage::get_contexts('block/curr_admin:class:view'), $parent_clusterid);

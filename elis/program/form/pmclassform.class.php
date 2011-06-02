@@ -155,18 +155,18 @@ class pmclassform extends cmform {
         $mform->addHelpButton('maxstudents', 'pmclassform:class_maxstudents', 'elis_program');
 
         // Environment selector
-        $envs = environment_get_listing();
-        $envs = $envs ? $envs : array();
+        //$envs = environment_get_listing();
+        //$envs = $envs ? $envs : array();
 
-        $o_envs = array(get_string('none', 'elis_program'));
+        //$o_envs = array(get_string('none', 'elis_program'));
 
-        foreach ($envs as $env) {
-            $o_envs[$env->id] = $env->name;
-        }
+        //foreach ($envs as $env) {
+        //    $o_envs[$env->id] = $env->name;
+        //}
 
-        $mform->addElement('select', 'environmentid', get_string('environment', 'elis_program') . ':',
-                           $o_envs);
-        $mform->addHelpButton('environmentid', 'pmclassform:environment', 'elis_program');
+        //$mform->addElement('select', 'environmentid', get_string('environment', 'elis_program') . ':',
+        //                   $o_envs);
+        //$mform->addHelpButton('environmentid', 'pmclassform:environment', 'elis_program');
 
         // Course selector
         if (empty($this->_customdata['obj']->moodlecourseid)) {
