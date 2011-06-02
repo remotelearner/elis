@@ -129,12 +129,12 @@ class course extends data_object_with_custom_fields {
     	return $this->_db->execute_sql($sql, "");
     }
 
+    /////////////////////////////////////////////////////////////////////
+    //                                                                 //
+    //  FORM FUNCTIONS:                                                //
+    //                                                                 //
+    /////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////
-//                                                                 //
-//  FORM FUNCTIONS:                                                //
-//                                                                 //
-/////////////////////////////////////////////////////////////////////
     public function setUrl($url = null, $action = array()) {
         if(!($url instanceof noodle_url)) {
             $url = new moodle_url($url, $action);
@@ -252,11 +252,11 @@ class course extends data_object_with_custom_fields {
     }
 
 
-/////////////////////////////////////////////////////////////////////
-//                                                                 //
-//  DATA FUNCTIONS:                                                //
-//                                                                 //
-/////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+    //                                                                 //
+    //  DATA FUNCTIONS:                                                //
+    //                                                                 //
+    /////////////////////////////////////////////////////////////////////
 
 
     /**
@@ -437,22 +437,20 @@ class course extends data_object_with_custom_fields {
         }
     }
 
-/////////////////////////////////////////////////////////////////////
-//                                                                 //
-//  STATIC FUNCTIONS:                                              //
-//    These functions can be used without instatiating an object.  //
-//    Usage: student::[function_name([args])]                      //
-//                                                                 //
-/////////////////////////////////////////////////////////////////////
-
+    /////////////////////////////////////////////////////////////////////
+    //                                                                 //
+    //  STATIC FUNCTIONS:                                              //
+    //    These functions can be used without instatiating an object.  //
+    //    Usage: student::[function_name([args])]                      //
+    //                                                                 //
+    /////////////////////////////////////////////////////////////////////
 
     public static function get_default() {
-        global $CURMAN;
-
         $default_values = array();
         $prefix = self::$config_default_prefix;
         $prefixlen = strlen($prefix);
 
+        /*
         foreach ($CURMAN->config as $key => $data) {
 
           if (false !== strpos($key, $prefix)) {
@@ -462,6 +460,7 @@ class course extends data_object_with_custom_fields {
               $default_values[$index] = $data;
           }
         }
+        */
 
         return $default_values;
     }
@@ -471,8 +470,9 @@ class course extends data_object_with_custom_fields {
      *
      */
     function check_for_nags() {
-        global $CFG, $CURMAN;
+        global $CFG;
 
+        /*
         $sendtouser =       $CURMAN->config->notify_courserecurrence_user;
         $sendtorole =       $CURMAN->config->notify_courserecurrence_role;
         $sendtosupervisor = $CURMAN->config->notify_courserecurrence_supervisor;
@@ -481,6 +481,7 @@ class course extends data_object_with_custom_fields {
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
             return true;
         }
+        */
 
         /// Course Recurrence:
         /// A course needs to recur if,
@@ -574,10 +575,11 @@ class course extends data_object_with_custom_fields {
      */
 
     public static function course_recurrence_handler($user) {
-        global $CFG, $CURMAN;
+        global $CFG;
         require_once($CFG->dirroot.'/curriculum/lib/notifications.php');
 
         /// Does the user receive a notification?
+        /*
         $sendtouser       = $CURMAN->config->notify_courserecurrence_user;
         $sendtorole       = $CURMAN->config->notify_courserecurrence_role;
         $sendtosupervisor = $CURMAN->config->notify_courserecurrence_supervisor;
@@ -586,6 +588,7 @@ class course extends data_object_with_custom_fields {
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
             return true;
         }
+        */
 
         $context = get_system_context();
 
@@ -599,6 +602,7 @@ class course extends data_object_with_custom_fields {
         $message = new notification();
 
         /// Set up the text of the message
+        /*
         $text = empty($CURMAN->config->notify_courserecurrence_message) ?
                     get_string('notifycourserecurrencemessagedef', 'elis_program') :
                     $CURMAN->config->notify_courserecurrence_message;
@@ -632,6 +636,7 @@ class course extends data_object_with_custom_fields {
         foreach ($users as $u) {
             $message->send_notification($text, $u, $enroluser);
         }
+        */
 
         return true;
     }
@@ -827,12 +832,17 @@ class course extends data_object_with_custom_fields {
  */
 
 function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=0, $namesearch='', $alpha='', $contexts=null) {
-    $LIKE = $this->_db->sql_compare();
+    global $DB;
+
+    //$LIKE = $DB->sql_compare();
+    $LIKE = 'LIKE';
 
     $select = 'SELECT crs.*, env.name as envname, env.description as envdescription, (SELECT COUNT(*) FROM {'.curriculumcourse::TABLE.'} WHERE courseid = crs.id ) as curricula ';
     $tables = 'FROM {'.course::TABLE.'} crs ';
-    $join   = 'LEFT JOIN {'.enrvironment::TABLE.'} env ';
-    $on     = 'ON env.id = crs.environmentid ';
+    //$join   = 'LEFT JOIN {'.enrvironment::TABLE.'} env ';
+    //$on     = 'ON env.id = crs.environmentid ';
+    $join   = ' ';
+    $on     = ' ';
 
     $where = array();
     if (!empty($namesearch)) {
@@ -845,7 +855,10 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
     }
 
     if ($contexts !== null) {
-        $where[] = $contexts->sql_filter_for_context_level('crs.id', 'course');
+        //$where[] = $contexts->sql_filter_for_context_level('crs.id', 'course');
+
+        $filter_object = $contexts->filter_for_context_level('crs.id', 'course');
+        $where[] = $filter_object->get_sql();
     }
 
     if (!empty($where)) {
@@ -859,25 +872,28 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
     }
 
     if (!empty($perpage)) {
-        if ($this->_db->_dbconnection->databaseType == 'postgres7') {
-            $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-        } else {
+        //if ($this->_db->_dbconnection->databaseType == 'postgres7') {
+        //    $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
+        //} else {
             $limit = 'LIMIT '.$startrec.', '.$perpage;
-        }
+        //}
     } else {
         $limit = '';
     }
 
     $sql = $select.$tables.$join.$on.$where.$sort.$limit;
 
-    return $this->_db->get_records_sql($sql);
+    return $DB->get_records_sql($sql);
 }
 
 
 function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
+    global $DB;
+
     $where = array();
 
-    $LIKE = $this->_db->sql_compare();
+    //$LIKE = $this->_db->sql_compare();
+    $LIKE = 'LIKE';
 
     if (!empty($namesearch)) {
         $where[] = "((name $LIKE '%$namesearch%') OR (idnumber $LIKE '%$namesearch%'))";
@@ -888,11 +904,14 @@ function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
     }
 
     if ($contexts !== null) {
-        $where[] = $contexts->sql_filter_for_context_level('id', 'course');
+        //$where[] = $contexts->sql_filter_for_context_level('id', 'course');
+
+        $filter_object = $contexts->filter_for_context_level('id', 'course');
+        $where[] = $filter_object->get_sql();
     }
 
     $where = implode(' AND ', $where);
 
-    return $this->_db->count_records_select(course::TABLE, $where);
+    return $DB->count_records_select(course::TABLE, $where);
 }
 

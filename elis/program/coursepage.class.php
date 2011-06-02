@@ -156,7 +156,6 @@ class coursepage extends managementpage {
         $columns = array(
             'name'      => array('header' => get_string('course_name','elis_program')),
             'code'      => array('header' => get_string('course_code','elis_program')),
-            'envname'   => array('header' => get_string('environment','elis_program')),
             'version'   => array('header' => get_string('course_version','elis_program')),
             'curricula' => array('header' => get_string('course_curricula','elis_program')),
         );
@@ -364,9 +363,10 @@ class coursepage extends managementpage {
      * @param  object  $cm_entity  The CM entity added
      */
     function after_cm_entity_add($cm_entity) {
-        global $USER, $CURMAN;
+        global $USER;
 
         //make sure a valid role is set
+        /*
         if(!empty($CURMAN->config->default_course_role_id) && record_exists('role', 'id', $CURMAN->config->default_course_role_id)) {
 
             //get the context instance for capability checking
@@ -378,6 +378,7 @@ class coursepage extends managementpage {
                 role_assign($CURMAN->config->default_course_role_id, $USER->id, 0, $context_instance->id);
             }
         }
+        */
     }
 
     /**
