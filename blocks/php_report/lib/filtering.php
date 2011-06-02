@@ -29,6 +29,9 @@ require_once($CFG->dirroot.'/blocks/php_report/php_report_base.php');
 
 require_once($CFG->libdir.'/formslib.php');
 
+//needed for base filter form
+require_once($CFG->dirroot.'/user/filters/user_filter_forms.php');
+
 /**
  * Includes the necessary filtering classes required for all reports to work
  */
@@ -36,11 +39,11 @@ function php_report_filtering_require_dependencies() {
     global $CFG;
 
     //go through the files in the filtering directory
-    if($handle = opendir($CFG->dirroot . '/curriculum/lib/filtering')) {
+    if($handle = opendir($CFG->dirroot.'/blocks/php_report/filter')) {
         while (false !== ($file = readdir($handle))) {
             //load filter definition if it's a PHP file
             if(strrpos($file, '.php') == strlen($file) - strlen('.php')) {
-                require_once($CFG->dirroot . '/curriculum/lib/filtering/' . $file);
+                require_once($CFG->dirroot.'/blocks/php_report/filter/'.$file);
             }
         }
     }
@@ -233,7 +236,7 @@ function php_report_filtering_get_user_preferences($report_shortname) {
             if ($key != 'report') {
                 //error_log("/blocks/php_report/lib/filtering.php::php_report_filtering_get_user_preferences($report_shortname, $force_persistent) over-riding filter values with URL param: {$key}={$val}");
                 $SESSION->php_report_default_params[$reportid.'/'.$key] = $val;
-                set_user_preferences(array($reportid.'/'.$key,$val)); // let's save URL params as persistent to avoid random session craziness issues
+                set_user_preferences(array($reportid.'/'.$key => $val)); // let's save URL params as persistent to avoid random session craziness issues
             }
         }
         $user_prefs = $SESSION->php_report_default_params;
@@ -258,14 +261,24 @@ function php_report_filtering_set_user_preferences($preferences, $temporary, $re
     // Ugly form dependency check and preference modification code
     // Note: this can be removed once MDL-27045 is resolved and 'checkbox' in elis/core/lib/filtering/date.php can be changed to 'advcheckbox'
     //       (or until someone can implement a cleaner way to handle this)
-    if (isset($_SESSION['SESSION']->php_reports[$report_name]->inner_report->filter->_addform->_form->_dependencies)) {
-        $dependencies = array_keys($_SESSION['SESSION']->php_reports[$report_name]->inner_report->filter->_addform->_form->_dependencies);
-        // Check each dependency to see if there is a related preference
-        foreach ($dependencies as $dependency) {
-           $check_pref = 'php_report_' . $report_name . '/' . $dependency;
-            // If there is no related preference, it is probably because it's an unchecked checkbox so let's set it to 0
-            if (!isset($preferences[$check_pref])) {
-                $preferences[$check_pref] = 0;
+
+    //see if the current report is cached
+    if (isset($_SESSION['SESSION']->php_reports[$report_name])) {
+        $report_container = $_SESSION['SESSION']->php_reports[$report_name];
+
+        //obtain the filter's main form;
+        if (isset($report_container->inner_report->filter->_addform)) {
+            $filter_form = $report_container->inner_report->filter->_addform;
+
+            //grab the list required fields
+            $dependencies = $filter_form->get_dependencies();
+
+            foreach ($dependencies as $dependency => $data) {
+                $check_pref = 'php_report_' . $report_name . '/' . $dependency;
+                // If there is no related preference, it is probably because it's an unchecked checkbox so let's set it to 0
+                if (!isset($preferences[$check_pref])) {
+                    $preferences[$check_pref] = 0;
+                }
             }
         }
     }
@@ -298,7 +311,7 @@ function php_report_filtering_set_user_preferences($preferences, $temporary, $re
  *                              persistent preferences
  */
 function php_report_filtering_unset_invalid_user_preferences($to_delete, $temporary) {
-    global $SESSION;
+    global $SESSION, $DB;
 
     if ($temporary) {
         //delete temporary preferences that are not valid
@@ -316,18 +329,28 @@ function php_report_filtering_unset_invalid_user_preferences($to_delete, $tempor
         //delete persistent preferences that are not valid
         if (!empty($to_delete)) {
 
+            //query sql conditions
             $conditions = array();
+            //query parameters
+            $params = array();
 
             //set up conditions for any valid prefix-matching
-            foreach ($to_delete as $item) {
-                $conditions[] = "name = '{$item}'";
-                $conditions[] = 'name ' . sql_ilike() . " '{$item}_%'";
+            foreach ($to_delete as $key => $item) {
+                //= '[item]' case
+                $conditions[] = "name = :substringequalityitem".$key;
+                $params['substringequalityitem'.$key] = $item;
+
+                //ILIKE '[item]_%' case
+                $conditions[] = $DB->sql_like('name', ':substringlikeitem'.$key, false);
+                $params['substringlikeitem'.$key] = $item;
             }
 
             //try to be efficient in cases with a lot of data
             $where = implode(' OR ', $conditions);
-            if ($recordset = get_recordset_select('user_preferences', $where)) {
-                while ($record = rs_fetch_next_record($recordset)) {
+
+            //find matching preferences and unset them
+            if ($recordset = $DB->get_recordset_select('user_preferences', $where, $params)) {
+                foreach ($recordset as $record) {
                     //user proper API function to handle stored session info
                     unset_user_preference($record->name);
                 }
@@ -412,7 +435,7 @@ function php_report_filtering_reset_form($form_data, $filter_object, $report_nam
 
     if (is_array($reset_array)) {
         // initialize parameters
-        $parameter_form->_form->setConstants($reset_array);
+        $parameter_form->set_constants($reset_array);
     }
 }
 
