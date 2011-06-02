@@ -343,7 +343,7 @@ class elis_data_object {
             if ($filter === null) {
                 // nothing
             } else if (is_object($filter)) {
-                $sql_clauses = $filter->get_sql(false, null, $db);
+                $sql_clauses = $filter->get_sql(false, "{{$tablename}}", $db);
             } else {
                 $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
             }
@@ -396,7 +396,7 @@ class elis_data_object {
         } else {
             if ($filter === null) {
             } else if (is_object($filter)) {
-                $sql_clauses = $filter->get_sql(false, null, $db);
+                $sql_clauses = $filter->get_sql(false, "{{$tablename}}", $db);
             } else {
                 $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
             }
@@ -447,7 +447,7 @@ class elis_data_object {
         } else {
             if ($filter === null) {
             } else if (is_object($filter)) {
-                $sql_clauses = $filter->get_sql(false, null, $db);
+                $sql_clauses = $filter->get_sql(false, "{{$tablename}}", $db);
             } else {
                 $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
             }
@@ -487,7 +487,7 @@ class elis_data_object {
         }
 
         if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(false, null, $db);
+            $sql_clauses = $filter->get_sql(false, "{{$tablename}}", $db);
         } else {
             $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
         }

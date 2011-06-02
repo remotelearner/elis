@@ -57,15 +57,22 @@ abstract class data_filter {
     abstract public function get_sql($use_join=false, $tablename=null, moodle_database $db=null);
 
     /**
-     * Returns a unique table alias.  Useful for creating join conditions.  The
-     * name is guaranteed to be unique across a single run of a script.  The
-     * name is produced by concatenating a (configurable) prefix with a number.
+     * This is public so that unit tests can have predictable table aliases.
+     * Do not access this variable directly.
+     */
+    public static $_prefix_num = 0;
+
+    /**
+     * Returns a unique name.  Useful for table aliases for creating join
+     * conditions.  The name is guaranteed to be unique across a single run of
+     * a script.  The name is produced by concatenating a (configurable) prefix
+     * with a counter.
      *
      * @param string $prefix the table prefix to use
      */
-    protected function _get_unique_table_name($prefix='table') {
-        static $num = 0;
-        $num = $num + 1;
+    protected function _get_unique_name($prefix='table') {
+        self::$_prefix_num = self::$_prefix_num + 1;
+        $num = self::$_prefix_num;
         return "_{$prefix}_{$num}";
     }
 }
@@ -272,6 +279,32 @@ class field_filter extends data_filter {
 }
 
 /**
+ * Filtering on a field value being in a list of values
+ */
+class in_list_filter extends data_filter {
+    /**
+     * @param string $local_field the name of the field
+     * @param array $list the values to compare against
+     * @param bool $not_in whether to return records that do not match
+     */
+    public function __construct($local_field, array $list, $not_in = false) {
+        $this->local_field = $local_field;
+        $this->list = $list;
+        $this->not_in = $not_in;
+    }
+
+    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+        global $DB;
+        if ($db === null) {
+            $db = $DB;
+        }
+        list($sql, $params) = $db->get_in_or_equal($this->list, SQL_PARAMS_QM, '', !$this->not_in);
+        return array('where' => "{$this->local_field} {$sql}",
+                     'where_parameters' => $params);
+    }
+}
+
+/**
  * Filtering on a joined table
  */
 class join_filter extends data_filter {
@@ -284,13 +317,17 @@ class join_filter extends data_filter {
      * @param data_filter $filter how to filter the joined table
      * @param bool $not_exist whether to return records for which no
      * association exists
+     * @param bool $unique whether each $foreign_field value is unique (within
+     * the filter).  This determines whether a join can be used, or whether
+     * joining may result in duplicate records
      */
-    public function __construct($local_field, $foreign_table, $foreign_field, data_filter $filter=null, $not_exist = false) {
+    public function __construct($local_field, $foreign_table, $foreign_field, data_filter $filter=null, $not_exist = false, $unique = true) {
         $this->local_field = $local_field;
         $this->foreign_table = $foreign_table;
         $this->foreign_field = $foreign_field;
         $this->filter = $filter;
         $this->not_exist = $not_exist;
+        $this->unique = $unique;
     }
 
     public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
@@ -300,12 +337,11 @@ class join_filter extends data_filter {
         } else {
             $local_field = $this->local_field;
         }
-        if ($use_join) {
-            $jointablename = data_filter::_get_unique_table_name();
-
+        $jointablename = data_filter::_get_unique_name();
+        if ($use_join && $this->unique) {
             if ($this->not_exist) {
                 // get the filter SQL to tack on to the JOIN condition
-                $filter_sql = $this->filter ? $this->filter->get_sql(false, $tablename, $db) : array();
+                $filter_sql = $this->filter ? $this->filter->get_sql(false, $jointablename, $db) : array();
                 $add_filter = empty($filter_sql) ? '' : "AND ({$filter_sql['where']})";
 
                 // and create the join
@@ -318,6 +354,8 @@ class join_filter extends data_filter {
                 // get the sql from the filter
                 if ($this->filter) {
                     $filter_sql = $this->filter->get_sql(true, $tablename, $db);
+                } else {
+                    $filter_sql = array();
                 }
 
                 if (isset($filter_sql['where'])) {
@@ -327,24 +365,50 @@ class join_filter extends data_filter {
 
                 // and create the join
                 $rv['join'] = "JOIN {{$this->foreign_table}} {$jointablename} ON {$jointablename}.{$this->foreign_field} = {$local_field}"
-                    . isset($filter_sql['join']) ? (' ' . $filter_sql['join']) : '';
+                    . (isset($filter_sql['join']) ? (' ' . $filter_sql['join']) : '');
                 $rv['join_parameters'] = array();
                 if (isset($filter_sql['join'])) {
                     $rv['join_parameters'] = $rv['join_parameters'] + $filter_sql['join_parameters'];
                 }
             }
         } else {
-            $filter_sql = $this->filter ? $this->filter->get_sql(false, null, $db) : array();
-            $in = $this->not_exist ? 'NOT IN' : 'IN';
-            if (!empty($filter_sql)) {
-                $rv['where'] = "{$local_field} $in (SELECT {$this->foreign_field}
-                                                      FROM {{$this->foreign_table}}
-                                                     WHERE {$filter_sql['where']})";
-                $rv['where_parameters'] = $filter_sql['where_parameters'];
+            $filter_sql = $this->filter ? $this->filter->get_sql(true, $jointablename, $db) : array();
+            if ($tablename) {
+                // if the table name is specified, we can use the more
+                // efficient EXISTS instead of IN
+                $exists = $this->not_exist ? 'NOT EXISTS' : 'EXISTS';
+                $params = array();
+                $sql = "$exists (SELECT 'x'
+                                   FROM {{$this->foreign_table}} {$jointablename} ";
+                if (isset($filter_sql['join'])) {
+                    $sql .= $filter_sql['join'];
+                    $params = $filter_sql['join_parameters'];
+                }
+                $sql .= " WHERE {$jointablename}.{$this->foreign_field} = {$local_field}";
+                if (isset($filter_sql['where'])) {
+                    $sql .= " AND {$filter_sql['where']}";
+                    $params += $filter_sql['where_parameters'];
+                }
+                $sql .= ')';
+                $rv['where'] = $sql;
+                $rv['where_parameters'] = $params;
             } else {
-                $rv['where'] = "{$local_field} $in (SELECT {$this->foreign_field}
-                                                      FROM {{$this->foreign_table}})";
-                $rv['where_parameters'] = array();
+                $filter_sql = $this->filter ? $this->filter->get_sql(true, $jointablename, $db) : array();
+                $in = $this->not_exist ? 'NOT IN' : 'IN';
+                $params = array();
+                $sql = "{$local_field} $in (SELECT {$jointablename}.{$this->foreign_field}
+                                              FROM {{$this->foreign_table}} {$jointablename} ";
+                if (isset($filter_sql['join'])) {
+                    $sql .= $filter_sql['join'];
+                    $params = $filter_sql['join_parameters'];
+                }
+                if (isset($filter_sql['where'])) {
+                    $sql .= " WHERE {$filter_sql['where']}";
+                    $params += $filter_sql['where_parameters'];
+                }
+                $sql .= ')';
+                $rv['where'] = $sql;
+                $rv['where_parameters'] = $params;
             }
         }
 

@@ -27,7 +27,34 @@
 require_once(dirname(__FILE__) . '/../test_config.php');
 require_once($CFG->dirroot . '/elis/core/lib/data/data_filter.class.php');
 
-class field_filterTest extends PHPUnit_Framework_TestCase {
+/**
+ * Helpers for testing filters
+ */
+abstract class filter_TestCase extends PHPUnit_Framework_TestCase {
+    /**
+     * Equality check for SQL output from filters
+     */
+    public static function assertFilterSQLEquals($expected, $actual, $message='') {
+        if (isset($expected['where'])) {
+            $expected['where'] = trim(preg_replace('/\s+/', ' ', $expected['where']));
+        }
+        if (isset($expected['join'])) {
+            $expected['join'] = trim(preg_replace('/\s+/', ' ', $expected['join']));
+        }
+        if (isset($actual['where'])) {
+            $actual['where'] = trim(preg_replace('/\s+/', ' ', $actual['where']));
+        }
+        if (isset($actual['join'])) {
+            $actual['join'] = trim(preg_replace('/\s+/', ' ', $actual['join']));
+        }
+        self::assertEquals($expected, $actual, $message);
+    }
+}
+
+/**
+ * Test the field filter
+ */
+class filterTest extends filter_TestCase {
     protected $backupGlobalsBlacklist = array('DB');
 
     /**
@@ -63,12 +90,223 @@ class field_filterTest extends PHPUnit_Framework_TestCase {
      * @dataProvider field_filterProvider
      */
     public function testFieldFilter($init, $expected) {
-        $filter = isset($init[2]) ? new field_filter($init[0], $init[1], $init[2]) : new field_filter($init[0], $init[1]);
+        $construct = function ($name, $value, $comparison=field_filter::EQ) {
+            return new field_filter($name, $value, $comparison);
+        };
+        $filter = call_user_func_array($construct, $init);
 
-        $this->assertEquals($filter->get_sql(), $expected);
-        $this->assertEquals($filter->get_sql(true), $expected);
+        $this->assertFilterSQLEquals($expected, $filter->get_sql());
+        $this->assertFilterSQLEquals($expected, $filter->get_sql(true));
         $expected['where'] = 'x.' . $expected['where'];
-        $this->assertEquals($filter->get_sql(false, 'x'), $expected);
-        $this->assertEquals($filter->get_sql(true, 'x'), $expected);
+        $this->assertFilterSQLEquals($expected, $filter->get_sql(false, 'x'));
+        $this->assertFilterSQLEquals($expected, $filter->get_sql(true, 'x'));
+    }
+
+    /**
+     * test cases for join_filter
+     */
+    public function join_filterProvider() {
+        $tests = array();
+
+        // simple join
+        $tests[] = array(
+            array('id', 'foreign', 'foreignid'
+            ),
+            array(
+                'where' => 'id IN (SELECT _table_1.foreignid
+                                     FROM {foreign} _table_1 )',
+                'where_parameters' => array()
+            ),
+            array(
+                'join' => 'JOIN {foreign} _table_1
+                             ON _table_1.foreignid = id',
+                'join_parameters' => array()
+            ),
+            array(
+                'where' => "EXISTS (SELECT 'x'
+                                      FROM {foreign} _table_1
+                                     WHERE _table_1.foreignid = x.id)",
+                'where_parameters' => array()
+            ),
+            array(
+                'join' => 'JOIN {foreign} _table_1
+                             ON _table_1.foreignid = x.id',
+                'join_parameters' => array()
+            )
+        );
+
+        // use nonunique table (so can't use join)
+        $tests[] = array(
+            array('id', 'foreign', 'foreignid', null, false, false
+            ),
+            array(
+                'where' => 'id IN (SELECT _table_1.foreignid
+                                     FROM {foreign} _table_1 )',
+                'where_parameters' => array()
+            ),
+            array(
+                'where' => 'id IN (SELECT _table_1.foreignid
+                                     FROM {foreign} _table_1 )',
+                'where_parameters' => array()
+            ),
+            array(
+                'where' => "EXISTS (SELECT 'x'
+                                      FROM {foreign} _table_1
+                                     WHERE _table_1.foreignid = x.id)",
+                'where_parameters' => array()
+            ),
+            array(
+                'where' => "EXISTS (SELECT 'x'
+                                      FROM {foreign} _table_1
+                                     WHERE _table_1.foreignid = x.id)",
+                'where_parameters' => array()
+            )
+        );
+
+        // left join
+        $tests[] = array(
+            array('id', 'foreign', 'foreignid', null, true
+            ),
+            array(
+                'where' => 'id NOT IN (SELECT _table_1.foreignid
+                                         FROM {foreign} _table_1 )',
+                'where_parameters' => array()
+            ),
+            array(
+                'join' => 'LEFT JOIN {foreign} _table_1
+                                  ON _table_1.foreignid = id ',
+                'join_parameters' => array(),
+                'where' => '_table_1.id IS NULL',
+                'where_parameters' => array()
+            ),
+            array(
+                'where' => "NOT EXISTS (SELECT 'x'
+                                          FROM {foreign} _table_1
+                                         WHERE _table_1.foreignid = x.id)",
+                'where_parameters' => array()
+            ),
+            array(
+                'join' => 'LEFT JOIN {foreign} _table_1
+                                  ON _table_1.foreignid = x.id',
+                'join_parameters' => array(),
+                'where' => '_table_1.id IS NULL',
+                'where_parameters' => array()
+            )
+        );
+
+        // sub joins
+        $tests[] = array(
+            array('id', 'foreign', 'foreignid',
+                  new join_filter('id', 'ff', 'ffid')
+            ),
+            array(
+                'where' => 'id IN (SELECT _table_1.foreignid
+                                     FROM {foreign} _table_1
+                                     JOIN {ff} _table_3
+                                       ON _table_3.ffid = _table_1.id)',
+                'where_parameters' => array()
+            ),
+            array(
+                'join' => 'JOIN {foreign} _table_1
+                             ON _table_1.foreignid = id
+                           JOIN {ff} _table_2
+                             ON _table_2.ffid = id',
+                'join_parameters' => array()
+            ),
+            array(
+                'where' => "EXISTS (SELECT 'x'
+                                      FROM {foreign} _table_1
+                                      JOIN {ff} _table_2
+                                        ON _table_2.ffid = _table_1.id
+                                     WHERE _table_1.foreignid = x.id)",
+                'where_parameters' => array()
+            ),
+            array(
+                'join' => 'JOIN {foreign} _table_1
+                             ON _table_1.foreignid = x.id
+                           JOIN {ff} _table_2
+                             ON _table_2.ffid = x.id',
+                'join_parameters' => array()
+            )
+        );
+
+        // left join with subjoin
+        $tests[] = array(
+            array('id', 'foreign', 'foreignid',
+                  new join_filter('id', 'ff', 'ffid'), true
+            ),
+            array(
+                'where' => 'id NOT IN (SELECT _table_1.foreignid
+                                         FROM {foreign} _table_1
+                                         JOIN {ff} _table_3
+                                           ON _table_3.ffid = _table_1.id)',
+                'where_parameters' => array()
+            ),
+            array(
+                // gross SQL
+                'join' => "LEFT JOIN {foreign} _table_1
+                                  ON _table_1.foreignid = id
+                                 AND (EXISTS (SELECT 'x'
+                                                FROM {ff} _table_2
+                                               WHERE _table_2.ffid = _table_1.id))",
+                'join_parameters' => array(),
+                'where' => '_table_1.id IS NULL',
+                'where_parameters' => array()
+            ),
+            array(
+                'where' => "NOT EXISTS (SELECT 'x'
+                                          FROM {foreign} _table_1
+                                          JOIN {ff} _table_2
+                                            ON _table_2.ffid = _table_1.id
+                                         WHERE _table_1.foreignid = x.id)",
+                'where_parameters' => array()
+            ),
+            array(
+                'join' => "LEFT JOIN {foreign} _table_1
+                                  ON _table_1.foreignid = x.id
+                                 AND (EXISTS (SELECT 'x'
+                                                FROM {ff} _table_2
+                                               WHERE _table_2.ffid = _table_1.id))",
+                'join_parameters' => array(),
+                'where' => '_table_1.id IS NULL',
+                'where_parameters' => array()
+            )
+        );
+
+        /*
+        $tests[] = array(
+            array('id', 'foreign', 'foreignid'
+            ),
+            array(
+            ),
+            array(
+            ),
+            array(
+            ),
+            array(
+            )
+        );
+        */
+
+        return $tests;
+    }
+
+    /**
+     * @dataProvider join_filterProvider
+     */
+    public function testJoinFilter($init, $expected00, $expected01, $expected10, $expected11) {
+        $construct = function ($local_field, $foreign_table, $foreign_field, data_filter $filter=null, $not_exist = false, $unique = true) {
+            return new join_filter($local_field, $foreign_table, $foreign_field, $filter, $not_exist, $unique);
+        };
+        $filter = call_user_func_array($construct, $init);
+
+        data_filter::$_prefix_num = 0;
+        $this->assertFilterSQLEquals($expected00, $filter->get_sql());
+        data_filter::$_prefix_num = 0;
+        $this->assertFilterSQLEquals($expected01, $filter->get_sql(true));
+        data_filter::$_prefix_num = 0;
+        $this->assertFilterSQLEquals($expected10, $filter->get_sql(false, 'x'));
+        data_filter::$_prefix_num = 0;
+        $this->assertFilterSQLEquals($expected11, $filter->get_sql(true, 'x'));
     }
 }
