@@ -27,6 +27,7 @@
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
+require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('managementpage.class.php');
 
 /*
@@ -175,7 +176,7 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     function get_moodle_course_id() {
-        $mdlrec = $this->_db->get_record(classmoodle::TABLE, 'classid', $this->id);
+        $mdlrec = $this->_db->get_record(classmoodlecourse::TABLE, 'classid', $this->id);
         return !empty($mdlrec) ? $mdlrec->moodlecourseid : 0;
         //$this->moodlesiteid = !empty($mdlrec->siteid) ? $mdlrec->siteid : 0;
     }
@@ -505,7 +506,7 @@ class pmclass extends data_object_with_custom_fields {
 
         //crlm_class_moodle moodlecourseid
         $sql = 'SELECT cm.id
-                FROM '.classmoodle::TABLE.' AS cm
+                FROM '.classmoodlecourse::TABLE.' AS cm
                 LEFT JOIN '.$CFG->prefix.'course AS c ON cm.moodlecourseid = c.id
                 WHERE c.id IS NULL';
 
@@ -513,7 +514,7 @@ class pmclass extends data_object_with_custom_fields {
 
         if(!empty($broken_classes)) {
             foreach($broken_classes as $class) {
-                $this->_db->delete_records(classmoodle::TABLE, 'id', $class->id);
+                $this->_db->delete_records(classmoodlecourse::TABLE, 'id', $class->id);
             }
         }
 
@@ -597,7 +598,7 @@ class pmclass extends data_object_with_custom_fields {
                           u.id as muserid ';
         $from   = 'FROM '.pmclass::TABLE.' ccl ';
         $join   = 'INNER JOIN {'.classenrolment::TABLE.'} cce ON cce.classid = ccl.id
-                    LEFT JOIN {'.classmoodle::TABLE.'} ccm ON ccm.classid = ccl.id
+                    LEFT JOIN {'.classmoodlecourse::TABLE.'} ccm ON ccm.classid = ccl.id
                    INNER JOIN {'.user::TABLE.'} cu ON cu.id = cce.userid
                     LEFT JOIN '.$CFG->prefix.'user u ON u.idnumber = cu.idnumber
                     LEFT JOIN '.$CFG->prefix.'user_lastaccess ul ON ul.userid = u.id AND ul.courseid = ccm.moodlecourseid
@@ -673,7 +674,7 @@ class pmclass extends data_object_with_custom_fields {
                           u.id as muserid ';
         $from   = 'FROM {'.pmclass::TABLE.'} ccl ';
         $join   = 'INNER JOIN {'.classenrolment::TABLE.'} cce ON cce.classid = ccl.id
-                    LEFT JOIN {'.classmoodle::TABLE.'} ccm ON ccm.classid = ccl.id
+                    LEFT JOIN {'.classmoodlecourse::TABLE.'} ccm ON ccm.classid = ccl.id
                    INNER JOIN {'.user::TABLE.'} cu ON cu.id = cce.userid
                     LEFT JOIN '.$CFG->prefix.'user u ON u.idnumber = cu.idnumber
                     LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = ccl.id AND cnl.event = \'class_notcompleted\' ';
@@ -1138,7 +1139,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     $tables = 'FROM {'.pmclass::TABLE.'} cls ';
     $join   = 'JOIN {'.course::TABLE.'} crs
                ON crs.id = cls.courseid
-               LEFT JOIN {'.classmoodle::TABLE.'} clsmoodle
+               LEFT JOIN {'.classmoodlecourse::TABLE.'} clsmoodle
                ON clsmoodle.classid = cls.id
               ';
 
