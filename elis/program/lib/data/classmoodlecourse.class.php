@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
+require_once elispm::lib('data/pmclass.class.php');
+require_once elispm::lib('data/user.class.php');
+require_once elispm::lib('data/coursetemplate.class.php');
 
 /*
 require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
@@ -120,8 +123,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
 
         $ins = new instructor();
 
-        global $CURMAN;
-
+        /*
         if ($CURMAN->config->default_instructor_role && $instructors = $ins->get_instructors($this->classid)) {
         /// At this point we must switch over the other Moodle site's DB config, if needed
             if (!empty($this->siteconfig)) {
@@ -166,6 +168,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
                 moodle_load_config($cfgbak->dirroot . '/config.php');
             }
         }
+        */
 
         return true;
     }
@@ -255,7 +258,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
  * @return object bool True on sucess, false otherwise.
  */
 function moodle_load_config($file, $justroot = false) {
-    global $CFG, $CURMAN, $db;
+    global $CFG, $db;
 
     $return = false;
 
@@ -318,8 +321,8 @@ function moodle_load_config($file, $justroot = false) {
             $GLOBALS['CFG'] = $CFG;
             $GLOBALS['db']  = $db;
 
-            $this->_db = database_factory(CURMAN_APPPLATFORM);
-            $this->_db = database_factory('airtran');
+            //$this->_db = database_factory(CURMAN_APPPLATFORM);
+            //$this->_db = database_factory('airtran');
 
             $GLOBALS['CURMAN'] = $CURMAN;
 
@@ -353,12 +356,11 @@ function moodle_get_wwwroot($siteconfig = '') {
  * Return the 'fullname' for the specific Moodle site.
  *
  * @uses $CFG
- * @usrs $CURMAN
  * @param string $siteconfig The full system path to the config.php file (optional).
  * @return string The 'fullname' value for the site course.
  */
  function moodle_get_sitename($siteconfig = '') {
-    global $CFG, $CURMAN;
+    global $CFG, $DB;
 
     $sitename = '';
     $cfgbak   = $CFG->dirroot . '/config.php';
@@ -368,7 +370,7 @@ function moodle_get_wwwroot($siteconfig = '') {
         $CURMAN = $GLOBALS['CURMAN'];
     }
 
-    $sitename = $this->_db->get_field('course', 'fullname', 'id', SITEID);
+    $sitename = $DB->get_field('course', 'fullname', 'id', SITEID);
 
     if (!empty($siteconig)) {
         moodle_load_config($cfgbak);
@@ -382,12 +384,11 @@ function moodle_get_wwwroot($siteconfig = '') {
  * Return the top-level course category ID
  *
  * @uses $CFG
- * @uses $CURMAN
  * @param string $siteconfig The full system path to the config.php file (optional).
  * @return int The category ID.
  */
 function moodle_get_topcatid($siteconfig = '') {
-    global $CFG, $CURMAN;
+    global $CFG, $DB;
 
     $catid  = 0;
     $cfgbak = $CFG->dirroot . '/config.php';
@@ -397,7 +398,7 @@ function moodle_get_topcatid($siteconfig = '') {
         $CURMAN = $GLOBALS['CURMAN'];
     }
 
-    $catid = $this->_db->get_field('course_categories', 'id', 'parent', '0');
+    $catid = $DB->get_field('course_categories', 'id', 'parent', '0');
 
     if (!empty($siteconig)) {
         moodle_load_config($cfgbak);
@@ -410,7 +411,6 @@ function moodle_get_topcatid($siteconfig = '') {
 /**
  * Attach a class record from this system to an existing Moodle course.
  *
- * @uses $CURMAN
  * @param int    $clsid           The class ID.
  * @param int    $mdlid           The Moodle course ID.
  * @param string $siteconfig      The full system path to a Moodle congif.php file (defaults to local).
@@ -420,13 +420,13 @@ function moodle_get_topcatid($siteconfig = '') {
  */
 function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor = false,
                              $enrolstudent = false, $autocreate = false) {
-    global $CURMAN;
+    global $DB;
 
     $result = true;
     $moodlecourseid = $mdlid;
 
 /// Look for an existing link for this class.
-    if (!$clsmdl = $this->_db->get_record(classmoodlecourse::TABLE, 'classid', $clsid)) {
+    if (!$clsmdl = $DB->get_record(classmoodlecourse::TABLE, 'classid', $clsid)) {
     /// Make sure the specified Moodle site config file exists.
         if (!empty($siteconfig) && !file_exists($siteconfig)) {
             return false;
@@ -451,7 +451,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
             $restore->id = $moodlecourseid;
             $restore->fullname = addslashes($cls->course->name . '_' . $cls->idnumber);
             $restore->shortname = addslashes($cls->idnumber);
-            $this->_db->update_record('course', $restore);
+            $DB->update_record('course', $restore);
         }
 
         $newrec = array(
@@ -482,7 +482,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 }
 
 function moodle_get_classes() {
-    global $CFG;
+    global $CFG, $DB;
 
     $select = 'SELECT mc.* ';
     $from   = 'FROM {'.classmoodlecourse::TABLE.'} mc ';
@@ -490,7 +490,7 @@ function moodle_get_classes() {
     $where  = 'WHERE c.id IS NOT NULL ';
     $sql = $select.$from.$join.$where;
 
-    return $this->_db->get_records_sql($sql);
+    return $DB->get_records_sql($sql);
 }
 
 
@@ -501,6 +501,8 @@ function moodle_get_classes() {
  * @return int|bool The Moodle course ID or false on error.
  */
 function moodle_get_course($clsid) {
-    return $this->_db->get_field(classmoodlecourse::TABLE, 'moodlecourseid', 'classid', $clsid);
+    global $DB;
+
+    return $DB->get_field(classmoodlecourse::TABLE, 'moodlecourseid', 'classid', $clsid);
 }
 ?>
