@@ -37,6 +37,7 @@ $string['autocreate'] = 'Auto Create Moodle course from template';
 
 $string['browse'] = 'Browse';
 
+$string['class'] = 'Class';
 $string['classreportlinks'] = 'Reports';
 $string['class_assigntrackhead'] = 'Assigned Tracks';
 $string['class_attached_course'] = 'This class is already attached to the Moodle course';
@@ -161,6 +162,7 @@ $string['manage_user'] = 'Manage users';
 $string['moodlecourse'] = 'Moodle course';
 
 $string['no_completion_elements'] = 'There are no completion elements defined.';
+$string['no_items_matching'] = 'No items matching ';
 $string['no_moodlecourse'] = 'No Moodle courses on this site';
 $string['none'] = 'None';
 $string['notice_class_deleted'] = 'Deleted the class {$a->idnumber}';

@@ -29,6 +29,8 @@ require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('managementpage.class.php');
+require_once elispm::lib('contexts.php');
+
 
 /*
 require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
@@ -336,7 +338,7 @@ class pmclass extends data_object_with_custom_fields {
      * The logic is mostly copied/based on /course/enrol.php
      */
     public function is_enrollable() {
-        global $CURMAN, $CFG;
+        global $CFG;
         $courseid = $this->get_moodle_course_id();
         // no associated Moodle course, so we're always enrollable
         if ($courseid == 0) {
@@ -360,9 +362,13 @@ class pmclass extends data_object_with_custom_fields {
         if (!$enrol) {
             $enrol = $CFG->enrol;
         }
+
+        /*
         if ($CURMAN->config->restrict_to_elis_enrolment_plugin && $enrol != 'elis') {
             return false;
         }
+        */
+
         // check that the enrolment plugin allows manual enrolment
         require_once("$CFG->dirroot/enrol/enrol.class.php");
         $enrol = enrolment_factory::factory($course->enrol);
@@ -386,8 +392,6 @@ class pmclass extends data_object_with_custom_fields {
      * @param array The class grades
      */
     function update_all_class_grades($classgrades = array()) {
-        global $CURMAN;
-
         if (isset($this->course) && (get_class($this->course) == 'course')) {
             $elements = $this->course->get_completion_elements();
         } else {
@@ -528,12 +532,11 @@ class pmclass extends data_object_with_custom_fields {
 /////////////////////////////////////////////////////////////////////
 
     public static function get_default() {
-        global $CURMAN;
-
         $default_values = array();
         $prefix = self::$config_default_prefix;
         $prefixlen = strlen($prefix);
 
+        /*
         foreach ($CURMAN->config as $key => $data) {
 
           if (false !== strpos($key, $prefix)) {
@@ -543,6 +546,7 @@ class pmclass extends data_object_with_custom_fields {
               $default_values[$index] = $data;
           }
         }
+        */
 
         return $default_values;
     }
@@ -553,9 +557,10 @@ class pmclass extends data_object_with_custom_fields {
      * has not been met in the defined timeframe.
      */
     public static function check_for_nags() {
-        global $CFG, $CURMAN;
+        global $CFG;
         $result = true;
 
+        /*
         $sendtouser = $CURMAN->config->notify_classnotstarted_user;
         $sendtorole = $CURMAN->config->notify_classnotstarted_role;
         if ($sendtouser || $sendtorole) {
@@ -567,12 +572,13 @@ class pmclass extends data_object_with_custom_fields {
         if ($sendtouser || $sendtorole) {
             $result = self::check_for_nags_notcompleted() && $result;
         }
+        */
 
         return $result;
     }
 
     public static function check_for_nags_notstarted() {
-        global $CFG, $CURMAN;
+        global $CFG;
 
         /// Unstarted classes:
         /// A class is unstarted if
@@ -586,7 +592,9 @@ class pmclass extends data_object_with_custom_fields {
     /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
 
         $timenow = time();
-        $timedelta = $CURMAN->config->notify_classnotstarted_days * 60*60*24;
+        //$timedelta = $CURMAN->config->notify_classnotstarted_days * 60*60*24;
+        $timedelta = 0;
+
         // If the student is enrolled prior to this time, then they have been
         // enrolled for at least [notify_classnotstarted_days] days
         $startdate = $timenow - $timedelta;
@@ -652,7 +660,7 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     public static function check_for_nags_notcompleted() {
-        global $CFG, $CURMAN;
+        global $CFG;
 
         /// Incomplete classes:
         /// A class is incomplete if
@@ -662,7 +670,9 @@ class pmclass extends data_object_with_custom_fields {
     /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
 
         $timenow = time();
-        $timedelta = $CURMAN->config->notify_classnotcompleted_days * 24*60*60;
+        //$timedelta = $CURMAN->config->notify_classnotcompleted_days * 24*60*60;
+        $timedelta = 0;
+
         // If the completion time is prior to this time, then it will complete
         // within [notify_classnotcompleted_days] days
         $enddate = $timenow + $timedelta;
@@ -1007,7 +1017,6 @@ class pmclass extends data_object_with_custom_fields {
      * object.
      */
     function duplicate($options=array()) {
-        global $CURMAN;
         $objs = array('errors' => array());
         if (isset($options['targetcluster'])) {
             $cluster = $options['targetcluster'];
@@ -1038,7 +1047,7 @@ class pmclass extends data_object_with_custom_fields {
         $cmc = $this->_db->get_record(CLSMDLTABLE, 'classid', $this->id);
         if ($cmc) {
             if ($cmc->autocreated == -1) {
-                $cmc->autocreated = $CURMAN->config->autocreated_unknown_is_yes;
+                //$cmc->autocreated = $CURMAN->config->autocreated_unknown_is_yes;
             }
             if (empty($options['moodlecourses']) || $options['moodlecourses'] == 'copyalways'
                 || ($options['moodlecourses'] == 'copyautocreated' && $cmc->autocreated)) {
@@ -1128,7 +1137,7 @@ class pmclass extends data_object_with_custom_fields {
 function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
                              $perpage = 0, $namesearch = '', $alpha = '', $id = 0, $onlyopen=false,
                              $contexts=null, $clusterid = 0, $extrafilters = array()) {
-    global $CFG, $USER;
+    global $CFG, $USER, $DB;
 
     //$LIKE = $this->_db->sql_compare();
     $LIKE = 'LIKE';
@@ -1183,7 +1192,11 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     }
 
     if ($contexts !== null) {
-        $where[] = $contexts->sql_filter_for_context_level('cls.id', 'class');
+        //$where[] = $contexts->sql_filter_for_context_level('cls.id', 'class');
+
+        // Why doesn't this work?
+        //$filter_object = $contexts->filter_for_context_level('cls.id', 'class');
+        //$where[] = $filter_object->get_sql();
     }
 
     if (!empty($where)) {
@@ -1203,18 +1216,18 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     }
 
     if (!empty($perpage)) {
-        if ($this->_db->_dbconnection->databaseType == 'postgres7') {
-            $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-        } else {
+        //if ($DB->_dbconnection->databaseType == 'postgres7') {
+        //    $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
+        //} else {
             $limit = 'LIMIT '.$startrec.', '.$perpage;
-        }
+        //}
     } else {
         $limit = '';
     }
 
     $sql = $select.$tables.$join.$where.$sort.$limit;
 
-    return $this->_db->get_records_sql($sql);
+    return $DB->get_records_sql($sql);
 }
 
 /**
@@ -1229,6 +1242,8 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
  * @return  int                          The number of records
  */
 function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen = false, $contexts = null, $clusterid = 0) {
+    global $DB;
+
     $select = 'SELECT COUNT(cls.id) ';
     $tables = 'FROM {'.pmclass::TABLE.'} cls ';
     $join   = 'LEFT JOIN {'.course::TABLE.'} crs ' .
@@ -1245,7 +1260,8 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
 
     $where  = array();
 
-    $LIKE = $this->_db->sql_compare();
+    //$LIKE = $this->_db->sql_compare();
+    $LIKE = 'LIKE';
 
     if (!empty($namesearch)) {
         $where[] = "((crs.name $LIKE '%$namesearch%') OR (cls.idnumber $LIKE '%$namesearch%'))";
@@ -1265,7 +1281,11 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
     }
 
     if ($contexts !== null) {
-        $where[] = $contexts->sql_filter_for_context_level('cls.id', 'class');
+        //$where[] = $contexts->sql_filter_for_context_level('cls.id', 'class');
+
+        // Why doesn't this work?
+        //$filter_object = $contexts->filter_for_context_level('cls.id', 'class');
+        //$where[] = $filter_object->get_sql();
     }
 
     if (!empty($where)) {
@@ -1276,11 +1296,12 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
 
     $sql = $select . $tables . $join . $where;
 
-    return $this->_db->count_records_sql($sql);
+    return $DB->count_records_sql($sql);
 }
 
 function pmclass_get_record_by_courseid($courseid) {
-    $records = $this->_db->get_records(pmclass::TABLE, 'courseid', $courseid);
+    global $DB;
+    $records = $DB->get_records(pmclass::TABLE, 'courseid', $courseid);
     return $records;
 }
 

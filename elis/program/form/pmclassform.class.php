@@ -32,7 +32,7 @@ MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/curriculu
 
 class pmclassform extends cmform {
     function definition() {
-        global $USER, $CFG, $CURMAN;
+        global $USER, $CFG;
 
         parent::definition();
 
@@ -131,6 +131,7 @@ class pmclassform extends cmform {
         $mform->addElement('date_selector', 'enddate', get_string('class_enddate', 'elis_program') . ':', array('optional'=>true));
 
         // They may very likely be a much better way of checking for this...
+        /*
         if (empty($obj->starttimehour) and empty($obj->starttimeminute)) {
             $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'checked', 'display_12h'=>$CURMAN->config->time_format_12h));
@@ -138,10 +139,12 @@ class pmclassform extends cmform {
             $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>$CURMAN->config->time_format_12h));
         }
+        */
 
         $mform->addHelpButton('starttime', 'pmclassform:class_starttime', 'elis_program');
 
         // Do the same thing for the endtime
+        /*
         if (empty($obj->endtimehour) and empty($obj->endtimeminute)) {
             $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'checked', 'display_12h'=>$CURMAN->config->time_format_12h));
@@ -149,6 +152,7 @@ class pmclassform extends cmform {
             $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>$CURMAN->config->time_format_12h));
         }
+        */
 
         $mform->addElement('text', 'maxstudents', get_string('class_maxstudents', 'elis_program') . ':');
         $mform->setType('maxstudents', PARAM_INT);

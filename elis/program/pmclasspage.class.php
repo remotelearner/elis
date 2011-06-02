@@ -332,6 +332,8 @@ class pmclasspage extends managementpage {
      * Prints the single-button form used to request the add action for a record type.
      */
     function print_add_button() {
+        global $OUTPUT;
+
         if (!$this->can_do('add')) {
             return;
         }
@@ -344,8 +346,9 @@ class pmclasspage extends managementpage {
         if ($parent) {
             $options['parent'] = $parent;
         }
-        // FIXME: change to language string
-        echo print_single_button('index.php', $options, get_string('add','elis_program').' ' . get_string($obj->get_verbose_name(),'elis_program'), 'get', '_self', true, get_string('add','elis_program').' ' . get_string($obj->get_verbose_name(),'elis_program'));
+
+        $button = new single_button(new moodle_url('index.php', $options), get_string('add_class','elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('add_class','elis_program'), 'id'=>''));
+        echo $OUTPUT->render($button);
         echo '</div>';
     }
 
@@ -372,9 +375,10 @@ class pmclasspage extends managementpage {
      * @param  object  $cm_entity  The CM entity added
      */
     function after_cm_entity_add($cm_entity) {
-        global $USER, $CURMAN;
+        global $USER;
 
         //make sure a valid role is set
+        /*
         if(!empty($CURMAN->config->default_class_role_id) && record_exists('role', 'id', $CURMAN->config->default_class_role_id)) {
 
             //get the context instance for capability checking
@@ -386,6 +390,7 @@ class pmclasspage extends managementpage {
                 role_assign($CURMAN->config->default_class_role_id, $USER->id, 0, $context_instance->id);
             }
         }
+        */
     }
 
     /**
