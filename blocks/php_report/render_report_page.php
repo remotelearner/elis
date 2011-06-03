@@ -27,12 +27,6 @@
 require_once('../../config.php');
 require_once($CFG->dirroot . '/blocks/php_report/lib/reportpage.class.php');
 
-//not using require_login here because permissions are determined
-//by the reports themselved
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
-
-$PAGE->set_url('/blocks/php_report/render_report_page.php');
-
 //display the page for the specific report
-$page = new report_page();
-$page->run();
+$PAGE = new report_page();
+$PAGE->run();

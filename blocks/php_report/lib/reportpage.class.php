@@ -41,18 +41,18 @@ if (!defined('REPORT_PAGE_NUM_RECORDS')) {
 class report_page extends elis_page {
 
     //shortname of contained report
-    var $report_shortname = '';
+    var $report = '';
     //actual contained report instance
     var $report_instance = FALSE;
     
     public function __construct($params = null) {
-        parent::__construct($params);
-        
         //URL parameter specifies the report instance
-        $this->report_shortname = $this->required_param('report');
+        $this->report = $this->required_param('report');
         
         //convert shortname to report instance
-        $this->report_instance = php_report::get_default_instance($this->report_shortname);
+        $this->report_instance = php_report::get_default_instance($this->report);
+
+        parent::__construct($params);
     }
     
     /**
@@ -87,14 +87,14 @@ class report_page extends elis_page {
     /**
      * Performs the default action (display the report specified by URL)
      */
-    function display_default() {
+    function display_default() {//print_object('in display_default');print_object($this->navbar);
         global $CFG;
         
         //name of class for specific report instance
-        $classname = $this->report_shortname . '_report';
+        $classname = $this->report . '_report';
         
         //initialize report block, to be dispalyed at 100% width
-        $reportblock = new php_report_block($this->report_shortname, TRUE, $this->report_instance->get_display_name(),
+        $reportblock = new php_report_block($this->report, TRUE, $this->report_instance->get_display_name(),
                                             0, REPORT_PAGE_NUM_RECORDS, $classname, '100%');
         
         //import necessary CSS
@@ -116,34 +116,24 @@ class report_page extends elis_page {
         echo "
         <script>
           my_handler = new associate_link_handler('{$CFG->wwwroot}/blocks/php_report/dynamicreport.php',
-                                                  'php_report_body_{$this->report_shortname}');
+                                                  'php_report_body_{$this->report}');
         </script>";
         
     }
     
-    /**
-     * Specified this page's navlinks
-     * 
-     * @return  array  The navlinks, in the format expected by build_navigation
-     */
-    function get_navigation_default() {
-        $navlinks = array();
-        $navlinks[] = array('name' => $this->report_instance->get_display_name(),
-                            'link' => null,
-                            'type' => 'misc');
-        return $navlinks;
+    function build_navbar_default() {
+        global $CFG;
+        parent::build_navbar_default();
+
+        $this->navbar->add($this->report_instance->get_display_name(), null);
     }
 
-    function get_title() {
+    function get_page_title() {
         return $this->report_instance->get_display_name();
     }
 
-    /**
-     * Return the URL for the base page.
-     */
-    public function get_base_url() {
-        global $CFG;
-        return $CFG->wwwroot . '/blocks/php_report/render_report_page.php';
+    protected function _get_page_params() {
+        return array('report' => $this->report) + parent::_get_page_params();
     }
 }
 
