@@ -87,8 +87,8 @@ class report_page extends elis_page {
     /**
      * Performs the default action (display the report specified by URL)
      */
-    function display_default() {//print_object('in display_default');print_object($this->navbar);
-        global $CFG;
+    function display_default() {
+        global $CFG, $PAGE;
         
         //name of class for specific report instance
         $classname = $this->report . '_report';
@@ -105,20 +105,18 @@ class report_page extends elis_page {
         echo $reportblock->display();
         
         //needed for AJAX calls
-        require_js(array('yui_yahoo',
-                         'yui_dom',
-                         'yui_event',
-                         'yui_connection',
-                         "{$CFG->wwwroot}/elis/core/js/associate.class.js",
-                         "{$CFG->wwwroot}/blocks/php_report/throbber.php"));
+        $PAGE->requires->yui2_lib(array('yahoo',
+                                        'dom',
+                                        'event',
+                                        'connection'));
+
+        $PAGE->requires->js('/elis/core/js/associate.class.js');
+        $PAGE->requires->js('/blocks/php_report/throbber.php');
         
         //set up JS work to contain dynamic output in the report div
-        echo "
-        <script>
-          my_handler = new associate_link_handler('{$CFG->wwwroot}/blocks/php_report/dynamicreport.php',
-                                                  'php_report_body_{$this->report}');
-        </script>";
-        
+        $init_code = "my_handler = new associate_link_handler('{$CFG->wwwroot}/blocks/php_report/dynamicreport.php',
+                                                              'php_report_body_{$this->report}')";
+        $PAGE->requires->js_init_code($init_code);
     }
     
     function build_navbar_default() {

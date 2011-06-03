@@ -122,16 +122,16 @@ class php_report_block {
      * @return  string  The desired output
      */
     function display() {
-        global $CFG, $SESSION, $USER;
+        global $CFG, $SESSION, $USER, $PAGE;
 
         $this->initialize();
 
         //these JS files are needed for async reporting requests
-        require_js($CFG->wwwroot . '/blocks/php_report/reportblock.js');
-        require_js(array('yui_yahoo',
-                         'yui_dom',
-                         'yui_event',
-                         'yui_connection'));
+        $PAGE->requires->js('/blocks/php_report/reportblock.js');
+        $PAGE->requires->yui2_lib(array('yahoo',
+                                        'dom',
+                                        'event',
+                                        'connection'));
 
         $output = '';
 
