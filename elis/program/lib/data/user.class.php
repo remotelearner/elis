@@ -55,27 +55,27 @@ class user extends data_object_with_custom_fields {
     static $associations = array(
         'classenrolments' => array(
             'class' => 'student',
-            'foreignkey' => 'userid'
+            'foreignidfield' => 'userid'
         ),
         'waitlist' => array(
             'class' => 'waitlist',
-            'foreignkey' => 'userid'
+            'foreignidfield' => 'userid'
         ),
         'classestaught' => array(
             'class' => 'instructor',
-            'foreignkey' => 'userid'
+            'foreignidfield' => 'userid'
         ),
         'clusterassignments' => array(
             'class' => 'usercluster',
-            'foreignkey' => 'userid'
+            'foreignidfield' => 'userid'
         ),
         'programassignments' => array(
             'class' => 'curriculumstudent',
-            'foreignkey' => 'userid'
+            'foreignidfield' => 'userid'
         ),
         'trackassignments' => array(
             'class' => 'usertrack',
-            'foreignkey' => 'userid'
+            'foreignidfield' => 'userid'
         ),
     );
 
@@ -162,13 +162,13 @@ class user extends data_object_with_custom_fields {
             // delete associated data
             require_once elis::lib('data/data_filter.class.php');
             $filter = new field_filter('userid', $this->id);
-            curriculumstudent::delete_records($filter, $this->_db);
-            instructor::delete_reconds($filter, $this->_db);
-            student::delete_records($filter, $this->_db);
-            student_grade::delete_records($filter, $this->_db);
-            usertrack::delete_records($filter, $this->_db);
-            usercluster::delete_records($filter, $this->_db);
-            waitlist::delete_records($filter, $this->_db);
+            //programstudent::delete_records($filter, $this->_db);
+            //instructor::delete_reconds($filter, $this->_db);
+            //student::delete_records($filter, $this->_db);
+            //student_grade::delete_records($filter, $this->_db);
+            //usertrack::delete_records($filter, $this->_db);
+            //usersetassignment::delete_records($filter, $this->_db);
+            //waitlist::delete_records($filter, $this->_db);
 
             $level = context_level_base::get_custom_context_level('user', 'elis_program');
             delete_context($level,$this->id);
