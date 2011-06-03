@@ -29,6 +29,7 @@ $string['add_class'] = 'Add Class';
 $string['add_course'] = 'Add Course';
 $string['add_pmclass'] = 'Add Class';
 $string['add_user'] = 'Add user';
+$string['added_to_waitlist_message'] = 'you have been added to the waitlist for class {$a->idnumber}';
 $string['adding_completion_element'] = 'Adding Completion Element';
 $string['address'] = 'Address';
 $string['address2'] = 'Address 2';
@@ -158,8 +159,13 @@ $string['male'] = 'Male';
 $string['manage_class'] = 'Manage Classes';
 $string['manage_course'] = 'Manage Courses';
 $string['manage_pmclass'] = 'Manage Classes';
+$string['manage_student'] = 'Manage Students';
 $string['manage_user'] = 'Manage users';
 $string['moodlecourse'] = 'Moodle course';
+
+$string['moodleenrol'] = 'You have been removed from the waiting list for class {$a->class->idnumber}.
+Please visit {$a->wwwroot}/course/enrol.php?id={$a->crs->id} to complete your enrolment.';
+$string['moodleenrol_subj'] = 'Ready to enrol in {$a->class->idnumber}.';
 
 $string['no_completion_elements'] = 'There are no completion elements defined.';
 $string['no_items_matching'] = 'No items matching ';
@@ -170,6 +176,7 @@ $string['notice_course_deleted'] = 'Deleted the course named {$a->name} (ID numb
 $string['notice_pmclass_deleted'] = 'Deleted the class {$a->idnumber}';
 $string['notifycourserecurrencemessagedef'] = "%%%%userenrolname%%%% is due to re-take the course %%%%coursename%%%%.";
 $string['nouser'] = 'No user found for specified user id.';
+$string['nowenroled'] = 'You have been removed from the waiting list and placed in class {$a->idnum}.';
 $string['num_class_found'] = '{$a} class(es) found';
 $string['num_course_found'] = '{$a} course(s) found';
 $string['num_pmclass_found'] = '{$a} class(es) found';
@@ -221,5 +228,6 @@ $string['useridnumber_help'] = 'An id number is a unique value used to identify 
 It also serves as way to tie Curriculum Management users to Moodle users.';
 
 $string['waiting'] = 'Waiting';
+$string['waitlist'] = 'waitlist';
 $string['waitlistenrol'] = 'Auto enrol from waitlist';
 
