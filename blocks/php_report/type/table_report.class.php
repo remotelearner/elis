@@ -1110,7 +1110,7 @@ abstract class table_report extends php_report {
      * @return  string           HTML output for display.
      */
     function print_header($id = 0) {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         $output = '';
 
@@ -1125,9 +1125,10 @@ abstract class table_report extends php_report {
             $effective_url = $this->baseurl;
         }
 
-        $output .= print_paging_bar($this->numrecs, $this->page, $this->perpage,
-                                    "{$effective_url}&amp;sort={$this->sort}&amp;dir={$this->dir}&amp;" .
-                                    "perpage={$this->perpage}" . $args . "&amp;", 'page', false, true);
+        $effective_url = "{$effective_url}&amp;sort={$this->sort}&amp;dir={$this->dir}&amp;" .
+                         "perpage={$this->perpage}";
+        $pagingbar = new paging_bar($this->numrecs, $this->page, $this->perpage, $effective_url);
+        echo $OUTPUT->render($pagingbar);
 
         //show available and active filters, if applicable
         echo $this->get_interactive_filter_display();
@@ -1143,7 +1144,7 @@ abstract class table_report extends php_report {
      * @return  string      HTML output for display.
      */
     function print_footer($id = 0) {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         $args = '';
         $output = '';
@@ -1154,9 +1155,10 @@ abstract class table_report extends php_report {
             $effective_url = $this->baseurl;
         }
 
-        $output .= print_paging_bar($this->numrecs, $this->page, $this->perpage,
-                                    "{$effective_url}&amp;sort={$this->sort}&amp;dir={$this->dir}&amp;" .
-                                    "perpage={$this->perpage}" . $args . "&amp;", 'page', false, true);
+        $effective_url = "{$effective_url}&amp;sort={$this->sort}&amp;dir={$this->dir}&amp;" .
+                         "perpage={$this->perpage}";
+        $pagingbar = new paging_bar($this->numrecs, $this->page, $this->perpage, $effective_url);
+        echo $OUTPUT->render($pagingbar);
 
         return $output;
     }
