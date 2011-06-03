@@ -109,7 +109,7 @@ class report_page extends elis_page {
                          'yui_dom',
                          'yui_event',
                          'yui_connection',
-                         "{$CFG->wwwroot}/curriculum/js/associate.class.js",
+                         "{$CFG->wwwroot}/elis/core/js/associate.class.js",
                          "{$CFG->wwwroot}/blocks/php_report/throbber.php"));
         
         //set up JS work to contain dynamic output in the report div
