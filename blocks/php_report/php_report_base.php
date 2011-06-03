@@ -351,7 +351,7 @@ abstract class php_report {
      * @return  string  The HTML content of the config header
      */
     function get_config_header() {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         require_once($CFG->libdir.'/filelib.php');
 
@@ -396,7 +396,7 @@ abstract class php_report {
             $alt_text = get_string('config_params', 'block_php_report');
             $config_params_url = $CFG->wwwroot . '/blocks/php_report/config_params.php?id=' . $this->id;
             $result .= '<a href="' . $config_params_url . '">' .
-                       '<img src="' . $CFG->wwwroot . '/blocks/php_report/pix/configuration.png" border="0" width="16" height="16" ' .
+                       '<img src="' . $OUTPUT->pix_url('configuration', 'block_php_report') . '" border="0" width="16" height="16" ' .
                        'alt="' . $alt_text . '" title="' . $alt_text . '">' .
                        '</a>&nbsp;&nbsp;';
         }
@@ -410,9 +410,9 @@ abstract class php_report {
                 $alt_text = get_string('export_link_' . $allowable_export_format, 'block_php_report');
                 // add hatch character at end of url to force loading in a new page (checked in associate.class.js)
                 $export_url = $CFG->wwwroot . '/blocks/php_report/download.php?id=' . $this->id . '&format=' . $allowable_export_format . '#';
-                $icon = mimeinfo('icon', "foo.$allowable_export_format");
+                $icon = 'f/' . mimeinfo('icon', "foo.$allowable_export_format");
                 $result .= '<a href="' . $export_url . '">' .
-                           '<img src="' . $CFG->pixpath . '/f/' . $icon . '" border="0" width="16" height="16" ' .
+                           '<img src="' . $OUTPUT->pix_url($icon) . '" border="0" width="16" height="16" ' .
                            'alt="' . $alt_text . '" title="' . $alt_text . '">' .
                            '</a>&nbsp;&nbsp;';
             }
@@ -430,7 +430,7 @@ abstract class php_report {
                         get_string('schedule_this_report', 'block_php_report') .
                         '&nbsp;
                         <a href="#" onclick="openpopup(\'' . $schedule_report_url . '\', \'php_report_param_popup\', \'menubar=0,location=0,scrollbars,status,resizable,width=1600,height=600\')">
-                        <img src="' . $CFG->wwwroot . '/blocks/php_report/pix/schedule.png"/>
+                        <img src="' . $OUTPUT->pix_url('schedule', 'block_php_report') . '"/>
                         </a>
                         </span>';
         }

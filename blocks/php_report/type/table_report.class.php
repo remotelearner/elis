@@ -537,7 +537,7 @@ abstract class table_report extends php_report {
      * Generate report headers
      */
     function generate_column_headers() {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         foreach ($this->headers as $column => $header) {
 
@@ -561,8 +561,8 @@ abstract class table_report extends php_report {
                     $columndir = "ASC";
                 } else {
                     $columndir  = $this->dir == "ASC" ? "DESC":"ASC";
-                    $columnicon = $this->dir == "ASC" ? "down":"up";
-                    $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
+                    $columnicon = $this->dir == "ASC" ? "t/down":"t/up";
+                    $columnicon = " <img src=\"".$OUTPUT->pix_url($columnicon)."'\" alt=\"\" />";
                 }
                 $args = '&amp;sort=' . $column . '&amp;dir=' . $columndir;
                 $column_text = '<a href="' . $this->effective_url . $args . '">' . $header . '</a>' . $columnicon;
