@@ -172,12 +172,12 @@ class cm_context_set {
     function _filter_for_track($idfieldname) {
         $where = array();
         if (isset($this->contexts['track'])) {
-            $where[] = new select_filter("$idfieldname IN (".implode(',',$this->contexts['track']).')');
+            $where[] = new in_list_filter($idfieldname, $this->contexts['track']);
         }
         if (isset($this->contexts['curriculum'])) {
             // yuck
-            $where[] = new select_filter("$idfieldname IN (SELECT id FROM {crlm_track}
-                                                            WHERE curid IN (".implode(',',$this->contexts['curriculum']).'))');
+            $where[] = new join_filter($idfieldname, track::TABLE, 'id',
+                                       new in_list_filter('curid', $this->contexts['curriculum']));
         }
         return $where;
     }
@@ -185,11 +185,12 @@ class cm_context_set {
     function _filter_for_course($idfieldname) {
         $where = array();
         if (isset($this->contexts['course'])) {
-            $where[] = new select_filter("$idfieldname IN (".implode(',',$this->contexts['course']).')');
+            $where[] = new in_list_filter($idfieldname, $this->contexts['course']);
         }
         if (isset($this->contexts['curriculum'])) {
-            $where[] = new select_filter("$idfieldname IN (SELECT courseid FROM crlm_curriculum_course}
-                                                            WHERE curriculumid IN (".implode(',',$this->contexts['curriculum']).'))');
+            $where[] = new join_filter($idfieldname, programcourse::TABLE, 'courseid',
+                                       new in_list_filter('curriculumid', $this->contexts['curriculum']),
+                                       false, false);
         }
         return $where;
     }
@@ -197,29 +198,17 @@ class cm_context_set {
     function _filter_for_class($idfieldname) {
         $where = array();
         if (isset($this->contexts['class'])) {
-            $where[] = new select_filter("$idfieldname IN (".implode(',',$this->contexts['class']).')');
+            $where[] = new in_list_filter($idfieldname, $this->contexts['class']);
         }
-        if (isset($this->contexts['course'])) {
+        if (isset($this->contexts['course']) || isset($this->contexts['curriculum'])) {
             // yuck
-            $where[] = new select_filter("$idfieldname IN (SELECT id FROM {crlm_class}
-                                                            WHERE courseid IN (".implode(',',$this->contexts['course']).'))');
+            $where[] = new join_filter($idfieldname, pmclass::TABLE, 'id',
+                                       $this->get_filter('courseid', 'course'));
         }
-        if (isset($this->contexts['track'])) {
-            $where[] = new select_filter("$idfieldname IN (SELECT classid FROM {crlm_track_class}
-                                                            WHERE trackid IN (".implode(',',$this->contexts['track']).'))');
-        }
-        if (isset($this->contexts['curriculum'])) {
-            // return classes that belong to tracks in the curriculum, or
-            // classes that belong to courses in the curriculum
-            $where[] = new elect_filter("$idfieldname IN (SELECT trkcls.classid
-                                                            FROM {crlm_track_class} trkcls
-                                                            JOIN {crlm_track} trk ON trk.id = trkcls.trackid
-                                                           WHERE trk.curid IN (".implode(',',$this->contexts['curriculum']).'))');
-
-            $where[] = new select_filter("$idfieldname IN (SELECT cls.id
-                                                             FROM {crlm_curriculum_course} cls
-                                                             JOIN {crlm_curriculum_course} curcrs ON curcrs.courseid = cls.courseid
-                                                            WHERE curcrs.curriculumid IN (".implode(',',$this->contexts['curriculum']).'))');
+        if (isset($this->contexts['track']) || isset($this->contexts['curriculum'])) {
+            $where[] = new join_filter($idfieldname, trackclass::TABLE, 'classid',
+                                       $this>get_filter('trackid', 'track'),
+                                       false, false);
         }
         return $where;
     }
@@ -227,15 +216,15 @@ class cm_context_set {
     function _filter_for_cluster($idfieldname) {
         $where = array();
         if (isset($this->contexts['cluster'])) {
-            $where[] = new select_filter("$idfieldname IN (".implode(',',$this->contexts['cluster']).')');
+            $where[] = new in_list_filter($idfieldname, $this->contexts['cluster']);
             $ctxlvl = context_level_base::get_custom_context_level('cluster', 'elis_program');
             // cross fingers and hope that the user doesn't have too many clusters
             foreach ($this->contexts['cluster'] as $cluster) {
                 $context = get_context_instance($ctxlvl, $cluster);
                 $pattern = $context->path . '/%';
-                $where[] = new select_filter("$idfieldname IN (SELECT ctx.instanceid FROM {context} ctx
-                                                                WHERE ctx.path LIKE '{$pattern}'
-                                                                  AND ctx.contextlevel = {$ctxlvl})");
+                $where[] = new join_filter($idfieldname, 'context', 'instanceid',
+                                           new AND_filter(new field_filter('path', $pattern, field_filter::LIKE),
+                                                          new field_filter('contextlevel', $ctxlvl)));
             }
         }
         return $where;
@@ -244,23 +233,12 @@ class cm_context_set {
     function _filter_for_user($idfieldname) {
         $where = array();
         if (isset($this->contexts['user'])) {
-            $where[] = new select_filter("$idfieldname IN (".implode(',',$this->contexts['user']).')');
+            $where[] = new in_list_filter($idfieldname, $this->contexts['user']);
         }
         if (isset($this->contexts['cluster'])) {
-            $where[] = new select_filter("$idfieldname IN (SELECT userid FROM {crlm_usercluster}
-                                                            WHERE clusterid IN (".implode(',',$this->contexts['cluster']).'))');
-            $ctxlvl = context_level_base::get_custom_context_level('cluster', 'elis_program');
-            // cross fingers and hope that the user doesn't have too many clusters
-            foreach ($this->contexts['cluster'] as $cluster) {
-                $context = get_context_instance($ctxlvl, $cluster);
-                $pattern = $context->path . '/%';
-                $where[] = new select_filter("$idfieldname IN (SELECT userid
-                                                                 FROM {crlm_usercluster}
-                                                                WHERE clusterid IN (SELECT ctx.instanceid
-                                                                                     FROM {context} ctx
-                                                                                    WHERE ctx.path LIKE '{$pattern}'
-                                                                                      AND ctx.contextlevel = {$ctxlvl}))");
-            }
+            $where[] = new join_filter($idfieldname, usercluster::TABLE, 'userid',
+                                       $this->get_filter('clusterid', 'cluster'),
+                                       false, false);
         }
         return $where;
     }
