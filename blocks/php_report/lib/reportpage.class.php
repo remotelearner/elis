@@ -111,7 +111,7 @@ class report_page extends elis_page {
                                         'connection'));
 
         $PAGE->requires->js('/elis/core/js/associate.class.js');
-        $PAGE->requires->js('/blocks/php_report/throbber.php');
+        $PAGE->requires->js('/blocks/php_report/js/throbber.php');
         
         //set up JS work to contain dynamic output in the report div
         $init_code = "my_handler = new associate_link_handler('{$CFG->wwwroot}/blocks/php_report/dynamicreport.php',
