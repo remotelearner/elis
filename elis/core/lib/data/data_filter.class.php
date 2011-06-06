@@ -148,6 +148,7 @@ class OR_filter extends data_filter {
     }
 
     public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+        $filters = $this->filters;
         if (count($filters) == 0) {
             // no filters -- return nothing
             return array();
