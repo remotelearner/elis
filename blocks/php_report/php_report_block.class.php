@@ -141,16 +141,13 @@ class php_report_block {
         require_once($CFG->dirroot . '/blocks/php_report/instances/' . $folder_name . '/' . $this->classname . '.class.php');
         $test_instance = new $this->classname($this->id);
 
-        $style_tag = '';
-
-        if(!empty($this->reportwidth)) {
-            $style_tag = 'style="width: ' . $this->reportwidth . 'px"';
-        }
-
-        $output .= '<div id="php_report_block" class="php_report_block" ' . $style_tag . '>';
+        $output .= html_writer::start_tag('div', array('id'    => 'php_report_block',
+                                                       'class' => 'php_report_block',
+                                                       'style' => "width: {$this->reportwidth}px"));
 
         //div for containing report body
-        $output .= '<div class="php_report_body" id="php_report_body_' . $this->id . '">';
+        $output .= html_writer::start_tag('div', array('id'    => 'php_report_body_'.$this->id,
+                                                       'class' => 'php_report_body'));
 
         /**
          * Reset the state if the user has changed
@@ -172,9 +169,9 @@ class php_report_block {
             $SESSION->php_reports[$this->id]->loaded = true;
         }
 
-        $output .= '</div>';
+        $output .= html_writer::end_tag('div');
 
-        $output .= '</div>';
+        $output .= html_writer::end_tag('div');
 
         return $output;
     }
