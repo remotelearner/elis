@@ -127,7 +127,7 @@ class php_report_block {
         $this->initialize();
 
         //these JS files are needed for async reporting requests
-        $PAGE->requires->js('/blocks/php_report/reportblock.js');
+        $PAGE->requires->js('/blocks/php_report/js/reportblock.js');
         $PAGE->requires->yui2_lib(array('yahoo',
                                         'dom',
                                         'event',
