@@ -78,11 +78,43 @@ class elis {
     public static function lib($file) {
         return self::file("core/lib/{$file}");
     }
+
+    public static $config;
+}
+
+class elis_config {
+    private $configs = array();
+
+    public function &__get($name) {
+        global $DB;
+        if (!isset($this->configs[$name])) {
+            $config = new stdClass;
+
+            // load the defaults
+            $defaults = array();
+            include(elis::plugin_file($name, 'defaults.php'));
+            foreach ($defaults as $key => $value) {
+                $config->$key = $value;
+            }
+
+            $configrecs = $DB->get_records('config_plugins', array('plugin' => $name));
+
+            foreach ($configrecs as $rec) {
+                $key = $rec->name;
+                $config->$key = $rec->value;
+            }
+
+            $this->configs[$name] = $config;
+        }
+        return $this->configs[$name];
+    }
 }
 
 global $CFG;
 elis::$basedir = "{$CFG->dirroot}/elis";
 elis::$libdir = elis::file('core/lib');
+
+elis::$config = new elis_config();
 
 {
     $plugin = new stdClass;
