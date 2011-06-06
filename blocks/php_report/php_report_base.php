@@ -629,8 +629,11 @@ abstract class php_report {
         $report_instance->require_dependencies();
         //initialize all necessary data
         $report_instance->init_all($shortname, $parameter_data);
-        //run the export
-        $report_instance->download($format, $report_instance->get_complete_sql_query(FALSE), $filename);
+
+        //calculate the query and all necessary parameter values
+        list($sql, $params) = $report_instance->get_complete_sql_query(FALSE);
+        //run the report
+        $report_instance->download($format, $sql, $params, $filename);
 
         return true;
     }

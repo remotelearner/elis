@@ -52,6 +52,10 @@ if (isset($SESSION->php_reports[$id])) {
         //make sure we have enough resources to export our report
         php_report::allocate_extra_resources();
 
-        $report->download($format, $report->get_complete_sql_query(false));
+        //obtain the query and parameter values
+        list($sql, $params) = $report->get_complete_sql_query(false);
+
+        //run the query and export the results
+        $report->download($format, $sql, $params);
     }
 }

@@ -189,11 +189,12 @@ class php_report_export_csv extends php_report_export {
      * Export a report in this format
      *
      * @param  string  $query         Final form of the main report query
+     * @param  string  $params        SQL query params
      * @param  string  $storage_path  Path on the file system to save the output to,
      *                                or NULL if sending to browser
      * @param  $filename              Filename to use when sending to browser
      */
-    function export($query, $storage_path, $filename) {
+    function export($query, $params, $storage_path, $filename) {
         global $DB;
 
         $init = false;
@@ -218,7 +219,7 @@ class php_report_export_csv extends php_report_export {
         $grouping_object = $this->report->initialize_groupings();
 
         //iterate through the result records
-        if ($recordset = $DB->get_recordset_sql($query)) {
+        if ($recordset = $DB->get_recordset_sql($query, $params)) {
             foreach ($recordset as $datum) {
                 if (!is_object($datum)) {
                     continue;

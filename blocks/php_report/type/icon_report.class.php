@@ -134,16 +134,17 @@ abstract class icon_report extends php_report {
      * @param   boolean  $use_filters  Flag that can be updated to prevent use of filters
      *                                 for this field
      *
-     * @return  mixed                  SQL string, of FALSE if not implemented by subclass
+     * @return  array                  SQL string, of FALSE if not implemented by subclass,
+     *                                 and applicable query filter data
      */
     function get_data_item_sql($key, &$use_filters) {
         $function_name = 'get_' . $key . '_sql';
 
         if (method_exists($this, $function_name)) {
-            $sql = $this->$function_name($use_filters);
-            return $sql;
+            list($sql, $params) = $this->$function_name($use_filters);
+            return array($sql, $params);
         } else {
-            return FALSE;
+            return array(false, array());
         }
     }
 
@@ -169,7 +170,7 @@ abstract class icon_report extends php_report {
                 //backup plan - use SQL query to get the item value
 
                 $use_filters = true;
-                $sql = $this->get_data_item_sql($key, $use_filters);
+                list($sql, $params) = $this->get_data_item_sql($key, $use_filters);
 
                 if ($sql !== FALSE) {
                     //parse SQL for a WHERE clause
@@ -184,14 +185,15 @@ abstract class icon_report extends php_report {
 
                     //apply filters if applicable
                     if(!empty($this->filter) && !empty($use_filters)) {
-                        $sql_filter = $this->filter->get_sql_filter('', $this->get_filter_exceptions($key), $this->allow_interactive_filters(), $this->allow_configured_filters());
-                        if(!empty($sql_filter)) {
-                            $sql .= " {$conditional_symbol} ({$sql_filter})";
+                        list($additional_sql, $additional_params) = $this->filter->get_sql_filter('', $this->get_filter_exceptions($key), $this->allow_interactive_filters(), $this->allow_configured_filters());
+                        if(!empty($additional_sql)) {
+                            $sql .= " {$conditional_symbol} ({$additional_sql})";
+                            $params = array_merge($params, $additional_params);
                         }
                     }
 
                     //obtain field value
-                    if ($field_data = $DB->get_field_sql($sql)) {
+                    if ($field_data = $DB->get_field_sql($sql, $params)) {
                         $this->data[$key]->value = $field_data;
                     }
                 }

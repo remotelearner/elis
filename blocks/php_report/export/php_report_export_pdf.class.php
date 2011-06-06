@@ -149,19 +149,20 @@ class php_report_export_pdf extends php_report_export {
      *
      * @param  FPDF reference       $newpdf        A reference to the PDF being created
      * @param  string               $query         The main report query
+     * @param  array                $params        SQL query parameters
      * @param  int array reference  $widths        Current values for column widths
      * @param  int array reference  $heights       Current values for row heights
      * @param  boolean reference    $found_record  Set to TRUE if report has at least one row of data
      * @param  int array reference  $min_widths    Update with minimum column widths based on longest token
      */
-    protected function update_pdf_column_sizes_from_data(&$newpdf, $query, &$widths, &$heights, &$found_record, &$min_widths) {
+    protected function update_pdf_column_sizes_from_data(&$newpdf, $query, $params, &$widths, &$heights, &$found_record, &$min_widths) {
         global $DB;
 
         $row = 0;
 
         //iterate through the results to calculate column widths,
         //using a recordset so we don't run out of memory
-        if ($recordset = $DB->get_recordset_sql($query)) {
+        if ($recordset = $DB->get_recordset_sql($query, $params)) {
             foreach ($recordset as $datum) {
                 $found_record = true;
 
@@ -639,12 +640,13 @@ class php_report_export_pdf extends php_report_export {
      *
      * @param   FPDF reference  $newpdf   The PDF object being created
      * @param   string          $query    The main report query
+     * @param   array           $params   SQL query params
      * @param   int array       $widths   Final mapping of column ids to pixel widths
      * @param   int array       $heights  Final mapping of rows to pixel heights
      *
      * @return  int                       Number of rows processed
      */
-    protected function render_pdf_core_data(&$newpdf, $query, $widths, $heights, &$need_columns_header) {
+    protected function render_pdf_core_data(&$newpdf, $query, $params, $widths, $heights, &$need_columns_header) {
         global $DB;
 
         $row = 0;
@@ -652,7 +654,7 @@ class php_report_export_pdf extends php_report_export {
         $grouping_object = $this->report->initialize_groupings();
 
         //iterate through the core report data
-        if ($recordset = $DB->get_recordset_sql($query)) {
+        if ($recordset = $DB->get_recordset_sql($query, $params)) {
 
             //need to track both so we can detect grouping changes
             $datum = $recordset->current();;
@@ -872,8 +874,9 @@ class php_report_export_pdf extends php_report_export {
      *
      * @param  FPDF reference  $newpdf   Reference to the PDF object being created
      * @param  string          $query    The main report query
+     * @param  array           $params   SQL query params
      */
-    protected function render_pdf_instance(&$newpdf, $query) {
+    protected function render_pdf_instance(&$newpdf, $query, $params) {
         //print the report name
         $this->render_report_name($newpdf);
 
@@ -892,7 +895,7 @@ class php_report_export_pdf extends php_report_export {
 
         //determine whether a record is found
         $found_record = false;
-        $row = $this->update_pdf_column_sizes_from_data($newpdf, $query, $widths, $heights, $found_record, $min_widths);
+        $row = $this->update_pdf_column_sizes_from_data($newpdf, $query, $params, $widths, $heights, $found_record, $min_widths);
 
         if (!$found_record) {
             //no data, so close out the pdf
@@ -933,7 +936,7 @@ class php_report_export_pdf extends php_report_export {
             $need_columns_header = true;
         }
 
-        $row = $this->render_pdf_core_data($newpdf, $query, $widths, $heights, $need_columns_header);
+        $row = $this->render_pdf_core_data($newpdf, $query, $params, $widths, $heights, $need_columns_header);
 
         if ($column_based_summary_row !== NULL) {
             //use the report-defined background colour
@@ -969,18 +972,19 @@ class php_report_export_pdf extends php_report_export {
      * Export a report in this format
      *
      * @param  string  $query         Final form of the main report query
+     * @param  array   $params        SQL query params
      * @param  string  $storage_path  Path on the file system to save the output to,
      *                                or NULL if sending to browser
      * @param  $filename              Filename to use when sending to browser
      */
-    function export($query, $storage_path, $filename) {
+    function export($query, $params, $storage_path, $filename) {
         global $CFG;
 
         $filename .= '.pdf';
 
         $newpdf = $this->initialize_pdf();
 
-        $this->render_pdf_instance($newpdf, $query);
+        $this->render_pdf_instance($newpdf, $query, $params);
 
         $this->output_pdf_file($newpdf, $storage_path, $filename);
     }

@@ -84,8 +84,8 @@ abstract class gas_gauge_table_report extends table_report {
      * @param   string  $sql         The SQL statement to be filtered
      * @param   string  $filter_key  The key that references the filter being applied
      *
-     * @return  string               The WHERE / AND clause performing the filtering, or
-     *                               an empty string if none
+     * @return  array                The WHERE / AND clause performing the filtering, or
+     *                               an empty string if none, as well as the applicable filter values
      */
     private function get_secondary_filter_clause($sql, $filter_key) {
         //calculate our conditional symbol / operator based on the existing query
@@ -99,13 +99,14 @@ abstract class gas_gauge_table_report extends table_report {
 
         //filtering
         if (!empty($this->filter)) {
-            $sql_filter = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(), $this->allow_configured_filters(), $filter_key);
+            //try to return the filter clause and parameter values
+            list($sql_filter, $params) = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(), $this->allow_configured_filters(), $filter_key);
             if(!empty($sql_filter)) {
-                return " {$conditional_symbol} ({$sql_filter})";
+                return array(" {$conditional_symbol} ({$sql_filter})", $params);
             }
         }
 
-        return '';
+        return array(null, array());
     }
 
     /* ------------------------------------------------------
@@ -123,14 +124,16 @@ abstract class gas_gauge_table_report extends table_report {
      *                   such that each different gas gauge should have a different key
      */
     function get_page_value($i) {
-        if ($sql = $this->get_page_value_sql($i)) {
+        list($sql, $params) = $this->get_page_value_sql($i);
+        if ($sql) {
             //apply page value SQL filter
-            $sql .= $this->get_secondary_filter_clause($sql, PHP_REPORT_SECONDARY_FILTERING_PAGE_VALUE);
+            list($additional_sql, $additional_params) = $this->get_secondary_filter_clause($sql, PHP_REPORT_SECONDARY_FILTERING_PAGE_VALUE);
+            $sql .= $additional_sql;
 
             $sql .= ' ' .$this->get_page_value_order_by();
 
             $offset = $this->get_page_value_offset($i);
-            return $this->get_field_sql($sql, $offset);
+            return $this->get_field_sql($sql, $params, $offset);
         }
 
         return NULL;
@@ -190,11 +193,14 @@ abstract class gas_gauge_table_report extends table_report {
      * @return  int  The total number of pages
      */
     function get_num_pages() {
-        if ($sql = $this->get_num_pages_sql()) {
+        list($sql, $params) = $this->get_num_pages_sql();
+        if ($sql) {
             //apply num pages SQL filter
-            $sql .= $this->get_secondary_filter_clause($sql, PHP_REPORT_SECONDARY_FILTERING_NUM_PAGES);
+            list($additional_sql, $additional_params) = $this->get_secondary_filter_clause($sql, PHP_REPORT_SECONDARY_FILTERING_NUM_PAGES);
+            $sql .= $additional_sql;
+            $params = array_merge($params, $additional_params);
 
-            return $this->get_field_sql($sql);
+            return $this->get_field_sql($sql, $params);
         }
 
         return 0;
@@ -235,10 +241,13 @@ abstract class gas_gauge_table_report extends table_report {
      * @return  int          The current value of the gas gauge
      */
     function get_gas_gauge_value($key) {
-        if ($sql = $this->get_gas_gauge_value_sql($key)) {
+        list($sql, $params) = $this->get_gas_gauge_value_sql($key); 
+        if ($sql) {
             //apply gas gauge value SQL filter
-            $sql .= $this->get_secondary_filter_clause($sql, PHP_REPORT_SECONDARY_FILTERING_GAS_GAUGE_VALUE);
-            return $this->get_field_sql($sql);
+            list($additional_sql, $additional_params) = $this->get_secondary_filter_clause($sql, PHP_REPORT_SECONDARY_FILTERING_GAS_GAUGE_VALUE);
+            $sql .= $additional_sql;
+            $params = array_merge($params, $additional_params);
+            return $this->get_field_sql($sql, $params);
         }
 
         return 0;
@@ -278,11 +287,14 @@ abstract class gas_gauge_table_report extends table_report {
      * @return  int          The maximum value of the gas gauge
      */
     function get_gas_gauge_max_value($key) {
-        if ($sql = $this->get_gas_gauge_max_value_sql($key)) {
+        list($sql, $params) = $this->get_gas_gauge_max_value_sql($key);
+        if ($sql) {
             //apply gas gauge max value SQL filter
-            $sql .= $this->get_secondary_filter_clause($sql, PHP_REPORT_SECONDARY_FILTERING_GAS_GAUGE_MAX_VALUE);
+            list($additional_sql, $additional_params) = $this->get_secondary_filter_clause($sql, PHP_REPORT_SECONDARY_FILTERING_GAS_GAUGE_MAX_VALUE);
 
-            return $this->get_field_sql($sql);
+            $sql .= $additional_sql;
+            $params = array_merge($params, $additional_params);
+            return $this->get_field_sql($sql, $params);
         }
 
         //use a sane default
@@ -332,38 +344,17 @@ abstract class gas_gauge_table_report extends table_report {
     function print_gas_gauge($id) {
         global $CFG;
 
-        $radius = 0;
-        //track whether config info was found
-        $radius_set = FALSE;
+        $radius = PHP_REPORT_GAS_GAUGE_MAXIMUM_WIDTH;
 
-        //get radius from the configured report width
-        if(!empty($id) and $block_instance = get_record('block_instance', 'id', $id)) {
-            $config_data = unserialize(base64_decode($block_instance->configdata));
-            if(!empty($config_data->reportwidth)) {
-                $radius = round($config_data->reportwidth / 2 * PHP_REPORT_GAS_GAUGE_RELATIVE_WIDTH);
-                $radius_set = TRUE;
-            }
-        }
+        //load up the color palette
+        $palette = $this->get_gas_gauge_color_palette();
 
-        if (!$radius_set) {
-            //no config info found, so use default size
-            $radius = PHP_REPORT_GAS_GAUGE_MAXIMUM_WIDTH;
-        }
-
-        if (!empty($radius)) {
-            //load up the color palette
-            $palette = $this->get_gas_gauge_color_palette();
-
-            //image tag points to a php script that uses the necessary measures are parameters
-            return '<img src="' . $CFG->wwwroot . '/blocks/php_report/gas_gauge_output.php?value=' . $this->gas_gauge_value .
-                                                                                         '&total=' . $this->gas_gauge_max_value .
-                                                                                         '&radius=' . $radius .
-                                                                                         '&palette=' . urlencode(base64_encode(serialize($palette))) .
-                                                                                         '" class="php_report_gas_gauge_image"/>';
-        } else {
-            //error, so don't display
-            return '';
-        }
+        //image tag points to a php script that uses the necessary measures are parameters
+        return '<img src="' . $CFG->wwwroot . '/blocks/php_report/gas_gauge_output.php?value=' . $this->gas_gauge_value .
+                                                                                     '&total=' . $this->gas_gauge_max_value .
+                                                                                     '&radius=' . $radius .
+                                                                                     '&palette=' . urlencode(base64_encode(serialize($palette))) .
+                                                                                     '" class="php_report_gas_gauge_image"/>';
     }
 
     /**
@@ -758,15 +749,16 @@ abstract class gas_gauge_table_report extends table_report {
      *
      * @param   string  $sql         an SQL statement expected to return a single value
      *                               (with a limit clause calculated depending on the database type).
+     * @param   array   $params      query parameters to apply
      * @param   int     $limitfrom   return a subset of records, starting at this point (optional).
      *
      * @return  mixed                the specified value, or false if an error occured.
      */
-    function get_field_sql($sql, $limitfrom = 0) {
+    function get_field_sql($sql, $params, $limitfrom = 0) {
         global $CFG, $DB;
 
         //use the optional starting point
-        if ($records = $DB->get_records_sql($sql, null, $limitfrom, 1)) {
+        if ($records = $DB->get_records_sql($sql, $params, $limitfrom, 1)) {
             foreach ($records as $record) {
                 $fields = (array)$record;
                 return reset($fields);
@@ -810,7 +802,7 @@ abstract class gas_gauge_table_report extends table_report {
             //End of RL edit
             if ($page > 0) {
                 $pagenum = $page - 1;
-                $alt_title = $this->get_field_sql($tooltip_sql, $pagenum);
+                $alt_title = $this->get_field_sql($tooltip_sql, array(), $pagenum);
                 if (!is_a($baseurl, 'moodle_url')){
                     $output .= '&nbsp;(<a class="previous" href="'. $baseurl . $pagevar .'='. $pagenum .'" alt="' . $alt_title . '" title="' . $alt_title . '">'. get_string('previous') .'</a>)&nbsp;';
                 } else {
@@ -823,7 +815,7 @@ abstract class gas_gauge_table_report extends table_report {
                 $lastpage = 1;
             }
             if ($page > 15) {
-                $alt_title = $this->get_field_sql($tooltip_sql, 0);
+                $alt_title = $this->get_field_sql($tooltip_sql, array(), 0);
                 $startpage = $page - 10;
                 if (!is_a($baseurl, 'moodle_url')){
                     $output .= '&nbsp;<a href="'. $baseurl . $pagevar .'=0" alt="' . $alt_title . '" title="' . $alt_title . '">1</a>&nbsp;...';
@@ -840,7 +832,7 @@ abstract class gas_gauge_table_report extends table_report {
                 if ($page == $currpage && empty($nocurr)) {
                     $output .= '&nbsp;&nbsp;'. $displaypage;
                 } else {
-                    $alt_title = $this->get_field_sql($tooltip_sql, $currpage);
+                    $alt_title = $this->get_field_sql($tooltip_sql, array(), $currpage);
                     if (!is_a($baseurl, 'moodle_url')){
                         $output .= '&nbsp;&nbsp;<a href="'. $baseurl . $pagevar .'='. $currpage .'" alt="' . $alt_title . '" title="' . $alt_title . '">'. $displaypage .'</a>';
                     } else {
@@ -852,7 +844,7 @@ abstract class gas_gauge_table_report extends table_report {
             }
             if ($currpage < $lastpage) {
                 $lastpageactual = $lastpage - 1;
-                $alt_title = $this->get_field_sql($tooltip_sql, $lastpageactual);
+                $alt_title = $this->get_field_sql($tooltip_sql, array(), $lastpageactual);
                 if (!is_a($baseurl, 'moodle_url')){
                     $output .= '&nbsp;...&nbsp;<a href="'. $baseurl . $pagevar .'='. $lastpageactual .'" alt="' . $alt_title . '" title="' . $alt_title . '">'. $lastpage .'</a>&nbsp;';
                 } else {
@@ -861,7 +853,7 @@ abstract class gas_gauge_table_report extends table_report {
             }
             $pagenum = $page + 1;
             if ($pagenum != $displaypage) {
-                $alt_title = $this->get_field_sql($tooltip_sql, $pagenum);
+                $alt_title = $this->get_field_sql($tooltip_sql, array(), $pagenum);
                 if (!is_a($baseurl, 'moodle_url')){
                     $output .= '&nbsp;&nbsp;(<a class="next" href="'. $baseurl . $pagevar .'='. $pagenum .'" alt="' . $alt_title . '" title="' . $alt_title . '">'. get_string('next') .'</a>)';
                 } else {

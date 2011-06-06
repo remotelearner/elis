@@ -555,8 +555,10 @@ class php_report_default_capable_filtering extends generalized_filtering {
 
     /**
      * Returns sql where statement based on active user filters
-     * @param string $extra sql
-     * @return string
+     *
+     * @param   string  $extra  additional sql to add
+     *
+     * @return  array           the sql fragment and parameters to apply
      */
     function get_sql_filter($extra='', $exceptions = array(), $allow_interactive_filters = false, $allow_configured_filters = true, $secondary_filtering_key = '') {
         global $SESSION;
@@ -581,7 +583,12 @@ class php_report_default_capable_filtering extends generalized_filtering {
 
         $per_filter_data = array();
 
+        //resulting query
+        $result = '';
+        //sql fragments
         $sqls = array();
+        //parameter values
+        $params = array();
 
         //obtain the pool of attributes to pull preferences from
         $per_filter_data = $this->get_preferences();
@@ -591,9 +598,11 @@ class php_report_default_capable_filtering extends generalized_filtering {
             if (isset($per_filter_data[$shortname])) {
                 $formatted_data = $field->check_data((object)$per_filter_data[$shortname]);
                 if ($formatted_data != false) {
-                    $newsql = $field->get_sql_filter($formatted_data);
-                    if ($newsql !== null) {
-                        $sqls[] = $newsql;
+                    //determine the additional sql fragment and parameters
+                    list($additional_sql, $additional_params) = $field->get_sql_filter($formatted_data);
+                    if ($additional_sql !== null) {
+                        $sqls[] = $additional_sql;
+                        $params = array_merge($params, $additional_params);
                     }
                 }
             }
@@ -609,7 +618,8 @@ class php_report_default_capable_filtering extends generalized_filtering {
             }
         }
 
-        return $result;
+        //return the sql fragment and parameters
+        return array($result, $params);
     }
 
     /**

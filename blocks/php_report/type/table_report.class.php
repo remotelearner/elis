@@ -1008,8 +1008,9 @@ abstract class table_report extends php_report {
      *
      * @param  string  $format  A valid format type.
      * @param  string  $query   The report query, with no limit clauses
+     * @param  array   $params  SQL query parameters
      */
-    function download($format, $query, $storage_path = NULL) {
+    function download($format, $query, $params, $storage_path = NULL) {
         global $CFG;
 
         $output = '';
@@ -1020,19 +1021,19 @@ abstract class table_report extends php_report {
             case php_report::$EXPORT_FORMAT_CSV:
                 require_once($CFG->dirroot . '/blocks/php_report/export/php_report_export_csv.class.php');
                 $export = new php_report_export_csv($this);
-                $export->export($query, $storage_path, $filename);
+                $export->export($query, $params, $storage_path, $filename);
                 break;
 
             case php_report::$EXPORT_FORMAT_EXCEL:
                 require_once($CFG->dirroot . '/blocks/php_report/export/php_report_export_excel.class.php');
                 $export = new php_report_export_excel($this);
-                $export->export($query, $storage_path, $filename);
+                $export->export($query, $params, $storage_path, $filename);
                 break;
 
             case php_report::$EXPORT_FORMAT_PDF:
                 require_once($CFG->dirroot . '/blocks/php_report/export/php_report_export_pdf.class.php');
                 $export = new php_report_export_pdf($this);
-                $export->export($query, $storage_path, $filename);
+                $export->export($query, $params, $storage_path, $filename);
                 break;
 
             default:
@@ -1376,22 +1377,25 @@ abstract class table_report extends php_report {
      *
      * @param   string  $conditional_symbol  the leading token (should be AND or WHERE)
      *
-     * @return  string                       the appropriate SQL condition
+     * @return  array                        the appropriate SQL condition, and the sql
+     *                                       filter information
      */
     function get_filter_condition($conditional_symbol) {
-        $result = '';
+        $sql = '';
+        $params = array();
 
         //error checking
         if(!empty($this->filter)) {
             //run the calculation
-            $sql_filter = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(), $this->allow_configured_filters());
-            if(!empty($sql_filter)) {
+            list($additional_sql, $additional_params) = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(), $this->allow_configured_filters());
+            if(!empty($additional_sql)) {
                 //one or more filters are active
-                $result .= " {$conditional_symbol} ({$sql_filter})";
+                $sql .= " {$conditional_symbol} ({$additional_sql})";
+                $params = array_merge($params, $additional_params);
             }
         }
 
-        return $result;
+        return array($sql, $params);
     }
 
     /**
@@ -1488,13 +1492,13 @@ abstract class table_report extends php_report {
      *
      * @param   boolean  $use_limit  true if the paging-based limit clause should be included, otherwise false
      *
-     * @return  string               The SQL query
+     * @return  string               The SQL query, and the appropriate sql filter information
      */
     function get_complete_sql_query($use_limit = true) {
         $columns = $this->get_select_columns();
 
         //query from the report implementation
-        $sql = $this->get_report_sql($columns);
+        list($sql, $params) = $this->get_report_sql($columns);
 
         $has_where_clause = php_report::sql_has_where_clause($sql);
 
@@ -1505,7 +1509,9 @@ abstract class table_report extends php_report {
         }
 
         //filtering
-        $sql .= $this->get_filter_condition($conditional_symbol);
+        list($additional_sql, $additional_params) = $this->get_filter_condition($conditional_symbol);
+        $sql .= $additional_sql;
+        $params = array_merge($params, $additional_params);
 
         //grouping
         $groups = $this->get_report_sql_groups();
@@ -1518,7 +1524,7 @@ abstract class table_report extends php_report {
         //ordering
         $sql .= $this->get_order_by_clause();
 
-        return $sql;
+        return array($sql, $params);
     }
 
     /**
@@ -1545,7 +1551,7 @@ abstract class table_report extends php_report {
     function get_data() {
         global $CFG, $DB;
 
-        $sql = $this->get_complete_sql_query();
+        list($sql, $params) = $this->get_complete_sql_query();
 
         $first_object = null;
 
@@ -1554,7 +1560,7 @@ abstract class table_report extends php_report {
         $offset = $paging_info[table_report::offset];
         $limit = $paging_info[table_report::limit];
 
-        if($report_results = $DB->get_recordset_sql($sql, null, $offset, $limit)) {
+        if($report_results = $DB->get_recordset_sql($sql, $params, $offset, $limit)) {
             $this->data = array();
             $this->summary = array();
             $report_result = $report_results->current();
