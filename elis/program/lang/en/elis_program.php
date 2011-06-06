@@ -27,6 +27,7 @@
 $string['add'] = 'Add';
 $string['add_class'] = 'Add Class';
 $string['add_course'] = 'Add Course';
+$string['add_curriculum'] = 'Add Curriculum';
 $string['add_pmclass'] = 'Add Class';
 $string['add_user'] = 'Add user';
 $string['added_to_waitlist_message'] = 'you have been added to the waitlist for class {$a->idnumber}';
@@ -52,6 +53,8 @@ $string['class_startdate'] = 'Start Date';
 $string['class_starttime'] = 'Start Time';
 $string['class_unassigntrackhead'] = 'Unassigned Tracks';
 $string['clear'] = 'Clear';
+$string['cluster'] = 'Cluster';
+$string['clusters'] = 'Clusters';
 $string['completionform:completion_grade'] = 'Completion grade';
 $string['completionform:completion_grade_help'] = '<p>Minimum grade the learner must received to identify the element as &ldquo;completed&rdquo;.</p>';
 $string['completionform:course_idnumber'] = 'ID Number';
@@ -71,10 +74,12 @@ $string['completion_status'] = 'Completion Status';
 $string['confirm_delete_class'] = 'Are you sure you want to delete the class {$a->idnumber}?';
 $string['confirm_delete_completion'] = 'Are you sure you want to delete the completion element \"name: {$a}\"?';
 $string['confirm_delete_course'] = 'Are you sure you want to delete the course named {$a->name} (ID number: {$a->idnumber})?';
+$string['confirm_delete_curriculum'] = 'Are you sure you want to delete the curriculum named {$a->name} (ID number: {$a->idnumber})?';
 $string['confirm_delete_pmclass'] = 'Are you sure you want to delete the class {$a->idnumber}?';
 $string['confirm_delete_user'] = 'Are you sure you want to delete the user named {$a->firstname} {$a->lastname} (ID number: {$a->idnumber})?';
 $string['cost'] = 'Cost';
 $string['course'] = 'Course';
+$string['courses'] = 'Courses';
 $string['courseform:completion_grade'] = 'Completion grade';
 $string['courseform:completion_grade_help'] = '<p>Minimum grade to complete/pass the course.</p>';
 $string['courseform:cost'] = 'Cost';
@@ -111,11 +116,40 @@ $string['course_syllabus'] = 'Description';
 $string['course_version'] = 'Version';
 $string['coursetemplate'] = 'Course Template in Moodle';
 $string['credits'] = 'Credits';
+$string['curricula'] = 'Curricula';
+$string['curriculaform:curriculum_description'] = 'Long description';
+$string['curriculaform:curriculum_description_help'] = '<p>Description information about the curriculum. A complete and thorough
+description will help administrators, teachers and students know if this curriculum is correct for them.</p>';
+$string['curriculaform:curriculum_idnumber'] = 'ID Number';
+$string['curriculaform:curriculum_idnumber_help'] = '<p>Curriculum ID number. This number will display in reports.</p>';
+$string['curriculaform:curriculum_name'] = 'Name';
+$string['curriculaform:curriculum_name_help'] = '<p>Name of curriculum.</p>';
+$string['curriculaform:expiration'] = 'Expiration';
+$string['curriculaform:expiration_help'] = '<p>The date on which credit for the curriculum expires.<br/>
+For example, 4y = every four years.<br/>
+If the user\'s credit for the given curriculum does not expire, this field should be left blank.<br/><br/>
+The expiration date is printed on the Curriculum report, the Individual User report, and on curriculum certificates.<br/>
+This expiration is informational only - credit is not removed from the system, but the student\'s transcript and certificate show the expiration date.</p>';
+$string['curriculaform:priority'] = 'Display priority';
+$string['curriculaform:priority_help'] = '<p>Determines the order in which curricula are displayed from an enrolled user\'s perspective.
+The lower the priority number, the higher the curriculum will display on the user\'s listing.</p>';
+$string['curriculaform:required_credits'] = 'Required Credits';
+$string['curriculaform:required_credits_help'] = '<p>Number of credits the learner must receive before the curriculum is
+complete.  Each course can be assigned a credit value. If credits are not being used this field can be left blank.</p>';
+$string['curriculaform:time_to_complete'] = 'Time to complete';
+$string['curriculaform:time_to_complete_help'] = '<p>The time a learner has to complete the curriculum once they have been
+assigned to the curriculum. For example, 18m = 18 months. If there is not a time limit for the curriculum, this field can be left blank.</p>';
 $string['curriculum'] = 'Curriculum';
+$string['curriculum_idnumber'] = 'ID Number';
+$string['curriculum_description'] = 'Long description';
+$string['curriculum_name'] = 'Name';
+$string['curriculum_reqcredits'] = ' Required Credits';
+$string['curriculum_shortdescription'] = 'Short description';
 
 $string['delete'] = 'Delete';
 $string['delete_class'] = 'Delete Class';
 $string['delete_course'] = 'Delete Course';
+$string['delete_curriculum'] = 'Delete Curriculum';
 $string['delete_label'] = 'Delete';
 $string['delete_pmclass'] = 'Delete Class';
 $string['delete_user'] = 'Delete user';
@@ -136,9 +170,13 @@ $string['enrolments'] = 'Enrollments';
 $string['environment'] = 'Environment';
 $string['error_date_range'] = 'Start date must be before the end date.';
 $string['error_duration'] = 'Start time must be before the end time.';
+$string['error_not_timeformat'] = 'time not in proper format';
+$string['error_not_durrationformat'] = 'durration not in proper format';
 $string['error_n_overenrol'] = 'The over enrol capability is required for this';
+$string['expiration'] = 'Expiration';
 
 $string['failclustcpycls'] = 'Failed to copy class with idnumber {$a->idnumber}';
+$string['failclustcpycurr'] = 'Curriculum {$a->name} failed to copy';
 $string['failclustcpycurrcrs'] = 'Failed to copy course {$a->name}';
 $string['fax'] = 'Fax';
 $string['female'] = 'Female';
@@ -158,6 +196,7 @@ $string['makecurcourse'] = 'Make a curriculum for this course';
 $string['male'] = 'Male';
 $string['manage_class'] = 'Manage Classes';
 $string['manage_course'] = 'Manage Courses';
+$string['manage_curriculum'] = 'Manage Curricula';
 $string['manage_pmclass'] = 'Manage Classes';
 $string['manage_student'] = 'Manage Students';
 $string['manage_user'] = 'Manage users';
@@ -173,12 +212,15 @@ $string['no_moodlecourse'] = 'No Moodle courses on this site';
 $string['none'] = 'None';
 $string['notice_class_deleted'] = 'Deleted the class {$a->idnumber}';
 $string['notice_course_deleted'] = 'Deleted the course named {$a->name} (ID number: {$a->idnumber})';
+$string['notice_curriculum_deleted'] = 'Deleted the curriculum named {$a->name} (ID number: {$a->idnumber})';
 $string['notice_pmclass_deleted'] = 'Deleted the class {$a->idnumber}';
 $string['notifycourserecurrencemessagedef'] = "%%%%userenrolname%%%% is due to re-take the course %%%%coursename%%%%.";
+$string['notifycurriculumrecurrencemessagedef'] = "%%%%userenrolname%%%% is due to re-take the curriculum %%%%curriculumname%%%%.";
 $string['nouser'] = 'No user found for specified user id.';
 $string['nowenroled'] = 'You have been removed from the waiting list and placed in class {$a->idnum}.';
 $string['num_class_found'] = '{$a} class(es) found';
 $string['num_course_found'] = '{$a} course(s) found';
+$string['num_curriculum_found'] = '{$a} curricula found';
 $string['num_pmclass_found'] = '{$a} class(es) found';
 $string['num_user_found'] = '{$a} users found';
 
@@ -209,17 +251,26 @@ $string['pmclassform:waitlistenrol_help'] = '<p>on to automatically enrol studen
 $string['pmclass_delete_warning'] = 'Warning!  Deleting this class will also delete all stored enrollment information for the class.';
 $string['pmclass_delete_warning_continue'] = 'I understand all enrollments for the class will be deleted, continue ...';
 $string['postalcode'] = 'Postal code';
+$string['priority'] = 'Display priority';
 $string['progman'] = 'Program Manager';
 
 $string['registered_date'] = 'Registered date';
 $string['required'] = 'Required';
+$string['required_credits'] = 'Required Credits';
 
 $string['showinactive'] = 'Show inactive';
 
 $string['tags'] = 'Tags';
 $string['timecreated'] = 'Creation time';
+$string['time_settings'] = 'Time Settings';
+$string['tips_time_format'] = "The format of this is ' *h, *d, *w, *m, *y ' (representing hours, days, weeks, months and years - where * can be any number) Each format must be separated by a comma";
+$string['time_to_complete'] = 'Time to complete';
+$string['track'] = 'Track';
+$string['tracks'] = 'Tracks';
 $string['transfercredits'] = 'Transfer credits';
 
+$string['user'] = 'User';
+$string['users'] = 'Users';
 $string['userbirthdate'] = 'Birth date';
 $string['usergender'] = 'Gender';
 $string['usermi'] = 'Middle initials';
