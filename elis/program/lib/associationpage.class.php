@@ -40,6 +40,7 @@ require_once elispm::lib('newpage.class.php');
  *
  */
 class associationpage extends newpage {
+    const LANG_FILE = 'elis_program';
 
     public function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
@@ -87,8 +88,9 @@ class associationpage extends newpage {
 
         echo '<div align="center">';
         $options = array_merge(array('s' => $this->pagename, 'action' => 'add'), $params);
-        // FIXME: change to language string
-        echo print_single_button('index.php', $options, $text ? $text : get_string('delete_label','block_curr_admin').' ' . get_string($obj->get_verbose_name(),'block_curr_admin'), 'get', '_self', true, $text ? $text : get_string('delete_label','block_curr_admin').' ' . get_string($obj->get_verbose_name(),'block_curr_admin'));
+        $dellabel = get_string('delete_label', self::LANG_FILE);
+        $objlabel = get_string($obj->get_verbose_name(), self::LANG_FILE); // TBD
+        echo print_single_button('index.php', $options, $text ? $text : $dellabel .' ' . $objlabel, 'get', '_self', true, $text ? $text : $dellabel .' ' . $objlabel);
         echo '</div>';
     }
 
@@ -109,13 +111,9 @@ class associationpage extends newpage {
      */
     function display_add($parent_obj) {
         $id = required_param('id', PARAM_INT);
-
         $target = $this->get_new_page(array('action' => 'savenew', 'id' => $id));
-
-        $form = new $this->form_class($target->get_moodle_url(), array('parent_obj' => $parent_obj));
-
+        $form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
         $form->set_data(array('id' => $id));
-
         $form->display();
     }
 
@@ -148,7 +146,7 @@ class associationpage extends newpage {
 
         $target = $this->get_new_page(array('action' => 'update', 'id' => $parent_id, 'association_id' => $obj->id));
 
-        $form = new $this->form_class($target->get_moodle_url(), array('obj' => $obj, 'parent_obj' => $parent_obj));
+        $form = new $this->form_class($target->url, array('obj' => $obj, 'parent_obj' => $parent_obj));
 
         $form->display();
     }
@@ -156,17 +154,17 @@ class associationpage extends newpage {
     /**
      * Generic handler for the savenew action.  Tries to save the object and then prints the appropriate page.
      */
-    function do_savenew() { // *** TBD ***
+    function do_savenew() { // TBD: display_savenew() ?
         $parent_id = required_param('id', PARAM_INT);
 
         $parent_obj = new $this->parent_data_class($parent_id);
 
         $target = $this->get_new_page(array('action' => 'savenew', 'id' => $parent_id));
 
-        $form = new $this->form_class($target->get_moodle_url(), array('parent_obj' => $parent_obj));
+        $form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
 
         if ($form->is_cancelled()) {
-            $this->action_default();
+            $this->do_default();
             return;
         }
 
@@ -177,7 +175,7 @@ class associationpage extends newpage {
             $obj->set_from_data($data);
             $obj->add();
             $target = $this->get_new_page(array('action' => 'default', 'id' => $parent_id));
-            redirect($target->get_url(), ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' saved.');
+            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' saved.');
         } else {
             // Validation must have failed, redisplay form
             $form->display();
@@ -197,10 +195,10 @@ class associationpage extends newpage {
         $target = $this->get_new_page(array('action' => 'update'));
 
 
-        $form = new $this->form_class($target->get_moodle_url(), array('obj' => $obj, 'parent_obj' => $parent_obj));
+        $form = new $this->form_class($target->url, array('obj' => $obj, 'parent_obj' => $parent_obj));
 
         if ($form->is_cancelled()) {
-            $this->action_default();
+            $this->do_default();
             return;
         }
 
@@ -210,7 +208,7 @@ class associationpage extends newpage {
             $obj->set_from_data($data);
             $obj->update();  // TODO: create a generalized "save" method that decides whether to do update or add
             $target = $this->get_new_page(array('action' => 'default', 'id' => $parent_id));
-            redirect($target->get_url(), ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' updated.');
+            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' updated.');
         } else {
             // Validation must have failed, redisplay form
             $this->print_tabs('edit', array('id' => $id));
@@ -218,18 +216,18 @@ class associationpage extends newpage {
         }
     }
 
-    public function get_title() {
-        return get_string('breadcrumb_' . get_class($this), 'block_curr_admin');
+    public function get_title_default() {
+        return get_string('breadcrumb_' . get_class($this), self::LANG_FILE);
     }
 
-    public function get_navigation_default() {
-        return $this->get_tab_page()->get_navigation_view();
+    public function build_navigation_default() {
+        $this->navbar->add($this->get_tab_page()->build_navigation_view());
     }
 
     /**
      * Generic handler for the delete action.  Prints the delete confirmation form.
      */
-    function do_delete() {
+    function _display_delete() { // TBD: after rename action_confirm() two do_delete() or display_delete methods ???
         $association_id = required_param('association_id', PARAM_INT);
 
         if(empty($association_id)) {
@@ -256,7 +254,7 @@ class associationpage extends newpage {
         //$a->type_name = $obj->get_verbose_name();
         $a->id = $a_id;
 
-        $message    = get_string('confirm_delete_association', 'block_curr_admin', $a);
+        $message    = get_string('confirm_delete_association', self::LANG_FILE, $a); // TBD: no param in lang string?
         $optionsyes = array('s' => $this->pagename, 'action' => 'confirm',
                             'association_id' => $a_id, 'id' => $id, 'confirm' => md5($a_id));
         $optionsno = array('s' => $this->pagename, 'id' => $id);
@@ -268,18 +266,18 @@ class associationpage extends newpage {
     /**
      * Generic handler for the confirm (confirm delete) action.  Tries to delete the object and then renders the appropriate page.
      */
-    function do_confirm() {
+    function do_delete() {
         $association_id = required_param('association_id', PARAM_INT);
         $confirm = required_param('confirm', PARAM_ALPHANUM);
 
         if (md5($association_id) != $confirm) {
-            echo cm_error('Invalid confirmation code!');
+            echo cm_error('Invalid confirmation code!'); // TBD: language string
         } else {
             $obj = new $this->data_class($association_id);
             $obj->delete();
         }
 
-        $target = $this->action_default();
+        $target = $this->do_default();
     }
 
     /**
@@ -294,12 +292,12 @@ class associationpage extends newpage {
         $id = required_param('id', PARAM_INT);
 
         if (empty($items)) {
-            echo '<div>' . get_string('none', 'block_curr_admin') . '</div>';
+            echo '<div>' . get_string('none', self::LANG_FILE) . '</div>';
             return;
         }
 
         $table = $this->create_table_object($items, $columns, $formatters);
-        $table->print_table();
+        echo $table;
     }
 
     /**
@@ -317,7 +315,9 @@ class associationpage extends newpage {
      * @param $numitems number of items
      */
     function print_num_items($numitems) {
-        echo '<div style="float:right;">' . get_string('items_found', 'block_curr_admin', $numitems) . '</div>';
+        $a = new stdClass;
+        $a->num = $numitems;
+        echo '<div style="float:right;">' . get_string('items_found', self::LANG_FILE, $a) . '</div>';
     }
 
     /**
@@ -358,10 +358,10 @@ class associationpage extends newpage {
         if (!empty($menu)) {
             // TODO: use something that doesn't require this append-to-url-string approach
             // Double use of $id is to keep idea of foreign key for association and parent object separate
-            $url = $this->get_new_page(array('action' => $action, $local_key => $id, 'id' => $id))->get_url() . '&amp;' . $nonlocal_key . '=';
+            $url = $this->get_new_page(array('action' => $action, $local_key => $id, 'id' => $id))->url .'&amp;'. $nonlocal_key .'=';
             popup_form($url, $menu, 'assigntrk', '', 'Add...');
         } else {
-            echo get_string('all_items_assigned', 'block_curr_admin');
+            echo get_string('all_items_assigned', self::LANG_FILE);
         }
         echo '</div>';
     }
@@ -379,8 +379,10 @@ class associationpage extends newpage {
     /**
      * Generates the HTML for the management buttons (such as edit and delete) for a record's row in the table.
      * @param $params extra parameters to pass through the buttons, such as a record id
+     * @uses $OUTPUT
      */
     function get_buttons($params) {
+        global $OUTPUT;
         // TODO: function copied from managementpage.class.php.  Refactor at some point.
         $buttons = '';
 
@@ -390,7 +392,7 @@ class associationpage extends newpage {
                 $target = new $tab['page'](array_merge($tab['params'], $params));
 
                 if ($target->can_do()) {
-                    $buttons .= '<a href="' . $target->get_url() . '"><img title="' . $tab['name'] . '" alt="' . $tab['name'] . '" src="pix/' . $tab['image'] . '" /></a> ';
+                    $buttons .= '<a href="'. $target->url .'"><img title="' . $tab['name'] . '" alt="' . $tab['name'] . '" src="'. $OUTPUT->pix_url($tab['image']) .'" /></a> ';
                 }
             }
         }
@@ -433,9 +435,7 @@ class associationpage extends newpage {
 class association_page_table extends display_table {
     function __construct(&$items, $columns, $page, $decorators=array()) {
         $this->page = $page;
-
-        parent::__construct($items, $columns,
-                            $page->get_moodle_url(), $decorators);
+        parent::__construct($items, $columns, $page->url, $decorators);
     }
 
     function get_column_align_buttons() {
@@ -452,11 +452,12 @@ class association_page_table extends display_table {
     }
 
     function get_item_display_manage($column, $item) {
+        global $OUTPUT;
         $id = required_param('id', PARAM_INT);
         $target = $this->page->get_new_page(array('action' => 'delete', 'association_id' => $item->id, 'id' => $id));
         if ($target->can_do('delete')) {
-            $deletebutton = '<a href="' . $target->get_url() . '">' .
-                '<img src="pix/delete.gif" alt="Unenrol" title="Unenrol" /></a>';
+            $deletebutton = '<a href="'. $target->url .'">'.
+                '<img src="'. $OUTPUT->pix_url(delete) .'" alt="Unenrol" title="Unenrol" /></a>';
         } else {
             $deletebutton = '';
         }

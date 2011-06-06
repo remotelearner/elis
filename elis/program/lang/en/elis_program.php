@@ -35,7 +35,29 @@ $string['adding_completion_element'] = 'Adding Completion Element';
 $string['address'] = 'Address';
 $string['address2'] = 'Address 2';
 $string['admin_dashboard'] = 'Administrator Dashboard';
+$string['all_items_assigned'] = 'All available items assigned.';
 $string['autocreate'] = 'Auto Create Moodle course from template';
+
+// TBD: associationpage.class.php::get_title_default()
+$string['breadcrumb_trackassignmentpage'] = 'Assign Classes';
+$string['breadcrumb_usertrackpage'] = 'Assign Tracks';
+$string['breadcrumb_trackuserpage'] = 'Assign Users';
+$string['breadcrumb_userclusterpage'] = 'Assign Clusters';
+$string['breadcrumb_clusteruserpage'] = 'Assign Users';
+$string['breadcrumb_clustertrackpage'] = 'Assign Tracks';
+$string['breadcrumb_trackclusterpage'] = 'Assign Clusters';
+$string['breadcrumb_clustercurriculumpage'] = 'Assign Curricula';
+$string['breadcrumb_curriculumclusterpage'] = 'Assign Clusters';
+$string['breadcrumb_coursecurriculumpage'] = 'Assign Curricula';
+$string['breadcrumb_curriculumcoursepage'] = 'Assign Courses';
+$string['breadcrumb_studentpage'] = 'Assign Students';
+$string['breadcrumb_instructorpage'] = 'Assign Instructors';
+$string['breadcrumb_studentcurriculumpage'] = 'Assign Curricula';
+$string['breadcrumb_curtaginstancepage'] = 'Assign Tags';
+$string['breadcrumb_clstaginstancepage'] = 'Assign Tags';
+$string['breadcrumb_crstaginstancepage'] = 'Assign Tags';
+$string['breadcrumb_curriculumstudentpage'] = 'Assign Students';
+$string['breadcrumb_waitlistpage'] = 'Waiting List';
 
 $string['browse'] = 'Browse';
 
@@ -71,6 +93,8 @@ $string['completion_idnumber'] = 'ID Number';
 $string['completion_grade'] = 'Completion grade';
 $string['completion_name'] = 'Name';
 $string['completion_status'] = 'Completion Status';
+
+$string['confirm_delete_association'] = 'Are you sure you want to delete this entry?';
 $string['confirm_delete_class'] = 'Are you sure you want to delete the class {$a->idnumber}?';
 $string['confirm_delete_completion'] = 'Are you sure you want to delete the completion element \"name: {$a}\"?';
 $string['confirm_delete_course'] = 'Are you sure you want to delete the course named {$a->name} (ID number: {$a->idnumber})?';
@@ -188,6 +212,7 @@ $string['idnumber_already_used'] = 'ID Number is already in use';
 $string['id_same_as_user'] = 'Same as username';
 $string['inactive'] = 'Inactive';
 $string['instructors'] = 'Instructors';
+$string['items_found'] = '{$a->num} items found.';
 
 $string['learningplan'] = 'Learning Plan';
 $string['length_description'] = 'Length Description';
