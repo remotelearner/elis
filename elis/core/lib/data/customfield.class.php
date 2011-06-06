@@ -25,6 +25,7 @@
  */
 
 require_once(elis::lib('data/data_object.class.php'));
+require_once(elis::lib('data/data_filter.class.php'));
 
 /**
  * Custom fields.
@@ -280,6 +281,56 @@ class field extends elis_data_object {
         return $field;
     }
 
+}
+
+class elis_field_filter extends data_filter {
+    /**
+     * @param field $field the elis field to check
+     * @param string $idfield the name of the field that stores the object's ID
+     * @param int $contextlevel the context level
+     * @param string $value the value of the field to match
+     * @param string $comparison the comparison operator to use
+     */
+    public function __construct(field $field, $idfield, $contextlevel, $value, $comparison=self::EQ) {
+        $this->field = $field;
+        $this->idfield = $idfield;
+        $this->contextlevel = $contextlevel;
+        $this->value = $value;
+        $this->comparison = $comparison;
+    }
+
+    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+        global $DB;
+        if ($tablename) {
+            $name = "{$tablename}.{$this->idfield}";
+        } else {
+            $name = $this->idfield;
+        }
+
+        $field_filter = new field_filter('COALESCE(fdata.data, fdefault.data)', $this->value, $this->comparison);
+        $field_filter = $field_filter->get_sql(false, null, $db);
+        $sql = "SELECT ctx.id
+                  FROM {context} ctx
+             LEFT JOIN {{$field->data_table()}} fdata ON fdata.contextid = ctx.id AND fdata.fieldid = {$field->id}
+             LEFT JOIN {{$field->data_table()}} fdefault ON fdefault.contextid IS NULL AND fdefault.fieldid = {$field->id}
+                 WHERE ctx.contextlevel = ?";
+        $params = array($this->contextlevel)
+
+        if (isset($field_filter['where'])) {
+            $sql .= " AND {$fieldfilter['where']}";
+            $params += $fieldfilter['where_paremeters'];
+        }
+
+        if ($tablename) {
+            // if the table name is specified, we can use the more
+            // efficient EXISTS instead of IN
+            return array('where' => "EXISTS ($sql AND ctx.instanceid = {$name})",
+                         'where_parameters' = $params);
+        } else {
+            return array('where' => "{$name} IN ($sql)",
+                         'where_parameters' = $params);
+        }
+    }
 }
 
 /**
