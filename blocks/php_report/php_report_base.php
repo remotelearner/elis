@@ -389,16 +389,25 @@ abstract class php_report {
             return '';
         }
 
-        $result = '<div class="php_report_config_header">';
+        $result = html_writer::start_tag('div', array('class' => 'php_report_config_header'));
 
         if ($show_config_filters_link) {
             //link for configuring parameters
             $alt_text = get_string('config_params', 'block_php_report');
-            $config_params_url = $CFG->wwwroot . '/blocks/php_report/config_params.php?id=' . $this->id;
-            $result .= '<a href="' . $config_params_url . '">' .
-                       '<img src="' . $OUTPUT->pix_url('configuration', 'block_php_report') . '" border="0" width="16" height="16" ' .
-                       'alt="' . $alt_text . '" title="' . $alt_text . '">' .
-                       '</a>&nbsp;&nbsp;';
+            $config_params_url = $CFG->wwwroot.'/blocks/php_report/config_params.php?id='.$this->id;
+
+            //start of anchor for link
+            $result .= html_writer::start_tag('a', array('href' => $config_params_url));
+            //icon
+            $result .= html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('configuration', 'block_php_report'),
+                                                           'border' => 0,
+                                                           'width' => 16,
+                                                           'height' => 16,
+                                                           'alt' => $alt_text,
+                                                           'title' => $alt_text));
+            //end of anchor for link
+            $result .= html_writer::end_tag('a');
+            $result .= '&nbsp;&nbsp;';
         }
 
         //loop through the possible export formats and add the export links if
@@ -407,14 +416,25 @@ abstract class php_report {
         $allowable_export_formats = php_report::get_allowable_export_formats();
         foreach ($allowable_export_formats as $allowable_export_format) {
             if (in_array($allowable_export_format, $export_formats)) {
-                $alt_text = get_string('export_link_' . $allowable_export_format, 'block_php_report');
-                // add hatch character at end of url to force loading in a new page (checked in associate.class.js)
-                $export_url = $CFG->wwwroot . '/blocks/php_report/download.php?id=' . $this->id . '&format=' . $allowable_export_format . '#';
-                $icon = 'f/' . mimeinfo('icon', "foo.$allowable_export_format");
-                $result .= '<a href="' . $export_url . '">' .
-                           '<img src="' . $OUTPUT->pix_url($icon) . '" border="0" width="16" height="16" ' .
-                           'alt="' . $alt_text . '" title="' . $alt_text . '">' .
-                           '</a>&nbsp;&nbsp;';
+                //link alt text
+                $alt_text = get_string('export_link_'.$allowable_export_format, 'block_php_report');
+                //export link, with hash for smooth flow
+                $export_url = $CFG->wwwroot.'/blocks/php_report/download.php?id='.$this->id.'&format='.$allowable_export_format.'#';
+                //icon url
+                $icon = 'f/'.mimeinfo('icon', "foo.$allowable_export_format");
+
+                //start of anchor for link
+                $result .= html_writer::start_tag('a', array('href' => $export_url));
+                //icon
+                $result .= html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url($icon),
+                                                               'border' => 0,
+                                                               'width' => 16,
+                                                               'height' => 16,
+                                                               'alt' => $alt_text,
+                                                               'title' => $alt_text));
+                //end of anchor for link
+                $result .= html_writer::end_tag('a');
+                $result .= '&nbsp;&nbsp';
             }
         }
 
@@ -424,17 +444,26 @@ abstract class php_report {
             $report_shortname = $this->get_report_shortname();
 
             //url to link to
-            $schedule_report_url = '/blocks/php_report/schedule.php?report=' . $report_shortname . '&action=listinstancejobs&createifnone=1';
+            $schedule_report_url = '/blocks/php_report/schedule.php?report='.$report_shortname.'&action=listinstancejobs&createifnone=1';
 
-            $result .= '<span class="external_report_link php_report_schedule_this_link">'.
-                        get_string('schedule_this_report', 'block_php_report') .
-                        '&nbsp;
-                        <a href="#" onclick="openpopup(\'' . $schedule_report_url . '\', \'php_report_param_popup\', \'menubar=0,location=0,scrollbars,status,resizable,width=1600,height=600\')">
-                        <img src="' . $OUTPUT->pix_url('schedule', 'block_php_report') . '"/>
-                        </a>
-                        </span>';
+            //containing span
+            $result .= html_writer::start_tag('span', array('class' => 'external_report_link php_report_schedule_this_link'));
+            $result .= get_string('schedule_this_report', 'block_php_report').'&nbsp';
+
+            //open popup code
+            $onclick = "openpopup('{$schedule_report_url}', 'php_report_param_popup',
+                                  'menubar=0,location=0,scrollbars,status,resizable,width=1600,height=600')";
+            //start of anchor for link
+            $result .= html_writer::start_tag('a', array('href' => '#',
+                                                         'onclick' => $onclick));
+            //icon
+            $result .= html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('schedule', 'block_php_report')));
+            //end of anchor for link
+            $result .= html_writer::end_tag('a');
+            //end of span
+            $result .= html_writer::end_tag('span');
         }
-        $result .= '</div>';
+        $result .= html_writer::end_tag('div');
 
         return $result;
     }
