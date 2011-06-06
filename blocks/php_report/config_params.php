@@ -100,4 +100,3 @@ if ($data = $parameter_form->get_data()) {
  */
 $parameter_form->display();
 
-?>
