@@ -114,7 +114,14 @@ abstract class elis_page extends moodle_page {
      */
     public function get_new_page(array $params=null, $replace_params=false) {
         $pageclass = get_class($this);
-        return new $pageclass($replace_params ? $params : ($params == null ? $this->params : ($params + $this->params)));
+        if (!$replace_params) {
+            if ($params === null) {
+                $params = $this->params;
+            } else if ($this->params !== null) {
+                $params += $this->params;
+            }
+        }
+        return new $pageclass($params);
     }
 
     /**
