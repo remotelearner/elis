@@ -362,7 +362,7 @@ class php_report_block {
     function execute($page, $id, $baseurl='', $sort='', $dir='', $filterchange='', $additional_options = array()) {
         global $CFG;
 
-        $output = '<div id="throbber"></div>';
+        $output = html_writer::tag('div', '', array('id' => 'throbber'));
         if ($this->shouldredirecttofilter()) {
             global $SESSION;
             //MUST create the report object as $this->inner_report is required!
@@ -402,12 +402,13 @@ class php_report_block {
 
         //Reference stylsheet if it exists
         if(file_exists($stylesheet_file_path)) {
-            $output .= '<style>@import url("' . $stylesheet_web_path . '");</style>';
+            $output .= html_writer::tag('style', '@import url("'.$stylesheet_web_path.'");');
         }
 
         //Report specific div
-        $output .= '<div class="' . $folder_name . ' ' . $this->get_report_content_css_classes($this->classname) . '">';
-        $output .= '<br/>';
+        $classnames = $folder_name.' '.$this->get_report_content_css_classes($this->classname);
+        $output .= html_writer::start_tag('div', array('class' => $classnames));
+        $output .= html_writer::empty_tag('br');
 
         //Add report output
         $output .= $this->cache;
@@ -415,7 +416,7 @@ class php_report_block {
         //Add refresh button
         $output .= $this->get_lastload_display($id);
 
-        $output .= '</div>';
+        $output .= html_writer::end_tag('div');
 
         return $output;
     }
