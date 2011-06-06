@@ -30,13 +30,13 @@ require_once elispm::file('form/cmform.class.php');
 
 class cmCourseForm extends cmform {
     public function definition() {
+        global $CFG, $PAGE;
+
         if (isset($this->_customdata['obj']->id)) {
             $id = $this->_customdata['obj']->id;
         }
 
-        global $CFG;
-
-        require_js($CFG->wwwroot . '/elis/program/js/courseform.js');
+        $PAGE->requires->js('/elis/program/js/courseform.js');
 
         $this->set_data($this->_customdata['obj']);
 

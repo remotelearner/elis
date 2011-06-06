@@ -25,13 +25,15 @@
  */
 
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
+require_once elis::lib('data/customfield.class.php');
+require_once elispm::lib('data/curriculum.class.php');
 
 /* Add these back in as they are migrated
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/environment.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/curriculum.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';
+require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
+require_once CURMAN_DIRLOCATION . '/lib/environment.class.php';         // not used
+require_once CURMAN_DIRLOCATION . '/lib/curriculum.class.php';          // ok
+require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // missing
+require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // ok
 */
 
 
@@ -49,8 +51,24 @@ class course extends data_object_with_custom_fields {
             'class' => 'coursetemplate',
             'foreignkey' => 'courseid'
         ),
+        'coursecompletion' => array(
+            'class' => 'coursecompletion',
+            'foreignkey' => 'courseid'
+        ),
+        'coursecorequisite' => array(
+            'class' => 'coursecorequisite',
+            'foreignkey' => 'courseid'
+        ),
+        'courseprerequisite' => array(
+            'class' => 'courseprerequisite',
+            'foreignkey' => 'courseid'
+        ),
         'curriculumcourse' => array(
             'class' => 'curriculumcourse',
+            'foreignkey' => 'courseid'
+        ),
+        'trackclass' => array(
+            'class' => 'trackclass',
             'foreignkey' => 'courseid'
         ),
     );

@@ -31,12 +31,12 @@ require_once elispm::lib('contexts.php');
 require_once elispm::file('form/courseform.class.php');
 
 /* Add these back in as they are migrated
-require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/course.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php');
-require_once (CURMAN_DIRLOCATION . '/form/courseform.class.php');
-require_once (CURMAN_DIRLOCATION . '/curriculumcoursepage.class.php');
-require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');
+require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
+require_once (CURMAN_DIRLOCATION . '/lib/course.class.php');            // ok
+require_once (CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php');    // ok
+require_once (CURMAN_DIRLOCATION . '/form/courseform.class.php');       // ok
+require_once (CURMAN_DIRLOCATION . '/curriculumcoursepage.class.php');  // missing
+require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
 */
 
 class coursepage extends managementpage {
@@ -107,10 +107,10 @@ class coursepage extends managementpage {
         array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
 
         //allow users to view the classes associated with this course
-        array('tab_id' => 'cmclasspage', 'page' => 'cmclasspage', 'params' => array('action' => 'default'), 'name' => get_string('course_classes', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class'),
+        array('tab_id' => 'pmclasspage', 'page' => 'pmclasspage', 'params' => array('action' => 'default'), 'name' => get_string('course_classes', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class'),
         array('tab_id' => 'elem', 'page' => get_class($this), 'params' => array('action' => 'lelem'), 'name' => get_string('completion_elements', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'grades'),
         array('tab_id' => 'coursecurriculumpage', 'page' => 'coursecurriculumpage', 'name' => get_string('course_curricula', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
-        array('tab_id' => 'crstaginstancepage', 'page' => 'crstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
+        //array('tab_id' => 'crstaginstancepage', 'page' => 'crstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
         array('tab_id' => 'course_rolepage', 'page' => 'course_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),

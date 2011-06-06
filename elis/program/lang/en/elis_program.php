@@ -257,6 +257,7 @@ $string['progman'] = 'Program Manager';
 $string['registered_date'] = 'Registered date';
 $string['required'] = 'Required';
 $string['required_credits'] = 'Required Credits';
+$string['required_field'] = 'Error: {$a} is a required field';
 
 $string['showinactive'] = 'Show inactive';
 
