@@ -104,51 +104,55 @@ class waitlist extends elis_data_object {
     public static function get_students($clsid = 0, $sort = 'timecreated', $dir = 'ASC',
                                         $startrec = 0, $perpage = 0, $namesearch = '',
                                         $alpha = '') {
-
+        // TBD: this method should be replaced by association w/ filter
         if (empty($this->_db)) {
             return array();
         }
 
-        $LIKE     = $this->_db->sql_compare();
+        $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $this->_db->sql_like('name', ':search_fullname');
+        $LASTNAME_LIKE = $this->_db->sql_like('usr.lastname', ':search_lastname');
 
-        $select   = 'SELECT watlst.id, usr.id as uid, ' . $FULLNAME . ' as name, usr.idnumber, usr.country, usr.language, watlst.timecreated ';
+        $select   = 'SELECT watlst.id, usr.id as uid, '. $FULLNAME .' as name, usr.idnumber, usr.country, usr.language, watlst.timecreated ';
 
         $tables  = 'FROM ' . waitlist::TABLE . ' watlst ';
         $join    = 'JOIN ' . user::TABLE . ' usr ';
         $on      = 'ON watlst.userid = usr.id ';
-        $where   = 'watlst.classid = ' . $clsid . ' ';
+        $where   = 'watlst.classid = :clsid ';
+        $params['clsid'] = $clsid;
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where     .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '%$namesearch%') ";
+            $where     .= (!empty($where) ? ' AND ' : ' ') . $FULLNAME_LIKE;
+            $params['search_fullname'] = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : '') . "(usr.lastname $LIKE '$alpha%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') . LASTNAME_LIKE;
+            $params['search_lastname'] = "{$alpha}%";
         }
 
         if (!empty($where)) {
-            $where = 'WHERE '.$where.' ';
+            $where = ' WHERE '.$where.' ';
         }
 
         if ($sort) {
-            $sort = 'ORDER BY '.$sort .' '. $dir.' ';
+            $sort = ' ORDER BY '.$sort .' '. $dir.' ';
         }
 
         if (!empty($perpage)) {
             if ($this->_db->get_dbfamily() == 'postgres') {
-                $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
+                $limit = ' LIMIT ' . $perpage . ' OFFSET ' . $startrec;
             } else {
-                $limit = 'LIMIT '.$startrec.', '.$perpage;
+                $limit = ' LIMIT '.$startrec.', '.$perpage;
             }
         } else {
             $limit = '';
         }
 
         $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-
-        return $this->_db->get_records_sql($sql);
+        return $this->_db->get_records_sql($sql, $params);
     }
 
     public function check_autoenrol_after_course_completion($enrolment) {
@@ -175,43 +179,45 @@ class waitlist extends elis_data_object {
      * @return array
      */
     public function count_records($clsid, $namesearch = '', $alpha = '') {
-
+        // TBD: this method should be replaced by association w/ filter
         if(empty($clsid)) {
-            if(!empty($this->_dbfield_classid)) {
-                $clsid = $this->_defield_classid;
+            if(!empty($this->classid)) {
+                $clsid = $this->classid;
             } else {
                 return array();
             }
         }
 
         $select = '';
-
-        $LIKE = $this->_db->sql_compare();
+        $params = array();
+        $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':search_fullname');
+        $LASTNAME_LIKE = $this->_db->sql_like('usr.lastname', ':search_lastname');
 
         $select = 'SELECT COUNT(watlist.id) ';
         $tables = 'FROM ' . waitlist::TABLE . ' watlist ';
         $join   = 'INNER JOIN ' . user::TABLE . ' usr ';
         $on     = 'ON watlist.userid = usr.id ';
-        $where = 'watlist.classid = \'' . $clsid . '\'';
-
-        $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $where = 'watlist.classid = :clsid ';
+        $params['clsid'] = $clsid;
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE  '%$namesearch%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') . $FULLNAME_LIKE;
+            $params['search_fullname'] = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : '') . "(usr.lastname $LIKE '$alpha%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') . LASTNAME_LIKE;
+            $params['search_lastname'] = "{$alpha}%";
         }
 
         if (!empty($where)) {
-            $where = 'WHERE '.$where.' ';
+            $where = ' WHERE '.$where.' ';
         }
 
         $sql = $select . $tables . $join . $on . $where;
-
-        return $this->_db->count_records_sql($sql);
+        return $this->_db->count_records_sql($sql, $params);
     }
 
     /**
@@ -224,7 +230,7 @@ class waitlist extends elis_data_object {
         global $CFG;
         $this->data_delete_record();
 
-        $class = new pmclass($this->_dbfield_classid);
+        $class = new pmclass($this->classid);
         $courseid = $class->get_moodle_course_id();
 
         // enrol directly in the course
@@ -254,8 +260,8 @@ class waitlist extends elis_data_object {
             $message = get_string('nowenroled', self::LANG_FILE, $a);
         }
 
-        // TBD: $user = cm_get_moodleuser($this->_dbfield_userid);
-        $cuser = new user($this->_dbfield_userid);
+        // TBD: $user = cm_get_moodleuser($this->userid);
+        $cuser = new user($this->userid);
         $user = $cuser->get_moodleuser();
         $from = get_admin();
 
@@ -268,16 +274,14 @@ class waitlist extends elis_data_object {
      */
     public function save() { // add()
 
-        if(empty($this->_dbfield_position)) {
+        if(empty($this->position)) {
             //SELECT MIN(userid) FROM eli_crlm_wait_list WHERE 1
             // TBD: MAX(postion) or MAX(wl.position) ???
             $sql = 'SELECT MAX(position) as max 
                     FROM ' . waitlist::TABLE . ' as wl
-                    WHERE wl.classid = ' . $this->_dbfield_classid;
-
-            $max_record = get_record_sql($sql);
+                    WHERE wl.classid = ? ';
+            $max_record = get_record_sql($sql, array($this->classid));
             $max = $max_record->max;
-
             $this->position = $max + 1;
         }
 
@@ -285,8 +289,8 @@ class waitlist extends elis_data_object {
         $pmclass = new pmclass($this->classid);
         $message = get_string('added_to_waitlist_message', self::LANG_FILE, $pmclass);
 
-        // TBD: $user = cm_get_moodleuser($this->_dbfield_userid);
-        $cuser = new user($this->_dbfield_userid);
+        // TBD: $user = cm_get_moodleuser($this->userid);
+        $cuser = new user($this->userid);
         $user = $cuser->get_moodleuser();
         $from = get_admin();
 
@@ -297,15 +301,13 @@ class waitlist extends elis_data_object {
     }
 
     public static function get_next($clsid) {
-        
+
         $select = 'SELECT * ';
         $from   = 'FROM ' . waitlist::TABLE . ' wlst ';
-        $where  = 'WHERE wlst.classid="' . $clsid . '" ';
+        $where  = 'WHERE wlst.classid = ? ';
         $order  = 'ORDER BY wlst.position ASC LIMIT 0,1';
-
         $sql = $select . $from . $where . $order;
-
-        $nextStudent = $this->_db->get_records_sql($sql);
+        $nextStudent = $this->_db->get_records_sql($sql, array($clsid));
 
         if(!empty($nextStudent)) {
             $nextStudent = current($nextStudent);
