@@ -457,15 +457,47 @@ class php_report_block {
             $timezone = $USER->timezone;
         }
         $a = userdate($this->lastload, $format, $timezone);
-        return '<form id="' . $element_id . '" action="' . $CFG->wwwroot . '/blocks/php_report/refresh.php" ' .
-               'onsubmit="start_throbber(); return true;" >' .
-               '<input type="hidden" id="id" name="id" value="' . $id . '" />' .
-               '<input type="hidden" id="page" name="page" value="' . $SESSION->php_reports[$id]->currentpage . '" />' .
-               '<input type="hidden" id="sort" name="sort" value="' . $SESSION->php_reports[$id]->currentsort . '" />' .
-               '<input type="hidden" id="dir" name="dir" value="' . $SESSION->php_reports[$id]->currentdir . '" />' .
-               '<p align="center" class="php_report_caching_info">' . get_string('infocurrent', 'block_php_report', $a) . '<br/>' .
-               '<input id="' . $element_id . '" type="submit" value="Refresh"/>' . '</p>' .
-               '</form>';
+
+        $result = '';
+
+        //start form
+        $result .= html_writer::start_tag('form', array('id' => $element_id,
+                                                        'action' => $CFG->wwwroot.'/blocks/php_report/refresh.php',
+                                                        'onsubmit' => 'start_throbber(); return true;'));
+        //store report id
+        $result .= html_writer::empty_tag('input', array('type' => 'hidden',
+                                                         'id' => 'id',
+                                                         'name' => 'id',
+                                                         'value' => $id));
+        //store current page
+        $result .= html_writer::empty_tag('input', array('type' => 'hidden',
+                                                         'id' => 'page',
+                                                         'name' => 'page',
+                                                         'value' => $SESSION->php_reports[$id]->currentpage));
+        //store current sort column
+        $result .= html_writer::empty_tag('input', array('type' => 'hidden',
+                                                         'id' => 'sort',
+                                                         'name' => 'sort',
+                                                         'value' => $SESSION->php_reports[$id]->currentsort));
+        //store current sort direction
+        $result .= html_writer::empty_tag('input', array('type' => 'hidden',
+                                                         'id' => 'dir',
+                                                         'name' => 'dir',
+                                                         'value' => $SESSION->php_reports[$id]->currentdir));
+        //display caching info
+        $result .= html_writer::start_tag('p', array('align' => 'center',
+                                                     'class' => 'php_report_caching_info'));
+        $result .= get_string('infocurrent', 'block_php_report', $a);
+        $result .= html_writer::end_tag('br');
+        //refresh button
+        $result .= html_writer::empty_tag('input', array('id' => $element_id,
+                                                         'type' => 'submit',
+                                                         'value' => 'Refresh'));
+        $result .= html_writer::end_tag('p');
+
+        //end form
+        $result .= html_writer::end_tag('form');
+        return $result;
     }
 
     /**
