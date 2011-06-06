@@ -68,15 +68,6 @@ class elispm {
      * The default database object.
      */
     static $db;
-
-    /**
-     * The CM configuration.
-     */
-    static $config;
-
-    static function load_config() {
-        // FIXME:
-    }
 }
 
 global $CFG;
@@ -85,8 +76,6 @@ elispm::$libdir = elis::component_file('program', 'lib');
 
 global $DB;
 elispm::$db = $DB;
-
-elispm::$config = elispm::load_config();
 
 {
     $plugin = new stdClass;
