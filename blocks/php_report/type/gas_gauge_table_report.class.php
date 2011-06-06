@@ -876,23 +876,20 @@ abstract class gas_gauge_table_report extends table_report {
      * Specifies an SQL condition for matching a field to the current
      * gas gauge page value
      *
-     * @param  string   $field    The full fieldname used for filtering in the query
-     * @param  boolean  $numeric  If TRUE, treat the specified field as numeric, otherwise
-     *                            treat it as a char / text type
+     * @param   string   $field    The full fieldname used for filtering in the query
+     *
+     * @return  array              The condition for filtering based on gas gauge page,
+     *                             as well as the associated SQL parameters
      */
-    function get_page_value_condition($field, $numeric = TRUE) {
+    function get_page_value_condition($field) {
         //handle case where there are no page
         if ($this->gas_gauge_page_value === NULL) {
-            return '0 = 1';
+            return array('0 = 1', array());
         }
 
-        if ($numeric) {
-            //numeric field comparison
-            return "$field = {$this->gas_gauge_page_value}";
-        } else {
-            //char / text field comparison
-            return "$field = '{$this->gas_gauge_page_value}'";
-        }
+        $sql = "$field = :gasgaugepagevalue";
+        $params = array('gasgaugepagevalue' => $this->gas_gauge_page_value);
+        return array($sql, $params);
     }
 
 }

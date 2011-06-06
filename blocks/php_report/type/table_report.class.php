@@ -1474,16 +1474,17 @@ abstract class table_report extends php_report {
      * based on a report query
      *
      * @param   string  $sql            The report sql without a limit clause added
+     * @param   array   $params         SQL query params to apply
      * @param   string  $wrapper_alias  A unique alias for the results from $sql
      *
      * @return  int                     The number of records in the result set
      */
-    function set_num_recs($sql, $wrapper_alias = 'count_items') {
+    function set_num_recs($sql, $params, $wrapper_alias = 'count_items') {
         global $DB;
 
         $count_sql = "SELECT COUNT(*) FROM (
                       {$sql}) {$wrapper_alias}";
-        $this->numrecs = $DB->count_records_sql($count_sql);
+        $this->numrecs = $DB->count_records_sql($count_sql, $params);
     }
 
     /**
@@ -1519,7 +1520,7 @@ abstract class table_report extends php_report {
             $sql .= " GROUP BY {$groups}";
         }
 
-        $this->set_num_recs($sql);
+        $this->set_num_recs($sql, $params);
 
         //ordering
         $sql .= $this->get_order_by_clause();
