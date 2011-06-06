@@ -146,7 +146,8 @@ abstract class gas_gauge_table_report extends table_report {
      * @param   int     $i  A number from 1 to n, where n is the number
      *                      of pages (as specified by get_num_page_values)
      *
-     * @return  string      The sql query that specifies the value as its only field
+     * @return  array       The sql query that specifies the value as its only field,
+     *                      and any appropriate parameters
      */
     function get_page_value_sql($i) {
         return '';
@@ -211,10 +212,10 @@ abstract class gas_gauge_table_report extends table_report {
      * the number of pages
      *
      * @return  string  The sql query that specifies the number of pages
-     *                  as its only field
+     *                  as its only field, and any appropriate SQL parameters
      */
     function get_num_pages_sql() {
-        return '';
+        return array('', array());
     }
 
     /**
@@ -260,8 +261,8 @@ abstract class gas_gauge_table_report extends table_report {
      * @param   mixed   $key  The unique key that represents the current page you are on,
      *                        as specified by get_page_value
      *
-     * @return  string        The sql query that specifies the current gas gauge value
-     *                        as its only field
+     * @return  array         The sql query that specifies the current gas gauge value
+     *                        as its only field, as well as any applicable SQL filters
      */
     function get_gas_gauge_value_sql($key) {
         return '';
@@ -308,8 +309,8 @@ abstract class gas_gauge_table_report extends table_report {
      * @param   mixed   $key  The unique key that represents the current page you are on,
      *                        as specified by get_page_value
      *
-     * @return  string        The sql query that specifies the maximum gas gauge value
-     *                        as its only field
+     * @return  array         The sql query that specifies the maximum gas gauge value
+     *                        as its only field, as well as any applicable SQL parameters
      */
     function get_gas_gauge_max_value_sql($key) {
         return '';

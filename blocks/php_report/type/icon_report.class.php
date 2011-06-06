@@ -134,7 +134,7 @@ abstract class icon_report extends php_report {
      * @param   boolean  $use_filters  Flag that can be updated to prevent use of filters
      *                                 for this field
      *
-     * @return  array                  SQL string, of FALSE if not implemented by subclass,
+     * @return  array                  SQL string, or FALSE if not implemented by subclass,
      *                                 and applicable query filter data
      */
     function get_data_item_sql($key, &$use_filters) {

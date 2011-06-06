@@ -1492,7 +1492,7 @@ abstract class table_report extends php_report {
      *
      * @param   boolean  $use_limit  true if the paging-based limit clause should be included, otherwise false
      *
-     * @return  string               The SQL query, and the appropriate sql filter information
+     * @return  array                The SQL query, and the appropriate sql filter information
      */
     function get_complete_sql_query($use_limit = true) {
         $columns = $this->get_select_columns();
@@ -1649,9 +1649,10 @@ abstract class table_report extends php_report {
      * Method to be implemented, which should return
      * the report's main SQL statement
      *
-     * @param   array   $columns  The list of columns automatically calculated
-     *                            by get_select_columns()
-     * @return  string            The report's main sql statement
+     * @param   array  $columns  The list of columns automatically calculated
+     *                           by get_select_columns()
+     * @return  array            The report's main sql statement, as well as the
+     *                           applicable SQL parameters
      */
     abstract function get_report_sql($columns);
 

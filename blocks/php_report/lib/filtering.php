@@ -941,7 +941,8 @@ abstract class generalized_filter_type {
     /**
      * Returns the condition to be used with SQL where
      * @param array $data filter settings
-     * @return string the filtering condition or null if the filter is disabled
+     * @return array the filtering condition or null if the filter is disabled, as well
+     *               as an array of parameter values to apply
      */
     abstract function get_sql_filter($data);
 
