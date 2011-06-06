@@ -314,7 +314,7 @@ class elis_field_filter extends data_filter {
              LEFT JOIN {{$field->data_table()}} fdata ON fdata.contextid = ctx.id AND fdata.fieldid = {$field->id}
              LEFT JOIN {{$field->data_table()}} fdefault ON fdefault.contextid IS NULL AND fdefault.fieldid = {$field->id}
                  WHERE ctx.contextlevel = ?";
-        $params = array($this->contextlevel)
+        $params = array($this->contextlevel);
 
         if (isset($field_filter['where'])) {
             $sql .= " AND {$fieldfilter['where']}";
@@ -325,10 +325,10 @@ class elis_field_filter extends data_filter {
             // if the table name is specified, we can use the more
             // efficient EXISTS instead of IN
             return array('where' => "EXISTS ($sql AND ctx.instanceid = {$name})",
-                         'where_parameters' = $params);
+                         'where_parameters' => $params);
         } else {
             return array('where' => "{$name} IN ($sql)",
-                         'where_parameters' = $params);
+                         'where_parameters' => $params);
         }
     }
 }
