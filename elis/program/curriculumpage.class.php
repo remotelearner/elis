@@ -27,18 +27,19 @@
 require_once elispm::lib('data/curriculum.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
+require_once elispm::lib('datedelta.class.php');
 require_once elispm::file('form/curriculumform.class.php');
 
-/* 
-require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/curriculum.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/datedelta.class.php');
-require_once (CURMAN_DIRLOCATION . '/form/curriculaform.class.php');
-require_once (CURMAN_DIRLOCATION . '/clustercurriculumpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/curriculumcoursepage.class.php');
-require_once (CURMAN_DIRLOCATION . '/taginstancepage.class.php');
-require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/contexts.php');
+/*
+require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
+require_once (CURMAN_DIRLOCATION . '/lib/curriculum.class.php');        // ok
+require_once (CURMAN_DIRLOCATION . '/lib/datedelta.class.php');         // ok
+require_once (CURMAN_DIRLOCATION . '/form/curriculaform.class.php');    // ok
+require_once (CURMAN_DIRLOCATION . '/clustercurriculumpage.class.php'); // missing
+require_once (CURMAN_DIRLOCATION . '/curriculumcoursepage.class.php');  // missing
+require_once (CURMAN_DIRLOCATION . '/taginstancepage.class.php');       // not used
+require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
+require_once (CURMAN_DIRLOCATION . '/lib/contexts.php');                // ok
 */
 
 /// The main management page.
@@ -131,8 +132,8 @@ class curriculumpage extends managementpage {
 
     public function _get_page_params() {
         return parent::_get_page_params();
-    }    
-    
+    }
+
     function __construct(array $params=null) {
         $this->tabs = array(
         array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),

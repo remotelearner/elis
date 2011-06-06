@@ -26,10 +26,10 @@
 
 
 require_once elispm::file('form/cmform.class.php');
- 
+
 /*
-require_once(CURMAN_DIRLOCATION . '/form/cmform.class.php');
-require_once(CURMAN_DIRLOCATION . '/lib/lib.php');
+require_once(CURMAN_DIRLOCATION . '/form/cmform.class.php');    // ok
+require_once(CURMAN_DIRLOCATION . '/lib/lib.php');              // missing
 */
 
 /**

@@ -27,19 +27,20 @@
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/user.class.php');
+require_once elispm::lib('datedelta.class.php');
 
 /*
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/course.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/curriculumstudent.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/user.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/datedelta.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';
+require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
+require_once CURMAN_DIRLOCATION . '/lib/course.class.php';              // ok
+require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // missing
+require_once CURMAN_DIRLOCATION . '/lib/curriculumstudent.class.php';   // missing
+require_once CURMAN_DIRLOCATION . '/lib/user.class.php';                // ok
+require_once CURMAN_DIRLOCATION . '/lib/datedelta.class.php';           // ok
+require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // missing
 */
 
 class curriculum extends data_object_with_custom_fields {
-    const TABLE = 'crlm_curriculum';	
+    const TABLE = 'crlm_curriculum';
 
     static $associations = array(
         'clustercurriculum' => array(
@@ -70,7 +71,7 @@ class curriculum extends data_object_with_custom_fields {
     protected $_dbfield_timetocomplete;
     protected $_dbfield_frequency;
     protected $_dbfield_priority;
-	
+
     /**
      * Contructor.
      *
@@ -334,7 +335,7 @@ class curriculum extends data_object_with_custom_fields {
                 */
             }
         }
-        
+
         return true;
     }
 
@@ -343,7 +344,7 @@ class curriculum extends data_object_with_custom_fields {
      */
     public static function check_for_recurrence_nags() {
         global $CFG;
-        
+
         /*
         $sendtouser = $CURMAN->config->notify_curriculumrecurrence_user;
         $sendtorole = $CURMAN->config->notify_curriculumrecurrence_role;
@@ -391,7 +392,7 @@ class curriculum extends data_object_with_custom_fields {
                 events_trigger('curriculum_recurrence', $user);
             }
         }
-        
+
         return true;
     }
 
@@ -426,7 +427,7 @@ class curriculum extends data_object_with_custom_fields {
             return true;
         }
         */
-        
+
         $context = get_system_context();
 
         $message = new notification();
@@ -618,27 +619,27 @@ class curriculum extends data_object_with_custom_fields {
 
     public function save() {
         $isnew = empty($this->id);
-        
+
         parent::save();
 
         if (!$isnew) {
             // If this setting is changed, we need to update the existing curriclum expiration values (ELIS-1172)
             if ($rs = get_recordset_select(CURASSTABLE, "timeexpired != 0 AND curriculumid = {$this->id}", '', 'id, userid')) {
                 $timenow = time();
-    
+
                 while ($curass = rs_fetch_next_record($rs)) {
                     $update = new stdClass;
                     $update->id           = $curass->id;
                     $update->timeexpired  = calculate_curriculum_expiry(NULL, $this->id, $curass->userid);
                     $update->timemodified = $timenow;
-    
+
                     update_record(CURASSTABLE, $update);
                  }
-    
+
                 rs_close($rs);
             }
         }
-        
+
         field_data::set_for_context_from_datarecord('curriculum', $this);
     }
 
@@ -669,7 +670,7 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
     //$LIKE = $DB->sql_compare();
     $LIKE = 'LIKE';
 
-    $select = 'SELECT cur.*, (SELECT COUNT(*) FROM {'.curriculumcourse::TABLE.'} 
+    $select = 'SELECT cur.*, (SELECT COUNT(*) FROM {'.curriculumcourse::TABLE.'}
                WHERE curriculumid = cur.id ) as courses ';
     $tables = 'FROM {'.curriculum::TABLE.'} cur ';
     $join   = '';
