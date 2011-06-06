@@ -99,7 +99,7 @@ class report_page extends elis_page {
         
         //import necessary CSS
         $stylesheet_web_path = $CFG->wwwroot . '/blocks/php_report/styles.php';
-        echo '<style>@import url("' . $stylesheet_web_path . '");</style>';
+        echo html_writer::tag('style', '@import url("'.$stylesheet_web_path.'")');
         
         //output the report contents
         echo $reportblock->display();
