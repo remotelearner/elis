@@ -85,7 +85,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
     public function save() {
         parent::save();
         $this->_load_context();
-        $contextlevel = $this->context->contextlevel;
+        $contextlevel = $this->_context->contextlevel;
         // only save the custom field data that has been changed
         foreach ($this->_field_changed as $name => $changed) {
             if ($changed) {

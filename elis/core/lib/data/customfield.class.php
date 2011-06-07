@@ -674,8 +674,8 @@ abstract class field_data extends elis_data_object {
      * @param object $record the data_object to fetch the field values from
      */
     public function set_for_context_from_datarecord($contextlevel, $record) {
-        if (!isnumeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($level, 'elis_program');
+        if (!is_numeric($contextlevel)) {
+            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
             if (!$contextlevel) {
                 // context levels not set up -- we must be in initial installation,
                 // so no fields set up

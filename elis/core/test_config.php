@@ -24,6 +24,8 @@
  *
  */
 
-define('PHPUNIT_SCRIPT', true);
+if (!defined('PHPUNIT_SCRIPT')) {
+    define('PHPUNIT_SCRIPT', true);
+}
 
 require_once(dirname(__FILE__) . '/../../config.php');
