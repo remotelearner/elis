@@ -330,9 +330,9 @@ abstract class managementpage extends pm_page {
      * Prints a detailed view of a specific record.
      */
     public function display_view() {
-        $this->print_tabs('view', array('id' => $id));
-
         $id = $this->required_param('id', PARAM_INT);
+
+        $this->print_tabs('view', array('id' => $id));
 
         $obj = $this->get_new_data_object($id);
         $obj->load();
@@ -419,7 +419,7 @@ abstract class managementpage extends pm_page {
         $form = new $this->form_class($target->url, array('obj' => $obj->to_object()));
 
         if ($form->is_cancelled()) {
-            $target = $this->get_new_page(array('action' => 'view'), true);
+            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
             redirect($target->url);
             return;
         }
@@ -446,6 +446,10 @@ abstract class managementpage extends pm_page {
         if (!isset($this->_form)) {
             throw new ErrorException('Display called before Do');
         }
+
+        $id = $this->required_param('id', PARAM_INT);
+
+        $this->print_tabs('edit', array('id' => $id));
 
         $this->_form->display();
     }
