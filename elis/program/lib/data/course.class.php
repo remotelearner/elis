@@ -688,15 +688,6 @@ class course extends data_object_with_custom_fields {
             $this->templateclass = $data->templateclass;
         }
 
-        $fields = field::get_for_context_level('course', 'elis_program');
-        $fields = $fields ? $fields : array();
-        foreach ($fields as $field) {
-            $fieldname = "field_{$field->shortname}";
-            if (isset($data->$fieldname)) {
-                $this->$fieldname = $data->$fieldname;
-            }
-        }
-
         $this->_load_data_from_record($data, true);
     }
 
