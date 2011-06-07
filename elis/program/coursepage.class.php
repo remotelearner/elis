@@ -30,6 +30,7 @@ require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('curriculumcoursepage.class.php');
 require_once elispm::file('form/courseform.class.php');
+require_once elispm::file('pmclasspage.class.php');
 
 /* Add these back in as they are migrated
 require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
@@ -112,7 +113,7 @@ class coursepage extends managementpage {
         array('tab_id' => 'elem', 'page' => get_class($this), 'params' => array('action' => 'lelem'), 'name' => get_string('completion_elements', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'grades'),
         array('tab_id' => 'coursecurriculumpage', 'page' => 'coursecurriculumpage', 'name' => get_string('course_curricula', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
         //array('tab_id' => 'crstaginstancepage', 'page' => 'crstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
-        array('tab_id' => 'course_rolepage', 'page' => 'course_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
+        //array('tab_id' => 'course_rolepage', 'page' => 'course_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
         );
@@ -158,7 +159,8 @@ class coursepage extends managementpage {
             'name'      => array('header' => get_string('course_name','elis_program')),
             'code'      => array('header' => get_string('course_code','elis_program')),
             'version'   => array('header' => get_string('course_version','elis_program')),
-            'curricula' => array('header' => get_string('course_curricula','elis_program')),
+            'curricula' => array('header' => get_string('course_curricula','elis_program'),
+                                 'display_function' => 'count_curricula'),
         );
 
         // Set sorting
@@ -418,3 +420,6 @@ class coursepage extends managementpage {
     }
 }
 
+function count_curricula($column, $item) {
+    return $item->count_curriculumcourse();
+}

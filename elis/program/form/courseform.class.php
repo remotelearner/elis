@@ -188,7 +188,8 @@ class cmCourseForm extends cmform {
         $this->_form->removeElement('templateButtons');
 
         // Add completion status information
-        $counts = $this->_customdata['obj']->get_completion_counts();
+        $obj = new course($this->_customdata['obj']);
+        $counts = $obj->get_completion_counts();
 
         $counttext = "Passed: {$counts[2]}, Failed: {$counts[1]}, In Progress: {$counts[0]}";
 
