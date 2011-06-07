@@ -48,7 +48,11 @@ class student extends elis_data_object {
 
     var $verbose_name = 'student';
 
-    static $associations = array( // TBD
+    static $associations = array(
+        'users'   => array('class' => 'user',
+                           'idfield' => 'userid'),
+        'pmclass' => array('class' => 'pmclass',
+                           'idfield' => classid)
     );
 
 /*
@@ -150,15 +154,15 @@ class student extends elis_data_object {
 
         if ($classdata !== false) {
             if (is_int($classdata) || is_numeric($classdata)) {
-                $this->_dbfield_classid = $classdata;
+                $this->classid = $classdata;
                 $this->pmclass = null;
             } else if (is_object($classdata) && (get_class($classdata) == 'cmclass')) {
-                $this->_dbfield_classid = $classdata->id;
+                $this->classid = $classdata->id;
                 $this->pmclass = $classdata;
             }
         }
 
-        if (!empty($this->_dbfield_classid)) {
+        if (!empty($this->classid)) {
 
             if (empty($this->pmclass)) {
                 $this->pmclass = new pmclass($this->classid);
@@ -170,7 +174,7 @@ class student extends elis_data_object {
                 if ($compelements === false) {
                     $compelements = $this->pmclass->course->get_completion_elements();
                 }
-                $select ='classid = '.$this->_dbfield_classid.' AND userid = '.$this->_dbfield_userid;
+                $select ='classid = '.$this->classid.' AND userid = '.$this->userid;
                 $grades = $this->_db->get_records_select
                             (student_grade::TABLE, $select, '',
                              'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
@@ -1339,7 +1343,7 @@ class student extends elis_data_object {
         }
 
         /// Check for an existing enrolment - it can't already exist.
-        if ($this->_db->record_exists(student::TABLE, 'classid', $record->_dbfield_classid, 'userid', $record->_dbfield_userid)) {
+        if ($this->_db->record_exists(student::TABLE, 'classid', $record->classid, 'userid', $record->userid)) {
             return true;
         }
 
@@ -1356,10 +1360,10 @@ class student extends elis_data_object {
     function get_students($cid = 0) {
 
         if (!$cid) {
-            if (empty($this->_dbfield_classid)) {
+            if (empty($this->classid)) {
                 return array();
             }
-            $cid = $this->_dbfield_classid;
+            $cid = $this->classid;
         }
 
         $uids = array();
@@ -1388,10 +1392,10 @@ class student extends elis_data_object {
     public function get_waiting($cid = 0) {
 
         if (!$cid) {
-            if (empty($this->_dbfield_classid)) {
+            if (empty($this->classid)) {
                 return array();
             }
-            $cid = $this->_dbfield_classid;
+            $cid = $this->classid;
         }
 
         $uids = array();
@@ -1445,13 +1449,16 @@ class student extends elis_data_object {
                                             $alpha='') {
 
         if (!$cuserid) {
-            if (empty($this->_dbfield_userid)) {
+            if (empty($this->userid)) {
                 return array();
             }
-            $cuserid = $this->_dbfield_userid;
+            $cuserid = $this->userid;
         }
 
-        $LIKE = $this->_db->sql_compare();
+        $params = array();
+        $CRSNAME_LIKE = $this->_db->sql_like('crs.name', ':crs_like');
+        $CRSNAME_STARTSWITH = $this->_db->sql_like('crs.name', ':crs_startswith');
+        $CLSID_LIKE = $this->_db->sql_like('cls.idnumber', ':clsid');
 
         $select  = 'SELECT wat.id wlid, wat.position, cls.idnumber clsid, crs.name, cls.*';
         $tables  = 'FROM ' . waitlist::TABLE . ' wat ';
@@ -1461,12 +1468,14 @@ class student extends elis_data_object {
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= (!empty($where) ? ' AND ' : '') . "((crs.name $LIKE '%$namesearch%') OR " .
-                      "(cls.idnumber $LIKE '%$namesearch%')) ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $CRSNAME_LIKE .') OR ('. $CLSID_LIKE .') ';
+            $params['crs_like'] = "%{$namesearch}%";
+            $params['clsid_like'] = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : '') . "(crs.name $LIKE '$alpha%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') . '('. $CRSNAME_STARTSWITH .') ';
+            $params['crs_startswith'] = "{$alpha}%";
         }
 
         if (!empty($where)) {
@@ -1488,7 +1497,7 @@ class student extends elis_data_object {
         }
 
         $sql = $select.$tables.$join.$where.$sort.$limit;
-        return $this->_db->get_records_sql($sql);
+        return $this->_db->get_records_sql($sql, $params);
     }
 
     /**
@@ -1508,17 +1517,17 @@ class student extends elis_data_object {
     function get_listing($classid=0, $sort='name', $dir='ASC', $startrec=0, $perpage=0, $namesearch='',
                                  $alpha='') {
         if (!$classid) {
-            if (empty($this->_dbfield_classid)) {
+            if (empty($this->classid)) {
                 return 0;
             }
-
-            $classid = $this->_dbfield_classid;
+            $classid = $this->classid;
         }
 
-        $LIKE     = $this->_db->sql_compare();
-
+        $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-
+        $FULLNAME_LIKE = $this->_db->sql_like('name', ':name_like');
+        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT stu.* ';
         $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
@@ -1530,12 +1539,14 @@ class student extends elis_data_object {
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= (!empty($where) ? ' AND ' : '') . "(($FULLNAME $LIKE '%$namesearch%') OR " .
-                      "(usr.idnumber $LIKE '%$namesearch%')) ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
+            $params['name_like'] = "%{$namesearch}%";
+            $params['id_like']   = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : '') . "(usr.lastname $LIKE '$alpha%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $params['lastname_startswith'] = "{$alpha}%";
         }
 
         if (!empty($where)) {
@@ -1559,7 +1570,7 @@ class student extends elis_data_object {
 
         $sql = $select.$tables.$join.$on.$where.$sort.$limit;
 
-        return $this->_db->get_records_sql($sql);
+        return $this->_db->get_records_sql($sql, $params);
     }
 
     /**
@@ -1574,15 +1585,16 @@ class student extends elis_data_object {
     public function count_enroled($classid = 0, $namesearch = '', $alpha = '') {
 
         if (!$classid) {
-            if (empty($this->_dbfield_classid)) {
+            if (empty($this->classid)) {
                 return 0;
             }
-
-            $classid = $this->_dbfield_classid;
+            $classid = $this->classid;
         }
 
-        $LIKE     = $this->_db->sql_compare();
+        $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT COUNT(stu.id) ';
         $tables  = 'FROM ' . student::TABLE . ' stu ';
@@ -1592,11 +1604,13 @@ class student extends elis_data_object {
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '%$namesearch%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $FULLNAME_LIKE .') ';
+            $params['name_like'] = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : '') . "(usr.lastname $LIKE '$alpha%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $params['lastname_startswith'] = "{$alpha}%";
         }
 
         if (!empty($where)) {
@@ -1604,7 +1618,7 @@ class student extends elis_data_object {
         }
 
         $sql = $select . $tables . $join . $on . $where;
-        return $this->_db->count_records_sql($sql);
+        return $this->_db->count_records_sql($sql, $params);
     }
 
     /**
@@ -1617,29 +1631,33 @@ class student extends elis_data_object {
     public function count_records($classid = 0, $namesearch = '', $alpha = '') {
 
         if (!$classid) {
-            if (empty($this->_dbfield_classid)) {
+            if (empty($this->classid)) {
                 return 0;
             }
-
-            $classid = $this->_dbfield_classid;
+            $classid = $this->classid;
         }
 
-        $LIKE     = $this->_db->sql_compare();
+        $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT COUNT(stu.id) ';
         $tables  = 'FROM ' . student::TABLE . ' stu ';
         $join    = 'LEFT JOIN ' . user::TABLE . ' usr ';
         $on      = 'ON stu.userid = usr.id ';
-        $where   = 'stu.classid = \'' . $classid . '\'';
+        $where   = 'stu.classid = :clsid';
+        $params['clsid'] = $classid;
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '%$namesearch%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $FULLNAME_LIKE .') ';
+            $params['name_like'] = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : '') . "(usr.lastname $LIKE '$alpha%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $params['lastname_startswith'] = "{$alpha}%";
         }
 
         if (!empty($where)) {
@@ -1647,7 +1665,7 @@ class student extends elis_data_object {
         }
 
         $sql = $select . $tables . $join . $on . $where;
-        return $this->_db->count_records_sql($sql);
+        return $this->_db->count_records_sql($sql, $params);
     }
 
     /**
@@ -1664,8 +1682,11 @@ class student extends elis_data_object {
             return NULL;
         }
 
-        $LIKE     = $this->_db->sql_compare();
+        $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $this->_db->sql_like('name', ':name_like');
+        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
 //        $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, usr.type as description, ' .
         $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, ' .
@@ -1673,17 +1694,20 @@ class student extends elis_data_object {
                    'stu.completestatusid, stu.grade ';
         $tables  = 'FROM ' . user::TABLE . ' usr ';
         $join    = 'LEFT JOIN ' . student::TABLE . ' stu ';
-        $on      = "ON stu.userid = usr.id AND stu.classid = $this->_dbfield_classid ";
+        $on      = 'ON stu.userid = usr.id AND stu.classid = :clsid ';
         $where   = 'stu.id IS NULL';
+        $params['clsid'] = $this->classid;
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where     .= (!empty($where) ? ' AND ' : '') . "(($FULLNAME $LIKE '%$namesearch%') OR " .
-                          "(usr.idnumber $LIKE '%$namesearch%')) ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
+            $params['name_like'] = "%{$namesearch}%";
+            $params['id_like']   = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '$alpha%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $params['lastname_startswith'] = "{$alpha}%";
         }
 
         $uids = array();
@@ -1719,7 +1743,7 @@ class student extends elis_data_object {
         if(!cmclasspage::_has_capability('block/curr_admin:class:enrol', $this->classid)) {            
             //perform SQL filtering for the more "conditional" capability
 
-            $allowed_clusters = pmclass::get_allowed_clusters($this->_dbfield_classid);
+            $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
  
             if(empty($allowed_clusters)) {
                 $where .= 'AND 0=1';
@@ -1747,7 +1771,7 @@ class student extends elis_data_object {
         }
 
         $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-        return $this->_db->get_records_sql($sql);
+        return $this->_db->get_records_sql($sql, $params);
     }
 
     /**
@@ -1758,23 +1782,29 @@ class student extends elis_data_object {
      * @return  int  count of users.
      */
     function count_users_avail($namesearch = '', $alpha = '') {
-        $LIKE     = $this->_db->sql_compare();
+        $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
+        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT COUNT(usr.id) ';
         $tables  = 'FROM ' . user::TABLE . ' usr ';
         $join    = 'LEFT JOIN ' . student::STUTABLE . ' stu ';
-        $on      = "ON stu.userid = usr.id AND stu.classid = $this->_dbfield_classid ";
+        $on      = 'ON stu.userid = usr.id AND stu.classid = :clsid ';
         $where   = 'stu.id IS NULL';
+        $params['clsid'] = $this->classid;
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where     .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '%$namesearch%') OR " .
-                          "(usr.idnumber $LIKE '%$namesearch%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
+            $params['name_like'] = "%{$namesearch}%";
+            $params['id_like']   = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '$alpha%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $params['lastname_startswith'] = "{$alpha}%";
         }
 
         $uids = array();
@@ -1824,8 +1854,7 @@ class student extends elis_data_object {
         }
 
         $sql = $select.$tables.$join.$on.$where;
-
-        return $this->_db->count_records_sql($sql);
+        return $this->_db->count_records_sql($sql, $params);
     }
 
     /**
@@ -1845,8 +1874,11 @@ class student extends elis_data_object {
             return NULL;
         }
 
-        $LIKE     = $this->_db->sql_compare();
+        $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $this->_db->sql_like('name', ':name_like');
+        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
 //        $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, usr.type as description, ' .
         $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, ' .
@@ -1865,15 +1897,17 @@ class student extends elis_data_object {
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where     .= (!empty($where) ? ' AND ' : '') . "(($FULLNAME $LIKE '%$namesearch%') OR " .
-                          "(usr.idnumber $LIKE '%$namesearch%')) ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
+            $params['name_like'] = "%{$namesearch}%";
+            $params['id_like']   = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : '') . "(usr.lastname $LIKE '$alpha%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $params['lastname_startswith'] = "{$alpha}%";
         }
 
-        $where .= (!empty($where) ? ' AND ' : '') . "classid = {$this->_dbfield_classid} ";
+        $where .= (!empty($where) ? ' AND ' : '') . "classid = {$this->classid} ";
         $where = "WHERE $where ";
 
         if ($sort) {
@@ -1891,7 +1925,7 @@ class student extends elis_data_object {
         }
 
         $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-        return $this->_db->get_records_sql($sql);
+        return $this->_db->get_records_sql($sql, $params);
     }
 
     /**
@@ -1906,8 +1940,11 @@ class student extends elis_data_object {
     function count_users_enrolled($type = '', $namesearch = '', $alpha = '') {
         global $CFG;
 
-        $LIKE     = $this->_db->sql_compare();
+        $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
+        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT COUNT(usr.id) ';
         $tables  = 'FROM ' . user::TABLE . ' usr ';
@@ -1923,12 +1960,14 @@ class student extends elis_data_object {
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where     .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '%$namesearch%') OR " .
-                          "(usr.idnumber $LIKE '%$namesearch%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
+            $params['name_like'] = "%{$namesearch}%";
+            $params['id_like']   = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '$alpha%') ";
+            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $params['lastname_startswith'] = "{$alpha}%";
         }
 
 //        switch ($type) {
@@ -1945,13 +1984,12 @@ class student extends elis_data_object {
 //                break;
 //        }
 
-        $where .= (!empty($where) ? ' AND ' : '') . "classid=$this->classid ";
-
+        $where .= (!empty($where) ? ' AND ' : '') . ' classid = :clsid ';
+        $params['clsid'] = $this->classid;
         $where = "WHERE $where ";
 
         $sql = $select.$tables.$join.$on.$where;
-
-        return $this->_db->count_records_sql($sql);
+        return $this->_db->count_records_sql($sql, $params);
     }
 
 /////////////////////////////////////////////////////////////////////
@@ -2434,8 +2472,11 @@ class student_grade extends elis_data_object {
 function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $perpage=0, $namesearch='',
                              $alpha='') {
     global $DB;
-    $LIKE     = $DB->sql_compare();
+    $params = array();
     $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+    $FULLNAME_LIKE = $DB->sql_like('name', ':name_like');
+    $IDNUMBER_LIKE = $DB->sql_like('usr.idnumber', ':id_like');
+    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
 
     $select  = 'SELECT stu.* ';
     $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
@@ -2443,16 +2484,19 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
     $tables  = 'FROM ' . student::TABLE . ' stu ';
     $join    = 'LEFT JOIN ' . user::TABLE . ' usr ';
     $on      = 'ON stu.userid = usr.id ';
-    $where   = 'stu.classid = \'' . $classid . '\'';
+    $where   = 'stu.classid = :clsid ';
+    $params['clsid'] = $classid;
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where .= (!empty($where) ? ' AND ' : '') . "(($FULLNAME $LIKE '%$namesearch%') OR " .
-                  "(usr.idnumber $LIKE '%$namesearch%')) ";
+        $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
+        $params['name_like'] = "%{$namesearch}%";
+        $params['id_like']   = "%{$namesearch}%";
     }
 
     if ($alpha) {
-        $where .= (!empty($where) ? ' AND ' : '') . "(usr.lastname $LIKE '$alpha%') ";
+        $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+        $params['lastname_startswith'] = "{$alpha}%";
     }
 
     if (!empty($where)) {
@@ -2473,10 +2517,8 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
         $limit = '';
     }
 
-
     $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-
-    return $DB->get_records_sql($sql);
+    return $DB->get_records_sql($sql, $params);
 }
 
 /**
@@ -2487,27 +2529,30 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
  */
 function student_count_records($classid, $namesearch = '', $alpha = '') {
     global $DB;
-
-    $LIKE     = $DB->sql_compare();
-    $FULLNAME = sql_concat('usr.firstname', "' '", 'usr.lastname');
+    $params = array();
+    $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like');
+    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
 
     $select  = 'SELECT COUNT(stu.id) ';
     $tables  = 'FROM ' . student::TABLE . ' stu ';
     $join    = 'LEFT JOIN ' . user::TABLE . ' usr ';
     $on      = 'ON stu.userid = usr.id ';
-    $where   = 'stu.classid = \'' . $classid . '\'';
+    $where   = 'stu.classid = :clsid ';
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '%$namesearch%') ";
+        $where .= (!empty($where) ? ' AND ' : ' ') .'('. $FULLNAME_LIKE .') ';
+        $params['name_like'] = "%{$namesearch}%";
     }
 
     if ($alpha) {
-        $where .= (!empty($where) ? ' AND ' : '') . "(usr.lastname $LIKE '$alpha%') ";
+        $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+        $params['lastname_startswith'] = "{$alpha}%";
     }
 
     if (!empty($where)) {
-        $where = 'WHERE '.$where.' ';
+        $where = "WHERE $where ";
     }
 
     $sql = $select . $tables . $join . $on . $where;
@@ -2526,21 +2571,24 @@ function student_count_records($classid, $namesearch = '', $alpha = '') {
 function student_get_student_classes($userid, $curid = 0) {
     global $DB;
 
+    $params = array();
     if (empty($curid)) {
-        $sql = "SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid
-                FROM " . student::TABLE . " stu
-                INNER JOIN " . pmclass::TABLE . " cls ON stu.classid = cls.id
-                WHERE stu.userid = $userid";
+        $sql = 'SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid
+                FROM '. student::TABLE .' stu
+                INNER JOIN '. pmclass::TABLE .' cls ON stu.classid = cls.id
+                WHERE stu.userid = ? ';
+                $params[] = $userid;
     } else {
-        $sql = "SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid
-                FROM " . student::TABLE . " stu
-                INNER JOIN " . pmclass::TABLE . " cls ON stu.classid = cls.id
-                INNER JOIN " . course::TABLE . " curcrs ON cls.courseid = curcrs.courseid
-                WHERE stu.userid = $userid
-                AND curcrs.curriculumid = $curid";
+        $sql = 'SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid
+                FROM '. student::TABLE .' stu
+                INNER JOIN '. pmclass::TABLE .' cls ON stu.classid = cls.id
+                INNER JOIN '. course::TABLE .' curcrs ON cls.courseid = curcrs.courseid
+                WHERE stu.userid = ?
+                AND curcrs.curriculumid = ? ';
+                $params[] = $userid;
+                $params[] = $curid;
     }
-
-    return $DB->get_records_sql($sql);
+    return $DB->get_records_sql($sql, $params);
 }
 
 /**
@@ -2553,13 +2601,14 @@ function student_get_student_classes($userid, $curid = 0) {
  */
 function student_get_class_from_course($crsid, $userid) {
     global $DB;
-
-    $sql = "SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid, stu.grade
-            FROM " . student::TABLE . " stu
-            INNER JOIN " . pmclass::TABLE . " cls ON stu.classid = cls.id
-            WHERE stu.userid = $userid
-            AND cls.courseid = $crsid";
-
-    return $DB->get_record_sql($sql);
+    $params = array();
+    $sql = 'SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid, stu.grade
+            FROM '. student::TABLE .' stu
+            INNER JOIN '. pmclass::TABLE .' cls ON stu.classid = cls.id
+            WHERE stu.userid = ?
+            AND cls.courseid = ? ';
+    $params[] = $userid;
+    $params[] = $crsid;
+    return $DB->get_record_sql($sql, $params);
 }
 

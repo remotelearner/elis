@@ -227,7 +227,7 @@ class associationpage extends pm_page {
     /**
      * Generic handler for the delete action.  Prints the delete confirmation form.
      */
-    function _display_delete() { // TBD: after rename action_confirm() two do_delete() or display_delete methods ???
+    function display_delete() {
         $association_id = required_param('association_id', PARAM_INT);
 
         if(empty($association_id)) {
@@ -243,15 +243,15 @@ class associationpage extends pm_page {
      * Prints the delete confirmation form.
      * @param $obj Basic data object being associated with.
      */
-    function display_delete($obj) {
+    function print_delete_form($obj) {
         $id = required_param('id', PARAM_INT);
         $a_id = required_param('association_id', PARAM_INT);
 
         $url        = 'index.php';
 
         $a = new object();
-        //$a->object_name = $obj->to_string();
-        //$a->type_name = $obj->get_verbose_name();
+        $a->object_name = $obj->__toString();
+        $a->type_name = $obj->get_verbose_name();
         $a->id = $a_id;
 
         $message    = get_string('confirm_delete_association', self::LANG_FILE, $a); // TBD: no param in lang string?
