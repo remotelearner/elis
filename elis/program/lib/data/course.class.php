@@ -89,6 +89,9 @@ class course extends data_object_with_custom_fields {
     protected $_dbfield_timemodified;
     protected $_dbfield_version;
 
+    private $location;
+    private $templateclass;
+
     /**
      * Contructor.
      *
@@ -177,7 +180,7 @@ class course extends data_object_with_custom_fields {
         }
 
         if (!empty($this->id)) {
-            $template = new coursetemplate($this->id);
+            $template = $this->coursetemplate->current();
             $course = $this->_db->get_record('course', 'id', $template->location);
 
             if (!empty($course)) {
@@ -206,7 +209,7 @@ class course extends data_object_with_custom_fields {
         $output = '';
 
         if (!empty($this->id)) {
-            $template = new coursetemplate($this->id);
+            $template = $this->coursetemplate->current();
             $output .= $this->add_js_function($template->location);
         } else {
             $output .= $this->add_js_function();
@@ -694,7 +697,7 @@ class course extends data_object_with_custom_fields {
             }
         }
 
-        return parent::set_from_data($data);
+        $this->_load_data_from_record($data, true);
     }
 
     static $validation_rules = array(
@@ -719,12 +722,12 @@ class course extends data_object_with_custom_fields {
 
         // Add moodle course template
         if (isset($this->location)) {
-            $template = new coursetemplate($this->id);
+            $template = $this->coursetemplate->current();
             $template->location           = $this->location;
             $template->templateclass      = $this->templateclass;
             $template->courseid           = $this->id;
 
-            $template->data_update_record(true);
+            $template->save();
         } else {
             coursetemplate::delete_for_course($this->id);
         }
