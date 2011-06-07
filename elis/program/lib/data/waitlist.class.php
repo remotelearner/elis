@@ -118,8 +118,8 @@ class waitlist extends elis_data_object {
 
         $select   = 'SELECT watlst.id, usr.id as uid, '. $FULLNAME .' as name, usr.idnumber, usr.country, usr.language, watlst.timecreated ';
 
-        $tables  = 'FROM ' . waitlist::TABLE . ' watlst ';
-        $join    = 'JOIN ' . user::TABLE . ' usr ';
+        $tables  = 'FROM {'. waitlist::TABLE .'} watlst ';
+        $join    = 'JOIN {'. user::TABLE .'} usr ';
         $on      = 'ON watlst.userid = usr.id ';
         $where   = 'watlst.classid = :clsid ';
         $params['clsid'] = $clsid;
@@ -143,18 +143,8 @@ class waitlist extends elis_data_object {
             $sort = ' ORDER BY '.$sort .' '. $dir.' ';
         }
 
-        if (!empty($perpage)) {
-            if ($this->_db->get_dbfamily() == 'postgres') {
-                $limit = ' LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-            } else {
-                $limit = ' LIMIT '.$startrec.', '.$perpage;
-            }
-        } else {
-            $limit = '';
-        }
-
         $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-        return $this->_db->get_records_sql($sql, $params);
+        return $this->_db->get_records_sql($sql, $params, $startrec, $perpage);
     }
 
     public function check_autoenrol_after_course_completion($enrolment) {
@@ -197,8 +187,8 @@ class waitlist extends elis_data_object {
         $LASTNAME_LIKE = $this->_db->sql_like('usr.lastname', ':search_lastname');
 
         $select = 'SELECT COUNT(watlist.id) ';
-        $tables = 'FROM ' . waitlist::TABLE . ' watlist ';
-        $join   = 'INNER JOIN ' . user::TABLE . ' usr ';
+        $tables = 'FROM {'. waitlist::TABLE .'} watlist ';
+        $join   = 'INNER JOIN {'. user::TABLE .'} usr ';
         $on     = 'ON watlist.userid = usr.id ';
         $where = 'watlist.classid = :clsid ';
         $params['clsid'] = $clsid;
@@ -280,7 +270,7 @@ class waitlist extends elis_data_object {
             //SELECT MIN(userid) FROM eli_crlm_wait_list WHERE 1
             // TBD: MAX(postion) or MAX(wl.position) ???
             $sql = 'SELECT MAX(position) as max 
-                    FROM ' . waitlist::TABLE . ' as wl
+                    FROM {'. waitlist::TABLE .'}  wl
                     WHERE wl.classid = ? ';
             $max_record = get_record_sql($sql, array($this->classid));
             $max = $max_record->max;
@@ -305,7 +295,7 @@ class waitlist extends elis_data_object {
     public static function get_next($clsid) {
 
         $select = 'SELECT * ';
-        $from   = 'FROM ' . waitlist::TABLE . ' wlst ';
+        $from   = 'FROM {'. waitlist::TABLE .'} wlst ';
         $where  = 'WHERE wlst.classid = ? ';
         $order  = 'ORDER BY wlst.position ASC LIMIT 0,1';
         $sql = $select . $from . $where . $order;

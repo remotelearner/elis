@@ -34,8 +34,7 @@ require_once elispm::lib('contexts.php'); // TBD
 require_once elispm::file('pmclasspage.class.php');
 require_once elispm::file('form/waitlistform.class.php');
 
-class studentpage extends associationpage //managementpage // TBD: was associationpage but ->tabs
-{
+class studentpage extends associationpage {
     var $data_class = 'student';
     var $pagename = 'stu';
     var $tab_page = 'pmclasspage'; // TBD: was cmclasspage
@@ -45,6 +44,8 @@ class studentpage extends associationpage //managementpage // TBD: was associati
     var $section = 'curr';
 
     var $parent_data_class = 'pmclass'; // TBD: was cmclass
+
+    var $tabs;
 
     function __construct(array $params = null) {
         parent::__construct($params);
@@ -251,7 +252,7 @@ class studentpage extends associationpage //managementpage // TBD: was associati
         $stu                           = new student($sturecord);
 
         if ($stu->completestatusid == STUSTATUS_PASSED &&
-            $CURMAN->db->get_field(STUTABLE, 'completestatusid', 'id', $stuid) != STUSTATUS_PASSED) {
+            $this->_db->get_field(student::TABLE, 'completestatusid', 'id', $stuid) != STUSTATUS_PASSED) {
 
             $stu->complete();
         } else {
@@ -335,7 +336,7 @@ class studentpage extends associationpage //managementpage // TBD: was associati
             $stu                           = new student($sturecord);
 
             if ($stu->completestatusid == STUSTATUS_PASSED
-                && $CURMAN->db->get_field(STUTABLE, 'completestatusid', 'id', $stu->id) != STUSTATUS_PASSED) {
+                && $this->_db->get_field(student::TABLE, 'completestatusid', 'id', $stu->id) != STUSTATUS_PASSED) {
                 $stu->complete();
             } else {
                 if (($status = $stu->update()) !== true) {

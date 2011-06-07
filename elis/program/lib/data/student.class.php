@@ -144,6 +144,10 @@ class student extends elis_data_object {
     }
 **** */
 
+    function is_available() { // TBD: Move to parent class or library with class as param?
+        return $this->_db->get_manager()->table_exists(self::TABLE);
+    }
+
     /**
      *  @param $classdata int/object Optional id, or cmclass object to load.
      *  @param $compelements array Optional array of completion elements associated with the class.
@@ -1375,10 +1379,10 @@ class student extends elis_data_object {
         }
 
         if (!empty($uids)) {
-            $sql = "SELECT id, idnumber, username, firstname, lastname
-                    FROM " . user::TABLE . "
-                    WHERE id IN ( " . implode(', ', $uids) . " )
-                    ORDER BY lastname ASC, firstname ASC";
+            $sql = 'SELECT id, idnumber, username, firstname, lastname
+                    FROM {'. user::TABLE .'}
+                    WHERE id IN ( '. implode(', ', $uids). ' )
+                    ORDER BY lastname ASC, firstname ASC';
 
             return $this->_db->get_records_sql($sql);
         }
@@ -1407,29 +1411,27 @@ class student extends elis_data_object {
         }
 
         if (!empty($uids)) {
-            $sql = "SELECT id, idnumber, username, firstname, lastname
-                    FROM " . user::TABLE . "
-                    WHERE id IN ( " . implode(', ', $uids) . " )
-                    ORDER BY lastname ASC, firstname ASC";
+            $sql = 'SELECT id, idnumber, username, firstname, lastname
+                    FROM {'. user::TABLE .'}
+                    WHERE id IN ( '. implode(', ', $uids) .' )
+                    ORDER BY lastname ASC, firstname ASC';
 
             return $this->_db->get_records_sql($sql);
         }
-
         return array();
     }
 
     static public function get_waitlist_in_curriculum($userid, $curid) {
         $select  = 'SELECT wat.id wlid, wat.position, cls.idnumber clsid, crs.name, cls.* ';
-        $tables = 'FROM ' . CURCRSTABLE . ' curcrs '; // ***TBD***
-        $join   = 'JOIN ' . course::TABLE . ' crs ON curcrs.courseid = crs.id ';
-        $join  .= 'JOIN ' . pmclass::TABLE . ' cls ON cls.courseid = crs.id ';
-        $join  .= 'JOIN ' . waitlist::TABLE . ' wat ON wat.classid = cls.id ';
+        $tables = 'FROM {'. CURCRSTABLE .'} curcrs '; // ***TBD***
+        $join   = 'JOIN {'. course::TABLE .'} crs ON curcrs.courseid = crs.id ';
+        $join  .= 'JOIN {'. pmclass::TABLE .'} cls ON cls.courseid = crs.id ';
+        $join  .= 'JOIN {'. waitlist::TABLE .'} wat ON wat.classid = cls.id ';
         $where  = 'WHERE curcrs.curriculumid = \'' . $curid . '\' ';
         $where .= 'AND wat.userid = \'' . $userid . '\' ';
         $sort = 'ORDER BY curcrs.position';
 
         $sql = $select.$tables.$join.$where.$sort;
-
         return $this->_db->get_records_sql($sql);
     }
 
@@ -1461,10 +1463,11 @@ class student extends elis_data_object {
         $CLSID_LIKE = $this->_db->sql_like('cls.idnumber', ':clsid');
 
         $select  = 'SELECT wat.id wlid, wat.position, cls.idnumber clsid, crs.name, cls.*';
-        $tables  = 'FROM ' . waitlist::TABLE . ' wat ';
-        $join    = 'JOIN ' . pmclass::TABLE . ' cls ON wat.classid = cls.id ';
-        $join   .= 'JOIN ' . course::TABLE . ' crs ON cls.courseid = crs.id ';
-        $where   = 'wat.userid = ' . $cuserid . ' ';
+        $tables  = 'FROM {'. waitlist::TABLE .'} wat ';
+        $join    = 'JOIN {'. pmclass::TABLE .'} cls ON wat.classid = cls.id ';
+        $join   .= 'JOIN {'. course::TABLE .'} crs ON cls.courseid = crs.id ';
+        $where   = 'wat.userid = :userid ';
+        $params['userid'] = $cuserid;
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
@@ -1486,18 +1489,8 @@ class student extends elis_data_object {
             $sort = 'ORDER BY '.$sort .' '. $dir.' ';
         }
 
-        if (!empty($perpage)) {
-            if ($this->_db->get_dbfamily() == 'postgres') {
-                $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-            } else {
-                $limit = 'LIMIT '.$startrec.', '.$perpage;
-            }
-        } else {
-            $limit = '';
-        }
-
-        $sql = $select.$tables.$join.$where.$sort.$limit;
-        return $this->_db->get_records_sql($sql, $params);
+        $sql = $select.$tables.$join.$where.$sort;
+        return $this->_db->get_records_sql($sql, $params, $startrec, $perpage);
     }
 
     /**
@@ -1532,10 +1525,11 @@ class student extends elis_data_object {
         $select  = 'SELECT stu.* ';
         $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
     //    $select .= ', ' . $FULLNAME . ' as name, usr.type as description ';
-        $tables  = 'FROM ' . student::TABLE . ' stu ';
-        $join    = 'LEFT JOIN ' . user::TABLE . ' usr ';
+        $tables  = 'FROM {'. student::TABLE .'} stu ';
+        $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
         $on      = 'ON stu.userid = usr.id ';
-        $where   = 'stu.classid = \'' . $classid . '\'';
+        $where   = 'stu.classid = :clsid ';
+        $params['clsid'] = $classid;
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
@@ -1557,20 +1551,8 @@ class student extends elis_data_object {
             $sort = 'ORDER BY '.$sort .' '. $dir.' ';
         }
 
-        if (!empty($perpage)) {
-            if ($this->_db->get_dbfamily() == 'postgres') {
-                $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-            } else {
-                $limit = 'LIMIT '.$startrec.', '.$perpage;
-            }
-        } else {
-            $limit = '';
-        }
-
-
-        $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-
-        return $this->_db->get_records_sql($sql, $params);
+        $sql = $select.$tables.$join.$on.$where.$sort;
+        return $this->_db->get_records_sql($sql, $params, $startrec, $perpage);
     }
 
     /**
@@ -1597,10 +1579,11 @@ class student extends elis_data_object {
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT COUNT(stu.id) ';
-        $tables  = 'FROM ' . student::TABLE . ' stu ';
-        $join    = 'LEFT JOIN ' . user::TABLE . ' usr ';
+        $tables  = 'FROM {'. student::TABLE .'} stu ';
+        $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
         $on      = 'ON stu.userid = usr.id ';
-        $where   = 'stu.completestatusid = ' . STUSTATUS_NOTCOMPLETE . ' AND stu.classid = \'' . $classid . '\'';
+        $where   = 'stu.completestatusid = ' . STUSTATUS_NOTCOMPLETE . ' AND stu.classid = :clsid ';
+        $params['clsid']= $classid;
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
@@ -1643,10 +1626,10 @@ class student extends elis_data_object {
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT COUNT(stu.id) ';
-        $tables  = 'FROM ' . student::TABLE . ' stu ';
-        $join    = 'LEFT JOIN ' . user::TABLE . ' usr ';
+        $tables  = 'FROM {'. student::TABLE .'} stu ';
+        $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
         $on      = 'ON stu.userid = usr.id ';
-        $where   = 'stu.classid = :clsid';
+        $where   = 'stu.classid = :clsid ';
         $params['clsid'] = $classid;
 
         if (!empty($namesearch)) {
@@ -1692,8 +1675,8 @@ class student extends elis_data_object {
         $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, ' .
                    'stu.classid, stu.userid, stu.enrolmenttime, stu.completetime, ' .
                    'stu.completestatusid, stu.grade ';
-        $tables  = 'FROM ' . user::TABLE . ' usr ';
-        $join    = 'LEFT JOIN ' . student::TABLE . ' stu ';
+        $tables  = 'FROM {'. user::TABLE .'} usr ';
+        $join    = 'LEFT JOIN {'. student::TABLE .'} stu ';
         $on      = 'ON stu.userid = usr.id AND stu.classid = :clsid ';
         $where   = 'stu.id IS NULL';
         $params['clsid'] = $this->classid;
@@ -1750,8 +1733,8 @@ class student extends elis_data_object {
             } else {
                 $cluster_filter = implode(',', $allowed_clusters);
                 // *** TBD ***
-                $where .= "AND usr.id IN (
-                             SELECT userid FROM " . clusteruser::TABLE . "
+                $where .= 'AND usr.id IN (
+                             SELECT userid FROM {'. clusteruser::TABLE ."}
                              WHERE clusterid IN ({$cluster_filter}))";
             }
         }
@@ -1760,18 +1743,8 @@ class student extends elis_data_object {
             $sort = 'ORDER BY '.$sort .' '. $dir.' ';
         }
 
-        if (!empty($perpage)) {
-            if ($this->_db->get_dbfamily() == 'postgres') {
-                $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-            } else {
-                $limit = 'LIMIT '.$startrec.', '.$perpage;
-            }
-        } else {
-            $limit = '';
-        }
-
-        $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-        return $this->_db->get_records_sql($sql, $params);
+        $sql = $select.$tables.$join.$on.$where.$sort;
+        return $this->_db->get_records_sql($sql, $params, $startrec, $perpage);
     }
 
     /**
@@ -1789,8 +1762,8 @@ class student extends elis_data_object {
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT COUNT(usr.id) ';
-        $tables  = 'FROM ' . user::TABLE . ' usr ';
-        $join    = 'LEFT JOIN ' . student::STUTABLE . ' stu ';
+        $tables  = 'FROM {'. user::TABLE .'} usr ';
+        $join    = 'LEFT JOIN {'. student::STUTABLE .'} stu ';
         $on      = 'ON stu.userid = usr.id AND stu.classid = :clsid ';
         $where   = 'stu.id IS NULL';
         $params['clsid'] = $this->classid;
@@ -1847,8 +1820,8 @@ class student extends elis_data_object {
             } else {
                 $cluster_filter = implode(',', $allowed_clusters);
                 // *** TBD ***
-                $where .= "AND usr.id IN (
-                             SELECT userid FROM " . clusteruser::TABLE . "
+                $where .= 'AND usr.id IN (
+                             SELECT userid FROM {'. clusteruser::TABLE ."}
                              WHERE clusterid IN ({$cluster_filter}))";
             }
         }
@@ -1884,8 +1857,8 @@ class student extends elis_data_object {
         $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, ' .
                    'stu.classid, stu.userid, usr.idnumber AS user_idnumber, stu.enrolmenttime, stu.completetime, ' .
                    'stu.completestatusid, stu.grade, stu.id as association_id, stu.credits, stu.locked ';
-        $tables  = 'FROM ' . user::TABLE . ' usr ';
-        $join    = 'LEFT JOIN ' . student::TABLE . ' stu ';
+        $tables  = 'FROM {'. user::TABLE .'} usr ';
+        $join    = 'LEFT JOIN {'. student::TABLE .'} stu ';
         $on      = 'ON stu.userid = usr.id ';
 
         /// If limiting returns to specific teams, set that up now.
@@ -1914,18 +1887,8 @@ class student extends elis_data_object {
             $sort = 'ORDER BY '.$sort .' '. $dir.' ';
         }
 
-        if (!empty($perpage)) {
-            if ($this->_db->get_dbfamily() == 'postgres') {
-                $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-            } else {
-                $limit = 'LIMIT '.$startrec.', '.$perpage;
-            }
-        } else {
-            $limit = '';
-        }
-
-        $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-        return $this->_db->get_records_sql($sql, $params);
+        $sql = $select.$tables.$join.$on.$where.$sort;
+        return $this->_db->get_records_sql($sql, $params, $startrec, $perpage);
     }
 
     /**
@@ -1947,8 +1910,8 @@ class student extends elis_data_object {
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT COUNT(usr.id) ';
-        $tables  = 'FROM ' . user::TABLE . ' usr ';
-        $join    = 'LEFT JOIN ' . student::TABLE . ' stu ';
+        $tables  = 'FROM {'. user::TABLE .'} usr ';
+        $join    = 'LEFT JOIN {'. student::TABLE .'} stu ';
         $on      = 'ON stu.userid = usr.id ';
 
         /// If limiting returns to specific teams, set that up now.
@@ -2480,8 +2443,8 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
     $select  = 'SELECT stu.* ';
     $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
 //    $select .= ', ' . $FULLNAME . ' as name, usr.type as description ';
-    $tables  = 'FROM ' . student::TABLE . ' stu ';
-    $join    = 'LEFT JOIN ' . user::TABLE . ' usr ';
+    $tables  = 'FROM {'. student::TABLE .'} stu ';
+    $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
     $on      = 'ON stu.userid = usr.id ';
     $where   = 'stu.classid = :clsid ';
     $params['clsid'] = $classid;
@@ -2516,8 +2479,8 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
         $limit = '';
     }
 
-    $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-    return $DB->get_records_sql($sql, $params);
+    $sql = $select.$tables.$join.$on.$where.$sort;
+    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
 /**
@@ -2534,10 +2497,11 @@ function student_count_records($classid, $namesearch = '', $alpha = '') {
     $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
 
     $select  = 'SELECT COUNT(stu.id) ';
-    $tables  = 'FROM ' . student::TABLE . ' stu ';
-    $join    = 'LEFT JOIN ' . user::TABLE . ' usr ';
+    $tables  = 'FROM {'. student::TABLE .'} stu ';
+    $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
     $on      = 'ON stu.userid = usr.id ';
     $where   = 'stu.classid = :clsid ';
+    $params['clsid'] =  $classid;
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
@@ -2555,7 +2519,7 @@ function student_count_records($classid, $namesearch = '', $alpha = '') {
     }
 
     $sql = $select . $tables . $join . $on . $where;
-    return $DB->count_records_sql($sql);
+    return $DB->count_records_sql($sql, $params);
 }
 
 /**
@@ -2573,15 +2537,15 @@ function student_get_student_classes($userid, $curid = 0) {
     $params = array();
     if (empty($curid)) {
         $sql = 'SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid
-                FROM '. student::TABLE .' stu
-                INNER JOIN '. pmclass::TABLE .' cls ON stu.classid = cls.id
+                FROM {'. student::TABLE .'} stu
+                INNER JOIN {'. pmclass::TABLE .'} cls ON stu.classid = cls.id
                 WHERE stu.userid = ? ';
                 $params[] = $userid;
     } else {
         $sql = 'SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid
-                FROM '. student::TABLE .' stu
-                INNER JOIN '. pmclass::TABLE .' cls ON stu.classid = cls.id
-                INNER JOIN '. course::TABLE .' curcrs ON cls.courseid = curcrs.courseid
+                FROM {'. student::TABLE .'} stu
+                INNER JOIN {'. pmclass::TABLE .'} cls ON stu.classid = cls.id
+                INNER JOIN {'. course::TABLE .'} curcrs ON cls.courseid = curcrs.courseid
                 WHERE stu.userid = ?
                 AND curcrs.curriculumid = ? ';
                 $params[] = $userid;
@@ -2602,8 +2566,8 @@ function student_get_class_from_course($crsid, $userid) {
     global $DB;
     $params = array();
     $sql = 'SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid, stu.grade
-            FROM '. student::TABLE .' stu
-            INNER JOIN '. pmclass::TABLE .' cls ON stu.classid = cls.id
+            FROM {'. student::TABLE .'} stu
+            INNER JOIN {'. pmclass::TABLE .'} cls ON stu.classid = cls.id
             WHERE stu.userid = ?
             AND cls.courseid = ? ';
     $params[] = $userid;
