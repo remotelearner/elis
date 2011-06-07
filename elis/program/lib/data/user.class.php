@@ -162,8 +162,8 @@ class user extends data_object_with_custom_fields {
             // delete associated data
             require_once elis::lib('data/data_filter.class.php');
             $filter = new field_filter('userid', $this->id);
-            //programstudent::delete_records($filter, $this->_db);
-            //instructor::delete_reconds($filter, $this->_db);
+            //curriculumstudent::delete_records($filter, $this->_db);
+            //instructor::delete_records($filter, $this->_db);
             //student::delete_records($filter, $this->_db);
             //student_grade::delete_records($filter, $this->_db);
             //usertrack::delete_records($filter, $this->_db);
@@ -484,7 +484,7 @@ class user extends data_object_with_custom_fields {
     static function get_user_course_curriculum($userid, $curid) {
         $sql = 'SELECT curcrs.*, crs.name AS coursename, cls.count as classcount, prereq.count as prereqcount, enrol.completestatusid as completionid, waitlist.courseid as waiting
                   FROM {'.curriculumcourse::TABLE.'} curcrs
-                  JOIN {'.coursetable::TABLE.'} crs ON curcrs.courseid = crs.id
+                  JOIN {'.course::TABLE.'} crs ON curcrs.courseid = crs.id
                        -- limit to non-enrolled courses
                   JOIN (SELECT cls.courseid, clsenrol.completestatusid FROM {'.pmclass::TABLE.'} cls
                           JOIN {'.student::TABLE.'} clsenrol ON cls.id = clsenrol.classid AND clsenrol.userid = :userid) enrol
