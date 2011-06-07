@@ -65,6 +65,10 @@ class pmclass extends data_object_with_custom_fields {
     static $config_default_prefix = 'clsdft';
 
     static $associations = array(
+        'course' => array(
+            'class' => 'course',
+            'idfield' => 'courseid'
+        ),
         'classenrolments' => array(
             'class' => 'student',
             'foreignidfield' => 'classid'
@@ -198,10 +202,10 @@ class pmclass extends data_object_with_custom_fields {
         $sql = 'SELECT cce.completestatusid status, COUNT(cce.completestatusid) count
         FROM {'.student::TABLE.'} cce
         INNER JOIN {'.pmclass::TABLE.'} cc ON cc.id = cce.classid
-        WHERE cc.id = '.$this->id.'
+        WHERE cc.id = ?
         GROUP BY cce.completestatusid';
 
-        $rows = $this->_db->get_records_sql($sql);
+        $rows = $this->_db->get_records_sql($sql, array($this->id));
 
         $ret = array(STUSTATUS_NOTCOMPLETE=>0, STUSTATUS_FAILED=>0, STUSTATUS_PASSED=>0);
 
@@ -277,15 +281,6 @@ class pmclass extends data_object_with_custom_fields {
         }
 
         $this->oldmax = $this->maxstudents;
-
-        $fields = field::get_for_context_level('class', 'elis_program');
-        $fields = $fields ? $fields : array();
-        foreach ($fields as $field) {
-            $fieldname = "field_{$field->shortname}";
-            if (isset($data->$fieldname)) {
-                $this->$fieldname = $data->$fieldname;
-            }
-        }
 
         parent::set_from_data($data);
     }
@@ -422,18 +417,16 @@ class pmclass extends data_object_with_custom_fields {
                            ) grades ON grades.userid = s.userid
                      WHERE s.classid = '.$this->id.' AND s.locked = 0';
 
-            $rs = get_recordset_sql($sql);
-            if ($rs) {
-                while ($rec = rs_fetch_next_record($rs)) {
-                    if ($rec->incomplete == 0 && $rec->grade > 0 &&
-                        $rec->grade >= $this->course->completion_grade) {
-                        $student = new student($rec, $this, null);
-                        $student->completestatusid = STUSTATUS_PASSED;
-                        $student->completetime     = $rec->maxtime;
-                        $student->credits          = $this->course->credits;
-                        $student->locked           = 1;
-                        $student->complete();
-                    }
+            $rs = $this->_db->get_recordset_sql($sql);
+            foreach ($rs as $rec) {
+                if ($rec->incomplete == 0 && $rec->grade > 0 &&
+                    $rec->grade >= $this->course->completion_grade) {
+                    $student = new student($rec, $this, null);
+                    $student->completestatusid = STUSTATUS_PASSED;
+                    $student->completetime     = $rec->maxtime;
+                    $student->credits          = $this->course->credits;
+                    $student->locked           = 1;
+                    $student->complete();
                 }
             }
         } else {
@@ -441,18 +434,15 @@ class pmclass extends data_object_with_custom_fields {
             /// minimum value required for the course.
 
             /// Get all unlocked enrolments
-            $select  = "classid = {$this->id} AND locked = 0";
-            $rs = get_recordset_select(student::TABLE, $select, 'userid');
-            if ($rs) {
-                while ($rec = rs_fetch_next_record($rs)) {
-                    if ($rec->grade > 0 && $rec->grade >= $this->course->completion_grade) {
-                        $student = new student($rec, $this, null);
-                        $student->completestatusid = STUSTATUS_PASSED;
-                        $student->completetime     = $timenow;
-                        $student->credits          = $this->course->credits;
-                        $student->locked           = 1;
-                        $student->complete();
-                    }
+            $rs = student::find(array(new field_filter('classid', $this->id),
+                                      new field_filter('locked', 0)));
+            foreach ($rs as $rec) {
+                if ($rec->grade > 0 && $rec->grade >= $this->course->completion_grade) {
+                    $rec->completestatusid = STUSTATUS_PASSED;
+                    $rec->completetime     = $timenow;
+                    $rec->credits          = $this->course->credits;
+                    $rec->locked           = 1;
+                    $rec->complete();
                 }
             }
         }
@@ -462,10 +452,9 @@ class pmclass extends data_object_with_custom_fields {
      * Counts the number of classes assigned to the course
      *
      * @param int courseid Course id
-     * @param int curriculumid Curriculum id
      */
     function count_course_assignments($courseid) {
-        $assignments = $this->_db->count_records(pmclass::TABLE, 'courseid', $courseid);
+        $assignments = pmclass::count(new field_filter('courseid', $courseid), $this->_db);
         return $assignments;
     }
 
@@ -476,38 +465,8 @@ class pmclass extends data_object_with_custom_fields {
 /////////////////////////////////////////////////////////////////////
 
 
-    /**
-     * Data function to attach a Moodle course with this class object.
-     *
-     * @param int  $cid             The Moodle course ID.
-     * @param bool $enrolinstructor Flag for enroling instructors into the Moodle course (optional).
-     * @param bool $enrolstudent    Flag for enroling students into the Moodle course (optional).
-     */
-    function data_attach_moodle_course($cid, $enrolinstructor = false, $enrolstudent = false) {
-
-    }
-
-    /**
-     * Check for a duplicate record when doing an insert.
-     *
-     * @param boolean $record true if a duplicate is found false otherwise
-     * note: output is expected and treated as boolean please ensure return values are boolean
-     */
-    function duplicate_check($record=null) {
-        if(empty($record)) {
-            $record = $this;
-        }
-
-        /// Check for valid idnumber - it can't already exist in the user table.
-        if ($this->_db->record_exists($this->table, 'idnumber', $record->idnumber)) {
-            return true;
-        }
-
-        return false;
-    }
-
     public static function check_for_moodle_courses() {
-        global $CFG;
+        global $CFG, $DB;
 
         //crlm_class_moodle moodlecourseid
         $sql = 'SELECT cm.id
@@ -515,11 +474,11 @@ class pmclass extends data_object_with_custom_fields {
                 LEFT JOIN '.$CFG->prefix.'course AS c ON cm.moodlecourseid = c.id
                 WHERE c.id IS NULL';
 
-        $broken_classes = $this->_db->get_records_sql($sql);
+        $broken_classes = $DB->get_records_sql($sql);
 
         if(!empty($broken_classes)) {
             foreach($broken_classes as $class) {
-                $this->_db->delete_records(classmoodlecourse::TABLE, 'id', $class->id);
+                $DB->delete_records(classmoodlecourse::TABLE, 'id', $class->id);
             }
         }
 
@@ -579,7 +538,7 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     public static function check_for_nags_notstarted() {
-        global $CFG;
+        global $DB;
 
         /// Unstarted classes:
         /// A class is unstarted if
@@ -605,12 +564,12 @@ class pmclass extends data_object_with_custom_fields {
                           cce.id as studentid, cce.classid, cce.userid,
                           cce.enrolmenttime, cce.completetime, cce.completestatusid, cce.grade, cce.credits, cce.locked,
                           u.id as muserid ';
-        $from   = 'FROM '.pmclass::TABLE.' ccl ';
+        $from   = 'FROM {'.pmclass::TABLE.'} ccl ';
         $join   = 'INNER JOIN {'.classenrolment::TABLE.'} cce ON cce.classid = ccl.id
                     LEFT JOIN {'.classmoodlecourse::TABLE.'} ccm ON ccm.classid = ccl.id
                    INNER JOIN {'.user::TABLE.'} cu ON cu.id = cce.userid
-                    LEFT JOIN '.$CFG->prefix.'user u ON u.idnumber = cu.idnumber
-                    LEFT JOIN '.$CFG->prefix.'user_lastaccess ul ON ul.userid = u.id AND ul.courseid = ccm.moodlecourseid
+                    LEFT JOIN {user} u ON u.idnumber = cu.idnumber
+                    LEFT JOIN {user_lastaccess} ul ON ul.userid = u.id AND ul.courseid = ccm.moodlecourseid
                     LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = ccl.id AND cnl.event = \'class_notstarted\' ';
         $where  = 'WHERE cce.completestatusid = '.STUSTATUS_NOTCOMPLETE.'
                      AND cnl.id IS NULL
@@ -623,45 +582,43 @@ class pmclass extends data_object_with_custom_fields {
         $classtempl = new pmclass(); // used just for its properties.
         $studenttempl = new student(); // used just for its properties.
 
-        $rs = get_recordset_sql($sql);
-        if ($rs) {
-            while ($rec = rs_fetch_next_record($rs)) {
-                if ($classid != $rec->id) {
+        $rs = $DB->get_recordset_sql($sql);
+        foreach ($rs as $rec) {
+            if ($classid != $rec->id) {
                 /// Load a new class
-                    $classid = $rec->id;
-                    $classdata = array();
-                    foreach ($classtempl->properties as $prop => $type) {
-                        $classdata[$prop] = $rec->$prop;
-                    }
-                    $pmclass = new pmclass($classdata);
+                $classid = $rec->id;
+                $classdata = array();
+                foreach ($classtempl->properties as $prop => $type) {
+                    $classdata[$prop] = $rec->$prop;
+                }
+                $pmclass = new pmclass($classdata);
 
-                    $elements = $pmclass->course->get_completion_elements();
+                $elements = $pmclass->course->get_completion_elements();
 
                 /// Is there a Moodle class?
-                    $moodlecourseid = (empty($rec->mcourseid)) ? false : $rec->mcourseid;
-                }
-
-                /// Load the student...
-                $studentdata = array();
-                foreach ($studenttempl->properties as $prop => $type) {
-                    $studentdata[$prop] = $rec->$prop;
-                }
-                $student = new student($studentdata, $pmclass, $elements);
-                /// Add the moodlecourseid to the student record so we can use it in the event handler.
-                $student->moodlecourseid = $moodlecourseid;
-
-                $moodleuserid = (empty($rec->muserid)) ? false : $rec->muserid;
-
-                mtrace("Triggering class_notstarted event.\n");
-                events_trigger('class_notstarted', $student);
+                $moodlecourseid = (empty($rec->mcourseid)) ? false : $rec->mcourseid;
             }
-            rs_close($rs);
+
+            /// Load the student...
+            $studentdata = array();
+            foreach ($studenttempl->properties as $prop => $type) {
+                $studentdata[$prop] = $rec->$prop;
+            }
+            $student = new student($studentdata, $pmclass, $elements);
+            /// Add the moodlecourseid to the student record so we can use it in the event handler.
+            $student->moodlecourseid = $moodlecourseid;
+
+            $moodleuserid = (empty($rec->muserid)) ? false : $rec->muserid;
+
+            mtrace("Triggering class_notstarted event.\n");
+            events_trigger('class_notstarted', $student);
         }
+        $rs->close();
         return true;
     }
 
     public static function check_for_nags_notcompleted() {
-        global $CFG;
+        global $DB;
 
         /// Incomplete classes:
         /// A class is incomplete if
@@ -687,7 +644,7 @@ class pmclass extends data_object_with_custom_fields {
         $join   = 'INNER JOIN {'.classenrolment::TABLE.'} cce ON cce.classid = ccl.id
                     LEFT JOIN {'.classmoodlecourse::TABLE.'} ccm ON ccm.classid = ccl.id
                    INNER JOIN {'.user::TABLE.'} cu ON cu.id = cce.userid
-                    LEFT JOIN '.$CFG->prefix.'user u ON u.idnumber = cu.idnumber
+                    LEFT JOIN {user} u ON u.idnumber = cu.idnumber
                     LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = ccl.id AND cnl.event = \'class_notcompleted\' ';
         $where  = 'WHERE cce.completestatusid = '.STUSTATUS_NOTCOMPLETE.'
                      AND cnl.id IS NULL
@@ -699,46 +656,44 @@ class pmclass extends data_object_with_custom_fields {
         $classtempl = new pmclass(); // used just for its properties.
         $studenttempl = new student(); // used just for its properties.
 
-        $rs = get_recordset_sql($sql);
-        if ($rs) {
-            while ($rec = rs_fetch_next_record($rs)) {
-                if ($classid != $rec->id) {
+        $rs = $DB->get_recordset_sql($sql);
+        foreach ($rs as $rec) {
+            if ($classid != $rec->id) {
                 /// Load a new class
-                    $classid = $rec->id;
-                    $classdata = array();
-                    foreach ($classtempl->properties as $prop => $type) {
-                        $classdata[$prop] = $rec->$prop;
-                    }
-                    $pmclass = new pmclass($classdata);
+                $classid = $rec->id;
+                $classdata = array();
+                foreach ($classtempl->properties as $prop => $type) {
+                    $classdata[$prop] = $rec->$prop;
+                }
+                $pmclass = new pmclass($classdata);
 
 
-                    $elements = $pmclass->course->get_completion_elements();
+                $elements = $pmclass->course->get_completion_elements();
 
                 /// Is there a Moodle class?
-                    $moodlecourseid = (empty($rec->mcourseid)) ? false : $rec->mcourseid;
-                }
-
-                /// If the class doesn't have an end date, skip it.
-                if (empty($pmclass->enddate)) {
-                    continue;
-                }
-
-                /// Load the student...
-                $studentdata = array();
-                foreach ($studenttempl->properties as $prop => $type) {
-                    $studentdata[$prop] = $rec->$prop;
-                }
-                $student = new student($studentdata, $pmclass, $elements);
-                /// Add the moodlecourseid to the student record so we can use it in the event handler.
-                $student->moodlecourseid = $moodlecourseid;
-
-                $moodleuserid = (empty($rec->muserid)) ? false : $rec->muserid;
-
-                mtrace("Triggering class_notcompleted event.\n");
-                events_trigger('class_notcompleted', $student);
+                $moodlecourseid = (empty($rec->mcourseid)) ? false : $rec->mcourseid;
             }
-            rs_close($rs);
+
+            /// If the class doesn't have an end date, skip it.
+            if (empty($pmclass->enddate)) {
+                continue;
+            }
+
+            /// Load the student...
+            $studentdata = array();
+            foreach ($studenttempl->properties as $prop => $type) {
+                $studentdata[$prop] = $rec->$prop;
+            }
+            $student = new student($studentdata, $pmclass, $elements);
+            /// Add the moodlecourseid to the student record so we can use it in the event handler.
+            $student->moodlecourseid = $moodlecourseid;
+
+            $moodleuserid = (empty($rec->muserid)) ? false : $rec->muserid;
+
+            mtrace("Triggering class_notcompleted event.\n");
+            events_trigger('class_notcompleted', $student);
         }
+        rs_close($rs);
         return true;
     }
 
@@ -749,7 +704,8 @@ class pmclass extends data_object_with_custom_fields {
      * @return object pmclass corresponding to the idnumber or null
      */
     public static function get_by_idnumber($idnumber) {
-        $retval = $this->_db->get_record(pmclass::TABLE, 'idnumber', $idnumber);
+        global $DB;
+        $retval = $DB->get_record(pmclass::TABLE, 'idnumber', $idnumber);
 
         if(!empty($retval)) {
             $retval = new pmclass($retval->id);
@@ -777,56 +733,6 @@ class pmclass extends data_object_with_custom_fields {
             }
         }
         return $curcourselist;
-    }
-
-    /**
-     * Creates the javascript used to update the track selection box
-     * so that only the tracks that belong to the curricula of the
-     * selected course will show up.
-     *
-     * NOTE - This is not working as it should be right now
-     */
-    function add_edit_form_js_tracks($list) {
-        $tracks = array();
-        $case = '';
-        $output = 'var trklist = document.getElementById("track");
-                   var courselist = document.getElementById("courseid");
-                   var selected = courselist.selectedIndex;
-
-                   /* Clear list */
-                   trklist.length = 0;'."\n";
-
-        foreach ($list as $curid => $courselist) {
-
-            $tracks = track_get_list_from_curr($curid);
-
-            if (is_array($tracks)) {
-
-                foreach ($courselist as $courseid => $temp) {
-                    $case .= 'case "'.$courseid.'":'."\n";
-                }
-
-                foreach ($tracks as $trackid => $track) {
-                    $case .= "    var y = document.createElement('option');"."\n".
-                                  "y.text= '".$track->name."';"."\n".
-                                  "y.value='".$track->id."';"."\n".
-                                  "trklist.add(y,null);"."\n";
-                }
-
-                $case .= '        break;'."\n";
-            }
-
-        }
-        //courselist.options[selected].value
-        $output .= 'switch (courselist.options[selected].value) {'."\n".
-                   $case."\n".
-                   '}';
-
-        return '<script language=javascript >
-                    function updateTrackList() {'.
-                        $output.
-                    '}
-                </script>';
     }
 
     /**
@@ -864,80 +770,14 @@ class pmclass extends data_object_with_custom_fields {
             $this->startdate = !isset($this->startdate) ? time() : $this->startdate;
             $this->enddate = !isset($this->enddate) ? time() : $this->enddate;
 
-            if (!$this->data_insert_record()) {
-                return false; // Something went wrong
-            }
+            $this->save();
         }
 
         return $this->id;
     }
 
-    /**
-     * update records with fields that aren't handled by the parent class
-     * tracks because they are multi select and require relations be made in a separate table
-     * moodlecourseid because they require relations be made in a separate table
-     * @param bool $createnew
-     */
-    public function data_update_record($createnew = false) {
-        $status = parent::data_update_record($createnew);
-
-        if (isset($this->track) && is_array($this->track)) {
-            $param['classid'] = $this->id;
-            $param['courseid'] = $this->courseid;
-
-            foreach ($this->track as $t) {
-                $param['trackid'] = $t;
-                $trackassignobj = new trackassignmentclass($param);
-                $trackassignobj->add();
-            }
-        }
-
-        if(!empty($this->moodlecourseid)) {
-            moodle_attach_class($this->id, $this->moodlecourseid);
-        }
-
-        return $status;
-    }
-
-    /**
-     * Data function to insert a database record with the object contents.
-     *
-     * @param $record object If present, uses the contents of it rather than the object.
-     * @return boolean Status of the operation.
-     */
-    function data_insert_record($record = false) {
-        $status = parent::data_insert_record($record);
-
-        if (isset($this->track)) {
-            $param['classid'] = $this->id;
-            $param['courseid'] = $this->courseid;
-
-            foreach ($this->track as $t) {
-                $param['trackid'] = $t;
-                $trackassignobj = new trackassignmentclass($param);
-                $trackassignobj->add();
-            }
-        }
-
-        if(!empty($this->moodlecourseid)) {
-            moodle_attach_class($this->id, $this->moodlecourseid);
-        }
-        return $status;
-    }
-
-    /**
-     * loads the data into this object specifically moodlecourseid since it is in a group form element
-     * @param array $data
-     */
-    public function data_load_array($data) {
-        parent::data_load_array($data);
-
-        if(!empty($data['moodleCourses']['moodlecourseid'])){
-            $this->moodlecourseid = $data['moodleCourses']['moodlecourseid'];
-        }
-    }
-
-    public function count_students_by_section($clsid = 0){
+    public static function count_students_by_section($clsid = 0){
+        global $DB;
         if(!$clsid) {
             if(empty($this->id)) {
                 return array();
@@ -953,7 +793,7 @@ class pmclass extends data_object_with_custom_fields {
 
         $sql = $select . $from . $where . $groupby;
 
-        return $this->_db->get_records_sql($sql);
+        return $DB->get_records_sql($sql);
     }
 
     /**
@@ -973,7 +813,7 @@ class pmclass extends data_object_with_custom_fields {
         if (pmclasspage::_has_capability('block/curr_admin:class:enrol_cluster_user', $clsid)) {
             require_once elispm::lib('data/usercluster.class.php');
             $cmuserid = cm_get_crlmuserid($USER->id);
-            $userclusters = $this->_db->get_records(clusteruser::TABLE, 'userid', $cmuserid);
+            $userclusters = clusterassignment::find(new field_filter('userid', $cmuserid));
             foreach ($userclusters as $usercluster) {
                 $allowed_clusters[] = $usercluster->clusterid;
             }
@@ -1071,8 +911,6 @@ class pmclass extends data_object_with_custom_fields {
             }
         }
 
-        // FIXME: copy tags
-
         return $objs;
     }
 
@@ -1093,6 +931,21 @@ class pmclass extends data_object_with_custom_fields {
         $isnew = empty($this->id);
 
         parent::save();
+
+        if (isset($this->track) && is_array($this->track)) {
+            $param['classid'] = $this->id;
+            $param['courseid'] = $this->courseid;
+
+            foreach ($this->track as $t) {
+                if (trackassignmentclass::exists(array(new field_filter('classid', $this->id),
+                                                       new field_filter('trackid', $t)))) {
+                    continue;
+                }
+                $param['trackid'] = $t;
+                $trackassignobj = new trackassignmentclass($param);
+                $trackassignobj->add();
+            }
+        }
 
         if ($this->moodlecourseid || $this->autocreate) {
             moodle_attach_class($this->id, $this->moodlecourseid, '', true, true, $this->autocreate);
@@ -1138,7 +991,7 @@ class pmclass extends data_object_with_custom_fields {
 function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
                              $perpage = 0, $namesearch = '', $alpha = '', $id = 0, $onlyopen=false,
                              $contexts=null, $clusterid = 0, $extrafilters = array()) {
-    global $CFG, $USER, $DB;
+    global $USER, $DB;
 
     //$LIKE = $this->_db->sql_compare();
     $LIKE = 'LIKE';
@@ -1166,13 +1019,14 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     //assert that classes returned were requested by the current user using the course / class
     //request block and approved
     if (!empty($extrafilters['show_my_approved_classes'])) {
-        $join .= 'JOIN '.$CFG->prefix.'block_course_request request
+        $join .= 'JOIN {block_course_request} request
                   ON cls.id = request.classid
                   AND request.userid = '.$USER->id.'
                  ';
     }
 
     $where = array();
+    $params = array();
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
@@ -1193,11 +1047,12 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     }
 
     if ($contexts !== null) {
-        //$where[] = $contexts->sql_filter_for_context_level('cls.id', 'class');
-
-        // Why doesn't this work?
-        //$filter_object = $contexts->filter_for_context_level('cls.id', 'class');
-        //$where[] = $filter_object->get_sql();
+        $filter_object = $contexts->get_filter('cls.id', 'class');
+        $filter_sql = $filter_object->get_sql(false, 'cls');
+        if (isset($filter_sql['where'])) {
+            $where[] = $filter_sql['where'];
+            $params += $filter_sql['where_params'];
+        }
     }
 
     if (!empty($where)) {
@@ -1216,19 +1071,9 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
         }
     }
 
-    if (!empty($perpage)) {
-        //if ($DB->_dbconnection->databaseType == 'postgres7') {
-        //    $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-        //} else {
-            $limit = 'LIMIT '.$startrec.', '.$perpage;
-        //}
-    } else {
-        $limit = '';
-    }
+    $sql = $select.$tables.$join.$where.$sort;
 
-    $sql = $select.$tables.$join.$where.$sort.$limit;
-
-    return $DB->get_records_sql($sql);
+    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
 /**
@@ -1260,16 +1105,20 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
     }
 
     $where  = array();
-
-    //$LIKE = $this->_db->sql_compare();
-    $LIKE = 'LIKE';
+    $params = array();
 
     if (!empty($namesearch)) {
-        $where[] = "((crs.name $LIKE '%$namesearch%') OR (cls.idnumber $LIKE '%$namesearch%'))";
+        $crslike = $DB->sql_like('crs.name', '?');
+        $clslike = $DB->sql_like('cls.idnumber', '?');
+
+        $where[] = "(($crslike) OR ($clslike))";
+        $params += array("%$namesearch%", "%$namesearch%");
     }
 
     if ($alpha) {
-        $where[] = "(crs.name $LIKE '$alpha%')";
+        $crslike = $DB->sql_like('crs.name', '?');
+        $where[] = "($crslike)";
+        $params[] = "$alpha%";
     }
 
     if ($id) {
@@ -1282,11 +1131,12 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
     }
 
     if ($contexts !== null) {
-        //$where[] = $contexts->sql_filter_for_context_level('cls.id', 'class');
-
-        // Why doesn't this work?
-        //$filter_object = $contexts->filter_for_context_level('cls.id', 'class');
-        //$where[] = $filter_object->get_sql();
+        $filter_object = $contexts->get_filter('cls.id', 'class');
+        $filter_sql = $filter_object->get_sql(false, 'cls');
+        if (isset($filter_sql['where'])) {
+            $where[] = $filter_sql['where'];
+            $params += $filter_sql['where_params'];
+        }
     }
 
     if (!empty($where)) {
@@ -1297,12 +1147,10 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
 
     $sql = $select . $tables . $join . $where;
 
-    return $DB->count_records_sql($sql);
+    return $DB->count_records_sql($sql, $params);
 }
 
 function pmclass_get_record_by_courseid($courseid) {
-    global $DB;
-    $records = $DB->get_records(pmclass::TABLE, 'courseid', $courseid);
-    return $records;
+    return pmclass::find(new field_filter('courseid', $courseid));
 }
 
