@@ -26,10 +26,18 @@
 
 $string['add'] = 'Add';
 $string['add_class'] = 'Add Class';
+$string['add_coreq'] = 'Add co-requisites';
+$string['add_coreq_to_curriculum'] = 'Add co-requisites to curriculum';
 $string['add_course'] = 'Add Course';
 $string['add_curriculum'] = 'Add Curriculum';
 $string['add_pmclass'] = 'Add Class';
+$string['add_prereq'] = 'Add prerequisites';
+$string['add_prereq_to_curriculum'] = 'Add prerequisites to curriculum';
 $string['add_user'] = 'Add user';
+$string['added_corequisite'] = 'Added <b>{$a}</b> corequisite';
+$string['added_corequisites'] = 'Added <b>{$a}</b> corequisites';
+$string['added_prerequisite'] = 'Added <b>{$a}</b> prerequisite';
+$string['added_prerequisites'] = 'Added <b>{$a}</b> prerequisites';
 $string['added_to_waitlist_message'] = 'you have been added to the waitlist for class {$a->idnumber}';
 $string['adding_completion_element'] = 'Adding Completion Element';
 $string['address'] = 'Address';
@@ -37,6 +45,8 @@ $string['address2'] = 'Address 2';
 $string['admin_dashboard'] = 'Administrator Dashboard';
 $string['all_items_assigned'] = 'All available items assigned.';
 $string['autocreate'] = 'Auto Create Moodle course from template';
+$string['available_course_corequisites'] = 'Available Course Corequisites';
+$string['available_course_prerequisites'] = 'Available Course Prerequisites';
 
 // TBD: associationpage.class.php::get_title_default()
 $string['breadcrumb_trackassignmentpage'] = 'Assign Classes';
@@ -58,7 +68,6 @@ $string['breadcrumb_clstaginstancepage'] = 'Assign Tags';
 $string['breadcrumb_crstaginstancepage'] = 'Assign Tags';
 $string['breadcrumb_curriculumstudentpage'] = 'Assign Students';
 $string['breadcrumb_waitlistpage'] = 'Waiting List';
-
 $string['browse'] = 'Browse';
 
 $string['class'] = 'Class';
@@ -93,7 +102,6 @@ $string['completion_idnumber'] = 'ID Number';
 $string['completion_grade'] = 'Completion grade';
 $string['completion_name'] = 'Name';
 $string['completion_status'] = 'Completion Status';
-
 $string['confirm_delete_association'] = 'Are you sure you want to delete this entry?';
 $string['confirm_delete_class'] = 'Are you sure you want to delete the class {$a->idnumber}?';
 $string['confirm_delete_completion'] = 'Are you sure you want to delete the completion element \"name: {$a}\"?';
@@ -101,6 +109,7 @@ $string['confirm_delete_course'] = 'Are you sure you want to delete the course n
 $string['confirm_delete_curriculum'] = 'Are you sure you want to delete the curriculum named {$a->name} (ID number: {$a->idnumber})?';
 $string['confirm_delete_pmclass'] = 'Are you sure you want to delete the class {$a->idnumber}?';
 $string['confirm_delete_user'] = 'Are you sure you want to delete the user named {$a->firstname} {$a->lastname} (ID number: {$a->idnumber})?';
+$string['corequisites'] = 'Corequisite';
 $string['cost'] = 'Cost';
 $string['course'] = 'Course';
 $string['courses'] = 'Courses';
@@ -130,6 +139,7 @@ $string['courseform:environment'] = 'Environment';
 $string['courseform:environment_help'] = '<p>Where/how is the course delivered. Select from the choices available.  If no enviroments have been entered into the system, go to Curriculum Administration block &gt; Information Elements &gt; Environments to enter environment options, such as online, face-to-face, blended, etc.</p>';
 $string['courseform:length_description'] = 'Length Description';
 $string['courseform:length_description_help'] = '<p>Defines the units for duration, such as days, weeks, months, semesters, etc.</p>';
+$string['course_assigncurriculum'] = 'Assign Curriculum';
 $string['course_classes'] = 'Classes';
 $string['course_curricula'] = 'Curricula';
 $string['course_code'] = 'Code';
@@ -164,6 +174,21 @@ $string['curriculaform:time_to_complete'] = 'Time to complete';
 $string['curriculaform:time_to_complete_help'] = '<p>The time a learner has to complete the curriculum once they have been
 assigned to the curriculum. For example, 18m = 18 months. If there is not a time limit for the curriculum, this field can be left blank.</p>';
 $string['curriculum'] = 'Curriculum';
+$string['curriculumcourse_assigncourse'] = 'Assign course';
+$string['curriculumcourse_position'] = 'Position';
+$string['curriculumcourseform:course'] = 'Course';
+$string['curriculumcourseform:course_help'] = '<p>The name of the Curriculum Administration course being associated with a curriculum.</p>';
+$string['curriculumcourseform:curriculum'] = 'Curriculum';
+$string['curriculumcourseform:curriculum_help'] = '<p>The name of the curriculum being associated with a course.</p>';
+$string['curriculumcourseform:frequency'] = 'Frequency';
+$string['curriculumcourseform:frequency_help'] = '<p>The frequency the course must be repeated, if necessary.  For example,
+4y = every four years. If the course does not need to be repeated periodically, this field should be left blank.</p>';
+$string['curriculumcourseform:position'] = 'Position';
+$string['curriculumcourseform:position_help'] = '<p>Determines the order in which courses are listed within this curriculum. Courses with lower position numbers are displayed first.</p>';
+$string['curriculumcourseform:required'] = 'Required';
+$string['curriculumcourseform:required_help'] = '<p>If enabled, completion of the associated course is required in order for students to complete the selected curriculum.</p>';
+$string['curriculumcourseform:time_period'] = 'Timepreriod';
+$string['curriculumcourseform:time_period_help'] = '<p>The units used in specifying the course frequency.</p>';
 $string['curriculum_idnumber'] = 'ID Number';
 $string['curriculum_description'] = 'Long description';
 $string['curriculum_name'] = 'Name';
@@ -171,6 +196,10 @@ $string['curriculum_reqcredits'] = ' Required Credits';
 $string['curriculum_shortdescription'] = 'Short description';
 
 $string['delete'] = 'Delete';
+$string['deleted_corequisite'] = 'Deleted <b>{$a}</b> corequisite';
+$string['deleted_corequisites'] = 'Deleted <b>{$a}</b> corequisites';
+$string['deleted_prerequisite'] = 'Deleted <b>{$a}</b> prerequisite';
+$string['deleted_prerequisites'] = 'Deleted <b>{$a}</b> prerequistes';
 $string['delete_class'] = 'Delete Class';
 $string['delete_course'] = 'Delete Course';
 $string['delete_curriculum'] = 'Delete Curriculum';
@@ -183,6 +212,8 @@ $string['duration'] = 'Duration';
 
 $string['edit'] = 'Edit';
 $string['editing_completion_element'] = 'Editing Completion Element';
+$string['edit_course_corequisites'] = 'Edit Course Corequisites';
+$string['edit_course_prerequisites'] = 'Edit Course Prerequisites';
 $string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a}';
 $string['elis_doc_class_link'] = '<strong>Documentation for ELIS</strong> &mdash; we have over 200
 pages of documentation for ELIS in our <a href="http://training.remote-learner.net/course/view.php?id=1090">ELIS Support Course</a>.
@@ -197,6 +228,9 @@ $string['error_duration'] = 'Start time must be before the end time.';
 $string['error_not_timeformat'] = 'time not in proper format';
 $string['error_not_durrationformat'] = 'durration not in proper format';
 $string['error_n_overenrol'] = 'The over enrol capability is required for this';
+$string['existing_course_corequisites'] = 'Existing Course Corequisites';
+$string['existing_course_prerequisites'] = 'Existing Course Prerequisites';
+$string['exit'] = 'Exit';
 $string['expiration'] = 'Expiration';
 
 $string['failclustcpycls'] = 'Failed to copy class with idnumber {$a->idnumber}';
@@ -204,6 +238,7 @@ $string['failclustcpycurr'] = 'Curriculum {$a->name} failed to copy';
 $string['failclustcpycurrcrs'] = 'Failed to copy course {$a->name}';
 $string['fax'] = 'Fax';
 $string['female'] = 'Female';
+$string['frequency'] = 'Frequency';
 
 $string['health_check_link'] = 'The <a href="{$a}/curriculum/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
 
@@ -219,6 +254,7 @@ $string['length_description'] = 'Length Description';
 
 $string['makecurcourse'] = 'Make a curriculum for this course';
 $string['male'] = 'Male';
+$string['management'] = 'Management';
 $string['manage_class'] = 'Manage Classes';
 $string['manage_course'] = 'Manage Courses';
 $string['manage_curriculum'] = 'Manage Curricula';
@@ -226,7 +262,6 @@ $string['manage_pmclass'] = 'Manage Classes';
 $string['manage_student'] = 'Manage Students';
 $string['manage_user'] = 'Manage users';
 $string['moodlecourse'] = 'Moodle course';
-
 $string['moodleenrol'] = 'You have been removed from the waiting list for class {$a->class->idnumber}.
 Please visit {$a->wwwroot}/course/enrol.php?id={$a->crs->id} to complete your enrolment.';
 $string['moodleenrol_subj'] = 'Ready to enrol in {$a->class->idnumber}.';
@@ -275,11 +310,15 @@ $string['pmclassform:waitlistenrol'] = 'Auto enrol from waitlist';
 $string['pmclassform:waitlistenrol_help'] = '<p>on to automatically enrol students from the waitlist into the course when an erolled student completes (passes or fails) the course.</p>';
 $string['pmclass_delete_warning'] = 'Warning!  Deleting this class will also delete all stored enrollment information for the class.';
 $string['pmclass_delete_warning_continue'] = 'I understand all enrollments for the class will be deleted, continue ...';
+$string['position'] = 'Position';
 $string['postalcode'] = 'Postal code';
+$string['prerequisites'] = 'Prerequisite';
 $string['priority'] = 'Display priority';
 $string['progman'] = 'Program Manager';
 
 $string['registered_date'] = 'Registered date';
+$string['remove_coreq'] = 'Remove co-requisites';
+$string['remove_prereq'] = 'Remove prerequisites';
 $string['required'] = 'Required';
 $string['required_credits'] = 'Required Credits';
 $string['required_field'] = 'Error: {$a} is a required field';
@@ -288,6 +327,7 @@ $string['showinactive'] = 'Show inactive';
 
 $string['tags'] = 'Tags';
 $string['timecreated'] = 'Creation time';
+$string['time_period'] = 'Timeperiod';
 $string['time_settings'] = 'Time Settings';
 $string['tips_time_format'] = "The format of this is ' *h, *d, *w, *m, *y ' (representing hours, days, weeks, months and years - where * can be any number) Each format must be separated by a comma";
 $string['time_to_complete'] = 'Time to complete';

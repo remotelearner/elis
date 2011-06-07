@@ -50,19 +50,19 @@ class coursecurriculumbaseform extends cmform {
         $this->body_definition();
 
         $mform->addElement('advcheckbox', 'required', get_string('required', 'elis_program'), null, null, array('0', '1'));
-        $mform->addHelpButton('required', array('coursecurriculumform/required', get_string('required', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('required', 'curriculumcourseform:required', 'elis_program');
 
         $mform->addElement('text', 'frequency', get_string('frequency', 'elis_program') . ':');
         $mform->setType('frequency', PARAM_INT);
         $mform->addRule('frequency', null, 'maxlength', 64, 'client');
-        $mform->addHelpButton('frequency', array('coursecurriculumform/frequency', get_string('frequency', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('frequency', 'curriculumcourseform:frequency', 'elis_program');
 
         $mform->addElement('select', 'timeperiod', get_string('time_period', 'elis_program') . ':', $this->timeperiod_values);
-        $mform->addHelpButton('timeperiod', array('coursecurriculumform/timeperiod', get_string('time_period', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('timeperiod', 'curriculumcourseform:timeperiod', 'elis_program');
 
         $mform->addElement('text', 'position', get_string('curriculumcourse_position', 'elis_program') . ':');
         $mform->setType('position', PARAM_INT);
-        $mform->addHelpButton('position', array('coursecurriculumform/position', get_string('position', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('position', 'curriculumcourseform:position', 'elis_program');
 
         $this->add_action_buttons();
     }
@@ -103,15 +103,14 @@ class coursecurriculumform extends coursecurriculumbaseform {
 
         $mform->addElement('select', 'curriculumid', get_string('curriculum', 'elis_program') . ':', $curriculas);
         $mform->addRule('curriculumid', null, 'required', null, 'client');
-        $mform->addHelpButton('curriculumid', array('coursecurriculumform/curriculumname', get_string('curriculum', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('curriculumid', 'curriculumcourseform:curriculum', 'elis_program');
 
         $mform->addElement('hidden', 'courseid', $parent_obj->id);
         $mform->setType('courseid', PARAM_INT);
 
-
         $mform->addElement('text', 'coursename', get_string('course', 'elis_program') . ':', 'readonly="readonly"');
         $mform->setType('coursename', PARAM_TEXT);
-        $mform->addHelpButton('coursename', array('coursecurriculumform/coursename', get_string('course', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('coursename', 'curriculumcourseform:course', 'elis_program');
 
         $this->set_data(array('coursename' => $parent_obj->name));
     }
@@ -136,7 +135,7 @@ class curriculumcourseform extends coursecurriculumbaseform {
 
         $mform->addElement('text', 'curriculumname', get_string('curriculum', 'elis_program') . ':', 'readonly="readonly"');
         $mform->setType('curriculumname', PARAM_TEXT);
-        $mform->addHelpButton('curriculumname', array('coursecurriculumform/curriculumname', get_string('curriculum', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('curriculumname', 'curriculumcourseform:curriculum', 'elis_program');
 
         $contexts = coursepage::get_contexts('block/curr_admin:associate');
         $courses_avail = $coursecurriculum->get_courses_avail(array('contexts' => $contexts));
@@ -157,7 +156,7 @@ class curriculumcourseform extends coursecurriculumbaseform {
 
         $mform->addElement('select', 'courseid', get_string('course', 'elis_program') . ':', $courses);
         $mform->addRule('courseid', null, 'required', null, 'client');
-        $mform->addHelpButton('courseid', array('coursecurriculumform/coursename', get_string('course', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('courseid', 'curriculumcourseform:course', 'elis_program');
 
         $this->set_data(array('curriculumname' => $parent_obj->name));
     }
