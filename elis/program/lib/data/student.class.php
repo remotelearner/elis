@@ -328,8 +328,8 @@ class student extends elis_data_object {
 
         $status = true;
 
-        if ($this->_db->record_exists(student::TABLE, 'userid', $this->userid,
-                                      'classid', $this->classid)) {
+        if ($this->_db->record_exists(student::TABLE, array('userid' => $this->userid,
+                                      'classid' => $this->classid))) {
             // already enrolled -- pretend we succeeded
             return true;
         }
@@ -1343,7 +1343,7 @@ class student extends elis_data_object {
         }
 
         /// Check for an existing enrolment - it can't already exist.
-        if ($this->_db->record_exists(student::TABLE, 'classid', $record->classid, 'userid', $record->userid)) {
+        if ($this->_db->record_exists(student::TABLE, array('classid' => $record->classid, 'userid' => $record->userid))) {
             return true;
         }
 
@@ -2162,7 +2162,7 @@ class student extends elis_data_object {
      */
     public static function can_manage_assoc($userid, $classid) {
         global $USER;
-        
+
         if(!cmclasspage::can_enrol_into_class($classid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
@@ -2170,12 +2170,11 @@ class student extends elis_data_object {
             //current user has the direct capability
             return true;
         }
-        
+
         //get the context for the "indirect" capability
         $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
-            
+
         $allowed_clusters = array();
-            
         $allowed_clusters = pmclass::get_allowed_clusters($classid);
 
         //query to get users associated to at least one enabling cluster
@@ -2185,13 +2184,13 @@ class student extends elis_data_object {
         } else {
             $cluster_select = 'clusterid IN (' . implode(',', $allowed_clusters) . ')';
         }
-        $select = "userid = {$userid} AND {$cluster_select}";
+        $select = "userid = ? AND {$cluster_select}";
 
         //user just needs to be in one of the possible clusters
-        if(record_exists_select(clusteruser::TABLE, $select)) { // *** TBD ***
+        if(record_exists_select(clusteruser::TABLE, $select, array($userid))) {
             return true;
         }
-        
+
         return false;
     }
 }
@@ -2445,7 +2444,7 @@ class student_grade extends elis_data_object {
             $record = $this;
         }
 
-        if ($this->_db->record_exists(CLSGRTABLE, 'classid', $record->_dbfield_classid, 'userid', $record->_dbfield_userid, 'completionid', $record->_dbfield_completionid)) {
+        if ($this->_db->record_exists(CLSGRTABLE, array('classid' => $record->classid, 'userid' => $record->userid, 'completionid' => $record->completionid))) {
             return true;
         }
         return false;
