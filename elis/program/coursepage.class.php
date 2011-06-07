@@ -28,6 +28,7 @@ require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
+require_once elispm::file('curriculumcoursepage.class.php');
 require_once elispm::file('form/courseform.class.php');
 
 /* Add these back in as they are migrated
@@ -35,7 +36,7 @@ require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
 require_once (CURMAN_DIRLOCATION . '/lib/course.class.php');            // ok
 require_once (CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php');    // ok
 require_once (CURMAN_DIRLOCATION . '/form/courseform.class.php');       // ok
-require_once (CURMAN_DIRLOCATION . '/curriculumcoursepage.class.php');  // missing
+require_once (CURMAN_DIRLOCATION . '/curriculumcoursepage.class.php');  // ok
 require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
 */
 
@@ -297,7 +298,8 @@ class coursepage extends managementpage {
                     $newarr[] = $editbutton . ' ' . $deletebutton;
                     $table->data[] = $newarr;
                 }
-                $output .= print_table($table, true); // need to still convert this to html_writer (althought migration instructions say to use "echo $table" which I don't think makes sense)
+                //$output .= print_table($table, true);
+                $output .= $table->get_html();
 
         } else {
             $output .= '<div align="center">' . get_string('no_completion_elements', 'elis_program') . '</div>';

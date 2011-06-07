@@ -26,27 +26,28 @@
 
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/course.class.php');
+require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('form/pmclassform.class.php');
 
 /*
-require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/pmclass.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/course.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/environment.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/track.class.php');
-require_once (CURMAN_DIRLOCATION . '/form/pmclassform.class.php');
-require_once (CURMAN_DIRLOCATION . '/studentpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/waitlistpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/instructorpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/taginstancepage.class.php');
-require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');
-require_once (CURMAN_DIRLOCATION . '/reportlinkspage.class.php');
+require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
+require_once (CURMAN_DIRLOCATION . '/lib/pmclass.class.php');           // ok
+require_once (CURMAN_DIRLOCATION . '/lib/course.class.php');            // ok
+require_once (CURMAN_DIRLOCATION . '/lib/environment.class.php');       // not used
+require_once (CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php'); // ok
+require_once (CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php');    // ok
+require_once (CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php');   // missing
+require_once (CURMAN_DIRLOCATION . '/lib/track.class.php');             // missing
+require_once (CURMAN_DIRLOCATION . '/form/pmclassform.class.php');      // ok
+require_once (CURMAN_DIRLOCATION . '/studentpage.class.php');           // missing
+require_once (CURMAN_DIRLOCATION . '/waitlistpage.class.php');          // missing
+require_once (CURMAN_DIRLOCATION . '/instructorpage.class.php');        // missing
+require_once (CURMAN_DIRLOCATION . '/taginstancepage.class.php');       // not used
+require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
+require_once (CURMAN_DIRLOCATION . '/reportlinkspage.class.php');       // missing
 */
 
 class pmclasspage extends managementpage {

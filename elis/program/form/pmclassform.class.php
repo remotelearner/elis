@@ -119,7 +119,6 @@ class pmclassform extends cmform {
         }
         // Done adding course select
 
-
         $mform->addElement('text', 'idnumber', get_string('class_idnumber', 'elis_program') . ':');
         $mform->addRule('idnumber', get_string('required'), 'required', NULL, 'client');
         $mform->setType('idnumber', PARAM_TEXT);
@@ -139,9 +138,8 @@ class pmclassform extends cmform {
             $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>$CURMAN->config->time_format_12h));
         }
-        */
-
         $mform->addHelpButton('starttime', 'pmclassform:class_starttime', 'elis_program');
+        */
 
         // Do the same thing for the endtime
         /*
@@ -193,7 +191,8 @@ class pmclassform extends cmform {
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
             ? get_context_instance(context_level_base::get_custom_context_level('class', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
-            require_once elispm::file('plugins/manual/custom_fields.php');
+        /*
+        require_once elispm::file('plugins/manual/custom_fields.php');
         foreach ($fields as $rec) {
             $field = new field($rec);
             if (!isset($field->owners['manual'])) {
@@ -205,6 +204,7 @@ class pmclassform extends cmform {
             }
             manual_field_add_form_element($this, $context, $field);
         }
+        */
 
         $this->add_action_buttons();
     }
@@ -279,10 +279,15 @@ class pmclassform extends cmform {
     function add_track_multi_select($courseid) {
         global $CFG;
 
-        require_js('yui_yahoo');
-        require_js('yui_event');
-        require_js('yui_connection');
-        require_js($CFG->wwwroot.'/curriculum/js/trkmultiselect.js');
+        //require_js('yui_yahoo');
+        //require_js('yui_event');
+        //require_js('yui_connection');
+        //require_js($CFG->wwwroot.'/curriculum/js/trkmultiselect.js');
+
+        $PAGE->requires->js('yui_yahoo');
+        $PAGE->requires->js('yui_event');
+        $PAGE->requires->js('yui_connection');
+        $PAGE->requires->js('/elis/program/js/trkmultiselect.js');
 
         $mform =& $this->_form;
 
@@ -306,6 +311,8 @@ class pmclassform extends cmform {
      * @return string The form HTML, without the form.
      */
     function add_moodle_course_select() {
+        global $CFG, $DB;
+
         $mform =& $this->_form;
 
         //$categoryid = $this->_db->get_field('course_categories', 'id', 'parent', '0');
@@ -315,7 +322,9 @@ class pmclassform extends cmform {
 
         $cselect = array(get_string('none', 'elis_program'));
 
-        $crss = $this->_db->get_records_select('course', $select, 'fullname');
+        //$crss = $this->_db->get_records_select('course', $select, 'fullname');
+        $params = array();
+        $crss = $DB->get_records_select('course', $select, $params, 'fullname');
         if(!empty($crss)) {
             foreach ($crss as $crs) {
                 $cselect[$crs->id] = $crs->fullname;

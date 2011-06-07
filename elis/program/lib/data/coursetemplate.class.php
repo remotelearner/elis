@@ -135,3 +135,4 @@ class coursetemplate extends data_object_with_custom_fields {
 		return $this->_db->delete_records(coursetemplate::TABLE, 'courseid', $id);
 	}
 }
+

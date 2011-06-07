@@ -29,6 +29,7 @@ require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::lib('datedelta.class.php');
 require_once elispm::file('form/curriculumform.class.php');
+require_once elispm::file('curriculumcoursepage.class.php');
 
 /*
 require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
@@ -36,7 +37,7 @@ require_once (CURMAN_DIRLOCATION . '/lib/curriculum.class.php');        // ok
 require_once (CURMAN_DIRLOCATION . '/lib/datedelta.class.php');         // ok
 require_once (CURMAN_DIRLOCATION . '/form/curriculaform.class.php');    // ok
 require_once (CURMAN_DIRLOCATION . '/clustercurriculumpage.class.php'); // missing
-require_once (CURMAN_DIRLOCATION . '/curriculumcoursepage.class.php');  // missing
+require_once (CURMAN_DIRLOCATION . '/curriculumcoursepage.class.php');  // ok
 require_once (CURMAN_DIRLOCATION . '/taginstancepage.class.php');       // not used
 require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
 require_once (CURMAN_DIRLOCATION . '/lib/contexts.php');                // ok

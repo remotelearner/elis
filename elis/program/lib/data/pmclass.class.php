@@ -25,28 +25,30 @@
  */
 
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
+require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('data/classmoodlecourse.class.php');
+require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
-
+require_once elispm::file('form/pmclassform.class.php');
 
 /*
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/course.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/environment.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/student.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/attendance.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php';
-require_once CURMAN_DIRLOCATION . '/form/pmclassform.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/track.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/taginstance.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/track.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';
+require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
+require_once CURMAN_DIRLOCATION . '/lib/course.class.php';              // ok
+require_once CURMAN_DIRLOCATION . '/lib/environment.class.php';         // not used
+require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php';          // missing
+require_once CURMAN_DIRLOCATION . '/lib/student.class.php';             // missing
+require_once CURMAN_DIRLOCATION . '/lib/attendance.class.php';          // not used
+require_once CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php';   // ok
+require_once CURMAN_DIRLOCATION . '/form/pmclassform.class.php';        // ok
+require_once CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php';      // ok
+require_once CURMAN_DIRLOCATION . '/lib/track.class.php';               // missing
+require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // ok
+require_once CURMAN_DIRLOCATION . '/lib/taginstance.class.php';         // not used
+require_once CURMAN_DIRLOCATION . '/lib/track.class.php';               // missing
+require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // ok
 */
 
 /*
@@ -65,23 +67,23 @@ class pmclass extends data_object_with_custom_fields {
     static $associations = array(
         'classenrolments' => array(
             'class' => 'student',
-            'foreignkey' => 'classid'
+            'foreignidfield' => 'classid'
         ),
         'classgraded' => array(
             'class' => 'classgraded',
-            'foreignkey' => 'classid'
+            'foreignidfield' => 'classid'
         ),
         'classinstructor' => array(
             'class' => 'instructor',
-            'foreignkey' => 'classid'
+            'foreignidfield' => 'classid'
         ),
         'classmoodle' => array(
             'class' => 'classmoodle',
-            'foreignkey' => 'classid'
+            'foreignidfield' => 'classid'
         ),
         'trackclass' => array(
             'class' => 'trackclass',
-            'foreignkey' => 'classid'
+            'foreignidfield' => 'classid'
         ),
     );
 
@@ -217,11 +219,11 @@ class pmclass extends data_object_with_custom_fields {
         return $ret;
     }
 
-/////////////////////////////////////////////////////////////////////
-//                                                                 //
-//  FORM FUNCTIONS:                                                //
-//                                                                 //
-/////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+    //                                                                 //
+    //  FORM FUNCTIONS:                                                //
+    //                                                                 //
+    /////////////////////////////////////////////////////////////////////
     public function setUrl($url = null, $action = array()) {
         if(!($url instanceof moodle_url)) {
             $url = new moodle_url($url, $action);
@@ -274,7 +276,6 @@ class pmclass extends data_object_with_custom_fields {
             $this->track = $data->track;
         }
 
-
         $this->oldmax = $this->maxstudents;
 
         $fields = field::get_for_context_level('class', 'elis_program');
@@ -289,10 +290,10 @@ class pmclass extends data_object_with_custom_fields {
         parent::set_from_data($data);
     }
 
-/*
- * Perform all the necessary steps to delete all aspects of a class.
- *
- */
+    /*
+     * Perform all the necessary steps to delete all aspects of a class.
+     *
+     */
     function delete() {
         $status = true;
         if (!empty($this->id)) {
@@ -525,11 +526,11 @@ class pmclass extends data_object_with_custom_fields {
         return true;
     }
 
-/////////////////////////////////////////////////////////////////////
-//                                                                 //
-//  STATIC FUNCTIONS:                                              //
-//                                                                 //
-/////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+    //                                                                 //
+    //  STATIC FUNCTIONS:                                              //
+    //                                                                 //
+    /////////////////////////////////////////////////////////////////////
 
     public static function get_default() {
         $default_values = array();
@@ -587,9 +588,9 @@ class pmclass extends data_object_with_custom_fields {
         ///     - it's connected to a Moodle course and no graded activities have been graded...
         ///     - no completion elements have been completed (graded).
 
-    /// Get all enrolments that haven't started.
-    /// LEFT JOIN Moodle course and Moodle user info, since they may not have records.
-    /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
+        /// Get all enrolments that haven't started.
+        /// LEFT JOIN Moodle course and Moodle user info, since they may not have records.
+        /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
 
         $timenow = time();
         //$timedelta = $CURMAN->config->notify_classnotstarted_days * 60*60*24;
@@ -666,8 +667,8 @@ class pmclass extends data_object_with_custom_fields {
         /// A class is incomplete if
         ///     - The enrollment record is not marked as complete.
 
-    /// Get all enrolments that haven't started.
-    /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
+        /// Get all enrolments that haven't started.
+        /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
 
         $timenow = time();
         //$timedelta = $CURMAN->config->notify_classnotcompleted_days * 24*60*60;
@@ -972,7 +973,7 @@ class pmclass extends data_object_with_custom_fields {
         if (pmclasspage::_has_capability('block/curr_admin:class:enrol_cluster_user', $clsid)) {
             require_once elispm::lib('data/usercluster.class.php');
             $cmuserid = cm_get_crlmuserid($USER->id);
-            $userclusters = $this->_db->get_records(CLSTUSERTABLE, 'userid', $cmuserid);
+            $userclusters = $this->_db->get_records(clusteruser::TABLE, 'userid', $cmuserid);
             foreach ($userclusters as $usercluster) {
                 $allowed_clusters[] = $usercluster->clusterid;
             }
@@ -1044,7 +1045,7 @@ class pmclass extends data_object_with_custom_fields {
         }
         $objs['classes'] = array($this->id => $clone->id);
 
-        $cmc = $this->_db->get_record(CLSMDLTABLE, 'classid', $this->id);
+        $cmc = $this->_db->get_record(classmoodle::TABLE, 'classid', $this->id);
         if ($cmc) {
             if ($cmc->autocreated == -1) {
                 //$cmc->autocreated = $CURMAN->config->autocreated_unknown_is_yes;

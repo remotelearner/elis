@@ -43,7 +43,7 @@ require_once (CURMAN_DIRLOCATION . '/form/coursecurriculumform.class.php'); // o
 class curriculumcoursebasepage extends associationpage {
     var $data_class = 'curriculumcourse';
 
-    function __construct($params=false) {
+    function __construct(array $params=null) {
         parent::__construct($params);
 
         $this->tabs = array(

@@ -27,12 +27,13 @@
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/curriculum.class.php');
+require_once elispm::lib('data/curriculumcourse.class.php');
 
 /* Add these back in as they are migrated
 require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
 require_once CURMAN_DIRLOCATION . '/lib/environment.class.php';         // not used
 require_once CURMAN_DIRLOCATION . '/lib/curriculum.class.php';          // ok
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // missing
+require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // ok
 require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // ok
 */
 
@@ -45,31 +46,31 @@ class course extends data_object_with_custom_fields {
     static $associations = array(
         'pmclass' => array(
             'class' => 'pmclass',
-            'foreignkey' => 'courseid'
+            'foreignidfield' => 'courseid'
         ),
         'coursetemplate' => array(
             'class' => 'coursetemplate',
-            'foreignkey' => 'courseid'
+            'foreignidfield' => 'courseid'
         ),
         'coursecompletion' => array(
             'class' => 'coursecompletion',
-            'foreignkey' => 'courseid'
+            'foreignidfield' => 'courseid'
         ),
         'coursecorequisite' => array(
             'class' => 'coursecorequisite',
-            'foreignkey' => 'courseid'
+            'foreignidfield' => 'courseid'
         ),
         'courseprerequisite' => array(
             'class' => 'courseprerequisite',
-            'foreignkey' => 'courseid'
+            'foreignidfield' => 'courseid'
         ),
         'curriculumcourse' => array(
             'class' => 'curriculumcourse',
-            'foreignkey' => 'courseid'
+            'foreignidfield' => 'courseid'
         ),
         'trackclass' => array(
             'class' => 'trackclass',
-            'foreignkey' => 'courseid'
+            'foreignidfield' => 'courseid'
         ),
     );
 
@@ -511,16 +512,16 @@ class course extends data_object_with_custom_fields {
 
         mtrace("Checking course notifications<br />\n");
 
-    /// Get all curriculum courses with a frequency greater than zero.
-    /// LEFT JOIN Moodle course and Moodle user info, since they may not have records.
-    /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
+        /// Get all curriculum courses with a frequency greater than zero.
+        /// LEFT JOIN Moodle course and Moodle user info, since they may not have records.
+        /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
         $day   = 60 * 60 * 24;
         $week  = $day * 7;
         $month = $day * 30;
         $year  = $day * 365;
         $timenow = time();
 
-    /// Enrolment id will be the one that won't repeat, so it will be the unique index.
+        /// Enrolment id will be the one that won't repeat, so it will be the unique index.
         $select = 'SELECT cce.id, ccc.frequency, ccc.timeperiod, ' .
                   'cc.name as coursename, ' .
                   'c.name as curriculumname, ' .
@@ -767,8 +768,8 @@ class course extends data_object_with_custom_fields {
      * object.
      */
     function duplicate($options) {
-        require_once elis::lib('cmclass.class.php');
-        require_once elis::lib('coursetemplate.class.php');
+        require_once elispm::lib('pmclass.class.php');
+        require_once elispm::lib('coursetemplate.class.php');
         $objs = array('errors' => array());
         if (isset($options['targetcluster'])) {
             $cluster = $options['targetcluster'];
@@ -810,8 +811,6 @@ class course extends data_object_with_custom_fields {
         unset($template->id);
         $template->courseid = $clone->id;
         $template->add();
-
-        // FIXME: copy tags
 
         // copy the classes
         if (!empty($options['classes'])) {
@@ -855,7 +854,8 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
     //$LIKE = $DB->sql_compare();
     $LIKE = 'LIKE';
 
-    $select = 'SELECT crs.*, env.name as envname, env.description as envdescription, (SELECT COUNT(*) FROM {'.curriculumcourse::TABLE.'} WHERE courseid = crs.id ) as curricula ';
+    //$select = 'SELECT crs.*, env.name as envname, env.description as envdescription, (SELECT COUNT(*) FROM {'.curriculumcourse::TABLE.'} WHERE courseid = crs.id ) as curricula ';
+    $select = 'SELECT crs.*, (SELECT COUNT(*) FROM {'.curriculumcourse::TABLE.'} WHERE courseid = crs.id ) as curricula ';
     $tables = 'FROM {'.course::TABLE.'} crs ';
     //$join   = 'LEFT JOIN {'.enrvironment::TABLE.'} env ';
     //$on     = 'ON env.id = crs.environmentid ';
@@ -875,8 +875,8 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
     if ($contexts !== null) {
         //$where[] = $contexts->sql_filter_for_context_level('crs.id', 'course');
 
-        $filter_object = $contexts->filter_for_context_level('crs.id', 'course');
-        $where[] = $filter_object->get_sql();
+        //$filter_object = $contexts->filter_for_context_level('crs.id', 'course');
+        //$where[] = $filter_object->get_sql();
     }
 
     if (!empty($where)) {
@@ -924,8 +924,8 @@ function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
     if ($contexts !== null) {
         //$where[] = $contexts->sql_filter_for_context_level('id', 'course');
 
-        $filter_object = $contexts->filter_for_context_level('id', 'course');
-        $where[] = $filter_object->get_sql();
+        //$filter_object = $contexts->filter_for_context_level('id', 'course');
+        //$where[] = $filter_object->get_sql();
     }
 
     $where = implode(' AND ', $where);

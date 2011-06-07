@@ -25,18 +25,20 @@
  */
 
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
+require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/course.class.php');
+require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('datedelta.class.php');
 
 /*
 require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
 require_once CURMAN_DIRLOCATION . '/lib/course.class.php';              // ok
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // missing
+require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // ok
 require_once CURMAN_DIRLOCATION . '/lib/curriculumstudent.class.php';   // missing
 require_once CURMAN_DIRLOCATION . '/lib/user.class.php';                // ok
 require_once CURMAN_DIRLOCATION . '/lib/datedelta.class.php';           // ok
-require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // missing
+require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // ok
 */
 
 class curriculum extends data_object_with_custom_fields {
@@ -45,19 +47,19 @@ class curriculum extends data_object_with_custom_fields {
     static $associations = array(
         'clustercurriculum' => array(
             'class' => 'clustercurriculum',
-            'foreignkey' => 'curriculumid'
+            'foreignidfield' => 'curriculumid'
         ),
         'curriculumassignment' => array(
             'class' => 'curriculumassignment',
-            'foreignkey' => 'curriculumid'
+            'foreignidfield' => 'curriculumid'
         ),
         'curriculumcourse' => array(
             'class' => 'curriculumcourse',
-            'foreignkey' => 'curriculumid'
+            'foreignidfield' => 'curriculumid'
         ),
         'track' => array(
             'class' => 'track',
-            'foreignkey' => 'curid'
+            'foreignidfield' => 'curid'
         ),
     );
 
@@ -689,8 +691,8 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
     if ($contexts !== null) {
         //$where[] = $contexts->sql_filter_for_context_level('cur.id', 'curriculum');
 
-        $filter_object = $contexts->filter_for_context_level('cur.id', 'curriculum');
-        $where[] = $filter_object->get_sql();
+        //$filter_object = $contexts->filter_for_context_level('cur.id', 'curriculum');
+        //$where[] = $filter_object->get_sql();
     }
 
     if(!empty($userid)) {
@@ -777,8 +779,8 @@ function curriculum_count_records($namesearch = '', $alpha = '', $contexts = nul
     if ($contexts != null) {
         //$where[] = $contexts->sql_filter_for_context_level('id', 'curriculum');
 
-        $filter_object = $contexts->filter_for_context_level('id', 'curriculum');
-        $where[] = $filter_object->get_sql();
+        //$filter_object = $contexts->filter_for_context_level('id', 'curriculum');
+        //$where[] = $filter_object->get_sql();
     }
 
     $where = implode(' AND ',$where).' ';
