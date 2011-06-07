@@ -31,6 +31,7 @@ require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('form/pmclassform.class.php');
+require_once elispm::file('coursepage.class.php');
 
 /*
 require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
@@ -144,9 +145,14 @@ class pmclasspage extends managementpage {
 
     public function _get_page_context() {
         $id = $this->optional_param('id', 0, PARAM_INT);
+        $action = $this->optional_param('action', 'default', PARAM_ACTION);
 
         if ($id) {
-            return get_context_instance(context_level_base::get_custom_context_level('class', 'elis_program'), $id);
+            if ($action == 'default') {
+                return get_context_instance(context_level_base::get_custom_context_level('course', 'elis_program'), $id);
+            } else {
+                return get_context_instance(context_level_base::get_custom_context_level('class', 'elis_program'), $id);
+            }
         } else {
             return parent::_get_page_context();
         }
