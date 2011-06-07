@@ -96,7 +96,7 @@ class context_level_elis_curriculum extends context_level_base {
         // Curriculum
         $contextlevel = context_level_base::get_custom_context_level('curriculum', 'elis_program');
         $sql = 'UPDATE {context}
-                   SET depth=2, path='.sql_concat("'$base/'", 'id')."
+                   SET depth=2, path='.$DB->sql_concat("'$base/'", 'id')."
                  WHERE contextlevel = $contextlevel
                        AND EXISTS (SELECT 'x'
                                      FROM {crlm_curriculum} u
@@ -187,7 +187,7 @@ class context_level_elis_track extends context_level_base {
         $trackcontextlevel = context_level_base::get_custom_context_level('track', 'elis_program');
         $curcontextlevel = context_level_base::get_custom_context_level('curriculum', 'elis_program');
         $sql = 'INSERT INTO {context_temp} (id, path, depth)
-                SELECT ctx.id, '.sql_concat('pctx.path', "'/'", 'ctx.id').", pctx.depth+1
+                SELECT ctx.id, '.$DB->sql_concat('pctx.path', "'/'", 'ctx.id').", pctx.depth+1
                   FROM {context} ctx
                   JOIN {crlm_track} t ON ctx.instanceid=t.id
                   JOIN {context} pctx ON t.curid=pctx.instanceid
@@ -276,7 +276,7 @@ class context_level_elis_course extends context_level_base {
         // Course
         $contextlevel = context_level_base::get_custom_context_level('course', 'elis_program');
         $sql = 'UPDATE {context}
-                   SET depth=2, path='.sql_concat("'$base/'", 'id')."
+                   SET depth=2, path='.$DB->sql_concat("'$base/'", 'id')."
                  WHERE contextlevel=$contextlevel
                        AND EXISTS (SELECT 'x'
                                      FROM {crlm_course} u
@@ -371,7 +371,7 @@ class context_level_elis_class extends context_level_base {
         $classcontextlevel = context_level_base::get_custom_context_level('class', 'elis_program');
         $coursecontextlevel = context_level_base::get_custom_context_level('course', 'elis_program');
         $sql = 'INSERT INTO {context_temp} (id, path, depth)
-                SELECT ctx.id, '.sql_concat('pctx.path', "'/'", 'ctx.id').", pctx.depth+1
+                SELECT ctx.id, '.$DB->sql_concat('pctx.path', "'/'", 'ctx.id').", pctx.depth+1
                   FROM {context} ctx
                   JOIN {crlm_class} c ON ctx.instanceid=c.id
                   JOIN {context} pctx ON c.courseid=pctx.instanceid
@@ -442,7 +442,7 @@ class context_level_elis_user extends context_level_base {
         // User
         $contextlevel = context_level_base::get_custom_context_level('user', 'elis_program');
         $sql = 'UPDATE {context}
-                   SET depth=2, path='.sql_concat("'$base/'", 'id')."
+                   SET depth=2, path='.$DB->sql_concat("'$base/'", 'id')."
                  WHERE contextlevel=$contextlevel
                        AND EXISTS (SELECT 'x'
                                      FROM {crlm_course} u
@@ -555,7 +555,7 @@ class context_level_elis_cluster extends context_level_base {
         // Cluster
         $contextlevel = context_level_base::get_custom_context_level('cluster', 'elis_program');
         $sql = "UPDATE {context}
-                   SET depth=2, path=".sql_concat("'$base/'", 'id')."
+                   SET depth=2, path=".$DB->sql_concat("'$base/'", 'id')."
                  WHERE contextlevel=$contextlevel
                        AND EXISTS (SELECT 'x'
                                      FROM {crlm_cluster} u
@@ -568,7 +568,7 @@ class context_level_elis_cluster extends context_level_base {
         $maxdepth = $DB->get_field_sql('SELECT MAX(depth) FROM {crlm_cluster}');
         for ($n=2;$n<=$maxdepth;$n++) {
             $sql = 'INSERT INTO {context_temp} (id, path, depth)
-                    SELECT ctx.id, '.sql_concat('pctx.path', "'/'", 'ctx.id').", pctx.depth+1
+                    SELECT ctx.id, '.$DB->sql_concat('pctx.path', "'/'", 'ctx.id').", pctx.depth+1
                       FROM {context} ctx
                       JOIN {crlm_cluster} c ON ctx.instanceid=c.id
                       JOIN {context} pctx ON c.parent=pctx.instanceid
