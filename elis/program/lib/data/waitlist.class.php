@@ -40,9 +40,11 @@ class waitlist extends elis_data_object {
 
     var $verbose_name = 'waitlist';
 
-    static $associations = array( // TBD
-        'users' => array('class' => 'user',
-                         'idfield' => 'userid')
+    static $associations = array( // TBD: class student ???
+        'users'   => array('class' => 'user',
+                           'idfield' => 'userid'),
+        'pmclass' => array('class' => 'pmclass',
+                           'idfield' => classid)
     );
 
 /*

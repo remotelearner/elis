@@ -239,13 +239,9 @@ class student extends elis_data_object {
 
         if ($this->update()) {
             /// Does the user receive a notification?
-            // *** TBD ***
-            $sendtouser       = true;
-            $sendtorole       = true;
-            $sendtosupervisor = true;
-            //$sendtouser       = $CURMAN->config->notify_classcompleted_user;
-            //$sendtorole       = $CURMAN->config->notify_classcompleted_role;
-            //$sendtosupervisor = $CURMAN->config->notify_classcompleted_supervisor;
+            $sendtouser       = elis::$config->elis_program->notify_classcompleted_user;
+            $sendtorole       = elis::$config->elis_program->notify_classcompleted_role;
+            $sendtosupervisor = elis::$config->elis_program->notify_classcompleted_supervisor;
 
             /// Make sure this is a valid user.
             $enroluser = new user($this->userid);
@@ -257,9 +253,9 @@ class student extends elis_data_object {
             $message = new stdClass; // TBD: new notification();
 
             /// Set up the text of the message
-            $text = empty($CURMAN->config->notify_classcompleted_message) ?
+            $text = empty(elis::$config->elis_program->notify_classcompleted_message) ?
                         get_string('notifyclasscompletedmessagedef', self::LANG_FILE) :
-                        $CURMAN->config->notify_classcompleted_message;
+                        elis::$config->elis_program->notify_classcompleted_message;
             $search = array('%%userenrolname%%', '%%classname%%');
 
             if (($clsmdl = $this->_db->get_record(CLSMDLTABLE, array('classid' => $this->pmclass->id))) &&
@@ -415,7 +411,7 @@ class student extends elis_data_object {
                 if (!$enrol) {
                     $enrol = $CFG->enrol;
                 }
-                if ($CURMAN->config->restrict_to_elis_enrolment_plugin && $enrol != 'elis') {
+                if (elis::$config->elis_program->restrict_to_elis_enrolment_plugin && $enrol != 'elis') {
                     $status = new Object();
                     $status->message = get_string('error_not_using_elis_enrolment', self::LANG_FILE);
                     return $status;
@@ -1989,9 +1985,9 @@ class student extends elis_data_object {
         require_once($CFG->dirroot.'/curriculum/lib/notifications.php');
 
         /// Does the user receive a notification?
-        $sendtouser       = $CURMAN->config->notify_classnotstarted_user;
-        $sendtorole       = $CURMAN->config->notify_classnotstarted_role;
-        $sendtosupervisor = $CURMAN->config->notify_classnotstarted_supervisor;
+        $sendtouser       = elis::$config->elis_program->notify_classnotstarted_user;
+        $sendtorole       = elis::$config->elis_program->notify_classnotstarted_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_classnotstarted_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -2010,9 +2006,9 @@ class student extends elis_data_object {
         $message = new notification();
 
         /// Set up the text of the message
-        $text = empty($CURMAN->config->notify_classnotstarted_message) ?
+        $text = empty(elis::$config->elis_program->notify_classnotstarted_message) ?
                     get_string('notifyclassnotstartedmessagedef', self::LANG_FILE) :
-                    $CURMAN->config->notify_classnotstarted_message;
+                    elis::$config->elis_program->notify_classnotstarted_message;
         $search = array('%%userenrolname%%', '%%classname%%');
         $replace = array(fullname($student->user), $student->cmclass->course->name);
         $text = str_replace($search, $replace, $text);
@@ -2060,8 +2056,8 @@ class student extends elis_data_object {
         require_once($CFG->dirroot.'/curriculum/lib/notifications.php');
 
         /// Does the user receive a notification?
-        $sendtouser = $CURMAN->config->notify_classnotcompleted_user;
-        $sendtorole = $CURMAN->config->notify_classnotcompleted_role;
+        $sendtouser = elis::$config->elis_program->notify_classnotcompleted_user;
+        $sendtorole = elis::$config->elis_program->notify_classnotcompleted_role;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole) {
@@ -2080,9 +2076,9 @@ class student extends elis_data_object {
         $message = new notification();
 
         /// Set up the text of the message
-        $text = empty($CURMAN->config->notify_classnotcompleted_message) ?
+        $text = empty(elis::$config->elis_program->notify_classnotcompleted_message) ?
                     get_string('notifyclassnotcompletedmessagedef', self::LANG_FILE) :
-                    $CURMAN->config->notify_classnotcompleted_message;
+                    elis::$config->elis_program->notify_classnotcompleted_message;
         $search = array('%%userenrolname%%', '%%classname%%');
         $replace = array(fullname($student->user), $student->cmclass->course->name);
         $text = str_replace($search, $replace, $text);

@@ -25,7 +25,7 @@
  */
 
 require_once elis::lib('table.class.php');
-require_once elispm::lib('newpage.class.php');
+require_once elispm::lib('page.class.php');
 //require_once elispm::lib('recordlinkformatter.class.php');
 //require_once elispm::lib('cmsearchbox.class.php');
 //require_once elispm::lib('cmalphabox.class.php');
@@ -39,7 +39,7 @@ require_once elispm::lib('newpage.class.php');
  * define how the class operates.  See an existing subclass for an example.
  *
  */
-class associationpage extends newpage {
+class associationpage extends pm_page {
     const LANG_FILE = 'elis_program';
 
     public function can_do_default() {
