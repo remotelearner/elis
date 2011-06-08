@@ -320,14 +320,15 @@ class display_date_item {
  */
 class record_link_decorator {
     /**
-     * @param elis_page $page the base page object to use for constructing the
+     * @param string $page the base page object to use for constructing the
      * link
      * $param string $id_field_name the field in the item data that contains
      * the ID to use
      * $param string $param_name the URL parameter to use to specify the ID
      */
-    public function __construct(elis_page $page, $id_field_name, $param_name='id') {
-        $this->page = $page;
+    public function __construct($pageclass, array $pageparams, $id_field_name, $param_name='id') {
+        $this->pageclass = $pageclass;
+        $this->pageparams = $pageparams;
         $this->id_field_name = $id_field_name;
         $this->param_name = $param_name;
     }
@@ -336,7 +337,7 @@ class record_link_decorator {
         $id_field_name = $this->id_field_name;
 
         if (isset($item->$id_field_name) && $item->$id_field_name) {
-            $page = $this->page->get_new_page(array($this->param_name => $item->$id_field_name));
+            $page = new $this->page($this->pageparams + array($this->param_name => $item->$id_field_name));
             if ($page->can_do()) {
                 return html_writer::link($page->get_url(), $text);
             }
