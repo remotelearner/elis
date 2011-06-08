@@ -127,4 +127,73 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($src->parent, $retr->parent);
         $this->assertEquals(3, $retr->depth);
     }
+
+    /**
+     * Test that you can delete and promote sub user sets
+     */
+    public function testDeletePromote() {
+        global $DB;
+        $this->origdb = $DB;
+        $DB = $this->overlaydb = new overlay_database($DB, array('context' => 'moodle',
+                                                                 'course' => 'moodle',
+                                                                 userset::TABLE => 'elis_program'));
+        $this->setUpContextsTable();
+
+        // load initial data from a CSV file
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv'));
+        load_phpunit_data_set($dataset, true, $this->overlaydb);
+
+        // make sure all the contexts are created, so that we can find the children
+        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
+        for ($i = 1; $i <= 4; $i++) {
+            $cluster_context_instance = get_context_instance($cluster_context_level, $i);
+        }
+
+        // delete a record
+        $src = new userset(2, null, array(), false, array(), $this->overlaydb);
+        $src->deletesubs = false;
+        $src->delete();
+
+        // test that the record is deleted
+        $this->assertFalse(userset::exists(new field_filter('id', 2), $this->overlaydb));
+
+        // test that the child cluster is promoted
+        $retr = new userset(4, null, array(), false, array(), $this->overlaydb);
+        $this->assertEquals(0, $retr->parent);
+        $this->assertEquals(1, $retr->depth);
+    }
+
+    /**
+     * Test that you can delete a user set and all its sub user sets
+     */
+    public function testDeleteSubs() {
+        global $DB;
+        $this->origdb = $DB;
+        $DB = $this->overlaydb = new overlay_database($DB, array('context' => 'moodle',
+                                                                 'course' => 'moodle',
+                                                                 userset::TABLE => 'elis_program'));
+        $this->setUpContextsTable();
+
+        // load initial data from a CSV file
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv'));
+        load_phpunit_data_set($dataset, true, $this->overlaydb);
+
+        // make sure all the contexts are created, so that we can find the children
+        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
+        for ($i = 1; $i <= 4; $i++) {
+            $cluster_context_instance = get_context_instance($cluster_context_level, $i);
+        }
+
+        // delete a record
+        $src = new userset(2, null, array(), false, array(), $this->overlaydb);
+        $src->deletesubs = true;
+        $src->delete();
+
+        // test that the record is deleted
+        $this->assertFalse(userset::exists(new field_filter('id', 2), $this->overlaydb));
+        // test that the child userset is deleted
+        $this->assertFalse(userset::exists(new field_filter('id', 4), $this->overlaydb));
+    }
 }

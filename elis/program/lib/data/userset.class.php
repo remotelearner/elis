@@ -151,8 +151,8 @@ class userset extends data_object_with_custom_fields {
             require_once(elis::plugin_file(self::ENROL_PLUGIN_TYPE.'_'.$plugin, 'lib.php'));
         }
 
-        if (isset($this->deletesimple)) {
-            parent::delete();
+        if ($this->deletesimple) {
+            return parent::delete();
         }
 
         $result = true;
@@ -166,7 +166,8 @@ class userset extends data_object_with_custom_fields {
         $instance_id = $cluster_context_instance->id;
         $instance_path = $cluster_context_instance->path;
         $children = userset::find(new join_filter('id', 'context', 'instanceid',
-                                                  new field_filter('path', "{$instance_path}/%", field_filter::LIKE)),
+                                                  new AND_filter(array(new field_filter('path', "{$instance_path}/%", field_filter::LIKE),
+                                                                       new field_filter('contextlevel', $cluster_context_level)))),
                                   array('id' => 'DESC'), 0, 0, $this->_db);
         $children = $children->to_array();
 
@@ -180,10 +181,10 @@ class userset extends data_object_with_custom_fields {
         foreach ($todelete as $userset) {
             // Cascade to regular datarecords
             $filter = new field_filter('clusterid', $userset->id);
-            $result = $result && usersetprogram::delete_records($filter, $this->_db);
-            $result = $result && usersettrack::delete_records($filter, $this->_db);
-            $result = $result && usersetassignment::delete_records($filter, $this->_db);
-            $result = $result && delete_context($cluster_context_level,$delete_id);
+            //clustercurriculum::delete_records($filter, $this->_db);
+            //clustertrack::delete_records($filter, $this->_db);
+            //clusterassignment::delete_records($filter, $this->_db);
+            delete_context($cluster_context_level,$userset->id);
 
             // Cascade to all plugins
             foreach ($plugins as $plugin => $plugindir) {
@@ -191,7 +192,7 @@ class userset extends data_object_with_custom_fields {
             }
 
             $userset->deletesimple = true;
-            $result = $result && $userset->delete();
+            $userset->delete();
         }
 
         if (!$this->deletesubs && !empty($children)) {
@@ -301,13 +302,13 @@ class userset extends data_object_with_custom_fields {
     }
 
     static function cluster_assigned_handler($eventdata) {
-        require_once(elis::pm('data/usersetassignment.class.php'));
-        require_once(elis::pm('data/usersetprogram.class.php'));
-        require_once(elis::pm('data/programstudent.class.php'));
-        require_once(elis::pm('data/usersettrack.class.php'));
+        require_once(elis::pm('data/clusterassignment.class.php'));
+        require_once(elis::pm('data/clustercurriculum.class.php'));
+        require_once(elis::pm('data/curriculumstudent.class.php'));
+        require_once(elis::pm('data/clustertrack.class.php'));
         require_once(elis::pm('data/usertrack.class.php'));
 
-        $assignment = new usersetassignment($eventdata);
+        $assignment = new clusterassignment($eventdata);
         $userset = $assignment->userset;
 
         // assign user to the curricula associated with the cluster
@@ -830,7 +831,7 @@ function cluster_get_cluster_names($orderby = 'name ASC') {
 }
 
 function cluster_get_user_clusters($userid) {
-    return usersetassignment::find(new field_filter('userid', $userid));
+    return clusterassignment::find(new field_filter('userid', $userid));
 }
 
 function cluster_assign_to_user($clusterid, $userid, $autoenrol=true, $leader=false) {
@@ -839,13 +840,13 @@ function cluster_assign_to_user($clusterid, $userid, $autoenrol=true, $leader=fa
         return false;
     }
 
-    if (usersetassignment::exists(array(new field_filter('userid', $userid),
+    if (clusterassignment::exists(array(new field_filter('userid', $userid),
                                         new field_filter('clusterid', $clusterid)))) {
         // user already assigned
         return true;
     }
 
-    $usass = new usersetassignment();
+    $usass = new clusterassignment();
     $usass->userid = $userid;
     $usass->clusterid = $clusterid;
     $usass->save();
@@ -860,7 +861,7 @@ function cluster_deassign_user($clusterid, $userid) {
         return false;
     }
 
-    $records = usersetassignment::find(array(new field_filter('userid', $userid),
+    $records = clusterassignment::find(array(new field_filter('userid', $userid),
                                              new field_filter('clusterid', $clusterid)));
 
     foreach ($records as $rec) {
@@ -876,7 +877,7 @@ function cluster_deassign_all_user($userid) {
         return false;
     }
 
-    return usersetassignment::delete(new field_filter('userid', $userid));
+    return clusterassignment::delete(new field_filter('userid', $userid));
 }
 
 /**
