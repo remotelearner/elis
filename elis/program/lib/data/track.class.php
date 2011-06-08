@@ -28,11 +28,7 @@ require_once elis::lib('data/data_object_with_custom_fields.class.php');
 
 /* Add these back in as they are migrated
 require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/curriculum.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/course.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/cmclass.class.php';
 
-require_once CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php';
 require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
 require_once CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php';
 require_once CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php';
@@ -41,17 +37,21 @@ require_once CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php';
 require_once CURMAN_DIRLOCATION . '/lib/student.class.php';
 require_once CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php';
 */
-require_once elis::lib('data/classmoodlecourse.class.php');
-require_once elis::lib('data/course.class.php');
-require_once elis::lib('data/coursetemplate.class.php');
-require_once elis::lib('data/pmclass.class.php');
-require_once elis::lib('data/user.class.php');
+require_once elispm::lib('data/classmoodlecourse.class.php');
+require_once elispm::lib('data/course.class.php');
+require_once elispm::lib('data/coursetemplate.class.php');
+require_once elispm::lib('data/curriculum.class.php');
+require_once elispm::lib('data/pmclass.class.php');
+require_once elispm::lib('data/user.class.php');
+require_once elispm::lib('data/usertrack.class.php');
 
 //define ('TABLE', 'crlm_track');
 //define ('CLASSTABLE', 'crlm_track_class');
 
 class track extends data_object_with_custom_fields {
     const TABLE = 'crlm_track';
+
+    var $autocreate;
 
      /**
      * User ID-number
@@ -66,6 +66,9 @@ class track extends data_object_with_custom_fields {
     protected $_dbfield_startdate;
     protected $_dbfield_enddate;
     protected $_dbfield_defaulttrack;
+
+    private $location;
+    private $templateclass;
 
     static $associations = array(
         'clustertrack' => array(
@@ -134,7 +137,7 @@ class track extends data_object_with_custom_fields {
 
         if (!empty($this->id)) {
             // custom fields
-            $level = context_level_base::get_custom_context_level('track', 'block_curr_admin');
+            $level = context_level_base::get_custom_context_level('track', 'elis_program');
             if ($level) {
                 $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
                 $fielddata = $fielddata ? $fielddata : array();
@@ -151,20 +154,6 @@ class track extends data_object_with_custom_fields {
         return context_level_base::get_custom_context_level('track', 'elis_program');
     }
 
-    public static function delete_for_curriculum($id) {
-        $result = true;
-
-        //look up and delete associated tracks
-        if($tracks = track_get_listing('name', 'ASC', 0, 0, '', '', $id)) {
-            foreach ($tracks as $track) {
-                $record = new track($track->id);
-                $result = $record->delete() && $result;
-            }
-        }
-
-        return $result;
-    }
-
     /**
      * Creates and associates a class with a track for every course that
      * belongs to the track curriculum
@@ -172,11 +161,10 @@ class track extends data_object_with_custom_fields {
      * TODO: return some data
      */
     function track_auto_create() {
-        global $DB;
 
         if (empty($this->curid) or
             empty($this->id)) {
-            cm_error('trackid and curid have not been properly initialized');
+            //cm_error('trackid and curid have not been properly initialized');
             return false;
         }
 
@@ -186,10 +174,11 @@ class track extends data_object_with_custom_fields {
         // Pull up the curricula assignment record(s)
         //        $curcourse = curriculumcourse_get_list_by_curr($this->curid);
         $sql = 'SELECT ccc.*, cc.idnumber ' .
-            'FROM ' . curriculumcourse::TABLE . ' ccc ' .
-            'INNER JOIN ' . course::TABLE . ' cc ON cc.id = ccc.courseid '.
-            'WHERE ccc.curriculumid = ' .$this->curid;
-        $curcourse = $DB->get_records_sql($sql);
+            'FROM {' . curriculumcourse::TABLE . '} ccc ' .
+            'INNER JOIN {' . course::TABLE . '} cc ON cc.id = ccc.courseid '.
+            'WHERE ccc.curriculumid = ? ';
+        $params = array($this->curid);
+        $curcourse = $this->_db->get_records_sql($sql, $params);
         if (empty($curcourse)) {
             $curcourse = array();
         }
@@ -219,7 +208,7 @@ class track extends data_object_with_custom_fields {
 
             // Create class
             if (!($classid = $classojb->auto_create_class(array('courseid'=>$curcourec->courseid)))) {
-                cm_error('Could not create class');
+                //cm_error('Could not create class');
                 return false;
             }
 
@@ -229,8 +218,8 @@ class track extends data_object_with_custom_fields {
             }
 
             $trackclassobj = new trackassignment(array('courseid' => $curcourec->courseid,
-                                                            'trackid'  => $this->id,
-                                                            'classid' => $classojb->id));
+                                                       'trackid'  => $this->id,
+                                                       'classid' => $classojb->id));
 
             // Set auto-enrol flag
             if ($autoenrol) {
@@ -241,14 +230,14 @@ class track extends data_object_with_custom_fields {
             $trackclassobj->save();
 
             // Create and assign class to default system track
-            // TODO: commented out until we know what to do with CURMAN->config
-            /*
-            if (!empty($CURMAN->config->userdefinedtrack)) {
+            // TODO: for now, use elis::$config->elis_program in place of $CURMAN->config
+
+            if (!empty(elis::$config->elis_program->userdefinedtrack)) {
                 $trkid = $this->create_default_track();
 
                 $trackclassobj = new trackassignment(array('courseid' => $curcourec->courseid,
-                                                                'trackid'  => $trkid,
-                                                                'classid' => $classojb->id));
+                                                           'trackid'  => $trkid,
+                                                           'classid' => $classojb->id));
 
                 // Set auto-enrol flag
                 if ($autoenrol) {
@@ -258,7 +247,7 @@ class track extends data_object_with_custom_fields {
                 // Assign class to default system track
                 $trackclassobj->save();
 
-            }*/
+            }
             $usetemplate = false;
             $autoenrol = false;
         }
@@ -304,9 +293,8 @@ class track extends data_object_with_custom_fields {
      * @return mixed $trackid Track id or false if an error occured
      */
     function get_default_track() {
-        global $DB;
 
-        $trackid = $DB->get_field(TABLE, 'id', array('curid'=> $this->curid,
+        $trackid = $this->_db->get_field(TABLE, 'id', array('curid'=> $this->curid,
                                                      'defaulttrack'=> 1));
         return $trackid;
     }
@@ -319,7 +307,7 @@ class track extends data_object_with_custom_fields {
      */
     function delete() {
         // Cascade
-        $level = context_level_base::get_custom_context_level('track', 'block_curr_admin');
+        $level = context_level_base::get_custom_context_level('track', 'elis_program');
         $result = usertrack::delete_for_track($this->id);
         $result = $result && clustertrack::delete_for_track($this->id);
         $result = $result && trackassignment::delete_for_track($this->id);
@@ -335,16 +323,7 @@ class track extends data_object_with_custom_fields {
     public function set_from_data($data) {
         $this->autocreate = !empty($data->autocreate) ? $data->autocreate : 0;
 
-        $fields = field::get_for_context_level('track', 'block_curr_admin');
-        $fields = $fields ? $fields : array();
-        foreach ($fields as $field) {
-            $fieldname = "field_{$field->shortname}";
-            if (isset($data->$fieldname)) {
-                $this->$fieldname = $data->$fieldname;
-            }
-        }
-
-        parent::set_from_data($data);
+        $this->_load_data_from_record($data, true);
     }
 
     static $validation_rules = array(
@@ -379,7 +358,7 @@ class track extends data_object_with_custom_fields {
         return $result;
     } */
 
-    public function duplicate_check($record=null) {
+    /*public function duplicate_check($record=null) {
         global $DB;
 
         if(empty($record)) {
@@ -392,10 +371,10 @@ class track extends data_object_with_custom_fields {
         }
 
         return false;
-    }
+    }*/
 
     public static function get_by_idnumber($idnumber) {
-        global $CURMAN;
+        global $DB;
 
         $retval = $DB->get_record(TABLE, 'idnumber', $idnumber);
 
@@ -511,7 +490,7 @@ class track extends data_object_with_custom_fields {
         $clone = new track(addslashes_recursive($clone));
         $clone->autocreate = false; // avoid warnings
         if (!$clone->save()) {
-            $objs['errors'][] = get_string('failclustcpytrk', 'block_curr_admin', $this);
+            $objs['errors'][] = get_string('failclustcpytrk', 'elis_program', $this);
             return $objs;
         }
         $objs['tracks'] = array($this->id => $clone->id);
@@ -556,9 +535,8 @@ class track extends data_object_with_custom_fields {
 }
 
 /** ------ trackassignment class ------ **/
-class trackassignment extends data_object_with_custom_fields {
+class trackassignment extends elis_data_object {
     const TABLE = 'crlm_track_class';
-
 
     /**
      * User ID-number
@@ -570,6 +548,9 @@ class trackassignment extends data_object_with_custom_fields {
     protected $_dbfield_classid;
     protected $_dbfield_courseid;
     protected $_dbfield_autoenrol;
+
+    private $location;
+    private $templateclass;
 
     static $associations = array(
         'track' => array(
@@ -587,7 +568,7 @@ class trackassignment extends data_object_with_custom_fields {
     );
     /*function trackassignment($trackassign = false) {
     //    parent::datarecord();
-    //    $this->set_table(CLASSTABLE);
+    //    $this->set_table(trackassignment::TABLE);
         if (is_numeric($trackassign)) {
             $this->data_load_record($trackassign);
         } else if (is_array($trackassign)) {
@@ -597,22 +578,12 @@ class trackassignment extends data_object_with_custom_fields {
         }
     }*/
 
-    public static function delete_for_class($id) {
-
-        return $this->_db->delete_records(trackassignment::TABLE, array('classid'=> $id));
-    }
-
-    public static function delete_for_track($id) {
-
-        //TODO: Remove users from crlm_user_track table that use -
-        // this track
-
-        return $this->_db->delete_records(trackassignment::TABLE, array('trackid'=> $id));
-    }
-
     function count_assigned_classes_from_track() {
 
-        return $this->_db->count_records(trackassignment::TABLE, array('trackid'=> $this->trackid));
+        //return $this->_db->count_records(trackassignment::TABLE, array('trackid'=> $this->trackid));
+        $trackassignments = trackassignment::count(new field_filter('trackid', $this->trackid), $this->_db);
+        return $trackassignments;
+
     }
 
     /**
@@ -623,11 +594,10 @@ class trackassignment extends data_object_with_custom_fields {
      * in crlm_track_class table
      */
     function get_assigned_tracks() {
-        global $DB;
 
         $assigned   = array();
 
-        $result = $DB->get_records(trackassignment::TABLE, array('classid'=> $this->classid));
+        $result = $this->_db->get_records(trackassignment::TABLE, array('classid'=> $this->classid));
 
         if ($result) {
             foreach ($result as $data) {
@@ -646,7 +616,7 @@ class trackassignment extends data_object_with_custom_fields {
     function is_class_assigned_to_track() {
 
         // check if assignment already exists
-        return $DB->record_exists(trackassignment::TABLE, array('classid'=> $this->classid,
+        return $this->_db->record_exists(trackassignment::TABLE, array('classid'=> $this->classid,
                                                                 'trackid'=> $this->trackid));
     }
 
@@ -657,27 +627,24 @@ class trackassignment extends data_object_with_custom_fields {
      * @return TODO: add meaningful return value
      */
     function save() { //add()
-        global $DB;
 
         if (empty($this->courseid)) {
-            $this->courseid = $DB->get_field(pmclass::TABLE, 'courseid', array('id'=> $this->classid));
+            $this->courseid = $this->_db->get_field(pmclass::TABLE, 'courseid', array('id'=> $this->classid));
         }
-        // TODO: Comment out until we know what to do with $CURMAN->config
-        // Also, how to convert to save :)
-        /*
+
         if ((empty($this->trackid) or
              empty($this->classid) or
              empty($this->courseid)) and
-            empty($CURMAN->config->userdefinedtrack)) {
-            cm_error('trackid and classid have not been properly initialized');
+            empty(elis::$config->elis_program->userdefinedtrack)) {
+            //cm_error('trackid and classid have not been properly initialized');
             return false;
         } elseif ((empty($this->courseid) or
                    empty($this->classid)) and
-                  $CURMAN->config->userdefinedtrack) {
-            cm_error('courseid has not been properly initialized');
+                  elis::$config->elis_program->userdefinedtrack) {
+            //cm_error('courseid has not been properly initialized');
         }
 
-        if (empty($CURMAN->config->userdefinedtrack)) {
+        if (empty(elis::$config->elis_program->userdefinedtrack)) {
             if ($this->is_class_assigned_to_track()) {
                 return false;
             }
@@ -688,7 +655,7 @@ class trackassignment extends data_object_with_custom_fields {
                       'courseid'        => $this->classid));
 
             // insert assignment record
-            $parent::save(); //updated for ELIS2 from $this->data_insert_record()
+            parent::save(); //updated for ELIS2 from $this->data_insert_record()
 
             if ($this->autoenrol && $this->is_autoenrollable()) {
                 // autoenrol all users in the track
@@ -740,7 +707,7 @@ class trackassignment extends data_object_with_custom_fields {
                 }
             }
         }
-*/
+
         events_trigger('crlm_track_class_associated', $this);
 
         return true;
@@ -753,17 +720,16 @@ class trackassignment extends data_object_with_custom_fields {
      * - must be the only class in the track for its course
      */
     function is_autoenrollable() {
-        global $DB;
 
         if (!$this->autoenrol) {
             return false;
         }
         if (empty($this->courseid)) {
-            $this->courseid = $DB->get_field(pmclass::TABLE, 'courseid', array('id'=> $this->classid));
+            $this->courseid = $this->_db->get_field(pmclass::TABLE, 'courseid', array('id'=> $this->classid));
         }
         $select = "trackid = ? AND courseid = ? AND classid != ?";
         $params = array($this->trackid, $this->courseid, $this->classid);
-        return !$DB->record_exists_select(trackassignment::TABLE, $select, $params);
+        return !$this->_db->record_exists_select(trackassignment::TABLE, $select, $params);
     }
 
     //TODO: document function and return something meaningful
@@ -782,11 +748,10 @@ class trackassignment extends data_object_with_custom_fields {
      * @return boolean true if record exists, otherwise false
      */
     function is_class_assigned_to_default_track() {
-        global $DB;
 
         // Get the curriculum id
         // check if default track exists
-        $exists = $DB->record_exists(TABLE, 'curid', $this->track->curid,
+        $exists = $this->_db->record_exists(TABLE, 'curid', $this->track->curid,
                                              array('defaulttrack'=> 1));
 
         if (!$exists) {
@@ -794,19 +759,18 @@ class trackassignment extends data_object_with_custom_fields {
         }
 
         // Retrieve track id
-        $trackid = $DB->get_field(TABLE, 'id', array('curid'=> $this->track->curid,
+        $trackid = $this->_db->get_field(TABLE, 'id', array('curid'=> $this->track->curid,
                                                             'defaulttrack'=> 1));
         if (false === $trackid) {
-            cm_error('Error #1001: selecting field from crlm_track table');
+            //cm_error('Error #1001: selecting field from crlm_track table');
         }
 
         // Check if class is assigned to default track
-        return $DB->record_exists(trackassignment::TABLE, array('classid'=> $this->classid,
+        return $this->_db->record_exists(trackassignment::TABLE, array('classid'=> $this->classid,
                                                            'trackid'=> $trackid));
     }
 
     function enrol_all_track_users_in_class() {
-        global $DB;
 
         // find all users who are not enrolled in the class
         // TODO: validate this...
@@ -815,7 +779,7 @@ class trackassignment extends data_object_with_custom_fields {
                                 WHERE s.classid = ? AND s.userid = ?)
                   AND trackid = ?";
         $params = array($this->classid, '{' .usertrack::TABLE .'}'.userid, $this->trackid);
-        $users = $DB->get_records_select(usertrack::TABLE, $sql, $params, 'userid');
+        $users = $this->_db->get_records_select(usertrack::TABLE, $sql, $params, 'userid');
 
         if ($users) {
             $timenow = time();
@@ -840,15 +804,15 @@ class trackassignment extends data_object_with_custom_fields {
                 }
             }
 
-            print_string('n_users_enrolled', 'block_curr_admin', $count);
+            print_string('n_users_enrolled', 'elis_program', $count);
             if ($waitlisted) {
-                print_string('n_users_waitlisted', 'block_curr_admin', $waitlisted);
+                print_string('n_users_waitlisted', 'elis_program', $waitlisted);
             }
             if ($prereq) {
-                print_string('n_users_unsatisfied_prereq', 'block_curr_admin', $prereq);
+                print_string('n_users_unsatisfied_prereq', 'elis_program', $prereq);
             }
         } else {
-            print_string('all_users_already_enrolled', 'block_curr_admin');
+            print_string('all_users_already_enrolled', 'elis_program');
         }
     }
 }
@@ -881,10 +845,10 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
     $ALPHA_LIKE = $DB->sql_like('trk.name', ':search_alpha');
 
     $select = 'SELECT trk.*, cur.name AS parcur, (SELECT COUNT(*) ' .
-              'FROM {' . CLASSTABLE . '} '.
+              'FROM {' . trackassignment::TABLE . '} '.
               'WHERE trackid = :trkid ) as class ';
     $params['trkid'] = 'trk.id';
-    $tables = 'FROM {' . TABLE . '} trk '.
+    $tables = 'FROM {' . track::TABLE . '} trk '.
               'JOIN {' .curriculum::TABLE . '} cur ON trk.curid = cur.id ';
     $join   = '';
     $on     = '';
@@ -910,15 +874,22 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
     }
 
     if ($parentclusterid) {
-        $where[] = "(trk.id IN (SELECT trackid FROM {".CLASSTABLE."}
+        $where[] = "(trk.id IN (SELECT trackid FROM {".trackassignment::TABLE."}
                             WHERE clusterid = :parentclusterid))";
         $params['parentclusterid'] = $parentclusterid;
     }
 
     if ($contexts !== null) {
         //$where[] = $contexts->sql_filter_for_context_level('trk.id', 'track');
+        /* TODO: Causes fatal error right now
         $filter_object = $contexts->filter_for_context_level('trk.id', 'track');
-        $where[] = $filter_object->get_sql();
+        $where[] = $filter_object->get_sql();*/
+        $filter_object = $contexts->get_filter('trk.id', 'track');
+        $filter_sql = $filter_object->get_sql(false, 'trk');
+        if (isset($filter_sql['where'])) {
+            $where[] = $filter_sql['where'];
+            $params += $filter_sql['where_params'];
+        }
     }
 
     if(!empty($userid)) {
@@ -927,11 +898,12 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
 
         $allowed_clusters = array();
 
+        /* TODO: when clusters are added
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
         $curriculum_context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol', $USER->id);
-        $curriculum_filter_object = $curriculum_context->sql_filter_for_context_level('trk.id', 'track');
+        $curriculum_filter_object = $curriculum_context->filter_for_context_level('trk.id', 'track');
         $curriculum_filter = $curriculum_filter_object->get_sql();
 
         if(empty($allowed_clusters)) {
@@ -951,6 +923,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
                         )";
            $params['allowed_clusters'] = $allowed_clusters_list;
         }
+        */
     }
 
     if (!empty($where)) {
@@ -963,19 +936,9 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
         $sort = 'ORDER BY '.$sort .' '. $dir.' ';
     }
 
-    if (!empty($perpage)) {
-        if ($this->_db->get_dbfamily() == 'postgres') {
-            $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-        } else {
-            $limit = 'LIMIT '.$startrec.', '.$perpage;
-        }
-    } else {
-        $limit = '';
-    }
+    $sql = $select.$tables.$join.$on.$where.$sort;
 
-    $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-
-    return $DB->get_records_sql($sql, $params);
+    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
 /**
@@ -1023,13 +986,21 @@ function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $
     }
 
     if ($contexts !== null) {
-        $filter_object = $contexts->sql_filter_for_context_level('id', 'track');
+        /* TODO: not working yet...
+        $filter_object = $contexts->filter_for_context_level('id', 'track');
         $where[] = $filter_object->get_sql();
+        */
+        $filter_object = $contexts->get_filter('id', 'track');
+        $filter_sql = $filter_object->get_sql(false, 'trk');
+        if (isset($filter_sql['where'])) {
+            $where[] = $filter_sql['where'];
+            $params += $filter_sql['where_params'];
+        }
     }
 
     $where = implode(' AND ', $where);
 
-    return $DB->count_records_select(TABLE, $where, $params);
+    return $DB->count_records_select(track::TABLE, $where, $params);
 }
 
 /**
@@ -1044,7 +1015,7 @@ function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $
 function track_get_list_from_curr($curid) {
     global $DB;
 
-    $tracks = $DB->get_records(TABLE, array('curid'=> $curid));
+    $tracks = $DB->get_records(track::TABLE, array('curid'=> $curid));
 
     if (is_array($tracks)) {
         foreach ($tracks as $key => $track) {
@@ -1117,19 +1088,9 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
         $sort = 'ORDER BY '.$sort .' '. $dir.' ';
     }
 
-    if (!empty($perpage)) {
-        if ($this->_db->get_dbfamily() == 'postgres') {
-            $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-        } else {
-            $limit = 'LIMIT '.$startrec.', '.$perpage;
-        }
-    } else {
-        $limit = '';
-    }
+    $sql = $select.$tables.$join.$where.$sort;
 
-    $sql = $select.$tables.$join.$where.$sort.$limit;
-
-    return $DB->get_records_sql($sql, $params);
+    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
 /**
@@ -1151,7 +1112,7 @@ function track_assignment_count_records($trackid, $namesearch = '', $alpha = '')
     $select = 'SELECT COUNT(*) ';
     $tables = ' FROM {' . trackassignment::TABLE . '} trkassign ';
     $join   = ' JOIN {' . track::TABLE. '} trk ON trkassign.trackid = trk.id
-                JOIN {' . pmclass::CLSTABLE. '} cls ON trkassign.classid = cls.id
+                JOIN {' . pmclass::TABLE. '} cls ON trkassign.classid = cls.id
                 JOIN {' . curriculumcourse::TABLE. '} curcrs ON curcrs.curriculumid = trk.curid AND curcrs.courseid = cls.courseid ';
     // get number of users from track who are enrolled
     $join  .= 'LEFT JOIN (SELECT s.classid, COUNT(s.userid) AS enrolments
@@ -1159,7 +1120,7 @@ function track_assignment_count_records($trackid, $namesearch = '', $alpha = '')
                             JOIN {' . usertrack::TABLE. '} t USING(userid)
                            WHERE t.trackid = :trackid
                         GROUP BY s.classid) enr ON enr.classid = cls.id ';
-    $params['trackid'] = $rackid;
+    $params['trackid'] = $trackid;
 
     $where = ' trkassign.trackid = :assign_trackid';
     $params['assign_trackid'] = $trackid;
