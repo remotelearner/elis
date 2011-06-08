@@ -29,7 +29,12 @@ require_once elis::lib('data/data_object_with_custom_fields.class.php');
 class coursetemplate extends data_object_with_custom_fields {
     const TABLE = 'crlm_coursetemplate';
 
-    static $associations = array();
+    static $associations = array(
+        'course' => array(
+            'class' => 'course',
+            'idfield' => 'courseid'
+        ),
+    );
 
     protected $_dbfield_courseid;
     protected $_dbfield_location;

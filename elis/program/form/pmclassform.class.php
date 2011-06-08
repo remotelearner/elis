@@ -277,16 +277,13 @@ class pmclassform extends cmform {
      * @return string HTML for a multi-select element
      */
     function add_track_multi_select($courseid) {
-        global $CFG;
+        global $CFG, $PAGE;
 
         //require_js('yui_yahoo');
         //require_js('yui_event');
         //require_js('yui_connection');
         //require_js($CFG->wwwroot.'/curriculum/js/trkmultiselect.js');
 
-        $PAGE->requires->js('yui_yahoo');
-        $PAGE->requires->js('yui_event');
-        $PAGE->requires->js('yui_connection');
         $PAGE->requires->js('/elis/program/js/trkmultiselect.js');
 
         $mform =& $this->_form;
