@@ -354,7 +354,7 @@ class join_filter extends data_filter {
             } else {
                 // get the sql from the filter
                 if ($this->filter) {
-                    $filter_sql = $this->filter->get_sql(true, $tablename, $db);
+                    $filter_sql = $this->filter->get_sql(true, $jointablename, $db);
                 } else {
                     $filter_sql = array();
                 }

@@ -327,7 +327,7 @@ class elis_data_object {
             $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', $db);
         }
         if (isset($sql_clauses['join'])) {
-            $sql = "SELECT DISTINCT d.*
+            $sql = "SELECT d.*
                       FROM {{$tablename}} d
                            {$sql_clauses['join']}";
             $parameters = $sql_clauses['join_parameters'];
