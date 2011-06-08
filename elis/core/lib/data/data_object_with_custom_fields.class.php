@@ -71,7 +71,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
      */
     public function delete() {
         $this->_load_context();
-        $filter = new field_filter('contextid', $this->context->id);
+        $filter = new field_filter('contextid', $this->_context->id);
         field_data_int::delete_records('field_data_int', $filter);
         field_data_num::delete_records('field_data_num', $filter);
         field_data_char::delete_records('field_data_char', $filter);
