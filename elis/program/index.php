@@ -33,6 +33,8 @@ if (!isloggedin()) {
     redirect ($CFG->wwwroot);
 }
 
+$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+
 $pages = array(
     // Learning Plan
     'crscat' => array('class' => 'coursecatalogpage',
@@ -59,8 +61,8 @@ $pages = array(
                        'file' => 'rolepage.class.php'),
 
     // Manage Clusters
-    'clst' => array('class' => 'clusterpage',
-                    'file' => 'clusterpage.class.php'),
+    'clst' => array('class' => 'usersetpage',
+                    'file' => 'usersetpage.class.php'),
     'clstcur' => array('class' => 'clustercurriculumpage',
                        'file' => 'clustercurriculumpage.class.php'),
     'clsttrk' => array('class' => 'clustertrackpage',
