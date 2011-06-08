@@ -72,7 +72,7 @@ class studentpage extends associationpage {
 
     function can_do_add() {
         $id = $this->required_param('id');
-        $users = optional_param('users', array());
+        $users = optional_param('users', array(), PARAM_CLEAN);
         
         foreach($users as $uid => $user) {
             if(!student::can_manage_assoc($uid, $id)) {
@@ -154,7 +154,7 @@ class studentpage extends associationpage {
 
     function do_savenew() { // action_savenew
         $clsid = $this->required_param('id', PARAM_INT);
-        $users = $this->optional_param('users', array());
+        $users = $this->optional_param('users', array(), PARAM_CLEAN);
 
         if (!empty($users)) {
             $this->attempt_enrol($clsid, $users);
@@ -311,7 +311,7 @@ class studentpage extends associationpage {
     function do_updatemultiple() { // action_updatemultiple
         global $CURMAN;
         $clsid = $this->required_param('id', PARAM_INT);
-        $users = $this->optional_param('users', array());
+        $users = $this->optional_param('users', array(), PARAM_CLEAN);
 
         foreach($users as $uid => $user) {
             $sturecord                     = array();
@@ -562,7 +562,8 @@ class studentpage extends associationpage {
      * @param int $numitems max number of students
      */
     function print_num_items($classid, $max) {
-        $students = pmclass::count_students_by_section($classid);
+        $pmclass = new pmclass($classid);
+        $students = $pmclass->count_students_by_section($classid);
 
         if(!empty($students[STUSTATUS_FAILED])) {
             echo '<div style="float:right;">' . get_string('num_students_failed', 'block_curr_admin') . ': ' . $students[STUSTATUS_FAILED]->c . '</div><br />';

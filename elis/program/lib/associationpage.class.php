@@ -25,10 +25,9 @@
  */
 
 require_once elis::lib('table.class.php');
+require_once elispm::lib('lib.php');
 require_once elispm::lib('page.class.php');
 //require_once elispm::lib('recordlinkformatter.class.php');
-//require_once elispm::lib('cmsearchbox.class.php');
-//require_once elispm::lib('cmalphabox.class.php');
 
 /**
  * This is the base class for a page that manages association data object types, for example
@@ -286,7 +285,7 @@ class associationpage extends pm_page {
      * @param $columns associative array of column id => column heading text
      * @param $formatters associative array of column id => formatting object, used to customize the display of columns
      */
-    function display_list_view($items, $columns, $formatters=array()) { // TBD
+    function print_list_view($items, $columns, $formatters=array()) { // TBD
         global $CFG;
 
         $id = required_param('id', PARAM_INT);
@@ -417,18 +416,14 @@ class associationpage extends pm_page {
      * Prints the 'All A B C ...' alphabetical filter bar.
      */
     function print_alpha() {
-        $alphabox = new cmalphabox($this);
-
-        $alphabox->display();
+        pmalphabox($this->url);
     }
 
     /**
      * Prints the text substring search interface.
      */
     function print_search() {
-        $searchbox = new cmsearchbox($this);
-
-        $searchbox->display();
+        pmsearchbox($this);
     }
 }
 

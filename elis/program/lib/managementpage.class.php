@@ -20,14 +20,13 @@
  * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 require_once $CFG->libdir . '/weblib.php';
+require_once elispm::lib('lib.php');
 require_once elispm::lib('page.class.php');
-//require_once CURMAN_DIRLOCATION . '/lib/cmsearchbox.class.php';
-//require_once CURMAN_DIRLOCATION . '/lib/cmalphabox.class.php';
 
 /**
  * This is the base class for a page that manages the basic data object types,
@@ -252,43 +251,14 @@ abstract class managementpage extends pm_page {
      * Prints the 'All A B C ...' alphabetical filter bar.
      */
     public function print_alpha() {
-        $alpha        = optional_param('alpha', null, PARAM_ALPHA);
-
-        $alphabet = explode(',', get_string('alphabet', 'langconfig'));
-        $strall = get_string('all');
-
-        echo html_writer::start_tag('div', array('style' => 'text-align:center'));
-
-        if ($alpha) {
-            $url = clone($this->url);
-            $url->remove_params('alpha');
-            echo html_writer::link($url, $strall);
-        } else {
-            echo html_writer::tag('b', $strall);
-        }
-
-        foreach ($alphabet as $letter) {
-            if ($letter == $alpha) {
-                echo html_writer::tag('b', $letter);
-                echo " <b>$letter</b> ";
-            } else {
-                $url = clone($this->url);
-                $url->params(array('alpha' => $letter));
-                echo html_writer::link($url, $letter);
-            }
-        }
-
-        echo html_writer::end_tag('div');
+        pmalphabox($this->url);
     }
 
     /**
      * Prints the text substring search interface.
      */
     public function print_search() {
-        // FIXME:
-        //$searchbox = new cmsearchbox($this);
-
-        //$searchbox->display();
+        pmsearchbox($this);
     }
 
     /**
