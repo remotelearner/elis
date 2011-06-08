@@ -102,7 +102,7 @@ class context_level_elis_curriculum extends context_level_base {
                                      FROM {crlm_curriculum} u
                                     WHERE u.id = {context}.instanceid)
                        $emptyclause";
-        $DB->execute_sql($sql);
+        $DB->execute($sql);
     }
 }
 
@@ -197,7 +197,7 @@ class context_level_elis_track extends context_level_base {
                                            FROM {context_temp} temp
                                            WHERE temp.id = ctx.id)
                        $ctxemptyclause";
-        $DB->execute_sql($sql);
+        $DB->execute($sql);
 
         context_level_base::flush_context_temp();
     }
@@ -270,7 +270,7 @@ class context_level_elis_course extends context_level_base {
     public function build_context_path($base, $emptyclause) {
         global $CFG, $DB;
 
-        $a = $CFG->prefix.'context';
+        $a = '{context}';
         eval('$emptyclause = "'.$emptyclause.'";');
 
         // Course
@@ -282,7 +282,7 @@ class context_level_elis_course extends context_level_base {
                                      FROM {crlm_course} u
                                     WHERE u.id = {context}.instanceid)
                        $emptyclause ";
-        $DB->execute_sql($sql);
+        $DB->execute($sql);
     }
 }
 
@@ -381,7 +381,7 @@ class context_level_elis_class extends context_level_base {
                                            FROM {context_temp} temp
                                            WHERE temp.id = ctx.id)
                        $ctxemptyclause";
-        $DB->execute_sql($sql);
+        $DB->execute($sql);
 
         context_level_base::flush_context_temp();
     }
@@ -448,7 +448,7 @@ class context_level_elis_user extends context_level_base {
                                      FROM {crlm_course} u
                                     WHERE u.id = {context}.instanceid)
                        $emptyclause";
-        $DB->execute_sql($sql);
+        $DB->execute($sql);
     }
 }
 
@@ -562,7 +562,7 @@ class context_level_elis_cluster extends context_level_base {
                                     WHERE u.id = {context}.instanceid
                                       AND u.depth=1)
                        $emptyclause";
-        $DB->execute_sql($sql);
+        $DB->execute($sql);
 
         // Deeper clusters - one query per depthlevel
         $maxdepth = $DB->get_field_sql('SELECT MAX(depth) FROM {crlm_cluster}');
@@ -579,7 +579,7 @@ class context_level_elis_cluster extends context_level_base {
                                            FROM {context_temp} temp
                                            WHERE temp.id = ctx.id)
                            $ctxemptyclause";
-            $DB->execute_sql($sql);
+            $DB->execute($sql);
 
             // this is needed after every loop
             // MDL-11532
