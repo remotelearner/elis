@@ -153,6 +153,7 @@ class student extends elis_data_object {
      *  @param $compelements array Optional array of completion elements associated with the class.
      *
      */
+/* **** function only used in disabled constructor ****
     function load_cmclass($classdata=false, $compelements=false) {
 
         if ($classdata !== false) {
@@ -197,6 +198,7 @@ class student extends elis_data_object {
             $this->pmclass = new pmclass();
         }
     }
+**** */
 
     /**
      * Perform all actions to mark this student record complete.
@@ -265,7 +267,7 @@ class student extends elis_data_object {
                         elis::$config->elis_program->notify_classcompleted_message;
             $search = array('%%userenrolname%%', '%%classname%%');
 
-            if (($clsmdl = $this->_db->get_record(CLSMDLTABLE, array('classid' => $this->pmclass->id))) &&
+            if (($clsmdl = $this->_db->get_record(CLSMDLTABLE, array('classid' => $this->classid))) &&
                 ($course = get_record('course', array('id' => $clsmdl->moodlecourseid)))) {
                 /// If its a Moodle class...
                 $replace = array(fullname($this->user), $course->fullname);
@@ -274,7 +276,8 @@ class student extends elis_data_object {
                     return true;
                 }
             } else {
-                $replace = array(fullname($this->user), $this->pmclass->course->name);
+                $pmclass = new pmclass($this->classid);
+                $replace = array(fullname($this->user), $pmclass->course->name);
                 if (!($context = get_system_context())) {
                     print_error('invalidcontext');
                     return true;
@@ -341,12 +344,12 @@ class student extends elis_data_object {
         if (!empty($checks['prereq'])) {
             // check prerequisites
 
-            $cmclass = new pmclass($this->classid);
+            $pmclass = new pmclass($this->classid);
             // get all the curricula that the user is in
             $curricula = curriculumstudent::get_curricula($this->userid);
             foreach ($curricula as $curriculum) {
                 $curcrs = new curriculumcourse();
-                $curcrs->courseid = $cmclass->courseid;
+                $curcrs->courseid = $pmclass->courseid;
                 $curcrs->curriculumid = $curriculum->curid;
                 if (!$curcrs->prerequisites_satisfied($this->userid)) {
                     // prerequisites not satisfied
@@ -368,8 +371,8 @@ class student extends elis_data_object {
 
         if (!empty($checks['waitlist'])) {
             // check class enrolment limit
-            $cmclass = new cmclass($this->classid);
-            $limit = $cmclass->maxstudents;
+            $pmclass = new pmclass($this->classid);
+            $limit = $pmclass->maxstudents;
             if (!empty($limit) && $limit <= student::count_enroled($this->classid)) {
                 // class is full
                 // put student on wait list
@@ -383,7 +386,7 @@ class student extends elis_data_object {
 
                     $a = new object();
                     $a->user = $this->user->idnumber;
-                    $a->cmclass = $cmclass->idnumber;
+                    $a->pmclass = $pmclass->idnumber;
                     $message = get_string('user_waitlisted_msg', self::LANG_FILE, $a);
 
                     $from = $user = get_admin();
@@ -399,7 +402,7 @@ class student extends elis_data_object {
             }
         }
         //set end time based on class duration
-        $studentclass = new cmclass($this->classid);
+        $studentclass = new pmclass($this->classid);
         if (empty($this->endtime)) {
             if (isset($studentclass->duration) && $studentclass->duration) {
                 $this->endtime = $this->enrolmenttime + $studentclass->duration;
@@ -475,9 +478,9 @@ class student extends elis_data_object {
         $result = $result && $this->data_delete_record();
 
         if($this->completestatusid == STUSTATUS_NOTCOMPLETE) {
-            $cmclass = new cmclass($this->classid);
+            $pmclass = new pmclass($this->classid);
 
-            if(empty($cmclass->maxstudents) || $cmclass->maxstudents > student::count_enroled($cmclass->id)) {
+            if(empty($pmclass->maxstudents) || $pmclass->maxstudents > student::count_enroled($pmclass->id)) {
                 $wlst = waitlist::get_next($this->classid);
 
                 if(!empty($wlst)) {
@@ -612,7 +615,7 @@ class student extends elis_data_object {
                                                 $namesearch, $alpha);
             $usercount = $this->count_users_avail($namesearch, $alpha);
 
-            $alphabet = explode(',', get_string('alphabet'));
+            $alphabet = explode(',', get_string('alphabet', 'langconfig'));
             $strall   = get_string('all');
 
 
@@ -634,14 +637,12 @@ class student extends elis_data_object {
                 }
             }
             echo "</p>";
-
-            print_paging_bar($usercount, $page, $perpage,
+            $pagingbar = new paging_bar($usercount, $page, $perpage,
                     "index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;&amp;action=add&amp;" .
                     "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;stype=$type" .
                     "&amp;search=" . urlencode(stripslashes($namesearch)) . "&amp;");
-
+            echo $OUTPUT->render($pagingbar);
             flush();
-
         } else {
             $user = $this->user;
 
@@ -924,7 +925,7 @@ class student extends elis_data_object {
 
         $table = new stdClass;
 
-        $can_unenrol = cmclasspage::can_enrol_into_class($classid);
+        $can_unenrol = pmclasspage::can_enrol_into_class($classid);
 
         if (empty($this->id)) {
             $columns = array(
@@ -986,7 +987,7 @@ class student extends elis_data_object {
                                                 $namesearch, $alpha);
             $usercount = $this->count_users_enrolled($type, $namesearch, $alpha);
 
-            $alphabet = explode(',', get_string('alphabet'));
+            $alphabet = explode(',', get_string('alphabet', 'langconfig'));
             $strall   = get_string('all');
 
 
@@ -1008,14 +1009,12 @@ class student extends elis_data_object {
                 }
             }
             echo "</p>";
-
-            print_paging_bar($usercount, $page, $perpage,
+            $pagingbar = new paging_bar($usercount, $page, $perpage,
                     "index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;&amp;action=bulkedit&amp;" .
                     "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;stype=$type" .
                     "&amp;search=" . urlencode(stripslashes($namesearch)) . "&amp;");
-
+            echo $OUTPUT->render($pagingbar);
             flush();
-
         } else {
             $user = $this->user;
 
@@ -1724,7 +1723,7 @@ class student extends elis_data_object {
         }
 
         // *** TBD ***
-        if(!cmclasspage::_has_capability('block/curr_admin:class:enrol', $this->classid)) {            
+        if(!pmclasspage::_has_capability('block/curr_admin:class:enrol', $this->classid)) {            
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
@@ -1811,7 +1810,7 @@ class student extends elis_data_object {
         }
 
         // *** TBD ***
-        if(!cmclasspage::_has_capability('block/curr_admin:class:enrol', $this->classid)) {
+        if(!pmclasspage::_has_capability('block/curr_admin:class:enrol', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
@@ -2013,7 +2012,7 @@ class student extends elis_data_object {
                     get_string('notifyclassnotstartedmessagedef', self::LANG_FILE) :
                     elis::$config->elis_program->notify_classnotstarted_message;
         $search = array('%%userenrolname%%', '%%classname%%');
-        $replace = array(fullname($student->user), $student->cmclass->course->name);
+        $replace = array(fullname($student->user), $student->pmclass->course->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
@@ -2084,7 +2083,7 @@ class student extends elis_data_object {
                     get_string('notifyclassnotcompletedmessagedef', self::LANG_FILE) :
                     elis::$config->elis_program->notify_classnotcompleted_message;
         $search = array('%%userenrolname%%', '%%classname%%');
-        $replace = array(fullname($student->user), $student->cmclass->course->name);
+        $replace = array(fullname($student->user), $student->pmclass->course->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
@@ -2129,10 +2128,10 @@ class student extends elis_data_object {
     public static function can_manage_assoc($userid, $classid) {
         global $USER;
 
-        if(!cmclasspage::can_enrol_into_class($classid)) {
+        if(!pmclasspage::can_enrol_into_class($classid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if (cmclasspage::_has_capability('block/curr_admin:track:enrol', $classid)) {
+        } else if (pmclasspage::_has_capability('block/curr_admin:track:enrol', $classid)) {
             //current user has the direct capability
             return true;
         }

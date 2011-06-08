@@ -94,3 +94,15 @@ function pmsearchbox($page, $searchname = 'search') {
     echo "</td></tr></table>";
 }
 
+/**
+ * Function to get a parameter from _POST or _GET. If not present, will return
+ * the value defined in the $default parameter, or false if not defined.
+ *
+ * @param string $param     The parameter to look for.
+ * @param string $default   Default value to return if not found.
+ * @return string | boolean The value of the parameter, or $default.
+ */
+function cm_get_param($param, $default = false) {
+    return optional_param($param, $default, PARAM_CLEAN);
+}
+

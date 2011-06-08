@@ -24,6 +24,7 @@
  *
  */
 
+require_once elispm::lib('lib.php');
 require_once elispm::lib('page.class.php');
 require_once elispm::lib('associationpage.class.php');
 //require_once elispm::lib('table.class.php');

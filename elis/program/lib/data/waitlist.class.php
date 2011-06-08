@@ -44,7 +44,7 @@ class waitlist extends elis_data_object {
         'users'   => array('class' => 'user',
                            'idfield' => 'userid'),
         'pmclass' => array('class' => 'pmclass',
-                           'idfield' => classid)
+                           'idfield' => 'classid')
     );
 
 /*
