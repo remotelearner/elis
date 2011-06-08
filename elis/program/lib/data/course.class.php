@@ -288,13 +288,13 @@ class course extends data_object_with_custom_fields {
      */
     public function get_completion_counts() {
         $sql = 'SELECT cce.completestatusid status, COUNT(cce.completestatusid) count
-        FROM {'.student::TABLE.'} cce
-        INNER JOIN {'.pmclass::TABLE.'} cc ON cc.id = cce.classid
-        INNER JOIN {'.course::TABLE.'} cco ON cco.id = cc.courseid
-        WHERE cco.id = '.$this->id.'
-        GROUP BY cce.completestatusid';
+                FROM {'.student::TABLE.'} cce
+                INNER JOIN {'.pmclass::TABLE.'} cc ON cc.id = cce.classid
+                INNER JOIN {'.course::TABLE.'} cco ON cco.id = cc.courseid
+                WHERE cco.id = ?
+                GROUP BY cce.completestatusid';
 
-        $rows = $this->_db->get_records_sql($sql);
+        $rows = $this->_db->get_records_sql($sql, array($this->id));
 
         $ret = array(STUSTATUS_NOTCOMPLETE=>0, STUSTATUS_FAILED=>0, STUSTATUS_PASSED=>0);
 
@@ -518,24 +518,24 @@ class course extends data_object_with_custom_fields {
                   'INNER JOIN {'.user::TABLE.'} cu ON cu.id = cca.userid ' .
                   'INNER JOIN {'.pmclass::TABLE.'} ccl ON ccl.courseid = cc.id ' .
                   'INNER JOIN {'.classenrolment::TABLE.'} cce ON cce.classid = ccl.id ' .
-                  'LEFT JOIN {'.$CFG->prefix.'user u ON u.idnumber = cu.idnumber ' .
+                  'LEFT JOIN {user} u ON u.idnumber = cu.idnumber ' .
                   'LEFT JOIN {'.notificationlog::TABLE.' cnl ON cnl.userid = cu.id AND cnl.instance = cce.id AND cnl.event = \'course_recurrence\' ';
         $where  = 'WHERE (cce.completestatusid != '.STUSTATUS_NOTCOMPLETE.') AND (ccc.frequency > 0) '.
                   'AND ((cce.completetime + ' .
             /// This construct is to select the number of seconds to add to determine the delta frequency based on the timeperiod
-                  '(CASE ccc.timeperiod WHEN \'year\' THEN (ccc.frequency * '.$year.')
-                                        WHEN \'month\' THEN (ccc.frequency * '.$month.')
-                                        WHEN \'week\' THEN (ccc.frequency * '.$week.')
-                                        WHEN \'day\' THEN (ccc.frequency * '.$day.')
+                  '(CASE ccc.timeperiod WHEN \'year\' THEN (ccc.frequency * ?)
+                                        WHEN \'month\' THEN (ccc.frequency * ?)
+                                        WHEN \'week\' THEN (ccc.frequency * ?)
+                                        WHEN \'day\' THEN (ccc.frequency * ?)
                                         ELSE 0 END)' .
             ///
-                  ') < '.$timenow.') AND (cnl.id IS NULL) ';
+                  ') < ?) AND (cnl.id IS NULL) ';
         $order  = 'ORDER BY cce.id ASC ';
         $sql    = $select . $from . $join . $where . $order;
 
         $usertempl = new user(); // used just for its properties.
 
-        $rs = get_recordset_sql($sql);
+        $rs = get_recordset_sql($sql, array($year,$month,$week,$day,$timenow));
         if ($rs) {
             while ($rec = rs_fetch_next_record($rs)) {
                 /// Load the student...

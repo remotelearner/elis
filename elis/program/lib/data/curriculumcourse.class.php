@@ -49,7 +49,16 @@ define ('CRSCOREQTABLE',  'crlm_course_corequisite');
 class curriculumcourse extends data_object_with_custom_fields {
     const TABLE = 'crlm_curriculum_course';
 
-    static $associations = array();
+    static $associations = array(
+        'curriculum' => array(
+            'class' => 'curriculum',
+            'idfield' => 'curriculumid'
+        ),
+        'course' => array(
+            'class' => 'course',
+            'idfield' => 'courseid'
+        ),
+    );
 
     /*
     var $id;           // INT - The data id if in the database.
@@ -140,11 +149,13 @@ class curriculumcourse extends data_object_with_custom_fields {
     }
 
     public static function delete_for_curriculum($id) {
-        return $this->_db->delete_records(curriculumcourse::TABLE, 'curriculumid', $id);
+        global $DB;
+        return $DB->delete_records(curriculumcourse::TABLE, array('curriculumid'=>$id));
     }
 
     public static function delete_for_course($id) {
-    	return $this->_db->delete_records(curriculumcourse::TABLE, 'courseid', $id);
+        global $DB;
+    	return $DB->delete_records(curriculumcourse::TABLE, array('courseid'=>$id));
     }
 
     function delete() {
@@ -156,6 +167,7 @@ class curriculumcourse extends data_object_with_custom_fields {
 
     function add() {
         parent::add();
+        // TO-DO: what do we do about tables that aren't even defined as a variable?
         events_trigger('crlm_curriculum_course_associated', $this);
     }
 
@@ -408,7 +420,7 @@ class curriculumcourse extends data_object_with_custom_fields {
             return false;
         }
 
-        return $this->_db->delete_records(courseprerequisite::TABLE, 'curriculumcourseid', $this->id);
+        return $this->_db->delete_records(courseprerequisite::TABLE, array('curriculumcourseid'=>$this->id));
     }
 
     function delete_all_corequisites() {
@@ -416,7 +428,7 @@ class curriculumcourse extends data_object_with_custom_fields {
             return false;
         }
 
-        return $this->_db->delete_records(coursecorequisite::TABLE, 'curriculumcourseid', $this->id);
+        return $this->_db->delete_records(coursecorequisite::TABLE, array('curriculumcourseid'=>$this->id));
     }
 
     function delete_all_track_classes() {
@@ -428,7 +440,7 @@ class curriculumcourse extends data_object_with_custom_fields {
 
         if (is_array($tracks)) {
             foreach ($tracks as $track_id=>$track_obj) {
-                $result = $this->_db->delete_records(trackclass::TABLE, 'trackid', $track_obj->id, 'courseid', $this->courseid);
+                $result = $this->_db->delete_records(trackclass::TABLE, array('trackid'=>$track_obj->id, 'courseid'=>$this->courseid));
             }
         }
         return true;
@@ -483,7 +495,7 @@ class curriculumcourse extends data_object_with_custom_fields {
             return false;
         }
 
-        return $this->_db->delete_records(courseprerequisite::TABLE, 'curriculumcourseid', $this->id, 'courseid', $cid);
+        return $this->_db->delete_records(courseprerequisite::TABLE, array('curriculumcourseid'=>$this->id, 'courseid'=>$cid));
     }
 
 
@@ -600,7 +612,7 @@ class curriculumcourse extends data_object_with_custom_fields {
             return false;
         }
 
-        return $this->_db->delete_records(coursecorequisite::TABLE, 'curriculumcourseid', $this->id, 'courseid', $cid);
+        return $this->_db->delete_records(coursecorequisite::TABLE, array('curriculumcourseid'=>$this->id, 'courseid'=>$cid));
     }
 
 
@@ -654,8 +666,6 @@ class curriculumcourse extends data_object_with_custom_fields {
      * @return A list of course names, indexed by their ID values.
      */
     function get_courses_avail($filters=array()) {
-        $cids = array();
-
         $sql = 'SELECT crs.id, crs.name, crs.idnumber
                   FROM {'.course::TABLE.'} crs
              LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs on curcrs.courseid = crs.id AND curcrs.curriculumid = '.$this->curriculumid.'
@@ -839,7 +849,7 @@ function curriculumcourse_get_curriculum_listing($crsid, $sort='position', $dir=
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where .= (!empty($where) ? ' AND ' : '') . "(cur.name $LIKE  '%$namesearch%') ";
+        $where .= (!empty($where) ? ' AND ' : '') . "(cur.name $LIKE '%$namesearch%') ";
     }
 
     if ($alpha) {
@@ -849,8 +859,8 @@ function curriculumcourse_get_curriculum_listing($crsid, $sort='position', $dir=
     if ($contexts !== null) {
         //$where .= ' AND ' . $contexts->sql_filter_for_context_level('cur.id', 'curriculum');
 
-        $filter_object = $contexts->filter_for_context_level('cur.id', 'curriculum');
-        $where .= $filter_object->get_sql();
+        //$filter_object = $contexts->filter_for_context_level('cur.id', 'curriculum');
+        //$where .= $filter_object->get_sql();
     }
 
     if (!empty($where)) {
@@ -902,8 +912,8 @@ function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $al
     if ($contexts !== null) {
         //$where .= ' AND ' . $contexts->sql_filter_for_context_level('cur.id', 'curriculum');
 
-        $filter_object = $contexts->filter_for_context_level('cur.id', 'curriculum');
-        $where .= $filter_object->get_sql();
+        //$filter_object = $contexts->filter_for_context_level('cur.id', 'curriculum');
+        //$where .= $filter_object->get_sql();
     }
 
     if (!empty($where)) {
@@ -943,3 +953,38 @@ function curriculumcourse_get_list_by_curr($curriculumid) {
     return $curcourse;
 }
 
+class courseprerequisite extends elis_data_object {
+    const TABLE = 'crlm_course_prerequisite';
+
+    static $associations = array(
+        'curriculumcourse' => array(
+            'class' => 'curriculumcourse',
+            'idfield' => 'curriculumcourseid'
+        ),
+        'course' => array(
+            'class' => 'course',
+            'idfield' => 'courseid'
+        ),
+    );
+
+    protected $_dbfield_curriculumcourseid;
+    protected $_dbfield_courseid;
+}
+
+class coursecorequisite extends elis_data_object {
+    const TABLE = 'crlm_course_corequisite';
+
+    static $associations = array(
+        'curriculumcourse' => array(
+            'class' => 'curriculumcourse',
+            'idfield' => 'curriculumcourseid'
+        ),
+        'course' => array(
+            'class' => 'course',
+            'idfield' => 'courseid'
+        ),
+    );
+
+    protected $_dbfield_curriculumcourseid;
+    protected $_dbfield_courseid;
+}

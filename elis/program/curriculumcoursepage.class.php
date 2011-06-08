@@ -113,8 +113,8 @@ class curriculumcoursepage extends curriculumcoursebasepage {
         $page         = optional_param('page', 0, PARAM_INT);
         $perpage      = optional_param('perpage', 30, PARAM_INT);        // how many per page
 
-        $namesearch   = trim(cm_get_param('search', ''));
-        $alpha        = cm_get_param('alpha', '');
+        $namesearch   = trim(optional_param('search', '', PARAM_RAW));
+        $alpha        = optional_param('alpha', '', PARAM_ALPHA);
 
         $columns = array(
             'coursename' => array('header' => get_string('course_name','elis_program')),
@@ -301,8 +301,8 @@ class coursecurriculumpage extends curriculumcoursebasepage {
         $page         = optional_param('page', 0, PARAM_INT);
         $perpage      = optional_param('perpage', 30, PARAM_INT);        // how many per page
 
-        $namesearch   = trim(cm_get_param('search', ''));
-        $alpha        = cm_get_param('alpha', '');
+        $namesearch   = trim(optional_param('search', '', PARAM_RAW));
+        $alpha        = optional_param('alpha', '', PARAM_ALPHA);
 
         $columns = array(
             'curriculumname'    => array('header' => get_string('curriculum_name','elis_program')),

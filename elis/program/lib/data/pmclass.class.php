@@ -190,7 +190,8 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     public static function delete_for_course($id) {
-        return $this->_db->delete_records(pmclass::TABLE, 'courseid', $id);
+        global $DB;
+        return $DB->delete_records(pmclass::TABLE, array('courseid'=>$id));
     }
 
     /*
@@ -314,17 +315,6 @@ class pmclass extends data_object_with_custom_fields {
     function __toString() {
         $coursename = isset($this->course) ? $this->course->name : '';
         return $this->idnumber . ' ' . $coursename;
-    }
-
-    /*
-     * Remove specified environment from all courses.
-     *
-     * @param $envid int Environment id.
-     * @return bool Status of operation.
-     */
-    public static function remove_environment($envid) {
-    	$sql = 'UPDATE {'.pmclass::TABLE.'} SET environmentid=0 where environmentid='.$envid;
-    	return $this->_db->execute_sql($sql, "");
     }
 
     /**
@@ -478,7 +468,7 @@ class pmclass extends data_object_with_custom_fields {
 
         if(!empty($broken_classes)) {
             foreach($broken_classes as $class) {
-                $DB->delete_records(classmoodlecourse::TABLE, 'id', $class->id);
+                $DB->delete_records(classmoodlecourse::TABLE, array('id'=>$class->id));
             }
         }
 

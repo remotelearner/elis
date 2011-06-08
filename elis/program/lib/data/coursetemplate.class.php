@@ -137,7 +137,8 @@ class coursetemplate extends data_object_with_custom_fields {
     }
 
 	public static function delete_for_course($id) {
-		return $this->_db->delete_records(coursetemplate::TABLE, 'courseid', $id);
+	    global $DB;
+		return $DB->delete_records(coursetemplate::TABLE, array('courseid'=>$id));
 	}
 }
 
