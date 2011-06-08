@@ -112,7 +112,9 @@ class overlay_database extends moodle_database {
             }
             $structure = $xmldb_file->getStructure();
             $table = $structure->getTable($tablename);
-            $manager->create_temp_table($table);
+            // FIXME: when http://bugs.mysql.com/bug.php?id=10327 gets fixed,
+            // we can switch this back to create_temp_table
+            $manager->create_table($table);
         }
         $this->xmldbfiles = $xmldbfiles;
 
@@ -130,7 +132,9 @@ class overlay_database extends moodle_database {
             $xmldb_file = $this->xmldbfiles[$component];
             $structure = $xmldb_file->getStructure();
             $table = $structure->getTable($tablename);
-            $manager->drop_temp_table($table);
+            // FIXME: when http://bugs.mysql.com/bug.php?id=10327 gets fixed,
+            // we can switch this back to drop_temp_table
+            $manager->drop_table($table);
         }
     }
 
