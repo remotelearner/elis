@@ -32,7 +32,7 @@ require_once elispm::file('curriculumcoursepage.class.php');
 require_once elispm::file('form/courseform.class.php');
 require_once elispm::file('pmclasspage.class.php');
 
-/* Add these back in as they are migrated
+/*
 require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
 require_once (CURMAN_DIRLOCATION . '/lib/course.class.php');            // ok
 require_once (CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php');    // ok
@@ -113,6 +113,7 @@ class coursepage extends managementpage {
         array('tab_id' => 'elem', 'page' => get_class($this), 'params' => array('action' => 'lelem'), 'name' => get_string('completion_elements', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'grades'),
         array('tab_id' => 'coursecurriculumpage', 'page' => 'coursecurriculumpage', 'name' => get_string('course_curricula', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
         //array('tab_id' => 'crstaginstancepage', 'page' => 'crstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
+        //TO-DO: re-enable once rolepage is ported
         //array('tab_id' => 'course_rolepage', 'page' => 'course_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
@@ -266,42 +267,42 @@ class coursepage extends managementpage {
                 'required'          => get_string('required','elis_program')
                 );
 
-                foreach ($columns as $column => $cdesc) {
-                    $columndir = "ASC";
-                    $columnicon = $columndir == "ASC" ? "down":"up";
-                    $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
+            foreach ($columns as $column => $cdesc) {
+                $columndir = "ASC";
+                $columnicon = $columndir == "ASC" ? "down":"up";
+                $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
 
-                    $$column = $cdesc;
-                    $table->head[]  = $$column;
-                    $table->align[] = "left";
-                    $table->wrap[]  = false;
-                }
-                $table->head[]  = "";
-                $table->align[] = "center";
-                $table->wrap[]  = true;
+                $$column = $cdesc;
+                $table->head[]  = $$column;
+                $table->align[] = "left";
+                $table->wrap[]  = false;
+            }
+            $table->head[]  = "";
+            $table->align[] = "center";
+            $table->wrap[]  = true;
 
-                foreach ($elements as $element) {
+            foreach ($elements as $element) {
 
-                    $deletebutton = '<a href="index.php?s=crs&amp;section=curr&amp;action=delem&amp;id='.$crs->id.
+                $deletebutton = '<a href="index.php?s=crs&amp;section=curr&amp;action=delem&amp;id='.$crs->id.
                                 '&amp;elemid='.$element->id.'">'.
                                 '<img src="pix/delete.gif" alt="Delete" title="Delete" /></a>';
-                    $editbutton   = '<a href="index.php?s=crs&amp;section=curr&amp;action=eelem&amp;id='.$crs->id.
+                $editbutton   = '<a href="index.php?s=crs&amp;section=curr&amp;action=eelem&amp;id='.$crs->id.
                                 '&amp;elemid='.$element->id.'">'.
                                 '<img src="pix/edit.gif" alt="Edit" title="Edit" /></a>';
 
-                    $newarr = array();
-                    foreach ($columns as $column => $cdesc) {
-                        if ($column == 'required') {
-                            $newarr[] = empty($element->required) ? get_string('no') :  get_string('yes');
-                        } else {
-                            $newarr[] = $element->$column;
-                        }
+                $newarr = array();
+                foreach ($columns as $column => $cdesc) {
+                    if ($column == 'required') {
+                        $newarr[] = empty($element->required) ? get_string('no') :  get_string('yes');
+                    } else {
+                        $newarr[] = $element->$column;
                     }
-                    $newarr[] = $editbutton . ' ' . $deletebutton;
-                    $table->data[] = $newarr;
                 }
-                //$output .= print_table($table, true);
-                $output .= $table->get_html();
+                $newarr[] = $editbutton . ' ' . $deletebutton;
+                $table->data[] = $newarr;
+            }
+            //$output .= print_table($table, true);
+            $output .= $table->get_html();
 
         } else {
             $output .= '<div align="center">' . get_string('no_completion_elements', 'elis_program') . '</div>';
@@ -370,8 +371,8 @@ class coursepage extends managementpage {
         global $USER;
 
         //make sure a valid role is set
-        /*
-        if(!empty($CURMAN->config->default_course_role_id) && record_exists('role', 'id', $CURMAN->config->default_course_role_id)) {
+        /* TO-DO: re-enable after rolepage is ported
+        if(!empty(elis::$config->elis_program->default_course_role_id) && record_exists('role', 'id', elis::$config->elis_program->default_course_role_id)) {
 
             //get the context instance for capability checking
             $context_level = context_level_base::get_custom_context_level('course', 'elis_program');
@@ -379,7 +380,7 @@ class coursepage extends managementpage {
 
             //assign the appropriate role if the user does not have the edit capability
             if(!has_capability('block/curr_admin:course:edit', $context_instance)) {
-                role_assign($CURMAN->config->default_course_role_id, $USER->id, 0, $context_instance->id);
+                role_assign(elis::$config->elis_program->default_course_role_id, $USER->id, 0, $context_instance->id);
             }
         }
         */
@@ -423,3 +424,4 @@ class coursepage extends managementpage {
 function count_curricula($column, $item) {
     return $item->count_curriculumcourse();
 }
+

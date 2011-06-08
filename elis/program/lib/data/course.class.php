@@ -29,14 +29,13 @@ require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/curriculum.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
 
-/* Add these back in as they are migrated
+/*
 require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
 require_once CURMAN_DIRLOCATION . '/lib/environment.class.php';         // not used
 require_once CURMAN_DIRLOCATION . '/lib/curriculum.class.php';          // ok
 require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // ok
 require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // ok
 */
-
 
 class course extends data_object_with_custom_fields {
     const TABLE = 'crlm_course';
@@ -92,6 +91,8 @@ class course extends data_object_with_custom_fields {
     private $location;
     private $templateclass;
 
+    static $delete_is_complex = true;
+
     /**
      * Contructor.
      *
@@ -140,17 +141,6 @@ class course extends data_object_with_custom_fields {
         return context_level_base::get_custom_context_level('course', 'elis_program');
     }
 
-    /*
-     * Remove specified environment from all courses.
-     *
-     * @param $envid int Environment id.
-     * @return bool Status of operation.
-     */
-    public static function remove_environment($envid) {
-    	$sql = 'UPDATE {'.course::TABLE.'} SET environmentid=0 where environmentid=' . $envid;
-    	return $this->_db->execute_sql($sql, "");
-    }
-
     /////////////////////////////////////////////////////////////////////
     //                                                                 //
     //  FORM FUNCTIONS:                                                //
@@ -158,7 +148,7 @@ class course extends data_object_with_custom_fields {
     /////////////////////////////////////////////////////////////////////
 
     public function setUrl($url = null, $action = array()) {
-        if(!($url instanceof noodle_url)) {
+        if(!($url instanceof moodle_url)) {
             $url = new moodle_url($url, $action);
         }
 
@@ -273,13 +263,11 @@ class course extends data_object_with_custom_fields {
         return $output;
     }
 
-
     /////////////////////////////////////////////////////////////////////
     //                                                                 //
     //  DATA FUNCTIONS:                                                //
     //                                                                 //
     /////////////////////////////////////////////////////////////////////
-
 
     /**
      * Get a list of the course completion elements for the current course.
@@ -424,7 +412,7 @@ class course extends data_object_with_custom_fields {
     function remove_course_curricula() {
         $currassigned = $this->get_assigned_curricula();
 
-        foreach($currassigned as $currid => $rowid) {
+        foreach ($currassigned as $currid => $rowid) {
                 // Remove
                 $curcrs = new curriculumcourse($rowid);
                 $curcrs->data_delete_record();
@@ -472,17 +460,12 @@ class course extends data_object_with_custom_fields {
         $prefix = self::$config_default_prefix;
         $prefixlen = strlen($prefix);
 
-        /*
-        foreach ($CURMAN->config as $key => $data) {
-
-          if (false !== strpos($key, $prefix)) {
-
-              $index = substr($key, $prefixlen);
-
-              $default_values[$index] = $data;
-          }
+        foreach (elis::$config->elis_program as $key => $data) {
+            if (false !== strpos($key, $prefix)) {
+                $index = substr($key, $prefixlen);
+                $default_values[$index] = $data;
+            }
         }
-        */
 
         return $default_values;
     }
@@ -494,16 +477,14 @@ class course extends data_object_with_custom_fields {
     function check_for_nags() {
         global $CFG;
 
-        /*
-        $sendtouser =       $CURMAN->config->notify_courserecurrence_user;
-        $sendtorole =       $CURMAN->config->notify_courserecurrence_role;
-        $sendtosupervisor = $CURMAN->config->notify_courserecurrence_supervisor;
+        $sendtouser =       elis::$config->elis_program->notify_courserecurrence_user;
+        $sendtorole =       elis::$config->elis_program->notify_courserecurrence_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_courserecurrence_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
             return true;
         }
-        */
 
         /// Course Recurrence:
         /// A course needs to recur if,
@@ -511,7 +492,6 @@ class course extends data_object_with_custom_fields {
         ///     - The frequency time has passed from when they last completed a class of this course
 
         /// currenttime > completetime + (frequency * timeperiod_in_seconds)
-
 
         mtrace("Checking course notifications<br />\n");
 
@@ -597,20 +577,18 @@ class course extends data_object_with_custom_fields {
      */
 
     public static function course_recurrence_handler($user) {
-        global $CFG;
-        require_once($CFG->dirroot.'/curriculum/lib/notifications.php');
+        // TO-DO: re-enable when notifications has been ported
+        //require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
-        /*
-        $sendtouser       = $CURMAN->config->notify_courserecurrence_user;
-        $sendtorole       = $CURMAN->config->notify_courserecurrence_role;
-        $sendtosupervisor = $CURMAN->config->notify_courserecurrence_supervisor;
+        $sendtouser       = elis::$config->elis_program->notify_courserecurrence_user;
+        $sendtorole       = elis::$config->elis_program->notify_courserecurrence_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_courserecurrence_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
             return true;
         }
-        */
 
         $context = get_system_context();
 
@@ -621,13 +599,13 @@ class course extends data_object_with_custom_fields {
             return true;
         }
 
+        /// Set up the text of the message
+        /* TO-DO: re-enable when notifications have been ported
         $message = new notification();
 
-        /// Set up the text of the message
-        /*
-        $text = empty($CURMAN->config->notify_courserecurrence_message) ?
+        $text = empty(elis::$config->elis_program->notify_courserecurrence_message) ?
                     get_string('notifycourserecurrencemessagedef', 'elis_program') :
-                    $CURMAN->config->notify_courserecurrence_message;
+                    elis::$config->elis_program->notify_courserecurrence_message;
         $search = array('%%userenrolname%%', '%%coursename%%');
         $replace = array(fullname($user), $user->coursename);
         $text = str_replace($search, $replace, $text);
@@ -664,10 +642,10 @@ class course extends data_object_with_custom_fields {
     }
 
 	public function delete() {
+	    // TO-DO: convert this to new way to do delete
         $level = context_level_base::get_custom_context_level('course', 'elis_program');
 		$return = curriculumcourse::delete_for_course($this->id);
-		$return = $return && cmclass::delete_for_course($this->id);
-		$return = $return && taginstance::delete_for_course($this->id);
+		$return = $return && pmclass::delete_for_course($this->id);
         $return = $return && coursetemplate::delete_for_course($this->id);
         $return = $return && delete_context($level,$this->id);
 
@@ -731,10 +709,11 @@ class course extends data_object_with_custom_fields {
     }
 
     static public function get_by_idnumber($idnumber) {
+        global $DB;
+
         $retval = null;
 
-        $course = $this->_db->get_record(course::TABLE, 'idnumber', $idnumber);
-
+        $course = $DB->get_record(course::TABLE, 'idnumber', $idnumber);
 
         if(!empty($course)) {
             $retval = new course($course->id);
@@ -764,6 +743,7 @@ class course extends data_object_with_custom_fields {
     function duplicate($options) {
         require_once elispm::lib('pmclass.class.php');
         require_once elispm::lib('coursetemplate.class.php');
+
         $objs = array('errors' => array());
         if (isset($options['targetcluster'])) {
             $cluster = $options['targetcluster'];
@@ -795,7 +775,7 @@ class course extends data_object_with_custom_fields {
             foreach ($compelems as $compelem) {
                 $compelem = addslashes_recursive($compelem);
                 unset($compelem->id);
-                $clone->save_completion_esement($complem);
+                $clone->save_completion_esement($compelem);
             }
         }
 
@@ -845,32 +825,35 @@ class course extends data_object_with_custom_fields {
 function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=0, $namesearch='', $alpha='', $contexts=null) {
     global $DB;
 
-    //$LIKE = $DB->sql_compare();
-    $LIKE = 'LIKE';
-
-    //$select = 'SELECT crs.*, env.name as envname, env.description as envdescription, (SELECT COUNT(*) FROM {'.curriculumcourse::TABLE.'} WHERE courseid = crs.id ) as curricula ';
     $select = 'SELECT crs.*, (SELECT COUNT(*) FROM {'.curriculumcourse::TABLE.'} WHERE courseid = crs.id ) as curricula ';
     $tables = 'FROM {'.course::TABLE.'} crs ';
-    //$join   = 'LEFT JOIN {'.enrvironment::TABLE.'} env ';
-    //$on     = 'ON env.id = crs.environmentid ';
-    $join   = ' ';
-    $on     = ' ';
 
-    $where = array();
+    $where  = array();
+    $params = array();
+
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where[] = "((crs.name $LIKE '%$namesearch%') OR (crs.idnumber $LIKE '%$namesearch%')) ";
+
+        $name_like = $DB->sql_like('crs.name', '?');
+        $idnumber_like = $DB->sql_like('crs.idnumber', '?');
+
+        $where[] = "(($name_like) OR ($idnumber_like))";
+        $params += array("%$namesearch%", "%$namesearch%");
     }
 
     if ($alpha) {
-        $where[] = (!empty($where) ? ' AND ' : '') . "(crs.name $LIKE '$alpha%') ";
+        $name_like = $DB->sql_like('crs.name', '?');
+        $where[] = (!empty($where) ? ' AND ' : '') . "($name_like)";
+        $params[] = "$alpha%";
     }
 
     if ($contexts !== null) {
-        //$where[] = $contexts->sql_filter_for_context_level('crs.id', 'course');
-
-        //$filter_object = $contexts->filter_for_context_level('crs.id', 'course');
-        //$where[] = $filter_object->get_sql();
+        $filter_object = $contexts->get_filter('crs.id', 'course');
+        $filter_sql = $filter_object->get_sql(false, 'crs');
+        if (isset($filter_sql['where'])) {
+            $where[] = $filter_sql['where'];
+            $params += $filter_sql['where_params'];
+        }
     }
 
     if (!empty($where)) {
@@ -883,19 +866,9 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
         $sort = 'ORDER BY '.$sort .' '. $dir.' ';
     }
 
-    if (!empty($perpage)) {
-        //if ($this->_db->_dbconnection->databaseType == 'postgres7') {
-        //    $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-        //} else {
-            $limit = 'LIMIT '.$startrec.', '.$perpage;
-        //}
-    } else {
-        $limit = '';
-    }
+    $sql = $select.$tables.$where.$sort;
 
-    $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-
-    return $DB->get_records_sql($sql);
+    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
 
@@ -903,27 +876,33 @@ function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
     global $DB;
 
     $where = array();
-
-    //$LIKE = $this->_db->sql_compare();
-    $LIKE = 'LIKE';
+    $params = array();
 
     if (!empty($namesearch)) {
-        $where[] = "((name $LIKE '%$namesearch%') OR (idnumber $LIKE '%$namesearch%'))";
+        $name_like     = $DB->sql_like('name', '?');
+        $idnumber_like = $DB->sql_like('idnumber', '?');
+
+        $where[] = "(($name_like) OR ($idnumber_like))";
+        $params += array("%$namesearch%", "%$namesearch%");
     }
 
     if ($alpha) {
-        $where[] = "(name $LIKE '$alpha%')";
+        $name_like = $DB->sql_like('name', '?');
+        $where[] = "($name_like)";
+        $params[] = "$alpha%";
     }
 
     if ($contexts !== null) {
-        //$where[] = $contexts->sql_filter_for_context_level('id', 'course');
-
-        //$filter_object = $contexts->filter_for_context_level('id', 'course');
-        //$where[] = $filter_object->get_sql();
+        $filter_object = $contexts->get_filter('crs.id', 'course');
+        $filter_sql = $filter_object->get_sql(false, 'crs');
+        if (isset($filter_sql['where'])) {
+            $where[] = $filter_sql['where'];
+            $params += $filter_sql['where_params'];
+        }
     }
 
     $where = implode(' AND ', $where);
 
-    return $DB->count_records_select(course::TABLE, $where);
+    return $DB->count_records_select(course::TABLE, $where, $params);
 }
 

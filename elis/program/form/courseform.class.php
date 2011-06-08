@@ -84,22 +84,6 @@ class cmCourseForm extends cmform {
         $mform->addElement('select', 'completion_grade', get_string('completion_grade', 'elis_program') . ':', $grades);
         $mform->addHelpButton('completion_grade', 'courseform:completion_grade', 'elis_program');
 
-        /*
-        $environments = array('- ' . get_string('none', 'elis_program') . ' -');
-        $envs = environment_get_listing();
-
-        if(empty($envs)) {
-            $envs = array();
-        }
-
-        foreach($envs as $e){
-            $environments[$e->id] = $e->name;
-        }
-
-        $mform->addElement('select', 'environmentid', get_string('environment', 'elis_program'), $environments);
-        $mform->addHelpButton('environmentid', 'courseform:environment', 'elis_program');
-        */
-
         $mform->addElement('text', 'cost', get_string('cost', 'elis_program') . ':');
         $mform->setType('cost', PARAM_TEXT);
         $mform->addRule('cost', null, 'maxlength', 10);
@@ -167,7 +151,10 @@ class cmCourseForm extends cmform {
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
             ? get_context_instance(context_level_base::get_custom_context_level('course', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
-        //require_once CURMAN_DIRLOCATION.'/plugins/manual/custom_fields.php';
+
+        // TO-DO: re-enable once plugin is ported
+        //require_once elispm::file('plugins/manual/custom_fields.php');
+
         foreach ($fields as $rec) {
             $field = new field($rec);
             if (!isset($field->owners['manual'])) {
@@ -199,13 +186,13 @@ class cmCourseForm extends cmform {
     }
 
     function validation($data, $files) {
+        global $DB;
+
         $errors = parent::validation($data, $files);
 
-        /*
-        if ($CURMAN->db->record_exists_select(course::TABLE, "idnumber = '{$data['idnumber']}'".($data['id'] ? " AND id != {$data['id']}" : ''))) {
+        if ($DB->record_exists_select(course::TABLE, "idnumber = '{$data['idnumber']}'".($data['id'] ? " AND id != {$data['id']}" : ''))) {
             $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
         }
-        */
 
         return $errors;
     }
