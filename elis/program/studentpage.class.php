@@ -35,6 +35,8 @@ require_once elispm::file('pmclasspage.class.php');
 require_once elispm::file('form/waitlistform.class.php');
 
 class studentpage extends associationpage {
+    const LANG_FILE = 'elis_program';
+
     var $data_class = 'student';
     var $pagename = 'stu';
     var $tab_page = 'pmclasspage'; // TBD: was cmclasspage
@@ -131,9 +133,9 @@ class studentpage extends associationpage {
         if (md5($stuid) != $confirm) {
             echo cm_error('Invalid confirmation code!');
         } else if (!$stu->delete()){
-            echo cm_error('Student "name: ' . cm_fullname($stu->user) . '" not unenrolled.');
+            echo cm_error('Student "name: '. fullname($stu->user) .'" not unenrolled.');
         } else {
-            echo cm_error('Student "name: ' . cm_fullname($stu->user) . '" unenrolled.');
+            echo cm_error('Student "name: '. fullname($stu->user) .'" unenrolled.');
         }
 
         $this->do_default();
@@ -200,9 +202,10 @@ class studentpage extends associationpage {
 
                 if ($status !== true) {
                     if (!empty($status->message)) {
-                        echo cm_error(get_string('record_not_created_reason', 'block_curr_admin', $status->message));
+                        echo cm_error(get_string('record_not_created_reason',
+                                         self::LANG_FILE, $status));
                     } else {
-                        echo cm_error(get_string('record_not_created', 'block_curr_admin'));
+                        echo cm_error(get_string('record_not_created', self::LANG_FILE));
                     }
                 }
             }
@@ -349,7 +352,7 @@ class studentpage extends associationpage {
                && pmclasspage::can_enrol_into_class($clsid)) {
                 $stu_delete = new student($user['association_id']);
                 if(!$stu_delete->delete()) {
-                    echo cm_error('Student "name: ' . cm_fullname($stu->user) . '" not unenrolled.');
+                    echo cm_error('Student "name: '. fullname($stu->user) .'" not unenrolled.');
                 }
             }
         }
@@ -423,9 +426,10 @@ class studentpage extends associationpage {
 
                         if ($status !== true) {
                             if (!empty($status->message)) {
-                                echo cm_error(get_string('record_not_created_reason', 'block_curr_admin', $status->message));
+                                echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $status));
                             } else {
-                                echo cm_error(get_string('record_not_created', 'block_curr_admin'));
+                                echo cm_error(get_string('record_not_created',
+                                                  self::LANG_FILE));
                             }
                         }
                     }
@@ -439,9 +443,11 @@ class studentpage extends associationpage {
     /**
      *
      * @global <type> $CFG
+     * @uses $CFG
+     * @uses $OUTPUT
      */
     function do_default() { // action_default (and above)
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         $clsid        = $this->required_param('id', PARAM_INT);
         $sort         = $this->optional_param('sort', 'name', PARAM_ALPHANUM);
@@ -454,14 +460,14 @@ class studentpage extends associationpage {
         $cls = new pmclass($clsid);
 
         $columns = array(
-            'idnumber'    => get_string('student_idnumber', 'block_curr_admin'),
-            'name'             => get_string('student_name_1', 'block_curr_admin'),
-            'enrolmenttime'    => get_string('enrolment_time', 'block_curr_admin'),
-            'completetime'     => get_string('completion_time', 'block_curr_admin'),
-            'completestatusid' => get_string('student_status', 'block_curr_admin'),
-            'grade'            => get_string('student_grade', 'block_curr_admin'),
-            'credits'          => get_string('student_credits', 'block_curr_admin'),
-            'locked'           => get_string('student_locked', 'block_curr_admin'),
+            'idnumber'         => get_string('student_idnumber', self::LANG_FILE),
+            'name'             => get_string('student_name_1', self::LANG_FILE),
+            'enrolmenttime'    => get_string('enrolment_time', self::LANG_FILE),
+            'completetime'     => get_string('completion_time', self::LANG_FILE),
+            'completestatusid' => get_string('student_status', self::LANG_FILE),
+            'grade'            => get_string('student_grade', self::LANG_FILE),
+            'credits'          => get_string('student_credits', self::LANG_FILE),
+            'locked'           => get_string('student_locked', self::LANG_FILE),
             'buttons'          => '',
             );
 
@@ -475,10 +481,11 @@ class studentpage extends associationpage {
 
         $this->print_list_view($stus, $columns);
 
-        print_paging_bar($numstus, $page, $perpage,
+        $pagingbar = new paging_bar($numstus, $page, $perpage,
                          "index.php?s=stu&amp;section=curr&amp;id=$clsid&amp;sort=$sort&amp;" .
                          "dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;namesearch=" .
                          urlencode(stripslashes($namesearch))."&amp;");
+        echo $OUTPUT->render($pagingbar);
 
         echo "<form>";
         // TODO: pass in query parameters
@@ -488,7 +495,7 @@ class studentpage extends associationpage {
         }
         if ($this->can_do('add')) {
             echo "<input type=\"button\" onclick=\"document.location='index.php?s=stu&amp;section=curr&amp;" .
-                "action=add&amp;id=$clsid';\" value=\"" . get_string('enrolstudents', 'block_curr_admin') . "\" />";
+                "action=add&amp;id=$clsid';\" value=\"" . get_string('enrolstudents', self::LANG_FILE) . "\" />";
         }
         echo "</form>";
     }
@@ -547,7 +554,9 @@ class studentpage extends associationpage {
      */
     function print_delete_form($stu) {
         $url     = 'index.php';
-        $message = get_string('student_deleteconfirm', 'block_curr_admin', cm_fullname($stu->user));
+        $a = new stdClass;
+        $a->name = fullname($stu->user);
+        $message = get_string('student_deleteconfirm', self::LANG_FILE, $a);
         $optionsyes = array('s' => 'stu', 'section' => 'curr', 'id' => $stu->classid,
                             'action' => 'confirm', 'association_id' => $stu->id, 'confirm' => md5($stu->id));
         $optionsno = array('s' => 'stu', 'section' => 'curr', 'id' => $stu->classid);
@@ -566,19 +575,20 @@ class studentpage extends associationpage {
         $students = $pmclass->count_students_by_section($classid);
 
         if(!empty($students[STUSTATUS_FAILED])) {
-            echo '<div style="float:right;">' . get_string('num_students_failed', 'block_curr_admin') . ': ' . $students[STUSTATUS_FAILED]->c . '</div><br />';
+            echo '<div style="float:right;">' . get_string('num_students_failed', self::LANG_FILE) . ': ' . $students[STUSTATUS_FAILED]->c . '</div><br />';
         }
 
         if(!empty($students[STUSTATUS_PASSED])) {
-            echo '<div style="float:right;">' . get_string('num_students_passed', 'block_curr_admin') . ': ' . $students[STUSTATUS_PASSED]->c . '</div><br />';
+            echo '<div style="float:right;">' . get_string('num_students_passed', self::LANG_FILE) . ': ' . $students[STUSTATUS_PASSED]->c . '</div><br />';
         }
 
         if(!empty($students[STUSTATUS_NOTCOMPLETE])) {
-            echo '<div style="float:right;">' . get_string('num_students_not_complete', 'block_curr_admin') . ': ' . $students[STUSTATUS_NOTCOMPLETE]->c . '</div><br />';
+            echo '<div style="float:right;">' . get_string('num_students_not_complete', self::LANG_FILE) . ': ' . $students[STUSTATUS_NOTCOMPLETE]->c . '</div><br />';
         }
 
         if(!empty($max)) {
-            echo '<div style="float:right;">' . get_string('num_max_students', 'block_curr_admin') . ': ' . $max . '</div><br />';
+            echo '<div style="float:right;">' . get_string('num_max_students',
+                 self::LANG_FILE) . ': ' . $max . '</div><br />';
         }
     }
 }
@@ -598,7 +608,7 @@ class student_table extends association_page_table {
 
     function get_item_display_completestatusid($column, $id) {
         $status = student::$completestatusid_values[$id->$column];
-        return get_string($status, 'block_curr_admin');
+        return get_string($status, self::LANG_FILE);
     }
 
     function get_item_display_locked($column, $id) {

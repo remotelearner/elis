@@ -52,7 +52,7 @@ class student extends elis_data_object {
         'users'   => array('class' => 'user',
                            'idfield' => 'userid'),
         'pmclass' => array('class' => 'pmclass',
-                           'idfield' => classid)
+                           'idfield' => 'classid')
     );
 
 /*
@@ -154,7 +154,6 @@ class student extends elis_data_object {
      *
      */
     function load_cmclass($classdata=false, $compelements=false) {
-        global $CURMAN;
 
         if ($classdata !== false) {
             if (is_int($classdata) || is_numeric($classdata)) {
@@ -211,9 +210,9 @@ class student extends elis_data_object {
      * @return  boolean          TRUE is successful, otherwise FALSE
      */
     function complete($status = false, $time = false, $grade = false, $credits = false, $locked = false) {
-        global $CFG, $CURMAN;
+        global $CFG;
         // *** TBD ***
-        //require_once CURMAN_DIRLOCATION . '/lib/notifications.php';
+        //require_once($CFG->dirroot .'/curriculum/lib/notifications.php');
 
         /// Set any data passed in...
         if ($status !== false) {
@@ -328,7 +327,7 @@ class student extends elis_data_object {
      * check fails
      */
     function save($checks = array(), $notify = false) { // add()
-        global $CURMAN, $CFG;
+        global $CFG;
 
         $status = true;
 
@@ -543,12 +542,13 @@ class student extends elis_data_object {
      * @param $formid string A suffix to put on all 'id' and index for all 'name' attributes.
      *                       This should be unique if being used more than once in a form.
      * @param $extraclass string Any extra class information to add to the output.
-     *
+     * @uses $CFG
+     * @uses $OUTPUT
      * @return string The form HTML, without the form.
      */
     function edit_form_html($classid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
                             $perpage = 0, $namesearch = '', $alpha = '') {
-        global $CURMAN, $CFG;
+        global $CFG, $OUTPUT;
 
         $classid = $this->classid;
 
@@ -590,15 +590,14 @@ class student extends elis_data_object {
             } else {
                 $columndir = $dir == "ASC" ? "DESC":"ASC";
                 $columnicon = $dir == "ASC" ? "down":"up";
-                $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
-
+                $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
             }
 
             if (($column == 'name') || ($column == 'description')) {
-                $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;" .
-                           "action=add&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=" .
-                           urlencode(stripslashes($namesearch)) . "&amp;alpha=$alpha\">" .
-                           $cdesc . "</a>$columnicon";
+                $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;".
+                           "action=add&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=".
+                           urlencode(stripslashes($namesearch)) ."&amp;alpha=$alpha\">".
+                           $cdesc ."</a>$columnicon";
             } else {
                 $$column = $cdesc;
             }
@@ -646,7 +645,7 @@ class student extends elis_data_object {
         } else {
             $user = $this->user;
 
-            $user->name        = cm_fullname($user);
+            $user->name        = fullname($user);
             $users[]           = $user;
             $usercount         = 0;
         }
@@ -772,7 +771,7 @@ class student extends elis_data_object {
 
         if (!empty($table)) {
             if(empty($this->id)) {
-                require_js($CFG->wwwroot . '/curriculum/js/classform.js');
+                require_js($CFG->wwwroot .'/curriculum/js/classform.js');
                 echo '<span class="checkbox selectall">';
 
                 echo '<input type="checkbox" onclick="class_enrol_set_all_selected()"
@@ -807,7 +806,7 @@ class student extends elis_data_object {
                 } else {
                     $columndir = $dir == "ASC" ? "DESC":"ASC";
                     $columnicon = $dir == "ASC" ? "down":"up";
-                    $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
+                    $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
 
                 }
 
@@ -912,11 +911,13 @@ class student extends elis_data_object {
     /**
      * Return the HTML to for a view page that also allows editing.
      *
+     * @uses $CFG
+     * @uses $OUTPUT
      * @return string The form HTML, without the form.
      */
     function view_form_html($classid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
                             $perpage = 0, $namesearch = '', $alpha = '') {
-        global $CURMAN, $CFG;
+        global $CFG, $OUTPUT;
 
         $output = '';
         ob_start();
@@ -963,7 +964,7 @@ class student extends elis_data_object {
             } else {
                 $columndir = $dir == "ASC" ? "DESC":"ASC";
                 $columnicon = $dir == "ASC" ? "down":"up";
-                $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
+                $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
             }
 
             if (($column != 'unenrol')) {
@@ -1018,7 +1019,7 @@ class student extends elis_data_object {
         } else {
             $user = $this->user;
 
-            $user->name        = cm_fullname($user);
+            $user->name        = fullname($user);
             $users[]           = $user;
             $usercount         = 0;
         }
@@ -1164,7 +1165,7 @@ class student extends elis_data_object {
             ($elements = $this->pmclass->course->get_completion_elements())) {
 
             $select = "classid = {$this->classid} AND userid = {$this->userid}";
-            $grades = $CURMAN->db->get_records_select(CLSGRTABLE, $select, 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
+            $grades = $this->_db->get_records_select(CLSGRTABLE, $select, 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
 
             $table = new stdClass;
 
@@ -1182,7 +1183,7 @@ class student extends elis_data_object {
                 } else {
                     $columndir = $dir == "ASC" ? "DESC":"ASC";
                     $columnicon = $dir == "ASC" ? "down":"up";
-                    $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
+                    $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
 
                 }
 
@@ -1982,8 +1983,9 @@ class student extends elis_data_object {
      */
 
     public static function class_notstarted_handler($student) {
-        global $CFG, $CURMAN;
-        require_once($CFG->dirroot.'/curriculum/lib/notifications.php');
+        global $CFG;
+        // *** TBD ***
+        //require_once($CFG->dirroot .'/curriculum/lib/notifications.php');
 
         /// Does the user receive a notification?
         $sendtouser       = elis::$config->elis_program->notify_classnotstarted_user;
@@ -2048,13 +2050,14 @@ class student extends elis_data_object {
      * Function to handle class not completed events.
      *
      * @param   student  $student  The class enrolment / student object who is "not completed"
-     *
+     * @uses CFG
      * @return  boolean            TRUE is successful, otherwise FALSE
      */
 
     public static function class_notcompleted_handler($student) {
-        global $CFG, $CURMAN;
-        require_once($CFG->dirroot.'/curriculum/lib/notifications.php');
+        global $CFG;
+        // *** TBD ***
+        //require_once($CFG->dirroot .'/curriculum/lib/notifications.php');
 
         /// Does the user receive a notification?
         $sendtouser = elis::$config->elis_program->notify_classnotcompleted_user;
@@ -2265,12 +2268,13 @@ class student_grade extends elis_data_object {
      * @param $formid string A suffix to put on all 'id' and index for all 'name' attributes.
      *                       This should be unique if being used more than once in a form.
      * @param $extraclass string Any extra class information to add to the output.
-     *
+     * @uses $CFG
+     * @uses $OUTPUT
      * @return string The form HTML, without the form.
      */
     function edit_form_html($classid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
                             $perpage = 0, $namesearch = '', $alpha = '') {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         $output = '';
         ob_start();
@@ -2290,7 +2294,7 @@ class student_grade extends elis_data_object {
             } else {
                 $columndir = $dir == "ASC" ? "DESC":"ASC";
                 $columnicon = $dir == "ASC" ? "down":"up";
-                $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
+                $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
 
             }
 

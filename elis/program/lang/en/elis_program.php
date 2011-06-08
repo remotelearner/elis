@@ -103,6 +103,7 @@ $string['completion_idnumber'] = 'ID Number';
 $string['completion_grade'] = 'Completion grade';
 $string['completion_name'] = 'Name';
 $string['completion_status'] = 'Completion Status';
+$string['completion_time'] = 'Completion Time';
 $string['confirm_delete_association'] = 'Are you sure you want to delete this entry?';
 $string['confirm_delete_class'] = 'Are you sure you want to delete the class {$a->idnumber}?';
 $string['confirm_delete_completion'] = 'Are you sure you want to delete the completion element \"name: {$a}\"?';
@@ -225,8 +226,11 @@ pages of documentation for ELIS in our <a href="http://training.remote-learner.n
 You can access this course by logging in as a guest.  If you have problems
 accessing this course, please contact your sales representative.';
 $string['email2'] = 'Email address 2';
+$string['enrol'] = 'Enrol'; // TBD: Enroll ?
 $string['enrolment'] = 'Enrollment';
+$string['enrolment_time'] = 'Enrollment Time';
 $string['enrolments'] = 'Enrollments';
+$string['enrolstudents'] = 'Enrol Student'; // TBD (s) ?
 $string['environment'] = 'Environment';
 $string['error_date_range'] = 'Start date must be before the end date.';
 $string['error_duration'] = 'Start time must be before the end time.';
@@ -241,6 +245,7 @@ $string['expiration'] = 'Expiration';
 $string['failclustcpycls'] = 'Failed to copy class with idnumber {$a->idnumber}';
 $string['failclustcpycurr'] = 'Curriculum {$a->name} failed to copy';
 $string['failclustcpycurrcrs'] = 'Failed to copy course {$a->name}';
+$string['failed'] = 'Failed';
 $string['fax'] = 'Fax';
 $string['female'] = 'Female';
 $string['frequency'] = 'Frequency';
@@ -272,6 +277,7 @@ $string['moodleenrol'] = 'You have been removed from the waiting list for class 
 Please visit {$a->wwwroot}/course/enrol.php?id={$a->crs->id} to complete your enrolment.';
 $string['moodleenrol_subj'] = 'Ready to enrol in {$a->class->idnumber}.';
 
+$string['n_completed'] = 'Not Completed';
 $string['no_completion_elements'] = 'There are no completion elements defined.';
 $string['no_items_matching'] = 'No items matching ';
 $string['no_moodlecourse'] = 'No Moodle courses on this site';
@@ -289,13 +295,18 @@ $string['nowenroled'] = 'You have been removed from the waiting list and placed 
 $string['num_class_found'] = '{$a} class(es) found';
 $string['num_course_found'] = '{$a} course(s) found';
 $string['num_curriculum_found'] = '{$a} curricula found';
+$string['num_max_students'] = 'Max # of Students';
 $string['num_pmclass_found'] = '{$a} class(es) found';
+$string['num_students_failed'] = 'number of students failed';
+$string['num_students_not_complete'] = 'number of students not complete';
+$string['num_students_passed'] = 'number of students passed';
 $string['num_user_found'] = '{$a} user(s) found';
 $string['num_userset_found'] = '{$a} user set(s) found';
 
 $string['o_active'] = 'Only active';
 $string['o_inactive'] = 'Only inactive';
 
+$string['passed'] = 'Passed';
 $string['phone2'] = 'Phone 2';
 $string['pmclassform:class_idnumber'] = 'ID Number';
 $string['pmclassform:class_idnumber_help'] = '<p>Class ID number.</p>';
@@ -325,6 +336,8 @@ $string['prerequisites'] = 'Prerequisite';
 $string['priority'] = 'Display priority';
 $string['progman'] = 'Program Manager';
 
+$string['record_not_created'] = 'Record not created.';
+$string['record_not_created_reason'] = 'Record not created. Reason: {$a->message}';
 $string['registered_date'] = 'Registered date';
 $string['remove_coreq'] = 'Remove co-requisites';
 $string['remove_prereq'] = 'Remove prerequisites';
@@ -333,6 +346,18 @@ $string['required_credits'] = 'Required Credits';
 $string['required_field'] = 'Error: {$a} is a required field';
 
 $string['showinactive'] = 'Show inactive';
+
+$string['student_credits'] = 'Credits';
+$string['student_deleteconfirm'] = 'Are you sure you want to unenrol the student name: {$a->name} ?<br />'.
+                                   'NOTE: This will delete all records for this student in this class and will unenrol them from any connected Moodle class!';
+$string['student_email'] = 'Email'; // TBD
+$string['student_grade'] = 'Grade';
+$string['student_id'] = 'ID'; // TBD
+$string['student_idnumber'] = 'ID Number';
+$string['student_locked'] = 'Locked';
+$string['student_name'] = 'Student Name';
+$string['student_name_1'] = 'Name';
+$string['student_status'] = 'Status';
 
 $string['tags'] = 'Tags';
 $string['timecreated'] = 'Creation time';
