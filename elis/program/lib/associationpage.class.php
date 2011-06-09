@@ -26,6 +26,7 @@
 
 require_once elis::lib('table.class.php');
 require_once elispm::lib('lib.php');
+require_once elispm::lib('deprecatedlib.php'); // cm_error();
 require_once elispm::lib('page.class.php');
 //require_once elispm::lib('recordlinkformatter.class.php');
 

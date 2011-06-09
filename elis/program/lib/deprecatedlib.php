@@ -36,3 +36,14 @@ function cm_get_param($param, $default = false) {
     return optional_param($param, $default, PARAM_CLEAN);
 }
 
+/**
+ * Return an error message formatted the way the application wants it.
+ *
+ * @param string $message The text to display.
+ * @return string The formatted message.
+ */
+function cm_error($message) {
+    /// Using Moodle...
+    return notify($message, 'notifyproblem', 'center', true);
+}
+
