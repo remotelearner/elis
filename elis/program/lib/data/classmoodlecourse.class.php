@@ -97,7 +97,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
     }
 
 	public static function delete_for_class($id) {
-    	return $this->_db->delete_records(classmoodlecourse::TABLE, 'classid', $id);
+    	return $this->_db->delete_records(classmoodlecourse::TABLE, array('classid'=>$id));
     }
 
 /////////////////////////////////////////////////////////////////////
@@ -143,7 +143,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
             /// Make sure that a Moodle account exists for this user already.
                 $user = new user($instructor->id);
 
-                if (!$muser = $this->_db->get_record('user', 'idnumber', addslashes($user->idnumber))) {
+                if (!$muser = $this->_db->get_record('user', array('idnumber'=>addslashes($user->idnumber)))) {
                     $muser = addslashes_recursive($muser);
                 /// Create a new record.
                     $muser = new stdClass;
@@ -211,7 +211,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
             /// Make sure that a Moodle account exists for this user already.
                 $user = new user($student->id);
 
-                if (!$muser = $this->_db->get_record('user', 'idnumber', addslashes($user->idnumber))) {
+                if (!$muser = $this->_db->get_record('user', array('idnumber'=>addslashes($user->idnumber)))) {
                     $muser = addslashes_recursive($muser);
                 /// Create a new record.
                     $muser = new stdClass;
@@ -425,8 +425,8 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
     $result = true;
     $moodlecourseid = $mdlid;
 
-/// Look for an existing link for this class.
-    if (!$clsmdl = $DB->get_record(classmoodlecourse::TABLE, 'classid', $clsid)) {
+    /// Look for an existing link for this class.
+    if (!$clsmdl = $DB->get_record(classmoodlecourse::TABLE, array('classid'=>$clsid))) {
     /// Make sure the specified Moodle site config file exists.
         if (!empty($siteconfig) && !file_exists($siteconfig)) {
             return false;

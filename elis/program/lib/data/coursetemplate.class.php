@@ -26,7 +26,7 @@
 
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 
-class coursetemplate extends data_object_with_custom_fields {
+class coursetemplate extends elis_data_object {
     const TABLE = 'crlm_coursetemplate';
 
     static $associations = array(
@@ -92,6 +92,7 @@ class coursetemplate extends data_object_with_custom_fields {
      * @param $createnew boolean If true, and the record doesn't exist, creates a new one.
      * @return boolean Status of the operation.
      */
+    /*
     function data_update_record($createnew = false) {
         if ($this->_dbloaded || !empty($this->id)) {
             $record = new stdClass();
@@ -135,10 +136,20 @@ class coursetemplate extends data_object_with_custom_fields {
             return false;
         }
     }
+    */
+
+    public function save() {
+        $isnew = empty($this->id);
+
+        parent::save();
+
+        // TO-DO: put proper update code here
+
+    }
 
 	public static function delete_for_course($id) {
 	    global $DB;
 		return $DB->delete_records(coursetemplate::TABLE, array('courseid'=>$id));
 	}
-}
 
+}

@@ -187,7 +187,7 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     function get_moodle_course_id() {
-        $mdlrec = $this->_db->get_record(classmoodlecourse::TABLE, 'classid', $this->id);
+        $mdlrec = $this->_db->get_record(classmoodlecourse::TABLE, array('classid'=>$this->id));
         return !empty($mdlrec) ? $mdlrec->moodlecourseid : 0;
         //$this->moodlesiteid = !empty($mdlrec->siteid) ? $mdlrec->siteid : 0;
     }
@@ -340,7 +340,7 @@ class pmclass extends data_object_with_custom_fields {
         if ($courseid == 0) {
             return true;
         }
-        $course = $this->_db->get_record('course', 'id', $courseid);
+        $course = $this->_db->get_record('course', array('id'=>$courseid));
         // check that this is a valid course to enrol into
         if (!$course || $course->metacourse || $course->id == SITEID) {
             return false;
@@ -694,7 +694,7 @@ class pmclass extends data_object_with_custom_fields {
      */
     public static function get_by_idnumber($idnumber) {
         global $DB;
-        $retval = $DB->get_record(pmclass::TABLE, 'idnumber', $idnumber);
+        $retval = $DB->get_record(pmclass::TABLE, array('idnumber'=>$idnumber));
 
         if(!empty($retval)) {
             $retval = new pmclass($retval->id);
@@ -874,7 +874,7 @@ class pmclass extends data_object_with_custom_fields {
         }
         $objs['classes'] = array($this->id => $clone->id);
 
-        $cmc = $this->_db->get_record(classmoodle::TABLE, 'classid', $this->id);
+        $cmc = $this->_db->get_record(classmoodle::TABLE, array('classid'=>$this->id));
         if ($cmc) {
             if ($cmc->autocreated == -1) {
                 $cmc->autocreated = elis::$config->elis_program->autocreated_unknown_is_yes;
