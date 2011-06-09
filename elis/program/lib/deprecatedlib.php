@@ -71,3 +71,58 @@ function cm_delete_form($url='', $message='', $optionsyes=NULL, $optionsno=NULL)
     return $OUTPUT->confirm($message, $buttoncontinue, $buttoncancel);
 }
 
+/**
+ * Get Moodle user id for a given curriculum user id.
+ *
+ * @param int $userid  the cm userid
+ * @uses $CFG
+ * @uses $DB
+ * @return int  the corresponding Moodle userid
+ */
+function cm_get_moodleuserid($userid) {
+    global $CFG, $DB;
+    require_once elispm::lib('data/user.class.php');
+
+    $select = 'SELECT mu.id ';
+    $from   = 'FROM {'. user::TABLE .'} cu ';
+    $join   = 'INNER JOIN {user} mu ON mu.idnumber = cu.idnumber AND mu.mnethostid = ? AND mu.deleted = 0 ';
+    $where  = 'WHERE cu.id = ? ';
+    return $DB->get_field_sql($select.$from.$join.$where, array($CFG->mnet_localhost_id, $userid));
+}
+
+/**
+ * Get Moodle user record for a given curriculum user id.
+ *
+ * @param int $userid  the cm userid
+ * @uses $CFG
+ * @uses $DB
+ * @return object the corresponding Moodle user object
+ */
+function cm_get_moodleuser($userid) {
+    global $CFG, $DB;
+    require_once elispm::lib('data/user.class.php');
+
+    $select = 'SELECT mu.* ';
+    $from   = 'FROM {'. user::TABLE .'} cu ';
+    $join   = 'INNER JOIN {user} mu ON mu.idnumber = cu.idnumber AND mu.mnethostid = ? AND mu.deleted = 0 ';
+    $where  = 'WHERE cu.id = ? ';
+    return $DB->get_record_sql($select.$from.$join.$where, array($CFG->mnet_localhost_id, $userid));
+}
+
+/**
+ * Get Curriculum user id for a given Moodle user id.
+ *
+ * @param int $userid  the Moodle userid
+ * @uses $DB
+ */
+function cm_get_crlmuserid($userid) {
+    global $DB;
+    require_once elispm::lib('data/user.class.php');
+
+    $select = 'SELECT cu.id ';
+    $from   = 'FROM {user} mu ';
+    $join   = 'INNER JOIN {'. user::TABLE .'} cu ON cu.idnumber = mu.idnumber ';
+    $where  = 'WHERE mu.id = ? ';
+    return $DB->get_field_sql($select.$from.$join.$where, array($userid));
+}
+
