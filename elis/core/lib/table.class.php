@@ -337,7 +337,7 @@ class record_link_decorator {
         $id_field_name = $this->id_field_name;
 
         if (isset($item->$id_field_name) && $item->$id_field_name) {
-            $page = new $this->page($this->pageparams + array($this->param_name => $item->$id_field_name));
+            $page = new $this->pageclass($this->pageparams + array($this->param_name => $item->$id_field_name));
             if ($page->can_do()) {
                 return html_writer::link($page->get_url(), $text);
             }
