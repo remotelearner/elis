@@ -49,11 +49,11 @@ function pmalphabox($moodle_url, $pname = 'alpha') {
 
     foreach ($alphabet as $letter) {
         if ($letter == $alpha) {
-            echo html_writer::tag('b', $letter);
+            echo ' ', html_writer::tag('b', $letter);
         } else {
             $url = clone($moodle_url); // TBD
             $url->params(array($pname => $letter));
-            echo html_writer::link($url, $letter);
+            echo ' ', html_writer::link($url, $letter);
         }
     }
 
@@ -92,17 +92,5 @@ function pmsearchbox($page, $searchname = 'search') {
 
     echo "</fieldset></form>";
     echo "</td></tr></table>";
-}
-
-/**
- * Function to get a parameter from _POST or _GET. If not present, will return
- * the value defined in the $default parameter, or false if not defined.
- *
- * @param string $param     The parameter to look for.
- * @param string $default   Default value to return if not found.
- * @return string | boolean The value of the parameter, or $default.
- */
-function cm_get_param($param, $default = false) {
-    return optional_param($param, $default, PARAM_CLEAN);
 }
 
