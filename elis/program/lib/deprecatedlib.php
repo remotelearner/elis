@@ -47,3 +47,27 @@ function cm_error($message) {
     return notify($message, 'notifyproblem', 'center', true);
 }
 
+/**
+ * Returns a delete form formatted for the application.
+ *
+ * @param string $url The page to call.
+ * @param string $message The message to ask.
+ * @param array $optionsyes The form attributes for the "yes" portion.
+ * @param array $optionsno The form attributes for the "no" portion.
+ * @uses $OUTPUT
+ * @return string The HTML for the form.
+ *
+ */
+function cm_delete_form($url='', $message='', $optionsyes=NULL, $optionsno=NULL) {
+    global $OUTPUT;
+    $methodyes = 'post';
+    $methodno  = 'get';
+    $linkyes   = $url;
+    $linkno    = $url;
+
+    $buttoncontinue = new single_button(new moodle_url($linkyes, $optionsyes), get_string('yes'), $methodyes);
+    $buttoncancel   = new single_button(new moodle_url($linkno, $optionsno), get_string('no'), $methodno);
+
+    echo $OUTPUT->confirm($message, $buttoncontinue, $buttoncancel);
+}
+
