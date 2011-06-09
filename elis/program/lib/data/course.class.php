@@ -221,7 +221,7 @@ class course extends data_object_with_custom_fields {
 
     public function create_completion_form($elemid=0, $formid='', $extraclass='', $rows='2', $cols='40') {
         if ($elemid != 0) {
-            $elem = $this->_db->get_record(coursecompletion::TABLE, 'id', $elemid);
+            $elem = $this->_db->get_record(coursecompletion::TABLE, array('id'=>$elemid));
         } else {
             $elem = new Object();
             $elem->idnumber = '';
@@ -344,7 +344,7 @@ class course extends data_object_with_custom_fields {
             return false;
         }
 
-        return $this->_db->delete_records(coursecompletion::TABLE, 'id', $elemid);
+        return $this->_db->delete_records(coursecompletion::TABLE, array('id'=>$elemid));
     }
 
     /**
@@ -715,7 +715,7 @@ class course extends data_object_with_custom_fields {
 
         $retval = null;
 
-        $course = $DB->get_record(course::TABLE, 'idnumber', $idnumber);
+        $course = $DB->get_record(course::TABLE, array('idnumber'=>$idnumber));
 
         if(!empty($course)) {
             $retval = new course($course->id);
@@ -782,7 +782,7 @@ class course extends data_object_with_custom_fields {
         }
 
         // copy template
-        $template = $this->_db->get_record(coursetemplate::TABLE, 'courseid', $this->id);
+        $template = $this->_db->get_record(coursetemplate::TABLE, array('courseid'=>$this->id));
         $template = new coursetemplate($template);
         unset($template->id);
         $template->courseid = $clone->id;

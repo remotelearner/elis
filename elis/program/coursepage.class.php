@@ -198,7 +198,7 @@ class coursepage extends managementpage {
 
     function display_celem() {
         $id = required_param('id', PARAM_INT);
-        $elemid = cm_get_param('elemid', 0);
+        $elemid = optional_param('elemid', 0, PARAM_INT);
 
         $this->print_tabs('elem', array('id' => $id));
         echo $this->get_completion_edit_form($id, $elemid);
@@ -212,12 +212,12 @@ class coursepage extends managementpage {
         $form = $crs->create_completion_form($this->optional_param('elemid', 0, PARAM_INT));
         if (!$form->is_cancelled()) {
             $elemrecord = new Object();
-            $elemrecord->id                = cm_get_param('elemid', 0);
-            $elemrecord->idnumber          = cm_get_param('idnumber', '');
-            $elemrecord->name              = cm_get_param('name', '');
-            $elemrecord->description       = cm_get_param('description', '');
-            $elemrecord->completion_grade  = cm_get_param('completion_grade', 0);
-            $elemrecord->required          = cm_get_param('required', 0);
+            $elemrecord->id                = optional_param('elemid', 0, PARAM_INT);
+            $elemrecord->idnumber          = optional_param('idnumber', '', PARAM_CLEAN);
+            $elemrecord->name              = optional_param('name', '', PARAM_CLEAN);
+            $elemrecord->description       = optional_param('description', '', PARAM_TEXT);
+            $elemrecord->completion_grade  = optional_param('completion_grade', 0, PARAM_INT);
+            $elemrecord->required          = optional_param('required', 0, PARAM_INT);
             $crs->save_completion_element($elemrecord);
         }
 
@@ -226,7 +226,7 @@ class coursepage extends managementpage {
     }
 
     function display_delem() {
-        $elemid = cm_get_param('elemid', 0);
+        $elemid = optional_param('elemid', 0, PARAM_INT);
         return $this->get_delete_element_form($elemid);
     }
 
@@ -234,7 +234,7 @@ class coursepage extends managementpage {
         $id = required_param('id', PARAM_INT);
         $confirm = required_param('confirm', PARAM_TEXT);
 
-        $elemid = cm_get_param('elemid', 0);
+        $elemid = optional_param('elemid', 0, PARAM_INT);
         $crs = new course($id);
         if (md5($elemid) != $confirm) {
             echo cm_error('Invalid confirmation code!');
@@ -402,7 +402,7 @@ class coursepage extends managementpage {
     }
 
     function get_delete_element_form($elemid) {
-        $elemrecord = $this->_db->get_record(coursecompletion::TABLE, 'id', $elemid);
+        $elemrecord = $this->_db->get_record(coursecompletion::TABLE, array('id'=>$elemid));
 
         if (!($elemrecord)) {
             error ('Undefined completion element.');
