@@ -60,22 +60,6 @@ class curriculumcourse extends data_object_with_custom_fields {
         ),
     );
 
-    /*
-    var $id;           // INT - The data id if in the database.
-    var $curriculumid; // INT - The id of the curriclum this relationship belongs to.
-    var $curriculum;   // OBJECT - Curriculum object.
-    var $courseid;     // INT - The id of the course this relationship belongs to.
-    var $course;       // OBJECT - Course object.
-    var $required;     // BOOLEAN - True if course is required for this curriculum.
-    var $frequency;    // INT - How many times the course must be re-taken.
-    var $timeperiod;   // STRING - enum(day, week, month, year)
-    var $position;     // INT - ?
-    var $timecreated;  // INT - Timestamp.
-    var $timemodified; // INT - Timestamp.
-
-    var $_dbloaded;         // BOOLEAN - True if loaded from database.
-    */
-
     protected $_dbfield_curriculumid;
     protected $_dbfield_courseid;
     protected $_dbfield_required;
@@ -84,6 +68,8 @@ class curriculumcourse extends data_object_with_custom_fields {
     protected $_dbfield_position;
     protected $_dbfield_timecreated;
     protected $_dbfield_timemodifieid;
+
+    static $delete_is_complex = true;
 
     private $form_url = null;  //moodle_url object
 
@@ -104,7 +90,6 @@ class curriculumcourse extends data_object_with_custom_fields {
         display: block;
     }
     ';
-
 
     /**
      * Contructor.
@@ -159,16 +144,11 @@ class curriculumcourse extends data_object_with_custom_fields {
     }
 
     function delete() {
+        // TO-DO: convert this to new way of deleting
         $this->delete_all_prerequisites();
         $this->delete_all_corequisites();
         $this->delete_all_track_classes();
         parent::delete();
-    }
-
-    function add() {
-        parent::add();
-        // TO-DO: what do we do about tables that aren't even defined as a variable?
-        events_trigger('crlm_curriculum_course_associated', $this);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -512,7 +492,7 @@ class curriculumcourse extends data_object_with_custom_fields {
             return false;
         }
 
-        return $this->_db->record_exists(courseprerequisite::TABLE, 'curriculumcourseid', $this->id, 'courseid', $cid);
+        return $this->_db->record_exists(courseprerequisite::TABLE, array('curriculumcourseid'=>$this->id, 'courseid'=>$cid));
     }
 
 
@@ -556,12 +536,12 @@ class curriculumcourse extends data_object_with_custom_fields {
                            FROM {'.pmclass::TABLE.'} cls
                                 -- find classes that the user has completed
                      INNER JOIN {'.student::TABLE.'} e ON cls.id = e.classid
-                          WHERE e.userid = $userid. AND e.completestatusid = 2
+                          WHERE e.userid = ? AND e.completestatusid = 2
                        ) pcls ON  pcls.courseid = p.courseid
-                 WHERE cc.curriculumid = '.$this->curriculumid.' AND cc.courseid = '.$this->courseid.' AND pcls.courseid IS NULL';
+                 WHERE cc.curriculumid = ? AND cc.courseid = ? AND pcls.courseid IS NULL';
 
         // prereqs satisfied if there are no unsatisfied prereqs
-        return !$this->_db->record_exists_sql($sql);
+        return !$this->_db->record_exists_sql($sql, array($userid, $this->curriculumid, $this->courseid));
     }
 
 
@@ -629,7 +609,7 @@ class curriculumcourse extends data_object_with_custom_fields {
             return false;
         }
 
-        return $this->_db->record_exists(coursecorequisiteTABLE, 'curriculumcourseid', $this->id, 'courseid', $cid);
+        return $this->_db->record_exists(coursecorequisite::TABLE, array('curriculumcourseid'=>$this->id, 'courseid'=>$cid));
     }
 
 
@@ -656,7 +636,7 @@ class curriculumcourse extends data_object_with_custom_fields {
     }
 
     function is_recorded() {
-        $retval = $this->_db->record_exists(curriculumcourse::TABLE, 'curriculumid', $this->curriculumid, 'courseid', $this->courseid);
+        $retval = $this->_db->record_exists(curriculumcourse::TABLE, array('curriculumid'=>$this->curriculumid, 'courseid'=>$this->courseid));
         return $retval;
     }
 
@@ -668,31 +648,43 @@ class curriculumcourse extends data_object_with_custom_fields {
      * @return A list of course names, indexed by their ID values.
      */
     function get_courses_avail($filters=array()) {
+        $params = array($this->curriculumid);
+
         $sql = 'SELECT crs.id, crs.name, crs.idnumber
                   FROM {'.course::TABLE.'} crs
-             LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs on curcrs.courseid = crs.id AND curcrs.curriculumid = '.$this->curriculumid.'
+             LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs on curcrs.courseid = crs.id AND curcrs.curriculumid = ?
                  WHERE curcrs.id IS NULL ';
         if (isset($filters['contexts'])) {
-            $filter_object = $filters['contexts']->filter_for_context_level('cur.id', 'course');
-            $sql = $sql.' AND '.$filter_object->get_sql().' ';
+            $filter_object = $filters['contexts']->get_filter('cur.id', 'course');
+            $filter_sql = $filter_object->get_sql(false, 'cur');
+            if (isset($filter_sql['where'])) {
+                $sql = $sql.' AND '.$filter_sql['where'].' ';
+                $params += $filter_sql['where_params'];
+            }
         }
         $sql .= 'ORDER BY crs.name ASC';
 
-        return get_records_sql($sql);
+        return get_records_sql($sql, $params);
     }
 
     function get_curricula_avail($filters=array()) {
+        $params = array($this->courseid);
+
         $sql = 'SELECT cur.id, cur.name, cur.idnumber
                   FROM {'.curriculum::TABLE.'} cur
-             LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs ON curcrs.curriculumid = cur.id AND curcrs.courseid = '.$this->courseid.'
+             LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs ON curcrs.curriculumid = cur.id AND curcrs.courseid = ?
                  WHERE curcrs.id IS NULL ';
         if (isset($filters['contexts'])) {
-            $filter_object = $filters['contexts']->filter_for_context_level('cur.id', 'curriculum');
-            $sql = $sql.' AND '.$filter_object->get_sql().' ';
+            $filter_object = $filters['contexts']->get_filter('cur.id', 'curriculum');
+            $filter_sql = $filter_object->get_sql(false, 'cur');
+            if (isset($filter_sql['where'])) {
+                $sql = $sql.' AND '.$filter_sql['where'].' ';
+                $params += $filter_sql['where_params'];
+            }
         }
         $sql = $sql . 'ORDER BY cur.name ASC';
 
-        return get_records_sql($sql);
+        return get_records_sql($sql, $params);
     }
 
     /**
@@ -725,6 +717,10 @@ class curriculumcourse extends data_object_with_custom_fields {
         parent::save();
 
         // add/update crap goes here
+
+        // TO-DO: what do we do about tables that aren't even defined as a variable?
+        events_trigger('crlm_curriculum_course_associated', $this);
+
     }
 
 }
@@ -749,22 +745,26 @@ class curriculumcourse extends data_object_with_custom_fields {
 function curriculumcourse_get_listing($curid, $sort='position', $dir='ASC', $startrec=0, $perpage=0, $namesearch='', $alpha='') {
     global $DB;
 
-    // $LIKE = $CURMAN->db->sql_compare();
-    $LIKE = 'LIKE';
-
     $select = 'SELECT curcrs.*, crs.name AS coursename ';
     $tables = 'FROM {'.curriculumcourse::TABLE.'} curcrs ';
     $join   = 'INNER JOIN {'.course::TABLE.'} crs ';
     $on     = 'ON curcrs.courseid = crs.id ';
-    $where  = 'curcrs.curriculumid = \'' . $curid . '\'';
+    $where  = 'curcrs.curriculumid = ?';
+
+    $params = array($curid);
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where .= (!empty($where) ? ' AND ' : '') . "(crs.name $LIKE  '%$namesearch%') ";
+        $name_like = $DB->sql_like('crs.name', '?');
+
+        $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
+        $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $where .= (!empty($where) ? ' AND ' : '') . "(crs.name $LIKE '$alpha%') ";
+        $name_like = $DB->sql_like('crs.name', '?');
+        $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
+        $params[] = "$alpha%";
     }
 
     if (!empty($where)) {
@@ -775,19 +775,9 @@ function curriculumcourse_get_listing($curid, $sort='position', $dir='ASC', $sta
         $sort = 'ORDER BY '.$sort .' '. $dir.' ';
     }
 
-    if (!empty($perpage)) {
-        //if ($CURMAN->db->_dbconnection->databaseType == 'postgres7') {
-        //    $limit = 'LIMIT '.$perpage.' OFFSET '.$startrec;
-        //} else {
-            $limit = 'LIMIT '.$startrec.', '.$perpage;
-        //}
-    } else {
-        $limit = '';
-    }
+    $sql = $select.$tables.$join.$on.$where.$sort;
 
-    $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-
-    return $DB->get_records_sql($sql);
+    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
 
@@ -796,22 +786,26 @@ function curriculumcourse_count_records($curid, $namesearch = '', $alpha = '') {
 
     $select = '';
 
-    //$LIKE = $CURMAN->db->sql_compare();
-    $LIKE = 'LIKE';
-
     $select = 'SELECT COUNT(curcrs.id) ';
     $tables = 'FROM {'.curriculumcourse::TABLE.'} curcrs ';
     $join   = 'INNER JOIN {'.course::TABLE.'} crs ';
     $on     = 'ON curcrs.courseid = crs.id ';
-    $where  = 'curcrs.curriculumid = \''.$curid.'\'';
+    $where  = 'curcrs.curriculumid = ?';
+
+    $params = array($curid);
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where .= (!empty($where) ? ' AND ' : '') . "(crs.name $LIKE  '%$namesearch%') ";
+        $name_like = $DB->sql_like('crs.name', '?');
+
+        $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
+        $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $where .= (!empty($where) ? ' AND ' : '') . "(crs.name $LIKE '$alpha%') ";
+        $name_like = $DB->sql_like('crs.name', '?');
+        $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
+        $params[] = "$alpha%";
     }
 
     if (!empty($where)) {
@@ -820,7 +814,7 @@ function curriculumcourse_count_records($curid, $namesearch = '', $alpha = '') {
 
     $sql = $select . $tables . $join . $on . $where;
 
-    return $DB->count_records_sql($sql);
+    return $DB->count_records_sql($sql, $params);
 }
 
 /**
@@ -840,29 +834,35 @@ function curriculumcourse_get_curriculum_listing($crsid, $sort='position', $dir=
                                                  $alpha='', $contexts = null) {
     global $DB;
 
-    //$LIKE = $CURMAN->db->sql_compare();
-    $LIKE = 'LIKE';
-
     $select = 'SELECT curcrs.*, cur.name AS curriculumname ';
     $tables = 'FROM {'.curriculumcourse::TABLE.'} curcrs ';
     $join   = 'INNER JOIN {'.curriculum::TABLE.'} cur ';
     $on     = 'ON curcrs.curriculumid = cur.id ';
-    $where  = 'curcrs.courseid = \'' . $crsid . '\'';
+    $where  = 'curcrs.courseid = ?';
+
+    $params = array($crsid);
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where .= (!empty($where) ? ' AND ' : '') . "(cur.name $LIKE '%$namesearch%') ";
+        $name_like = $DB->sql_like('cur.name', '?');
+
+        $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
+        $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $where .= (!empty($where) ? ' AND ' : '') . "(cur.name $LIKE '$alpha%') ";
+        $name_like = $DB->sql_like('cur.name', '?');
+        $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
+        $params[] = "$alpha%";
     }
 
     if ($contexts !== null) {
-        //$where .= ' AND ' . $contexts->sql_filter_for_context_level('cur.id', 'curriculum');
-
-        //$filter_object = $contexts->filter_for_context_level('cur.id', 'curriculum');
-        //$where .= $filter_object->get_sql();
+        $filter_object = $contexts->get_filter('cur.id', 'curriculum');
+        $filter_sql = $filter_object->get_sql(false, 'cur');
+        if (isset($filter_sql['where'])) {
+            $where .= ' AND ' . $filter_sql['where'];
+            $params += $filter_sql['where_params'];
+        }
     }
 
     if (!empty($where)) {
@@ -873,19 +873,9 @@ function curriculumcourse_get_curriculum_listing($crsid, $sort='position', $dir=
         $sort = 'ORDER BY '.$sort .' '. $dir.' ';
     }
 
-    if (!empty($perpage)) {
-        //if ($CURMAN->db->_dbconnection->databaseType == 'postgres7') {
-        //    $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-        //} else {
-            $limit = 'LIMIT '.$startrec.', '.$perpage;
-        //}
-    } else {
-        $limit = '';
-    }
+    $sql = $select.$tables.$join.$on.$where.$sort;
 
-    $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-
-    return $DB->get_records_sql($sql);
+    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
 function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $alpha = '', $contexts = null) {
@@ -893,29 +883,35 @@ function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $al
 
     $select = '';
 
-    //$LIKE = $CURMAN->db->sql_compare();
-    $LIKE = 'LIKE';
-
     $select = 'SELECT COUNT(curcrs.id) ';
-    $tables = 'FROM {'.curriculumcourseTABLE.'} curcrs ';
+    $tables = 'FROM {'.curriculumcourse::TABLE.'} curcrs ';
     $join   = 'INNER JOIN {'.curriculum::TABLE.'} cur ';
     $on     = 'ON curcrs.curriculumid = cur.id ';
-    $where  = 'curcrs.courseid = \'' . $crsid . '\'';
+    $where  = 'curcrs.courseid = ?';
+
+    $params = array($crsid);
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where .= (!empty($where) ? ' AND ' : '') . "(cur.name $LIKE '%$namesearch%') ";
+        $name_like = $DB->sql_like('cur.name', '?');
+
+        $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
+        $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $where .= (!empty($where) ? ' AND ' : '') . "(cur.name $LIKE '$alpha%') ";
+        $name_like = $DB->sql_like('cur.name', '?');
+        $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
+        $params[] = "$alpha%";
     }
 
     if ($contexts !== null) {
-        //$where .= ' AND ' . $contexts->sql_filter_for_context_level('cur.id', 'curriculum');
-
-        //$filter_object = $contexts->filter_for_context_level('cur.id', 'curriculum');
-        //$where .= $filter_object->get_sql();
+        $filter_object = $contexts->get_filter('cur.id', 'curriculum');
+        $filter_sql = $filter_object->get_sql(false, 'cur');
+        if (isset($filter_sql['where'])) {
+            $where .= ' AND ' . $filter_sql['where'];
+            $params += $filter_sql['where_params'];
+        }
     }
 
     if (!empty($where)) {
@@ -924,7 +920,7 @@ function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $al
 
     $sql = $select.$tables.$join.$on.$where;
 
-    return $DB->count_records_sql($sql);
+    return $DB->count_records_sql($sql, $params);
 }
 
 /**

@@ -113,7 +113,7 @@ class curriculumcoursepage extends curriculumcoursebasepage {
         $page         = optional_param('page', 0, PARAM_INT);
         $perpage      = optional_param('perpage', 30, PARAM_INT);        // how many per page
 
-        $namesearch   = trim(optional_param('search', '', PARAM_RAW));
+        $namesearch   = trim(optional_param('search', '', PARAM_TEXT));
         $alpha        = optional_param('alpha', '', PARAM_ALPHA);
 
         $columns = array(
@@ -301,7 +301,7 @@ class coursecurriculumpage extends curriculumcoursebasepage {
         $page         = optional_param('page', 0, PARAM_INT);
         $perpage      = optional_param('perpage', 30, PARAM_INT);        // how many per page
 
-        $namesearch   = trim(optional_param('search', '', PARAM_RAW));
+        $namesearch   = trim(optional_param('search', '', PARAM_TEXT));
         $alpha        = optional_param('alpha', '', PARAM_ALPHA);
 
         $columns = array(
