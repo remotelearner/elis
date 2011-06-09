@@ -1667,7 +1667,7 @@ class student extends elis_data_object {
 
         $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like('name', ':name_like');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
         $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
@@ -2439,12 +2439,12 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
     global $DB;
     $params = array();
     $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-    $FULLNAME_LIKE = $DB->sql_like('name', ':name_like');
+    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like'); // 'name' breaks
     $IDNUMBER_LIKE = $DB->sql_like('usr.idnumber', ':id_like');
     $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
 
     $select  = 'SELECT stu.* ';
-    $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
+    $select .= ', ' . $FULLNAME . ', usr.idnumber ';
 //    $select .= ', ' . $FULLNAME . ' as name, usr.type as description ';
     $tables  = 'FROM {'. student::TABLE .'} stu ';
     $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
