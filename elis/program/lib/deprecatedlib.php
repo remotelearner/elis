@@ -68,6 +68,6 @@ function cm_delete_form($url='', $message='', $optionsyes=NULL, $optionsno=NULL)
     $buttoncontinue = new single_button(new moodle_url($linkyes, $optionsyes), get_string('yes'), $methodyes);
     $buttoncancel   = new single_button(new moodle_url($linkno, $optionsno), get_string('no'), $methodno);
 
-    echo $OUTPUT->confirm($message, $buttoncontinue, $buttoncancel);
+    return $OUTPUT->confirm($message, $buttoncontinue, $buttoncancel);
 }
 
