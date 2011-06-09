@@ -982,9 +982,6 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
                              $contexts=null, $clusterid = 0, $extrafilters = array()) {
     global $USER, $DB;
 
-    //$LIKE = $this->_db->sql_compare();
-    $LIKE = 'LIKE';
-
     $select = 'SELECT cls.*, cls.starttimehour as starttimehour, cls.starttimeminute as starttimeminute, ' .
               'cls.endtimehour as endtimehour, cls.endtimeminute as endtimeminute, crs.name as crsname, ' .
               'clsmoodle.moodlecourseid as moodlecourseid ';
@@ -1019,11 +1016,18 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where[] = "((crs.name $LIKE '%$namesearch%') OR (cls.idnumber $LIKE '%$namesearch%')) ";
+
+        $crslike = $DB->sql_like('crs.name', '?');
+        $clslike = $DB->sql_like('cls.idnumber', '?');
+
+        $where[] = "(($crslike) OR ($clslike))";
+        $params += array("%$namesearch%", "%$namesearch%");
     }
 
     if ($alpha) {
-        $where[] = "(crs.name $LIKE '$alpha%')";
+        $crslike = $DB->sql_like('crs.name', '?');
+        $where[] = "($crslike)";
+        $params[] = "$alpha%";
     }
 
     if ($id) {
