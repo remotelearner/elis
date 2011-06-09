@@ -284,9 +284,8 @@ class associationpage extends pm_page {
      * Prints out the page that displays a list of records returned from a query.
      * @param $items array of records to print
      * @param $columns associative array of column id => column heading text
-     * @param $formatters associative array of column id => formatting object, used to customize the display of columns
      */
-    function print_list_view($items, $columns, $formatters=array()) { // TBD
+    function print_list_view($items, $columns) { // TBD
         global $CFG;
 
         $id = required_param('id', PARAM_INT);
@@ -296,7 +295,7 @@ class associationpage extends pm_page {
             return;
         }
 
-        $table = $this->create_table_object($items, $columns, $formatters);
+        $table = $this->create_table_object($items, $columns);
         echo $table;
     }
 
@@ -304,10 +303,9 @@ class associationpage extends pm_page {
      * Creates a new table object with specified $items and $columns.
      * @param array $items
      * @param array $columns
-     * @param array $formatters
      */
-    function create_table_object($items, $columns, $formatters) {
-        return new association_page_table($items, $columns, $this, $formatters);
+    function create_table_object($items, $columns) {
+        return new association_page_table($items, $columns, $this);
     }
 
     /**
@@ -330,6 +328,8 @@ class associationpage extends pm_page {
      * @param $namefield property name in the class to associate with that should be displayed in the dropdown rows
      */
     function print_dropdown($items, $taken_items, $local_key, $nonlocal_key, $action='savenew', $namefield='name') {
+        global $OUTPUT;
+
         $id = required_param('id', PARAM_INT);
 
         // As most of the listing functions return 'false' if there are no records.
@@ -346,7 +346,7 @@ class associationpage extends pm_page {
         }
 
         $menu = array();
-        
+
         foreach ($avail as $info) {
             if (!in_array($info->id, $taken_ids)) {
                 $menu[$info->id] = $info->$namefield;
@@ -354,12 +354,14 @@ class associationpage extends pm_page {
         }
 
         echo '<div align="center"><br />';
-        
+
         if (!empty($menu)) {
             // TODO: use something that doesn't require this append-to-url-string approach
             // Double use of $id is to keep idea of foreign key for association and parent object separate
-            $url = $this->get_new_page(array('action' => $action, $local_key => $id, 'id' => $id))->url .'&amp;'. $nonlocal_key .'=';
-            popup_form($url, $menu, 'assigntrk', '', 'Add...');
+            $url = $this->get_new_page(array('action' => $action, $local_key => $id, 'id' => $id))->url;
+            $actionurl = new moodle_url($url, array('sesskey'=>sesskey()));
+            $select = new single_select($actionurl, 'trackid', $menu, null, array(''=>get_string('adddots')));
+            echo $OUTPUT->render($select);
         } else {
             echo get_string('all_items_assigned', self::LANG_FILE);
         }
@@ -400,19 +402,6 @@ class associationpage extends pm_page {
         return $buttons;
     }
 
-    /*
-     * Convenience function for creating the standard link-to-foreign-record formatters array for the list view.
-     *
-     */
-    function create_link_formatters($columns, $foreign_class, $foreign_id) {
-        $formatters = array();
-        foreach($columns as $column) {
-            $formatters[$column] = new recordlinkformatter(new $foreign_class(), $foreign_id);
-        }
-
-        return $formatters;
-    }
-
     /**
      * Prints the 'All A B C ...' alphabetical filter bar.
      */
@@ -429,9 +418,9 @@ class associationpage extends pm_page {
 }
 
 class association_page_table extends display_table {
-    function __construct(&$items, $columns, $page, $decorators=array()) {
+    function __construct(&$items, $columns, $page) {
         $this->page = $page;
-        parent::__construct($items, $columns, $page->url, $decorators);
+        parent::__construct($items, $columns, $page->url);
     }
 
     function get_column_align_buttons() {
@@ -453,7 +442,7 @@ class association_page_table extends display_table {
         $target = $this->page->get_new_page(array('action' => 'delete', 'association_id' => $item->id, 'id' => $id));
         if ($target->can_do('delete')) {
             $deletebutton = '<a href="'. $target->url .'">'.
-                '<img src="'. $OUTPUT->pix_url(delete) .'" alt="Unenrol" title="Unenrol" /></a>';
+                '<img src="'. $OUTPUT->pix_url('delete') .'" alt="Unenrol" title="Unenrol" /></a>';
         } else {
             $deletebutton = '';
         }

@@ -45,6 +45,8 @@ require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/usertrack.class.php');
 
+require_once elispm::lib('deprecatedlib.php');
+
 //define ('TABLE', 'crlm_track');
 //define ('CLASSTABLE', 'crlm_track_class');
 
@@ -164,7 +166,7 @@ class track extends data_object_with_custom_fields {
 
         if (empty($this->curid) or
             empty($this->id)) {
-            //cm_error('trackid and curid have not been properly initialized');
+            cm_error('trackid and curid have not been properly initialized');
             return false;
         }
 
@@ -208,7 +210,7 @@ class track extends data_object_with_custom_fields {
 
             // Create class
             if (!($classid = $classojb->auto_create_class(array('courseid'=>$curcourec->courseid)))) {
-                //cm_error('Could not create class');
+                cm_error('Could not create class');
                 return false;
             }
 
@@ -636,12 +638,12 @@ class trackassignment extends elis_data_object {
              empty($this->classid) or
              empty($this->courseid)) and
             empty(elis::$config->elis_program->userdefinedtrack)) {
-            //cm_error('trackid and classid have not been properly initialized');
+            cm_error('trackid and classid have not been properly initialized');
             return false;
         } elseif ((empty($this->courseid) or
                    empty($this->classid)) and
                   elis::$config->elis_program->userdefinedtrack) {
-            //cm_error('courseid has not been properly initialized');
+            cm_error('courseid has not been properly initialized');
         }
 
         if (empty(elis::$config->elis_program->userdefinedtrack)) {
@@ -762,7 +764,7 @@ class trackassignment extends elis_data_object {
         $trackid = $this->_db->get_field(TABLE, 'id', array('curid'=> $this->track->curid,
                                                             'defaulttrack'=> 1));
         if (false === $trackid) {
-            //cm_error('Error #1001: selecting field from crlm_track table');
+            cm_error('Error #1001: selecting field from crlm_track table');
         }
 
         // Check if class is assigned to default track

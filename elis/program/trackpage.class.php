@@ -87,7 +87,7 @@ class trackpage extends managementpage {
      * @return  boolean            Whether the user is allowed to enrol users into the curriculum
      *
      */
-    static function can_enrol_into_track($trackid) {
+    public static function can_enrol_into_track($trackid) {
         global $USER;
 
         //check the standard capability
@@ -115,13 +115,14 @@ class trackpage extends managementpage {
      * Check if the user has the given capability for the requested track
      */
     public function _has_capability($capability, $id = null) {
-        $id = $id ? $id : $this->required_param('id', PARAM_INT);
+        $id = $id ? $id : required_param('id', PARAM_INT);
+
         $cached = trackpage::check_cached($capability, $id);
         if ($cached !== null) {
             return $cached;
         }
-        //$context = get_context_instance(context_level_base::get_custom_context_level('track', 'elis_program'), $id);
-        return has_capability($capability, $this->context);
+        $context = get_context_instance(context_level_base::get_custom_context_level('track', 'elis_program'), $id);
+        return has_capability($capability, $context);
     }
 
     public function __construct(array $params=null) {
@@ -130,7 +131,7 @@ class trackpage extends managementpage {
         array('tab_id' => 'edit', 'page' => 'trackpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
 
         //array('tab_id' => 'trackclusterpage', 'page' => 'trackclusterpage', 'name' => get_string('clusters','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster.gif'),
-        //array('tab_id' => 'trackuserpage', 'page' => 'trackuserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
+        array('tab_id' => 'trackuserpage', 'page' => 'trackuserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
         array('tab_id' => 'trackassignmentpage', 'page' => 'trackassignmentpage', 'name' => get_string('track_classes','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class.gif'),
         //array('tab_id' => 'track_rolepage', 'page' => 'track_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
 

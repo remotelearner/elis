@@ -115,7 +115,7 @@ class usertrack extends elis_data_object {
 
         $user = new user($userid);
         $track = new track($trackid);
-
+/* TODO:  Needs to be ported to ELIS2
         // add the student to the associated curriculum, if they're not already
         // enrolled
         if (!$DB->record_exists(curriculumassignment::TABLE, array('userid'=> $userid,
@@ -128,7 +128,7 @@ class usertrack extends elis_data_object {
             $curstu->locked = 0;
             $curstu->save();
         }
-
+*/
         events_trigger('track_assigned', $record);
 
         /**
@@ -173,9 +173,22 @@ class usertrack extends elis_data_object {
     }
 
     static $validation_rules = array(
-        'validate_idnumber_not_empty',
-        'validate_unique_idnumber'
+        'validate_userid_not_empty',
+        'validate_trackid_not_empty',
+        'validate_unique_userid_trackid'
     );
+
+    function validate_userid_not_empty() {
+        return validate_not_empty($this, 'userid');
+    }
+
+    function validate_trackid_not_empty() {
+        return validate_not_empty($this, 'trackid');
+    }
+
+    function validate_unique_userid_trackid() {
+        return validate_is_unique($this, array('userid','trackid'));
+    }
 
     /// collection functions. (These may be able to replaced by a generic container/listing class)
 

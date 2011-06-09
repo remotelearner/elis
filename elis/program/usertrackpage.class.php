@@ -47,18 +47,16 @@ class usertrackbasepage extends associationpage {
     function do_savenew() {
         $trackid = $this->required_param('trackid', PARAM_INT);
         $userid = $this->required_param('userid', PARAM_INT);
-
         usertrack::enrol($userid, $trackid);
 
         $target = $this->get_new_page(array('action' => 'default', 'id' => $this->required_param('id', PARAM_INT)));
-        redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' saved.');
-        //return $this->display_default();
+        redirect($target->url);
     }
 }
 
 class usertrackpage extends usertrackbasepage {
     var $pagename = 'usrtrk';
-    var $tab_page = 'usermanagementpage';
+    var $tab_page = 'userpage';
 
     var $section = 'users';
 
@@ -128,25 +126,29 @@ class usertrackpage extends usertrackbasepage {
 
             $contexts->contexts['track'] = array_merge($contexts->contexts['track'], $new_tracks);
         }*/
+        if (!empty($id)) {
+            //print curriculum tabs if viewing from the curriculum view
+            $userpage = new userpage(array('id' => $id));
+            $userpage->print_tabs('usertrackpage', array('id' => $id));
+        }
 
 
         $columns = array(
             'idnumber'    => array('header'=> get_string('track_idnumber', 'elis_program'),
                                    'decorator' => array(new record_link_decorator('trackpage',
                                                                                   array('action'=>'view'),
-                                                                                  'trackid'))),
-            'name'        => array('header'=> get_string('track_description', 'elis_program'),
+                                                                                  'trackid'),
+                                                        'decorate')),
+            'name'        => array('header'=> get_string('track_name', 'elis_program'),
                                    'decorator' => array(new record_link_decorator('trackpage',
                                                                                   array('action'=>'view'),
-                                                                                  'trackid'))),
+                                                                                  'trackid'),
+                                                        'decorate')),
             'numclasses'   => array('header'=> get_string('track_num_classes', 'elis_program')),
             'manage'      => array('header'=> ''),
         );
 
         $items = usertrack::get_tracks($id);
-
-        //$formatters = $this->create_link_formatters(array('idnumber', 'name'), 'trackpage', 'trackid');
-        //$formatters = $this->create_link_formatters(array('idnumber', 'name'), 'trackpage', 'trackid');
 
         $this->print_list_view($items, $columns);
 
@@ -197,6 +199,12 @@ class trackuserpage extends usertrackbasepage {
     function display_default() {
         $id = $this->required_param('id', PARAM_INT);
 
+        if (!empty($id)) {
+            //print curriculum tabs if viewing from the curriculum view
+            $trackpage = new userpage(array('id' => $id));
+            $trackpage->print_tabs('trackuserpage', array('id' => $id));
+        }
+
         $columns = array(
                 'idnumber'    => array('header'=> get_string('student_idnumber', 'elis_program'),
                                        'decorator' => array(new record_link_decorator('trackpage',
@@ -211,8 +219,6 @@ class trackuserpage extends usertrackbasepage {
         );
 
         $items = usertrack::get_users($id);
-
-        //$formatters = $this->create_link_formatters(array('idnumber', 'name'), 'usermanagementpage', 'userid');
 
         $this->print_list_view($items, $columns);
 
