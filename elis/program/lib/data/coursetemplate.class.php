@@ -67,7 +67,7 @@ class coursetemplate extends data_object_with_custom_fields {
             $select = 'courseid = ' . $id;
         }
 
-        $record = $this->_db->get_record_select($this->table, $select);
+        $record = $this->_db->get_record_select(self::TABLE, $select);
         if (empty($record)) {
             return false;
         }

@@ -301,9 +301,8 @@ class coursepage extends managementpage {
                 $newarr[] = $editbutton . ' ' . $deletebutton;
                 $table->data[] = $newarr;
             }
-            //$output .= print_table($table, true);
-            $output .= $table->get_html();
 
+            $output .= $table->get_html();
         } else {
             $output .= '<div align="center">' . get_string('no_completion_elements', 'elis_program') . '</div>';
         }

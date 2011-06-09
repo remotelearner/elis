@@ -155,6 +155,7 @@ class course extends data_object_with_custom_fields {
         $this->form_url = $url;
     }
 
+    /*
     public function create_edit_form($formid='', $rows=2, $cols=40) {
         $configdata = array();
         $configdata['formid'] = $formid;
@@ -182,6 +183,7 @@ class course extends data_object_with_custom_fields {
 
         return $crsForm;
     }
+    */
 
 
     /**
@@ -280,7 +282,7 @@ class course extends data_object_with_custom_fields {
             return false;
         }
 
-        return $this->_db->get_records(coursecompletion::TABLE, 'courseid', $this->id);
+        return $this->_db->get_records(coursecompletion::TABLE, array('courseid'=>$this->id));
     }
 
     /*
@@ -358,7 +360,7 @@ class course extends data_object_with_custom_fields {
           return false;
       }
 
-      $result = $this->_db->get_records(curriculumcourse::TABLE, 'courseid', $this->id);
+      $result = $this->_db->get_records(curriculumcourse::TABLE, array('courseid'=>$this->id));
 
       if ($result) {
           foreach ($result as $data) {

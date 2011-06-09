@@ -28,10 +28,13 @@ require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
+require_once elispm::lib('data/track.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('form/pmclassform.class.php');
 require_once elispm::file('coursepage.class.php');
+//require_once elispm::file('studentpage.class.php');
+//require_once elispm::file('waitlistpage.class.php');
 
 /*
 require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
@@ -41,7 +44,7 @@ require_once (CURMAN_DIRLOCATION . '/lib/environment.class.php');       // not u
 require_once (CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php'); // ok
 require_once (CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php');    // ok
 require_once (CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php');   // missing
-require_once (CURMAN_DIRLOCATION . '/lib/track.class.php');             // missing
+require_once (CURMAN_DIRLOCATION . '/lib/track.class.php');             // ok
 require_once (CURMAN_DIRLOCATION . '/form/pmclassform.class.php');      // ok
 require_once (CURMAN_DIRLOCATION . '/studentpage.class.php');           // missing
 require_once (CURMAN_DIRLOCATION . '/waitlistpage.class.php');          // missing
@@ -130,7 +133,7 @@ class pmclasspage extends managementpage {
     /**
      * Check if the user has the given capability for the requested track
      */
-    function _has_capability($capability, $id = null) {
+    public function _has_capability($capability, $id = null) {
         $id = $id ? $id : $this->required_param('id', PARAM_INT);
         // class contexts are different -- we rely on the cache because tracks
         // require special logic
@@ -162,19 +165,21 @@ class pmclasspage extends managementpage {
         return parent::_get_page_params();
     }
 
-    function __construct(array $params=null) {
+    public function __construct(array $params=null) {
         $this->tabs = array(
         array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
         array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
 
-        array('tab_id' => 'studentpage', 'page' => 'studentpage', 'name' => get_string('enrolments', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
-        array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting.png'),
-        array('tab_id' => 'instructorpage', 'page' => 'instructorpage', 'name' => get_string('instructors', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'instructor.gif'),
-        array('tab_id' => 'clstaginstancepage', 'page' => 'clstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag.gif'),
-        array('tab_id' => 'class_rolepage', 'page' => 'class_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
+        // TO-DO: re-enable as pages become available
+
+        //array('tab_id' => 'studentpage', 'page' => 'studentpage', 'name' => get_string('enrolments', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
+        //array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting.png'),
+        //array('tab_id' => 'instructorpage', 'page' => 'instructorpage', 'name' => get_string('instructors', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'instructor.gif'),
+        //array('tab_id' => 'clstaginstancepage', 'page' => 'clstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag.gif'),
+        //array('tab_id' => 'class_rolepage', 'page' => 'class_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete.gif'),
-        array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'report.gif')
+        //array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'report.gif')
         );
 
         parent::__construct($params);
@@ -239,7 +244,8 @@ class pmclasspage extends managementpage {
         $this->navbar->add($combined_nav);
     }
 
-    /* override parent class, because formslib is picky
+    /**
+     * override parent class, because formslib is picky
      */
     function display_savenew() {
         $target = $this->get_new_page(array('action' => 'savenew'));
@@ -325,7 +331,7 @@ class pmclasspage extends managementpage {
         $id = required_param('id', PARAM_INT);
         $force = optional_param('force', 0, PARAM_INT);
 
-        if(count_records(STUTABLE, 'classid', $id) && $force != 1) {
+        if(count_records(student::TABLE, array('classid'=>$id)) && $force != 1) {
             $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1));
             notify(get_string('pmclass_delete_warning', 'elis_program'), 'errorbox');
             echo '<center><a href="' . $target->url . '">'. get_string('pmclass_delete_warning_continue', 'elis_program') . '</a></center>';
@@ -385,8 +391,8 @@ class pmclasspage extends managementpage {
         global $USER;
 
         //make sure a valid role is set
-        /*
-        if(!empty($CURMAN->config->default_class_role_id) && record_exists('role', 'id', $CURMAN->config->default_class_role_id)) {
+        /* TO-DO: re-enable after role pages are done
+        if(!empty(elis::$config->elis_program->default_class_role_id) && record_exists('role', 'id', elis::$config->elis_program->default_class_role_id)) {
 
             //get the context instance for capability checking
             $context_level = context_level_base::get_custom_context_level('class', 'elis_program');
@@ -394,7 +400,7 @@ class pmclasspage extends managementpage {
 
             //assign the appropriate role if the user does not have the edit capability
             if(!has_capability('block/curr_admin:class:edit', $context_instance)) {
-                role_assign($CURMAN->config->default_class_role_id, $USER->id, 0, $context_instance->id);
+                role_assign(elis::$config->elis_program->default_class_role_id, $USER->id, 0, $context_instance->id);
             }
         }
         */

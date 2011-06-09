@@ -30,6 +30,8 @@ require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
+require_once elispm::lib('data/track.class.php');
+require_once elispm::lib('data/student.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('form/pmclassform.class.php');
@@ -39,15 +41,14 @@ require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
 require_once CURMAN_DIRLOCATION . '/lib/course.class.php';              // ok
 require_once CURMAN_DIRLOCATION . '/lib/environment.class.php';         // not used
 require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php';          // missing
-require_once CURMAN_DIRLOCATION . '/lib/student.class.php';             // missing
+require_once CURMAN_DIRLOCATION . '/lib/student.class.php';             // ok
 require_once CURMAN_DIRLOCATION . '/lib/attendance.class.php';          // not used
 require_once CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php';   // ok
 require_once CURMAN_DIRLOCATION . '/form/pmclassform.class.php';        // ok
 require_once CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php';      // ok
-require_once CURMAN_DIRLOCATION . '/lib/track.class.php';               // missing
+require_once CURMAN_DIRLOCATION . '/lib/track.class.php';               // ok
 require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // ok
 require_once CURMAN_DIRLOCATION . '/lib/taginstance.class.php';         // not used
-require_once CURMAN_DIRLOCATION . '/lib/track.class.php';               // missing
 require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // ok
 */
 
@@ -105,6 +106,8 @@ class pmclass extends data_object_with_custom_fields {
     protected $_dbfield_maxstudents;
     protected $_dbfield_environmentid;
     protected $_dbfield_enrol_from_waitlist;
+
+    static $delete_is_complex = true;
 
     /**
      * Contructor.
@@ -166,7 +169,7 @@ class pmclass extends data_object_with_custom_fields {
     */
 
     protected function get_field_context_level() {
-        return context_level_base::get_custom_context_level('course', 'elis_program');
+        return context_level_base::get_custom_context_level('class', 'elis_program');
     }
 
     function get_start_time() {
@@ -237,24 +240,30 @@ class pmclass extends data_object_with_custom_fields {
         $this->form_url = $url;
     }
 
-//    public function create_edit_form($formid='', $rows=2, $cols=40) {
-//        $configdata = array();
-//        $configdata['id'] = $this->id;
-//        $configdata['courseid'] = $this->courseid;
-//        $configdata['display_12h'] = true;
-//
-//        $this->form = new pmclassform($this->form_url, $configdata);
-//
-//        $this->starttime = ($this->starttimehour + 5) * HOURSECS;
-//        $this->starttime += $this->starttimeminute * MINSECS;
-//
-//        $this->endtime = ($this->endtimehour + 5) * HOURSECS;
-//        $this->endtime += $this->endtimeminute * MINSECS;
-//
-//        $this->form->set_data($this);
-//
-//        return $this->form;
-//    }
+    /*
+    public function create_edit_form($formid='', $rows=2, $cols=40) {
+        $configdata = array();
+        $configdata['id'] = $this->id;
+        $configdata['courseid'] = $this->courseid;
+        $configdata['display_12h'] = true;
+
+        $this->form = new pmclassform($this->form_url, $configdata);
+
+        $this->starttime = ($this->starttimehour + 5) * HOURSECS;
+        $this->starttime += $this->starttimeminute * MINSECS;
+
+        $this->endtime = ($this->endtimehour + 5) * HOURSECS;
+        $this->endtime += $this->endtimeminute * MINSECS;
+
+        $this->form->set_data($this);
+
+        return $this->form;
+    }
+    */
+
+    public static function find($filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {
+        return parent::find($filter, $sort, $limitfrom, $limitnum, $db);
+    }
 
     public function set_from_data($data) {
         if(!empty($data->moodleCourses['autocreate'])) {
@@ -283,7 +292,8 @@ class pmclass extends data_object_with_custom_fields {
 
         $this->oldmax = $this->maxstudents;
 
-        parent::set_from_data($data);
+        //parent::set_from_data($data);
+        $this->_load_data_from_record($data, true);
     }
 
     /*
@@ -349,11 +359,9 @@ class pmclass extends data_object_with_custom_fields {
             $enrol = $CFG->enrol;
         }
 
-        /*
-        if ($CURMAN->config->restrict_to_elis_enrolment_plugin && $enrol != 'elis') {
+        if (elis::$config->elis_program->restrict_to_elis_enrolment_plugin && $enrol != 'elis') {
             return false;
         }
-        */
 
         // check that the enrolment plugin allows manual enrolment
         require_once("$CFG->dirroot/enrol/enrol.class.php");
@@ -486,17 +494,12 @@ class pmclass extends data_object_with_custom_fields {
         $prefix = self::$config_default_prefix;
         $prefixlen = strlen($prefix);
 
-        /*
-        foreach ($CURMAN->config as $key => $data) {
-
+        foreach (elis::$config->elis_program as $key => $data) {
           if (false !== strpos($key, $prefix)) {
-
               $index = substr($key, $prefixlen);
-
               $default_values[$index] = $data;
           }
         }
-        */
 
         return $default_values;
     }
@@ -510,19 +513,17 @@ class pmclass extends data_object_with_custom_fields {
         global $CFG;
         $result = true;
 
-        /*
-        $sendtouser = $CURMAN->config->notify_classnotstarted_user;
-        $sendtorole = $CURMAN->config->notify_classnotstarted_role;
+        $sendtouser = elis::$config->elis_program->notify_classnotstarted_user;
+        $sendtorole = elis::$config->elis_program->notify_classnotstarted_role;
         if ($sendtouser || $sendtorole) {
             $result = self::check_for_nags_notstarted() && $result;
         }
 
-        $sendtouser = $CURMAN->config->notify_classnotcompleted_user;
-        $sendtorole = $CURMAN->config->notify_classnotcompleted_role;
+        $sendtouser = elis::$config->elis_program->notify_classnotcompleted_user;
+        $sendtorole = elis::$config->elis_program->notify_classnotcompleted_role;
         if ($sendtouser || $sendtorole) {
             $result = self::check_for_nags_notcompleted() && $result;
         }
-        */
 
         return $result;
     }
@@ -542,8 +543,7 @@ class pmclass extends data_object_with_custom_fields {
         /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
 
         $timenow = time();
-        //$timedelta = $CURMAN->config->notify_classnotstarted_days * 60*60*24;
-        $timedelta = 0;
+        $timedelta = elis::$config->elis_program->notify_classnotstarted_days * 60*60*24;
 
         // If the student is enrolled prior to this time, then they have been
         // enrolled for at least [notify_classnotstarted_days] days
@@ -618,8 +618,7 @@ class pmclass extends data_object_with_custom_fields {
         /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
 
         $timenow = time();
-        //$timedelta = $CURMAN->config->notify_classnotcompleted_days * 24*60*60;
-        $timedelta = 0;
+        $timedelta = elis::$config->elis_program->notify_classnotcompleted_days * 24*60*60;
 
         // If the completion time is prior to this time, then it will complete
         // within [notify_classnotcompleted_days] days
@@ -878,7 +877,7 @@ class pmclass extends data_object_with_custom_fields {
         $cmc = $this->_db->get_record(classmoodle::TABLE, 'classid', $this->id);
         if ($cmc) {
             if ($cmc->autocreated == -1) {
-                //$cmc->autocreated = $CURMAN->config->autocreated_unknown_is_yes;
+                $cmc->autocreated = elis::$config->elis_program->autocreated_unknown_is_yes;
             }
             if (empty($options['moodlecourses']) || $options['moodlecourses'] == 'copyalways'
                 || ($options['moodlecourses'] == 'copyautocreated' && $cmc->autocreated)) {

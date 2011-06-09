@@ -28,7 +28,7 @@
 
 require_once elispm::file('form/cmform.class.php');
 
-MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/curriculum/form/timeselector.php", 'cm_time_selector');
+MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/elis/program/form/timeselector.php", 'cm_time_selector');
 
 class pmclassform extends cmform {
     function definition() {
@@ -130,45 +130,27 @@ class pmclassform extends cmform {
         $mform->addElement('date_selector', 'enddate', get_string('class_enddate', 'elis_program') . ':', array('optional'=>true));
 
         // They may very likely be a much better way of checking for this...
-        /*
         if (empty($obj->starttimehour) and empty($obj->starttimeminute)) {
             $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'elis_program') . ':',
-                               array('optional'=>true, 'checked'=>'checked', 'display_12h'=>$CURMAN->config->time_format_12h));
+                               array('optional'=>true, 'checked'=>'checked', 'display_12h'=>elis::$config->elis_program->time_format_12h));
         } else {
             $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'elis_program') . ':',
-                               array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>$CURMAN->config->time_format_12h));
+                               array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>elis::$config->elis_program->time_format_12h));
         }
         $mform->addHelpButton('starttime', 'pmclassform:class_starttime', 'elis_program');
-        */
 
         // Do the same thing for the endtime
-        /*
         if (empty($obj->endtimehour) and empty($obj->endtimeminute)) {
             $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'elis_program') . ':',
-                               array('optional'=>true, 'checked'=>'checked', 'display_12h'=>$CURMAN->config->time_format_12h));
+                               array('optional'=>true, 'checked'=>'checked', 'display_12h'=>elis::$config->elis_program->time_format_12h));
         } else {
             $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'elis_program') . ':',
-                               array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>$CURMAN->config->time_format_12h));
+                               array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>elis::$config->elis_program->time_format_12h));
         }
-        */
 
         $mform->addElement('text', 'maxstudents', get_string('class_maxstudents', 'elis_program') . ':');
         $mform->setType('maxstudents', PARAM_INT);
         $mform->addHelpButton('maxstudents', 'pmclassform:class_maxstudents', 'elis_program');
-
-        // Environment selector
-        //$envs = environment_get_listing();
-        //$envs = $envs ? $envs : array();
-
-        //$o_envs = array(get_string('none', 'elis_program'));
-
-        //foreach ($envs as $env) {
-        //    $o_envs[$env->id] = $env->name;
-        //}
-
-        //$mform->addElement('select', 'environmentid', get_string('environment', 'elis_program') . ':',
-        //                   $o_envs);
-        //$mform->addHelpButton('environmentid', 'pmclassform:environment', 'elis_program');
 
         // Course selector
         if (empty($this->_customdata['obj']->moodlecourseid)) {
@@ -191,7 +173,7 @@ class pmclassform extends cmform {
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
             ? get_context_instance(context_level_base::get_custom_context_level('class', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
-        /*
+        /* TO-DO: re-enable when custom fields are done
         require_once elispm::file('plugins/manual/custom_fields.php');
         foreach ($fields as $rec) {
             $field = new field($rec);
@@ -312,16 +294,11 @@ class pmclassform extends cmform {
 
         $mform =& $this->_form;
 
-        //$categoryid = $this->_db->get_field('course_categories', 'id', 'parent', '0');
-        //$sitename   = $this->_db->get_field('course', 'shortname', 'id', SITEID);
-
         $select = 'id != \'' . SITEID . '\' AND fullname NOT LIKE \'.%\'';
 
         $cselect = array(get_string('none', 'elis_program'));
 
-        //$crss = $this->_db->get_records_select('course', $select, 'fullname');
-        $params = array();
-        $crss = $DB->get_records_select('course', $select, $params, 'fullname');
+        $crss = $DB->get_records_select('course', $select, null, 'fullname');
         if(!empty($crss)) {
             foreach ($crss as $crs) {
                 $cselect[$crs->id] = $crs->fullname;
@@ -363,19 +340,23 @@ class pmclassform extends cmform {
      * @return array
      */
     function validation($data, $files) {
+        global $DB;
+
         $errors = parent::validation($data, $files);
 
-        if ($this->_db->record_exists_select(CLSTABLE, "idnumber = '{$data['idnumber']}'".($data['id'] ? " AND id != {$data['id']}" : ''))) {
+        if ($DB->record_exists_select(pmclass::TABLE, "idnumber = '{$data['idnumber']}'".($data['id'] ? " AND id != {$data['id']}" : ''))) {
             $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
         }
 
-        if($data['starttime'] > $data['endtime']) {
-            $errors['starttime'] = get_string('error_duration', 'elis_program');
-        }
+        if (isset($data['starttime']) && isset($data['endtime'])) {
+            if($data['starttime'] > $data['endtime']) {
+                $errors['starttime'] = get_string('error_duration', 'elis_program');
+            }
 
-        if(!empty($data['startdate']) && !empty($data['enddate']) && !empty($data['disablestart']) && !empty($data['disableend'])) {
-            if($data['startdate'] > $data['enddate']) {
-                $errors['start'] = get_string('error_date_range', 'elis_program');
+            if(!empty($data['startdate']) && !empty($data['enddate']) && !empty($data['disablestart']) && !empty($data['disableend'])) {
+                if($data['startdate'] > $data['enddate']) {
+                    $errors['start'] = get_string('error_date_range', 'elis_program');
+                }
             }
         }
 
@@ -399,9 +380,9 @@ class pmclassform extends cmform {
      */
     function get_moodle_url($extra = array()) {
         global $CFG;
-        $params    = array();
+        $params = array();
 
-        $url = new moodle_url($CFG->wwwroot . '/curriculum/index.php', $params);
+        $url = new moodle_url($CFG->wwwroot . '/elis/program/index.php', $params);
 
         foreach($extra as $name=>$value) {
             $url->param($name, $value);

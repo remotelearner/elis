@@ -188,6 +188,7 @@ class curriculumcourse extends data_object_with_custom_fields {
      *
      * @return string The form HTML, without the form.
      */
+    /*
     public function create_edit_form($formid='', $extraclass='', $rows=2, $cols=40) {
         $config_data = array();
         $config_data['formid'] = $formid;
@@ -207,6 +208,7 @@ class curriculumcourse extends data_object_with_custom_fields {
 
         return new coursecurriculumform($this->form_url, $config_data);
     }
+    */
 
     /**
      * Return the HTML to edit a specific curriculum course.
@@ -436,7 +438,7 @@ class curriculumcourse extends data_object_with_custom_fields {
             return false;
         }
 
-        $tracks = $this->_db->get_records(track::TABLE, 'curid', $this->curriculumid);
+        $tracks = $this->_db->get_records(track::TABLE, array('curid'=>$this->curriculumid));
 
         if (is_array($tracks)) {
             foreach ($tracks as $track_id=>$track_obj) {
@@ -527,7 +529,7 @@ class curriculumcourse extends data_object_with_custom_fields {
             return false;
         }
 
-        if ($courses = $this->_db->get_records(courseprerequisite::TABLE, 'curriculumcourseid', $this->id)) {
+        if ($courses = $this->_db->get_records(courseprerequisite::TABLE, array('curriculumcourseid'=>$this->id))) {
             foreach ($courses as $course) {
                 $cids[] = $course->courseid;
             }
@@ -644,7 +646,7 @@ class curriculumcourse extends data_object_with_custom_fields {
             return false;
         }
 
-        if ($courses = $this->_db->get_records(coursecorequisite::TABLE, 'curriculumcourseid', $this->id)) {
+        if ($courses = $this->_db->get_records(coursecorequisite::TABLE, array('curriculumcourseid'=>$this->id))) {
             foreach ($courses as $course) {
                 $cids[] = $course->courseid;
             }
@@ -934,7 +936,7 @@ function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $al
 function curriculumcourse_get_list_by_course($courseid) {
     global $DB;
 
-    $curcourse = $DB->get_records(curriculumcourse::TABLE, 'courseid', $courseid);
+    $curcourse = $DB->get_records(curriculumcourse::TABLE, array('courseid'=>$courseid));
 
     return $curcourse;
 }
@@ -948,7 +950,7 @@ function curriculumcourse_get_list_by_course($courseid) {
 function curriculumcourse_get_list_by_curr($curriculumid) {
     global $DB;
 
-    $curcourse = $DB->get_records(curriculumcourse::TABLE, 'curriculumid', $curriculumid);
+    $curcourse = $DB->get_records(curriculumcourse::TABLE, array('curriculumid'=>$curriculumid));
 
     return $curcourse;
 }
