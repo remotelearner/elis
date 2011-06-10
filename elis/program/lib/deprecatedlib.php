@@ -194,9 +194,9 @@ function cm_print_time_selector($hour, $minute, $currenttime = 0, $step = 5, $re
  * @param    type description
  * @todo Finish documenting this function
  */
-function cm_choose_from_menu ($options, $name, $selected = '', $nothing = 'choose', $script = '',
-                              $nothingvalue = '0', $return = false, $disabled = false,
-                              $tabindex = 0, $id = '') {
+function cm_choose_from_menu($options, $name, $selected = '', $nothing = 'choose', $script = '',
+                             $nothingvalue = '0', $return = false, $disabled = false,
+                             $tabindex = 0, $id = '') {
     if ($nothing == 'choose') {
         //$nothing = get_string('choose') .'...';
         $nothing = get_string('choose', 'elis_program');

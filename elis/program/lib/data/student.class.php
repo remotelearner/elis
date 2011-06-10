@@ -25,12 +25,14 @@
  */
 
 require_once elis::lib('data/data_object.class.php');
+require_once elis::lib('table.class.php');
 
 //require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
 //require_once CURMAN_DIRLOCATION . '/lib/attendance.class.php';
 
+require_once elispm::lib('deprecatedlib.php');
 require_once elispm::lib('data/course.class.php');
-//require_once elispm::lib('data/instructor.class.php');
+require_once elispm::lib('data/instructor.class.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/waitlist.class.php');
@@ -547,44 +549,45 @@ class student extends elis_data_object {
      * @param $extraclass string Any extra class information to add to the output.
      * @uses $CFG
      * @uses $OUTPUT
+     * @uses $PAGE
      * @return string The form HTML, without the form.
      */
     function edit_form_html($classid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
                             $perpage = 0, $namesearch = '', $alpha = '') {
-        global $CFG, $OUTPUT;
+        global $CFG, $OUTPUT, $PAGE;
 
-        $classid = $this->classid;
+        $classid = $this->classid; // TBD ???
 
         $output = '';
         ob_start();
 
-        $table = new stdClass;
-
         if (empty($this->id)) {
             $columns = array(
-                'enrol'            => get_string('enrol', self::LANG_FILE),
-                'idnumber'         => get_string('student_idnumber', self::LANG_FILE),
-                'name'             => get_string('student_name_1', self::LANG_FILE),
-                'enrolmenttime'    => get_string('enrolment_time', self::LANG_FILE),
-                'completetime'     => get_string('completion_time', self::LANG_FILE),
-                'completestatusid' => get_string('student_status', self::LANG_FILE),
-                'grade'            => get_string('student_grade', self::LANG_FILE),
-                'credits'          => get_string('student_credits', self::LANG_FILE),
-                'locked'           => get_string('student_locked', self::LANG_FILE)
+                'enrol'            => array('header' => get_string('enrol', self::LANG_FILE)),
+                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE)),
+                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE)),
+                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE)),
+                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE)),
+                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE)),
+                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
+                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
+                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE))
             );
 
         } else {
             $columns = array(
-                'idnumber'         => get_string('student_idnumber', self::LANG_FILE),
-                'name'             => get_string('student_name_1', self::LANG_FILE),
-                'enrolmenttime'    => get_string('enrolment_time', self::LANG_FILE),
-                'completetime'     => get_string('completion_time', self::LANG_FILE),
-                'completestatusid' => get_string('student_status', self::LANG_FILE),
-                'grade'            => get_string('student_grade', self::LANG_FILE),
-                'credits'          => get_string('student_credits', self::LANG_FILE),
-                'locked'           => get_string('student_locked', self::LANG_FILE)
+                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE)),
+                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE)),
+                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE)),
+                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE)),
+                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE)),
+                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
+                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
+                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE))
             );
         }
+
+        $table = new display_table(array(), $columns);
 
         foreach ($columns as $column => $cdesc) {
             if ($sort != $column) {
@@ -682,7 +685,7 @@ class student extends elis_data_object {
                         case 'name':
                         case 'idnumber':
                         case 'description';
-                            $newarr[] = $user->$column;
+                            $newarr[] = isset($user->{$column}) ? $user->{$column} : '';
                             break;
 
                         case 'enrolmenttime':
@@ -772,7 +775,8 @@ class student extends elis_data_object {
 
         if (!empty($table)) {
             if(empty($this->id)) {
-                require_js($CFG->wwwroot .'/curriculum/js/classform.js');
+                // ***TBD***
+                //$PAGE->requires->js_module($CFG->wwwroot .'/elis/program/js/classform.js');
                 echo '<span class="checkbox selectall">';
 
                 echo '<input type="checkbox" onclick="class_enrol_set_all_selected()"
@@ -780,7 +784,7 @@ class student extends elis_data_object {
                 echo '<label for="class_enrol_select_all">' . get_string('enrol_select_all', self::LANG_FILE) . '</label>';
                 echo '</span>';
             }
-            print_table($table);
+            echo $table->get_html();
         }
 
 
@@ -790,15 +794,14 @@ class student extends elis_data_object {
 
             $select = "classid = {$this->classid} AND userid = {$this->userid}";
             $grades = $this->_db->get_records_select(student_grade::TABLE, $select, 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
-
-            $table = new stdClass;
-
             $columns = array(
-                'element'          => 'Grade Element',
-                'grade'            => 'Grade',
-                'locked'           => 'Locked',
-                'timegraded'       => 'Date Graded'
+                'element'    => array('header' => get_string('grade_element', self::LANG_FILE)),
+                'grade'      => array('header' => get_string('grade_element', self::LANG_FILE)),
+                'locked'     => array('header' => get_string('student_locked', self::LANG_FILE)),
+                'timegraded' => array('header' => get_string('date_graded', self::LANG_FILE))
             );
+
+            $table = new display_table(array(), $columns);
 
             foreach ($columns as $column => $cdesc) {
                 if ($sort != $column) {
@@ -891,7 +894,7 @@ class student extends elis_data_object {
 
             if (!empty($table)) {
                 echo '<br />';
-                print_table($table);
+                echo $table->get_html();
                 print_string('grade_update_warning', self::LANG_FILE);
             }
         }
@@ -923,22 +926,20 @@ class student extends elis_data_object {
         $output = '';
         ob_start();
 
-        $table = new stdClass;
-
         $can_unenrol = pmclasspage::can_enrol_into_class($classid);
 
         if (empty($this->id)) {
             $columns = array(
-                'unenrol'          => get_string('unenrol', self::LANG_FILE),
-                'idnumber'         => get_string('student_idnumber', self::LANG_FILE),
-                'name'             => get_string('student_name_1', self::LANG_FILE),
+                'unenrol'          => array('header' => get_string('unenrol', self::LANG_FILE)),
+                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE)),
+                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE)),
 //                'description'      => 'Description',
-                'enrolmenttime'    => get_string('enrolment_time', self::LANG_FILE),
-                'completetime'     => get_string('completion_time', self::LANG_FILE),
-                'completestatusid' => get_string('student_status', self::LANG_FILE),
-                'grade'            => get_string('student_grade', self::LANG_FILE),
-                'credits'          => get_string('student_credits', self::LANG_FILE),
-                'locked'           => get_string('student_locked', self::LANG_FILE)
+                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE)),
+                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE)),
+                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE)),
+                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
+                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
+                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE))
             );
 
             if (!$can_unenrol) {
@@ -946,17 +947,19 @@ class student extends elis_data_object {
             }
         } else {
             $columns = array(
-                'idnumber'         => get_string('student_idnumber', self::LANG_FILE),
-                'name'             => get_string('student_name_1', self::LANG_FILE),
+                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE)),
+                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE)),
 //                'description'      => 'Description',
-                'enrolmenttime'    => get_string('enrolment_time', self::LANG_FILE),
-                'completetime'     => get_string('completion_time', self::LANG_FILE),
-                'completestatusid' => get_string('student_status', self::LANG_FILE),
-                'grade'            => get_string('student_grade', self::LANG_FILE),
-                'credits'          => get_string('student_credits', self::LANG_FILE),
-                'locked'           => get_string('student_locked', self::LANG_FILE)
+                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE)),
+                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE)),
+                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE)),
+                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
+                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
+                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE))
             );
         }
+
+        $table = new display_table(array(), $columns);
 
         foreach ($columns as $column => $cdesc) {
             if ($sort != $column) {
@@ -1155,7 +1158,7 @@ class student extends elis_data_object {
                 echo '</span>';
             }
 
-            print_table($table);
+            echo $table->get_html();
         }
 
 
@@ -1166,14 +1169,14 @@ class student extends elis_data_object {
             $select = "classid = {$this->classid} AND userid = {$this->userid}";
             $grades = $this->_db->get_records_select(CLSGRTABLE, $select, 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
 
-            $table = new stdClass;
-
             $columns = array(
-                'element'          => 'Grade Element',
-                'grade'            => 'Grade',
-                'locked'           => 'Locked',
-                'timegraded'       => 'Date Graded'
+                'element'          => array('header' => get_string('grade_element', self::LANG_FILE)),
+                'grade'            => array('header' => get_string('grade', self::LANG_FILE)),
+                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE)),
+                'timegraded'       => array('header' => get_string('date_graded', self::LANG_FILE))
             );
+
+            $table = new display_table(array(), $columns);
 
             foreach ($columns as $column => $cdesc) {
                 if ($sort != $column) {
@@ -1266,7 +1269,7 @@ class student extends elis_data_object {
 
             if (!empty($table)) {
                 echo '<br />';
-                print_table($table);
+                echo $table->get_html();
             }
         }
 
@@ -1772,7 +1775,7 @@ class student extends elis_data_object {
 
         $select  = 'SELECT COUNT(usr.id) ';
         $tables  = 'FROM {'. user::TABLE .'} usr ';
-        $join    = 'LEFT JOIN {'. student::STUTABLE .'} stu ';
+        $join    = 'LEFT JOIN {'. student::TABLE .'} stu ';
         $on      = 'ON stu.userid = usr.id AND stu.classid = :clsid ';
         $where   = 'stu.id IS NULL';
         $params['clsid'] = $this->classid;
@@ -2290,13 +2293,13 @@ class student_grade extends elis_data_object {
         $output = '';
         ob_start();
 
-        $table = new stdClass;
-
         $columns = array(
-            'grade'            => 'Grade',
-            'locked'           => 'Locked',
-            'timegraded'       => 'Date Graded'
+            'grade'      => array('header' => get_string('grade', self::LANG_FILE)),
+            'locked'     => array('header' => get_string('student_locked', self::LANG_FILE)),
+            'timegraded' => array('header' => get_string('date_graded', self::LANG_FILE))
         );
+
+        $table = new display_table(array(), $columns);
 
         foreach ($columns as $column => $cdesc) {
             if ($sort != $column) {
@@ -2388,7 +2391,7 @@ class student_grade extends elis_data_object {
         }
 
         if (!empty($table)) {
-            print_table($table);
+            echo $table->get_html();
         }
 
         if (empty($this->id)) {

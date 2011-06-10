@@ -95,15 +95,15 @@ class instructor extends elis_data_object {
 **** */
 
     public static function delete_for_class($id) {
-    	global $DB;
-    	return $DB->delete_records(INSTABLE, array('classid' => $id));
+        global $DB;
+        return $DB->delete_records(instructor::TABLE, array('classid' => $id));
     }
 
     public static function delete_for_user($id) {
         global $DB;
-        return $DB->delete_records(INSTABLE, array('userid' => $id));
+        return $DB->delete_records(instructor::TABLE, array('userid' => $id));
     }
-	
+
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
 //  FORM FUNCTIONS:                                                //
@@ -130,25 +130,24 @@ class instructor extends elis_data_object {
         $output = '';
         ob_start();
 
-        $table = new display_table(array(), array()); // new stdClass;
-
         if (empty($this->id)) {
             $columns = array(
-                'assign'       => 'Assign',
-                'idnumber'     => 'ID Number',
-                'name'         => 'Name',
-                'assigntime'   => 'Assigned Time',
-                'completetime' => 'Completion Time'
+                'assign'       => array('header' => get_string('assign', self::LANG_FILE)),
+                'idnumber'     => array('header' => get_string('class_idnumber', self::LANG_FILE)),
+                'name'         => array('header' => get_string('tag_name', self::LANG_FILE)),
+                'assigntime'   => array('header' => get_string('assigntime', self::LANG_FILE)),
+                'completetime' => array('header' => get_string('completion_time', self::LANG_FILE))
             );
 
         } else {
             $columns = array(
-                'idnumber'    => 'ID Number',
-                'name'         => 'Name',
-                'assigntime'   => 'Assigned Time',
-                'completetime' => 'Completion Time'
-            );
+                'idnumber'     => array('header' => get_string('class_idnumber', self::LANG_FILE)),
+                'name'         => array('header' => get_string('tag_name', self::LANG_FILE)),
+                'assigntime'   => array('header' => get_string('assigntime', self::LANG_FILE)),
+                'completetime' => array('header' => get_string('completion_time', self::LANG_FILE)));
         }
+
+        $table = new display_table(array(), $columns); // new stdClass;
 
         foreach ($columns as $column => $cdesc) {
             if ($sort != $column) {
@@ -157,8 +156,7 @@ class instructor extends elis_data_object {
             } else {
                 $columndir = $dir == "ASC" ? "DESC":"ASC";
                 $columnicon = $dir == "ASC" ? "down":"up";
-                $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
-
+                $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .' alt="" />';
             }
 
             if (($column == 'name') || ($column == 'description')) {

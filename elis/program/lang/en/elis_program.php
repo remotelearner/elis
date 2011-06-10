@@ -47,7 +47,9 @@ $string['address'] = 'Address';
 $string['address2'] = 'Address 2';
 $string['admin_dashboard'] = 'Administrator Dashboard';
 $string['all_items_assigned'] = 'All available items assigned.';
+$string['assign'] = 'Assign';
 $string['assign_selected'] = 'Assign Selected';
+$string['assigntime'] = 'Assigned Time';
 $string['autocreate'] = 'Auto Create Moodle course from template';
 $string['available_course_corequisites'] = 'Available Course Corequisites';
 $string['available_course_prerequisites'] = 'Available Course Prerequisites';
@@ -206,6 +208,7 @@ $string['curriculum_name'] = 'Name';
 $string['curriculum_reqcredits'] = ' Required Credits';
 $string['curriculum_shortdescription'] = 'Short description';
 
+$string['date_graded'] = 'Date Graded';
 $string['delete'] = 'Delete';
 $string['deleted_corequisite'] = 'Deleted <b>{$a}</b> corequisite';
 $string['deleted_corequisites'] = 'Deleted <b>{$a}</b> corequisites';
@@ -262,6 +265,9 @@ $string['failed'] = 'Failed';
 $string['fax'] = 'Fax';
 $string['female'] = 'Female';
 $string['frequency'] = 'Frequency';
+
+$string['grade'] = 'Grade';
+$string['grade_element'] = 'Grade Element';
 
 $string['health_check_link'] = 'The <a href="{$a}/curriculum/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
 
