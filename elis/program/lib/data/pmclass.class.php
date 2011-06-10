@@ -82,7 +82,7 @@ class pmclass extends data_object_with_custom_fields {
             'foreignidfield' => 'classid'
         ),
         'classgraded' => array(
-            'class' => 'classgraded',
+            'class' => 'student_grade',
             'foreignidfield' => 'classid'
         ),
         'classinstructor' => array(
@@ -90,11 +90,11 @@ class pmclass extends data_object_with_custom_fields {
             'foreignidfield' => 'classid'
         ),
         'classmoodle' => array(
-            'class' => 'classmoodle',
+            'class' => 'classmoodlecourse',
             'foreignidfield' => 'classid'
         ),
         'trackclass' => array(
-            'class' => 'trackclass',
+            'class' => 'track',
             'foreignidfield' => 'classid'
         ),
     );
@@ -411,7 +411,7 @@ class pmclass extends data_object_with_custom_fields {
                               FROM {'.student::TABLE.'} s
                               JOIN {'.coursecompletion::TABLE.'} cc
                                    ON cc.courseid = '.$this->courseid.'
-                         LEFT JOIN {'.classgrade::TABLE.'} grades
+                         LEFT JOIN {'.student_grade::TABLE.'} grades
                                    ON grades.userid = s.userid
                                       AND grades.completionid = cc.id
                                       AND grades.classid = '.$this->id.'
@@ -880,7 +880,7 @@ class pmclass extends data_object_with_custom_fields {
         }
         $objs['classes'] = array($this->id => $clone->id);
 
-        $cmc = $this->_db->get_record(classmoodle::TABLE, array('classid'=>$this->id));
+        $cmc = $this->_db->get_record(classmoodlecourse::TABLE, array('classid'=>$this->id));
         if ($cmc) {
             if ($cmc->autocreated == -1) {
                 $cmc->autocreated = elis::$config->elis_program->autocreated_unknown_is_yes;

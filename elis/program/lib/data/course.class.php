@@ -68,7 +68,7 @@ class course extends data_object_with_custom_fields {
             'foreignidfield' => 'courseid'
         ),
         'trackclass' => array(
-            'class' => 'trackclass',
+            'class' => 'track',
             'foreignidfield' => 'courseid'
         ),
     );
