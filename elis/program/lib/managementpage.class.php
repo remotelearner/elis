@@ -76,13 +76,13 @@ abstract class managementpage extends pm_page {
     public function do_delete() {
         global $CFG;
 
-        if (!optional_param('confirm', 0, PARAM_INT)) {
+        if (!$this->optional_param('confirm', 0, PARAM_INT)) {
             return $this->display('delete');
         }
 
         require_sesskey();
 
-        $id = required_param('id', PARAM_INT);
+        $id = $this->required_param('id', PARAM_INT);
 
         $obj = $this->get_new_data_object($id);
         $obj->load(); // force load, so that the confirmation notice has something to display
@@ -558,6 +558,7 @@ class management_page_table extends display_table {
         }
 
         $this->page = $page;
+        $this->display_date_item = new display_date_item();
 
         $target = $page->get_new_page($params, true);
         parent::__construct($items, $columns + array('_buttons' => array('sortable' => false, 'wrapped' => false, 'align' => 'center')),
@@ -580,11 +581,11 @@ class management_page_table extends display_table {
     }
 
     function get_item_display_startdate($column, $item) {
-        return $this->get_date_item_display($column, $item);
+        return $this->display_date_item->display($column, $item);
     }
 
     function get_item_display_enddate($column, $item) {
-        return $this->get_date_item_display($column, $item);
+        return $this->display_date_item->display($column, $item);
     }
 
     function get_item_display_starttime($column, $item) {
