@@ -594,11 +594,18 @@ class elis_data_object {
         if (property_exists(get_class($this), $field_name)) {
             $this->$field_name = $value;
             $this->_is_saved = false;
-        } else if (array_key_exists($this->_extradata, $name)) {
+        } else if (array_key_exists($name, $this->_extradata)) {
             $this->_extradata[$name] = $value;
         } else {
-            throw new ErrorException('Invalid access');
-            // FIXME: error
+            /*
+            $trace = debug_backtrace();
+            $classname = get_class($this);
+            trigger_error(
+                "Attempt to set to undefined member via __set(): $classname::\${$name} in {$trace[1]['file']} on line {$trace[1]['line']}",
+            E_USER_ERROR);
+            */
+            $classname = get_class($this);
+            throw new ErrorException("Attempt to set nonexistent member variable $classname::\${$name}");
         }
     }
 
@@ -619,7 +626,7 @@ class elis_data_object {
         $field_name = self::FIELD_PREFIX.$name;
         if (property_exists(get_class($this), $field_name)) {
             $this->$field_name = self::$_unset;
-        } else if (array_key_exists($this->_extradata, $name)) {
+        } else if (array_key_exists($name, $this->_extradata)) {
             unset($this->_extradata[$name]);
         }
         // FIXME: handle associations?
@@ -710,7 +717,7 @@ class elis_data_object {
         $classname = get_class($this);
         trigger_error(
             "Call to undefined method via __call(): $classname::$name in {$trace[1]['file']} on line {$trace[1]['line']}",
-            E_USER_NOTICE);
+            E_USER_ERROR);
     }
 
     /***************************************************************************
