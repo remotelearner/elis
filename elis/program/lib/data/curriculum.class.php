@@ -44,6 +44,8 @@ require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // ok
 class curriculum extends data_object_with_custom_fields {
     const TABLE = 'crlm_curriculum';
 
+    var $verbose_name = 'curriculum';
+
     static $associations = array(
         'clustercurriculum' => array(
             'class' => 'clustercurriculum',

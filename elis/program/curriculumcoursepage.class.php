@@ -117,7 +117,11 @@ class curriculumcoursepage extends curriculumcoursebasepage {
         $alpha        = optional_param('alpha', '', PARAM_ALPHA);
 
         $columns = array(
-            'coursename' => array('header' => get_string('course_name','elis_program')),
+            'coursename' => array('header' => get_string('course_name','elis_program'),
+                                         'decorator' => array(new record_link_decorator('coursepage',
+                                                                                        array('action'=>'view'),
+                                                                                        'courseid'),
+                                                              'decorate')),
             'required'   => array('header' => get_string('required','elis_program')),
             'frequency'  => array('header' => get_string('frequency','elis_program')),
             'timeperiod' => array('header' => get_string('time_period','elis_program')),
@@ -128,13 +132,11 @@ class curriculumcoursepage extends curriculumcoursebasepage {
         $items = curriculumcourse_get_listing($id, $sort, $dir, 0, 0, $namesearch, $alpha);
         $numitems = curriculumcourse_count_records($id, $namesearch, $alpha);
 
-        $formatters = $this->create_link_formatters(array('coursename'), 'coursepage', 'courseid');
-
         $this->print_num_items($numitems);
         $this->print_alpha();
         $this->print_search();
 
-        $this->print_list_view($items, $columns, $formatters);
+        $this->print_list_view($items, $columns);
 
         $this->print_add_button(array('id' => $id), get_string('curriculumcourse_assigncourse','elis_program') );
     }
@@ -305,7 +307,11 @@ class coursecurriculumpage extends curriculumcoursebasepage {
         $alpha        = optional_param('alpha', '', PARAM_ALPHA);
 
         $columns = array(
-            'curriculumname'    => array('header' => get_string('curriculum_name','elis_program')),
+            'curriculumname'    => array('header' => get_string('curriculum_name','elis_program'),
+                                         'decorator' => array(new record_link_decorator('curriculumpage',
+                                                                                        array('action'=>'view'),
+                                                                                        'curriculumid'),
+                                                              'decorate')),
             'required'          => array('header' => get_string('required','elis_program')),
             'frequency'         => array('header' => get_string('frequency','elis_program')),
             'timeperiod'        => array('header' => get_string('time_period','elis_program')),
@@ -317,13 +323,11 @@ class coursecurriculumpage extends curriculumcoursebasepage {
         $items = curriculumcourse_get_curriculum_listing($id, $sort, $dir, 0, 0, $namesearch, $alpha, $contexts);
         $numitems = curriculumcourse_count_curriculum_records($id, $namesearch, $alpha, $contexts);
 
-        $formatters = $this->create_link_formatters(array('curriculumname'), 'curriculumpage', 'curriculumid');
-
         $this->print_num_items($numitems);
         $this->print_alpha();
         $this->print_search();
 
-        $this->print_list_view($items, $columns, $formatters);
+        $this->print_list_view($items, $columns);
 
         $this->print_add_button(array('id' => $id), get_string('course_assigncurriculum', 'elis_program') );
 

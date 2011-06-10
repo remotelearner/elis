@@ -49,6 +49,8 @@ define ('CRSCOREQTABLE',  'crlm_course_corequisite');
 class curriculumcourse extends data_object_with_custom_fields {
     const TABLE = 'crlm_curriculum_course';
 
+    var $verbose_name = 'curriculumcourse';
+
     static $associations = array(
         'curriculum' => array(
             'class' => 'curriculum',
@@ -664,7 +666,7 @@ class curriculumcourse extends data_object_with_custom_fields {
         }
         $sql .= 'ORDER BY crs.name ASC';
 
-        return get_records_sql($sql, $params);
+        return $this->_db->get_records_sql($sql, $params);
     }
 
     function get_curricula_avail($filters=array()) {
@@ -684,7 +686,7 @@ class curriculumcourse extends data_object_with_custom_fields {
         }
         $sql = $sql . 'ORDER BY cur.name ASC';
 
-        return get_records_sql($sql, $params);
+        return $this->_db->get_records_sql($sql, $params);
     }
 
     /**
@@ -723,6 +725,9 @@ class curriculumcourse extends data_object_with_custom_fields {
 
     }
 
+    function get_verbose_name() {
+        return $this->verbose_name;
+    }
 }
 
 
