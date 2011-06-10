@@ -63,6 +63,13 @@ class pmclass extends data_object_with_custom_fields {
     const TABLE = 'crlm_class';
 
     var $verbose_name = 'class';
+    var $autocreate;
+    var $startdate;
+    var $enddate;
+    var $moodlecourseid;
+    var $track;
+    var $oldmax;
+
     static $config_default_prefix = 'clsdft';
 
     static $associations = array(
@@ -292,7 +299,6 @@ class pmclass extends data_object_with_custom_fields {
 
         $this->oldmax = $this->maxstudents;
 
-        //parent::set_from_data($data);
         $this->_load_data_from_record($data, true);
     }
 

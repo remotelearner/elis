@@ -128,6 +128,8 @@ class curriculum extends data_object_with_custom_fields {
     }
 
     public function set_from_data($data) {
+        // TO-DO: re-enable when custom field stuff is done
+        /*
         $fields = field::get_for_context_level('curriculum', 'elis_program');
         $fields = $fields ? $fields : array();
         foreach ($fields as $field) {
@@ -136,8 +138,9 @@ class curriculum extends data_object_with_custom_fields {
                 $this->$fieldname = $data->$fieldname;
             }
         }
+        */
 
-        return parent::set_from_data($data);
+        $this->_load_data_from_record($data, true);
     }
 
 	function delete() {
@@ -146,7 +149,6 @@ class curriculum extends data_object_with_custom_fields {
 		$result = $result && clustercurriculum::delete_for_curriculum($this->id);
 		$result = $result && curriculumcourse::delete_for_curriculum($this->id);
 		$result = $result && curriculumstudent::delete_for_curriculum($this->id);
-		$result = $result && taginstance::delete_for_curriculum($this->id);
         $result = $result && delete_context($level,$this->id);
 
     	return $result && $this->data_delete_record();
@@ -234,8 +236,8 @@ class curriculum extends data_object_with_custom_fields {
         $rs = get_recordset_sql($sql);
         if ($rs) {
             while ($rec = rs_fetch_next_record($rs)) {
-        /// Loop through enrolment records grouped by curriculum and curriculum assignments,
-        /// counting the credits achieved and looking for all required courses to be complete.
+            /// Loop through enrolment records grouped by curriculum and curriculum assignments,
+            /// counting the credits achieved and looking for all required courses to be complete.
             /// Load a new curriculum assignment
                 if ($curassid != $rec->curassid) {
                     /// Check for completion - all credits have been earned and all required courses completed
@@ -262,7 +264,7 @@ class curriculum extends data_object_with_custom_fields {
                     $curid = $rec->curid;
                     $reqcredits = $rec->reqcredits;
                     $select = 'curriculumid = '.$curid.' AND required = 1';
-                    if (!($requiredcourseids = get_records_select('crlm_curriculum_course', $select, '', 'courseid,required'))) {
+                    if (!($requiredcourseids = get_records_select(curriculumcourse::TABLE, $select, '', 'courseid,required'))) {
                         $requiredcourseids = array();
                     }
                     $checkcourses = $requiredcourseids;
@@ -347,15 +349,13 @@ class curriculum extends data_object_with_custom_fields {
     public static function check_for_recurrence_nags() {
         global $CFG;
 
-        /*
-        $sendtouser = $CURMAN->config->notify_curriculumrecurrence_user;
-        $sendtorole = $CURMAN->config->notify_curriculumrecurrence_role;
+        $sendtouser = elis::$config->elis_program->notify_curriculumrecurrence_user;
+        $sendtorole = elis::$config->elis_program->notify_curriculumrecurrence_role;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole) {
             return true;
         }
-        */
 
         $timenow = time();
 
@@ -365,10 +365,10 @@ class curriculum extends data_object_with_custom_fields {
                   FROM {'.curriculumassignment::TABLE.'} cca
                   JOIN {'.curriculum::TABLE.'} cc ON cca.curriculumid = cc.id
                   JOIN {'.user::TABLE.'} cu ON cu.id = cca.userid
-                  JOIN '.$CFG->prefix.'user mu ON cu.idnumber = mu.idnumber
+                  JOIN {user} mu ON cu.idnumber = mu.idnumber
              LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = cca.id AND cnl.event = \'curriculum_recurrence\'
                  WHERE cnl.id IS NULL and cca.timeexpired > 0
-                 -- AND cca.timeexpired < $timenow + {$CURMAN->config->notify_curriculumrecurrence_days}
+                  AND cca.timeexpired < $timenow + '.elis::$config->elis_program->notify_curriculumrecurrence_days.'
                ';
 
         $usertempl = new user(); // used just for its properties.
@@ -475,7 +475,7 @@ class curriculum extends data_object_with_custom_fields {
     }
 
     public static function get_by_idnumber($idnumber) {
-        $retval = $this->_db->get_record(curriculum::TABLE, 'idnumber', $idnumber);
+        $retval = $this->_db->get_record(curriculum::TABLE, array('idnumber'=>$idnumber));
 
         if(!empty($retval)) {
             $retval = new curriculum($retval->id);
@@ -626,7 +626,7 @@ class curriculum extends data_object_with_custom_fields {
 
         if (!$isnew) {
             // If this setting is changed, we need to update the existing curriclum expiration values (ELIS-1172)
-            if ($rs = get_recordset_select(CURASSTABLE, "timeexpired != 0 AND curriculumid = {$this->id}", '', 'id, userid')) {
+            if ($rs = get_recordset_select(curriculumassignment::TABLE, "timeexpired != 0 AND curriculumid = {$this->id}", '', 'id, userid')) {
                 $timenow = time();
 
                 while ($curass = rs_fetch_next_record($rs)) {
@@ -635,7 +635,7 @@ class curriculum extends data_object_with_custom_fields {
                     $update->timeexpired  = calculate_curriculum_expiry(NULL, $this->id, $curass->userid);
                     $update->timemodified = $timenow;
 
-                    update_record(CURASSTABLE, $update);
+                    update_record(curriculumassignment::TABLE, $update);
                  }
 
                 rs_close($rs);
@@ -669,30 +669,37 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
                                 $alpha='', $contexts = null, $userid = 0) {
     global $USER, $DB;
 
-    //$LIKE = $DB->sql_compare();
-    $LIKE = 'LIKE';
-
     $select = 'SELECT cur.*, (SELECT COUNT(*) FROM {'.curriculumcourse::TABLE.'}
                WHERE curriculumid = cur.id ) as courses ';
     $tables = 'FROM {'.curriculum::TABLE.'} cur ';
-    $join   = '';
-    $on     = '';
+    $join   = ' ';
+    $on     = ' ';
 
     $where = array("cur.iscustom = '0'");
+    $params = array();
+
     if ($contexts !== null && !empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where[] = "(name $LIKE '%$namesearch%')";
+
+        $name_like = $DB->sql_like('name', '?');
+
+        $where[] = "($name_like)";
+        $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $where[] = "(name $LIKE '$alpha%')";
+        $name_like = $DB->sql_like('name', '?');
+        $where[] = "($name_like)";
+        $params[] = "$alpha%";
     }
 
     if ($contexts !== null) {
-        //$where[] = $contexts->sql_filter_for_context_level('cur.id', 'curriculum');
-
-        //$filter_object = $contexts->filter_for_context_level('cur.id', 'curriculum');
-        //$where[] = $filter_object->get_sql();
+        $filter_object = $contexts->get_filter('cur.id', 'curriculum');
+        $filter_sql = $filter_object->get_sql(false, 'cur');
+        if (isset($filter_sql['where'])) {
+            $where[] = $filter_sql['where'];
+            $params += $filter_sql['where_params'];
+        }
     }
 
     if(!empty($userid)) {
@@ -703,12 +710,16 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
         $curriculum_context = cm_context_set::for_user_with_capability('curriculum', 'block/curr_admin:curriculum:enrol', $USER->id);
-        //$curriculum_filter = $curriculum_context->sql_filter_for_context_level('cur.id', 'curriculum');
-        $filter_object = $curriculum_context->filter_for_context_level('cur.id', 'curriculum');
-        $curriculum_filter = $filter_object->get_sql();
+        $filter_object = $curriculum_context->get_filter('cur.id', 'curriculum');
+        $filter_sql = $filter_object->get_sql(false, 'cur');
+        if (isset($filter_sql['where'])) {
+            $curriculum_filter = $filter_sql['where'];
+            $curriculum_params = $filter_sql['where_params'];
+        }
 
         if(empty($allowed_clusters)) {
             $where[] = $curriculum_filter;
+            $params[] = $curriculum_params;
         } else {
             $allowed_clusters_list = implode(',', $allowed_clusters);
 
@@ -722,6 +733,7 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
                           OR
                           '.$curriculum_filter.'
                         )';
+            $params[] = $curriculum_params;
         }
 
     }
@@ -736,19 +748,9 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
         $sort = 'ORDER BY '.$sort .' '. $dir.' ';
     }
 
-    if (!empty($perpage)) {
-        //if ($CURMAN->db->_dbconnection->databaseType == 'postgres7') {
-        //    $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-        //} else {
-            $limit = 'LIMIT '.$startrec.', '.$perpage;
-        //}
-    } else {
-        $limit = '';
-    }
+    $sql = $select.$tables.$join.$on.$where.$sort;
 
-    $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-
-    return $DB->get_records_sql($sql);
+    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
 /**
@@ -763,28 +765,32 @@ function curriculum_get_menu() {
 function curriculum_count_records($namesearch = '', $alpha = '', $contexts = null) {
     global $DB;
 
-    //$LIKE = $CURMAN->db->sql_compare();
-    $LIKE = 'LIKE';
-
     $where = array("iscustom = '0'");
-
-    if ($alpha) {
-        $where[] = "(name $LIKE '$alpha%')";
-    }
+    $params = array();
 
     if (!empty($namesearch)) {
-        $where[] = "(name $LIKE '%$namesearch%')";
+        $name_like = $DB->sql_like('name', '?');
+
+        $where[] = "($name_like)";
+        $params += array("%$namesearch%");
+    }
+
+    if ($alpha) {
+        $name_like = $DB->sql_like('name', '?');
+        $where[] = "($name_like)";
+        $params[] = "$alpha%";
     }
 
     if ($contexts != null) {
-        //$where[] = $contexts->sql_filter_for_context_level('id', 'curriculum');
-
-        //$filter_object = $contexts->filter_for_context_level('id', 'curriculum');
-        //$where[] = $filter_object->get_sql();
+        $filter_object = $contexts->get_filter('cur.id', 'curriculum');
+        $filter_sql = $filter_object->get_sql(false, 'cur');
+        if (isset($filter_sql['where'])) {
+            $where[] = $filter_sql['where'];
+            $params += $filter_sql['where_params'];
+        }
     }
 
     $where = implode(' AND ',$where).' ';
 
-    return $DB->count_records_select(curriculum::TABLE, $where);
+    return $DB->count_records_select(curriculum::TABLE, $where, $params);
 }
-

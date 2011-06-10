@@ -26,11 +26,7 @@
 
 
 require_once elispm::file('form/cmform.class.php');
-
-/*
-require_once(CURMAN_DIRLOCATION . '/form/cmform.class.php');    // ok
-require_once(CURMAN_DIRLOCATION . '/lib/lib.php');              // missing
-*/
+require_once elispm::lib('lib.php');
 
 /**
  * the form element for curriculum
@@ -90,14 +86,14 @@ class cmCurriculaForm extends cmform {
         //$mform->addElement('html', '<small>' . get_string('tips_time_to_complete', 'elis_program') . '</small><br /><br />');
 
         // Frequency (only display if curriculum expiration is currently enabled).
-        //if (!empty($CURMAN->config->enable_curriculum_expiration)) {
-        //    $mform->addElement('text', 'frequency', get_string('expiration', 'elis_program') . ':');
-        //    $mform->setType('frequency', PARAM_TEXT);
-        //    $mform->addRule('frequency', null, 'maxlength', 64);
-        //    $mform->addHelpButton('frequency', 'curriculaform:expiration', 'elis_program');
-        //} else {
+        if (!empty(elis::$config->elis_program->enable_curriculum_expiration)) {
+            $mform->addElement('text', 'frequency', get_string('expiration', 'elis_program') . ':');
+            $mform->setType('frequency', PARAM_TEXT);
+            $mform->addRule('frequency', null, 'maxlength', 64);
+            $mform->addHelpButton('frequency', 'curriculaform:expiration', 'elis_program');
+        } else {
             $mform->addElement('hidden', 'frequency');
-        //}
+        }
 
         //$mform->addElement('html', '<small>' . get_string('tips_time_to_redo', 'elis_program') . '</small><br /><br />');
 
@@ -111,7 +107,8 @@ class cmCurriculaForm extends cmform {
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
             ? get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
-        //require_once CURMAN_DIRLOCATION.'/plugins/manual/custom_fields.php';
+        /* TO-DO: re-enable when custom fields are done
+        require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
         foreach ($fields as $rec) {
             $field = new field($rec);
             if (!isset($field->owners['manual'])) {
@@ -123,6 +120,7 @@ class cmCurriculaForm extends cmform {
             }
             manual_field_add_form_element($this, $context, $field);
         }
+        */
 
         $this->add_action_buttons();
     }
@@ -166,4 +164,3 @@ class cmCurriculaForm extends cmform {
         return $data;
     }
 }
-

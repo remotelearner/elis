@@ -139,14 +139,15 @@ class curriculumpage extends managementpage {
         $this->tabs = array(
         array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
         array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
-        //TODO: reenable showtab and show button once it is in place
-        array('tab_id' => 'curriculumstudentpage', 'page' => 'curriculumstudentpage', 'name' => get_string('users', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
-        array('tab_id' => 'curriculumclusterpage', 'page' => 'curriculumclusterpage', 'name' => get_string('clusters', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster.gif'),
+
+        //TO-DO: re-enable tabs once their associated pages are done
+        //array('tab_id' => 'curriculumstudentpage', 'page' => 'curriculumstudentpage', 'name' => get_string('users', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
+        //array('tab_id' => 'curriculumclusterpage', 'page' => 'curriculumclusterpage', 'name' => get_string('clusters', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster.gif'),
         array('tab_id' => 'curriculumcoursepage', 'page' => 'curriculumcoursepage', 'name' => get_string('courses', 'elis_program') , 'showtab' => true, 'showbutton' => true, 'image' => 'course.gif'),
         //allow users to view the tracks associated with this curriculum
-        array('tab_id' => 'trackpage', 'page' => 'trackpage', 'name' => get_string('tracks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track.gif'),
+        //array('tab_id' => 'trackpage', 'page' => 'trackpage', 'name' => get_string('tracks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track.gif'),
         //array('tab_id' => 'curtaginstancepage', 'page' => 'curtaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag.gif'),
-        array('tab_id' => 'curriculum_rolepage', 'page' => 'curriculum_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
+        //array('tab_id' => 'curriculum_rolepage', 'page' => 'curriculum_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete', 'elis_program'), 'showbutton' => true, 'image' => 'delete.gif'),
         );
@@ -188,8 +189,8 @@ class curriculumpage extends managementpage {
         $page         = optional_param('page', 0, PARAM_INT);
         $perpage      = optional_param('perpage', 30, PARAM_INT);        // how many per page
 
-        $namesearch   = trim(optional_param('search', '', PARAM_RAW));
-        $alpha        = optional_param('alpha', '', PARAM_RAW);
+        $namesearch   = trim(optional_param('search', '', PARAM_TEXT));
+        $alpha        = optional_param('alpha', '', PARAM_ALPHA);
 
         // Define columns
         $columns = array(
@@ -221,8 +222,8 @@ class curriculumpage extends managementpage {
         global $USER;
 
         //make sure a valid role is set
-        /*
-        if(!empty($CURMAN->config->default_curriculum_role_id) && record_exists('role', 'id', $CURMAN->config->default_curriculum_role_id)) {
+        /* TO-DO: re-enable after rolepage is done
+        if(!empty(elis::$config->elis_program->default_curriculum_role_id) && record_exists('role', 'id', elis::$config->elis_program->default_curriculum_role_id)) {
 
             //get the context instance for capability checking
             $context_level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
@@ -230,7 +231,7 @@ class curriculumpage extends managementpage {
 
             //assign the appropriate role if the user does not have the edit capability
             if(!has_capability('block/curr_admin:curriculum:edit', $context_instance)) {
-                role_assign($CURMAN->config->default_curriculum_role_id, $USER->id, 0, $context_instance->id);
+                role_assign(elis::$config->elis_program->default_curriculum_role_id, $USER->id, 0, $context_instance->id);
             }
         }
         */
@@ -329,4 +330,3 @@ class curriculumforcoursepage extends curriculumpage {
         }
     }
 }
-

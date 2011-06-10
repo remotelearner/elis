@@ -432,11 +432,12 @@ class pmclassform extends cmform {
 
     function freeze() {
         // Add completion status information
-        $counts = $this->_customdata['obj']->get_completion_counts();
+        // TO-DO: re-enable when completion stuff is done
+        //$counts = $this->_customdata['obj']->get_completion_counts();
 
-        $counttext = "Passed: {$counts[2]}, Failed: {$counts[1]}, In Progress: {$counts[0]}";
+        //$counttext = "Passed: {$counts[2]}, Failed: {$counts[1]}, In Progress: {$counts[0]}";
 
-        $this->_form->addElement('static', 'test', get_string('completion_status', 'elis_program'), $counttext);
+        //$this->_form->addElement('static', 'test', get_string('completion_status', 'elis_program'), $counttext);
 
         parent::freeze();
     }
