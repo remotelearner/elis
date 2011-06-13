@@ -137,17 +137,17 @@ abstract class php_report {
         $result = '';
 
         if($entries = $this->get_header_entries()) {
-            $result .= '<div class="php_report_header_entries">';
+            $result .= html_writer::start_tag('div', array('class' => 'php_report_header_entries'));
             foreach($entries as $value) {
 
                 $label_class = "php_report_header_{$value->css_identifier} php_report_header_label";
                 $value_class = "php_report_header_{$value->css_identifier} php_report_header_value";
 
-                $result .= '<div class="' . $label_class . '">' . $value->label . '</div>';
-                $result .= '<div class="' . $value_class . '">' . $value->value . '</div>';
+                $result .= html_writer::tag('div', $value->label, array('class' => $label_class));
+                $result .= html_writer::tag('div', $value->value, array('class' => $value_class));
 
             }
-            $result .= '</div>';
+            $result .= html_writer::end_tag('div');
         }
 
         return $result;
