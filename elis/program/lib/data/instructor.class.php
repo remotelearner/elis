@@ -110,7 +110,6 @@ class instructor extends elis_data_object {
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-
     /**
      * Return the HTML to edit a specific instructor.
      * This could be extended to allow for application specific editing, for example
@@ -132,31 +131,49 @@ class instructor extends elis_data_object {
 
         if (empty($this->id)) {
             $columns = array(
-                'assign'       => array('header' => get_string('assign', self::LANG_FILE)),
-                'idnumber'     => array('header' => get_string('class_idnumber', self::LANG_FILE)),
-                'name'         => array('header' => get_string('tag_name', self::LANG_FILE)),
-                'assigntime'   => array('header' => get_string('assigntime', self::LANG_FILE)),
-                'completetime' => array('header' => get_string('completion_time', self::LANG_FILE))
+                'assign'       => array('header' => get_string('assign', self::LANG_FILE),
+                                        'display_function' => 'htmltab_display_function'),
+                'idnumber'     => array('header' => get_string('class_idnumber', self::LANG_FILE),
+                                        'display_function' => 'htmltab_display_function'),
+                'name'         => array('header' => get_string('tag_name', self::LANG_FILE),
+                                        'display_function' => 'htmltab_display_function'),
+                'assigntime'   => array('header' => get_string('assigntime', self::LANG_FILE),
+                                        'display_function' => 'htmltab_display_function'),
+                'completetime' => array('header' => get_string('completion_time', self::LANG_FILE),
+                                        'display_function' => 'htmltab_display_function')
             );
 
         } else {
             $columns = array(
-                'idnumber'     => array('header' => get_string('class_idnumber', self::LANG_FILE)),
-                'name'         => array('header' => get_string('tag_name', self::LANG_FILE)),
-                'assigntime'   => array('header' => get_string('assigntime', self::LANG_FILE)),
-                'completetime' => array('header' => get_string('completion_time', self::LANG_FILE)));
+                'idnumber'     => array('header' => get_string('class_idnumber', self::LANG_FILE),
+                                        'display_function' => 'htmltab_display_function'),
+                'name'         => array('header' => get_string('tag_name', self::LANG_FILE),
+                                        'display_function' => 'htmltab_display_function'),
+                'assigntime'   => array('header' => get_string('assigntime', self::LANG_FILE),
+                                        'display_function' => 'htmltab_display_function'),
+                'completetime' => array('header' => get_string('completion_time', self::LANG_FILE),
+                                        'display_function' => 'htmltab_display_function'));
         }
 
-        $table = new display_table(array(), $columns); // new stdClass;
-
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'defaultsortcolumn';
+            $columns[$sort]['sortable'] = $dir;
+        }
+    /* ****
         foreach ($columns as $column => $cdesc) {
+            // ***TBD***
             if ($sort != $column) {
                 $columnicon = "";
                 $columndir = "ASC";
             } else {
                 $columndir = $dir == "ASC" ? "DESC":"ASC";
                 $columnicon = $dir == "ASC" ? "down":"up";
-                $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .' alt="" />';
+                $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
             }
 
             if (($column == 'name') || ($column == 'description')) {
@@ -167,12 +184,14 @@ class instructor extends elis_data_object {
             } else {
                 $$column = $cdesc;
             }
-
+            // TBD
             $table->head[]  = $$column;
             $table->align[] = "left";
             $table->wrap[]  = true;
         }
+    **** */
 
+        $newarr = array();
         if (empty($this->id)) {
             $users     = $this->get_users_avail($sort, $dir, $page * $perpage, $perpage,
                                                 $namesearch, $alpha);
@@ -227,18 +246,15 @@ class instructor extends elis_data_object {
             echo get_string('no_users_matching', self::LANG_FILE). $matchstring;
 
             $table = NULL;
-
         } else {
             $insobj = new instructor();
-
-            $table->width = "100%";
+            $table->width = "100%"; // TBD
             foreach ($users as $user) {
-                $newarr = array();
-
+                $tabobj = new stdClass;
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
                         case 'assign':
-                            $newarr[] = '<input type="checkbox" name="users[' . $user->id . '][assign]" value="1" />'.
+                            $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][assign]" value="1" />'.
                                         '<input type="hidden" name="users[' . $user->id . '][idnumber]" '.
                                         'value="' . $user->idnumber . '" />';
                             break;
@@ -246,31 +262,32 @@ class instructor extends elis_data_object {
                         case 'name':
                         case 'idnumber':
                         case 'description';
-                            $newarr[] = $user->$column;
+                            $tabobj->{$column} = $user->{$column};
                             break;
 
                         case 'assigntime':
-                            $newarr[] = cm_print_date_selector('users[' . $user->id . '][startday]',
-                                                               'users[' . $user->id . '][startmonth]',
-                                                               'users[' . $user->id . '][startyear]',
-                                                               $this->assigntime, true);
+                            $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][startday]',
+                                                     'users[' . $user->id . '][startmonth]',
+                                                     'users[' . $user->id . '][startyear]',
+                                                     $this->assigntime, true);
                             break;
 
                         case 'completetime':
-                            $newarr[] = cm_print_date_selector('users[' . $user->id . '][endday]',
-                                                               'users[' . $user->id . '][endmonth]',
-                                                               'users[' . $user->id . '][endyear]',
-                                                               $this->completetime, true);
+                            $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][endday]',
+                                                     'users[' . $user->id . '][endmonth]',
+                                                     'users[' . $user->id . '][endyear]',
+                                                     $this->completetime, true);
                             break;
 
                         default:
-                            $newarr[] = '';
+                            $tabobj->{$column} = '';
                             break;
                     }
                 }
-
-                $table->data[] = $newarr;
+                $newarr[] = $tabobj;
+                //$table->data[] = $newarr;
             }
+            $table = new display_table($newarr, $columns); // new stdClass;
         }
 
         if (empty($this->id)) {
@@ -302,7 +319,7 @@ class instructor extends elis_data_object {
             echo '<input type="hidden" name="userid" value="' . $this->userid . '" />' . "\n";
         }
 
-        if (!empty($table)) {
+        if (!empty($table) && !empty($newarr)) { // TBD: $newarr or $table?
             echo $table->get_html();
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                              "index.php?s=ins&amp;section=curr&amp;id=$classid&amp;action=add&amp;" .
@@ -384,7 +401,7 @@ class instructor extends elis_data_object {
         $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
-        $select  = 'SELECT usr.id, ' . $FULLNAME . ', usr.idnumber, ' .
+        $select  = 'SELECT usr.id, ' . $FULLNAME . ' as name, usr.idnumber, ' .
                    'ins.classid, ins.userid, ins.assigntime, ins.completetime ';
         $tables  = 'FROM {'. user::TABLE .'} usr ';
         $join    = 'LEFT JOIN {' . instructor::TABLE .'} ins ';
@@ -561,7 +578,7 @@ function instructor_get_listing($classid, $sort = 'name', $dir = 'ASC', $startre
     $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
     $select  = 'SELECT ins.* ';
-    $select .= ', ' . $FULLNAME . ', usr.idnumber ';
+    $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
     $tables  = 'FROM {'. instructor::TABLE .'} ins ';
     $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
     $on      = 'ON ins.userid = usr.id ';

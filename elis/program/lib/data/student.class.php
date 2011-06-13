@@ -561,35 +561,61 @@ class student extends elis_data_object {
         $output = '';
         ob_start();
 
+        $newarr = array();
         if (empty($this->id)) {
             $columns = array(
-                'enrol'            => array('header' => get_string('enrol', self::LANG_FILE)),
-                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE)),
-                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE)),
-                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE)),
-                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE)),
-                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE)),
-                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
-                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
-                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE))
+                'enrol'            => array('header' => get_string('enrol', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function')
             );
-
         } else {
             $columns = array(
-                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE)),
-                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE)),
-                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE)),
-                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE)),
-                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE)),
-                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
-                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
-                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE))
+                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function')
             );
         }
 
-        $table = new display_table(array(), $columns);
-
-        foreach ($columns as $column => $cdesc) {
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'defaultsortcolumn';
+            $columns[$sort]['sortable'] = $dir;
+        }
+    /* ****
+        foreach ($columns as $column => $colobj) {
+            $cdesc = $colobj['header'];
             if ($sort != $column) {
                 $columnicon = "";
                 $columndir = "ASC";
@@ -598,29 +624,29 @@ class student extends elis_data_object {
                 $columnicon = $dir == "ASC" ? "down":"up";
                 $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
             }
-
+            // ***TBD***
             if (($column == 'name') || ($column == 'description')) {
                 $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;".
                            "action=add&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=".
                            urlencode(stripslashes($namesearch)) ."&amp;alpha=$alpha\">".
                            $cdesc ."</a>$columnicon";
             } else {
-                $$column = $cdesc;
+                $$column = $cdesc; // TBD
             }
-
+            // ***TBD***
             $table->head[]  = $$column;
             $table->align[] = "left";
             $table->wrap[]  = true;
         }
+    **** */
 
+        $users = array(); // TBD
         if (empty($this->id)) {
             $users     = $this->get_users_avail($sort, $dir, $page * $perpage, $perpage,
                                                 $namesearch, $alpha);
-            $usercount = $this->count_users_avail($namesearch, $alpha);
-
-            $alphabet = explode(',', get_string('alphabet', 'langconfig'));
-            $strall   = get_string('all');
-
+            $usercount = $this->count_users_avail($namesearch, $alpha); // TBD
+            $alphabet  = explode(',', get_string('alphabet', 'langconfig'));
+            $strall    = get_string('all');
 
         /// Bar of first initials
             echo "<p style=\"text-align:center\">";
@@ -647,11 +673,10 @@ class student extends elis_data_object {
             echo $OUTPUT->render($pagingbar);
             flush();
         } else {
-            $user = $this->user;
-
-            $user->name        = fullname($user);
-            $users[]           = $user;
-            $usercount         = 0;
+            $user       = new user($this->userid); // TBD
+            $user->name = fullname($user);
+            $users[]    = $user;
+            $usercount  = 0;
         }
 
         if (empty($this->id) && !$users) {
@@ -672,31 +697,33 @@ class student extends elis_data_object {
 
             $table->width = "100%";
             foreach ($users as $user) {
-                $newarr = array();
-
+                $tabobj = new stdClass;
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
                         case 'enrol':
-                            $newarr[] = '<input type="checkbox" name="users[' . $user->id . '][enrol]" value="1" />'.
+                            $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][enrol]" value="1" />'.
                                         '<input type="hidden" name="users[' . $user->id . '][idnumber]" '.
                                         'value="' . $user->idnumber . '" />';
                             break;
 
                         case 'name':
+                            //print_object($user);
+                            //$tabobj->{$column} = fullname($user);
+                            //break;
                         case 'idnumber':
                         case 'description';
-                            $newarr[] = isset($user->{$column}) ? $user->{$column} : '';
+                            $tabobj->{$column} = isset($user->{$column}) ? $user->{$column} : '';
                             break;
 
                         case 'enrolmenttime':
-                            $newarr[] = cm_print_date_selector('users[' . $user->id . '][startday]',
+                            $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][startday]',
                                                                'users[' . $user->id . '][startmonth]',
                                                                'users[' . $user->id . '][startyear]',
                                                                $this->enrolmenttime, true);
                             break;
 
                         case 'completetime':
-                            $newarr[] = cm_print_date_selector('users[' . $user->id . '][endday]',
+                            $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][endday]',
                                                                'users[' . $user->id . '][endmonth]',
                                                                'users[' . $user->id . '][endyear]',
                                                                $this->completetime, true);
@@ -708,35 +735,35 @@ class student extends elis_data_object {
                             foreach(student::$completestatusid_values as $key => $csidv) {
                                 $choices[$key] = get_string($csidv, self::LANG_FILE); // TBD
                             }
-
-                            $newarr[] = cm_choose_from_menu($choices,
+                            $tabobj->{$column} = cm_choose_from_menu($choices,
                                                             'users[' . $user->id . '][completestatusid]',
                                                             $this->completestatusid, '', '', '', true);
                             break;
 
                         case 'grade':
-                            $newarr[] = '<input type="text" name="users[' . $user->id . '][grade]" ' .
+                            $tabobj->{$column} = '<input type="text" name="users[' . $user->id . '][grade]" ' .
                                         'value="' . $this->grade . '" size="5" />';
                             break;
 
                         case 'credits':
-                            $newarr[] = '<input type="text" name="users[' . $user->id . '][credits]" ' .
+                            $tabobj->{$column} = '<input type="text" name="users[' . $user->id . '][credits]" ' .
                                         'value="' . $this->credits . '" size="5" />';
                             break;
 
                         case 'locked':
-                            $newarr[] = '<input type="checkbox" name="users[' . $user->id . '][locked]" ' .
+                            $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][locked]" ' .
                                         'value="1" '.($this->locked?'checked="checked"':'').'/>';
                             break;
 
                         default:
-                            $newarr[] = '';
+                            $tabobj->{$column} = '';
                             break;
                     }
                 }
-
-                $table->data[] = $newarr;
+                $newarr[] = $tabobj;
+                //$table->data[] = $newarr;
             }
+            $table = new display_table($newarr, $columns);
         }
 
         if (empty($this->id)) {
@@ -773,7 +800,7 @@ class student extends elis_data_object {
             echo '<input type="hidden" name="userid" value="' . $this->userid . '" />' . "\n";
         }
 
-        if (!empty($table)) {
+        if (!empty($newarr)) { // TBD: $newarr or $table
             if(empty($this->id)) {
                 // ***TBD***
                 //$PAGE->requires->js_module($CFG->wwwroot .'/elis/program/js/classform.js');
@@ -787,7 +814,6 @@ class student extends elis_data_object {
             echo $table->get_html();
         }
 
-
         if (isset($this->pmclass->course) && is_object($this->pmclass->course) &&
             (get_class($this->pmclass->course) == 'course') &&
             ($elements = $this->pmclass->course->get_completion_elements())) {
@@ -795,15 +821,29 @@ class student extends elis_data_object {
             $select = "classid = {$this->classid} AND userid = {$this->userid}";
             $grades = $this->_db->get_records_select(student_grade::TABLE, $select, 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
             $columns = array(
-                'element'    => array('header' => get_string('grade_element', self::LANG_FILE)),
-                'grade'      => array('header' => get_string('grade_element', self::LANG_FILE)),
-                'locked'     => array('header' => get_string('student_locked', self::LANG_FILE)),
-                'timegraded' => array('header' => get_string('date_graded', self::LANG_FILE))
+                'element'    => array('header' => get_string('grade_element', self::LANG_FILE),
+                                      'display_function' => 'htmltab_display_function'),
+                'grade'      => array('header' => get_string('grade_element', self::LANG_FILE),
+                                      'display_function' => 'htmltab_display_function'),
+                'locked'     => array('header' => get_string('student_locked', self::LANG_FILE),
+                                      'display_function' => 'htmltab_display_function'),
+                'timegraded' => array('header' => get_string('date_graded', self::LANG_FILE),
+                                      'display_function' => 'htmltab_display_function')
             );
 
-            $table = new display_table(array(), $columns);
 
-            foreach ($columns as $column => $cdesc) {
+            if ($dir !== 'DESC') {
+                $dir = 'ASC';
+            }
+            if (isset($columns[$sort])) {
+                $columns[$sort]['sortable'] = $dir;
+            } else {
+                $sort = 'defaultsortcolumn';
+                $columns[$sort]['sortable'] = $dir;
+            }
+        /* ****
+            foreach ($columns as $column => $colobj) {
+                $cdesc = $colobj['header'];
                 if ($sort != $column) {
                     $columnicon = "";
                     $columndir = "ASC";
@@ -811,9 +851,8 @@ class student extends elis_data_object {
                     $columndir = $dir == "ASC" ? "DESC":"ASC";
                     $columnicon = $dir == "ASC" ? "down":"up";
                     $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
-
                 }
-
+                // ***TBD***
                 if (($column == 'name') || ($column == 'description')) {
                     $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;" .
                                "action=add&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=" .
@@ -822,16 +861,17 @@ class student extends elis_data_object {
                 } else {
                     $$column = $cdesc;
                 }
-
+                // TBD
                 $table->head[]  = $$column;
                 $table->align[] = "left";
                 $table->wrap[]  = true;
             }
+        **** */
+            $table->width = "100%"; // TBD
 
-            $table->width = "100%";
-
+            $newarr = array();
             foreach ($elements as $element) {
-                $newarr = array();
+                $tabobj = new stdClass;
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
                         case 'element':
@@ -842,7 +882,7 @@ class student extends elis_data_object {
                                 $name = 'newelement['.$element->id.']';
                                 $value = $element->id;
                             }
-                            $newarr[] = '<input type="hidden" name="'.$name.'" ' .
+                            $tabobj->{$column} = '<input type="hidden" name="'.$name.'" ' .
                                         'value="' . $value . '" />'.s($element->idnumber);
                             break;
 
@@ -854,7 +894,7 @@ class student extends elis_data_object {
                                 $name = 'newtimegraded['.$element->id.']';
                                 $value = 0;
                             }
-                            $newarr[] = cm_print_date_selector($name.'[startday]',
+                            $tabobj->{$column} = cm_print_date_selector($name.'[startday]',
                                                                $name.'[startmonth]',
                                                                $name.'[startyear]',
                                                                $value, true);
@@ -868,7 +908,7 @@ class student extends elis_data_object {
                                 $name = 'newgrade['.$element->id.']';
                                 $value = 0;
                             }
-                            $newarr[] = '<input type="text" name="'.$name.'" ' .
+                            $tabobj->{$column} = '<input type="text" name="'.$name.'" ' .
                                         'value="' . $value . '" size="5" />';
                             break;
 
@@ -880,19 +920,21 @@ class student extends elis_data_object {
                                 $name = 'newlocked['.$element->id.']';
                                 $value = 0;
                             }
-                            $newarr[] = '<input type="checkbox" name="'.$name.'" ' .
+                            $tabobj->{$column} = '<input type="checkbox" name="'.$name.'" ' .
                                         'value="1" '.($value?'checked="checked"':'').'/>';
                             break;
 
                         default:
-                            $newarr[] = '';
+                            $tabobj->{$column} = '';
                             break;
                     }
                 }
-                $table->data[] = $newarr;
+                $newarr[] = $tabobj;
+                //$table->data[] = $newarr;
             }
 
-            if (!empty($table)) {
+            $table = new display_table($newarr, $columns);
+            if (!empty($newarr)) { // TBD: $table or $newarr?
                 echo '<br />';
                 echo $table->get_html();
                 print_string('grade_update_warning', self::LANG_FILE);
@@ -930,16 +972,25 @@ class student extends elis_data_object {
 
         if (empty($this->id)) {
             $columns = array(
-                'unenrol'          => array('header' => get_string('unenrol', self::LANG_FILE)),
-                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE)),
-                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE)),
+                'unenrol'          => array('header' => get_string('unenrol', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
 //                'description'      => 'Description',
-                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE)),
-                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE)),
-                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE)),
-                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
-                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
-                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE))
+                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function')
             );
 
             if (!$can_unenrol) {
@@ -947,21 +998,38 @@ class student extends elis_data_object {
             }
         } else {
             $columns = array(
-                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE)),
-                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE)),
+                'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'name'             => array('header' => get_string('student_name_1', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
 //                'description'      => 'Description',
-                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE)),
-                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE)),
-                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE)),
-                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
-                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
-                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE))
+                'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'grade'            => array('header' => get_string('student_grade', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'credits'          => array('header' => get_string('student_credits', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function')
             );
         }
 
-        $table = new display_table(array(), $columns);
-
-        foreach ($columns as $column => $cdesc) {
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'defaultsortcolumn';
+            $columns[$sort]['sortable'] = $dir;
+        }
+    /* ****
+        foreach ($columns as $column => $colobj) {
+            $cdesc = $colobj['header'];
             if ($sort != $column) {
                 $columnicon = "";
                 $columndir = "ASC";
@@ -970,7 +1038,7 @@ class student extends elis_data_object {
                 $columnicon = $dir == "ASC" ? "down":"up";
                 $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
             }
-
+            // ***TBD***
             if (($column != 'unenrol')) {
                 $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;" .
                            "action=bulkedit&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=" .
@@ -979,20 +1047,19 @@ class student extends elis_data_object {
             } else {
                 $$column = $cdesc;
             }
-
+            // TBD
             $table->head[]  = $$column;
             $table->align[] = "left";
             $table->wrap[]  = true;
         }
-
+    **** */
+        $users = array(); // TBD
         if (empty($this->id)) {
             $users     = $this->get_users_enrolled($type, $sort, $dir, $page * $perpage, $perpage,
                                                 $namesearch, $alpha);
             $usercount = $this->count_users_enrolled($type, $namesearch, $alpha);
-
             $alphabet = explode(',', get_string('alphabet', 'langconfig'));
             $strall   = get_string('all');
-
 
         /// Bar of first initials
             echo "<p style=\"text-align:center\">";
@@ -1019,11 +1086,10 @@ class student extends elis_data_object {
             echo $OUTPUT->render($pagingbar);
             flush();
         } else {
-            $user = $this->user;
-
-            $user->name        = fullname($user);
-            $users[]           = $user;
-            $usercount         = 0;
+            $user       = $this->user;
+            $user->name = fullname($user);
+            $users[]    = $user;
+            $usercount  = 0;
         }
 
         if (empty($this->id) && !$users) {
@@ -1038,64 +1104,60 @@ class student extends elis_data_object {
             echo 'No users matching '.$matchstring;
 
             $table = NULL;
-
         } else {
             $stuobj = new student();
-
-            $table->width = "100%";
+            $newarr = array();
+            $table->width = "100%"; // TBD
             foreach ($users as $user) {
-                $newarr = array();
-
+                $tabobj = new stdClass;
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
                         case 'unenrol':
-                            $newarr[] = '<input type="checkbox" name="users[' . $user->id . '][unenrol]" value="1" />';
+                            $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][unenrol]" value="1" />';
                             break;
 
                         case 'name':
                         case 'idnumber':
                         case 'description';
-                            $newarr[] = $user->$column;
+                            $tabobj->{$column} = $user->{$column};
                             break;
 
                         case 'enrolmenttime':
-                            $newarr[] = cm_print_date_selector('users[' . $user->id . '][startday]',
-                                                               'users[' . $user->id . '][startmonth]',
-                                                               'users[' . $user->id . '][startyear]',
-                                                               $user->enrolmenttime, true);
+                            $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][startday]',
+                                                     'users[' . $user->id . '][startmonth]',
+                                                     'users[' . $user->id . '][startyear]',
+                                                     $user->enrolmenttime, true);
                             break;
 
                         case 'completetime':
-                            $newarr[] = cm_print_date_selector('users[' . $user->id . '][endday]',
-                                                               'users[' . $user->id . '][endmonth]',
-                                                               'users[' . $user->id . '][endyear]',
-                                                               $user->completetime, true);
+                            $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][endday]',
+                                                     'users[' . $user->id . '][endmonth]',
+                                                     'users[' . $user->id . '][endyear]',
+                                                     $user->completetime, true);
                             break;
 
                         case 'completestatusid':
                             $choices = array();
-
                             foreach(student::$completestatusid_values as $key => $csidv) {
                                 $choices[$key] = get_string($csidv, self::LANG_FILE);
                             }
-
-                            $newarr[] = cm_choose_from_menu($choices,
-                                                            'users[' . $user->id . '][completestatusid]',
-                                                            $user->completestatusid, '', '', '', true);
+                            $tabobj->{$column} = cm_choose_from_menu($choices,
+                                                     'users[' . $user->id . '][completestatusid]',
+                                                     $user->completestatusid, '', '', '', true);
                             break;
 
                         case 'grade':
-                            $newarr[] = '<input type="text" name="users[' . $user->id . '][grade]" ' .
+                            $tabobj->{$column} = '<input type="text" name="users[' . $user->id . '][grade]" ' .
                                         'value="' . $user->grade . '" size="5" />';
                             break;
 
                         case 'credits':
-                            $newarr[] = '<input type="text" name="users[' . $user->id . '][credits]" ' .
+                            $tabobj->{$column} = '<input type="text" name="users[' . $user->id . '][credits]" ' .
                                         'value="' . $user->credits . '" size="5" />';
                             break;
 
                         case 'locked':
-                            $newarr[] = '<input type="checkbox" name="users[' . $user->id . '][locked]" ' .
+                            $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][locked]" ' .
                                         'value="1" '.($user->locked?'checked="checked"':'').'/>'.
                                         '<input type="hidden" name="users[' . $user->id . '][idnumber]" '.
                                         'value="' . $user->idnumber . '" />' .
@@ -1104,13 +1166,14 @@ class student extends elis_data_object {
                             break;
 
                         default:
-                            $newarr[] = '';
+                            $tabobj->{$column} = '';
                             break;
                     }
                 }
-
-                $table->data[] = $newarr;
+                $newarr[] = $tabobj;
+                //$table->data[] = $newarr;
             }
+            $table = new display_table($newarr, $columns);
         }
 
         if (empty($this->id)) {
@@ -1147,7 +1210,7 @@ class student extends elis_data_object {
             echo '<input type="hidden" name="userid" value="' . $this->userid . '" />' . "\n";
         }
 
-        if (!empty($table)) {
+        if (!empty($newarr)) { // TBD: $newarr or $table?
             if(empty($this->id)) {
                 require_js($CFG->wwwroot . '/curriculum/js/classform.js');
                 echo '<span class="checkbox selectall">';
@@ -1157,10 +1220,8 @@ class student extends elis_data_object {
                 echo '<label for="class_bulkedit_select_all">' . get_string('bulkedit_select_all', self::LANG_FILE) . '</label>';
                 echo '</span>';
             }
-
             echo $table->get_html();
         }
-
 
         if (isset($this->pmclass->course) && is_object($this->pmclass->course) &&
             (get_class($this->pmclass->course) == 'course') &&
@@ -1170,15 +1231,28 @@ class student extends elis_data_object {
             $grades = $this->_db->get_records_select(CLSGRTABLE, $select, 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
 
             $columns = array(
-                'element'          => array('header' => get_string('grade_element', self::LANG_FILE)),
-                'grade'            => array('header' => get_string('grade', self::LANG_FILE)),
-                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE)),
-                'timegraded'       => array('header' => get_string('date_graded', self::LANG_FILE))
+                'element'          => array('header' => get_string('grade_element', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'grade'            => array('header' => get_string('grade', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function'),
+                'timegraded'       => array('header' => get_string('date_graded', self::LANG_FILE),
+                                            'display_function' => 'htmltab_display_function')
             );
 
-            $table = new display_table(array(), $columns);
-
-            foreach ($columns as $column => $cdesc) {
+            if ($dir !== 'DESC') {
+                $dir = 'ASC';
+            }
+            if (isset($columns[$sort])) {
+                $columns[$sort]['sortable'] = $dir;
+            } else {
+                $sort = 'defaultsortcolumn';
+                $columns[$sort]['sortable'] = $dir;
+            }
+        /* ****
+            foreach ($columns as $column => $colobj) {
+                $cdesc = $colobj['header'];
                 if ($sort != $column) {
                     $columnicon = "";
                     $columndir = "ASC";
@@ -1186,9 +1260,8 @@ class student extends elis_data_object {
                     $columndir = $dir == "ASC" ? "DESC":"ASC";
                     $columnicon = $dir == "ASC" ? "down":"up";
                     $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
-
                 }
-
+                // ***TBD***
                 if (($column == 'name') || ($column == 'description')) {
                     $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;" .
                                "action=default&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=" .
@@ -1197,16 +1270,17 @@ class student extends elis_data_object {
                 } else {
                     $$column = $cdesc;
                 }
-
+                // TBD
                 $table->head[]  = $$column;
                 $table->align[] = "left";
                 $table->wrap[]  = true;
             }
+        **** */
+            $table->width = "100%"; // TBD
 
-            $table->width = "100%";
-
+            $newarr = array();
             foreach ($elements as $element) {
-                $newarr = array();
+                $tabobj = new stdClass;
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
                         case 'element':
@@ -1217,7 +1291,7 @@ class student extends elis_data_object {
                                 $name = 'newelement['.$element->id.']';
                                 $value = $element->id;
                             }
-                            $newarr[] = '<input type="hidden" name="'.$name.'" ' .
+                            $tabobj->{$column} = '<input type="hidden" name="'.$name.'" ' .
                                         'value="' . $value . '" />'.s($element->idnumber);
                             break;
 
@@ -1229,7 +1303,7 @@ class student extends elis_data_object {
                                 $name = 'newtimegraded['.$element->id.']';
                                 $value = 0;
                             }
-                            $newarr[] = cm_print_date_selector($name.'[startday]',
+                            $tabobj->{$column} = cm_print_date_selector($name.'[startday]',
                                                                $name.'[startmonth]',
                                                                $name.'[startyear]',
                                                                $value, true);
@@ -1243,7 +1317,7 @@ class student extends elis_data_object {
                                 $name = 'newgrade['.$element->id.']';
                                 $value = 0;
                             }
-                            $newarr[] = '<input type="text" name="'.$name.'" ' .
+                            $tabobj->{$column} = '<input type="text" name="'.$name.'" ' .
                                         'value="' . $value . '" size="5" />';
                             break;
 
@@ -1255,19 +1329,21 @@ class student extends elis_data_object {
                                 $name = 'newlocked['.$element->id.']';
                                 $value = 0;
                             }
-                            $newarr[] = '<input type="checkbox" name="'.$name.'" ' .
+                            $tabobj->{$column} = '<input type="checkbox" name="'.$name.'" ' .
                                         'value="1" '.($value?'checked="checked"':'').'/>';
                             break;
 
                         default:
-                            $newarr[] = '';
+                            $tabobj->{$column} = '';
                             break;
                     }
                 }
-                $table->data[] = $newarr;
+                $newarr[] = $tabobj;
+                //$table->data[] = $newarr;
             }
 
-            if (!empty($table)) {
+            $table = new display_table($newarr, $columns);
+            if (!empty($table)) { // TBD: $newarr or $table?
                 echo '<br />';
                 echo $table->get_html();
             }
@@ -1529,7 +1605,7 @@ class student extends elis_data_object {
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT stu.* ';
-        $select .= ', ' . $FULLNAME . ', usr.idnumber ';
+        $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
     //    $select .= ', ' . $FULLNAME . ' as name, usr.type as description ';
         $tables  = 'FROM {'. student::TABLE .'} stu ';
         $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
@@ -1681,7 +1757,7 @@ class student extends elis_data_object {
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
 //        $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, usr.type as description, ' .
-        $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ', ' .
+        $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, ' .
                    'stu.classid, stu.userid, stu.enrolmenttime, stu.completetime, ' .
                    'stu.completestatusid, stu.grade ';
         $tables  = 'FROM {'. user::TABLE .'} usr ';
@@ -1866,7 +1942,7 @@ class student extends elis_data_object {
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
 //        $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, usr.type as description, ' .
-        $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ', ' .
+        $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, ' .
                    'stu.classid, stu.userid, usr.idnumber AS user_idnumber, stu.enrolmenttime, stu.completetime, ' .
                    'stu.completestatusid, stu.grade, stu.id as association_id, stu.credits, stu.locked ';
         $tables  = 'FROM {'. user::TABLE .'} usr ';
@@ -2294,14 +2370,26 @@ class student_grade extends elis_data_object {
         ob_start();
 
         $columns = array(
-            'grade'      => array('header' => get_string('grade', self::LANG_FILE)),
-            'locked'     => array('header' => get_string('student_locked', self::LANG_FILE)),
-            'timegraded' => array('header' => get_string('date_graded', self::LANG_FILE))
+            'grade'      => array('header' => get_string('grade', self::LANG_FILE),
+                                  'display_function' => 'htmltab_display_function'),
+            'locked'     => array('header' => get_string('student_locked', self::LANG_FILE),
+                                  'display_function' => 'htmltab_display_function'),
+            'timegraded' => array('header' => get_string('date_graded', self::LANG_FILE),
+                                  'display_function' => 'htmltab_display_function')
         );
 
-        $table = new display_table(array(), $columns);
-
-        foreach ($columns as $column => $cdesc) {
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'defaultsortcolumn';
+            $columns[$sort]['sortable'] = $dir;
+        }
+    /* ****
+        foreach ($columns as $column => $colobj) {
+            $cdesc = $colobj['header'];
             if ($sort != $column) {
                 $columnicon = "";
                 $columndir = "ASC";
@@ -2309,9 +2397,8 @@ class student_grade extends elis_data_object {
                 $columndir = $dir == "ASC" ? "DESC":"ASC";
                 $columnicon = $dir == "ASC" ? "down":"up";
                 $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
-
             }
-
+            // ***TBD***
             if (($column == 'name') || ($column == 'description')) {
                 $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;class=$classid&amp;" .
                            "action=add&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=" .
@@ -2320,41 +2407,43 @@ class student_grade extends elis_data_object {
             } else {
                 $$column = $cdesc;
             }
-
+            // TBD
             $table->head[]  = $$column;
             $table->align[] = "left";
             $table->wrap[]  = true;
         }
+    **** */
+        $table->width = "100%"; // TBD
 
-        $table->width = "100%";
         $newarr = array();
-
+        $tabobj = new stdClass; // TBD: or in loop?
         foreach ($columns as $column => $cdesc) {
             switch ($column) {
                 case 'timegraded':
-                    $newarr[] = cm_print_date_selector('users[' . $user->id . '][startday]',
-                                                       'users[' . $user->id . '][startmonth]',
-                                                       'users[' . $user->id . '][startyear]',
-                                                       $this->timegraded, true);
+                    $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][startday]',
+                                             'users[' . $user->id . '][startmonth]',
+                                             'users[' . $user->id . '][startyear]',
+                                             $this->timegraded, true);
                     break;
 
                 case 'grade':
-                    $newarr[] = '<input type="text" name="users[' . $user->id . '][grade]" ' .
+                    $tabobj->{$column} = '<input type="text" name="users[' . $user->id . '][grade]" ' .
                                 'value="' . $this->grade . '" size="5" />';
                     break;
 
                 case 'locked':
-                    $newarr[] = '<input type="checkbox" name="users[' . $user->id . '][locked]" ' .
+                    $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][locked]" ' .
                                 'value="1" '.($this->locked?'checked="checked"':'').'/>';
                     break;
 
                 default:
-                    $newarr[] = '';
+                    $tabobj->{$column} = '';
                     break;
             }
-
-            $table->data[] = $newarr;
+            //$table->data[] = $newarr;
         }
+        $newarr[] = $tabobj; // TBD: or in loop?
+        $table = new display_table($newarr, $columns);
 
         if (empty($this->id)) {
             echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
@@ -2390,7 +2479,7 @@ class student_grade extends elis_data_object {
             echo '<input type="hidden" name="userid" value="' . $this->userid . '" />' . "\n";
         }
 
-        if (!empty($table)) {
+        if (!empty($newarr)) { // TBD: $newarr or $table?
             echo $table->get_html();
         }
 
@@ -2406,7 +2495,6 @@ class student_grade extends elis_data_object {
 
         return $output;
     }
-
 
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
@@ -2448,7 +2536,6 @@ class student_grade extends elis_data_object {
  * @uses $DB
  * @return object array Returned records.
  */
-
 function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $perpage=0, $namesearch='',
                              $alpha='') {
     global $DB;
@@ -2459,7 +2546,7 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
     $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
 
     $select  = 'SELECT stu.* ';
-    $select .= ', ' . $FULLNAME . ', usr.idnumber ';
+    $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
 //    $select .= ', ' . $FULLNAME . ' as name, usr.type as description ';
     $tables  = 'FROM {'. student::TABLE .'} stu ';
     $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
@@ -2594,5 +2681,13 @@ function student_get_class_from_course($crsid, $userid) {
     $params[] = $userid;
     $params[] = $crsid;
     return $DB->get_record_sql($sql, $params);
+}
+
+/**
+ * New display function to allow HTML elements in table
+ * see: /elis/core/lib/table.class.php
+ */
+function htmltab_display_function($column, $item) {
+    return isset($item->{$column}) ? $item->{$column} : '';
 }
 
