@@ -200,7 +200,7 @@ class curriculumcoursepage extends curriculumcoursebasepage {
             $curriculum = $curcrs->curriculum;
 
             if ($curriculum->iscustom) {
-                $curassid = $this->_db->get_field(curriculumassignment::TABLE, 'id', 'curriculumid', $curriculum->id);
+                $curassid = $this->_db->get_field(curriculumstudent::TABLE, 'id', 'curriculumid', $curriculum->id);
                 $stucur   = new curriculumstudent($curassid);
                 redirect('index.php?s=stucur&amp;section=curr&amp;id=' . $stucur->id .
                                  '&amp;action=edit', $output, 3);
@@ -264,7 +264,7 @@ class curriculumcoursepage extends curriculumcoursebasepage {
             $curriculum = $curcrs->curriculum;
 
             if ($curriculum->iscustom) {
-                $curassid = $this->_db->get_field(curriculumassignment::TABLE, 'id', 'curriculumid', $curriculum->id);
+                $curassid = $this->_db->get_field(curriculumstudent::TABLE, 'id', 'curriculumid', $curriculum->id);
                 $stucur   = new curriculumstudent($curassid);
                 redirect('index.php?s=stucur&amp;section=curr&amp;id=' . $stucur->id .
                                  '&amp;action=edit', $output, 3);

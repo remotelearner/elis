@@ -465,7 +465,7 @@ class user extends data_object_with_custom_fields {
                   JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
              LEFT JOIN (SELECT curcrs.courseid
                           FROM {'.curriculumcourse::TABLE.'} curcrs
-                          JOIN {'.curriculumassignment::TABLE.'} curass ON curass.curriculumid = curcrs.curriculumid AND curass.userid = ?) curcrs
+                          JOIN {'.curriculumstudent::TABLE.'} curass ON curass.curriculumid = curcrs.curriculumid AND curass.userid = ?) curcrs
                        ON curcrs.courseid = crs.id
                  WHERE clsenrol.userid = ? AND curcrs.courseid IS NULL';
         $params = array($userid, $userid);

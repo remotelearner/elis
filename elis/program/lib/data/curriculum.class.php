@@ -28,6 +28,7 @@ require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
+require_once elispm::lib('data/curriculumstudent.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('datedelta.class.php');
 
@@ -213,13 +214,13 @@ class curriculum extends data_object_with_custom_fields {
                     cca.credits, cca.locked, cca.timecreated, cca.timemodified, cca.timeexpired,
                     ccc.courseid as courseid ';
         /// >* This will return ALL class enrolment records for a user's curriculum assignment.
-        $from    = 'FROM {'.curriculumassignment::TABLE.'} cca ';
+        $from    = 'FROM {'.curriculumstudent::TABLE.'} cca ';
         $join    = 'INNER JOIN {'.user::TABLE.'} cu ON cu.id = cca.userid
                     INNER JOIN {'.curriculum::TABLE.'} cur ON cca.curriculumid = cur.id
                     INNER JOIN {'.curriculumcourse::TABLE.'} ccc ON ccc.curriculumid = cur.id
                     INNER JOIN {'.course::TABLE.'} cco ON cco.id = ccc.courseid
                     INNER JOIN {'.pmclass::TABLE.'} ccl ON ccl.courseid = cco.id
-                    INNER JOIN {'.classenrolment::TABLE.'} cce ON (cce.classid = ccl.id) AND (cce.userid = cca.userid) ';
+                    INNER JOIN {'.student::TABLE.'} cce ON (cce.classid = ccl.id) AND (cce.userid = cca.userid) ';
         /// >*
         $where   = 'WHERE (cca.completed = 0) AND (cce.completestatusid != '.STUSTATUS_NOTCOMPLETE.') ';
         $order   = 'ORDER BY cur.id, cca.id ASC ';
@@ -305,7 +306,7 @@ class curriculum extends data_object_with_custom_fields {
         $select  = 'SELECT cca.id as id, cca.userid, cca.curriculumid, cca.completed, cca.timecompleted,
                     cca.credits, cca.locked, cca.timecreated, cca.timemodified,
                     cur.id as curid, cur.timetocomplete as timetocomplete ';
-        $from    = 'FROM {'.curriculumassignment::TABLE.'} cca ';
+        $from    = 'FROM {'.curriculumstudent::TABLE.'} cca ';
         $join    = 'INNER JOIN {'.user::TABLE.'} cu ON cu.id = cca.userid
                     INNER JOIN {'.curriculum::TABLE.'} cur ON cca.curriculumid = cur.id
                     LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = cca.id AND
@@ -368,7 +369,7 @@ class curriculum extends data_object_with_custom_fields {
         $sql = 'SELECT cca.id AS enrolmentid, cc.name AS curriculumname,
                        cu.id AS userid, cu.idnumber AS useridnumber, cu.firstname AS firstname, cu.lastname AS lastname,
                        mu.id AS muserid
-                  FROM {'.curriculumassignment::TABLE.'} cca
+                  FROM {'.curriculumstudent::TABLE.'} cca
                   JOIN {'.curriculum::TABLE.'} cc ON cca.curriculumid = cc.id
                   JOIN {'.user::TABLE.'} cu ON cu.id = cca.userid
                   JOIN {user} mu ON cu.idnumber = mu.idnumber
@@ -633,7 +634,7 @@ class curriculum extends data_object_with_custom_fields {
         if (!$isnew) {
             // If this setting is changed, we need to update the existing curriclum expiration values (ELIS-1172)
             // TO-DO: enable this when curriculumassignment is done
-            if ($rs = $this->_db->get_recordset_select(curriculumassignment::TABLE, "timeexpired != 0 AND curriculumid = {$this->id}", '', 'id, userid')) {
+            if ($rs = $this->_db->get_recordset_select(curriculumstudent::TABLE, "timeexpired != 0 AND curriculumid = {$this->id}", '', 'id, userid')) {
                 $timenow = time();
 
                 foreach ($rs as $rec) {
@@ -642,7 +643,7 @@ class curriculum extends data_object_with_custom_fields {
                     $update->timeexpired  = calculate_curriculum_expiry(NULL, $this->id, $rec->userid);
                     $update->timemodified = $timenow;
 
-                    update_record(curriculumassignment::TABLE, $update);
+                    update_record(curriculumstudent::TABLE, $update);
                  }
 
                 rs_close($rs);

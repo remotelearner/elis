@@ -77,7 +77,7 @@ class pmclass extends data_object_with_custom_fields {
             'class' => 'course',
             'idfield' => 'courseid'
         ),
-        'classenrolments' => array(
+        'student' => array(
             'class' => 'student',
             'foreignidfield' => 'classid'
         ),
@@ -562,7 +562,7 @@ class pmclass extends data_object_with_custom_fields {
                           cce.enrolmenttime, cce.completetime, cce.completestatusid, cce.grade, cce.credits, cce.locked,
                           u.id as muserid ';
         $from   = 'FROM {'.pmclass::TABLE.'} ccl ';
-        $join   = 'INNER JOIN {'.classenrolment::TABLE.'} cce ON cce.classid = ccl.id
+        $join   = 'INNER JOIN {'.student::TABLE.'} cce ON cce.classid = ccl.id
                     LEFT JOIN {'.classmoodlecourse::TABLE.'} ccm ON ccm.classid = ccl.id
                    INNER JOIN {'.user::TABLE.'} cu ON cu.id = cce.userid
                     LEFT JOIN {user} u ON u.idnumber = cu.idnumber
@@ -637,7 +637,7 @@ class pmclass extends data_object_with_custom_fields {
                           cce.completetime, cce.completestatusid, cce.grade, cce.credits, cce.locked,
                           u.id as muserid ';
         $from   = 'FROM {'.pmclass::TABLE.'} ccl ';
-        $join   = 'INNER JOIN {'.classenrolment::TABLE.'} cce ON cce.classid = ccl.id
+        $join   = 'INNER JOIN {'.student::TABLE.'} cce ON cce.classid = ccl.id
                     LEFT JOIN {'.classmoodlecourse::TABLE.'} ccm ON ccm.classid = ccl.id
                    INNER JOIN {'.user::TABLE.'} cu ON cu.id = cce.userid
                     LEFT JOIN {user} u ON u.idnumber = cu.idnumber

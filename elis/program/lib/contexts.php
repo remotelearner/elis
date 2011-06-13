@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * Manipulate CM context levels.
  *
@@ -32,10 +32,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -188,7 +188,7 @@ class cm_context_set {
             $where[] = new in_list_filter($idfieldname, $this->contexts['course']);
         }
         if (isset($this->contexts['curriculum'])) {
-            $where[] = new join_filter($idfieldname, programcourse::TABLE, 'courseid',
+            $where[] = new join_filter($idfieldname, curriculumcourse::TABLE, 'courseid',
                                        new in_list_filter('curriculumid', $this->contexts['curriculum']),
                                        false, false);
         }
@@ -206,7 +206,7 @@ class cm_context_set {
                                        $this->get_filter('courseid', 'course'));
         }
         if (isset($this->contexts['track']) || isset($this->contexts['curriculum'])) {
-            $where[] = new join_filter($idfieldname, trackclass::TABLE, 'classid',
+            $where[] = new join_filter($idfieldname, trackassignment::TABLE, 'classid',
                                        $this>get_filter('trackid', 'track'),
                                        false, false);
         }
@@ -415,7 +415,7 @@ function _cmctx_get_curriculum_containing_course($instance_id) {
 function _cmctx_get_track_containing_class($instance_id) {
     global $DB;
     require_once elispm::lib('data/track.class.php');
-    $result = $DB->get_records(trackclass::TABLE, 'classid', $instance_id, '', 'trackid');
+    $result = $DB->get_records(trackassignment::TABLE, 'classid', $instance_id, '', 'trackid');
     if ($result) {
         return $result;
     } else {
@@ -433,5 +433,3 @@ function _cmctx_get_cluster_containing_user($instance_id) {
         return array();
     }
 }
-
-?>

@@ -32,7 +32,9 @@ require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
 require_once CURMAN_DIRLOCATION . '/lib/student.class.php';
 */
 
+/*
 define('CURASSTABLE', 			     'crlm_curriculum_assignment');
+*/
 define('CURR_EXPIRE_ENROL_START',    1);
 define('CURR_EXPIRE_ENROL_COMPLETE', 2);
 
@@ -100,11 +102,11 @@ class curriculumstudent extends elis_data_object {
     }
 
 	public static function delete_for_curriculum($id) {
-		return $this->_db->delete_records(curriculumassignment::TABLE, 'curriculumid', $id);
+		return $this->_db->delete_records(curriculumstudent::TABLE, 'curriculumid', $id);
 	}
 
 	public static function delete_for_user($id) {
-		return $this->_db->delete_records(curriculumassignment::TABLE, 'userid', $id);
+		return $this->_db->delete_records(curriculumstudent::TABLE, 'userid', $id);
 	}
 
     /////////////////////////////////////////////////////////////////////

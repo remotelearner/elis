@@ -516,10 +516,10 @@ class course extends data_object_with_custom_fields {
         $from   = 'FROM {'.curriculumcourse::TABLE.'} ccc ';
         $join   = 'INNER JOIN {'.course::TABLE.'} cc ON cc.id = ccc.courseid ' .
                   'INNER JOIN {'.curriculum::TABLE.'} c ON c.id = ccc.curriculumid ' .
-                  'INNER JOIN {'.curriculumassignment::TABLE.'} cca ON cca.curriculumid = c.id ' .
+                  'INNER JOIN {'.curriculumstudent::TABLE.'} cca ON cca.curriculumid = c.id ' .
                   'INNER JOIN {'.user::TABLE.'} cu ON cu.id = cca.userid ' .
                   'INNER JOIN {'.pmclass::TABLE.'} ccl ON ccl.courseid = cc.id ' .
-                  'INNER JOIN {'.classenrolment::TABLE.'} cce ON cce.classid = ccl.id ' .
+                  'INNER JOIN {'.student::TABLE.'} cce ON cce.classid = ccl.id ' .
                   'LEFT JOIN {user} u ON u.idnumber = cu.idnumber ' .
                   'LEFT JOIN {'.notificationlog::TABLE.' cnl ON cnl.userid = cu.id AND cnl.instance = cce.id AND cnl.event = \'course_recurrence\' ';
         $where  = 'WHERE (cce.completestatusid != '.STUSTATUS_NOTCOMPLETE.') AND (ccc.frequency > 0) '.
@@ -909,3 +909,24 @@ function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
     return $DB->count_records_select(course::TABLE, $where, $params);
 }
 
+class coursecompletion extends data_object_with_custom_fields {
+    const TABLE = 'crlm_course_completion';
+
+    protected $_dbfield_courseid;
+    protected $_dbfield_idnumber;
+    protected $_dbfield_name;
+    protected $_dbfield_description;
+    protected $_dbfield_completion_grade;
+    protected $_dbfield_required;
+
+    static $associations = array(
+        'course' => array(
+            'class' => 'course',
+            'idfield' => 'courseid'
+        ),
+    );
+
+    protected function get_field_context_level() {
+        return context_level_base::get_custom_context_level('course', 'elis_program');
+    }
+}
