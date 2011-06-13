@@ -24,13 +24,15 @@
  *
  */
 
+//require_once elispm::file('form/selectionform.class.php');
+
 /*
 require_once CURMAN_DIRLOCATION . '/form/selectionform.class.php';  // missing
 */
 
 class assigncurriculumform extends selectionform {
     function get_submit_button_name() {
-        return ucfirst(get_string('assign','block_curr_admin'));
+        return ucfirst(get_string('assign','elis_program'));
     }
 
     function definition() {
@@ -47,7 +49,7 @@ class assigncurriculumform extends selectionform {
 
 class unassigncurriculumform extends selectionform {
     function get_submit_button_name() {
-        return ucfirst(get_string('unassign','block_curr_admin'));
+        return ucfirst(get_string('unassign','elis_program'));
     }
 
     function definition() {
@@ -63,7 +65,7 @@ class unassigncurriculumform extends selectionform {
 
 class assignstudentform extends selectionform {
     function get_submit_button_name() {
-        return ucfirst(get_string('assign','block_curr_admin'));
+        return ucfirst(get_string('assign','elis_program'));
     }
 
     function definition() {
@@ -83,7 +85,7 @@ class assignstudentform extends selectionform {
 
 class unassignstudentform extends selectionform {
     function get_submit_button_name() {
-        return ucfirst(get_string('unassign','block_curr_admin'));
+        return ucfirst(get_string('unassign','elis_program'));
     }
 
     function definition() {

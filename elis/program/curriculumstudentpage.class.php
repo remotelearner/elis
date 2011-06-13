@@ -28,6 +28,7 @@ require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/curriculumstudent.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('contexts.php');
+require_once elispm::file('userpage.class.php');
 require_once elispm::file('curriculumpage.class.php');
 require_once elispm::file('form/curriculumstudentform.class.php');
 
@@ -37,7 +38,7 @@ require_once (CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php');          
 require_once (CURMAN_DIRLOCATION . '/lib/curriculumstudent.class.php');         // ok
 require_once (CURMAN_DIRLOCATION . '/lib/user.class.php');                      // ok
 require_once (CURMAN_DIRLOCATION . '/lib/usercluster.class.php');               // missing
-require_once (CURMAN_DIRLOCATION . '/usermanagementpage.class.php');            // missing
+require_once (CURMAN_DIRLOCATION . '/usermanagementpage.class.php');            // ok
 require_once (CURMAN_DIRLOCATION . '/curriculumpage.class.php');                // ok
 require_once (CURMAN_DIRLOCATION . '/lib/associationpage2.class.php');          // missing
 require_once (CURMAN_DIRLOCATION . '/form/curriculumstudentform.class.php');    // ok
@@ -54,8 +55,23 @@ class studentcurriculumpage extends associationpage2 {
         parent::__construct($params);
     }
 
+    public function _get_page_context() {
+        $id = $this->optional_param('id', 0, PARAM_INT);
+
+        if ($id) {
+            return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
+        } else {
+            return parent::_get_page_context();
+        }
+    }
+
+    public function _get_page_params() {
+        return parent::_get_page_params();
+    }
+
     function can_do_default() {
-        global $CURMAN;
+        global $DB;
+
         $id = $this->required_param('id', PARAM_INT);
         if ($this->is_assigning()) {
             // we have enrol capabilities on some curriculum
@@ -66,40 +82,38 @@ class studentcurriculumpage extends associationpage2 {
 
             // find curricula linked to clusters where the target user is a
             // member, and we have enrol cluster user capabilities
-            $cluster_contexts = clusterpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
+            $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
             $cluster_filter = $cluster_contexts->sql_filter_for_context_level('clst.id', 'cluster');
-            $sql = "SELECT COUNT(curr.id)
-                      FROM {$CURMAN->db->prefix_table(CLSTTABLE)} clst
-                      JOIN {$CURMAN->db->prefix_table(CLSTCURTABLE)} clstcurr
+            $sql = 'SELECT COUNT(curr.id)
+                      FROM {'.userset::TABLE.'} clst
+                      JOIN {'.clustercurriculum::TABLE.'} clstcurr
                            ON clst.id = clstcurr.clusterid
-                      JOIN {$CURMAN->db->prefix_table(CURTABLE)} curr
+                      JOIN {'.curriculum::TABLE.'} curr
                            ON clstcurr.curriculumid = curr.id
-                      JOIN {$CURMAN->db->prefix_table(CLSTUSERTABLE)} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = {$id}
-                     WHERE {$cluster_filter}";
-            return $CURMAN->db->count_records_select($sql) > 0;
+                      JOIN {'.usercluster::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
+                     WHERE '.$cluster_filter.' ';
+            return $DB->count_records_select($sql) > 0;
         } else {
-            return usermanagementpage::_has_capability('block/curr_admin:user:view', $id);
+            return userpage::_has_capability('block/curr_admin:user:view', $id);
         }
     }
 
     function get_title() {
-        return get_string('breadcrumb_studentcurriculumpage','block_curr_admin');
+        return get_string('breadcrumb_studentcurriculumpage','elis_program');
     }
 
     protected function get_context() {
         if (!isset($this->context)) {
             $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
-            $this->context = get_context_instance(context_level_base::get_custom_context_level('user', 'block_curr_admin'), $id);
+            $this->context = get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
         }
         return $this->context;
     }
 
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
-            global $CFG, $CURMAN;
-            require_once CURMAN_DIRLOCATION . '/usermanagementpage.class.php';
             $id = isset($this->params['id']) ? $this->params['id'] : NULL;
-            $this->parent_page = new usermanagementpage(array('id' => $id, 'action' => 'view'));
+            $this->parent_page = new userpage(array('id' => $id, 'action' => 'view'));
         }
         return $this->parent_page;
     }
@@ -109,8 +123,6 @@ class studentcurriculumpage extends associationpage2 {
     }
 
     function get_navigation_default() {
-        global $CURMAN;
-
         $navigation = $this->get_parent_page()->get_navigation_view();
 
         return $navigation;
@@ -134,12 +146,10 @@ class studentcurriculumpage extends associationpage2 {
 
         $tmppage = $this->get_basepage();
         $tmppage->params['_assign'] = 'assign';
-        redirect($tmppage->get_url(), get_string('num_curricula_assigned', 'block_curr_admin', count($data->_selection)));
+        redirect($tmppage->get_url(), get_string('num_curricula_assigned', 'elis_program', count($data->_selection)));
     }
 
     protected function process_unassignment($data) {
-        global $CURMAN;
-
         $userid  = $data->id;
         foreach ($data->_selection as $associd) {
             $curstu = new curriculumstudent($associd);
@@ -149,11 +159,11 @@ class studentcurriculumpage extends associationpage2 {
         }
 
         $tmppage = $this->get_basepage();
-        redirect($tmppage->get_url(), get_string('num_curricula_unassigned', 'block_curr_admin', count($data->_selection)));
+        redirect($tmppage->get_url(), get_string('num_curricula_unassigned', 'elis_program', count($data->_selection)));
     }
 
     protected function get_available_records($filter) {
-        global $CURMAN, $CFG;
+        global $DB;
 
         $context = $this->get_context();
         $id = $this->required_param('id', PARAM_INT);
@@ -184,7 +194,7 @@ class studentcurriculumpage extends associationpage2 {
 
         $id = required_param('id', PARAM_INT);
 
-        $where = "id NOT IN (SELECT curriculumid FROM {$CFG->prefix}".CURASSTABLE." WHERE userid={$id})";
+        $where = 'id NOT IN (SELECT curriculumid FROM {'.curriculumstudent::TABLE.'} WHERE userid='.$id.')';
 
         // only show curricula where user has enrol capabilities
         $curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
@@ -192,26 +202,26 @@ class studentcurriculumpage extends associationpage2 {
 
         // or curricula attached to clusters where user has enrol cluster user
         // capabilities (and target user is a member of that cluster)
-        $cluster_contexts = clusterpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
+        $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
         $cluster_filter = $cluster_contexts->sql_filter_for_context_level('clst.id', 'cluster');
 
-        $where .= " OR id IN (SELECT curr.id
-                                FROM {$CURMAN->db->prefix_table(CLSTTABLE)} clst
-                                JOIN {$CURMAN->db->prefix_table(CLSTCURTABLE)} clstcurr
-                                     ON clst.id = clstcurr.clusterid
-                                JOIN {$CURMAN->db->prefix_table(CURTABLE)} curr
-                                     ON clstcurr.curriculumid = curr.id
-                                JOIN {$CURMAN->db->prefix_table(CLSTUSERTABLE)} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = {$id}
-                               WHERE {$cluster_filter}))";
+        $where .= ' OR id IN (SELECT curr.id
+                    FROM {'.userset::TABLE.'} clst
+                    JOIN {'.usersetcurriculum::TABLE.'} clstcurr
+                         ON clst.id = clstcurr.clusterid
+                    JOIN {'.curriculum::TABLE.'} curr
+                         ON clstcurr.curriculumid = curr.id
+                    JOIN {'.usercluster::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
+                   WHERE '.$cluster_filter.'))';
 
-        $count = $CURMAN->db->count_records_select('crlm_curriculum', $where);
-        $users = $CURMAN->db->get_records_select('crlm_curriculum', $where, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $count = $DB->count_records_select(curriculum::TABLE, $where);
+        $users = $DB->get_records_select(curriculum::TABLE, $where, $sortclause, '*', $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
 
     protected function get_assigned_records($filter) {
-        global $CURMAN, $CFG;
+        global $DB;
 
         $context = $this->get_context();
         $id = $this->required_param('id', PARAM_INT);
@@ -238,40 +248,42 @@ class studentcurriculumpage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
-        $sql = "SELECT curass.id, curass.curriculumid curid, curass.completed, curass.timecompleted, curass.credits, cur.idnumber, cur.name, cur.description, cur.reqcredits, curcrscnt.count as numcourses
-                  FROM {$CURMAN->db->prefix_table(CURASSTABLE)} curass
-                  JOIN {$CURMAN->db->prefix_table(CURTABLE)} cur ON cur.id = curass.curriculumid
+        $sql = 'SELECT curass.id, curass.curriculumid curid, curass.completed, curass.timecompleted, curass.credits,
+                cur.idnumber, cur.name, cur.description, cur.reqcredits, curcrscnt.count as numcourses
+                  FROM {'.curriculumstudent::TABLE.'} curass
+                  JOIN {'.curriculum::TABLE.'} cur ON cur.id = curass.curriculumid
                   JOIN (SELECT curriculumid, COUNT(courseid) AS count
-                          FROM {$CURMAN->db->prefix_table(CURCRSTABLE)}
+                          FROM {'.curriculumcourse::TABLE.'}
                       GROUP BY curriculumid) curcrscnt ON cur.id = curcrscnt.curriculumid
-                 WHERE curass.userid = {$id}
-              ORDER BY {$sortclause}";
-        $where = "id IN (SELECT curriculumid FROM {$CFG->prefix}".CURASSTABLE." WHERE userid={$id})";
+                 WHERE curass.userid = '.$id.'
+              ORDER BY '.$sortclause;
+        $where = 'id IN (SELECT curriculumid FROM {'.curriculumstudent::TABLE.'} WHERE userid='.$id.')';
 
-        $count = $CURMAN->db->count_records_select('crlm_curriculum', $where);
-        $curricula = $CURMAN->db->get_records_sql($sql, $pagenum*$perpage, $perpage);
+        $count = $DB->count_records_select(curriculum::TABLE, $where);
+        $curricula = $DB->get_records_sql($sql, $pagenum*$perpage, $perpage);
 
         return array($curricula, $count);
     }
 
     function get_records_from_selection($record_ids) {
-        global $CURMAN;
+        global $DB;
+
         $usersstring = implode(',', $record_ids);
-        $records = $CURMAN->db->get_records_select('crlm_curriculum', "id in ($usersstring)");
+        $records = $DB->get_records_select(curriculum::TABLE, "id in ($usersstring)");
         return $records;
     }
 
     protected function create_selection_table($records, $baseurl) {
         $records = $records ? $records : array();
         $columns = array('_selection' => '',
-                         'idnumber' => get_string('idnumber','block_curr_admin'),
-                         'name' => get_string('name','block_curr_admin'),
-                         'description' => get_string('description','block_curr_admin'),
-                         'reqcredits' => get_string('required_credits','block_curr_admin'));
+                         'idnumber' => get_string('idnumber','elis_program'),
+                         'name' => get_string('name','elis_program'),
+                         'description' => get_string('description','elis_program'),
+                         'reqcredits' => get_string('required_credits','elis_program'));
         if (!$this->is_assigning()) {
-            $columns['numcourses'] = get_string('num_courses','block_curr_admin');
-            $columns['timecompleted'] = get_string('date_completed','block_curr_admin');
-            $columns['credits'] = get_string('credits_rec','block_curr_admin');
+            $columns['numcourses'] = get_string('num_courses','elis_program');
+            $columns['timecompleted'] = get_string('date_completed','elis_program');
+            $columns['credits'] = get_string('credits_rec','elis_program');
         }
         return new user_curriculum_selection_table($records, $columns,
                                                    new moodle_url($baseurl));
@@ -281,22 +293,25 @@ class studentcurriculumpage extends associationpage2 {
 
 class user_curriculum_selection_table extends selection_table {
     function __construct(&$items, $columns, $pageurl, $decorators=array()) {
-        global $CURMAN;
+        global $DB;
+
         parent::__construct($items, $columns, $pageurl, $decorators);
+
         $this->curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
 
         $id = required_param('id', PARAM_INT);
-        $cluster_contexts = clusterpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
+        $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
         $cluster_filter = $cluster_contexts->sql_filter_for_context_level('clst.id', 'cluster');
-        $sql = "SELECT curr.id
-                  FROM {$CURMAN->db->prefix_table(CLSTTABLE)} clst
-                  JOIN {$CURMAN->db->prefix_table(CLSTCURTABLE)} clstcurr
+        $sql = 'SELECT curr.id
+                  FROM {'.userset::TABLE.'} clst
+                  JOIN {'.usersetcurriculum::TABLE.'} clstcurr
                        ON clst.id = clstcurr.clusterid
-                  JOIN {$CURMAN->db->prefix_table(CURTABLE)} curr
+                  JOIN {'.curriculum::TABLE.'} curr
                        ON clstcurr.curriculumid = curr.id
-                  JOIN {$CURMAN->db->prefix_table(CLSTUSERTABLE)} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = {$id}
-                 WHERE {$cluster_filter}";
-        $this->cluster_curricula = $CURMAN->db->get_records_sql($sql);
+                  JOIN {'.usercluster::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
+                 WHERE '.$cluster_filter;
+
+        $this->cluster_curricula = $DB->get_records_sql($sql);
     }
 
     function is_sortable_numcourses() {
@@ -356,21 +371,19 @@ class curriculumstudentpage extends associationpage2 {
     }
 
     function get_title() {
-        return get_string('breadcrumb_curriculumstudentpage','block_curr_admin');
+        return get_string('breadcrumb_curriculumstudentpage','elis_program');
     }
 
     protected function get_context() {
         if (!isset($this->context)) {
             $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
-            $this->context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'block_curr_admin'), $id);
+            $this->context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $id);
         }
         return $this->context;
     }
 
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
-            global $CFG, $CURMAN;
-            require_once CURMAN_DIRLOCATION . '/curriculumpage.class.php';
             $id = isset($this->params['id']) ? $this->params['id'] : NULL;
             $this->parent_page = new curriculumpage(array('id' => $id, 'action' => 'view'));
         }
@@ -382,8 +395,6 @@ class curriculumstudentpage extends associationpage2 {
     }
 
     function get_navigation_default() {
-        global $CURMAN;
-
         $navigation = $this->get_parent_page()->get_navigation_view();
 
         return $navigation;
@@ -409,12 +420,10 @@ class curriculumstudentpage extends associationpage2 {
 
         $tmppage = $this->get_basepage();
         $tmppage->params['_assign'] = 'assign';
-        redirect($tmppage->get_url(), get_string('num_users_assigned', 'block_curr_admin', count($data->_selection)));
+        redirect($tmppage->get_url(), get_string('num_users_assigned', 'elis_program', count($data->_selection)));
     }
 
     protected function process_unassignment($data) {
-        global $CURMAN;
-
         $curid  = $data->id;
         foreach ($data->_selection as $associd) {
             $curstu = new curriculumstudent($associd);
@@ -424,7 +433,7 @@ class curriculumstudentpage extends associationpage2 {
         }
 
         $tmppage = $this->get_basepage();
-        redirect($tmppage->get_url(), get_string('num_users_unassigned', 'block_curr_admin', count($data->_selection)));
+        redirect($tmppage->get_url(), get_string('num_users_unassigned', 'elis_program', count($data->_selection)));
     }
 
     protected function get_selection_filter() {
@@ -440,7 +449,7 @@ class curriculumstudentpage extends associationpage2 {
     }
 
     protected function get_available_records($filter) {
-        global $CURMAN, $CFG, $USER;
+        global $USER, $DB;
 
         $context = $this->get_context();
         $id = required_param('id', PARAM_INT);
@@ -467,16 +476,15 @@ class curriculumstudentpage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
-        $where = "id NOT IN (SELECT userid FROM {$CFG->prefix}".CURASSTABLE." WHERE curriculumid={$id})";
+        $where = 'id NOT IN (SELECT userid FROM {'.curriculumstudent::TABLE.' WHERE curriculumid='.$id.')';
 
         $extrasql = $filter->get_sql_filter();
         if ($extrasql) {
-            $where .= " AND $extrasql";
+            $where .= ' AND '.$extrasql;
         }
 
         if(!curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $id)) {
             //perform SQL filtering for the more "conditional" capability
-
             $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
 
             $allowed_clusters = array();
@@ -495,20 +503,20 @@ class curriculumstudentpage extends associationpage2 {
                 return array(array(), 0);
             } else {
                 $cluster_filter = implode(',', $allowed_clusters);
-                $cluster_filter = " id IN (SELECT userid FROM {$CURMAN->db->prefix_table(CLSTUSERTABLE)}
-                                            WHERE clusterid IN ({$cluster_filter}))";
-                $where .= " AND $cluster_filter";
+                $cluster_filter = ' id IN (SELECT userid FROM {'.usercluster::TABLE.'}
+                                            WHERE clusterid IN ('.$cluster_filter.'))';
+                $where .= ' AND '.$cluster_filter;
             }
         }
 
-        $count = $CURMAN->db->count_records_select('crlm_user usr', $where);
-        $users = $CURMAN->db->get_records_select('crlm_user usr', $where, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $count = $DB->count_records_select(user::TABLE.' usr', $where);
+        $users = $DB->get_records_select(user::TABLE.' usr', $where, $sortclause, '*', $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
 
     protected function get_assigned_records($filter) {
-        global $CURMAN, $CFG;
+        global $DB;
 
         $context = $this->get_context();
         $id = required_param('id', PARAM_INT);
@@ -538,42 +546,42 @@ class curriculumstudentpage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
-        $sql = "SELECT curass.id, usr.id AS userid, usr.firstname, usr.lastname, usr.idnumber, usr.country, usr.language, curass.timecreated
-                  FROM {$CURMAN->db->prefix_table(CURASSTABLE)} curass
-                  JOIN {$CURMAN->db->prefix_table(USRTABLE)} usr on curass.userid = usr.id
-                 WHERE curass.curriculumid={$id}";
-        $where = "id IN (SELECT userid FROM {$CFG->prefix}".CURASSTABLE." WHERE curriculumid={$id})";
+        $sql = 'SELECT curass.id, usr.id AS userid, usr.firstname, usr.lastname, usr.idnumber, usr.country, usr.language, curass.timecreated
+                FROM {'.curriculumstudent::TABLE.'} curass
+                JOIN {'.user::TABLE.'} usr on curass.userid = usr.id
+                WHERE curass.curriculumid='.$id;
+        $where = 'id IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid='.$id.')';
 
         $extrasql = $filter->get_sql_filter();
         if ($extrasql) {
-            $where .= " AND $extrasql";
-            $sql .= " AND $extrasql";
+            $where .= ' AND '.$extrasql;
+            $sql .= ' AND '.$extrasql;
         }
 
-        $sql .= " ORDER BY {$sortclause}";
+        $sql .= ' ORDER BY '.$sortclause;
 
-        $count = $CURMAN->db->count_records_select('crlm_user usr', $where);
-        $users = $CURMAN->db->get_records_sql($sql, $pagenum*$perpage, $perpage);
+        $count = $DB->count_records_select(user::TABLE.' usr', $where);
+        $users = $DB->get_records_sql($sql, $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
 
     function get_records_from_selection($record_ids) {
-        global $CURMAN;
+        global $DB;
         $usersstring = implode(',', $record_ids);
-        $records = $CURMAN->db->get_records_select('crlm_user', "id in ($usersstring)");
+        $records = $DB->get_records_select(user::TABLE, "id in ($usersstring)");
         return $records;
     }
 
     protected function create_selection_table($records, $baseurl) {
         $records = $records ? $records : array();
         $columns = array('_selection' => '',
-                         'idnumber' => get_string('idnumber','block_curr_admin'),
-                         'name' => get_string('name','block_curr_admin'),
-                         'country' => get_string('country','block_curr_admin'),
-                         'language' => get_string('user_language','block_curr_admin'));
+                         'idnumber' => get_string('idnumber','elis_program'),
+                         'name' => get_string('name','elis_program'),
+                         'country' => get_string('country','elis_program'),
+                         'language' => get_string('user_language','elis_program'));
         if (!$this->is_assigning()) {
-            $columns['timecreated'] = get_string('registered_date','block_curr_admin');
+            $columns['timecreated'] = get_string('registered_date','elis_program');
         }
         return new curriculum_user_selection_table($records, $columns,
                                                    new moodle_url($baseurl));
@@ -583,7 +591,8 @@ class curriculumstudentpage extends associationpage2 {
 
 class curriculum_user_selection_table extends selection_table {
     function __construct(&$items, $columns, $pageurl, $decorators=array()) {
-        global $CURMAN, $USER;
+        global $USER;
+
         parent::__construct($items, $columns, $pageurl, $decorators);
         $id = required_param('id', PARAM_INT);
         if (!curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $id)) {
@@ -613,9 +622,11 @@ class curriculum_user_selection_table extends selection_table {
     }
 
     function get_item_display__selection($column, $item) {
+        global $DB;
+
         $userid = isset($item->userid) ? $item->userid : $item->id;
         if (isset($this->allowed_clusters)) {
-            if (empty($this->allowed_clusters) || !$CURMAN->db->record_exists_select(CLSTUSERTABLE, "userid = {$userid} AND clusterid IN (".implode(',',$this->allowed_clusters).')')) {
+            if (empty($this->allowed_clusters) || !$DB->record_exists_select(usercluster::TABLE, "userid = {$userid} AND clusterid IN (".implode(',',$this->allowed_clusters).')')) {
                 return '';
             }
         }

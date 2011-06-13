@@ -24,12 +24,18 @@
  *
  */
 
+require_once elis::lib('data/data_object.class.php');
+require_once elispm::lib('data/course.class.php');
+require_once elispm::lib('data/curriculum.class.php');
+require_once elispm::lib('data/curriculumcourse.class.php');
+//require_once elispm::lib('data/student.class.php');
+
 /*
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/course.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/curriculum.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/student.class.php';
+require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
+require_once CURMAN_DIRLOCATION . '/lib/course.class.php';              // ok
+require_once CURMAN_DIRLOCATION . '/lib/curriculum.class.php';          // ok
+require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // ok
+require_once CURMAN_DIRLOCATION . '/lib/student.class.php';             // missing
 */
 
 /*
@@ -41,17 +47,23 @@ define('CURR_EXPIRE_ENROL_COMPLETE', 2);
 class curriculumstudent extends elis_data_object {
     const TABLE = 'crlm_curriculum_assignment';
 
-/*
-    var $id;           // INT - The data ID if in the database.
-    var $userid;       // INT - The user ID.
-    var $user;         // OBJECT - The user database object.
-    var $curriculumid; // INT - The curriculum ID.
-    var $curriculum;   // OBJECT - The curriculum database object.
-    var $timecreated;  // INT - The time created (timestamp).
-    var $timemodified; // INT - The time modified (timestamp).
+    static $associations = array(
+        'pmclass' => array(
+            'class' => 'pmclass',
+            'foreignidfield' => 'courseid'
+        ),
+    );
 
-    var $_dbloaded;         // BOOLEAN - True if loaded from database.
-*/
+    protected $_dbfield_userid;
+    protected $_dbfield_curriculumid;
+    protected $_dbfield_completed;
+    protected $_dbfield_timecompleted;
+    protected $_dbfield_timeexpired;
+    protected $_dbfield_credits;
+    protected $_dbfield_locked;
+    protected $_dbfield_timecreated;
+    protected $_dbfield_timemodified;
+
     // STRING - Styles to use for edit form.
     var $_editstyle = '
 .curriculumstudenteditform input,
@@ -62,13 +74,13 @@ class curriculumstudent extends elis_data_object {
 }
 ';
 
-
     /**
      * Contructor.
      *
      * @param $curriculumstudentdata int/object/array The data id of a data record or data elements to load manually.
      *
      */
+    /*
     function curriculumstudent($curriculumstudentdata = false) {
         parent::datarecord();
 
@@ -100,6 +112,11 @@ class curriculumstudent extends elis_data_object {
             $this->curriculum = new curriculum($this->curriculumid);
         }
     }
+    */
+
+    protected function get_field_context_level() {
+        return context_level_base::get_custom_context_level('user', 'elis_program');
+    }
 
 	public static function delete_for_curriculum($id) {
 		return $this->_db->delete_records(curriculumstudent::TABLE, 'curriculumid', $id);
@@ -118,6 +135,8 @@ class curriculumstudent extends elis_data_object {
     /**
      * Perform all necessary tasks to add a student curriculum enrolment to the system.
      */
+    // TO-DO: change to save method
+    /*
     function add() {
         global $CURMAN;
 
@@ -140,14 +159,18 @@ class curriculumstudent extends elis_data_object {
 
         return $result;
     }
+    */
 
     /**
      * Perform all necessary tasks to update a student enrolment.
      *
      */
+    // TO-DO: change to save method
+    /*
     function update() {
         return $this->data_update_record();
     }
+    */
 
     /**
      * Perform all actions to mark this student record complete.
@@ -157,8 +180,10 @@ class curriculumstudent extends elis_data_object {
      * @param  boolean  $locked   TRUE if the curriculum enrolment should be locked, otherwise false
      */
     function complete($time = false, $credits = false, $locked = false) {
-        global $CFG, $CURMAN;
-        require_once CURMAN_DIRLOCATION . '/lib/notifications.php';
+        global $CFG;
+
+        // TO-DO: re-enable when notifications are done
+        //require_once $CFG->dirroot . 'elis/program/lib/notifications.php';
 
         $this->completed = STUSTATUS_PASSED;
 
@@ -170,7 +195,7 @@ class curriculumstudent extends elis_data_object {
         }
 
         // Handle a curriculum with an expiry date defined (ELIS-1172):
-        if (!empty($CURMAN->config->enable_curriculum_expiration) && !empty($this->curriculum->frequency)) {
+        if (!empty(elis::$config->elis_program->enable_curriculum_expiration) && !empty($this->curriculum->frequency)) {
             $this->timeexpired = calculate_curriculum_expiry($this);
         }
 
@@ -182,11 +207,12 @@ class curriculumstudent extends elis_data_object {
             $this->locked = $locked ? 1 : 0;
         }
 
+        /* TO-DO: re-enable when notifications are done
         if ($this->update()) {
             /// Does the user receive a notification?
-            $sendtouser       = $CURMAN->config->notify_curriculumcompleted_user;
-            $sendtorole       = $CURMAN->config->notify_curriculumcompleted_role;
-            $sendtosupervisor = $CURMAN->config->notify_curriculumcompleted_supervisor;
+            $sendtouser       = elis::$config->elis_program->notify_curriculumcompleted_user;
+            $sendtorole       = elis::$config->elis_program->notify_curriculumcompleted_role;
+            $sendtosupervisor = elis::$config->elis_program->notify_curriculumcompleted_supervisor;
 
             /// If nobody receives a notification, we're done.
             if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -198,16 +224,16 @@ class curriculumstudent extends elis_data_object {
             /// Make sure this is a valid user.
             $enroluser = new user($this->userid);
             if (empty($enroluser->id)) {
-                print_error('nouser', 'block_curr_admin');
+                print_error('nouser', 'elis_program');
                 return true;
             }
 
             $message = new notification();
 
             /// Set up the text of the message
-            $text = empty($CURMAN->config->notify_curriculumcompleted_message) ?
-                        get_string('notifycurriculumcompletedmessagedef', 'block_curr_admin') :
-                        $CURMAN->config->notify_curriculumcompleted_message;
+            $text = empty(elis::$config->elis_program->notify_curriculumcompleted_message) ?
+                        get_string('notifycurriculumcompletedmessagedef', 'elis_program') :
+                        elis::$config->elis_program->notify_curriculumcompleted_message;
             $search = array('%%userenrolname%%', '%%curriculumname%%');
             $replace = array(fullname($this->user), $this->curriculum->name);
             $text = str_replace($search, $replace, $text);
@@ -240,6 +266,7 @@ class curriculumstudent extends elis_data_object {
             }
 
         }
+        */
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -283,13 +310,15 @@ class curriculumstudent extends elis_data_object {
      */
 
     public static function curriculum_notcompleted_handler($curstudent) {
-        global $CFG, $CURMAN;
-        require_once($CFG->dirroot.'/curriculum/lib/notifications.php');
+        global $CFG, $DB;
+
+        // TO-DO: re-enable when notifications are done
+        //require_once $CFG->dirroot . 'elis/program/lib/notifications.php';
 
         /// Does the user receive a notification?
-        $sendtouser       = $CURMAN->config->notify_curriculumnotcompleted_user;
-        $sendtorole       = $CURMAN->config->notify_curriculumnotcompleted_role;
-        $sendtosupervisor = $CURMAN->config->notify_curriculumnotcompleted_supervisor;
+        $sendtouser       = elis::$config->elis_program->notify_curriculumnotcompleted_user;
+        $sendtorole       = elis::$config->elis_program->notify_curriculumnotcompleted_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_curriculumnotcompleted_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -298,12 +327,13 @@ class curriculumstudent extends elis_data_object {
 
         $context = get_system_context();
 
+        /* TO-DO: re-enable when notifications are done
         $message = new notification();
 
         /// Set up the text of the message
-        $text = empty($CURMAN->config->notify_curriculumnotcompleted_message) ?
-                    get_string('notifycurriculumnotcompletedmessagedef', 'block_curr_admin') :
-                    $CURMAN->config->notify_curriculumnotcompleted_message;
+        $text = empty(elis::$config->elis_program->notify_curriculumnotcompleted_message) ?
+                get_string('notifycurriculumnotcompletedmessagedef', 'elis_program') :
+                elis::$config->elis_program->notify_curriculumnotcompleted_message;
         $search = array('%%userenrolname%%', '%%curriculumname%%');
         $replace = array(fullname($curstudent->user), $curstudent->curriculum->name);
         $text = str_replace($search, $replace, $text);
@@ -334,14 +364,15 @@ class curriculumstudent extends elis_data_object {
         foreach ($users as $user) {
             $message->send_notification($text, $user, $enroluser);
         }
+        */
 
         return true;
     }
 
     public static function get_completed_for_user($userid) {
-        global $CURMAN;
+        global $DB;
 
-        $rows = $CURMAN->db->get_records_select(CURASSTABLE, "userid = $userid and completed != 0", '', 'id');
+        $rows = $DB->get_records_select(curriculumstudent::TABLE, "userid = $userid and completed != 0", '', 'id');
         $rows = ($rows == false ? array() : $rows);
 
         $r = array();
@@ -356,80 +387,82 @@ class curriculumstudent extends elis_data_object {
     /**
      * Get a list of the curricula assigned to this student.
      *
-     * @uses $CURMAN
      * @param int $userud The user id.
      */
     public static function get_curricula($userid = 0) {
-        global $CURMAN, $USER;
+        global $USER, $DB;
 
         if ($userid <= 0) {
             $userid = $USER->id;
         }
 
-        if (empty($CURMAN->db)) {
+        if (empty($DB)) {
             return NULL;
         }
 
-        $LIKE     = $CURMAN->db->sql_compare();
+        // TO-DO: convert this to new way of doing LIKE
+        //$LIKE     = $CURMAN->db->sql_compare();
+        $LIKE = 'LIKE';
 
         $select  = 'SELECT curass.id, curass.curriculumid curid, curass.completed, curass.timecompleted, curass.credits, '.
                    'cur.idnumber, cur.name, cur.description, cur.reqcredits, COUNT(curcrs.id) as numcourses ';
-        $tables  = 'FROM ' . $CURMAN->db->prefix_table(CURASSTABLE) . ' curass ';
-        $join    = 'LEFT JOIN ' . $CURMAN->db->prefix_table(CURTABLE) . ' cur '.
+        $tables  = 'FROM {'.curriculumstudent::TABLE.'} curass ';
+        $join    = 'LEFT JOIN {'.curriculum::TABLE.'} cur '.
                    'ON cur.id = curass.curriculumid ';
-        $join   .= 'LEFT JOIN ' . $CURMAN->db->prefix_table(CURCRSTABLE) . ' curcrs '.
+        $join   .= 'LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs '.
                    'ON curcrs.curriculumid = cur.id ';
         $where   = 'WHERE curass.userid = '.$userid.' ';
         $group   = 'GROUP BY curass.id, curass.curriculumid, curass.completed, curass.timecompleted, curass.credits, ' .
                    'cur.idnumber, cur.name, cur.description, cur.reqcredits ';
         $sort    = 'ORDER BY cur.priority ASC, cur.name, curcrs.position DESC ';
-        $limit   = '';
 
-        $sql = $select.$tables.$join.$where.$group.$sort.$limit;
+        $sql = $select.$tables.$join.$where.$group.$sort;
 
-        return $CURMAN->db->get_records_sql($sql);
+        // TO-DO: convert properly
+        return $DB->get_records_sql($sql);
     }
 
     /**
      * Get a list of the available students curriculum.
      *
-     * @uses $CURMAN
      * @param string $search A search filter.
      * @return array An array of user records.
      */
     public static function curriculumstudent_get_students($curid = 0, $enroled = true) {
-        global $CURMAN;
+        global $DB;
 
         if(0 >= $curid) {
-            $curid = $CURMAN->id;
+            $curid = $this->id;
         }
 
-        if (empty($CURMAN->db)) {
+        if (empty($DB)) {
             return NULL;
         }
 
-        $LIKE     = $CURMAN->db->sql_compare();
+        // TO-DO: convert this to new way of doing LIKE
+        //$LIKE     = $CURMAN->db->sql_compare();
+        $LIKE     = 'LIKE';
+
         $FULLNAME = sql_concat('usr.firstname', "' '", 'usr.lastname');
 
         $select   = 'SELECT curass.id, usr.id as usrid, curass.curriculumid as curid, ' .
                      $FULLNAME . ' as name, usr.idnumber, usr.country, usr.language, curass.timecreated, curass.userid ';
 
-        $tables   = 'FROM ' . $CURMAN->db->prefix_table(USRTABLE) . ' usr ';
-        $join     = 'LEFT JOIN ' . $CURMAN->db->prefix_table(CURASSTABLE) . ' curass ON curass.userid = usr.id ';
+        $tables   = 'FROM {'.user::TABLE.'} usr ';
+        $join     = 'LEFT JOIN {'.curriculumstudent::TABLE.'} curass ON curass.userid = usr.id ';
 
         $sort     = 'ORDER BY usr.idnumber ASC ';
-        $limit    = '';
 
         if($enroled) {
-            $where = 'WHERE curass.curriculumid = ' . $curid . ' ';
+            $where = 'WHERE curass.curriculumid = '.$curid.' ';
         } else {
-            $join .= 'LEFT JOIN ' . $CURMAN->db->prefix_table(CURASSTABLE) . ' curass2 ON curass2.userid = usr.id AND curass2.curriculumid = ' . $curid . ' ';
+            $join .= 'LEFT JOIN {'.curriculumstudent::TABLE.'} curass2 ON curass2.userid = usr.id AND curass2.curriculumid = '.$curid.' ';
             $where = 'WHERE curass2.curriculumid IS NULL ';
         }
 
-        $sql = $select.$tables.$join.$where.$sort.$limit;
+        $sql = $select.$tables.$join.$where.$sort;
 
-        return $CURMAN->db->get_records_sql($sql);
+        return $DB->get_records_sql($sql);
     }
 
     /**
@@ -442,7 +475,7 @@ class curriculumstudent extends elis_data_object {
      * @return   boolean           True if the current user has the required permissions, otherwise false
      */
     public static function can_manage_assoc($userid, $curid) {
-        global $USER;
+        global $USER, $DB;
 
         if(!curriculumpage::can_enrol_into_curriculum($curid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
@@ -471,7 +504,7 @@ class curriculumstudent extends elis_data_object {
         $select = "userid = {$userid} AND {$cluster_select}";
 
         //user just needs to be in one of the possible clusters
-        if(record_exists_select(CLSTUSERTABLE, $select)) {
+        if($DB->record_exists_select(clusteruser::TABLE, $select)) {
             return true;
         }
 
@@ -487,15 +520,16 @@ class curriculumstudent extends elis_data_object {
  * Count the number of users
  */
 function curriculumstudent_count_students($type = 'student', $namesearch = '', $alpha = '') {
-    global $CURMAN;
+    global $DB;
 
-    $LIKE     = $CURMAN->db->sql_compare();
+    // TO-DO: convert to proper way of doing LIKE
+    //$LIKE     = $CURMAN->db->sql_compare();
+    $LIKE = 'LIKE';
+
     $FULLNAME = sql_concat('usr.firstname', "' '", 'usr.lastname');
 
     $select  = 'SELECT COUNT(usr.id) ';
-    $tables  = 'FROM ' . $CURMAN->db->prefix_table(USRTABLE) . ' usr ';
-    $join    = '';
-    $on      = '';
+    $tables  = 'FROM {'.user::TABLE.'} usr ';
     $where   = '';
 
     if (!empty($namesearch)) {
@@ -507,41 +541,26 @@ function curriculumstudent_count_students($type = 'student', $namesearch = '', $
         $where .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '$alpha%') ";
     }
 
-//    switch ($type) {
-//        case 'student':
-//            $where .= (!empty($where) ? ' AND ' : '') . 'usr.type = \'Student\' ';
-//            break;
-//
-//        case 'instructor':
-//            $where .= (!empty($where) ? ' AND ' : '') . 'usr.type = \'Instructor\' ';
-//            break;
-//
-//        case '':
-//            $where .= (!empty($where) ? ' AND ' : '') . '(usr.type = \'Student\' OR usr.type = \'Instructor\') ';
-//            break;
-//    }
-
     if (!empty($where)) {
         $where = 'WHERE '.$where.' ';
     }
 
-    $sql = $select.$tables.$join.$on.$where;
+    $sql = $select.$tables.$where;
 
-    return $CURMAN->db->count_records_sql($sql);
+    return $DB->count_records_sql($sql);
 }
 
 
 /**
  * Determine if the given user has a curriculum assigned to them.
  *
- * @uses $CURMAN
  * @param int $uid The user ID.
  * @return bool True or False.
  */
 function student_has_curriculum($uid) {
-    global $CURMAN;
+    global $DB;
 
-    return $CURMAN->db->record_exists(CURASSTABLE, 'userid', $uid);
+    return $DB->record_exists(curriculumstudent::TABLE, array('userid'=>$uid));
 }
 
 
@@ -552,14 +571,13 @@ function student_has_curriculum($uid) {
  *       an empty or NULL value for the first parameter, then the second and third parameters are expected to be
  *       passed instead.
  *
- * @uses $CURMAN
  * @param object $curass The curriculum assignment object data (as loaded by the curriculumstudent class constructor).
  * @param int 	 $curid  The curriculum DB record ID.
  * @param int    $userid The user DB record ID.
  * @return int The expiration value as a UNIX timestamp or 0 for no expiration or an error.
  */
 function calculate_curriculum_expiry($curass, $curid = 0, $userid = 0) {
-    global $CURMAN;
+    global $DB;
 
     // If we are specifically looking for a curriculum and user ID, then pass verify the parameters.
     if (empty($curass)) {
@@ -567,7 +585,7 @@ function calculate_curriculum_expiry($curass, $curid = 0, $userid = 0) {
             return 0;
         }
 
-        if (!$curass = get_record(CURASSTABLE, 'userid', $userid, 'curriculumid', $curriculum->id)) {
+        if (!$curass = $DB->get_record(curriculumstudent::TABLE, array('userid'=>$userid, 'curriculumid'=>$curriculum->id))) {
             return 0;
         }
 
@@ -638,15 +656,15 @@ function calculate_curriculum_expiry($curass, $curid = 0, $userid = 0) {
         return 0;
     }
 
-    if (!isset($CURMAN->config->curriculum_expiration_start) ||
-        $CURMAN->config->curriculum_expiration_start == CURR_EXPIRE_ENROL_COMPLETE) {
+    if (!isset(elis::$config->elis_program->curriculum_expiration_start) ||
+        elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_COMPLETE) {
 
         // Base the expiry date off the curriculum completion date.
         if ($curass->timecompleted == 0) {
             return 0;
         }
         $timenow = $curass->timecompleted;
-    } else if ($CURMAN->config->curriculum_expiration_start == CURR_EXPIRE_ENROL_START) {
+    } else if (elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_START) {
         // Base the expiry date off the curriculum enrolment date.
         $timenow = $curass->timecreated;
     } else {
