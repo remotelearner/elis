@@ -65,6 +65,12 @@ class php_report_export_pdf extends php_report_export {
         require_once($CFG->libdir.'/tcpdf/tcpdf.php');
 
         $newpdf = new TCPDF('L', 'in', 'letter');
+
+        //prevent the library from automatically outputting
+        //header or footer bars
+        $newpdf->SetPrintHeader(false);
+        $newpdf->SetPrintFooter(false);
+
         $newpdf->setMargins(self::marginx, self::marginy);
         $newpdf->SetFont('freesans', '', 9);
         $newpdf->AddPage();
