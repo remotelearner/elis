@@ -194,8 +194,8 @@ class studentpage extends associationpage {
             if (!empty($user['enrol'])) {
                 $newstu = $this->build_student($uid, $classid, $user);
 
-                if($newstu->completestatusid != STUSTATUS_NOTCOMPLETE || empty($newstu->cmclass->maxstudents) || $newstu->cmclass->maxstudents > $newstu->count_enroled()) {
-                    $status = $newstu->add();
+                if($newstu->completestatusid != STUSTATUS_NOTCOMPLETE || empty($newstu->pmclass->maxstudents) || $newstu->pmclass->maxstudents > $newstu->count_enroled()) {
+                    $status = $this->do_add(); // $newstu->do_add();
                 } else {
                     $waitlist[] = $newstu;
                     $status = true;
@@ -303,7 +303,7 @@ class studentpage extends associationpage {
             $graderec['locked'] = isset($newlocked[$elementid]) ? $newlocked[$elementid] : '0';
 
             $sgrade = new student_grade($graderec);
-            $sgrade->add();
+            $sgrade->do_add();
         }
 
         $this->do_default();
@@ -412,7 +412,7 @@ class studentpage extends associationpage {
                         $wait_record->position = 0;
 
                         $wait_list = new waitlist($wait_record);
-                        $wait_list->add();
+                        $wait_list->do_add();
                     } else if($data->enrol[$uid] == 2) {
                         $user = new user($uid);
                         $student_data= array();
@@ -423,7 +423,7 @@ class studentpage extends associationpage {
                         $student_data['completestatusid'] = STUSTATUS_NOTCOMPLETE;
 
                         $newstu = new student($student_data);
-                        $status = $newstu->add();
+                        $status = $newstu->do_add();
 
                         if ($status !== true) {
                             if (!empty($status->message)) {
@@ -509,7 +509,7 @@ class studentpage extends associationpage {
         $form_url = new moodle_url(null, array('s'=>$this->pagename, 'section'=>$this->section, 'action'=>'waitlistconfirm'));
 
         $student = current($students);
-        $data = $student->cmclass;
+        $data = $student->pmclass;
         $waitlistform = new waitlistaddform($form_url, array('obj'=>$data, 'students'=>$students));
 
         $waitlistform->display();
