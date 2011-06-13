@@ -62,7 +62,7 @@ abstract class icon_report extends php_report {
          */
         $column_position = 0;
 
-        $result .= '<div>';
+        $result .= html_writer::start_tag('div');
 
         //use slightly less space due to IE7 width issues
         $percent_width = floor(100 / $this->numcolumns) - 1;
@@ -70,27 +70,36 @@ abstract class icon_report extends php_report {
         foreach($this->data as $key => $datum) {
 
             //this is used to make sure everything lines up in a nice grid
-            $clear_left = $column_position == 0 ? ' clear: left;' : '';
+            $clear = $column_position == 0 ? 'left' : 'none';
 
-            $result .= '<div style="width: ' . $percent_width . '%; float: left;' . $clear_left . '" class="php_report_icon_top_level_div">
-                        <div style="width: 20%; float: left;" class="php_report_icon_main_div php_report_icon_image_div"><img src="' . $datum->get_icon_url() . '" style="width: ' . $this->iconwidth . '" class="' . $key . '_image"/></div>
-                        <div style="width: 5%; float: left;">&nbsp;</div>
-                        <div style="width: 45%; float: left;" class="' . $key . '_label php_report_icon_main_div php_report_icon_label_div">' . $datum->display . '</div>
-                        <div style="width: 5%; float: left;">&nbsp;</div>
-                        <div style="width: 20%; float: left; text-align: right" class="' . $key . '_value php_report_icon_main_div php_report_icon_value_div">' . $datum->format_number() . '</div>
-                        <div style="width: 5%; float: left;">&nbsp;</div>
-                        </div>';
+            $result .= html_writer::start_tag('div', array('style' => 'width: '.$percent_width.'%; float:left; clear: '.$clear.';',
+                                                           'class' => 'php_report_icon_top_level_div'));
+            $result .= html_writer::start_tag('div', array('style' => 'width: 20%; float: left;',
+                                                           'class' => 'php_report_icon_main_div php_report_icon_image_div'));
+            $result .= html_writer::empty_tag('img', array('src' => $datum->get_icon_url(),
+                                                           'style' => 'width: '.$this->iconwidth,
+                                                           'class' => $key.'_image'));
+            $result .= html_writer::end_tag('div');
+            $result .= html_writer::tag('div', '&nbsp;', array('style' => 'width: 5%; float:left;'));
+            $result .= html_writer::tag('div', $datum->display, array('style' => 'width: 45%; float: left;',
+                                                                      'class' => $key.'_label php_report_icon_main_div php_report_icon_label_div'));
+            $result .= html_writer::tag('div', '&nbsp;', array('style' => 'width: 5%; float: left;'));
+            $result .= html_writer::tag('div', $datum->format_number(), array('style' => 'width: 20%; float: left; text-align: right;',
+                                                                              'class' => $key.'_value php_report_icon_main_div php_report_icon_value_div'));
+            $result .= html_writer::tag('div', '&nbsp', array('style' => 'width: 5%; float:left;'));
+            $result .= html_writer::end_tag('div');
+
             $column_position = ($column_position + 1) % $this->numcolumns;
         }
 
         if($column_position > 0) {
             for($i = $column_position; $i < $this->numcolumns; $i++) {
-                $result .= '<div style="width: ' . $percent_width . '%;float: left">&nbsp;</div>';
+                $result .= html_writer::tag('div', '&nbsp;', array('style' => 'width: '.$percent_width.'%;float: left'));
             }
         }
 
-        $result .= '</div>';
-        $result .= '<br style="clear:both" />';
+        $result .= html_writer::end_tag('div');
+        $result .= html_writer::empty_tag('br', array('style' => 'clear:both'));
 
         return $result;
 
