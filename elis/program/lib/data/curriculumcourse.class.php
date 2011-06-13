@@ -146,10 +146,10 @@ class curriculumcourse extends data_object_with_custom_fields {
     }
 
     function delete() {
-        // TO-DO: convert this to new way of deleting
         $this->delete_all_prerequisites();
         $this->delete_all_corequisites();
         $this->delete_all_track_classes();
+
         parent::delete();
     }
 
@@ -424,7 +424,7 @@ class curriculumcourse extends data_object_with_custom_fields {
 
         if (is_array($tracks)) {
             foreach ($tracks as $track_id=>$track_obj) {
-                $result = $this->_db->delete_records(trackclass::TABLE, array('trackid'=>$track_obj->id, 'courseid'=>$this->courseid));
+                $result = $this->_db->delete_records(trackassignment::TABLE, array('trackid'=>$track_obj->id, 'courseid'=>$this->courseid));
             }
         }
         return true;

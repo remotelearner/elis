@@ -307,25 +307,26 @@ class pmclass extends data_object_with_custom_fields {
      *
      */
     function delete() {
-        $status = true;
+        //$status = true;
         if (!empty($this->id)) {
-            instructor::delete_for_class($this->id);
-            student::delete_for_class($this->id);
-            trackassignmentclass::delete_for_class($this->id);
-            classmoodlecourse::delete_for_class($this->id);
-            student_grade::delete_for_class($this->id);
-            attendance::delete_for_class($this->id);
-            taginstance::delete_for_class($this->id);
-            waitlist::delete_for_class($this->id);
-            classmoodlecourse::delete_for_class($this->id);
+            //instructor::delete_for_class($this->id);
+            //student::delete_for_class($this->id);
+            //trackassignmentclass::delete_for_class($this->id);
+            //classmoodlecourse::delete_for_class($this->id);
+            //student_grade::delete_for_class($this->id);
+            //attendance::delete_for_class($this->id);
+            //taginstance::delete_for_class($this->id);
+            //waitlist::delete_for_class($this->id);
+            //classmoodlecourse::delete_for_class($this->id);
 
             $level = context_level_base::get_custom_context_level('class', 'elis_program');
             $result = delete_context($level,$this->id);
 
-            $status = $this->data_delete_record();
+            //$status = $this->data_delete_record();
+            parent::delete();
         }
 
-        return $status;
+        //return $status;
     }
 
     function __toString() {
@@ -1000,7 +1001,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
 
     //class associated to a particular cluster via a track
     if(!empty($clusterid)) {
-        $join .= 'JOIN {'.trackclass::TABLE.'} clstrk
+        $join .= 'JOIN {'.trackassignment::TABLE.'} clstrk
                   ON clstrk.classid = cls.id
                   JOIN {'.clustertrack::TABLE.'} clsttrk
                   ON clsttrk.trackid = clstrk.trackid

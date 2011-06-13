@@ -100,15 +100,11 @@ class curriculumstudent extends elis_data_object {
     }
 
 	public static function delete_for_curriculum($id) {
-		global $CURMAN;
-
-		return $CURMAN->db->delete_records(CURASSTABLE, 'curriculumid', $id);
+		return $this->_db->delete_records(curriculumassignment::TABLE, 'curriculumid', $id);
 	}
 
 	public static function delete_for_user($id) {
-		global $CURMAN;
-
-		return $CURMAN->db->delete_records(CURASSTABLE, 'userid', $id);
+		return $this->_db->delete_records(curriculumassignment::TABLE, 'userid', $id);
 	}
 
     /////////////////////////////////////////////////////////////////////

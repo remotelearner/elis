@@ -76,6 +76,8 @@ class curriculum extends data_object_with_custom_fields {
     protected $_dbfield_frequency;
     protected $_dbfield_priority;
 
+    static $delete_is_complex = true;
+
     /**
      * Contructor.
      *
@@ -147,13 +149,15 @@ class curriculum extends data_object_with_custom_fields {
 
 	function delete() {
         $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
-		$result = track::delete_for_curriculum($this->id);
-		$result = $result && clustercurriculum::delete_for_curriculum($this->id);
-		$result = $result && curriculumcourse::delete_for_curriculum($this->id);
-		$result = $result && curriculumstudent::delete_for_curriculum($this->id);
-        $result = $result && delete_context($level,$this->id);
+		//$result = track::delete_for_curriculum($this->id);
+		//$result = $result && clustercurriculum::delete_for_curriculum($this->id);
+		//$result = $result && curriculumcourse::delete_for_curriculum($this->id);
+		//$result = $result && curriculumstudent::delete_for_curriculum($this->id);
+        //$result = $result && delete_context($level,$this->id);
+        delete_context($level,$this->id);
 
-    	return $result && $this->data_delete_record();
+    	//return $result && $this->data_delete_record();
+    	parent::delete();
     }
 
     function __toString() {

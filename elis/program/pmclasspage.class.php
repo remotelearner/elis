@@ -168,18 +168,18 @@ class pmclasspage extends managementpage {
     public function __construct(array $params=null) {
         $this->tabs = array(
         array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
-        array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
+        array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
 
         // TO-DO: re-enable as pages become available
 
-        //array('tab_id' => 'studentpage', 'page' => 'studentpage', 'name' => get_string('enrolments', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
-        //array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting.png'),
-        //array('tab_id' => 'instructorpage', 'page' => 'instructorpage', 'name' => get_string('instructors', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'instructor.gif'),
-        //array('tab_id' => 'clstaginstancepage', 'page' => 'clstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag.gif'),
-        //array('tab_id' => 'class_rolepage', 'page' => 'class_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
+        //array('tab_id' => 'studentpage', 'page' => 'studentpage', 'name' => get_string('enrolments', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
+        //array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting'),
+        //array('tab_id' => 'instructorpage', 'page' => 'instructorpage', 'name' => get_string('instructors', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'instructor'),
+        //array('tab_id' => 'clstaginstancepage', 'page' => 'clstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
+        //array('tab_id' => 'class_rolepage', 'page' => 'class_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
-        array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete.gif'),
-        //array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'report.gif')
+        array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
+        //array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'report')
         );
 
         parent::__construct($params);
@@ -328,10 +328,12 @@ class pmclasspage extends managementpage {
     }
 
     function do_delete() {
+        global $DB;
+
         $id = required_param('id', PARAM_INT);
         $force = optional_param('force', 0, PARAM_INT);
 
-        if(count_records(student::TABLE, array('classid'=>$id)) && $force != 1) {
+        if($DB->count_records(student::TABLE, array('classid'=>$id)) && $force != 1) {
             $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1));
             notify(get_string('pmclass_delete_warning', 'elis_program'), 'errorbox');
             echo '<center><a href="' . $target->url . '">'. get_string('pmclass_delete_warning_continue', 'elis_program') . '</a></center>';

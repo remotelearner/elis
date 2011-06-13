@@ -644,14 +644,15 @@ class course extends data_object_with_custom_fields {
     }
 
 	public function delete() {
-	    // TO-DO: convert this to new way to do delete
         $level = context_level_base::get_custom_context_level('course', 'elis_program');
-		$return = curriculumcourse::delete_for_course($this->id);
-		$return = $return && pmclass::delete_for_course($this->id);
-        $return = $return && coursetemplate::delete_for_course($this->id);
-        $return = $return && delete_context($level,$this->id);
+		//$return = curriculumcourse::delete_for_course($this->id);
+		//$return = $return && pmclass::delete_for_course($this->id);
+        //$return = $return && coursetemplate::delete_for_course($this->id);
+        //$return = $return && delete_context($level,$this->id);
+        delete_context($level,$this->id);
 
-    	return $return && $this->data_delete_record();
+    	//return $return && $this->data_delete_record();
+        parent::delete();
     }
 
     public static function find($filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {

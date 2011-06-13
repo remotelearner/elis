@@ -30,14 +30,14 @@ require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
 
 /*
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/cmclass.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/user.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/student.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/rollover/sharelib.php';
+require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';      // ok
+require_once CURMAN_DIRLOCATION . '/lib/cmclass.class.php';         // ok
+require_once CURMAN_DIRLOCATION . '/lib/user.class.php';            // ok
+require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php';      // missing
+require_once CURMAN_DIRLOCATION . '/lib/student.class.php';         // missing
+require_once CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php';  // ok
+require_once CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php'; // missing
+require_once CURMAN_DIRLOCATION . '/lib/rollover/sharelib.php';     // missing
 */
 
 /*
@@ -50,7 +50,12 @@ define ('CLSMDLENROLCHOICE', 1);        // Allow user to choose at time of assig
 class classmoodlecourse extends data_object_with_custom_fields {
     const TABLE = 'crlm_class_moodle';
 
-    static $associations = array();
+    static $associations = array(
+        'pmclass' => array(
+            'class' => 'pmclass',
+            'idfield' => 'classid'
+        )
+    );
 
     protected $_dbfield_classid;
     protected $_dbfield_moodlecourseid;
@@ -100,11 +105,11 @@ class classmoodlecourse extends data_object_with_custom_fields {
     	return $this->_db->delete_records(classmoodlecourse::TABLE, array('classid'=>$id));
     }
 
-/////////////////////////////////////////////////////////////////////
-//                                                                 //
-//  DATA FUNCTIONS:                                                //
-//                                                                 //
-/////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+    //                                                                 //
+    //  DATA FUNCTIONS:                                                //
+    //                                                                 //
+    /////////////////////////////////////////////////////////////////////
 
 
     /**
@@ -121,17 +126,18 @@ class classmoodlecourse extends data_object_with_custom_fields {
             return false;
         }
 
+        /* TO-DO: re-enable once instructors is ready
         $ins = new instructor();
 
-        /*
-        if ($CURMAN->config->default_instructor_role && $instructors = $ins->get_instructors($this->classid)) {
-        /// At this point we must switch over the other Moodle site's DB config, if needed
+        if (elis::$config->elis_program->default_instructor_role && $instructors = $ins->get_instructors($this->classid)) {
+            /// At this point we must switch over the other Moodle site's DB config, if needed
             if (!empty($this->siteconfig)) {
                 $cfgbak = moodle_load_config($this->siteconfig);
             }
 
-        /// This has to be put here in case we have a site config reload.
+            /// This has to be put here in case we have a site config reload.
             $CFG    = $GLOBALS['CFG'];
+            // TO-DO: how should this be migrated?
             $CURMAN = $GLOBALS['CURMAN'];
             $db     = $GLOBALS['db'];
 
@@ -140,12 +146,12 @@ class classmoodlecourse extends data_object_with_custom_fields {
             }
 
             foreach ($instructors as $instructor) {
-            /// Make sure that a Moodle account exists for this user already.
+                /// Make sure that a Moodle account exists for this user already.
                 $user = new user($instructor->id);
 
                 if (!$muser = $this->_db->get_record('user', array('idnumber'=>addslashes($user->idnumber)))) {
                     $muser = addslashes_recursive($muser);
-                /// Create a new record.
+                    /// Create a new record.
                     $muser = new stdClass;
                     $muser->idnumber     = $user->idnumber;
                     $muser->username     = $user->uname;
@@ -157,9 +163,9 @@ class classmoodlecourse extends data_object_with_custom_fields {
                     $muser->id = $this->_db->insert_record('user', $muser);
                 }
 
-            /// If we have a vald Moodle user account, apply the role.
+                /// If we have a vald Moodle user account, apply the role.
                 if (!empty($muser->id)) {
-                    role_assign($CURMAN->config->default_instructor_role, $muser->id, 0, $context->id, 0, 0, 0, 'manual');
+                    role_assign(elis::$config->elis_program->default_instructor_role, $muser->id, 0, $context->id, 0, 0, 0, 'manual');
                 }
             }
 
@@ -191,13 +197,14 @@ class classmoodlecourse extends data_object_with_custom_fields {
         $stu = new student();
 
         if ($students = $stu->get_students($this->classid)) {
-        /// At this point we must switch over the other Moodle site's DB config, if needed
+            /// At this point we must switch over the other Moodle site's DB config, if needed
             if (!empty($this->siteconfig)) {
                 $cfgbak = moodle_load_config($this->siteconfig);
             }
 
-        /// This has to be put here in case we have a site config reload.
+            /// This has to be put here in case we have a site config reload.
             $CFG    = $GLOBALS['CFG'];
+            // TO-DO: how should this be migrated?
             $CURMAN = $GLOBALS['CURMAN'];
             $db     = $GLOBALS['db'];
 
@@ -208,12 +215,12 @@ class classmoodlecourse extends data_object_with_custom_fields {
             }
 
             foreach ($students as $student) {
-            /// Make sure that a Moodle account exists for this user already.
+                /// Make sure that a Moodle account exists for this user already.
                 $user = new user($student->id);
 
                 if (!$muser = $this->_db->get_record('user', array('idnumber'=>addslashes($user->idnumber)))) {
                     $muser = addslashes_recursive($muser);
-                /// Create a new record.
+                    /// Create a new record.
                     $muser = new stdClass;
                     $muser->idnumber     = $user->idnumber;
                     $muser->username     = $user->uname;
@@ -225,13 +232,13 @@ class classmoodlecourse extends data_object_with_custom_fields {
                     $muser->id = $this->_db->insert_record('user', $muser);
                 }
 
-            /// If we have a vald Moodle user account, apply the role.
+                /// If we have a vald Moodle user account, apply the role.
                 if (!empty($muser->id)) {
                     role_assign($role->id, $muser->id, 0, $context->id, 0, 0, 0, 'manual');
                 }
             }
 
-        /// Reset $CFG object.
+            /// Reset $CFG object.
             if (!empty($this->siteconfig)) {
                 moodle_load_config($cfgbak->dirroot . '/config.php');
             }
@@ -263,7 +270,6 @@ function moodle_load_config($file, $justroot = false) {
     $return = false;
 
     if (file_exists($file) && ($fp = fopen($file, 'r'))) {
-//print_object($file);
         while ($line = fgets($fp)) {
             if ($line[0] != '$') {
                 continue;
@@ -316,14 +322,16 @@ function moodle_load_config($file, $justroot = false) {
             $dbconnected = $db->Connect($CFG->dbhost,$CFG->dbuser,$CFG->dbpass,$CFG->dbname);
         }
 
-    /// Save the new global objects.
+        /// Save the new global objects.
         if ($dbconnected) {
             $GLOBALS['CFG'] = $CFG;
             $GLOBALS['db']  = $db;
 
+            // TO-DO: re-enable once factory is ready
             //$this->_db = database_factory(CURMAN_APPPLATFORM);
             //$this->_db = database_factory('airtran');
 
+            // TO-DO: how should this be migrated?
             $GLOBALS['CURMAN'] = $CURMAN;
 
             $return = true;
@@ -367,6 +375,7 @@ function moodle_get_wwwroot($siteconfig = '') {
 
     if (!empty($siteconfig)) {
         moodle_load_config($siteconfig);
+        // TO-DO: how should this be migrated?
         $CURMAN = $GLOBALS['CURMAN'];
     }
 
@@ -395,6 +404,7 @@ function moodle_get_topcatid($siteconfig = '') {
 
     if (!empty($siteconfig)) {
         moodle_load_config($siteconfig);
+        // TO-DO: how should this be migrated?
         $CURMAN = $GLOBALS['CURMAN'];
     }
 
@@ -427,7 +437,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 
     /// Look for an existing link for this class.
     if (!$clsmdl = $DB->get_record(classmoodlecourse::TABLE, array('classid'=>$clsid))) {
-    /// Make sure the specified Moodle site config file exists.
+        /// Make sure the specified Moodle site config file exists.
         if (!empty($siteconfig) && !file_exists($siteconfig)) {
             return false;
         }
@@ -444,7 +454,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
             $classname  = $temp->templateclass;
 
             $obj        = new $classname();
-            $courseId   = $temp->location;//$obj->parseCourseId($temp->location);//print_object($courseid);die();
+            $courseId   = $temp->location;
             $moodlecourseid   = content_rollover($courseId, $cls->startdate);
 
             // Rename the fullname, shortname and idnumber of the restored course
@@ -482,11 +492,11 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 }
 
 function moodle_get_classes() {
-    global $CFG, $DB;
+    global $DB;
 
     $select = 'SELECT mc.* ';
     $from   = 'FROM {'.classmoodlecourse::TABLE.'} mc ';
-    $join   = 'LEFT JOIN '.$CFG->prefix.'course c ON c.id = mc.moodlecourseid ';
+    $join   = 'LEFT JOIN {course} c ON c.id = mc.moodlecourseid ';
     $where  = 'WHERE c.id IS NOT NULL ';
     $sql = $select.$from.$join.$where;
 
@@ -505,4 +515,3 @@ function moodle_get_course($clsid) {
 
     return $DB->get_field(classmoodlecourse::TABLE, 'moodlecourseid', 'classid', $clsid);
 }
-?>
