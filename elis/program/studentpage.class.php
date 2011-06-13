@@ -225,8 +225,6 @@ class studentpage extends associationpage {
      *      enrol the student
      */
     function do_update() { //action_update
-        global $CURMAN;
-
         $stuid = $this->required_param('association_id', PARAM_INT);
         $clsid = $this->required_param('id', PARAM_INT);
         $users = $this->required_param('users');
@@ -313,7 +311,6 @@ class studentpage extends associationpage {
      *
      */
     function do_updatemultiple() { // action_updatemultiple
-        global $CURMAN;
         $clsid = $this->required_param('id', PARAM_INT);
         $users = $this->optional_param('users', array(), PARAM_CLEAN);
 

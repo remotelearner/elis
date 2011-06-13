@@ -122,8 +122,11 @@ $string['confirm_delete_user'] = 'Are you sure you want to delete the user named
 $string['confirm_delete_userset'] = 'Are you sure you want to delete the user set named {$a->name}?';
 $string['confirm_delete_with_usersubsets'] = 'Are you sure you want to delete the user set named {$a->name}?  This user set has {$a->subclusters} subset(s).';
 $string['confirm_delete_with_usersubsets_and_descendants'] = 'Are you sure you want to delete the user set named {$a->name}?  This user set has $a->subclusters subset(s) and $a->descendants other descendant user sets.';
+$string['confirm_waitlist_remove'] = 'Remove {$a->num} users from the waitlist';
+$string['confirm_waitlist_overenrol'] = 'Over enrol {$a->num} users into the class';
 $string['corequisites'] = 'Corequisite';
 $string['cost'] = 'Cost';
+$string['country'] = 'Country';
 $string['course'] = 'Course';
 $string['courses'] = 'Courses';
 $string['courseform:completion_grade'] = 'Completion grade';
@@ -251,6 +254,8 @@ $string['error_n_overenrol'] = 'The over enrol capability is required for this';
 $string['error_not_timeformat'] = 'time not in proper format';
 $string['error_not_durrationformat'] = 'durration not in proper format';
 $string['error_not_using_elis_enrolment'] = 'The associated Moodle course is not using the ELIS enrolment plugin';
+$string['error_waitlist_overenrol'] = 'Error over enrolling.';
+$string['error_waitlist_remove'] = 'Error removing users from waitlist.';
 $string['errorroleassign'] = 'Failed to assign role to Moodle course.';
 $string['errorsynchronizeuser'] = 'Could not create an associated Moodle user.';
 $string['existing_course_corequisites'] = 'Existing Course Corequisites';
@@ -272,6 +277,7 @@ $string['grade_element'] = 'Grade Element';
 $string['health_check_link'] = 'The <a href="{$a}/curriculum/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
 
 $string['id'] = 'ID';
+$string['idnumber'] = 'ID Number';
 $string['idnumber_already_used'] = 'ID Number is already in use';
 $string['id_same_as_user'] = 'Same as username';
 $string['inactive'] = 'Inactive';
@@ -298,8 +304,10 @@ Please visit {$a->wwwroot}/course/enrol.php?id={$a->crs->id} to complete your en
 $string['moodleenrol_subj'] = 'Ready to enrol in {$a->class->idnumber}.';
 
 $string['n_completed'] = 'Not Completed';
+$string['name'] = 'Name';
 $string['no_completion_elements'] = 'There are no completion elements defined.';
 $string['no_items_matching'] = 'No items matching ';
+$string['no_items_selected'] = 'No items selected';
 $string['no_moodlecourse'] = 'No Moodle courses on this site';
 $string['no_users_matching'] = 'No users matching ';
 $string['none'] = 'None';
@@ -375,7 +383,6 @@ $string['save_enrolment_changes'] = 'Save Changes';
 $string['search'] = 'Search';
 $string['show_all_users'] = 'Show All Users';
 $string['showinactive'] = 'Show inactive';
-
 $string['student_credits'] = 'Credits';
 $string['student_deleteconfirm'] = 'Are you sure you want to unenrol the student name: {$a->name} ?<br />'.
                                    'NOTE: This will delete all records for this student in this class and will unenrol them from any connected Moodle class!';
@@ -387,6 +394,8 @@ $string['student_locked'] = 'Locked';
 $string['student_name'] = 'Student Name';
 $string['student_name_1'] = 'Name';
 $string['student_status'] = 'Status';
+$string['success_waitlist_overenrol'] = 'Successfully over enrolled.';
+$string['success_waitlist_remove'] = 'Successfully removed from waitlist.';
 
 $string['tag_name'] = 'Name';
 $string['tags'] = 'Tags';
@@ -434,6 +443,7 @@ $string['update_assignment'] = 'Update Assignment';
 $string['update_enrolment'] = 'Update Enrollment';
 $string['update_grade'] = 'Update Grade';
 $string['user'] = 'User';
+$string['user_language'] = 'Language';
 $string['user_waitlisted'] = 'user added to waitlist';
 $string['user_waitlisted_msg'] = 'user with idnumber {$a->user} has been added to the waitlist for class {$a->pmclass}';
 $string['users'] = 'Users';
