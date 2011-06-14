@@ -689,7 +689,7 @@ class pmclass extends data_object_with_custom_fields {
             mtrace("Triggering class_notcompleted event.\n");
             events_trigger('class_notcompleted', $student);
         }
-        rs_close($rs);
+        //rs_close($rs);
         return true;
     }
 

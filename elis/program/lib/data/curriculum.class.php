@@ -634,7 +634,7 @@ class curriculum extends data_object_with_custom_fields {
         if (!$isnew) {
             // If this setting is changed, we need to update the existing curriclum expiration values (ELIS-1172)
             // TO-DO: enable this when curriculumassignment is done
-            if ($rs = $this->_db->get_recordset_select(curriculumstudent::TABLE, "timeexpired != 0 AND curriculumid = {$this->id}", '', 'id, userid')) {
+            if ($rs = $this->_db->get_recordset_select(curriculumstudent::TABLE, "timeexpired != 0 AND curriculumid = {$this->id}", null, 'id, userid')) {
                 $timenow = time();
 
                 foreach ($rs as $rec) {
@@ -646,7 +646,7 @@ class curriculum extends data_object_with_custom_fields {
                     update_record(curriculumstudent::TABLE, $update);
                  }
 
-                rs_close($rs);
+                //rs_close($rs);
             }
         }
 
