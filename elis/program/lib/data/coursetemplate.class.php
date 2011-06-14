@@ -24,7 +24,7 @@
  *
  */
 
-require_once elis::lib('data/data_object_with_custom_fields.class.php');
+require_once elis::lib('data/data_object.class.php');
 
 class coursetemplate extends elis_data_object {
     const TABLE = 'crlm_coursetemplate';

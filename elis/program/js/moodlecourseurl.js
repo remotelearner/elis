@@ -1,4 +1,3 @@
-<?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
@@ -24,36 +23,27 @@
  *
  */
 
-require_once('lib/setup.php');
-require_once elispm::lib('moodlecourseurl.class.php');
+function courseSelect(elmid, coursename){
+    var element = document.getElementById(elmid);
 
-/*
-require_once("config.php");                                         // ok
-require_once CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php'; // missing
-*/
+    var locationLabel = window.opener.document.getElementById('id_locationlabel');
+    locationLabel.value = coursename;
 
-$class = required_param('class', PARAM_CLEAN);
-
-if ($CFG->forcelogin) {
-    require_login();
+    var location = window.opener.document.getElementById('id_location');
+    location.value = element.id;
 }
 
-if (!$site = get_site()) {
-    print_error('Site isn\'t defined!');
-}
+function selectedCourse(elmid, status) {
+    if (document.getElementById(elmid)) {
+        var element = document.getElementById(elmid);
 
-if (!empty($class)) {
-    $templatetype = new $class();
-
-    switch ($class) {
-        case 'moodlecourseurl':
-            $category = optional_param('category', 0, PARAM_INT);
-            $selected = optional_param('selected', 0, PARAM_INT);
-            $templatetype->displayPage($category, $selected);
-            break;
-        case 'moodlebackupfile':
-            // not implemented yet
-        default:
-            break;
+        switch (status) {
+            case "old":
+                element.className = 'oldselect';
+                break;
+            case "new":
+                element.className = 'newselect';
+                break;
+        }
     }
 }
