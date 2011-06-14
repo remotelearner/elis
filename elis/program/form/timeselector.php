@@ -239,7 +239,7 @@ class cm_time_selector extends MoodleQuickForm_group {
         // 2 is the index where the checkbox is located
         if($this->isFrozen() && $this->_options['optional'] && $this->_elements[2]->getChecked()){
             $this->_elements = array();
-            $this->_elements[] =& MoodleQuickForm::createElement('static', 'disabled', '', get_string('disabled', 'form'));
+            $this->_elements[] =& MoodleQuickForm::createElement('static', 'disabled', '', get_string('disabled', 'filters'));
         } else if($this->isFrozen() && isset($this->_elements[2])) {
             // Remove the frozen checkbox when frozen
             unset($this->_elements[2]);
