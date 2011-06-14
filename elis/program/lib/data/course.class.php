@@ -90,6 +90,10 @@ class course extends data_object_with_custom_fields {
 
     private $location;
     private $templateclass;
+    private $form_url = null;
+
+    var $courseid;
+    var $_dbloaded;
 
     static $delete_is_complex = true;
 
@@ -155,7 +159,6 @@ class course extends data_object_with_custom_fields {
         $this->form_url = $url;
     }
 
-    /*
     public function create_edit_form($formid='', $rows=2, $cols=40) {
         $configdata = array();
         $configdata['formid'] = $formid;
@@ -172,7 +175,7 @@ class course extends data_object_with_custom_fields {
 
         if (!empty($this->id)) {
             $template = $this->coursetemplate->current();
-            $course = $this->_db->get_record('course', 'id', $template->location);
+            $course = $this->_db->get_record('course', array('id'=>$template->location));
 
             if (!empty($course)) {
                 $this->locationlabel = $course->fullname . ' ' . $course->shortname;
@@ -183,7 +186,6 @@ class course extends data_object_with_custom_fields {
 
         return $crsForm;
     }
-    */
 
 
     /**
@@ -394,7 +396,7 @@ class course extends data_object_with_custom_fields {
             foreach ($curriculums as $curr) {
               $curcrsrecord['curriculumid'] = $curr;
               $newcurcrs = new curriculumcourse($curcrsrecord);
-              $status = $newcurcrs->data_insert_record();
+              $status = $newcurcrs->save();
               if ($status !== true) {
                   if (!empty($status->message)) {
                       //$output .= cm_error('Record not created. Reason: '.$status->message);
@@ -764,7 +766,7 @@ class course extends data_object_with_custom_fields {
             $clone->idnumber = $clone->idnumber . ' - ' . $cluster->name;
         }
         $clone = new course(addslashes_recursive($clone));
-        if (!$clone->add()) {
+        if (!$clone->save()) {
             $objs['errors'][] = get_string('failclustcpycurrcrs', 'elis_program', $this);
             return $objs;
         }
@@ -787,7 +789,7 @@ class course extends data_object_with_custom_fields {
         $template = new coursetemplate($template);
         unset($template->id);
         $template->courseid = $clone->id;
-        $template->add();
+        $template->save();
 
         // copy the classes
         if (!empty($options['classes'])) {

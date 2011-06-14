@@ -39,7 +39,7 @@ class coursecurriculumbaseform extends cmform {
     );
 
     public function body_definition() {
-        error('Abstract form_definition() method in class '.get_class($this).' must be overriden, please fix the code.');
+        print_error('Abstract form_definition() method in class '.get_class($this).' must be overriden, please fix the code.');
     }
 
     public function definition() {
@@ -257,4 +257,3 @@ class corequisiteform extends cmform {
         $mform->addElement('cancel', 'exit', get_string('exit', 'elis_program'));
     }
 }
-

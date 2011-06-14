@@ -249,7 +249,7 @@ class coursepage extends managementpage {
     }
 
     function get_completion_page($crsid) {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         $output = '';
 
@@ -310,8 +310,8 @@ class coursepage extends managementpage {
         $output .= '<br clear="all" />' . "\n";
         $output .= '<div align="center">';
         $options = array('s' => 'crs', 'section' => 'curr', 'action' => 'celem', 'id' => $crs->id);
-        $output .= print_single_button('index.php', $options,
-                                       'Add Element', 'get', '_self', true, 'Add New Element');
+        $button = new single_button(new moodle_url('index.php', $options), 'Add Element', 'get', array('disabled'=>false, 'title'=>'Add Element', 'id'=>''));
+        echo $OUTPUT->render($button);
         $output .= '</div>';
 
         return $output;

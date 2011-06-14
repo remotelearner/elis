@@ -31,21 +31,6 @@ require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/student.class.php');
 require_once elispm::file('form/curriculumcourseform.class.php');
 
-/*
-require_once(CURMAN_DIRLOCATION . '/lib/datarecord.class.php');             // ok
-require_once(CURMAN_DIRLOCATION . '/lib/course.class.php');                 // ok
-require_once(CURMAN_DIRLOCATION . '/lib/curriculum.class.php');             // ok
-require_once(CURMAN_DIRLOCATION . '/lib/cmclass.class.php');                // ok
-require_once(CURMAN_DIRLOCATION . '/lib/student.class.php');                // ok
-require_once(CURMAN_DIRLOCATION . '/form/coursecurriculumform.class.php');  // ok
-*/
-
-/*
-define ('CURCRSTABLE',    'crlm_curriculum_course');
-define ('CRSPREREQTABLE', 'crlm_course_prerequisite');
-define ('CRSCOREQTABLE',  'crlm_course_corequisite');
-*/
-
 class curriculumcourse extends data_object_with_custom_fields {
     const TABLE = 'crlm_curriculum_course';
 
@@ -170,7 +155,6 @@ class curriculumcourse extends data_object_with_custom_fields {
      *
      * @return string The form HTML, without the form.
      */
-    /*
     public function create_edit_form($formid='', $extraclass='', $rows=2, $cols=40) {
         $config_data = array();
         $config_data['formid'] = $formid;
@@ -190,7 +174,6 @@ class curriculumcourse extends data_object_with_custom_fields {
 
         return new coursecurriculumform($this->form_url, $config_data);
     }
-    */
 
     /**
      * Return the HTML to edit a specific curriculum course.
@@ -385,20 +368,6 @@ class curriculumcourse extends data_object_with_custom_fields {
     //                                                                 //
     /////////////////////////////////////////////////////////////////////
 
-    /**
-     * Get a list of prerequisite courses for the current curriculum.
-     *
-     * @param none
-     * @return int The number of classes currently defined for this curriculum.
-     */
-    function count_courses() {
-        if (!$this->_dbloaded || !$this->id) {
-            return 0;
-        }
-
-        //return $this->_db->count_records('curriculum_');
-    }
-
     function delete_all_prerequisites() {
         if (!$this->id || !$this->_dbloaded) {
             return false;
@@ -460,7 +429,7 @@ class curriculumcourse extends data_object_with_custom_fields {
 
             $currprereq = new curriculumcourse($data);
             if(!$currprereq->is_recorded()){
-                $currprereq->add();
+                $currprereq->save();
             }
         }
 
@@ -577,7 +546,7 @@ class curriculumcourse extends data_object_with_custom_fields {
 
             $currprereq = new curriculumcourse($data);
             if(!$currprereq->is_recorded()){
-                $currprereq->add();
+                $currprereq->save();
             }
         }
 
@@ -697,8 +666,7 @@ class curriculumcourse extends data_object_with_custom_fields {
     function is_course_required() {
         $required = false;
         $result = $this->_db->get_field(curriculumcourse::TABLE, 'required',
-                                        'curriculumid', $this->curriculumid,
-                                        'courseid', $this->courseid);
+                                        array('curriculumid'=>$this->curriculumid, 'courseid'=>$this->courseid));
         if ($result) {
             if (1 == $result) {
                 $required = true;
@@ -718,7 +686,7 @@ class curriculumcourse extends data_object_with_custom_fields {
     public function save() {
         parent::save();
 
-        // add/update crap goes here
+        // TO-DO: add/update crap goes here
 
         // TO-DO: what do we do about tables that aren't even defined as a variable?
         events_trigger('crlm_curriculum_course_associated', $this);

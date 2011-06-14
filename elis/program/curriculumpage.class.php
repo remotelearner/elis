@@ -315,7 +315,7 @@ class curriculumforcoursepage extends curriculumpage {
         if($data) {
             $obj = new $this->data_class();
             $obj->set_from_data($data);
-            $obj->add();
+            $obj->save();
 
             $course = new course($data->courseid);
             $course->add_course_to_curricula(array($obj->id));

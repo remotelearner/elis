@@ -26,19 +26,11 @@
 
 require_once elispm::lib('associationpage.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
+require_once elispm::lib('data/curriculumstudent.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('curriculumpage.class.php');
 require_once elispm::file('coursepage.class.php');
 require_once elispm::file('form/curriculumcourseform.class.php');
-
-/*
-require_once (CURMAN_DIRLOCATION . '/lib/associationpage.class.php');       // ok
-require_once (CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php');      // ok
-require_once (CURMAN_DIRLOCATION . '/lib/curriculumstudent.class.php');     // missing
-require_once (CURMAN_DIRLOCATION . '/curriculumpage.class.php');            // ok
-require_once (CURMAN_DIRLOCATION . '/coursepage.class.php');                // ok
-require_once (CURMAN_DIRLOCATION . '/form/coursecurriculumform.class.php'); // ok
-*/
 
 class curriculumcoursebasepage extends associationpage {
     var $data_class = 'curriculumcourse';
@@ -295,6 +287,8 @@ class coursecurriculumpage extends curriculumcoursebasepage {
     }
 
     function display_default() {
+        global $OUTPUT;
+
         $id = $this->required_param('id', PARAM_INT);
 
         $sort         = optional_param('sort', 'name', PARAM_ALPHA);
@@ -333,7 +327,9 @@ class coursecurriculumpage extends curriculumcoursebasepage {
 
         echo '<div align="center">';
         $options = array_merge(array('s' => 'cfc', 'id' => $id));
-        echo print_single_button('index.php', $options, get_string('makecurcourse', 'elis_program'), 'get', '_self', true, get_string('makecurcourse', 'elis_program'));
+        $button = new single_button(new moodle_url('index.php', $options), get_string('makecurcourse','elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('makecurcourse','elis_program'), 'id'=>''));
+        echo $OUTPUT->render($button);
+
         echo '</div>';
     }
 
