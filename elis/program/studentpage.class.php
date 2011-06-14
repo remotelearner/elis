@@ -458,16 +458,27 @@ class studentpage extends associationpage {
         $cls = new pmclass($clsid);
 
         $columns = array(
-            'idnumber'         => get_string('student_idnumber', self::LANG_FILE),
-            'name'             => get_string('student_name_1', self::LANG_FILE),
-            'enrolmenttime'    => get_string('enrolment_time', self::LANG_FILE),
-            'completetime'     => get_string('completion_time', self::LANG_FILE),
-            'completestatusid' => get_string('student_status', self::LANG_FILE),
-            'grade'            => get_string('student_grade', self::LANG_FILE),
-            'credits'          => get_string('student_credits', self::LANG_FILE),
-            'locked'           => get_string('student_locked', self::LANG_FILE),
-            'buttons'          => '',
+            'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE)),
+            'name'             => array('header' => get_string('student_name_1', self::LANG_FILE)),
+            'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE)),
+            'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE)),
+            'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE)),
+            'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
+            'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
+            'locked'           => array('header' => get_string('student_locked', self::LANG_FILE)),
+            'buttons'          => array('header' => ''), // TBD , ?
             );
+
+        // TBD
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'defaultsortcolumn';
+            $columns[$sort]['sortable'] = $dir;
+        }
 
         $stus    = student_get_listing($clsid, $sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha);
         $numstus = student_count_records($clsid, $namesearch, $alpha);

@@ -101,20 +101,19 @@ class waitlist extends elis_data_object {
      * @param <type> $perpage
      * @param <type> $namesearch
      * @param <type> $alpha
+     * @uses $DB
      * @return <type>
      */
     public static function get_students($clsid = 0, $sort = 'timecreated', $dir = 'ASC',
                                         $startrec = 0, $perpage = 0, $namesearch = '',
                                         $alpha = '') {
+        global $DB;
         // TBD: this method should be replaced by association w/ filter
-        if (empty($this->_db)) {
-            return array();
-        }
 
         $params = array();
-        $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like('name', ':search_fullname');
-        $LASTNAME_LIKE = $this->_db->sql_like('usr.lastname', ':search_lastname');
+        $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':search_fullname');
+        $LASTNAME_LIKE = $DB->sql_like('usr.lastname', ':search_lastname');
 
         $select   = 'SELECT watlst.id, usr.id as uid, '. $FULLNAME .' as name, usr.idnumber, usr.country, usr.language, watlst.timecreated ';
 
@@ -131,7 +130,7 @@ class waitlist extends elis_data_object {
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : ' ') . LASTNAME_LIKE;
+            $where .= (!empty($where) ? ' AND ' : ' ') . $LASTNAME_LIKE;
             $params['search_lastname'] = "{$alpha}%";
         }
 
@@ -143,8 +142,8 @@ class waitlist extends elis_data_object {
             $sort = ' ORDER BY '.$sort .' '. $dir.' ';
         }
 
-        $sql = $select.$tables.$join.$on.$where.$sort.$limit;
-        return $this->_db->get_records_sql($sql, $params, $startrec, $perpage);
+        $sql = $select.$tables.$join.$on.$where.$sort;
+        return $DB->get_records_sql($sql, $params, $startrec, $perpage);
     }
 
     public function check_autoenrol_after_course_completion($enrolment) {
@@ -170,21 +169,18 @@ class waitlist extends elis_data_object {
      * @param char $alpha
      * @return array
      */
-    public function count_records($clsid, $namesearch = '', $alpha = '') {
+    public static function count_records($clsid, $namesearch = '', $alpha = '') {
+        global $DB;
         // TBD: this method should be replaced by association w/ filter
-        if(empty($clsid)) {
-            if(!empty($this->classid)) {
-                $clsid = $this->classid;
-            } else {
-                return array();
-            }
+        if(empty($clsid)) { // TBD
+            return array();
         }
 
         $select = '';
         $params = array();
-        $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':search_fullname');
-        $LASTNAME_LIKE = $this->_db->sql_like('usr.lastname', ':search_lastname');
+        $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':search_fullname');
+        $LASTNAME_LIKE = $DB->sql_like('usr.lastname', ':search_lastname');
 
         $select = 'SELECT COUNT(watlist.id) ';
         $tables = 'FROM {'. waitlist::TABLE .'} watlist ';
@@ -200,7 +196,7 @@ class waitlist extends elis_data_object {
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : ' ') . LASTNAME_LIKE;
+            $where .= (!empty($where) ? ' AND ' : ' ') . $LASTNAME_LIKE;
             $params['search_lastname'] = "{$alpha}%";
         }
 
@@ -209,7 +205,7 @@ class waitlist extends elis_data_object {
         }
 
         $sql = $select . $tables . $join . $on . $where;
-        return $this->_db->count_records_sql($sql, $params);
+        return $DB->count_records_sql($sql, $params);
     }
 
     /**
@@ -293,13 +289,13 @@ class waitlist extends elis_data_object {
     }
 
     public static function get_next($clsid) {
-
+        global $DB;
         $select = 'SELECT * ';
         $from   = 'FROM {'. waitlist::TABLE .'} wlst ';
         $where  = 'WHERE wlst.classid = ? ';
         $order  = 'ORDER BY wlst.position ASC LIMIT 0,1';
         $sql = $select . $from . $where . $order;
-        $nextStudent = $this->_db->get_records_sql($sql, array($clsid));
+        $nextStudent = $DB->get_records_sql($sql, array($clsid));
 
         if(!empty($nextStudent)) {
             $nextStudent = current($nextStudent);
@@ -310,12 +306,14 @@ class waitlist extends elis_data_object {
     }
 
     public static function delete_for_user($id) {
-    	$status = $this->_db->delete_records(waitlist::TABLE, array('userid' => $id));
+        global $DB;
+        $status = $DB->delete_records(waitlist::TABLE, array('userid' => $id));
     	return $status;
     }
 
     public static function delete_for_class($id) {
-    	$status = $this->_db->delete_records(waitlist::TABLE, array('classid' => $id));
+        global $DB;
+        $status = $DB->delete_records(waitlist::TABLE, array('classid' => $id));
     	return $status;
     }
 }

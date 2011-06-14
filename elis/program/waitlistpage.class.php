@@ -24,28 +24,25 @@
  *
  */
 
-//require_once (CURMAN_DIRLOCATION . '/lib/selectionpage.class.php');
-require_once elispm::lib('page.class.php'); // TBD
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/student.class.php');
-//require_once (CURMAN_DIRLOCATION . '/cmclasspage.class.php');
-
 require_once elispm::lib('data/waitlist.class.php');
-//require_once (CURMAN_DIRLOCATION . '/form/waitlistform.class.php');
+require_once elispm::lib('selectionpage.class.php');
+require_once elispm::file('pmclasspage.class.php');
+require_once elispm::file('form/waitlistform.class.php');
 
 class waitlistpage extends selectionpage {
     const LANG_FILE = 'elis_program';
 
     var $data_class = 'waitlist';
-    var $pagename = 'wtg';
-    var $tab_page = 'cmclasspage';
-
-    var $section = 'curr';
+    var $pagename   = 'wtg';
+    var $tab_page   = 'pmclasspage'; // TBD: 'cmclasspage'
+    var $section    = 'curr';        // TBD: 'curr'
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        $cmclasspage = new cmclasspage(array('id' => $id));
-        return $cmclasspage->can_do('edit');
+        $pmclasspage = new pmclasspage(array('id' => $id));
+        return $pmclasspage->can_do('edit');
     }
 
     protected function get_selection_form() {
@@ -53,24 +50,23 @@ class waitlistpage extends selectionpage {
     }
 
     function get_selection_filter() {
-        $alpha          = $this->optional_param('alpha', '', PARAM_ALPHA);
-        $namesearch     = trim($this->optional_param('search', ''));
+        $alpha      = $this->optional_param('alpha', '', PARAM_ALPHA);
+        $namesearch = trim($this->optional_param('search', '', PARAM_CLEAN));
         // FIXME:
-        return array('alpha' => $alpha,
-                     'namesearch' => $namesearch);
+        return array('alpha' => $alpha, 'namesearch' => $namesearch);
     }
 
     function print_selection_filter($filter) {
-        pmalphabox($this->url); // TBD
-        pmsearchbox($this->url); // TBD
+        pmalphabox(new moodle_url($this->_get_page_url())); // TBD
+        pmsearchbox($this->get_basepage()); // TBD
     }
 
     function get_records($filter) {
-        $sort           = $this->optional_param('sort', 'timecreated');
-        $dir            = $this->optional_param('dir', 'ASC');
-        $page           = $this->optional_param('page', 0);
-        $perpage        = $this->optional_param('perpage', 30);        // how many per page
-        $id             = $this->required_param('id', PARAM_INT);
+        $sort    = $this->optional_param('sort', 'timecreated', PARAM_CLEAN);
+        $dir     = $this->optional_param('dir', 'ASC', PARAM_CLEAN);
+        $page    = $this->optional_param('page', 0, PARAM_INT);
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT); // how many per page
+        $id      = $this->required_param('id', PARAM_INT);
 
         $items = waitlist::get_students($id, $sort, $dir, $page, $perpage, $filter['namesearch'], $filter['alpha']);
         $numitems = waitlist::count_records($id, $filter['namesearch'], $filter['alpha']);
@@ -198,20 +194,30 @@ class waitlist_table extends selection_table {
 
     function __construct(&$items, $url) {
         $columns = array(
-            '_selection'       => '',
-            'idnumber'      => get_string('idnumber',        self::LANG_FILE),
-            'name'          => get_string('name',            self::LANG_FILE),
-            'country'       => get_string('country',         self::LANG_FILE),
-            'language'      => get_string('user_language',   self::LANG_FILE),
-            'timecreated'   => get_string('registered_date', self::LANG_FILE),
+            '_selection'  => array('header' => ''), // TBD
+            'idnumber'    => array('header' => get_string('idnumber',        self::LANG_FILE)),
+            'name'        => array('header' => get_string('name',            self::LANG_FILE)),
+            'country'     => array('header' => get_string('country',         self::LANG_FILE)),
+            'language'    => array('header' => get_string('user_language',   self::LANG_FILE)),
+            'timecreated' => array('header' => get_string('registered_date', self::LANG_FILE),
+                                   'display_function', array(&$this, 'get_item_display_timecreated')), // TBD , ?
         );
         $formatters = array();
-        $formatters['name'] = $formatters['idnumber'] = new recordlinkformatter(new usermanagementpage(), 'uid');
+        // TBD: class recordlinkformatter ???
+        //$formatters['name'] = $formatters['idnumber'] = new recordlinkformatter(new usermanagementpage(), 'uid');
         parent::__construct($items, $columns, $url, $formatters);
     }
 
     function get_item_display_timecreated($column, $item) {
         return $this->get_date_item_display($column, $item);
+    }
+
+    /** TBD: get error
+     *  "illegal offset type in /elis/core/lib/table.class.php on line 118"
+     *  if this method (or parent) returns true!
+     */
+    protected function is_sortable_default() {
+        return false;
     }
 }
 

@@ -38,6 +38,13 @@ class instructor extends elis_data_object {
     const TABLE = INSTABLE;
     const LANG_FILE = 'elis_program';
 
+    static $associations = array(
+        'users'   => array('class' => 'user',
+                           'idfield' => 'userid'),
+        'pmclass' => array('class' => 'pmclass',
+                           'idfield' => 'classid')
+    );
+
 /*
     var $id;           // INT - The data id if in the database.
     var $classid;      // INT - The class ID.
@@ -469,7 +476,7 @@ class instructor extends elis_data_object {
             $sort = 'ORDER BY '.$sort .' '. $dir.' ';
         }
 
-        $sql = $select.$tables.$join.$on.$where.$sort.$limit;
+        $sql = $select.$tables.$join.$on.$where.$sort;
         return $this->_db->get_records_sql($sql, $params, $startrec, $perpage);
     }
 
@@ -609,7 +616,7 @@ function instructor_get_listing($classid, $sort = 'name', $dir = 'ASC', $startre
         $sort = 'ORDER BY '.$sort .' '. $dir.' ';
     }
 
-    $sql = $select.$tables.$join.$on.$where.$sort.$limit;
+    $sql = $select.$tables.$join.$on.$where.$sort;
 //print_object($sql);
     return $$DB->get_records_sql($sql, $params, $startrec, $perpage);
 }

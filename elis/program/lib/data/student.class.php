@@ -802,10 +802,8 @@ class student extends elis_data_object {
 
         if (!empty($newarr)) { // TBD: $newarr or $table
             if(empty($this->id)) {
-                // ***TBD***
-                //$PAGE->requires->js_module($CFG->wwwroot .'/elis/program/js/classform.js');
+                $PAGE->requires->js('/elis/program/js/classform.js');
                 echo '<span class="checkbox selectall">';
-
                 echo '<input type="checkbox" onclick="class_enrol_set_all_selected()"
                              id="class_enrol_select_all" name="class_enrol_select_all"/>';
                 echo '<label for="class_enrol_select_all">' . get_string('enrol_select_all', self::LANG_FILE) . '</label>';
@@ -2575,16 +2573,6 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
             $sort = $FULLNAME;
         }
         $sort = 'ORDER BY '.$sort .' '. $dir.' ';
-    }
-
-    if (!empty($perpage)) {
-        if ($DB->get_dbfamily() == 'postgres') {
-            $limit = 'LIMIT ' . $perpage . ' OFFSET ' . $startrec;
-        } else {
-            $limit = 'LIMIT '.$startrec.', '.$perpage;
-        }
-    } else {
-        $limit = '';
     }
 
     $sql = $select.$tables.$join.$on.$where.$sort;

@@ -33,7 +33,8 @@ $string['add_curriculum'] = 'Add Program';
 $string['add_grade'] = 'Add Grade';
 $string['add_pmclass'] = 'Add Class Instance';
 $string['add_prereq'] = 'Add prerequisites';
-$string['add_prereq_to_curriculum'] = 'Add prerequisites to program';
+$string['add_prereq_to_curriculum'] = 'Add prerequisites to curriculum';
+$string['add_to_waitinglist'] = 'add {$a->name}({$a->username}) to wait list?';
 $string['add_track'] = 'Add Track';
 $string['add_user'] = 'Add user';
 $string['add_userset'] = 'Add User Set';
@@ -47,7 +48,10 @@ $string['address'] = 'Address';
 $string['address2'] = 'Address 2';
 $string['admin_dashboard'] = 'Administrator Dashboard';
 $string['all_items_assigned'] = 'All available items assigned.';
-$string['assign'] = 'assign';
+$string['assign'] = 'Assign';
+$string['assign_selected'] = 'Assign Selected';
+$string['assigned'] = 'Assigned';
+$string['assigntime'] = 'Assigned Time';
 $string['autocreate'] = 'Auto Create Moodle course from template';
 $string['available_course_corequisites'] = 'Available Course Corequisites';
 $string['available_course_prerequisites'] = 'Available Course Prerequisites';
@@ -265,6 +269,7 @@ $string['failclustcpycurrcrs'] = 'Failed to copy course description {$a->name}';
 $string['failed'] = 'Failed';
 $string['fax'] = 'Fax';
 $string['female'] = 'Female';
+$string['form_error'] = 'Selection page form error - expecting array!';
 $string['frequency'] = 'Frequency';
 
 $string['health_check_link'] = 'The <a href="{$a}/elis/program/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
@@ -325,7 +330,8 @@ $string['num_curricula_assigned'] = '{$a} programs assigned';
 $string['num_curricula_unassigned'] = '{$a} programs unassigned';
 $string['num_curriculum_found'] = '{$a} programs found';
 $string['num_max_students'] = 'Max # of Students';
-$string['num_pmclass_found'] = '{$a} class instance(s) found';
+$string['num_not_shown'] = '{$a->num} not shown';
+$string['num_pmclass_found'] = '{$a} class(es) found';
 $string['num_students_failed'] = 'number of students failed';
 $string['num_students_not_complete'] = 'number of students not complete';
 $string['num_students_passed'] = 'number of students passed';
@@ -334,9 +340,11 @@ $string['num_user_found'] = '{$a} user(s) found';
 $string['num_users_assigned'] = '{$a} users assigned';
 $string['num_users_unassigned'] = '{$a} users unassigned';
 $string['num_userset_found'] = '{$a} user set(s) found';
+$string['numselected'] = '{$a->num} currently selected';
 
 $string['o_active'] = 'Only active';
 $string['o_inactive'] = 'Only inactive';
+$string['over_enrol'] = 'Over Enrol'; // TBD: Enroll
 
 $string['passed'] = 'Passed';
 $string['phone2'] = 'Phone 2';
@@ -381,6 +389,7 @@ $string['required_field'] = 'Error: {$a} is a required field';
 
 $string['save_enrolment_changes'] = 'Save Changes';
 $string['search'] = 'Search';
+$string['selectedonly'] = 'Show selected items only';
 $string['show_all_users'] = 'Show All Users';
 $string['showinactive'] = 'Show inactive';
 $string['student_credits'] = 'Credits';
@@ -439,6 +448,7 @@ $string['track_startdate'] = 'Start Date';
 $string['transfercredits'] = 'Transfer credits';
 
 $string['unassign'] = 'unassign';
+$string['unassigned'] = 'Unassigned';
 $string['unenrol'] = 'Unenrol'; // TBD: Unenroll ?
 $string['unsatisfiedprereqs'] = 'One or more prerequisites are not completed yet.';
 $string['update_enrolment'] = 'Update Enrollment';
@@ -467,6 +477,7 @@ $string['userset_userassociation'] = 'User association';
 $string['usersubsets'] = 'User subsets';
 
 $string['waiting'] = 'Waiting';
+$string['waitinglistform_title'] = 'Class is full';
 $string['waitlist'] = 'waitlist';
 $string['waitlistenrol'] = 'Auto enrol from waitlist';
 

@@ -24,6 +24,61 @@
  *
  */
 
+define('USE_OLD_CHECKBOX', 1);
+
+/** Display an standard html checkbox with an optional label
+ * NOTE: this version is from Moodle 1.9x it *SUPPORTS* script tags for onclick
+ *       (unlike the version in /lib/deprecatedlib.php)
+ *
+ * @param string  $name    The name of the checkbox
+ * @param string  $value   The valus that the checkbox will pass when checked
+ * @param boolean $checked The flag to tell the checkbox initial state
+ * @param string  $label   The label to be showed near the checkbox
+ * @param string  $alt     The info to be inserted in the alt tag
+ */
+function _print_checkbox($name, $value, $checked = true, $label = '', $alt = '', $script = '', $return = false) {
+  if (defined('USE_OLD_CHECKBOX')) {
+    static $idcounter = 0;
+
+    if (!$name) {
+        $name = 'unnamed';
+    }
+
+    if ($alt) {
+        $alt = strip_tags($alt);
+    } else {
+        $alt = 'checkbox';
+    }
+
+    if ($checked) {
+        $strchecked = ' checked="checked"';
+    } else {
+        $strchecked = '';
+    }
+
+    $htmlid = 'auto-cb'.sprintf('%04d', ++$idcounter);
+    $output  = '<span class="checkbox '.$name."\">";
+    $output .= '<input name="'.$name.'" id="'.$htmlid.'" type="checkbox" value="'.$value.'" alt="'.$alt.'"'.$strchecked.' '.((!empty($script)) ? ' onclick="'.$script.'" ' : '').' />';
+    if(!empty($label)) {
+        $output .= ' <label for="'.$htmlid.'">'.$label.'</label>';
+    }
+    $output .= '</span>'."\n";
+
+    if (empty($return)) {
+        echo $output;
+    } else {
+        return $output;
+    }
+  } else {
+    $output = html_writer::checkbox($name, $value, $checked, $label, empty($script) ? null : array('onclick' => $script));
+    if (empty($return)) {
+        echo $output;
+    } else {
+        return $output;
+    }
+  }
+}
+
 /**
  * Function to get a parameter from _POST or _GET. If not present, will return
  * the value defined in the $default parameter, or false if not defined.
