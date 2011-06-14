@@ -109,7 +109,7 @@ class associationpage extends pm_page {
      * Prints the add form.
      * @param $parent_obj is the basic data object we are forming an association with.
      */
-    function print_add_form($parent_obj) {
+    function display_add($parent_obj) {
         $id = required_param('id', PARAM_INT);
         $target = $this->get_new_page(array('action' => 'savenew', 'id' => $id));
         $form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
@@ -228,7 +228,7 @@ class associationpage extends pm_page {
      * Generic handler for the delete action.  Prints the delete confirmation form.
      */
     function display_delete() {
-        $association_id = $this->required_param('association_id', PARAM_INT);
+        $association_id = required_param('association_id', PARAM_INT);
 
         if(empty($association_id)) {
             print_error('invalid_id');
@@ -244,8 +244,8 @@ class associationpage extends pm_page {
      * @param $obj Basic data object being associated with.
      */
     function print_delete_form($obj) {
-        $id = $this->required_param('id', PARAM_INT);
-        $a_id = $this->required_param('association_id', PARAM_INT);
+        $id = required_param('id', PARAM_INT);
+        $a_id = required_param('association_id', PARAM_INT);
 
         $url        = 'index.php';
 
@@ -256,34 +256,28 @@ class associationpage extends pm_page {
 
         $message    = get_string('confirm_delete_association', self::LANG_FILE, $a); // TBD: no param in lang string?
         $optionsyes = array('s' => $this->pagename, 'action' => 'confirm',
-                            'sesskey' => sesskey(),
                             'association_id' => $a_id, 'id' => $id, 'confirm' => md5($a_id));
-        $optionsno = array('s' => $this->pagename, 'id' => $id,
-                           'sesskey' => sesskey());
+        $optionsno = array('s' => $this->pagename, 'id' => $id);
 
         echo '<br />' . "\n";
         echo cm_delete_form($url, $message, $optionsyes, $optionsno);
     }
 
     /**
-     * Generic handler for the confirm (confirm delete) action.  Tries to
-     * delete the object and then renders the appropriate page.
+     * Generic handler for the confirm (confirm delete) action.  Tries to delete the object and then renders the appropriate page.
      */
     function do_delete() {
-        if (!$this->optional_param('confirm', 0, PARAM_INT)) {
-            return $this->display('delete');
+        $association_id = required_param('association_id', PARAM_INT);
+        $confirm = required_param('confirm', PARAM_ALPHANUM);
+
+        if (md5($association_id) != $confirm) {
+            echo cm_error('Invalid confirmation code!'); // TBD: language string
+        } else {
+            $obj = new $this->data_class($association_id);
+            $obj->delete();
         }
 
-        require_sesskey();
-
-        $association_id = $this->required_param('association_id', PARAM_INT);
-        $id = $this->required_param('id', PARAM_INT);
-
-        $obj = new $this->data_class($association_id);
-        $obj->delete();
-
-        $target_page = $this->get_new_page(array('id' => $id), true);
-        redirect($returnurl);
+        $target = $this->do_default();
     }
 
     /**

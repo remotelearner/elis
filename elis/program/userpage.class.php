@@ -110,7 +110,7 @@ class userpage extends managementpage {
 
             //array('tab_id' => 'studentcurriculumpage', 'page' => 'studentcurriculumpage', 'name' => get_string('curricula', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
             //array('tab_id' => 'userclusterpage', 'page' => 'userclusterpage', 'name' => get_string('clusters', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster.gif'),
-            array('tab_id' => 'usertrackpage', 'page' => 'usertrackpage', 'name' => get_string('tracks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track.gif'),
+            array('tab_id' => 'usertrackpage', 'page' => 'usertrackpage', 'name' => get_string('tracks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track'),
             //array('tab_id' => 'user_rolepage', 'page' => 'user_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
 
             array('tab_id' => 'delete', 'page' => 'userpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),

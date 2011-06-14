@@ -87,7 +87,7 @@ class track extends data_object_with_custom_fields {
         ),
         'curriculum' => array(
             'class' => 'curriculum',
-            'idfield' => 'trackid'
+            'idfield' => 'curid'
         )
     );
 
@@ -848,8 +848,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
 
     $select = 'SELECT trk.*, cur.name AS parcur, (SELECT COUNT(*) ' .
               'FROM {' . trackassignment::TABLE . '} '.
-              'WHERE trackid = :trkid ) as class ';
-    $params['trkid'] = 'trk.id';
+              "WHERE trackid = 'trk.id' ) as class ";
     $tables = 'FROM {' . track::TABLE . '} trk '.
               'JOIN {' .curriculum::TABLE . '} cur ON trk.curid = cur.id ';
     $join   = '';
@@ -900,7 +899,6 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
 
         $allowed_clusters = array();
 
-        /* TODO: when clusters are added
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
@@ -925,7 +923,6 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
                         )";
            $params['allowed_clusters'] = $allowed_clusters_list;
         }
-        */
     }
 
     if (!empty($where)) {

@@ -47,9 +47,6 @@ $string['address'] = 'Address';
 $string['address2'] = 'Address 2';
 $string['admin_dashboard'] = 'Administrator Dashboard';
 $string['all_items_assigned'] = 'All available items assigned.';
-$string['assign'] = 'Assign';
-$string['assign_selected'] = 'Assign Selected';
-$string['assigntime'] = 'Assigned Time';
 $string['autocreate'] = 'Auto Create Moodle course from template';
 $string['available_course_corequisites'] = 'Available Course Corequisites';
 $string['available_course_prerequisites'] = 'Available Course Prerequisites';
@@ -77,7 +74,6 @@ $string['breadcrumb_waitlistpage'] = 'Waiting List';
 $string['browse'] = 'Browse';
 $string['bulkedit_select_all'] = 'Select All';
 
-$string['choose'] = 'Choose...';
 $string['class'] = 'Class';
 $string['classreportlinks'] = 'Reports';
 $string['class_assigntrackhead'] = 'Assigned Tracks';
@@ -122,11 +118,8 @@ $string['confirm_delete_user'] = 'Are you sure you want to delete the user named
 $string['confirm_delete_userset'] = 'Are you sure you want to delete the user set named {$a->name}?';
 $string['confirm_delete_with_usersubsets'] = 'Are you sure you want to delete the user set named {$a->name}?  This user set has {$a->subclusters} subset(s).';
 $string['confirm_delete_with_usersubsets_and_descendants'] = 'Are you sure you want to delete the user set named {$a->name}?  This user set has $a->subclusters subset(s) and $a->descendants other descendant user sets.';
-$string['confirm_waitlist_remove'] = 'Remove {$a->num} users from the waitlist';
-$string['confirm_waitlist_overenrol'] = 'Over enrol {$a->num} users into the class';
 $string['corequisites'] = 'Corequisite';
 $string['cost'] = 'Cost';
-$string['country'] = 'Country';
 $string['course'] = 'Course';
 $string['courses'] = 'Courses';
 $string['courseform:completion_grade'] = 'Completion grade';
@@ -211,7 +204,6 @@ $string['curriculum_name'] = 'Name';
 $string['curriculum_reqcredits'] = ' Required Credits';
 $string['curriculum_shortdescription'] = 'Short description';
 
-$string['date_graded'] = 'Date Graded';
 $string['delete'] = 'Delete';
 $string['deleted_corequisite'] = 'Deleted <b>{$a}</b> corequisite';
 $string['deleted_corequisites'] = 'Deleted <b>{$a}</b> corequisites';
@@ -239,6 +231,7 @@ $string['elis_doc_class_link'] = '<strong>Documentation for ELIS</strong> &mdash
 pages of documentation for ELIS in our <a href="http://training.remote-learner.net/course/view.php?id=1090">ELIS Support Course</a>.
 You can access this course by logging in as a guest.  If you have problems
 accessing this course, please contact your sales representative.';
+$string['email'] = 'Email address';
 $string['email2'] = 'Email address 2';
 $string['enrol'] = 'Enrol'; // TBD: Enroll ?
 $string['enrol_select_all'] = 'Select All';
@@ -254,8 +247,6 @@ $string['error_n_overenrol'] = 'The over enrol capability is required for this';
 $string['error_not_timeformat'] = 'time not in proper format';
 $string['error_not_durrationformat'] = 'durration not in proper format';
 $string['error_not_using_elis_enrolment'] = 'The associated Moodle course is not using the ELIS enrolment plugin';
-$string['error_waitlist_overenrol'] = 'Error over enrolling.';
-$string['error_waitlist_remove'] = 'Error removing users from waitlist.';
 $string['errorroleassign'] = 'Failed to assign role to Moodle course.';
 $string['errorsynchronizeuser'] = 'Could not create an associated Moodle user.';
 $string['existing_course_corequisites'] = 'Existing Course Corequisites';
@@ -271,13 +262,9 @@ $string['fax'] = 'Fax';
 $string['female'] = 'Female';
 $string['frequency'] = 'Frequency';
 
-$string['grade'] = 'Grade';
-$string['grade_element'] = 'Grade Element';
-
 $string['health_check_link'] = 'The <a href="{$a}/curriculum/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
 
 $string['id'] = 'ID';
-$string['idnumber'] = 'ID Number';
 $string['idnumber_already_used'] = 'ID Number is already in use';
 $string['id_same_as_user'] = 'Same as username';
 $string['inactive'] = 'Inactive';
@@ -304,12 +291,9 @@ Please visit {$a->wwwroot}/course/enrol.php?id={$a->crs->id} to complete your en
 $string['moodleenrol_subj'] = 'Ready to enrol in {$a->class->idnumber}.';
 
 $string['n_completed'] = 'Not Completed';
-$string['name'] = 'Name';
 $string['no_completion_elements'] = 'There are no completion elements defined.';
 $string['no_items_matching'] = 'No items matching ';
-$string['no_items_selected'] = 'No items selected';
 $string['no_moodlecourse'] = 'No Moodle courses on this site';
-$string['no_users_matching'] = 'No users matching ';
 $string['none'] = 'None';
 $string['notice_class_deleted'] = 'Deleted the class {$a->idnumber}';
 $string['notice_course_deleted'] = 'Deleted the course named {$a->name} (ID number: {$a->idnumber})';
@@ -369,6 +353,8 @@ $string['postalcode'] = 'Postal code';
 $string['prerequisites'] = 'Prerequisite';
 $string['priority'] = 'Display priority';
 $string['progman'] = 'Program Manager';
+$string['program_numcourses'] = 'Num Courses';
+$string['program_reqcredits'] = ' Required Credits';
 
 $string['record_not_created'] = 'Record not created.';
 $string['record_not_created_reason'] = 'Record not created. Reason: {$a->message}';
@@ -383,6 +369,7 @@ $string['save_enrolment_changes'] = 'Save Changes';
 $string['search'] = 'Search';
 $string['show_all_users'] = 'Show All Users';
 $string['showinactive'] = 'Show inactive';
+
 $string['student_credits'] = 'Credits';
 $string['student_deleteconfirm'] = 'Are you sure you want to unenrol the student name: {$a->name} ?<br />'.
                                    'NOTE: This will delete all records for this student in this class and will unenrol them from any connected Moodle class!';
@@ -394,8 +381,6 @@ $string['student_locked'] = 'Locked';
 $string['student_name'] = 'Student Name';
 $string['student_name_1'] = 'Name';
 $string['student_status'] = 'Status';
-$string['success_waitlist_overenrol'] = 'Successfully over enrolled.';
-$string['success_waitlist_remove'] = 'Successfully removed from waitlist.';
 
 $string['tag_name'] = 'Name';
 $string['tags'] = 'Tags';
@@ -420,30 +405,31 @@ $string['trackform:track_name_help'] = '<p>Name of the track.</p>';
 $string['trackform:track_startdate'] = 'Start Date';
 $string['trackform:track_startdate_help'] = '<p>Start and end date for the track, if applicable.</p>';
 $string['tracks'] = 'Tracks';
+$string['track_assign_users'] = 'Assign users';
 $string['track_autocreate'] = 'Create all classes';
 $string['track_autocreate_button'] = 'Auto-create classes';
 $string['track_success_autocreate'] = 'Auto-created classes for this track';
 $string['track_auto_enrol'] = 'Auto-enrol';
 $string['track_classes'] = 'Classes';
+$string['track_click_user_enrol_track'] = 'Click on a user to enrol him/her in the track.';
 $string['track_curriculumid'] = 'Curriculum';
 $string['track_description'] = 'Description';
 $string['track_edit'] = 'Edit Track';
-$string['track_idnumber'] = 'ID Number';
-$string['track_startdate'] = 'Start Date';
 $string['track_enddate'] = 'End Date';
+$string['track_idnumber'] = 'ID Number';
 $string['track_maxstudents'] = 'Max Students';
 $string['track_name'] = 'Name';
+$string['track_no_matching_users'] = 'No matching users.';
 $string['track_num_classes'] = 'Number of classes';
 $string['track_parcur'] = 'Parent curriculum';
+$string['track_startdate'] = 'Start Date';
 $string['transfercredits'] = 'Transfer credits';
 
 $string['unenrol'] = 'Unenrol'; // TBD: Unenroll ?
 $string['unsatisfiedprereqs'] = 'One or more prerequisites are not completed yet.';
-$string['update_assignment'] = 'Update Assignment';
 $string['update_enrolment'] = 'Update Enrollment';
 $string['update_grade'] = 'Update Grade';
 $string['user'] = 'User';
-$string['user_language'] = 'Language';
 $string['user_waitlisted'] = 'user added to waitlist';
 $string['user_waitlisted_msg'] = 'user with idnumber {$a->user} has been added to the waitlist for class {$a->pmclass}';
 $string['users'] = 'Users';
@@ -453,6 +439,8 @@ $string['usermi'] = 'Middle initials';
 $string['useridnumber'] = 'ID number';
 $string['useridnumber_help'] = 'An id number is a unique value used to identify you within your organization.
 It also serves as way to tie Curriculum Management users to Moodle users.';
+$string['usersetprogram_auto_enrol'] = 'Auto-enrol';
+$string['userset_idnumber'] = 'ID Number';
 $string['userset_name'] = 'Name';
 $string['userset_name_help'] = 'Name of the user set';
 $string['userset_description'] = 'Description';

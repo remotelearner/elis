@@ -24,13 +24,14 @@
  *
  */
 
-require_once (dirname(__FILE__) . '/config.php');
+require_once (dirname(__FILE__) . '/lib/setup.php');
+require_once elispm::lib('lib.php');
 require_once elispm::lib('data/user.class.php');
-require_once elispm::lib('data/usertrack');
+require_once elispm::lib('data/usertrack.class.php');
 require_once elispm::lib('data/track.class.php');
 require_once elispm::file('usertrackpage.class.php');
 
-global $DB;
+global $DB, $OUTPUT;
 
 $site = get_site();
 
@@ -48,8 +49,18 @@ if ($dir != 'ASC' && $dir != 'DESC') {
 $page = optional_param('page',0,PARAM_INT);
 $perpage = optional_param('perpage',30,PARAM_INT);
 
+$url = new moodle_url('/elis/program/usertrackpopup.php',array('track'             => $trackid,
+                                                               'userid'            => $userid,
+                                                               'sort'              => $sort,
+                                                               'alpha'      => $alpha,
+                                                               'namesearch' => $namesearch,
+                                                               'dir'               => $dir,
+                                                               'page'              => $page,
+                                                               'perpage'           => $perpage));
+$PAGE->set_url($url);
+require_login();
 $context = get_context_instance(context_level_base::get_custom_context_level('track', 'elis_program'), $trackid);
-
+$PAGE->set_context($context);
 //todo: integrate this better with user-track page?
 //this checks permissions at the track level
 if(!trackpage::can_enrol_into_track($trackid)) {
@@ -72,46 +83,35 @@ if ($userid) {
 ?>
 <script type="text/javascript">
 //<![CDATA[
-window.opener.location = "<?php echo htmlspecialchars_decode($target->get_url()); ?>";
+window.opener.location = "<?php echo htmlspecialchars_decode($target->url); ?>";
 //]]>
 </script>
 <?php
 }
 
 // find all users not enrolled in the track
-$FULLNAME = sql_concat('usr.firstname', "' '", 'usr.lastname');
-//$LIKE     = $DB->sql_compare();
-
-$NAMESEARCH_LIKE = $DB->sql_like($FULLNAME, ':search_namesearch');
-$ALPHA_LIKE = $DB->sql_like($FULLNAME, ':search_alpha');
+$FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+$NAMELIKE = $DB->sql_like($FULLNAME, ':namesearch');
+$ALPHA_LIKE = $DB->sql_like($FULLNAME, ':lastname');
 
 $select = 'SELECT usr.*, ' . $FULLNAME . ' AS name ';
 $sql = 'FROM {' . user::TABLE . '} usr '
-    . 'LEFT OUTER JOIN {' . usertrack::TABLE . '} ut ON ut.userid = :usrid AND ut.trackid = :trackid '
+    . 'LEFT OUTER JOIN {' . usertrack::TABLE . '} ut ON ut.userid = usr.id AND ut.trackid = :trackid '
     . 'WHERE ut.userid IS NULL ';
-$params = array('usrid'=> 'usr.id', 'trackid'=> $trackid);
+$params = array('trackid'=> $trackid);
 if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        //$where[] = "(trk.name $LIKE  '%$namesearch%')";
-        $sql .= $NAMESEARCH_LIKE;
-        $params['search_namesearch'] = "%{$namesearch}%";
+        $sql .= ' AND '. $NAMELIKE;
+        $params['namesearch'] = "%{$namesearch}%";
     }
 
-    if ($alpha) {
-        //$where[] = "(trk.name $LIKE '$alpha%')";
-        $sql .= $ALPHA_LIKE;
-        $params['search_lastname'] = "{$alpha}%";
-    }
-/*if ($alpha) {
-    $sql .= 'AND '.$FULLNAME.' '.$LIKE.' \''.$alpha.'%\' ';
+if ($alpha) {
+    $sql .= ' AND '. $ALPHA_LIKE;
+    $params['lastname'] = "{$alpha}%";
 }
-if ($namesearch) {
-    $sql .= 'AND '.$FULLNAME.' '.$LIKE.' \'%'.$namesearch.'%\' ';
-}*/
 
 if(!trackpage::_has_capability('block/curr_admin:track:enrol', $trackid)) {
     //perform SQL filtering for the more "conditional" capability
-
     //get the context for the "indirect" capability
     $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
 
@@ -126,10 +126,11 @@ if(!trackpage::_has_capability('block/curr_admin:track:enrol', $trackid)) {
         $sql .= "AND usr.id IN (
                    SELECT userid FROM " . $DB->prefix_table(CLSTUSERTABLE) . "
                    WHERE clusterid IN (:clusterfilter))";
-        $params['clusterfilter'] = $cluster_filter
+        $params['clusterfilter'] = $cluster_filter;
     }
 }
-
+//print_object($sql);
+//print_object($params);
 // get the total number of matching users
 $count = $DB->count_records_sql('SELECT COUNT(usr.id) '.$sql, $params);
 if ($sort) {
@@ -146,8 +147,12 @@ if ($sort) {
 
 $users = $DB->get_records_sql($select.$sql, $params, $page * $perpage, $perpage);
 
-print_header($site->shortname . ': Assign users to track "' . $track->name . '"');
-
+//print_header($site->shortname . ': Assign users to track "' . $track->name . '"');
+$PAGE->set_title($site->shortname . ': Assign users to track "' . $track->name . '"');
+$PAGE->set_heading($site->shortname . ': Assign users to track "' . $track->name . '"');
+$PAGE->set_pagelayout('popup');
+echo $OUTPUT->header();
+echo $OUTPUT->box_start();
 // create a link based on the given parameters and the current page
 // parameters
 function make_link($psort=null, $pdir=null, $palpha=null, $ppage=null, $pnamesearch=null) {
@@ -180,7 +185,7 @@ function make_link($psort=null, $pdir=null, $palpha=null, $ppage=null, $pnamesea
 }
 
 /// Bar of first initials
-$alphabet = explode(',', get_string('alphabet'));
+/*$alphabet = explode(',', get_string('alphabet', 'elis_program'));
 $strall   = get_string('all');
 echo '<p style="text-align:center">';
 echo 'Name : ';
@@ -197,10 +202,13 @@ foreach ($alphabet as $letter) {
     }
 }
 echo "</p>";
-
+*/
+pmalphabox($url);
 // note: use moodle_url so that it will replace the current page parameter,
 // if present
-print_paging_bar($count, $page, $perpage, new moodle_url(make_link()));
+
+echo $OUTPUT->paging_bar($count, $page, $perpage, $url);
+//print_paging_bar($count, $page, $perpage, new moodle_url(make_link()));
 
 ?>
 <center><form action="usertrackpopup.php" method="get">
@@ -222,14 +230,15 @@ if ($dir != 'ASC') {
 
 // show list of available users
 if (empty($users)) {
-    echo '<div>' . get_string('no_matching_users', 'block_curr_admin') . '</div>';
+    echo '<div>' . get_string('track_no_matching_users', 'elis_program') . '</div>';
 } else {
-    echo '<div>' . get_string('click_user_enrol_track', 'block_curr_admin') . '</div>';
-    $table = null;
+    echo '<div>' . get_string('track_click_user_enrol_track', 'elis_program') . '</div>';
+    //$table = null;
+    $headings = array();
     $columns = array(
-        'idnumber'    => get_string('track_idnumber', 'block_curr_admin'),
-        'name'        => get_string('track_name', 'block_curr_admin'),
-        'email'       => get_string('email', 'block_curr_admin'),
+        'idnumber'    => get_string('track_idnumber', 'elis_program'),
+        'name'        => get_string('track_name', 'elis_program'),
+        'email'       => get_string('email', 'elis_program'),
         );
 
     foreach ($columns as $column => $cdesc) {
@@ -239,13 +248,18 @@ if (empty($users)) {
         } else {
             $columndir  = $dir == "ASC" ? 'DESC':'ASC';
             $columnicon = $dir == "ASC" ? 'down':'up';
-            $columnicon = ' <img src="'.$CFG->pixpath.'/t/'.$columnicon.'.gif" alt="" />';
+            $columnicon = ' <img src="'.$OUTPUT->pix_url($columnicon).'" alt="" />';
 
         }
-        $$column        = '<a href="'.make_link($column,$columndir).'">'.$cdesc."</a>$columnicon";
-        $table->head[]  = $$column;
-        $table->align[] = 'left';
+        //$$column        = '<a href="'.make_link($column,$columndir).'">'.$cdesc."</a>$columnicon";
+        $headings[$column] = '<a href="'.make_link($column,$columndir).'">'.$cdesc."</a>$columnicon";
+
     }
+    $table = new html_table();
+    //$table->head[]  = $$column;
+    //$table->align[] = 'left';
+    $table->align = array('left', 'left', 'left');
+    $table->head = $headings;
 
     $table->width = "95%";
     foreach ($users as $user) {
@@ -256,12 +270,11 @@ if (empty($users)) {
         $table->data[] = $newarr;
     }
 
-    print_table($table);
+    //print_table($table);
+    echo html_writer::table($table);
 }
 
-?>
-<div style="text-align: right"><a href="javascript:window.close()">Close window</a></div>
-<?php
-
-print_footer('empty');
+echo $OUTPUT->box_end();
+echo $OUTPUT->close_window_button();
+echo $OUTPUT->footer();
 ?>

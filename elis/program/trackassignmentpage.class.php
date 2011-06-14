@@ -131,16 +131,19 @@ class trackassignmentpage extends associationpage {
         $alpha        = $this->optional_param('alpha', '', PARAM_ALPHA);
 
         $columns = array(
-            'clsname'   => get_string('class_idnumber', 'elis_program'),
-            'autoenrol' => get_string('track_auto_enrol', 'elis_program'),
-            'enrolments' => get_string('enrolments', 'elis_program'),
-            'buttons' => '',
+            'clsname'   => array('header'=> get_string('class_idnumber', 'elis_program'),
+                                 'decorator' => array(new record_link_decorator('pmclasspage',
+                                                                                array('action'=>'view'),
+                                                                                'clsid'),
+                                                      'decorate')),
+            'autoenrol' => array('header'=> get_string('track_auto_enrol', 'elis_program')),
+            'enrolments' => array('header'=> get_string('enrolments', 'elis_program')),
+            'buttons' => array('header'=> ''),
         );
 
         $items = track_assignment_get_listing($id, $sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha);
         $numitems = track_assignment_count_records($id, $namesearch, $alpha);
 
-        //TODO: moodle2ify this
         if (empty($items)) {
             print_string('no_items_matching', 'elis_program');
         } else {
@@ -148,9 +151,7 @@ class trackassignmentpage extends associationpage {
             $this->print_alpha();
             $this->print_search();
 
-            $formatters = $this->create_link_formatters(array('clsname'), 'pmclasspage', 'clsid');
-
-            $this->print_list_view($items, $columns, $formatters);
+            $this->print_list_view($items, $columns);
         }
 
         if (empty($items)) {
@@ -202,13 +203,12 @@ class trackassignmentpage extends associationpage {
                 echo '</div>';
             }
         } else {
-            //TODO: moodle2 ify this
             $this->print_dropdown($classes, $items, 'trackid', 'clsid', 'add', 'idnumber');
         }
     }
 
-    function create_table_object($items, $columns, $formatters) {
-        return new trackassignment_page_table($items, $columns, $this, $formatters);
+    function create_table_object($items, $columns) {
+        return new trackassignment_page_table($items, $columns, $this);
     }
 
     function do_autocreate() {
@@ -234,12 +234,12 @@ class trackassignmentpage extends associationpage {
 }
 
 class trackassignment_page_table extends association_page_table {
-    function __construct(&$items, $columns, $page, $decorators=array()) {
+    function __construct(&$items, $columns, $page) {
         $id = required_param('id', PARAM_INT);
         $users = usertrack::get_users($id);
         $this->numusers = empty($users) ? 0 : count($users);
 
-        parent::__construct($items, $columns, $page, $decorators);
+        parent::__construct($items, $columns, $page);
     }
 
     function get_item_display_autoenrol($column, $item) {
@@ -253,18 +253,3 @@ class trackassignment_page_table extends association_page_table {
         return "{$item->enrolments} / {$this->numusers}";
     }
 }
-
-/*class check_class_required extends table_decorator {
-    var $flagged = false;
-
-    function decorate($text, $column, $item) {
-        if ($item->autoenrol && !$item->required) {
-            // the class is set to autoenrolled, but can't be autoenrolled
-            // because it is not required
-            $this->flagged = true;
-            return "<strike>$text</strike>*";
-        } else {
-            return $text;
-        }
-    }
-}*/

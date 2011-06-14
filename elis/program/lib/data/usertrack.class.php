@@ -227,10 +227,10 @@ class usertrack extends elis_data_object {
             $trackid = $this->trackid;
         }
 
-        $FULLNAME = sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
         $select  = 'SELECT usrtrk.id, usrtrk.userid, usr.idnumber, ' . $FULLNAME . ' AS name, usr.email ';
         $tables  = 'FROM {' . self::TABLE . '} usrtrk ';
-        $join    = 'LEFT JOIN {' . user::TABLE . '} usr '.
+        $join    = 'JOIN {' . user::TABLE . '} usr '.
             'ON usr.id = usrtrk.userid ';
         $where   = 'WHERE usrtrk.trackid = ? ';
         $group   = 'GROUP BY usrtrk.id ';
@@ -239,7 +239,7 @@ class usertrack extends elis_data_object {
         $params = array($trackid);
         $sql = $select.$tables.$join.$where.$group.$sort;
 
-        return $CURMAN->db->get_records_sql($sql, $params);
+        return $DB->get_records_sql($sql, $params);
     }
 
 
@@ -315,6 +315,7 @@ class usertrack extends elis_data_object {
         }
         $select = "userid = ? AND ?";
         $params = array($userid, $cluster_select);
+
 
         //user just needs to be in one of the possible clusters
         if(record_exists_select(clusteruser::TABLE, $select, $params)) {

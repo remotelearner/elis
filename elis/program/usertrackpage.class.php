@@ -30,6 +30,7 @@
 require_once elispm::lib('data/track.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/usertrack.class.php');
+require_once elispm::lib('data/userset.class.php');
 require_once elispm::lib('associationpage.class.php');
 require_once elispm::lib('page.class.php');
 require_once elispm::file('trackassignmentpage.class.php');
@@ -102,10 +103,10 @@ class usertrackpage extends usertrackbasepage {
             $cluster_filter = $filter_sql['where'];
             $params += $filter_sql['where_params'];
         }
-/* TODO: waiting on cluster
+/* TODO: waiting on clustertrack
         //query for getting tracks based on clusters
         $sql = 'SELECT trk.id
-                FROM {'.cluster::TABLE.'} clst
+                FROM {'.userset::TABLE.'} clst
                 JOIN {'.clustertrack::TABLE.'} clsttrk
                 ON clst.id = clsttrk.clusterid
                 JOIN {'.track::TABLE.'} trk
@@ -125,7 +126,8 @@ class usertrackpage extends usertrackbasepage {
             }
 
             $contexts->contexts['track'] = array_merge($contexts->contexts['track'], $new_tracks);
-        }*/
+        }
+*/
         if (!empty($id)) {
             //print curriculum tabs if viewing from the curriculum view
             $userpage = new userpage(array('id' => $id));
@@ -155,6 +157,21 @@ class usertrackpage extends usertrackbasepage {
         //get the listing specifically for this user
         $this->print_dropdown(track_get_listing('name', 'ASC', 0, 0, '', '', 0, 0, $contexts, $id), $items, 'userid', 'trackid', 'savenew', 'idnumber');
     }
+
+    /**
+     * Handler for the confirm (confirm delete) action.  Tries to delete the object and then renders the appropriate page.
+     */
+    function do_delete() {
+        $association_id = required_param('association_id', PARAM_INT);
+        $id = required_param('id', PARAM_INT);
+
+        $obj = new $this->data_class($association_id);
+        $obj->delete();
+
+        $target_page = $this->get_new_page(array('id'=> $id));
+
+        redirect($target_page->url);
+    }
 }
 
 class trackuserpage extends usertrackbasepage {
@@ -181,12 +198,7 @@ class trackuserpage extends usertrackbasepage {
     function can_do_delete() {
         global $USER;
 
-        $association_id = 0;
-        if(!empty($this->params['association_id'])) {
-            $association_id = $this->params['association_id'];
-        } else {
-            $association_id = $this->optional_param('association_id', '', PARAM_INT);
-        }
+        $association_id = $this->required_param('association_id', PARAM_INT);
         $usrtrk = new usertrack($association_id);
 
         return usertrack::can_manage_assoc($usrtrk->userid, $usrtrk->trackid);
@@ -207,13 +219,15 @@ class trackuserpage extends usertrackbasepage {
 
         $columns = array(
                 'idnumber'    => array('header'=> get_string('student_idnumber', 'elis_program'),
-                                       'decorator' => array(new record_link_decorator('trackpage',
+                                       'decorator' => array(new record_link_decorator('userpage',
                                                                                       array('action'=>'view'),
-                                                                                      'userid'))),
+                                                                                      'userid'),
+                                                      'decorate')),
                 'name'        => array('header'=> get_string('tag_name', 'elis_program'),
-                                       'decorator' => array(new record_link_decorator('trackpage',
+                                       'decorator' => array(new record_link_decorator('userpage',
                                                                                       array('action'=>'view'),
-                                                                                      'userid'))),
+                                                                                      'userid'),
+                                                      'decorate')),
                 'email'       => array('header'=> get_string('email', 'elis_program')),
                 'manage'      => array('header'=> ''),
         );
@@ -227,15 +241,39 @@ class trackuserpage extends usertrackbasepage {
         }
     }
 
+    /**
+     * Handler for the confirm (confirm delete) action.  Tries to delete the object and then renders the appropriate page.
+     */
+    function do_delete() {
+        $association_id = required_param('association_id', PARAM_INT);
+        $id = required_param('id', PARAM_INT);
+
+
+        $obj = new $this->data_class($association_id);
+        $obj->delete();
+
+        $target_page = $this->get_new_page(array('id'=> $id));
+
+        redirect($target_page->url);
+    }
+
     function print_assign_link() {
+        global $CFG;
+
         $id = $this->required_param('id', PARAM_INT);
+        $popup_settings ="height=500,width=500,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
+        $url = $CFG->wwwroot .'/elis/program/usertrackpopup.php?track='.$id;
+        $jsondata = array('url'=>$url,'name'=>'usertrackpopup','options'=>$popup_settings);
+        $jsondata = json_encode($jsondata);
+        $title = get_string('track_assign_users', 'elis_program');
 
         echo <<<EOD
 <div align="center"><br />
-<a href="javascript:null(window.open('usertrackpopup.php?track=$id','','width=500, height=500, resizable, scrollbars'));">
-Assign users
+<a href="javascript:null;" onclick='return openpopup(null,$jsondata);'>
+$title
 </a>
 </div>
 EOD;
+
     }
 }
