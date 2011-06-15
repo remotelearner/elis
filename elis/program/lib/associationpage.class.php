@@ -109,7 +109,7 @@ class associationpage extends pm_page {
      * Prints the add form.
      * @param $parent_obj is the basic data object we are forming an association with.
      */
-    function display_add($parent_obj) {
+    function print_add_form($parent_obj) {
         $id = required_param('id', PARAM_INT);
         $target = $this->get_new_page(array('action' => 'savenew', 'id' => $id));
         $form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
@@ -141,7 +141,7 @@ class associationpage extends pm_page {
      * @param $obj The association object being edited.
      * @param $parent_obj The basic data object being associated with.
      */
-    function display_edit($obj, $parent_obj) {
+    function print_edit_form($obj, $parent_obj) {
     	$parent_id = required_param('id', PARAM_INT);
 
         $target = $this->get_new_page(array('action' => 'update', 'id' => $parent_id, 'association_id' => $obj->id));
