@@ -557,6 +557,11 @@ class instructor extends elis_data_object {
         return $DB->record_exists(instructor::TABLE,
                    array('userid' => $userid, 'classid' => $classid));
     }
+
+    public function set_from_data($data) {
+        $this->_load_data_from_record($data, true);
+    }
+
 }
 
 /// Non-class supporting functions. (These may be able to replaced by a generic container/listing class)

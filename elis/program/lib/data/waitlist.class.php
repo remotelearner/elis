@@ -316,5 +316,10 @@ class waitlist extends elis_data_object {
         $status = $DB->delete_records(waitlist::TABLE, array('classid' => $id));
     	return $status;
     }
+
+    public function set_from_data($data) {
+        $this->_load_data_from_record($data, true);
+    }
+
 }
 

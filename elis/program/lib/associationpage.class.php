@@ -173,7 +173,7 @@ class associationpage extends pm_page {
         if($data) {
             $obj = new $this->data_class();
             $obj->set_from_data($data);
-            $obj->add();
+            $obj->save();
             $target = $this->get_new_page(array('action' => 'default', 'id' => $parent_id));
             redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' saved.');
         } else {
