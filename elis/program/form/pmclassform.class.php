@@ -222,8 +222,8 @@ class pmclassform extends cmform {
                 foreach ($tracks as $trackid => $trackrec) {
                     if ($trackrec->curid == $curcrsrec->curriculumid) {
                         if (!empty($this->_customdata['obj']->id)) {
-                            $trkobj = new trackassignmentclass(array('classid' => $this->_customdata['obj']->id,
-                                                                     'trackid' => $trackid));
+                            $trkobj = new trackassignment(array('classid' => $this->_customdata['obj']->id,
+                                                                'trackid' => $trackid));
                             if (!$trkobj->is_class_assigned_to_track()) {
                                 $unassigned[$trackid] = $trackrec->name;
                             } else {

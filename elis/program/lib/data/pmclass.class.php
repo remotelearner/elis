@@ -291,7 +291,7 @@ class pmclass extends data_object_with_custom_fields {
         if (!empty($this->id)) {
             //instructor::delete_for_class($this->id);
             //student::delete_for_class($this->id);
-            //trackassignmentclass::delete_for_class($this->id);
+            //trackassignment::delete_for_class($this->id);
             //classmoodlecourse::delete_for_class($this->id);
             //student_grade::delete_for_class($this->id);
             //attendance::delete_for_class($this->id);
@@ -796,7 +796,7 @@ class pmclass extends data_object_with_custom_fields {
         }
 
         //we first need to go through tracks to get to clusters
-        $track_listing = new trackassignmentclass(array('classid' => $clsid));
+        $track_listing = new trackassignment(array('classid' => $clsid));
         $tracks = $track_listing->get_assigned_tracks();
 
         //iterate over the track ides, which are the keys of the array
@@ -913,12 +913,12 @@ class pmclass extends data_object_with_custom_fields {
             $param['courseid'] = $this->courseid;
 
             foreach ($this->track as $t) {
-                if (trackassignmentclass::exists(array(new field_filter('classid', $this->id),
-                                                       new field_filter('trackid', $t)))) {
+                if (trackassignment::exists(array(new field_filter('classid', $this->id),
+                                                  new field_filter('trackid', $t)))) {
                     continue;
                 }
                 $param['trackid'] = $t;
-                $trackassignobj = new trackassignmentclass($param);
+                $trackassignobj = new trackassignment($param);
                 $trackassignobj->add();
             }
         }

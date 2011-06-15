@@ -50,8 +50,8 @@ class curriculumcoursebasepage extends associationpage {
         );
     }
 
-    function create_table_object($items, $columns, $formatters) {
-        return new curriculumcourse_page_table($items, $columns, $this, $formatters);
+    function create_table_object($items, $columns) {
+        return new curriculumcourse_page_table($items, $columns, $this);
     }
 
     function can_do_savenew() {
@@ -345,7 +345,7 @@ class coursecurriculumpage extends curriculumcoursebasepage {
 
 class curriculumcourse_page_table extends association_page_table {
     function get_item_display_required($column, $item) {
-        return $this->get_yesno_item_display($column, $item);
+        return $this->display_yesno_item($column, $item);
     }
 
     function get_default_sort_column() {

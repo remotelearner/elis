@@ -94,7 +94,7 @@ class pmclasspage extends managementpage {
         $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
 
         //we first need to go through tracks to get to clusters
-        $track_listing = new trackassignmentclass(array('classid' => $classid));
+        $track_listing = new trackassignment(array('classid' => $classid));
         $tracks = $track_listing->get_assigned_tracks();
 
         //iterate over the track ides, which are the keys of the array
