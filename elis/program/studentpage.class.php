@@ -603,6 +603,24 @@ class studentpage extends associationpage {
 }
 
 class student_table extends association_page_table {
+
+    function __construct(&$items, $columns, $page) {
+        $display_functions =
+             array('enrolmenttime'    => 'get_item_display_enrolmenttime',
+                   'completetime'     => 'get_item_display_completetime',
+                   'completestatusid' => 'get_item_display_completestatusid',
+                   'locked'           => 'get_item_display_locked',
+                   'idnumber'         => 'get_item_display_idnumber',
+                   'name'             => 'get_item_display_name');
+
+        foreach ($display_functions as $key => $val) {
+            if (isset($columns[$key]) && is_array($columns[$key])) {
+                $columns[$key]['display_function'] = array(&$this, $val);
+            }
+        }
+        parent::__construct($items, $columns, $page);
+    }
+
     function get_item_display_enrolmenttime($column, $item) {
         return $this->get_date_item_display($column, $item);
     }
@@ -639,7 +657,7 @@ class student_table extends association_page_table {
 
         if ($usermanagementpage->can_do_view()) {
             $target = $usermanagementpage->get_new_page(array('action' => 'view', 'id' => $item->userid));
-            $link = $target->get_url();
+            $link = $target->url;
             $elis_link_begin = '<a href="'.$link.'" alt="ELIS profile" title="ELIS profile">';
             $elis_link_end = '</a>';
         } else {

@@ -56,9 +56,12 @@ class waitlistpage extends selectionpage {
         return array('alpha' => $alpha, 'namesearch' => $namesearch);
     }
 
+    /* *** TBD *** */
     function print_selection_filter($filter) {
-        pmalphabox(new moodle_url($this->_get_page_url())); // TBD
-        pmsearchbox($this->get_basepage()); // TBD
+        $id = $this->required_param('id', PARAM_INT);
+        pmalphabox(new moodle_url($this->_get_page_url(),
+                           array('s' => $this->pagename, 'id' => $id)));
+        pmsearchbox($this->get_basepage());
     }
 
     function get_records($filter) {
@@ -87,7 +90,11 @@ class waitlistpage extends selectionpage {
     }
 
     function create_selection_table($records, $baseurl) {
-        return new waitlist_table($records, new moodle_url($baseurl));
+        $id = $this->required_param('id', PARAM_INT); // TBD
+        return new waitlist_table($records,
+                   new moodle_url($baseurl, array('s' => $this->pagename,
+                                                  'id' => $id)
+                   ));
     }
 
     protected function get_base_params() {

@@ -422,6 +422,12 @@ class associationpage extends pm_page {
 class association_page_table extends display_table {
     function __construct(&$items, $columns, $page) {
         $this->page = $page;
+        if (isset($columns['buttons']) && is_array($columns['buttons'])) {
+            $columns['buttons']['display_function'] = array(&$this, 'get_item_display_buttons');
+        }
+        if (isset($columns['manage']) && is_array($columns['manage'])) {
+            $columns['manage']['display_function'] = array(&$this, 'get_item_display_manage');
+        }
         parent::__construct($items, $columns, $page->url);
     }
 
