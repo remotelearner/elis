@@ -28,6 +28,8 @@ require_once elispm::lib('associationpage.class.php');
 require_once elispm::lib('data/clustercurriculum.class.php');
 require_once elispm::file('curriculumpage.class.php');
 require_once elispm::file('usersetpage.class.php');
+require_once elispm::file('form/clustercurriculumform.class.php');
+require_once elispm::file('form/clustercurriculumeditform.class.php');
 /*
 require_once (CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php');
 require_once (CURMAN_DIRLOCATION . '/lib/associationpage.class.php');
@@ -39,12 +41,13 @@ require_once (CURMAN_DIRLOCATION . '/curriculumpage.class.php');
 class clustercurriculumbasepage extends associationpage {
 
     var $data_class = 'clustercurriculum';
-    var $form_class = 'clustercurriculumform';
-    var $edit_form_class = 'clustercurriculumeditform';
+    //var $form_class = 'clustercurriculumform';
+    //var $edit_form_class = 'clustercurriculumeditform';
 
     var $tabs;
 
     function __construct(array $params=null) {
+
         $this->tabs = array(
             array('tab_id' => 'edit',
                   'page' => get_class($this),
@@ -53,6 +56,7 @@ class clustercurriculumbasepage extends associationpage {
                   'showtab' => true,
                   'showbutton' => true,
                   'image' => 'edit'),
+
             array('tab_id' => 'delete',
                   'page' => get_class($this),
                   'params' => array('action' => 'delete'),
@@ -64,25 +68,43 @@ class clustercurriculumbasepage extends associationpage {
         parent::__construct($params);
     }
 
+    public static function get_contexts($capability) {
+        if (!isset(trackassignmentpage::$contexts[$capability])) {
+            global $USER;
+            trackassignmentpage::$contexts[$capability] = get_contexts_by_capability_for_user('cluster', $capability, $USER->id);
+        }
+        return trackassignmentpage::$contexts[$capability];
+    }
+
+    public function _get_page_context() {
+        $id = $this->optional_param('id', 0, PARAM_INT);
+
+        if ($id) {
+            return get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $id);
+        } else {
+            return parent::_get_page_context();
+        }
+    }
     function can_do_savenew() {
         // the user must have 'block/curr_admin:associate' permissions on both ends
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $curriculumid = $this->required_param('curriculumid', PARAM_INT);
 
-        return clusterpage::_has_capability('block/curr_admin:associate', $clusterid)
+        return usersetpage::_has_capability('block/curr_admin:associate', $clusterid)
             && curriculumpage::_has_capability('block/curr_admin:associate', $curriculumid);
     }
 
     /**
      * @todo Refactor this once we have a common save() method for datarecord subclasses.
      */
-    function display_savenew() {
+    function do_savenew() {
         $id = $this->required_param('id', PARAM_INT);
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $curriculumid = $this->required_param('curriculumid', PARAM_INT);
 
-        require_once elispm::lib('/form/' . $this->form_class . '.class.php');
-        require_once elispm::lib('/plugins/cluster_classification/clusterclassification.class.php');
+        //require_once elispm::file('/form/' . $this->form_class . '.class.php');
+        //TODO: needs this plugin to be ported
+//        require_once elispm::lib('/plugins/cluster_classification/clusterclassification.class.php');
 
         $target = $this->get_new_page(array('action'       => 'savenew',
                                             'id'           => $id,
@@ -99,12 +121,13 @@ class clustercurriculumbasepage extends associationpage {
             }
             $this->display_default();
         } else {
-            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
-            if ($cluster_classification->param_autoenrol_curricula) {
-                $form->set_data(array('autoenrol' => 1));
-            } else {
+            //TODO: no classification plugin
+//            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
+//            if ($cluster_classification->param_autoenrol_curricula) {
+//                $form->set_data(array('autoenrol' => 1));
+//            } else {
                 $form->set_data(array('autoenrol' => 0));
-            }
+//            }
             $form->display();
         }
     }
@@ -117,7 +140,7 @@ class clustercurriculumbasepage extends associationpage {
         $clusterid = $record->clusterid;
         $curriculumid = $record->curriculumid;
 
-        return clusterpage::_has_capability('block/curr_admin:associate', $clusterid)
+        return usersetpage::_has_capability('block/curr_admin:associate', $clusterid)
             && curriculumpage::_has_capability('block/curr_admin:associate', $curriculumid);
     }
 
@@ -125,11 +148,11 @@ class clustercurriculumbasepage extends associationpage {
         return $this->can_do_edit();
     }
 
-    function display_edit() {
+    function do_edit() {
         $id = $this->required_param('id', PARAM_INT);
         $association_id = $this->required_param('association_id', PARAM_INT);
 
-        require_once elispm::lib('/form/' . $this->edit_form_class . '.class.php');
+        //require_once elispm::file('form/' . $this->edit_form_class . '.class.php');
 
         $target = $this->get_new_page(array('action'         => 'edit',
                                             'id'             => $id,
@@ -159,8 +182,9 @@ class clustercurriculumbasepage extends associationpage {
 
 class clustercurriculumpage extends clustercurriculumbasepage {
     var $pagename = 'clstcur';
-    var $tab_page = 'clusterpage';
+    var $tab_page = 'usersetpage';
 
+    var $parent_data_class = 'userset';
     var $section = 'users';
 
     const CPY_CURR_PREFIX         = 'add_curr_';
@@ -171,9 +195,8 @@ class clustercurriculumpage extends clustercurriculumbasepage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        // TODO: clusters not ported to ELIS2 yet, so return true for now
-        //return clusterpage::_has_capability('block/curr_admin:associate', $id);
-        return true;
+
+        return usersetpage::_has_capability('block/curr_admin:associate', $id);
     }
 
     function display_default() {
@@ -522,6 +545,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
 class curriculumclusterpage extends clustercurriculumbasepage {
     var $pagename = 'curclst';
     var $tab_page = 'curriculumpage';
+    var $parent_data_class = 'curriculum';
     var $tabs;
 
     var $section = 'curr';
@@ -541,7 +565,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
 
         $columns = array(
             'name'        => array('header' => get_string('program_name','elis_program'),
-                                   'decorator' => array(new record_link_decorator('clusterpage',
+                                   'decorator' => array(new record_link_decorator('usersetpage',
                                                                                   array('action'=>'view'),
                                                                                   'clusterid'),
                                                         'decorate')),
@@ -615,7 +639,7 @@ class clustercurriculum_page_table extends association_page_table {
      *
      */
     function get_item_display_autoenrol($column, $item) {
-        return $this->get_yesno_item_display($column, $item);
+        return $this->display_yesno_item($column, $item);
     }
 
 }

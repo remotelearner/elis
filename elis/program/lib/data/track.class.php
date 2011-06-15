@@ -893,8 +893,6 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
             $params += $filter_sql['where_params'];
         }
     }
-        echo '<br>where now? ';
-    print_object($where);
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
@@ -911,23 +909,25 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
         $curriculum_filter_object = $curriculum_context->get_filter('trk.id', 'track');
         $curriculum_filter = $curriculum_filter_object->get_sql();
 
-        if(count($allowed_clusters)!=0 || isset($curriculum_filter['where'])) {
-            $where[] = $curriculum_filter['where'];
-            $params += $curriculum_filter['where_params'];
-        } else {
-            //this allows both the indirect capability and the direct track filter to work
+        if (isset($curriculum_filter['where'])) {
+            if(count($allowed_clusters)!=0) {
+                $where[] = $curriculum_filter['where'];
+                $params += $curriculum_filter['where_params'];
+            } else {
+                //this allows both the indirect capability and the direct track filter to work
 
-            $allowed_clusters_list = implode(',', $allowed_clusters);
-            $where[] = "(
-                          trk.id IN (
-                            SELECT clsttrk.trackid
-                            FROM {". clustertrack::TABLE. "} clsttrk
-                            WHERE clsttrk.clusterid IN (:allowed_clusters)
-                          )
-                          OR
-                          {$curriculum_filter}
-                        )";
-           $params['allowed_clusters'] = $allowed_clusters_list;
+                $allowed_clusters_list = implode(',', $allowed_clusters);
+                $where[] = "(
+                              trk.id IN (
+                                SELECT clsttrk.trackid
+                                FROM {". clustertrack::TABLE. "} clsttrk
+                                WHERE clsttrk.clusterid IN (:allowed_clusters)
+                              )
+                              OR
+                              {$curriculum_filter['where']}
+                            )";
+               $params['allowed_clusters'] = $allowed_clusters_list;
+            }
         }
     }
 

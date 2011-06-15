@@ -129,11 +129,13 @@ class associationpage extends pm_page {
 
         $parent_obj = new $this->parent_data_class($id);
 
+        /* TODO: is this still required?
         if(!$obj->get_dbloaded()) {
             error('Invalid object id: ' . $id . '.');
-        }
+        }*/
 
-        $this->print_edit_form($obj, $parent_obj);
+        //$this->print_edit_form($obj, $parent_obj);
+        $this->display_edit($obj, $parent_obj);
     }
 
     /**
@@ -360,7 +362,7 @@ class associationpage extends pm_page {
             // Double use of $id is to keep idea of foreign key for association and parent object separate
             $url = $this->get_new_page(array('action' => $action, $local_key => $id, 'id' => $id))->url;
             $actionurl = new moodle_url($url, array('sesskey'=>sesskey()));
-            $select = new single_select($actionurl, 'trackid', $menu, null, array(''=>get_string('adddots')));
+            $select = new single_select($actionurl, $nonlocal_key, $menu, null, array(''=>get_string('adddots')));
             echo $OUTPUT->render($select);
         } else {
             echo get_string('all_items_assigned', self::LANG_FILE);

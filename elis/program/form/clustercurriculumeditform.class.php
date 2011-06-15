@@ -63,7 +63,7 @@ class clustercurriculumeditform extends moodleform {
         //association stuff
         $mform->addElement('header', 'associationinfo', get_string('info_group_association', 'elis_program'));
         $mform->addElement('advcheckbox', 'autoenrol', get_string('auto_enrol', 'elis_program'), null, null, array('0', '1'));
-        $mform->addHelpButton('autoenrol', 'clustercurriculumform:autoenrol', 'elis_program'));
+        $mform->addHelpButton('autoenrol', 'usersetprogramform:autoenrol', 'elis_program');
 
         $mform->addElement('hidden', 'association_id', '');
 

@@ -293,7 +293,7 @@ class clustertrack_page_table extends association_page_table {
      *
      */
     function get_item_display_autoenrol($column, $item) {
-        return $this->get_yesno_item_display($column, $item);
+        return $this->display_yesno_item($column, $item);
     }
 }
 

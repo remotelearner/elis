@@ -24,7 +24,7 @@
 *  @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
 */
 
-require_once(CURMAN_DIRLOCATION . '/form/cmform.class.php');
+require_once elispm::file('form/cmform.class.php');
 
 class clustercurriculumform extends cmform {
     /**
@@ -36,11 +36,13 @@ class clustercurriculumform extends cmform {
         $mform = &$this->_form;
 
         $mform->addElement('hidden', 'trackid');
+        //$mform->addElement('hidden', 'curriculumid');
+        //$mform->addElement('hidden', 'clusterid');
         $mform->addElement('hidden', 'classid');
 
-        $mform->addElement('advcheckbox', 'autoenrol', null, get_string('auto_enrol_cluster_curriculum', 'elis_program'), null, array('0', '1'));
+        $mform->addElement('advcheckbox', 'autoenrol', null, get_string('usersetprogramform_auto_enrol', 'elis_program'), null, array('0', '1'));
         $mform->setDefault('autoenrol', '1');
-        $mform->setHelpButton('autoenrol', array('clustercurriculumform/autoenrol', get_string('auto_enrol', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('autoenrol', 'usersetprogramform:autoenrol', 'elis_program');
 
         $this->add_action_buttons();
     }

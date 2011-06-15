@@ -105,6 +105,24 @@ class clustercurriculum extends elis_data_object {
         return null;
     }
 */
+    static $validation_rules = array(
+        'validate_clusterid_not_empty',
+        'validate_curriculumid_not_empty',
+        'validate_unique_clusterid_curriculumid'
+    );
+
+    function validate_clusterid_not_empty() {
+        return validate_not_empty($this, 'clusterid');
+    }
+
+    function validate_curriculumid_not_empty() {
+        return validate_not_empty($this, 'curriculumid');
+    }
+
+    function validate_unique_clusterid_curriculumid() {
+        return validate_is_unique($this, array('clusterid','curriculumid'));
+    }
+
 
     /**
      * Associates a cluster with a curriculum.
