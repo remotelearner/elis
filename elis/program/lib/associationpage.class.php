@@ -273,7 +273,7 @@ class associationpage extends pm_page {
         $confirm = required_param('confirm', PARAM_ALPHANUM);
 
         if (md5($association_id) != $confirm) {
-            echo cm_error('Invalid confirmation code!'); // TBD: language string
+            echo cm_error(get_string('invalidconfirm', 'elis_program'));
         } else {
             $obj = new $this->data_class($association_id);
             $obj->delete();

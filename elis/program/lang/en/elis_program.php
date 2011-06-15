@@ -281,6 +281,7 @@ $string['id_same_as_user'] = 'Same as username';
 $string['inactive'] = 'Inactive';
 $string['instructors'] = 'Instructors';
 $string['items_found'] = '{$a->num} items found.';
+$string['invalidconfirm'] = 'Invalid confirmation code!';
 
 $string['learningplan'] = 'Learning Plan';
 $string['length_description'] = 'Length Description';
@@ -386,6 +387,8 @@ $string['program_reqcredits'] = ' Required Credits';
 
 $string['record_not_created'] = 'Record not created.';
 $string['record_not_created_reason'] = 'Record not created. Reason: {$a->message}';
+$string['record_not_updated'] = 'Record not updated. Reason: {$a->message}';
+
 $string['registered_date'] = 'Registered date';
 $string['remove_coreq'] = 'Remove co-requisites';
 $string['remove_prereq'] = 'Remove prerequisites';
@@ -409,6 +412,8 @@ $string['student_locked'] = 'Locked';
 $string['student_name'] = 'Student Name';
 $string['student_name_1'] = 'Name';
 $string['student_status'] = 'Status';
+$string['studentnotunenrolled'] = 'Student: {$a->name} not unenrolled.'
+$string['studentunenrolled'] = 'Student: {$a->name} unenrolled.'
 
 $string['tag_name'] = 'Name';
 $string['tags'] = 'Tags';

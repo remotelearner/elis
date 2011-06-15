@@ -131,12 +131,14 @@ class studentpage extends associationpage {
         $confirm = required_param('confirm', PARAM_TEXT);
 
         $stu = new student($stuid);
+        $sparam = new stdClass;
+        $sparam->name = fullname($stu->user);
         if (md5($stuid) != $confirm) {
-            echo cm_error('Invalid confirmation code!');
+            echo cm_error(get_string('invalidconfirm', self::LANG_FILE));
         } else if (!$stu->delete()){
-            echo cm_error('Student "name: '. fullname($stu->user) .'" not unenrolled.');
+            echo cm_error(get_string('studentnotunenrolled', self::LANG_FILE, $sparam));
         } else {
-            echo cm_error('Student "name: '. fullname($stu->user) .'" unenrolled.');
+            echo cm_error(get_string('studentunenrolled', self::LANG_FILE, $sparam));
         }
 
         $this->do_default();
@@ -259,7 +261,7 @@ class studentpage extends associationpage {
             $stu->complete();
         } else {
             if (($status = $stu->update()) !== true) {
-                echo cm_error('Record not updated.  Reason: ' . $status->message);
+                echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
             }
         }
 
@@ -341,7 +343,7 @@ class studentpage extends associationpage {
                 $stu->complete();
             } else {
                 if (($status = $stu->update()) !== true) {
-                    echo cm_error('Record not updated.  Reason: ' . $status->message);
+                    echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
                 }
             }
 
@@ -350,7 +352,9 @@ class studentpage extends associationpage {
                && pmclasspage::can_enrol_into_class($clsid)) {
                 $stu_delete = new student($user['association_id']);
                 if(!$stu_delete->delete()) {
-                    echo cm_error('Student "name: '. fullname($stu->user) .'" not unenrolled.');
+                    $sparam = new stdClass;
+                    $sparam->name = fullname($stu->user);
+                    echo cm_error(get_string('studentnotunenrolled', self::LANG_FILE, $sparam));
                 }
             }
         }
@@ -378,7 +382,7 @@ class studentpage extends associationpage {
         $atn = new attendance($atnrecord);
 
         if (($status = $atn->update()) !== true) {
-            echo cm_error('Record not updated.  Reason: ' . $status->message);
+            echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
         }
     }
 
@@ -510,7 +514,7 @@ class studentpage extends associationpage {
     }
 
     public function create_table_object($items, $columns, $formatters) {
-        return new student_table($items, $columns, $this, $formatters);
+        return new student_table($items, $columns, $this);
     }
 
     public function get_waitlistform($students) {
