@@ -31,17 +31,8 @@ require_once elispm::lib('datedelta.class.php');
 require_once elispm::file('form/curriculumform.class.php');
 require_once elispm::file('curriculumcoursepage.class.php');
 
-/*
-require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
-require_once (CURMAN_DIRLOCATION . '/lib/curriculum.class.php');        // ok
-require_once (CURMAN_DIRLOCATION . '/lib/datedelta.class.php');         // ok
-require_once (CURMAN_DIRLOCATION . '/form/curriculaform.class.php');    // ok
-require_once (CURMAN_DIRLOCATION . '/clustercurriculumpage.class.php'); // missing
-require_once (CURMAN_DIRLOCATION . '/curriculumcoursepage.class.php');  // ok
-require_once (CURMAN_DIRLOCATION . '/taginstancepage.class.php');       // not used
-require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
-require_once (CURMAN_DIRLOCATION . '/lib/contexts.php');                // ok
-*/
+//require_once (CURMAN_DIRLOCATION . '/clustercurriculumpage.class.php'); // missing
+//require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
 
 /// The main management page.
 class curriculumpage extends managementpage {
@@ -323,7 +314,7 @@ class curriculumforcoursepage extends curriculumpage {
             $coursepage = new coursepage();
 
             $target = $coursepage->get_new_page(array('action' => 'view', 'id' => $course->id));
-            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' saved.');
+            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' saved.');
         } else {
             // Validation must have failed, redisplay form
             $form->display();

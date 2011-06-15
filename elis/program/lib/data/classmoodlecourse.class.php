@@ -28,22 +28,13 @@ require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
+require_once elispm::lib('data/student.class.php');
+require_once elispm::lib('moodlecourseurl.class.php');
 
-/*
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';      // ok
-require_once CURMAN_DIRLOCATION . '/lib/cmclass.class.php';         // ok
-require_once CURMAN_DIRLOCATION . '/lib/user.class.php';            // ok
-require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php';      // missing
-require_once CURMAN_DIRLOCATION . '/lib/student.class.php';         // missing
-require_once CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php';  // ok
-require_once CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php'; // missing
-require_once CURMAN_DIRLOCATION . '/lib/rollover/sharelib.php';     // missing
-*/
+//require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php';      // missing
+//require_once CURMAN_DIRLOCATION . '/lib/rollover/sharelib.php';     // missing
 
-/*
-define ('CLSMDLTABLE', 'crlm_class_moodle');
-*/
-
+//define ('CLSMDLTABLE', 'crlm_class_moodle');
 define ('CLSMDLENROLAUTO', 0);          // Automatically assign roles in Moodle course.
 define ('CLSMDLENROLCHOICE', 1);        // Allow user to choose at time of assignment.
 
@@ -70,32 +61,30 @@ class classmoodlecourse extends data_object_with_custom_fields {
      * @param $classmoodlecoursedata int/object/array The data id of a data record or data elements to load manually.
      *
      */
-    /*
-    function classmoodlecourse($classmoodlecoursedata = false) {
-        parent::datarecord();
+//     function classmoodlecourse($classmoodlecoursedata = false) {
+//         parent::datarecord();
 
-        $this->set_table(CLSMDLTABLE);
-        $this->add_property('id', 'int');
-        $this->add_property('classid', 'int');
-        $this->add_property('moodlecourseid', 'int');
-        $this->add_property('siteconfig', 'string');
-        $this->add_property('enroltype', 'int');
-        $this->add_property('enrolplugin', 'string');
-        $this->add_property('timemodified', 'int');
+//         $this->set_table(CLSMDLTABLE);
+//         $this->add_property('id', 'int');
+//         $this->add_property('classid', 'int');
+//         $this->add_property('moodlecourseid', 'int');
+//         $this->add_property('siteconfig', 'string');
+//         $this->add_property('enroltype', 'int');
+//         $this->add_property('enrolplugin', 'string');
+//         $this->add_property('timemodified', 'int');
 
-        if (is_numeric($classmoodlecoursedata)) {
-            $this->data_load_record($classmoodlecoursedata);
-        } else if (is_array($classmoodlecoursedata)) {
-            $this->data_load_array($classmoodlecoursedata);
-        } else if (is_object($classmoodlecoursedata)) {
-            $this->data_load_array(get_object_vars($classmoodlecoursedata));
-        }
+//         if (is_numeric($classmoodlecoursedata)) {
+//             $this->data_load_record($classmoodlecoursedata);
+//         } else if (is_array($classmoodlecoursedata)) {
+//             $this->data_load_array($classmoodlecoursedata);
+//         } else if (is_object($classmoodlecoursedata)) {
+//             $this->data_load_array(get_object_vars($classmoodlecoursedata));
+//         }
 
-        if (!empty($this->classid)) {
-            $this->class = new cmclass($this->classid);
-        }
-    }
-    */
+//         if (!empty($this->classid)) {
+//             $this->class = new cmclass($this->classid);
+//         }
+//     }
 
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('course', 'elis_program');

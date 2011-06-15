@@ -32,14 +32,7 @@ require_once elispm::file('curriculumcoursepage.class.php');
 require_once elispm::file('form/courseform.class.php');
 require_once elispm::file('pmclasspage.class.php');
 
-/*
-require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
-require_once (CURMAN_DIRLOCATION . '/lib/course.class.php');            // ok
-require_once (CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php');    // ok
-require_once (CURMAN_DIRLOCATION . '/form/courseform.class.php');       // ok
-require_once (CURMAN_DIRLOCATION . '/curriculumcoursepage.class.php');  // ok
-require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
-*/
+//require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');  // missing
 
 class coursepage extends managementpage {
     var $data_class = 'course';

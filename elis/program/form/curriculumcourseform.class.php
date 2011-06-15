@@ -58,7 +58,7 @@ class coursecurriculumbaseform extends cmform {
         $mform->addHelpButton('frequency', 'curriculumcourseform:frequency', 'elis_program');
 
         $mform->addElement('select', 'timeperiod', get_string('time_period', 'elis_program') . ':', $this->timeperiod_values);
-        $mform->addHelpButton('timeperiod', 'curriculumcourseform:timeperiod', 'elis_program');
+        $mform->addHelpButton('timeperiod', 'curriculumcourseform:time_period', 'elis_program');
 
         $mform->addElement('text', 'position', get_string('curriculumcourse_position', 'elis_program') . ':');
         $mform->setType('position', PARAM_INT);

@@ -27,11 +27,6 @@
 require_once('lib/setup.php');
 require_once elispm::lib('moodlecourseurl.class.php');
 
-/*
-require_once("config.php");                                         // ok
-require_once CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php'; // missing
-*/
-
 $class = required_param('class', PARAM_CLEAN);
 
 if ($CFG->forcelogin) {

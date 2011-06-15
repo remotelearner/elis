@@ -32,17 +32,9 @@ require_once elispm::file('userpage.class.php');
 require_once elispm::file('curriculumpage.class.php');
 require_once elispm::file('form/curriculumstudentform.class.php');
 
-/*
-require_once (CURMAN_DIRLOCATION . '/lib/newpage.class.php');                   // missing
-require_once (CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php');          // ok
-require_once (CURMAN_DIRLOCATION . '/lib/curriculumstudent.class.php');         // ok
-require_once (CURMAN_DIRLOCATION . '/lib/user.class.php');                      // ok
-require_once (CURMAN_DIRLOCATION . '/lib/usercluster.class.php');               // missing
-require_once (CURMAN_DIRLOCATION . '/usermanagementpage.class.php');            // ok
-require_once (CURMAN_DIRLOCATION . '/curriculumpage.class.php');                // ok
-require_once (CURMAN_DIRLOCATION . '/lib/associationpage2.class.php');          // missing
-require_once (CURMAN_DIRLOCATION . '/form/curriculumstudentform.class.php');    // ok
-*/
+//require_once (CURMAN_DIRLOCATION . '/lib/newpage.class.php');                   // missing
+//require_once (CURMAN_DIRLOCATION . '/lib/usercluster.class.php');               // missing
+//require_once (CURMAN_DIRLOCATION . '/lib/associationpage2.class.php');          // missing
 
 class studentcurriculumpage extends associationpage2 {
     var $pagename = 'stucur';
@@ -141,12 +133,12 @@ class studentcurriculumpage extends associationpage2 {
         foreach ($data->_selection as $curid) {
             $stucur = new curriculumstudent(array('userid' => $userid,
                                                   'curriculumid' => $curid));
-            $stucur->add();
+            $stucur->save();
         }
 
         $tmppage = $this->get_basepage();
         $tmppage->params['_assign'] = 'assign';
-        redirect($tmppage->get_url(), get_string('num_curricula_assigned', 'elis_program', count($data->_selection)));
+        redirect($tmppage->url, get_string('num_curricula_assigned', 'elis_program', count($data->_selection)));
     }
 
     protected function process_unassignment($data) {
@@ -159,7 +151,7 @@ class studentcurriculumpage extends associationpage2 {
         }
 
         $tmppage = $this->get_basepage();
-        redirect($tmppage->get_url(), get_string('num_curricula_unassigned', 'elis_program', count($data->_selection)));
+        redirect($tmppage->url, get_string('num_curricula_unassigned', 'elis_program', count($data->_selection)));
     }
 
     protected function get_available_records($filter) {
@@ -207,7 +199,7 @@ class studentcurriculumpage extends associationpage2 {
 
         $where .= ' OR id IN (SELECT curr.id
                     FROM {'.userset::TABLE.'} clst
-                    JOIN {'.usersetcurriculum::TABLE.'} clstcurr
+                    JOIN {'.clustercurriculum::TABLE.'} clstcurr
                          ON clst.id = clstcurr.clusterid
                     JOIN {'.curriculum::TABLE.'} curr
                          ON clstcurr.curriculumid = curr.id
@@ -215,7 +207,7 @@ class studentcurriculumpage extends associationpage2 {
                    WHERE '.$cluster_filter.'))';
 
         $count = $DB->count_records_select(curriculum::TABLE, $where);
-        $users = $DB->get_records_select(curriculum::TABLE, $where, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $users = $DB->get_records_select(curriculum::TABLE, $where, null, $sortclause, '*', $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
@@ -304,7 +296,7 @@ class user_curriculum_selection_table extends selection_table {
         $cluster_filter = $cluster_contexts->sql_filter_for_context_level('clst.id', 'cluster');
         $sql = 'SELECT curr.id
                   FROM {'.userset::TABLE.'} clst
-                  JOIN {'.usersetcurriculum::TABLE.'} clstcurr
+                  JOIN {'.clustercurriculum::TABLE.'} clstcurr
                        ON clst.id = clstcurr.clusterid
                   JOIN {'.curriculum::TABLE.'} curr
                        ON clstcurr.curriculumid = curr.id
@@ -415,12 +407,12 @@ class curriculumstudentpage extends associationpage2 {
         foreach ($data->_selection as $userid) {
             $stucur = new curriculumstudent(array('userid' => $userid,
                                                   'curriculumid' => $curid));
-            $stucur->add();
+            $stucur->save();
         }
 
         $tmppage = $this->get_basepage();
         $tmppage->params['_assign'] = 'assign';
-        redirect($tmppage->get_url(), get_string('num_users_assigned', 'elis_program', count($data->_selection)));
+        redirect($tmppage->url, get_string('num_users_assigned', 'elis_program', count($data->_selection)));
     }
 
     protected function process_unassignment($data) {
@@ -433,7 +425,7 @@ class curriculumstudentpage extends associationpage2 {
         }
 
         $tmppage = $this->get_basepage();
-        redirect($tmppage->get_url(), get_string('num_users_unassigned', 'elis_program', count($data->_selection)));
+        redirect($tmppage->url, get_string('num_users_unassigned', 'elis_program', count($data->_selection)));
     }
 
     protected function get_selection_filter() {
@@ -510,7 +502,7 @@ class curriculumstudentpage extends associationpage2 {
         }
 
         $count = $DB->count_records_select(user::TABLE.' usr', $where);
-        $users = $DB->get_records_select(user::TABLE.' usr', $where, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $users = $DB->get_records_select(user::TABLE.' usr', $where, null, $sortclause, '*', $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }

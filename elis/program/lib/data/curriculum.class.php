@@ -32,16 +32,6 @@ require_once elispm::lib('data/curriculumstudent.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('datedelta.class.php');
 
-/*
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
-require_once CURMAN_DIRLOCATION . '/lib/course.class.php';              // ok
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // ok
-require_once CURMAN_DIRLOCATION . '/lib/curriculumstudent.class.php';   // missing
-require_once CURMAN_DIRLOCATION . '/lib/user.class.php';                // ok
-require_once CURMAN_DIRLOCATION . '/lib/datedelta.class.php';           // ok
-require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // ok
-*/
-
 class curriculum extends data_object_with_custom_fields {
     const TABLE = 'crlm_curriculum';
 
@@ -85,48 +75,46 @@ class curriculum extends data_object_with_custom_fields {
      * @param $curriculumdata int/object/array The data id of a data record or data elements to load manually.
      *
      */
-    /*
-    function curriculum($curriculumdata=false) {
-        parent::datarecord();
+//     function curriculum($curriculumdata=false) {
+//         parent::datarecord();
 
-        $this->set_table(CURTABLE);
-        $this->add_property('id', 'int');
-        $this->add_property('idnumber', 'string', true);
-        $this->add_property('name', 'string', true);
-        $this->add_property('description', 'string');
-        $this->add_property('reqcredits', 'int');
-        $this->add_property('iscustom', 'int');
-        $this->add_property('timecreated', 'int');
-        $this->add_property('timemodified', 'int');
-        $this->add_property('timetocomplete', 'string');
-        $this->add_property('frequency', 'string');
-        $this->add_property('priority', 'int');
+//         $this->set_table(CURTABLE);
+//         $this->add_property('id', 'int');
+//         $this->add_property('idnumber', 'string', true);
+//         $this->add_property('name', 'string', true);
+//         $this->add_property('description', 'string');
+//         $this->add_property('reqcredits', 'int');
+//         $this->add_property('iscustom', 'int');
+//         $this->add_property('timecreated', 'int');
+//         $this->add_property('timemodified', 'int');
+//         $this->add_property('timetocomplete', 'string');
+//         $this->add_property('frequency', 'string');
+//         $this->add_property('priority', 'int');
 
-        if (is_numeric($curriculumdata)) {
-            $this->data_load_record($curriculumdata);
-        } else if (is_array($curriculumdata)) {
-            $this->data_load_array($curriculumdata);
-        } else if (is_object($curriculumdata)) {
-            $this->data_load_array(get_object_vars($curriculumdata));
-        }
+//         if (is_numeric($curriculumdata)) {
+//             $this->data_load_record($curriculumdata);
+//         } else if (is_array($curriculumdata)) {
+//             $this->data_load_array($curriculumdata);
+//         } else if (is_object($curriculumdata)) {
+//             $this->data_load_array(get_object_vars($curriculumdata));
+//         }
 
-        if (!empty($this->userid)) {
-            $this->user = new user($this->userid);
-        }
+//         if (!empty($this->userid)) {
+//             $this->user = new user($this->userid);
+//         }
 
-        if (!empty($this->id)) {
-            // custom fields
-            $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
-            if ($level) {
-                $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
-                $fielddata = $fielddata ? $fielddata : array();
-                foreach ($fielddata as $name => $value) {
-                    $this->{"field_{$name}"} = $value;
-                }
-            }
-        }
-    }
-    */
+//         if (!empty($this->id)) {
+//             // custom fields
+//             $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
+//             if ($level) {
+//                 $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
+//                 $fielddata = $fielddata ? $fielddata : array();
+//                 foreach ($fielddata as $name => $value) {
+//                     $this->{"field_{$name}"} = $value;
+//                 }
+//             }
+//         }
+//     }
 
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('curriculum', 'elis_program');
@@ -243,9 +231,9 @@ class curriculum extends data_object_with_custom_fields {
         $rs = get_recordset_sql($sql);
         if ($rs) {
             while ($rec = rs_fetch_next_record($rs)) {
-            /// Loop through enrolment records grouped by curriculum and curriculum assignments,
-            /// counting the credits achieved and looking for all required courses to be complete.
-            /// Load a new curriculum assignment
+                /// Loop through enrolment records grouped by curriculum and curriculum assignments,
+                /// counting the credits achieved and looking for all required courses to be complete.
+                /// Load a new curriculum assignment
                 if ($curassid != $rec->curassid) {
                     /// Check for completion - all credits have been earned and all required courses completed
                     if ($curassid && ($numcredits >= $reqcredits) && empty($checkcourses)) {
@@ -266,18 +254,18 @@ class curriculum extends data_object_with_custom_fields {
                 }
 
 
-            /// Get a new list of required courses.
+                /// Get a new list of required courses.
                 if ($curid != $rec->curid) {
                     $curid = $rec->curid;
                     $reqcredits = $rec->reqcredits;
                     $select = 'curriculumid = '.$curid.' AND required = 1';
-                    if (!($requiredcourseids = get_records_select(curriculumcourse::TABLE, $select, '', 'courseid,required'))) {
+                    if (!($requiredcourseids = get_records_select(curriculumcourse::TABLE, $select, null, '', 'courseid,required'))) {
                         $requiredcourseids = array();
                     }
                     $checkcourses = $requiredcourseids;
                 }
 
-            /// Track data for completion...
+                /// Track data for completion...
                 $numcredits += $rec->curcredits;
                 if (isset($checkcourses[$rec->courseid])) {
                     unset($checkcourses[$rec->courseid]);
@@ -290,16 +278,13 @@ class curriculum extends data_object_with_custom_fields {
             $currstudent->complete($timenow, $numcredits, 1);
         }
 
-
-        /*
-        $sendtouser = $CURMAN->config->notify_curriculumnotcompleted_user;
-        $sendtorole = $CURMAN->config->notify_curriculumnotcompleted_role;
+        $sendtouser = elis::$config->elis_program->notify_curriculumnotcompleted_user;
+        $sendtorole = elis::$config->elis_program->notify_curriculumnotcompleted_role;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole) {
             return true;
         }
-        */
 
         /// Incomplete curricula:
 
@@ -337,13 +322,11 @@ class curriculum extends data_object_with_custom_fields {
                 }
 
                 $daysfrom = ($reqcompletetime - $timenow) / $secondsinaday;
-                /*
-                if ($daysfrom <= $CURMAN->config->notify_curriculumnotcompleted_days) {
+                if ($daysfrom <= elis::$config->elis_program->notify_curriculumnotcompleted_days) {
                     $curstudent = new curriculumstudent($rec);
                     mtrace("Triggering curriculum_notcompleted event.\n");
                     events_trigger('curriculum_notcompleted', $curstudent);
                 }
-                */
             }
         }
 
@@ -423,29 +406,28 @@ class curriculum extends data_object_with_custom_fields {
 
     public static function curriculum_recurrence_handler($user) {
         global $CFG;
+        // TO-DO: re-enable once notifications are done
         //require_once($CFG->dirroot.'/curriculum/lib/notifications.php');
 
         /// Does the user receive a notification?
-        /*
-        $sendtouser       = $CURMAN->config->notify_curriculumrecurrence_user;
-        $sendtorole       = $CURMAN->config->notify_curriculumrecurrence_role;
-        $sendtosupervisor = $CURMAN->config->notify_curriculumrecurrence_supervisor;
+        $sendtouser       = elis::$config->elis_program->notify_curriculumrecurrence_user;
+        $sendtorole       = elis::$config->elis_program->notify_curriculumrecurrence_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_curriculumrecurrence_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
             return true;
         }
-        */
 
         $context = get_system_context();
 
         $message = new notification();
 
         /// Set up the text of the message
-        /*
-        $text = empty($CURMAN->config->notify_curriculumrecurrence_message) ?
+        /* TO-DO: re-enable once notifications are done
+        $text = empty(elis::$config->elis_program->notify_curriculumrecurrence_message) ?
                     get_string('notifycurriculumrecurrencemessagedef', 'elis_program') :
-                    $CURMAN->config->notify_curriculumrecurrence_message;
+                    elis::$config->elis_program->notify_curriculumrecurrence_message;
         $search = array('%%userenrolname%%', '%%curriculumname%%');
         $replace = array(fullname($user), $user->curriculumname);
         $text = str_replace($search, $replace, $text);
@@ -570,7 +552,7 @@ class curriculum extends data_object_with_custom_fields {
                         unset($curcrs->id);
                         $curcrs->courseid = $rv['courses'][$course->id];
                         $curcrs->curriculumid = $clone->id;
-                        $curcrs->add();
+                        $curcrs->save();
                     }
                 }
             }

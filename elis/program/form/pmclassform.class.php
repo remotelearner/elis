@@ -441,6 +441,4 @@ class pmclassform extends cmform {
 
         parent::freeze();
     }
-
 }
-

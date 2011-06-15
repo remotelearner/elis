@@ -29,14 +29,6 @@ require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/curriculum.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
 
-/*
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
-require_once CURMAN_DIRLOCATION . '/lib/environment.class.php';         // not used
-require_once CURMAN_DIRLOCATION . '/lib/curriculum.class.php';          // ok
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // ok
-require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // ok
-*/
-
 class course extends data_object_with_custom_fields {
     const TABLE = 'crlm_course';
 
@@ -103,43 +95,41 @@ class course extends data_object_with_custom_fields {
      * @param $coursedata int/object/array The data id of a data record or data elements to load manually.
      *
      */
-    /*
-    function course($coursedata = false) {
-        parent::datarecord();
+//     function course($coursedata = false) {
+//         parent::datarecord();
 
-        if (is_numeric($coursedata)) {
-            $this->data_load_record($coursedata);
-        } else if (is_array($coursedata)) {
-            $this->data_load_array($coursedata);
-        } else if (is_object($coursedata)) {
-            $this->data_load_array(get_object_vars($coursedata));
-        }
+//         if (is_numeric($coursedata)) {
+//             $this->data_load_record($coursedata);
+//         } else if (is_array($coursedata)) {
+//             $this->data_load_array($coursedata);
+//         } else if (is_object($coursedata)) {
+//             $this->data_load_array(get_object_vars($coursedata));
+//         }
 
-        if (!empty($this->environmentid)) {
-            $this->environment = new environment($this->environmentid);
-        }
+//         if (!empty($this->environmentid)) {
+//             $this->environment = new environment($this->environmentid);
+//         }
 
-        // FIXME: this should be done every time the template is updated, i.e. through getter/setter methods
-        if (!empty($this->id)) {
-            $template = new coursetemplate($this->id);
-            $course = $this->_db->get_record('course', 'id', $template->location);
+//         // FIXME: this should be done every time the template is updated, i.e. through getter/setter methods
+//         if (!empty($this->id)) {
+//             $template = new coursetemplate($this->id);
+//             $course = $this->_db->get_record('course', 'id', $template->location);
 
-            if (!empty($course)) {
-                $this->locationlabel = $course->fullname . ' ' . $course->shortname;
-            }
+//             if (!empty($course)) {
+//                 $this->locationlabel = $course->fullname . ' ' . $course->shortname;
+//             }
 
-            // custom fields
-            $level = context_level_base::get_custom_context_level('course', 'elis_program');
-            if ($level) {
-                $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
-                $fielddata = $fielddata ? $fielddata : array();
-                foreach ($fielddata as $name => $value) {
-                    $this->{"field_{$name}"} = $value;
-                }
-            }
-        }
-    }
-    */
+//             // custom fields
+//             $level = context_level_base::get_custom_context_level('course', 'elis_program');
+//             if ($level) {
+//                 $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
+//                 $fielddata = $fielddata ? $fielddata : array();
+//                 foreach ($fielddata as $name => $value) {
+//                     $this->{"field_{$name}"} = $value;
+//                 }
+//             }
+//         }
+//     }
 
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('course', 'elis_program');

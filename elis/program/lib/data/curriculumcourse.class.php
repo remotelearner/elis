@@ -83,38 +83,36 @@ class curriculumcourse extends data_object_with_custom_fields {
      *
      * @param $curcrsdata int/object/array The data id of a data record or data elements to load manually.
      */
-    /*
-    function curriculumcourse ($curcrsdata = false) {
-        parent::datarecord();
+//     function curriculumcourse ($curcrsdata = false) {
+//         parent::datarecord();
 
-        $this->set_table(CURCRSTABLE);
-        $this->add_property('id', 'int');
-        $this->add_property('curriculumid', 'int');
-        $this->add_property('courseid', 'int');
-        $this->add_property('required', 'int');
-        $this->add_property('frequency', 'int');
-        $this->add_property('timeperiod', 'string');
-        $this->add_property('position', 'int');
-        $this->add_property('timecreated', 'int');
-        $this->add_property('timemodifieid', 'int');
+//         $this->set_table(CURCRSTABLE);
+//         $this->add_property('id', 'int');
+//         $this->add_property('curriculumid', 'int');
+//         $this->add_property('courseid', 'int');
+//         $this->add_property('required', 'int');
+//         $this->add_property('frequency', 'int');
+//         $this->add_property('timeperiod', 'string');
+//         $this->add_property('position', 'int');
+//         $this->add_property('timecreated', 'int');
+//         $this->add_property('timemodifieid', 'int');
 
-        if (is_numeric($curcrsdata)) {
-            $this->data_load_record($curcrsdata);
-        } else if (is_array($curcrsdata)) {
-            $this->data_load_array($curcrsdata);
-        } else if (is_object($curcrsdata)) {
-            $this->data_load_array(get_object_vars($curcrsdata));
-        }
+//         if (is_numeric($curcrsdata)) {
+//             $this->data_load_record($curcrsdata);
+//         } else if (is_array($curcrsdata)) {
+//             $this->data_load_array($curcrsdata);
+//         } else if (is_object($curcrsdata)) {
+//             $this->data_load_array(get_object_vars($curcrsdata));
+//         }
 
-        if (!empty($this->curriculumid)) {
-            $this->curriculum = new curriculum($this->curriculumid);
-        }
+//         if (!empty($this->curriculumid)) {
+//             $this->curriculum = new curriculum($this->curriculumid);
+//         }
 
-        if (!empty($this->courseid)) {
-            $this->course = new course($this->courseid);
-        }
-    }
-    */
+//         if (!empty($this->courseid)) {
+//             $this->course = new course($this->courseid);
+//         }
+//     }
 
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('curriculum', 'elis_program');
@@ -231,6 +229,10 @@ class curriculumcourse extends data_object_with_custom_fields {
         }
 
         $this->form_url = $url;
+    }
+
+    public function set_from_data($data) {
+        $this->_load_data_from_record($data, true);
     }
 
     /**

@@ -26,7 +26,6 @@
 
 global $CFG;
 require_once ($CFG->dirroot.'/course/lib.php');
-//require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
 require_once elis::lib('data/data_object.class.php');
 require_once elispm::lib('deprecatedlib.php');
 

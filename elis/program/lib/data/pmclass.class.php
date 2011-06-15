@@ -36,28 +36,12 @@ require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('form/pmclassform.class.php');
 
-/*
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
-require_once CURMAN_DIRLOCATION . '/lib/course.class.php';              // ok
-require_once CURMAN_DIRLOCATION . '/lib/environment.class.php';         // not used
-require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php';          // missing
-require_once CURMAN_DIRLOCATION . '/lib/student.class.php';             // ok
-require_once CURMAN_DIRLOCATION . '/lib/attendance.class.php';          // not used
-require_once CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php';   // ok
-require_once CURMAN_DIRLOCATION . '/form/pmclassform.class.php';        // ok
-require_once CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php';      // ok
-require_once CURMAN_DIRLOCATION . '/lib/track.class.php';               // ok
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // ok
-require_once CURMAN_DIRLOCATION . '/lib/taginstance.class.php';         // not used
-require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';         // ok
-*/
+//require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php'; // missing
 
-/*
-define ('CLSTABLE', 'crlm_class');
-define ('CLSMOODLETABLE', 'crlm_class_moodle');
-define ('CLSGRTABLE', 'crlm_class_graded');  // TODO: this is a dup, remove it.
-define ('CLSTRACKCLS', 'crlm_track_class');
-*/
+//define ('CLSTABLE', 'crlm_class');
+//define ('CLSMOODLETABLE', 'crlm_class_moodle');
+//define ('CLSGRTABLE', 'crlm_class_graded');  // TODO: this is a dup, remove it.
+//define ('CLSTRACKCLS', 'crlm_track_class');
 
 class pmclass extends data_object_with_custom_fields {
     const TABLE = 'crlm_class';
@@ -122,58 +106,56 @@ class pmclass extends data_object_with_custom_fields {
      * @param $mmclassdata int/object/array The data id of a data record or data elements to load manually.
      *
      */
-    /*
-    public function pmclass($pmclassdata=false) {
-        global $CURMAN;
+//     public function pmclass($pmclassdata=false) {
+//         global $CURMAN;
 
-        parent::datarecord();
+//         parent::datarecord();
 
-        $this->set_table(CLSTABLE);
-        $this->add_property('id', 'int');
-        $this->add_property('idnumber', 'string', true);
-        $this->add_property('courseid', 'int', true);
-        $this->add_property('startdate', 'int');
-        $this->add_property('enddate', 'int');
-        $this->add_property('duration', 'int');
-        $this->add_property('starttimehour', 'int');
-        $this->add_property('starttimeminute', 'int');
-        $this->add_property('endtimehour', 'int');
-        $this->add_property('endtimeminute', 'int');
-        $this->add_property('maxstudents', 'int');
-        $this->add_property('environmentid', 'int');
-        $this->add_property('enrol_from_waitlist', 'int');
+//         $this->set_table(CLSTABLE);
+//         $this->add_property('id', 'int');
+//         $this->add_property('idnumber', 'string', true);
+//         $this->add_property('courseid', 'int', true);
+//         $this->add_property('startdate', 'int');
+//         $this->add_property('enddate', 'int');
+//         $this->add_property('duration', 'int');
+//         $this->add_property('starttimehour', 'int');
+//         $this->add_property('starttimeminute', 'int');
+//         $this->add_property('endtimehour', 'int');
+//         $this->add_property('endtimeminute', 'int');
+//         $this->add_property('maxstudents', 'int');
+//         $this->add_property('environmentid', 'int');
+//         $this->add_property('enrol_from_waitlist', 'int');
 
-        if (is_numeric($pmclassdata)) {
-            $this->data_load_record($pmclassdata);
-        } else if (is_array($pmclassdata)) {
-            $this->data_load_array($pmclassdata);
-        } else if (is_object($pmclassdata)) {
-            $this->data_load_array(get_object_vars($pmclassdata));
-        }
+//         if (is_numeric($pmclassdata)) {
+//             $this->data_load_record($pmclassdata);
+//         } else if (is_array($pmclassdata)) {
+//             $this->data_load_array($pmclassdata);
+//         } else if (is_object($pmclassdata)) {
+//             $this->data_load_array(get_object_vars($pmclassdata));
+//         }
 
-        if (!empty($this->id)) {
-            // custom fields
-            $level = context_level_base::get_custom_context_level('class', 'block_curr_admin');
-            if ($level) {
-                $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
-                $fielddata = $fielddata ? $fielddata : array();
-                foreach ($fielddata as $name => $value) {
-                    $this->{"field_{$name}"} = $value;
-                }
-            }
-        }
+//         if (!empty($this->id)) {
+//             // custom fields
+//             $level = context_level_base::get_custom_context_level('class', 'block_curr_admin');
+//             if ($level) {
+//                 $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
+//                 $fielddata = $fielddata ? $fielddata : array();
+//                 foreach ($fielddata as $name => $value) {
+//                     $this->{"field_{$name}"} = $value;
+//                 }
+//             }
+//         }
 
-        if (!empty($this->courseid)) {
-            $this->course = new course($this->courseid);
-        }
+//         if (!empty($this->courseid)) {
+//             $this->course = new course($this->courseid);
+//         }
 
-        if (!empty($this->environmentid)) {
-            $this->environment = new environment($this->environmentid);
-        }
+//         if (!empty($this->environmentid)) {
+//             $this->environment = new environment($this->environmentid);
+//         }
 
-        $this->moodlecourseid = $this->get_moodle_course_id();
-    }
-    */
+//         $this->moodlecourseid = $this->get_moodle_course_id();
+//     }
 
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('class', 'elis_program');
@@ -247,26 +229,24 @@ class pmclass extends data_object_with_custom_fields {
         $this->form_url = $url;
     }
 
-    /*
-    public function create_edit_form($formid='', $rows=2, $cols=40) {
-        $configdata = array();
-        $configdata['id'] = $this->id;
-        $configdata['courseid'] = $this->courseid;
-        $configdata['display_12h'] = true;
+//     public function create_edit_form($formid='', $rows=2, $cols=40) {
+//         $configdata = array();
+//         $configdata['id'] = $this->id;
+//         $configdata['courseid'] = $this->courseid;
+//         $configdata['display_12h'] = true;
 
-        $this->form = new pmclassform($this->form_url, $configdata);
+//         $this->form = new pmclassform($this->form_url, $configdata);
 
-        $this->starttime = ($this->starttimehour + 5) * HOURSECS;
-        $this->starttime += $this->starttimeminute * MINSECS;
+//         $this->starttime = ($this->starttimehour + 5) * HOURSECS;
+//         $this->starttime += $this->starttimeminute * MINSECS;
 
-        $this->endtime = ($this->endtimehour + 5) * HOURSECS;
-        $this->endtime += $this->endtimeminute * MINSECS;
+//         $this->endtime = ($this->endtimehour + 5) * HOURSECS;
+//         $this->endtime += $this->endtimeminute * MINSECS;
 
-        $this->form->set_data($this);
+//         $this->form->set_data($this);
 
-        return $this->form;
-    }
-    */
+//         return $this->form;
+//     }
 
     public static function find($filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {
         return parent::find($filter, $sort, $limitfrom, $limitnum, $db);
@@ -689,7 +669,7 @@ class pmclass extends data_object_with_custom_fields {
             mtrace("Triggering class_notcompleted event.\n");
             events_trigger('class_notcompleted', $student);
         }
-        //rs_close($rs);
+        $rs->close();
         return true;
     }
 
@@ -1153,4 +1133,3 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
 function pmclass_get_record_by_courseid($courseid) {
     return pmclass::find(new field_filter('courseid', $courseid));
 }
-

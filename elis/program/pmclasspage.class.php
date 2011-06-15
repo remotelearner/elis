@@ -31,28 +31,15 @@ require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('data/track.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
+require_once elispm::lib('moodlecourseurl.class.php');
 require_once elispm::file('form/pmclassform.class.php');
 require_once elispm::file('coursepage.class.php');
-//require_once elispm::file('studentpage.class.php');
-//require_once elispm::file('waitlistpage.class.php');
+require_once elispm::file('studentpage.class.php');
+require_once elispm::file('waitlistpage.class.php');
 
-/*
-require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');    // ok
-require_once (CURMAN_DIRLOCATION . '/lib/pmclass.class.php');           // ok
-require_once (CURMAN_DIRLOCATION . '/lib/course.class.php');            // ok
-require_once (CURMAN_DIRLOCATION . '/lib/environment.class.php');       // not used
-require_once (CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php'); // ok
-require_once (CURMAN_DIRLOCATION . '/lib/coursetemplate.class.php');    // ok
-require_once (CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php');   // missing
-require_once (CURMAN_DIRLOCATION . '/lib/track.class.php');             // ok
-require_once (CURMAN_DIRLOCATION . '/form/pmclassform.class.php');      // ok
-require_once (CURMAN_DIRLOCATION . '/studentpage.class.php');           // missing
-require_once (CURMAN_DIRLOCATION . '/waitlistpage.class.php');          // missing
-require_once (CURMAN_DIRLOCATION . '/instructorpage.class.php');        // missing
-require_once (CURMAN_DIRLOCATION . '/taginstancepage.class.php');       // not used
-require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
-require_once (CURMAN_DIRLOCATION . '/reportlinkspage.class.php');       // missing
-*/
+//require_once (CURMAN_DIRLOCATION . '/instructorpage.class.php');        // missing
+//require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
+//require_once (CURMAN_DIRLOCATION . '/reportlinkspage.class.php');       // missing
 
 class pmclasspage extends managementpage {
     var $data_class = 'pmclass';
@@ -490,4 +477,3 @@ class pmclasspage extends managementpage {
         return NULL;
     }
 }
-

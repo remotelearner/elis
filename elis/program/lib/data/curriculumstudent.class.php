@@ -28,19 +28,9 @@ require_once elis::lib('data/data_object.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/curriculum.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
-//require_once elispm::lib('data/student.class.php');
+require_once elispm::lib('data/student.class.php');
 
-/*
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';          // ok
-require_once CURMAN_DIRLOCATION . '/lib/course.class.php';              // ok
-require_once CURMAN_DIRLOCATION . '/lib/curriculum.class.php';          // ok
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';    // ok
-require_once CURMAN_DIRLOCATION . '/lib/student.class.php';             // missing
-*/
-
-/*
-define('CURASSTABLE', 			     'crlm_curriculum_assignment');
-*/
+//define('CURASSTABLE', 			     'crlm_curriculum_assignment');
 define('CURR_EXPIRE_ENROL_START',    1);
 define('CURR_EXPIRE_ENROL_COMPLETE', 2);
 
@@ -80,39 +70,37 @@ class curriculumstudent extends elis_data_object {
      * @param $curriculumstudentdata int/object/array The data id of a data record or data elements to load manually.
      *
      */
-    /*
-    function curriculumstudent($curriculumstudentdata = false) {
-        parent::datarecord();
+//     function curriculumstudent($curriculumstudentdata = false) {
+//         parent::datarecord();
 
-        $this->set_table(CURASSTABLE);
-        $this->add_property('id', 'int');
-        $this->add_property('userid', 'int');
-        $this->add_property('curriculumid', 'int');
-        $this->add_property('completed', 'int');
-        $this->add_property('timecompleted', 'int');
-        $this->add_property('timeexpired', 'int');
-        $this->add_property('credits', 'int');
-        $this->add_property('locked', 'int');
-        $this->add_property('timecreated', 'int');
-        $this->add_property('timemodified', 'int');
+//         $this->set_table(CURASSTABLE);
+//         $this->add_property('id', 'int');
+//         $this->add_property('userid', 'int');
+//         $this->add_property('curriculumid', 'int');
+//         $this->add_property('completed', 'int');
+//         $this->add_property('timecompleted', 'int');
+//         $this->add_property('timeexpired', 'int');
+//         $this->add_property('credits', 'int');
+//         $this->add_property('locked', 'int');
+//         $this->add_property('timecreated', 'int');
+//         $this->add_property('timemodified', 'int');
 
-        if (is_numeric($curriculumstudentdata)) {
-            $this->data_load_record($curriculumstudentdata);
-        } else if (is_array($curriculumstudentdata)) {
-            $this->data_load_array($curriculumstudentdata);
-        } else if (is_object($curriculumstudentdata)) {
-            $this->data_load_array(get_object_vars($curriculumstudentdata));
-        }
+//         if (is_numeric($curriculumstudentdata)) {
+//             $this->data_load_record($curriculumstudentdata);
+//         } else if (is_array($curriculumstudentdata)) {
+//             $this->data_load_array($curriculumstudentdata);
+//         } else if (is_object($curriculumstudentdata)) {
+//             $this->data_load_array(get_object_vars($curriculumstudentdata));
+//         }
 
-        if (!empty($this->userid)) {
-            $this->user = new user($this->userid);
-        }
+//         if (!empty($this->userid)) {
+//             $this->user = new user($this->userid);
+//         }
 
-        if (!empty($this->curriculumid)) {
-            $this->curriculum = new curriculum($this->curriculumid);
-        }
-    }
-    */
+//         if (!empty($this->curriculumid)) {
+//             $this->curriculum = new curriculum($this->curriculumid);
+//         }
+//     }
 
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('user', 'elis_program');
@@ -372,7 +360,7 @@ class curriculumstudent extends elis_data_object {
     public static function get_completed_for_user($userid) {
         global $DB;
 
-        $rows = $DB->get_records_select(curriculumstudent::TABLE, "userid = $userid and completed != 0", '', 'id');
+        $rows = $DB->get_records_select(curriculumstudent::TABLE, "userid = $userid and completed != 0", null, '', 'id');
         $rows = ($rows == false ? array() : $rows);
 
         $r = array();
