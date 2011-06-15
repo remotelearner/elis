@@ -258,7 +258,7 @@ abstract class selectionpage extends pm_page { // TBD
  */
 class selection_table extends display_table {
     function __construct(&$items, $columns, $pageurl, $decorators=array()) {
-        parent::__construct($items, $columns, $pageurl, $decorators);
+        parent::__construct($items, $columns, $pageurl);
         $this->table->id = 'selectiontable';
     }
 

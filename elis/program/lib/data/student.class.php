@@ -612,7 +612,7 @@ class student extends elis_data_object {
         if (isset($columns[$sort])) {
             $columns[$sort]['sortable'] = $dir;
         } else {
-            $sort = 'defaultsortcolumn';
+            $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
     /* ****
@@ -831,14 +831,13 @@ class student extends elis_data_object {
                                       'display_function' => 'htmltab_display_function')
             );
 
-
             if ($dir !== 'DESC') {
                 $dir = 'ASC';
             }
             if (isset($columns[$sort])) {
                 $columns[$sort]['sortable'] = $dir;
             } else {
-                $sort = 'defaultsortcolumn';
+                $sort = 'element'; // TBD
                 $columns[$sort]['sortable'] = $dir;
             }
         /* ****
@@ -1024,7 +1023,7 @@ class student extends elis_data_object {
         if (isset($columns[$sort])) {
             $columns[$sort]['sortable'] = $dir;
         } else {
-            $sort = 'defaultsortcolumn';
+            $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
     /* ****
@@ -1247,7 +1246,7 @@ class student extends elis_data_object {
             if (isset($columns[$sort])) {
                 $columns[$sort]['sortable'] = $dir;
             } else {
-                $sort = 'defaultsortcolumn';
+                $sort = 'element'; // TBD
                 $columns[$sort]['sortable'] = $dir;
             }
         /* ****
@@ -2397,7 +2396,7 @@ class student_grade extends elis_data_object {
         if (isset($columns[$sort])) {
             $columns[$sort]['sortable'] = $dir;
         } else {
-            $sort = 'defaultsortcolumn';
+            $sort = 'grade'; // TBD
             $columns[$sort]['sortable'] = $dir;
         }
     /* ****

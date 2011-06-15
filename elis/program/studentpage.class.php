@@ -476,7 +476,7 @@ class studentpage extends associationpage {
         if (isset($columns[$sort])) {
             $columns[$sort]['sortable'] = $dir;
         } else {
-            $sort = 'defaultsortcolumn';
+            $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
 

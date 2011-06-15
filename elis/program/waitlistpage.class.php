@@ -194,30 +194,27 @@ class waitlist_table extends selection_table {
 
     function __construct(&$items, $url) {
         $columns = array(
-            '_selection'  => array('header' => ''), // TBD
+            '_selection'  => array('header' => '', 'sortable' => false,
+                                   'display_function' => array(&$this, 'get_item_display__selection')), // TBD
             'idnumber'    => array('header' => get_string('idnumber',        self::LANG_FILE)),
             'name'        => array('header' => get_string('name',            self::LANG_FILE)),
             'country'     => array('header' => get_string('country',         self::LANG_FILE)),
             'language'    => array('header' => get_string('user_language',   self::LANG_FILE)),
             'timecreated' => array('header' => get_string('registered_date', self::LANG_FILE),
-                                   'display_function', array(&$this, 'get_item_display_timecreated')), // TBD , ?
+                                   'display_function' => array(&$this, 'get_item_display_timecreated')), // TBD , ?
         );
-        $formatters = array();
+
+        // foreach($items as $item) $item->_selection = '';
+
+        //$formatters = array();
         // TBD: class recordlinkformatter ???
         //$formatters['name'] = $formatters['idnumber'] = new recordlinkformatter(new usermanagementpage(), 'uid');
-        parent::__construct($items, $columns, $url, $formatters);
+        parent::__construct($items, $columns, $url);
     }
 
     function get_item_display_timecreated($column, $item) {
         return $this->get_date_item_display($column, $item);
     }
 
-    /** TBD: get error
-     *  "illegal offset type in /elis/core/lib/table.class.php on line 118"
-     *  if this method (or parent) returns true!
-     */
-    protected function is_sortable_default() {
-        return false;
-    }
 }
 
