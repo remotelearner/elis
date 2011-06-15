@@ -46,8 +46,8 @@ abstract class associationpage2 extends selectionpage {
     }
 
     function get_assigned_strings() {
-        return array(get_string('assigned', 'block_curr_admin'),
-                     get_string('unassigned', 'block_curr_admin'));
+        return array(get_string('assigned', 'elis_program'),
+                     get_string('unassigned', 'elis_program'));
     }
 
     function print_tabs() {
