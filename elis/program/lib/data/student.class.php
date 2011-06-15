@@ -180,10 +180,10 @@ class student extends elis_data_object {
                 if ($compelements === false) {
                     $compelements = $this->pmclass->course->get_completion_elements();
                 }
-                $select ='classid = '.$this->classid.' AND userid = '.$this->userid;
+                $select ='classid = ? AND userid = ? ';
                 $grades = $this->_db->get_records_select
-                            (student_grade::TABLE, $select, '',
-                             'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
+                            (student_grade::TABLE, $select, array($this->classid, $this->userid),
+                             '', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
                 $this->grades = array();
 
                 if (!empty($compelements)) {
@@ -497,28 +497,30 @@ class student extends elis_data_object {
     /**
      * Retrieves a user object given the users idnumber
      * @param <type> $idnumber
+     * @uses $DB
      * @return <type>
      */
     public static function get_userclass($userid, $classid) {
+        global $DB;
         $retval = null;
 
-        $student = $this->_db->get_record(student::TABLE, array('userid' => $userid, 'classid' => $classid));
-
+        $student = $DB->get_record(student::TABLE, array('userid' => $userid, 'classid' => $classid));
         if(!empty($student)) {
             $retval = new student($student->id);
         }
-
         return $retval;
     }
 
     // Note: we rely on the caller to cascade these deletes to the student_grade
-	// table.
+    // table.
     public static function delete_for_class($id) {
-    	return $this->_db->delete_records(student::TABLE, 'classid', $id);
+        global $DB;
+        return $DB->delete_records(student::TABLE, array('classid' => $id));
     }
 
     public static function delete_for_user($id) {
-        return $this->_db->delete_records(student::TABLE, 'userid', $id);
+        global $DB;
+        return $DB->delete_records(student::TABLE, array('userid' => $id));
     }
 
     /**
@@ -816,8 +818,8 @@ class student extends elis_data_object {
             (get_class($this->pmclass->course) == 'course') &&
             ($elements = $this->pmclass->course->get_completion_elements())) {
 
-            $select = "classid = {$this->classid} AND userid = {$this->userid}";
-            $grades = $this->_db->get_records_select(student_grade::TABLE, $select, 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
+            $select = 'classid = ? AND userid = ? ';
+            $grades = $this->_db->get_records_select(student_grade::TABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
             $columns = array(
                 'element'    => array('header' => get_string('grade_element', self::LANG_FILE),
                                       'display_function' => 'htmltab_display_function'),
@@ -1225,8 +1227,8 @@ class student extends elis_data_object {
             (get_class($this->pmclass->course) == 'course') &&
             ($elements = $this->pmclass->course->get_completion_elements())) {
 
-            $select = "classid = {$this->classid} AND userid = {$this->userid}";
-            $grades = $this->_db->get_records_select(CLSGRTABLE, $select, 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
+            $select = 'classid = ? AND userid = ? ';
+            $grades = $this->_db->get_records_select(CLSGRTABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
 
             $columns = array(
                 'element'          => array('header' => get_string('grade_element', self::LANG_FILE),
@@ -1499,17 +1501,18 @@ class student extends elis_data_object {
     }
 
     static public function get_waitlist_in_curriculum($userid, $curid) {
+        global $DB;
         $select  = 'SELECT wat.id wlid, wat.position, cls.idnumber clsid, crs.name, cls.* ';
         $tables = 'FROM {'. CURCRSTABLE .'} curcrs '; // ***TBD***
         $join   = 'JOIN {'. course::TABLE .'} crs ON curcrs.courseid = crs.id ';
         $join  .= 'JOIN {'. pmclass::TABLE .'} cls ON cls.courseid = crs.id ';
         $join  .= 'JOIN {'. waitlist::TABLE .'} wat ON wat.classid = cls.id ';
-        $where  = 'WHERE curcrs.curriculumid = \'' . $curid . '\' ';
-        $where .= 'AND wat.userid = \'' . $userid . '\' ';
+        $where  = 'WHERE curcrs.curriculumid = ? ';
+        $where .= 'AND wat.userid = ? ';
         $sort = 'ORDER BY curcrs.position';
 
         $sql = $select.$tables.$join.$where.$sort;
-        return $this->_db->get_records_sql($sql);
+        return $DB->get_records_sql($sql, array($curid, $userid));
     }
 
     /**
@@ -2044,6 +2047,10 @@ class student extends elis_data_object {
         return $this->_db->count_records_sql($sql, $params);
     }
 
+    public function set_from_data($data) {
+        $this->_load_data_from_record($data, true);
+    }
+
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
 //  STATIC FUNCTIONS:                                              //
@@ -2211,11 +2218,12 @@ class student extends elis_data_object {
      *
      * @param    int      $userid    The id of the user being associated to the class
      * @param    int      $classid   The id of the class we are associating the user to
-     *
+     * @uses     $DB
+     * @uses     $USER;
      * @return   boolean             True if the current user has the required permissions, otherwise false
      */
     public static function can_manage_assoc($userid, $classid) {
-        global $USER;
+        global $DB, $USER;
 
         if(!pmclasspage::can_enrol_into_class($classid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
@@ -2241,7 +2249,7 @@ class student extends elis_data_object {
         $select = "userid = ? AND {$cluster_select}";
 
         //user just needs to be in one of the possible clusters
-        if(record_exists_select(clusteruser::TABLE, $select, array($userid))) {
+        if($DB->record_exists_select(clusteruser::TABLE, $select, array($userid))) {
             return true;
         }
 
@@ -2256,7 +2264,11 @@ class student_grade extends elis_data_object {
 
     var $verbose_name = 'student_grade'; // TBD
 
-    static $associations = array( // TBD
+    static $associations = array(
+        'users'   => array('class' => 'user',
+                           'idfield' => 'userid'),
+        'pmclass' => array('class' => 'pmclass',
+                           'idfield' => 'classid')
     );
 
 /*
@@ -2331,15 +2343,18 @@ class student_grade extends elis_data_object {
 /////////////////////////////////////////////////////////////////////
 
     public static function delete_for_class($id) {
-    	return $this->_db->delete_records(student_grade::TABLE, array('classid' => $id));
+        global $DB;
+        return $DB->delete_records(student_grade::TABLE, array('classid' => $id));
     }
 
     public static function delete_for_user($id) {
-        return $this->_db->delete_records(student_grade::TABLE, array('userid' => $id));
+        global $DB;
+        return $DB->delete_records(student_grade::TABLE, array('userid' => $id));
     }
 
     public static function delete_for_user_and_class($userid, $classid) {
-        return $this->_db->delete_records(student_grade::TABLE, array( 'userid' => $userid, 'classid' => $classid) );
+        global $DB;
+        return $DB->delete_records(student_grade::TABLE, array('userid' => $userid, 'classid' => $classid));
     }
 
 /////////////////////////////////////////////////////////////////////

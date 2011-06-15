@@ -175,7 +175,7 @@ class associationpage extends pm_page {
             $obj->set_from_data($data);
             $obj->save();
             $target = $this->get_new_page(array('action' => 'default', 'id' => $parent_id));
-            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' saved.');
+            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' saved.');
         } else {
             // Validation must have failed, redisplay form
             $form->display();
@@ -208,7 +208,7 @@ class associationpage extends pm_page {
             $obj->set_from_data($data);
             $obj->update();  // TODO: create a generalized "save" method that decides whether to do update or add
             $target = $this->get_new_page(array('action' => 'default', 'id' => $parent_id));
-            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' updated.');
+            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' updated.');
         } else {
             // Validation must have failed, redisplay form
             $this->print_tabs('edit', array('id' => $id));
