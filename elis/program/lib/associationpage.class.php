@@ -135,7 +135,7 @@ class associationpage extends pm_page {
         }*/
 
         //$this->print_edit_form($obj, $parent_obj);
-        $this->display_edit($obj, $parent_obj);
+        $this->print_edit_form($obj, $parent_obj);
     }
 
     /**
