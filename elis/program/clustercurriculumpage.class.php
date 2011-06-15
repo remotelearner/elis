@@ -177,6 +177,8 @@ class clustercurriculumpage extends clustercurriculumbasepage {
     }
 
     function display_default() {
+        global $OUTPUT;
+
         $id = $this->required_param('id', PARAM_INT);
 
         $columns = array(
@@ -222,42 +224,47 @@ class clustercurriculumpage extends clustercurriculumbasepage {
             }
         } else {
             echo '<p align="center"><center>';
-            echo get_string('clsaddcurr_instruction','elis_program');
+            echo get_string('userset_addcurr_instruction','elis_program');
             $this->print_dropdown($curricula, $items, 'clusterid', 'curriculumid');
             echo '</center></p><br/>';
         }
 
         $options = array('id' => $id, 's' => 'clstcur', 'action' => 'copycurredit');
-        $button = print_single_button('index.php', $options, get_string('clscpycurr','elis_program'), 'get', '_self', true);
+        //print_single_button(null, $tmppage->get_moodle_url()->params, get_string('track_autocreate_button', 'elis_program'));
+        //$button = print_single_button('index.php', $options, get_string('userset_cpycurr','elis_program'), 'get', '_self', true);
+        $button = new single_button(new moodle_url('index.php', $options), get_string('userset_cpycurr','elis_program'), 'get');
+        //echo $OUTPUT->render($button);
+
 
         // Add a more specific CSS class
-        $button = str_replace('singlebutton', 'singlebutton clscpycurrbtn ', $button);
+        $button->class = str_replace('singlebutton', 'singlebutton clscpycurrbtn ', $button->class);
 
         echo '<p align="center"><center>';
-        echo get_string('clscpycurr_instruction','elis_program');
+        echo get_string('userset_cpycurr_instruction','elis_program');
         echo '</p><p align="center"><center>';
-        echo $button;
+        echo $OUTPUT->render($button);
         echo '</center></p>';
     }
 
-    function action_copycurredit() {
-        global $CFG, $USER, $CURMAN;
+    function display_copycurredit() {
+        global $CFG, $USER, $PAGE, $DB, $OUTPUT;
 
-        require_js($CFG->wwwroot . '/curriculum/js/clustercurriculumpage.js');
+        $PAGE->requires->js('/elis/program/js/clustercurriculumpage.js');
 
         $id = $this->required_param('id', PARAM_INT);
 
         // Create a list of curricula to be excluded
         $curriculumshown = array();
 
-        $table = new stdClass();
-        $table->head = array(get_string('clustcpyclustname', 'elis_program'),
-                             get_string('clustcpycurname', 'elis_program'),
-                             get_string('clustcpyadd', 'elis_program'),
-                             get_string('clustcpytrkcpy', 'elis_program'),
-                             get_string('clustcpycrscpy', 'elis_program'),
-                             get_string('clustcpyclscpy', 'elis_program'),
-                             get_string('clustcpymdlclscpy', 'elis_program'),
+        //$table = new stdClass();
+        $table = new html_table();
+        $table->head = array(get_string('userset_cpyclustname', 'elis_program'),
+                             get_string('userset_cpycurname', 'elis_program'),
+                             get_string('userset_cpyadd', 'elis_program'),
+                             get_string('userset_cpytrkcpy', 'elis_program'),
+                             get_string('userset_cpycrscpy', 'elis_program'),
+                             get_string('userset_cpyclscpy', 'elis_program'),
+                             get_string('userset_cpymdlclscpy', 'elis_program'),
             );
 
         $table->class = 'cluster_copy_curriculum';
@@ -268,7 +275,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         $clusters = cluster_get_listing($sort, $dir, 0);
         $clusterlist = array();
 
-        $sql = 'SELECT * from ' . $CURMAN->db->prefix_table('crlm_cluster');
+        $sql = 'SELECT * from {' . userset::TABLE.'}';
 
         // Exclude clusters the user does not have the capability to manage/see
         $context = get_contexts_by_capability_for_user('cluster', 'block/curr_admin:cluster:view', $USER->id);
@@ -285,10 +292,10 @@ class clustercurriculumpage extends clustercurriculumbasepage {
 
         echo '<form action="index.php" method="post">';
 
-        $mdlcrsoptions = array('copyalways' => get_string('currcopy_mdlcrs_copyalways', 'elis_program'),
-                               'copyautocreated' => get_string('currcopy_mdlcrs_copyautocreated', 'elis_program'),
-                               'autocreatenew' => get_string('currcopy_mdlcrs_autocreatenew', 'elis_program'),
-                               'link' => get_string('currcopy_mdlcrs_link', 'elis_program')
+        $mdlcrsoptions = array('copyalways' => get_string('program_copy_mdlcrs_copyalways', 'elis_program'),
+                               'copyautocreated' => get_string('program_copy_mdlcrs_copyautocreated', 'elis_program'),
+                               'autocreatenew' => get_string('program_copy_mdlcrs_autocreatenew', 'elis_program'),
+                               'link' => get_string('program_copy_mdlcrs_link', 'elis_program')
             );
 
         $contexts = curriculumpage::get_contexts('block/curr_admin:associate');
@@ -331,8 +338,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
                                                           1, false, '', '', '', true),
                                            print_checkbox(self::CPY_CURR_CLS_PREFIX.$assocurrrec->curriculumid,
                                                           1, false, '', '', '', true),
-                                           choose_from_menu($mdlcrsoptions, self::CPY_CURR_MDLCRS_PREFIX.$assocurrrec->curriculumid,
-                                                            '', '', '', 0, true),
+                                           html_writer::select($mdlcrsoptions, self::CPY_CURR_MDLCRS_PREFIX.$assocurrrec->curriculumid),
                         );
                     $table->rowclass[] = 'clus_cpy_row';
                 }
@@ -342,7 +348,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         }
 
         // Add unassociated row to table
-        $table->data[] = array(get_string('unassociated', 'elis_program'),
+        $table->data[] = array(get_string('usersetprogram_unassociated', 'elis_program'),
                                '', '', '', '', '', '');
         $table->rowclass[] = 'clus_cpy_row unassigned';
 
@@ -363,8 +369,9 @@ class clustercurriculumpage extends clustercurriculumbasepage {
                                                       1, false, '', '', '', true),
                                        print_checkbox(self::CPY_CURR_CLS_PREFIX.$curriculumid,
                                                       1, false, '', '', '', true),
-                                       choose_from_menu($mdlcrsoptions, self::CPY_CURR_MDLCRS_PREFIX.$curriculumid,
-                                                        '', '', '', 0, true),
+//                                       choose_from_menu($mdlcrsoptions, self::CPY_CURR_MDLCRS_PREFIX.$curriculumid,
+//                                                        '', '', '', 0, true),
+                                       html_writer::select($mdlcrsoptions, self::CPY_CURR_MDLCRS_PREFIX.$curriculumid),
                     );
 
                 $table->rowclass[] = 'clus_cpy_row';
@@ -391,10 +398,11 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         $table->data[] = array('', '', $currselectall, $trkselectall, $crsselectall, $clsselectall);
         $table->rowclass[] = 'clus_cpy_row select_all_row';
 
-        echo print_table($table, true);
+        //echo print_table($table, true);
+        echo html_writer::table($table);
 
         echo '<div class="clus_curr_cpy_save_exit">';
-        echo '<input type="submit" name="save" value="'.get_string('saveexit', 'elis_program').'">';
+        echo '<input type="submit" name="save" value="'.get_string('userset_saveexit', 'elis_program').'">';
         echo '<div class="hidden">';
         echo '<input type="hidden" name="id" value="'.$id.'">';
         echo '<input type="hidden" name="s" value="clstcur">';
@@ -406,7 +414,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
 
     }
 
-    function action_copycurr() {
+    function do_copycurr() {
 
         global $CFG;
 
@@ -423,7 +431,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
             notify(get_string('nodatasubmit', 'elis_program'), 'red');
         }
 
-        $targetcluster = new cluster($clusterid);
+        $targetcluster = new userset($clusterid);
 
         // Retrieve all of the curriculums that need to be copied and assigned
         $prefixlen = strlen(self::CPY_CURR_PREFIX);
@@ -502,7 +510,10 @@ class clustercurriculumpage extends clustercurriculumbasepage {
             }
         }
 
-        redirect($CFG->wwwroot . '/curriculum/index.php?id='.$data['id'].'&amp;s=clstcur', '', 2);
+        $tmppage = new clustercurriculumpage(array('id' => $data['id']));
+        //redirect($CFG->wwwroot . '/elis/program/?id='.$data['id'].'&s=clstcur', '', 2);
+        redirect($tmppage->url, '', 2);
+
 
     }
 
@@ -546,7 +557,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
 
         $this->print_list_view($items, $columns);
 
-        $contexts = clusterpage::get_contexts('block/curr_admin:associate');
+        $contexts = usersetpage::get_contexts('block/curr_admin:associate');
         $clusters = cluster_get_listing('name', 'ASC', 0, 0, '', '', array('contexts' =>$contexts));
         if (empty($clusters)) {
             $num_clusters = cluster_count_records();
@@ -573,7 +584,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
      * @param array $columns
      * @param array $formatters
      */
-    function create_table_object($items, $columns, $formatters) {
+    function create_table_object($items, $columns) {
 
         $parent_clusterid = $this->optional_param('parent_clusterid', 0, PARAM_INT);
 
@@ -584,7 +595,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
 
         $page_object = $this->get_new_page($extra_params);
 
-        return new clustercurriculum_page_table($items, $columns, $page_object, $formatters);
+        return new clustercurriculum_page_table($items, $columns, $page_object);
     }
 }
 

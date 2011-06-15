@@ -38,9 +38,9 @@ class clustercurriculumform extends cmform {
         $mform->addElement('hidden', 'trackid');
         $mform->addElement('hidden', 'classid');
 
-        $mform->addElement('advcheckbox', 'autoenrol', null, get_string('auto_enrol_cluster_curriculum', 'block_curr_admin'), null, array('0', '1'));
+        $mform->addElement('advcheckbox', 'autoenrol', null, get_string('auto_enrol_cluster_curriculum', 'elis_program'), null, array('0', '1'));
         $mform->setDefault('autoenrol', '1');
-        $mform->setHelpButton('autoenrol', array('clustercurriculumform/autoenrol', get_string('auto_enrol', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->setHelpButton('autoenrol', array('clustercurriculumform/autoenrol', get_string('auto_enrol', 'elis_program'), 'elis_program'));
 
         $this->add_action_buttons();
     }

@@ -260,7 +260,7 @@ class student extends elis_data_object {
                 print_error('nouser', self::LANG_FILE);
                 return true;
             }
-            
+
             $message = new stdClass; // TBD: new notification();
 
             /// Set up the text of the message
@@ -293,14 +293,14 @@ class student extends elis_data_object {
             }
 
             $users = array();
-            
+
             if ($sendtorole) {
                 /// Get all users with the notify_classcompleted capability.
                 if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_classcomplete')) {
                     $users = $users + $roleusers;
                 }
             }
-            
+
             if ($sendtosupervisor) {
                 /// Get parent-context users.
                 if ($supervisors = cm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_classcomplete')) {
@@ -1806,11 +1806,11 @@ class student extends elis_data_object {
         }
 
         // *** TBD ***
-        if(!pmclasspage::_has_capability('block/curr_admin:class:enrol', $this->classid)) {            
+        if(!pmclasspage::_has_capability('block/curr_admin:class:enrol', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
- 
+
             if(empty($allowed_clusters)) {
                 $where .= 'AND 0=1';
             } else {
@@ -1821,7 +1821,7 @@ class student extends elis_data_object {
                              WHERE clusterid IN ({$cluster_filter}))";
             }
         }
- 
+
         if ($sort) {
             if ($sort === 'name') {
                 $sort = $FULLNAME;
@@ -1900,7 +1900,7 @@ class student extends elis_data_object {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
-            
+
             if(empty($allowed_clusters)) {
                 $where .= 'AND 0=1';
             } else {
@@ -2112,7 +2112,7 @@ class student extends elis_data_object {
         }
 
         $users = array();
-        
+
         if ($sendtorole) {
             /// Get all users with the notify_classnotstart capability.
             if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_classnotstart')) {
@@ -2204,14 +2204,14 @@ class student extends elis_data_object {
 
         return true;
     }
-    
+
     /**
      * Determines whether the current user is allowed to create, edit, and delete associations
      * between a user and a class
-     * 
+     *
      * @param    int      $userid    The id of the user being associated to the class
      * @param    int      $classid   The id of the class we are associating the user to
-     * 
+     *
      * @return   boolean             True if the current user has the required permissions, otherwise false
      */
     public static function can_manage_assoc($userid, $classid) {

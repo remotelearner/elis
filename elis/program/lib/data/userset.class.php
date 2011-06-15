@@ -26,6 +26,8 @@
 
 require_once(elis::lib('data/data_object_with_custom_fields.class.php'));
 require_once(elispm::lib('contexts.php'));
+require_once(elispm::lib('data/clusterassignment.class.php'));
+require_once(elispm::lib('data/clustercurriculum.class.php'));
 /*
 require_once(CURMAN_DIRLOCATION . '/lib/usercluster.class.php');
 require_once(CURMAN_DIRLOCATION . '/lib/clusterassignment.class.php');
@@ -679,6 +681,7 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
     $filter = new AND_filter($filters);
     $filtersql = $filter->get_sql(true, 'clst');
     $params = array();
+    $where = '';
     if(isset($filtersql['join'])) {
         $join .= ' JOIN ' . $filtersql['join'];
         $params += $filtersql['join_parameters'];

@@ -42,7 +42,7 @@ require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/usertrack.class.php');
 require_once elispm::lib('data/track.class.php');
 
-class clustertrack extends data_object_with_custom_fields {
+class clustertrack extends elis_data_object {
     const TABLE = 'crlm_cluster_track';
 
     /**

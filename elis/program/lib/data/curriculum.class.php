@@ -520,7 +520,7 @@ class curriculum extends data_object_with_custom_fields {
         if (isset($options['targetcluster'])) {
             $cluster = $options['targetcluster'];
             if (!is_object($cluster) || !is_a($cluster, 'cluster')) {
-                $options['targetcluster'] = $cluster = new cluster($cluster);
+                $options['targetcluster'] = $cluster = new userset($cluster);
             }
         }
 
@@ -532,8 +532,8 @@ class curriculum extends data_object_with_custom_fields {
             $clone->name = $clone->name . ' - ' . $cluster->name;
             $clone->idnumber = $clone->idnumber . ' - ' . $cluster->name;
         }
-        $clone = new curriculum(addslashes_recursive($clone));
-        if (!$clone->add()) {
+        $clone = new curriculum($clone);
+        if (!$clone->save()) {
             $objs['errors'][] = get_string('failclustcpycurr', 'elis_program', $this);
             return $objs;
         }
@@ -646,7 +646,7 @@ class curriculum extends data_object_with_custom_fields {
                     update_record(curriculumstudent::TABLE, $update);
                  }
 
-                //rs_close($rs);
+                $rs->close();
             }
         }
 

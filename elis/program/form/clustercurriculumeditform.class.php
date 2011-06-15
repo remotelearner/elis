@@ -27,14 +27,14 @@
 class clustercurriculumeditform extends moodleform {
 
     function clustercurriculumeditform($action=null, $customdata=null, $method='post', $target='', $attributes=null, $editable=true) {
-        $this->cluster_fields = array('name'    => get_string('cluster_name', 'block_curr_admin'),
-                                      'display' => get_string('cluster_description', 'block_curr_admin'));
+        $this->cluster_fields = array('name'    => get_string('cluster_name', 'elis_program'),
+                                      'display' => get_string('cluster_description', 'elis_program'));
 
-        $this->curriculum_fields = array('idnumber'    => get_string('curriculum_idnumber', 'block_curr_admin'),
-                                         'name'        => get_string('curriculum_name', 'block_curr_admin'),
-                                         'description' => get_string('curriculum_shortdescription' ,'block_curr_admin'),
-                                         'reqcredits'  => get_string('curriculum_reqcredits', 'block_curr_admin'),
-                                         'numcourses'  => get_string('num_courses', 'block_curr_admin'));
+        $this->curriculum_fields = array('idnumber'    => get_string('curriculum_idnumber', 'elis_program'),
+                                         'name'        => get_string('curriculum_name', 'elis_program'),
+                                         'description' => get_string('curriculum_shortdescription' ,'elis_program'),
+                                         'reqcredits'  => get_string('curriculum_reqcredits', 'elis_program'),
+                                         'numcourses'  => get_string('num_courses', 'elis_program'));
 
         parent::__construct($action, $customdata, $method, $target, $attributes, $editable);
     }
@@ -43,7 +43,7 @@ class clustercurriculumeditform extends moodleform {
         $mform =& $this->_form;
 
         //cluster stuff
-        $mform->addElement('header', 'clusterinfo', get_string('info_group_cluster', 'block_curr_admin'));
+        $mform->addElement('header', 'clusterinfo', get_string('info_group_cluster', 'elis_program'));
 
         foreach($this->cluster_fields as $id => $display) {
             $element =& $mform->createElement('text', 'cluster' . $id, $display);
@@ -52,7 +52,7 @@ class clustercurriculumeditform extends moodleform {
         }
 
         //curriculum stuff
-        $mform->addElement('header', 'curriculuminfo', get_string('info_group_curriculum', 'block_curr_admin'));
+        $mform->addElement('header', 'curriculuminfo', get_string('info_group_curriculum', 'elis_program'));
 
         foreach($this->curriculum_fields as $id => $display) {
             $element =& $mform->createElement('text', 'curriculum' . $id, $display);
@@ -61,9 +61,9 @@ class clustercurriculumeditform extends moodleform {
         }
 
         //association stuff
-        $mform->addElement('header', 'associationinfo', get_string('info_group_association', 'block_curr_admin'));
-        $mform->addElement('advcheckbox', 'autoenrol', get_string('auto_enrol', 'block_curr_admin'), null, null, array('0', '1'));
-        $mform->setHelpButton('autoenrol', array('clustercurriculumform/autoenrol', get_string('auto_enrol', 'block_curr_admin'), 'block_curr_admin'));
+        $mform->addElement('header', 'associationinfo', get_string('info_group_association', 'elis_program'));
+        $mform->addElement('advcheckbox', 'autoenrol', get_string('auto_enrol', 'elis_program'), null, null, array('0', '1'));
+        $mform->addHelpButton('autoenrol', 'clustercurriculumform:autoenrol', 'elis_program'));
 
         $mform->addElement('hidden', 'association_id', '');
 
@@ -71,16 +71,16 @@ class clustercurriculumeditform extends moodleform {
     }
 
     function definition_after_data() {
-        global $CFG;
+        global $CFG, $DB;
 
         parent::definition_after_data();
         $mform =& $this->_form;
 
         if($association_id = $mform->getElementValue('association_id')) {
-            if($record = get_record(CLSTCURTABLE, 'id', $association_id)) {
+            if($record = $DB->get_record(clustercurriculum::TABLE, array('id'=> $association_id))) {
 
                 //cluster stuff
-                if($cluster_record = get_record(CLSTTABLE, 'id', $record->clusterid)) {
+                if($cluster_record = $DB->get_record(cluster::TABLE, array('id'=> $record->clusterid))) {
                     foreach($this->cluster_fields as $id => $display) {
                         $element =& $mform->getElement('cluster' . $id);
                         $element->setValue($cluster_record->{$id});
@@ -93,12 +93,13 @@ class clustercurriculumeditform extends moodleform {
                                           cur.description,
                                           cur.reqcredits,
                                    COUNT(curcrs.id) as numcourses
-                                   FROM {$CFG->prefix}crlm_curriculum cur
-                                   LEFT JOIN {$CFG->prefix}crlm_curriculum_course curcrs
+                                   FROM {".curriculum::TABLE ."} cur
+                                   LEFT JOIN {".curriculumcourse::TABLE."} curcrs
                                    ON curcrs.curriculumid = cur.id
-                                   WHERE cur.id = {$record->curriculumid}";
+                                   WHERE cur.id = ?";
 
-                if($curriculum_record = get_record_sql($curriculum_sql)) {
+                $params = array($record->curriculumid);
+                if($curriculum_record = $DB->get_record_sql($curriculum_sql, $params)) {
                     foreach($this->curriculum_fields as $id => $display) {
                         $element =& $mform->getElement('curriculum' . $id);
                         $element->setValue($curriculum_record->{$id});

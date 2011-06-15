@@ -38,6 +38,7 @@ require_once CURMAN_DIRLOCATION . '/lib/student.class.php';
 require_once CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php';
 */
 require_once elispm::lib('data/classmoodlecourse.class.php');
+require_once elispm::lib('data/clustertrack.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('data/curriculum.class.php');
@@ -892,6 +893,8 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
             $params += $filter_sql['where_params'];
         }
     }
+        echo '<br>where now? ';
+    print_object($where);
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
@@ -903,11 +906,14 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
         $curriculum_context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol', $USER->id);
-        $curriculum_filter_object = $curriculum_context->filter_for_context_level('trk.id', 'track');
+        //$curriculum_filter_object = $curriculum_context->filter_for_context_level('trk.id', 'track');
+        //$curriculum_filter = $curriculum_filter_object->get_sql();
+        $curriculum_filter_object = $curriculum_context->get_filter('trk.id', 'track');
         $curriculum_filter = $curriculum_filter_object->get_sql();
 
-        if(empty($allowed_clusters)) {
-            $where[] = $curriculum_filter;
+        if(count($allowed_clusters)!=0 || isset($curriculum_filter['where'])) {
+            $where[] = $curriculum_filter['where'];
+            $params += $curriculum_filter['where_params'];
         } else {
             //this allows both the indirect capability and the direct track filter to work
 
@@ -915,7 +921,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
             $where[] = "(
                           trk.id IN (
                             SELECT clsttrk.trackid
-                            FROM {". class_track::TABLE. "} clsttrk
+                            FROM {". clustertrack::TABLE. "} clsttrk
                             WHERE clsttrk.clusterid IN (:allowed_clusters)
                           )
                           OR
