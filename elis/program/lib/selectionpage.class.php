@@ -94,7 +94,7 @@ abstract class selectionpage extends pm_page { // TBD
         return new selectionform();
     }
 
-    function do_default() { // action_default
+    function display_default() { // action_default
         $form = $this->get_selection_form();
 
         $baseurl = htmlspecialchars_decode($this->_get_page_url()); // $this->get_basepage()->get_url()
@@ -157,7 +157,7 @@ abstract class selectionpage extends pm_page { // TBD
 
         // pager
         $action = optional_param('action', '', PARAM_ACTION);
-        $pagingbar = new paging_bar($count, $pagenum, $perpage, $this->get_basepage()->url . ($action ? "&amp;action=$action" : '' ) . '&amp;');
+        $pagingbar = new paging_bar($count, $pagenum, $perpage, $this->get_basepage()->url . ($action ? "&amp;action=$action" : '' )); // TBD: '&amp;'
         echo $OUTPUT->render($pagingbar);
 
         echo '<div style="float: right">';

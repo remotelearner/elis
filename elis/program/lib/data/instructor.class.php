@@ -27,6 +27,7 @@
 require_once elis::lib('data/data_object.class.php');
 require_once elis::lib('table.class.php');
 
+require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
@@ -230,7 +231,7 @@ class instructor extends elis_data_object {
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                              "index.php?s=ins&amp;section=curr&amp;id=$classid&amp;action=add&amp;" .
                              "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;" .
-                             "search=".urlencode(stripslashes($namesearch))."&amp;");
+                             "search=".urlencode(stripslashes($namesearch))); // TBD: .'&amp;'
             echo $OUTPUT->render($pagingbar);
             flush();
 
@@ -294,7 +295,7 @@ class instructor extends elis_data_object {
                 $newarr[] = $tabobj;
                 //$table->data[] = $newarr;
             }
-            $table = new display_table($newarr, $columns); // new stdClass;
+            $table = new display_table($newarr, $columns, get_pm_url());
         }
 
         if (empty($this->id)) {
@@ -331,7 +332,7 @@ class instructor extends elis_data_object {
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                              "index.php?s=ins&amp;section=curr&amp;id=$classid&amp;action=add&amp;" .
                              "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;" .
-                             "search=".urlencode(stripslashes($namesearch))."&amp;");
+                             "search=".urlencode(stripslashes($namesearch))); // TBD: .'&amp;'
             echo $OUTPUT->render($pagingbar);
         }
 

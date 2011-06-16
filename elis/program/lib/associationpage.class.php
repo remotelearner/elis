@@ -42,7 +42,19 @@ require_once elispm::lib('page.class.php');
 class associationpage extends pm_page {
     const LANG_FILE = 'elis_program';
 
+    /**
+     * The name of the class used for data objects
+     */
+    var $data_class;
+
+    /**
+     * The name of the class used for the add/edit form
+     */
+    var $form_class;
+
     var $tabs;
+
+    var $_form;
 
     public function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
@@ -121,12 +133,37 @@ class associationpage extends pm_page {
     /**
      * Generic handler for the add action.  Prints the add form.
      */
-    function do_add() {
+    function display_add() { // do_add()
         $id = required_param('id', PARAM_INT);
-
         $parent_obj = new $this->parent_data_class($id);
-
         $this->print_add_form($parent_obj);
+    }
+
+    function _do_add() {
+       $target = $this->get_new_page(array('action' => 'add'), true);
+        $obj = NULL; // $this->get_default_object_for_add();
+        $form = new $this->form_class($target->url, $obj ? array('obj' => $obj) : NULL);
+
+        if ($form->is_cancelled()) {
+            $target = $this->get_new_page(array(), true);
+            redirect($target->url);
+            return;
+        }
+
+        $data = $form->get_data();
+
+        if($data) {
+            require_sesskey();
+            $obj = $this->get_new_data_object();
+            $obj->set_from_data($data);
+            $obj->save();
+            $this->after_cm_entity_add($obj);
+            $target = $this->get_new_page(array('action' => 'view', 'id' => $obj->id), true);
+            redirect($target->url);
+        } else {
+            $this->_form = $form;
+            $this->display('add');
+        }
     }
 
     /**
@@ -144,21 +181,17 @@ class associationpage extends pm_page {
     /**
      * Generic handler for the edit action.  Prints the edit form.
      */
-    function do_edit() {
+    function display_edit() { // do_edit()
         $association_id = required_param('association_id', PARAM_INT);
-
-        $obj = new $this->data_class($association_id);
-
-        $id = required_param('id', PARAM_INT);
-
-        $parent_obj = new $this->parent_data_class($id);
+        $id             = required_param('id', PARAM_INT);
+        $obj            = new $this->data_class($association_id);
+        $parent_obj     = new $this->parent_data_class($id);
 
         /* TODO: is this still required?
         if(!$obj->get_dbloaded()) {
             error('Invalid object id: ' . $id . '.');
         }*/
 
-        //$this->print_edit_form($obj, $parent_obj);
         $this->print_edit_form($obj, $parent_obj);
     }
 
@@ -180,17 +213,15 @@ class associationpage extends pm_page {
     /**
      * Generic handler for the savenew action.  Tries to save the object and then prints the appropriate page.
      */
-    function do_savenew() { // TBD: display_savenew() ?
+    function display_savenew() { // TBD: do_savenew() ?
         $parent_id = required_param('id', PARAM_INT);
-
         $parent_obj = new $this->parent_data_class($parent_id);
-
         $target = $this->get_new_page(array('action' => 'savenew', 'id' => $parent_id));
 
         $form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
 
         if ($form->is_cancelled()) {
-            $this->do_default();
+            $this->display_default(); // do_default()
             return;
         }
 
@@ -211,7 +242,7 @@ class associationpage extends pm_page {
     /**
      * Generic handler for the update action.  Tries to update the object and then prints the appropriate page.
      */
-    function do_update() {
+    function display_update() { // do_update()
         $parent_id = required_param('id', PARAM_INT);
         $parent_obj = new $this->parent_data_class($parent_id);
 
@@ -224,7 +255,7 @@ class associationpage extends pm_page {
         $form = new $this->form_class($target->url, array('obj' => $obj, 'parent_obj' => $parent_obj));
 
         if ($form->is_cancelled()) {
-            $this->do_default();
+            $this->display_default(); // do_default()
             return;
         }
 
@@ -242,13 +273,28 @@ class associationpage extends pm_page {
         }
     }
 
-    public function get_title_default() {
+    public function get_page_title_default() {
         return get_string('breadcrumb_' . get_class($this), self::LANG_FILE);
+    }
+
+    public function get_title_default() {
+        return $this->get_page_title_default();
+    }
+
+    public function get_page_title_view() { // TBD
+        $id = $this->required_param('id', PARAM_INT);
+        $obj = $this->get_new_data_object($id);
+        $obj->load();
+        return $obj;
     }
 
     public function build_navbar_default() { // build_navigation_default
         parent::build_navbar_default();
-        $url = new moodle_url($this->_get_page_url(), array('s' => $this->pagename)); // TBD: $_GET ?
+        $uparams = array('s' => $this->pagename);
+        if (($id = $this->optional_param('id', null, PARAM_INT)) != null) {
+            $uparams['id'] = $id;
+        }
+        $url = new moodle_url($this->_get_page_url(), $uparams); // TBD: $_GET?
         $this->navbar->add(get_string("association_{$this->data_class}",
                                       self::LANG_FILE), $url); // TBD
         // arg1 was: $this->get_tab_page()->build_navigation_view()
@@ -295,7 +341,7 @@ class associationpage extends pm_page {
     /**
      * Generic handler for the confirm (confirm delete) action.  Tries to delete the object and then renders the appropriate page.
      */
-    function do_delete() {
+    function do_delete() { // TBD
         $association_id = required_param('association_id', PARAM_INT);
         $confirm = required_param('confirm', PARAM_ALPHANUM);
 
@@ -306,7 +352,7 @@ class associationpage extends pm_page {
             $obj->delete();
         }
 
-        $target = $this->do_default();
+        $target = $this->display_default(); // do_default()
     }
 
     /**

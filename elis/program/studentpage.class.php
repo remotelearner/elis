@@ -42,7 +42,7 @@ class studentpage extends associationpage {
     var $pagename = 'stu';
     var $tab_page = 'pmclasspage'; // TBD: was cmclasspage
 
-    var $form_class = 'studentform';
+    //var $form_class = 'studentform';
 
     var $section = 'curr';
 
@@ -51,12 +51,14 @@ class studentpage extends associationpage {
     //var $tabs; // TBD: moved to associationpage
 
     function __construct(array $params = null) {
-        parent::__construct($params);
-
         $this->tabs = array( // TBD: 'currcourse_edit' -> 'edit'
-            array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => 'Edit', 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
-           array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => 'Delete', 'showbutton' => true, 'image' => 'delete.gif'),
+            array('tab_id' => 'view', 'page' => 'studentpage' /* get_class($this) */, 'params' => array('action' => 'view'), 'name' => get_string('detail', self::LANG_FILE), 'showtab' => true),
+            array('tab_id' => 'currcourse_edit', 'page' => 'studentpage' /* get_class($this) */, 'params' => array('action' => 'edit'), 'name' => get_string('edit', self::LANG_FILE), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
+            array('tab_id' => 'edit', 'page' => 'studentpage' /* get_class($this) */, 'params' => array('action' => 'edit'), 'name' => get_string('edit', self::LANG_FILE), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
+           array('tab_id' => 'delete', 'page' => 'studentpage' /* get_class($this) */, 'params' => array('action' => 'delete'), 'name' => get_string('delete', self::LANG_FILE), 'showbutton' => true, 'image' => 'delete'),
         );
+
+        parent::__construct($params);
     }
 
     function _get_page_context() { // TBD
@@ -76,7 +78,7 @@ class studentpage extends associationpage {
     function can_do_add() {
         $id = $this->required_param('id');
         $users = optional_param('users', array(), PARAM_CLEAN);
-        
+
         foreach($users as $uid => $user) {
             if(!student::can_manage_assoc($uid, $id)) {
                 return false;
@@ -141,10 +143,10 @@ class studentpage extends associationpage {
             echo cm_error(get_string('studentunenrolled', self::LANG_FILE, $sparam));
         }
 
-        $this->do_default();
+        $this->display_default(); // do_default()
     }
 
-    function do_bulkedit() { // action_bulkedit
+    function display_bulkedit() { // action_bulkedit
         $clsid        = cm_get_param('id', 0);
         $type         = cm_get_param('stype', '');
         $sort         = cm_get_param('sort', 'name');
@@ -164,7 +166,7 @@ class studentpage extends associationpage {
         if (!empty($users)) {
             $this->attempt_enrol($clsid, $users);
         } else {
-            $this->do_default();
+            $this->display_default(); // do_default()
         }
     }
 
@@ -217,7 +219,7 @@ class studentpage extends associationpage {
         if(!empty($waitlist)) {
             $this->get_waitlistform($waitlist);
         } else {
-            $this->do_default();
+            $this->display_default(); // do_default()
         }
     }
 
@@ -306,7 +308,7 @@ class studentpage extends associationpage {
             $sgrade->do_add();
         }
 
-        $this->do_default();
+        $this->display_default(); // do_default()
     }
 
     /**
@@ -359,7 +361,7 @@ class studentpage extends associationpage {
             }
         }
 
-        $this->do_default();
+        $this->display_default(); // do_default()
     }
 
     function do_updateattendance() { // action_updateattendance
@@ -439,7 +441,7 @@ class studentpage extends associationpage {
             }
         }
 
-        $this->do_default();
+        $this->display_default(); // do_default()
     }
 
     /**
@@ -448,7 +450,7 @@ class studentpage extends associationpage {
      * @uses $CFG
      * @uses $OUTPUT
      */
-    function do_default() { // action_default (and above)
+    function display_default() { // action_default (and above)
         global $CFG, $OUTPUT;
 
         $clsid        = $this->required_param('id', PARAM_INT);
@@ -498,7 +500,7 @@ class studentpage extends associationpage {
         $pagingbar = new paging_bar($numstus, $page, $perpage,
                          "index.php?s=stu&amp;section=curr&amp;id=$clsid&amp;sort=$sort&amp;" .
                          "dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;namesearch=" .
-                         urlencode(stripslashes($namesearch))."&amp;");
+                         urlencode(stripslashes($namesearch))); // .'&amp;'
         echo $OUTPUT->render($pagingbar);
 
         echo "<form>";
