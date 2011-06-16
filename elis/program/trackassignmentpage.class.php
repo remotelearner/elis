@@ -33,7 +33,7 @@ require_once elispm::file('pmclasspage.class.php');
 require_once elispm::file('form/trackassignmentform.class.php');
 
 class trackassignmentpage extends associationpage {
-    var $data_class = 'trackassignmentclass';
+    var $data_class = 'trackassignment';
     var $form_class = 'trackassignmentform';
     var $parent_data_class = 'track';
 
@@ -89,7 +89,7 @@ class trackassignmentpage extends associationpage {
         // the user must have 'block/curr_admin:associate' permissions on both
         // ends
         $association_id = $this->required_param('association_id', PARAM_INT);
-        $record = new trackassignmentclass($association_id);
+        $record = new trackassignment($association_id);
         $trackid = $record->trackid;
         $classid = $record->classid;
 
@@ -140,6 +140,17 @@ class trackassignmentpage extends associationpage {
             'enrolments' => array('header'=> get_string('enrolments', 'elis_program')),
             'buttons' => array('header'=> ''),
         );
+
+        // TBD
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'clsname';
+            $columns[$sort]['sortable'] = $dir;
+        }
 
         $items = track_assignment_get_listing($id, $sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha);
         $numitems = track_assignment_count_records($id, $namesearch, $alpha);
@@ -225,7 +236,7 @@ class trackassignmentpage extends associationpage {
         $id = required_param('id', PARAM_INT);
         $aid = required_param('association_id', PARAM_INT);
 
-        $trackassignment = new trackassignmentclass($aid);
+        $trackassignment = new trackassignment($aid);
         $trackassignment->enrol_all_track_users_in_class();
 
         $tmppage = new trackassignmentpage(array('id' => $id));

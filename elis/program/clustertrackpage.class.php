@@ -24,30 +24,38 @@
  *
  */
 
-require_once (CURMAN_DIRLOCATION . '/lib/associationpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php'); // contains clustertrack as well
-require_once (CURMAN_DIRLOCATION . '/clusterpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/trackpage.class.php');
+//require_once (CURMAN_DIRLOCATION . '/lib/associationpage.class.php');
+//require_once (CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php'); // contains clustertrack as well
+//require_once (CURMAN_DIRLOCATION . '/clusterpage.class.php');
+//require_once (CURMAN_DIRLOCATION . '/trackpage.class.php');
+require_once elispm::lib('associationpage.class.php');
+require_once elispm::lib('data/clustercurriculum.class.php');
+require_once elispm::lib('data/clustertrack.class.php');
+require_once elispm::file('usersetpage.class.php');
+require_once elispm::file('trackpage.class.php');
+require_once elispm::file('form/clustertrackform.class.php');
+require_once elispm::file('form/clustertrackeditform.class.php');
 
 class clustertrackbasepage extends associationpage {
 
     var $data_class = 'clustertrack';
     var $form_class = 'clustertrackform';
     var $edit_form_class = 'clustertrackeditform';
+    var $tabs;
 
-    function __construct($params=false) {
+    function __construct(array $params=null) {
         $this->tabs = array(
             array('tab_id' => 'edit',
                   'page' => get_class($this),
                   'params' => array('action' => 'edit'),
-                  'name' => get_string('edit', 'block_curr_admin'),
+                  'name' => get_string('edit', 'elis_program'),
                   'showtab' => true,
                   'showbutton' => true,
                   'image' => 'edit.gif'),
             array('tab_id' => 'delete',
                   'page' => get_class($this),
                   'params' => array('action' => 'delete'),
-                  'name' => get_string('delete_label', 'block_curr_admin'),
+                  'name' => get_string('delete_label', 'elis_program'),
                   'showbutton' => true,
                   'image' => 'delete.gif'),
         );
@@ -60,27 +68,28 @@ class clustertrackbasepage extends associationpage {
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $trackid = $this->required_param('trackid', PARAM_INT);
 
-        return clusterpage::_has_capability('block/curr_admin:associate', $clusterid)
+        return usersetpage::_has_capability('block/curr_admin:associate', $clusterid)
             && trackpage::_has_capability('block/curr_admin:associate', $trackid);
     }
 
-    function action_savenew() {
+    function do_savenew() {
         $id = $this->required_param('id', PARAM_INT);
         $autounenrol = $this->optional_param('autounenrol', 1, PARAM_INT);
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $trackid = $this->required_param('trackid', PARAM_INT);
 
-        require_once(CURMAN_DIRLOCATION . '/form/' . $this->form_class . '.class.php');
-        require_once(CURMAN_DIRLOCATION . '/plugins/cluster_classification/clusterclassification.class.php');
+        //require_once(CURMAN_DIRLOCATION . '/form/' . $this->form_class . '.class.php');
+        // TODO: port cluster classification
+        //require_once elispm::file('plugins/cluster_classification/clusterclassification.class.php');
 
         $target = $this->get_new_page(array('action'       => 'savenew',
                                             'id'           => $id,
                                             'clusterid'    => $clusterid,
                                             'trackid'      => $trackid));
 
-        $form = new $this->form_class($target->get_moodle_url(), array('id'        => $id,
-                                                                       'clusterid' => $clusterid,
-                                                                       'trackid'   => $trackid));
+        $form = new $this->form_class($target->url, array('id'        => $id,
+                                                           'clusterid' => $clusterid,
+                                                           'trackid'   => $trackid));
 
         $form->set_data(array('clusterid' => $clusterid,
                               'trackid' => $trackid));
@@ -89,14 +98,15 @@ class clustertrackbasepage extends associationpage {
             if(!isset($data->cancel)) {
                 clustertrack::associate($clusterid, $trackid, $autounenrol, $data->autoenrol);
             }
-            $this->action_default();
+            $this->display_default();
         } else {
-            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
-            if (!empty($cluster_classification->param_autoenrol_tracks)) {
-                $form->set_data(array('autoenrol' => 1));
-            } else {
+            // TODO: port cluster classification
+//            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
+//            if (!empty($cluster_classification->param_autoenrol_tracks)) {
+//                $form->set_data(array('autoenrol' => 1));
+//            } else {
                 $form->set_data(array('autoenrol' => 0));
-            }
+//            }
 
             $form->display();
         }
@@ -111,7 +121,7 @@ class clustertrackbasepage extends associationpage {
         $clusterid = $record->clusterid;
         $trackid = $record->trackid;
 
-        return clusterpage::_has_capability('block/curr_admin:associate', $clusterid)
+        return usersetpage::_has_capability('block/curr_admin:associate', $clusterid)
             && trackpage::_has_capability('block/curr_admin:associate', $trackid);
     }
 
@@ -119,18 +129,16 @@ class clustertrackbasepage extends associationpage {
         return $this->can_do_edit();
     }
 
-    function action_edit() {
+    function do_edit() {
         $id = $this->required_param('id', PARAM_INT);
         $association_id = $this->required_param('association_id', PARAM_INT);
-
-        require_once(CURMAN_DIRLOCATION . '/form/' . $this->edit_form_class . '.class.php');
 
         $target = $this->get_new_page(array('action'         => 'edit',
                                             'id'             => $id,
                                             'association_id' => $association_id));
 
-        $form = new $this->edit_form_class($target->get_moodle_url(), array('id' => $id,
-                                                                            'association_id' => $association_id));
+        $form = new $this->edit_form_class($target->url, array('id' => $id,
+                                                               'association_id' => $association_id));
 
         $form->set_data(array('id' => $id,
                               'association_id' => $association_id));
@@ -139,45 +147,67 @@ class clustertrackbasepage extends associationpage {
             if(!isset($data->cancel)) {
                 clustertrack::update_autoenrol($association_id, $data->autoenrol);
             }
-            $this->action_default();
+            $this->display_default();
         } else {
             $form->display();
         }
     }
 
-    function create_table_object($items, $columns, $formatters) {
-        return new clustertrack_page_table($items, $columns, $this, $formatters);
+    function create_table_object($items, $columns) {
+        return new clustertrack_page_table($items, $columns, $this);
     }
 }
 
 class clustertrackpage extends clustertrackbasepage {
     var $pagename = 'clsttrk';
-    var $tab_page = 'clusterpage';
+    var $tab_page = 'usersetpage';
 
     var $section = 'users';
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        return clusterpage::_has_capability('block/curr_admin:associate', $id);
+        return usersetpage::_has_capability('block/curr_admin:associate', $id);
     }
 
-    function action_default() {
-        $id = $this->required_param('id', PARAM_INT);
+    function display_default() {
+        $id           = $this->required_param('id', PARAM_INT);
+        $sort         = $this->optional_param('sort', 'idnumber', PARAM_ALPHANUM);
+        $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
+        $page         = $this->optional_param('page', 0, PARAM_INT);
+        $perpage      = $this->optional_param('perpage', 30, PARAM_INT); // how many per page
 
         $columns = array(
-            'idnumber'    => get_string('track_idnumber','block_curr_admin'),
-            'name'        => get_string('track_name','block_curr_admin'),
-            'description' => get_string('track_description','block_curr_admin'),
-            'autoenrol'   => get_string('auto_enrol', 'block_curr_admin'),
+            'idnumber'    => array('header' => get_string('track_idnumber','elis_program'),
+                                   'decorator' => array(new record_link_decorator('trackpage',
+                                                                                  array('action'=>'view'),
+                                                                                  'trackid'),
+                                                        'decorate')),
+            'name'        => array('header' => get_string('track_name','elis_program'),
+                                   'decorator' => array(new record_link_decorator('trackpage',
+                                                                                  array('action'=>'view'),
+                                                                                  'trackid'),
+                                                        'decorate')),
+            'description' => array('header' => get_string('track_description','elis_program')),
+            'autoenrol'   => array('header' => get_string('usersettrack_auto_enrol', 'elis_program')),
              //buttons triggers the use of "tabs" as buttons for editing and deleting
-            'buttons'     => '',
+            'buttons'     => array('header' => ''),
         );
+
+        // TBD
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'idnumber';
+            $columns[$sort]['sortable'] = $dir;
+        }
 
         $items = clustertrack::get_tracks($id);
 
-        $formatters = $this->create_link_formatters(array('idnumber', 'name'), 'trackpage', 'trackid');
 
-        $this->print_list_view($items, $columns, $formatters);
+        $this->print_list_view($items, $columns);
 
         // find the tracks that the user can associate with this cluster
         $contexts = trackpage::get_contexts('block/curr_admin:associate');
@@ -188,12 +218,12 @@ class clustertrackpage extends clustertrackbasepage {
                 // some tracks exist, but don't have associate capability on
                 // any of them
                 echo '<div align="center"><br />';
-                print_string('no_associate_caps_track', 'block_curr_admin');
+                print_string('no_associate_caps_track', 'elis_program');
                 echo '</div>';
             } else {
                 // no tracks at all
                 echo '<div align="center"><br />';
-                print_string('all_items_assigned', 'block_curr_admin');
+                print_string('all_items_assigned', 'elis_program');
                 echo '</div>';
             }
         } else {
@@ -213,7 +243,7 @@ class trackclusterpage extends clustertrackbasepage {
         return trackpage::_has_capability('block/curr_admin:associate', $id);
     }
 
-    function action_default() {
+    function display_default() {
         $id = $this->required_param('id', PARAM_INT);
 
         $parent_clusterid = $this->optional_param('parent_clusterid', 0, PARAM_INT);
@@ -221,21 +251,34 @@ class trackclusterpage extends clustertrackbasepage {
         $dir = $this->optional_param('dir', 'ASC', PARAM_CLEAN);
 
         $columns = array(
-            'name'        => get_string('cluster_name','block_curr_admin'),
-            'display'     => get_string('description','block_curr_admin'),
-            'autoenrol'   => get_string('auto_enrol', 'block_curr_admin'),
+            'name'        => array('header' => get_string('userset_name','elis_program'),
+                                   'decorator' => array(new record_link_decorator('usersetpage',
+                                                                                  array('action'=>'view'),
+                                                                                  'clusterid'),
+                                                        'decorate')),
+            'display'     => array('header' => get_string('userset_description','elis_program')),
+            'autoenrol'   => array('header' => get_string('trackuserset_auto_enrol', 'elis_program')),
              //buttons triggers the use of "tabs" as buttons for editing and deleting
-            'buttons'     => '',
+            'buttons'     => array('header' => ''),
         );
+
+        // TBD
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'name';
+            $columns[$sort]['sortable'] = $dir;
+        }
 
         $items = clustertrack::get_clusters($id, $parent_clusterid, $sort, $dir);
 
-        $formatters = $this->create_link_formatters(array('name'), 'clusterpage', 'clusterid');
-
-        $this->print_list_view($items, $columns, $formatters);
+        $this->print_list_view($items, $columns);
 
         // find the tracks that the user can associate with this cluster
-        $contexts = clusterpage::get_contexts('block/curr_admin:associate');
+        $contexts = usersetpage::get_contexts('block/curr_admin:associate');
         $clusters = cluster_get_listing('name', 'ASC', 0, 0, '', '', array('contexts' =>$contexts));
         if (empty($clusters)) {
             $num_clusters = cluster_count_records();
@@ -243,12 +286,12 @@ class trackclusterpage extends clustertrackbasepage {
                 // some clusters exist, but don't have associate capability on
                 // any of them
                 echo '<div align="center"><br />';
-                print_string('no_associate_caps_clusters', 'block_curr_admin');
+                print_string('no_associate_caps_clusters', 'elis_program');
                 echo '</div>';
             } else {
                 // no clusters at all
                 echo '<div align="center"><br />';
-                print_string('all_items_assigned', 'block_curr_admin');
+                print_string('all_items_assigned', 'elis_program');
                 echo '</div>';
             }
         } else {
@@ -260,9 +303,8 @@ class trackclusterpage extends clustertrackbasepage {
      * Creates a new table object with specified $items and $columns.
      * @param array $items
      * @param array $columns
-     * @param array $formatters
      */
-    function create_table_object($items, $columns, $formatters) {
+    function create_table_object($items, $columns) {
 
         $parent_clusterid = $this->optional_param('parent_clusterid', 0, PARAM_INT);
 
@@ -273,7 +315,7 @@ class trackclusterpage extends clustertrackbasepage {
 
         $page_object = $this->get_new_page($extra_params);
 
-        return new clustertrack_page_table($items, $columns, $page_object, $formatters);
+        return new clustertrack_page_table($items, $columns, $page_object);
     }
 }
 

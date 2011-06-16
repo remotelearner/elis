@@ -69,11 +69,11 @@ class clustercurriculumbasepage extends associationpage {
     }
 
     public static function get_contexts($capability) {
-        if (!isset(trackassignmentpage::$contexts[$capability])) {
+        if (!isset(clustercurriculumpage::$contexts[$capability])) {
             global $USER;
-            trackassignmentpage::$contexts[$capability] = get_contexts_by_capability_for_user('cluster', $capability, $USER->id);
+            clustercurriculumpage::$contexts[$capability] = get_contexts_by_capability_for_user('cluster', $capability, $USER->id);
         }
-        return trackassignmentpage::$contexts[$capability];
+        return clustercurriculumpage::$contexts[$capability];
     }
 
     public function _get_page_context() {
@@ -174,8 +174,8 @@ class clustercurriculumbasepage extends associationpage {
         }
     }
 
-    function create_table_object($items, $columns, $formatters) {
-        return new clustercurriculum_page_table($items, $columns, $this, $formatters);
+    function create_table_object($items, $columns) {
+        return new clustercurriculum_page_table($items, $columns, $this);
     }
 
 }
@@ -202,7 +202,9 @@ class clustercurriculumpage extends clustercurriculumbasepage {
     function display_default() {
         global $OUTPUT;
 
-        $id = $this->required_param('id', PARAM_INT);
+        $id           = $this->required_param('id', PARAM_INT);
+        $sort         = $this->optional_param('sort', 'idnumber', PARAM_ALPHANUM);
+        $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
 
         $columns = array(
             'idnumber'    => array('header' => get_string('userset_idnumber', 'elis_program'),
@@ -222,6 +224,17 @@ class clustercurriculumpage extends clustercurriculumbasepage {
              //buttons triggers the use of "tabs" as buttons for editing and deleting
             'buttons'     => array('header' => ''),
         );
+
+        // TBD
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'idnumber';
+            $columns[$sort]['sortable'] = $dir;
+        }
 
         $items = clustercurriculum::get_curricula($id);
 
@@ -574,6 +587,17 @@ class curriculumclusterpage extends clustercurriculumbasepage {
              //buttons triggers the use of "tabs" as buttons for editing and deleting
             'buttons'     => array('header' => ''),
         );
+
+        // TBD
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'name';
+            $columns[$sort]['sortable'] = $dir;
+        }
 
         $items = clustercurriculum::get_clusters($id, $parent_clusterid, $sort, $dir);
 

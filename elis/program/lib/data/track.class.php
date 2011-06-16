@@ -316,7 +316,8 @@ class track extends data_object_with_custom_fields {
         $result = $result && trackassignment::delete_for_track($this->id);
         $result = $result && delete_context($level,$this->id);
 
-        return $result && $this->data_delete_record();
+        //return $result && $this->data_delete_record();
+        parent::delete();
     }
 
     function __toString() {

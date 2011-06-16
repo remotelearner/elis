@@ -235,6 +235,16 @@ class trackpage extends managementpage {
             'class'         => array('header' => get_string('track_classes', 'elis_program'))
         );
 
+        // TBD
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'name';
+            $columns[$sort]['sortable'] = $dir;
+        }
         $items   = track_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, $parent_clusterid, trackpage::get_contexts('block/curr_admin:track:view'));
         $numitems = track_count_records($namesearch, $alpha, $id, $parent_clusterid, trackpage::get_contexts('block/curr_admin:track:view'));
 

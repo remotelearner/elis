@@ -158,7 +158,8 @@ class clustertrack extends elis_data_object {
      */
     public function delete() {
 
-        $return = $this->data_delete_record();
+        //FIXME: is it correct to call parent::delete() ?
+        //$return = $this->data_delete_record();
 
         if ($return && $this->autounenrol) {
             // Unenrol all users in the cluster from the track (unless they are
@@ -183,7 +184,7 @@ class clustertrack extends elis_data_object {
                 . 'WHERE cu.clusterid = :clusterid AND cu.autoenrol=\'1\' AND f.userid IS NULL';
             $params['clusterid'] = $this->clusterid;
 
-            $usertracks = $this->get_records_sql($sql, $params);
+            $usertracks = $this->_db->get_records_sql($sql, $params);
 
             if ($usertracks) {
                 foreach ($usertracks as $usertrack) {
@@ -193,7 +194,8 @@ class clustertrack extends elis_data_object {
             }
         }
 
-        return $return;
+        //return $return;
+        parent::delete();
     }
 
     /// collection functions. (These may be able to replaced by a generic container/listing class)
@@ -223,7 +225,7 @@ class clustertrack extends elis_data_object {
         }
 
         $select  = 'SELECT clsttrk.id, clsttrk.clusterid, clst.name, clst.display, clsttrk.autoenrol ';
-        $tables  = 'FROM {' . usertrack::TABLE . '} clsttrk ';
+        $tables  = 'FROM {' . self::TABLE . '} clsttrk ';
         $join    = 'LEFT JOIN {' . userset::TABLE . '} clst '.
                    'ON clst.id = clsttrk.clusterid ';
 

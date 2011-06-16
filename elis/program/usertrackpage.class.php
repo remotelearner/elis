@@ -89,7 +89,9 @@ class usertrackpage extends usertrackbasepage {
     function display_default() {
         global $USER, $DB;
 
-        $id = required_param('id', PARAM_INT);
+        $id           = required_param('id', PARAM_INT);
+        $sort         = $this->optional_param('sort', 'idnumber', PARAM_ALPHANUM);
+        $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
         $contexts = clone(trackpage::get_contexts('block/curr_admin:track:enrol'));
 
         //look up student's cluster assignments with necessary capability
@@ -99,11 +101,13 @@ class usertrackpage extends usertrackbasepage {
         //$cluster_filter = $cluster_contexts->sql_filter_for_context_level('clst.id', 'cluster');
         $filter_object = $cluster_contexts->get_filter('clst.id', 'cluster');
         $filter_sql = $filter_object->get_sql(false, 'clst');
+        $cluster_filter = '';
+        $params = array();
         if (isset($filter_sql['where'])) {
-            $cluster_filter = $filter_sql['where'];
+            $cluster_filter = " WHERE ".$filter_sql['where'];
             $params += $filter_sql['where_params'];
         }
-/* TODO: waiting on clustertrack
+
         //query for getting tracks based on clusters
         $sql = 'SELECT trk.id
                 FROM {'.userset::TABLE.'} clst
@@ -111,23 +115,24 @@ class usertrackpage extends usertrackbasepage {
                 ON clst.id = clsttrk.clusterid
                 JOIN {'.track::TABLE.'} trk
                 ON clsttrk.trackid = trk.id
-                WHERE '.$cluster_filter;
+                '.$cluster_filter;
 
         //assign the appropriate track ids
-        $recordset = $DB->get_recordset_sql($sql);
-        if($recordset && $recordset->RecordCount() > 0) {
+        $recordset = $DB->get_recordset_sql($sql, $params);
+        if($recordset && count($recordset) > 0) {
             if(!isset($contexts->contexts['track'])) {
                 $contexts->contexts['track'] = array();
             }
 
             $new_tracks = array();
-            while($record = $DB->rs_fetch_next_record($recordset)) {
+            //while($record = rs_fetch_next_record($recordset)) {
+            foreach ($recordset as $record) {
                 $new_tracks[] = $record->id;
             }
 
             $contexts->contexts['track'] = array_merge($contexts->contexts['track'], $new_tracks);
         }
-*/
+
         if (!empty($id)) {
             //print curriculum tabs if viewing from the curriculum view
             $userpage = new userpage(array('id' => $id));
@@ -150,6 +155,17 @@ class usertrackpage extends usertrackbasepage {
             'manage'      => array('header'=> ''),
         );
 
+        // TBD
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'idnumber';
+            $columns[$sort]['sortable'] = $dir;
+        }
+
         $items = usertrack::get_tracks($id);
 
         $this->print_list_view($items, $columns);
@@ -160,7 +176,7 @@ class usertrackpage extends usertrackbasepage {
 
     /**
      * Handler for the confirm (confirm delete) action.  Tries to delete the object and then renders the appropriate page.
-     */
+     *//*
     function do_delete() {
         $association_id = required_param('association_id', PARAM_INT);
         $id = required_param('id', PARAM_INT);
@@ -171,7 +187,7 @@ class usertrackpage extends usertrackbasepage {
         $target_page = $this->get_new_page(array('id'=> $id));
 
         redirect($target_page->url);
-    }
+    }*/
 }
 
 class trackuserpage extends usertrackbasepage {
@@ -210,6 +226,8 @@ class trackuserpage extends usertrackbasepage {
 
     function display_default() {
         $id = $this->required_param('id', PARAM_INT);
+        $sort         = $this->optional_param('sort', 'idnumber', PARAM_ALPHANUM);
+        $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
 
         if (!empty($id)) {
             //print curriculum tabs if viewing from the curriculum view
@@ -232,6 +250,17 @@ class trackuserpage extends usertrackbasepage {
                 'manage'      => array('header'=> ''),
         );
 
+        // TBD
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'idnumber';
+            $columns[$sort]['sortable'] = $dir;
+        }
+
         $items = usertrack::get_users($id);
 
         $this->print_list_view($items, $columns);
@@ -244,6 +273,7 @@ class trackuserpage extends usertrackbasepage {
     /**
      * Handler for the confirm (confirm delete) action.  Tries to delete the object and then renders the appropriate page.
      */
+    /*
     function do_delete() {
         $association_id = required_param('association_id', PARAM_INT);
         $id = required_param('id', PARAM_INT);
@@ -255,7 +285,7 @@ class trackuserpage extends usertrackbasepage {
         $target_page = $this->get_new_page(array('id'=> $id));
 
         redirect($target_page->url);
-    }
+    }*/
 
     function print_assign_link() {
         global $CFG;

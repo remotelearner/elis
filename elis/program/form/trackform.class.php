@@ -93,7 +93,7 @@ class trackform extends cmform {
         $mform->addHelpButton('startdate', 'trackform:track_startdate', 'elis_program');
 
         if (!empty($this->_customdata->id)) {
-            $trackassignobj = new trackassignmentclass(array('trackid' =>$this->_customdata['id']));
+            $trackassignobj = new trackassignment(array('trackid' =>$this->_customdata['id']));
         }
 
         // Only show auto-create checkbox if the track does not have any classes assigned
@@ -108,7 +108,7 @@ class trackform extends cmform {
         //$fields = field::get_for_context_level('track');
         //$fields = $fields ? $fields : array();
 
-        /*
+        /* TODO: custom field plugin??
         $lastcat = null;
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
             ? get_context_instance(context_level_base::get_custom_context_level('track', 'elis_program'), $this->_customdata['obj']->id)

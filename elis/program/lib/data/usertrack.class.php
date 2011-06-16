@@ -27,6 +27,7 @@
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/student.class.php');
+require_once elispm::lib('data/curriculumstudent.class.php');
 require_once elispm::lib('data/track.class.php');
 
 
@@ -117,8 +118,8 @@ class usertrack extends elis_data_object {
         $track = new track($trackid);
 /* TODO:  Needs to be ported to ELIS2
         // add the student to the associated curriculum, if they're not already
-        // enrolled
-        if (!$DB->record_exists(curriculumassignment::TABLE, array('userid'=> $userid,
+        // enrolled */
+        if (!$DB->record_exists(curriculumstudent::TABLE, array('userid'=> $userid,
                                                                    'curriculumid'=> $track->curid))) {
             $curstu = new curriculumstudent();
             $curstu->userid = $userid;
@@ -128,7 +129,7 @@ class usertrack extends elis_data_object {
             $curstu->locked = 0;
             $curstu->save();
         }
-*/
+
         events_trigger('track_assigned', $record);
 
         /**
@@ -169,7 +170,8 @@ class usertrack extends elis_data_object {
      * Unenrols a user from a track.
      */
     function unenrol() {
-        return $this->data_delete_record();
+        //return $this->data_delete_record();
+        parent::delete();
     }
 
     static $validation_rules = array(
