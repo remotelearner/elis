@@ -105,7 +105,6 @@ class coursepage extends managementpage {
         array('tab_id' => 'pmclasspage', 'page' => 'pmclasspage', 'params' => array('action' => 'default'), 'name' => get_string('course_classes', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class'),
         array('tab_id' => 'elem', 'page' => get_class($this), 'params' => array('action' => 'lelem'), 'name' => get_string('completion_elements', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'grades'),
         array('tab_id' => 'coursecurriculumpage', 'page' => 'coursecurriculumpage', 'name' => get_string('course_curricula', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
-        //array('tab_id' => 'crstaginstancepage', 'page' => 'crstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
         //TO-DO: re-enable once rolepage is ported
         //array('tab_id' => 'course_rolepage', 'page' => 'course_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 

@@ -159,10 +159,9 @@ class pmclasspage extends managementpage {
 
         // TO-DO: re-enable as pages become available
 
-        //array('tab_id' => 'studentpage', 'page' => 'studentpage', 'name' => get_string('enrolments', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
-        //array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting'),
+        array('tab_id' => 'studentpage', 'page' => 'studentpage', 'name' => get_string('enrolments', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
+        array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting'),
         //array('tab_id' => 'instructorpage', 'page' => 'instructorpage', 'name' => get_string('instructors', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'instructor'),
-        //array('tab_id' => 'clstaginstancepage', 'page' => 'clstaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
         //array('tab_id' => 'class_rolepage', 'page' => 'class_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),

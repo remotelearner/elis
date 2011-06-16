@@ -24,9 +24,7 @@
  *
  */
 
-//require_once elispm::file('form/selectionform.class.php');
-
-//require_once CURMAN_DIRLOCATION . '/form/selectionform.class.php';  // missing
+require_once elispm::file('form/selectionform.class.php');
 
 class assigncurriculumform extends selectionform {
     function get_submit_button_name() {

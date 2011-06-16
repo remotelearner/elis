@@ -30,8 +30,8 @@ require_once elispm::lib('contexts.php');
 require_once elispm::lib('datedelta.class.php');
 require_once elispm::file('form/curriculumform.class.php');
 require_once elispm::file('curriculumcoursepage.class.php');
+require_once elispm::file('clustercurriculumpage.class.php');
 
-//require_once (CURMAN_DIRLOCATION . '/clustercurriculumpage.class.php'); // missing
 //require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
 
 /// The main management page.
@@ -133,11 +133,10 @@ class curriculumpage extends managementpage {
 
         //TO-DO: re-enable tabs once their associated pages are done
         //array('tab_id' => 'curriculumstudentpage', 'page' => 'curriculumstudentpage', 'name' => get_string('users', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
-        //array('tab_id' => 'curriculumclusterpage', 'page' => 'curriculumclusterpage', 'name' => get_string('clusters', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
+        array('tab_id' => 'curriculumclusterpage', 'page' => 'curriculumclusterpage', 'name' => get_string('clusters', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
         array('tab_id' => 'curriculumcoursepage', 'page' => 'curriculumcoursepage', 'name' => get_string('courses', 'elis_program') , 'showtab' => true, 'showbutton' => true, 'image' => 'course'),
         //allow users to view the tracks associated with this curriculum
         //array('tab_id' => 'trackpage', 'page' => 'trackpage', 'name' => get_string('tracks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track'),
-        //array('tab_id' => 'curtaginstancepage', 'page' => 'curtaginstancepage', 'name' => get_string('tags', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
         //array('tab_id' => 'curriculum_rolepage', 'page' => 'curriculum_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),

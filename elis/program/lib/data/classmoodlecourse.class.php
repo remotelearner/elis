@@ -29,9 +29,9 @@ require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('data/student.class.php');
+require_once elispm::lib('data/instructor.class.php');
 require_once elispm::lib('moodlecourseurl.class.php');
 
-//require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php';      // missing
 //require_once CURMAN_DIRLOCATION . '/lib/rollover/sharelib.php';     // missing
 
 //define ('CLSMDLTABLE', 'crlm_class_moodle');

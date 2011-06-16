@@ -27,6 +27,7 @@
 require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/curriculumstudent.class.php');
 require_once elispm::lib('data/user.class.php');
+require_once elispm::lib('associationpage2.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('userpage.class.php');
 require_once elispm::file('curriculumpage.class.php');
@@ -34,7 +35,6 @@ require_once elispm::file('form/curriculumstudentform.class.php');
 
 //require_once (CURMAN_DIRLOCATION . '/lib/newpage.class.php');                   // missing
 //require_once (CURMAN_DIRLOCATION . '/lib/usercluster.class.php');               // missing
-//require_once (CURMAN_DIRLOCATION . '/lib/associationpage2.class.php');          // missing
 
 class studentcurriculumpage extends associationpage2 {
     var $pagename = 'stucur';
@@ -82,7 +82,8 @@ class studentcurriculumpage extends associationpage2 {
                            ON clst.id = clstcurr.clusterid
                       JOIN {'.curriculum::TABLE.'} curr
                            ON clstcurr.curriculumid = curr.id
-                      JOIN {'.usercluster::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
+                    -- TO-DO: re-enable when clusterassignment is done
+                    --  JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
                      WHERE '.$cluster_filter.' ';
             return $DB->count_records_select($sql) > 0;
         } else {
@@ -203,7 +204,8 @@ class studentcurriculumpage extends associationpage2 {
                          ON clst.id = clstcurr.clusterid
                     JOIN {'.curriculum::TABLE.'} curr
                          ON clstcurr.curriculumid = curr.id
-                    JOIN {'.usercluster::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
+                 -- TO-DO: re-enable when clusterassignment is done
+                 -- JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
                    WHERE '.$cluster_filter.'))';
 
         $count = $DB->count_records_select(curriculum::TABLE, $where);
@@ -300,7 +302,8 @@ class user_curriculum_selection_table extends selection_table {
                        ON clst.id = clstcurr.clusterid
                   JOIN {'.curriculum::TABLE.'} curr
                        ON clstcurr.curriculumid = curr.id
-                  JOIN {'.usercluster::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
+               -- TO-DO: re-enable when clusterassignment is done
+               -- JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
                  WHERE '.$cluster_filter;
 
         $this->cluster_curricula = $DB->get_records_sql($sql);
@@ -495,9 +498,11 @@ class curriculumstudentpage extends associationpage2 {
                 return array(array(), 0);
             } else {
                 $cluster_filter = implode(',', $allowed_clusters);
-                $cluster_filter = ' id IN (SELECT userid FROM {'.usercluster::TABLE.'}
+                /* TO-DO: re-enable when clusterassignment is done
+                $cluster_filter = ' id IN (SELECT userid FROM {'.clusterassignment::TABLE.'}
                                             WHERE clusterid IN ('.$cluster_filter.'))';
                 $where .= ' AND '.$cluster_filter;
+                */
             }
         }
 
@@ -618,9 +623,11 @@ class curriculum_user_selection_table extends selection_table {
 
         $userid = isset($item->userid) ? $item->userid : $item->id;
         if (isset($this->allowed_clusters)) {
-            if (empty($this->allowed_clusters) || !$DB->record_exists_select(usercluster::TABLE, "userid = {$userid} AND clusterid IN (".implode(',',$this->allowed_clusters).')')) {
+            /* TO-DO: re-enable when clusterassignment is done
+            if (empty($this->allowed_clusters) || !$DB->record_exists_select(clusterassignment::TABLE, "userid = {$userid} AND clusterid IN (".implode(',',$this->allowed_clusters).')')) {
                 return '';
             }
+            */
         }
         return parent::get_item_display__selection($column, $item);
     }

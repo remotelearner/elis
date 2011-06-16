@@ -38,9 +38,13 @@ class curriculumstudent extends elis_data_object {
     const TABLE = 'crlm_curriculum_assignment';
 
     static $associations = array(
-        'pmclass' => array(
-            'class' => 'pmclass',
-            'foreignidfield' => 'courseid'
+        'user' => array(
+            'class' => 'user',
+            'idfield' => 'userid'
+        ),
+        'curriculum' => array(
+            'class' => 'curriculum',
+            'idfield' => 'curriculumid'
         ),
     );
 
@@ -63,6 +67,12 @@ class curriculumstudent extends elis_data_object {
     display: block;
 }
 ';
+
+    var $completed;
+    var $timecompleted;
+    var $timeexpired;
+    var $credits;
+    var $locked;
 
     /**
      * Contructor.
@@ -107,11 +117,11 @@ class curriculumstudent extends elis_data_object {
     }
 
 	public static function delete_for_curriculum($id) {
-		return $this->_db->delete_records(curriculumstudent::TABLE, 'curriculumid', $id);
+		return $this->_db->delete_records(curriculumstudent::TABLE, array('curriculumid'=>$id));
 	}
 
 	public static function delete_for_user($id) {
-		return $this->_db->delete_records(curriculumstudent::TABLE, 'userid', $id);
+		return $this->_db->delete_records(curriculumstudent::TABLE, array('userid'=>$id));
 	}
 
     /////////////////////////////////////////////////////////////////////
@@ -119,46 +129,6 @@ class curriculumstudent extends elis_data_object {
     //  STANDARD FUNCTIONS:                                            //
     //                                                                 //
     /////////////////////////////////////////////////////////////////////
-
-    /**
-     * Perform all necessary tasks to add a student curriculum enrolment to the system.
-     */
-    // TO-DO: change to save method
-    /*
-    function add() {
-        global $CURMAN;
-
-        // If curriculum expiration is set to be based off curriculum enrolment then we need to calculate the expiry
-        // date right now (ELIS-1618).
-        if (!empty($CURMAN->config->enable_curriculum_expiration) &&
-            $CURMAN->config->curriculum_expiration_start == CURR_EXPIRE_ENROL_START &&
-            get_field(CURTABLE, 'frequency', 'id', $this->curriculumid)) {
-
-            // We need to load this record from the DB fresh so we don't accidentally overwrite legitimate
-            // values with something empty when we update the record.
-            $this->timecreated = time();
-            $timeexpired = calculate_curriculum_expiry($this);
-            if ($timeexpired > 0) {
-                $this->timeexpired = $timeexpired;
-            }
-        }
-
-        $result = $this->data_insert_record();
-
-        return $result;
-    }
-    */
-
-    /**
-     * Perform all necessary tasks to update a student enrolment.
-     *
-     */
-    // TO-DO: change to save method
-    /*
-    function update() {
-        return $this->data_update_record();
-    }
-    */
 
     /**
      * Perform all actions to mark this student record complete.
@@ -388,9 +358,7 @@ class curriculumstudent extends elis_data_object {
             return NULL;
         }
 
-        // TO-DO: convert this to new way of doing LIKE
-        //$LIKE     = $CURMAN->db->sql_compare();
-        $LIKE = 'LIKE';
+        $params = array($userid);
 
         $select  = 'SELECT curass.id, curass.curriculumid curid, curass.completed, curass.timecompleted, curass.credits, '.
                    'cur.idnumber, cur.name, cur.description, cur.reqcredits, COUNT(curcrs.id) as numcourses ';
@@ -399,15 +367,14 @@ class curriculumstudent extends elis_data_object {
                    'ON cur.id = curass.curriculumid ';
         $join   .= 'LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs '.
                    'ON curcrs.curriculumid = cur.id ';
-        $where   = 'WHERE curass.userid = '.$userid.' ';
+        $where   = 'WHERE curass.userid = ? ';
         $group   = 'GROUP BY curass.id, curass.curriculumid, curass.completed, curass.timecompleted, curass.credits, ' .
                    'cur.idnumber, cur.name, cur.description, cur.reqcredits ';
         $sort    = 'ORDER BY cur.priority ASC, cur.name, curcrs.position DESC ';
 
         $sql = $select.$tables.$join.$where.$group.$sort;
 
-        // TO-DO: convert properly
-        return $DB->get_records_sql($sql);
+        return $DB->get_records_sql($sql, $params);
     }
 
     /**
@@ -427,14 +394,12 @@ class curriculumstudent extends elis_data_object {
             return NULL;
         }
 
-        // TO-DO: convert this to new way of doing LIKE
-        //$LIKE     = $CURMAN->db->sql_compare();
-        $LIKE     = 'LIKE';
+        $params = array();
 
         $FULLNAME = sql_concat('usr.firstname', "' '", 'usr.lastname');
 
-        $select   = 'SELECT curass.id, usr.id as usrid, curass.curriculumid as curid, ' .
-                     $FULLNAME . ' as name, usr.idnumber, usr.country, usr.language, curass.timecreated, curass.userid ';
+        $select   = 'SELECT curass.id, usr.id as usrid, curass.curriculumid as curid, '.
+                     $FULLNAME.' as name, usr.idnumber, usr.country, usr.language, curass.timecreated, curass.userid ';
 
         $tables   = 'FROM {'.user::TABLE.'} usr ';
         $join     = 'LEFT JOIN {'.curriculumstudent::TABLE.'} curass ON curass.userid = usr.id ';
@@ -442,15 +407,17 @@ class curriculumstudent extends elis_data_object {
         $sort     = 'ORDER BY usr.idnumber ASC ';
 
         if($enroled) {
-            $where = 'WHERE curass.curriculumid = '.$curid.' ';
+            $where = 'WHERE curass.curriculumid = ? ';
+            $params[] = $curid;
         } else {
-            $join .= 'LEFT JOIN {'.curriculumstudent::TABLE.'} curass2 ON curass2.userid = usr.id AND curass2.curriculumid = '.$curid.' ';
+            $join .= 'LEFT JOIN {'.curriculumstudent::TABLE.'} curass2 ON curass2.userid = usr.id AND curass2.curriculumid = ? ';
             $where = 'WHERE curass2.curriculumid IS NULL ';
+            $params[] = $curid;
         }
 
         $sql = $select.$tables.$join.$where.$sort;
 
-        return $DB->get_records_sql($sql);
+        return $DB->get_records_sql($sql, $params);
     }
 
     /**
@@ -492,11 +459,36 @@ class curriculumstudent extends elis_data_object {
         $select = "userid = {$userid} AND {$cluster_select}";
 
         //user just needs to be in one of the possible clusters
-        if($DB->record_exists_select(clusteruser::TABLE, $select)) {
+        /* TO-DO: re-enable this when clusterassignment is done
+        if($DB->record_exists_select(clusterassignment::TABLE, $select)) {
             return true;
         }
+        */
 
         return false;
+    }
+
+    static $validation_rules = array();
+
+    public function save() {
+        $isnew = empty($this->id);
+
+        parent::save();
+
+        if ($isnew) {
+            if (!empty(elis::$config->elis_program->enable_curriculum_expiration) &&
+                elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_START &&
+                get_field(curriculum::TABLE, 'frequency', array('id'=>$this->curriculumid))) {
+
+                // We need to load this record from the DB fresh so we don't accidentally overwrite legitimate
+                // values with something empty when we update the record.
+                $this->timecreated = time();
+                $timeexpired = calculate_curriculum_expiry($this);
+                if ($timeexpired > 0) {
+                    $this->timeexpired = $timeexpired;
+                }
+            }
+        }
     }
 }
 
@@ -510,32 +502,36 @@ class curriculumstudent extends elis_data_object {
 function curriculumstudent_count_students($type = 'student', $namesearch = '', $alpha = '') {
     global $DB;
 
-    // TO-DO: convert to proper way of doing LIKE
-    //$LIKE     = $CURMAN->db->sql_compare();
-    $LIKE = 'LIKE';
-
-    $FULLNAME = sql_concat('usr.firstname', "' '", 'usr.lastname');
+    $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
 
     $select  = 'SELECT COUNT(usr.id) ';
     $tables  = 'FROM {'.user::TABLE.'} usr ';
-    $where   = '';
+
+    $where   = array();
+    $params  = array();
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where     .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '%$namesearch%') ";
+        $name_like = $DB->sql_like($FULLNAME, '?');
+        $where[] = "($name_like)";
+        $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $where .= (!empty($where) ? ' AND ' : '') . "($FULLNAME $LIKE '$alpha%') ";
+        $name_like = $DB->sql_like($FULLNAME, '?');
+        $where[] = "($name_like)";
+        $params[] = "$alpha%";
     }
 
     if (!empty($where)) {
-        $where = 'WHERE '.$where.' ';
+        $where = 'WHERE '.implode(' AND ',$where).' ';
+    } else {
+        $where = '';
     }
 
     $sql = $select.$tables.$where;
 
-    return $DB->count_records_sql($sql);
+    return $DB->count_records_sql($sql, $params);
 }
 
 

@@ -32,11 +32,10 @@ require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/track.class.php');
 require_once elispm::lib('data/student.class.php');
+require_once elispm::lib('data/instructor.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('form/pmclassform.class.php');
-
-//require_once CURMAN_DIRLOCATION . '/lib/instructor.class.php'; // missing
 
 //define ('CLSTABLE', 'crlm_class');
 //define ('CLSMOODLETABLE', 'crlm_class_moodle');
