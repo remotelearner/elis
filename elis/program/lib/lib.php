@@ -94,6 +94,29 @@ function pmsearchbox($page, $searchname = 'search') {
     echo "</td></tr></table>";
 }
 
+/** Function to return pm page url with required params
+ *
+ * @param    string|moodle_url  the pages base url
+ *           defaults to: $CFG->wwwroot .'/elis/program/index.php'
+ * @uses     $CFG
+ * @return   moodle_url   the baseurl with required params
+ */
+function get_pm_url($baseurl = null) {
+    global $CFG;
+    if (empty($baseurl)) {
+        $baseurl = $CFG->wwwroot .'/elis/program/index.php';
+    }
+    $options = array('s', 'id', 'action', 'section', 'alpha', 'search', 'perpage', 'class'); // TBD: add more parameters as required
+    $params = array();
+    foreach ($options as $option) {
+        $val = optional_param($option, null, PARAM_CLEAN);
+        if ($val != null) {
+            $params[$option] = $val;
+        }
+    }
+    return new moodle_url($baseurl, $params);
+}
+
 /**
  * New display function callback to allow HTML elements in table
  * see: /elis/core/lib/table.class.php

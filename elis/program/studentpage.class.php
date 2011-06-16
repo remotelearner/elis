@@ -48,13 +48,13 @@ class studentpage extends associationpage {
 
     var $parent_data_class = 'pmclass'; // TBD: was cmclass
 
-    var $tabs;
+    //var $tabs; // TBD: moved to associationpage
 
     function __construct(array $params = null) {
         parent::__construct($params);
 
-        $this->tabs = array(
-            array('tab_id' => 'currcourse_edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => 'Edit', 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
+        $this->tabs = array( // TBD: 'currcourse_edit' -> 'edit'
+            array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => 'Edit', 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
            array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => 'Delete', 'showbutton' => true, 'image' => 'delete.gif'),
         );
     }

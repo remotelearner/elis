@@ -37,6 +37,8 @@ abstract class selectionpage extends pm_page { // TBD
 
     var $_basepage; // TBD
 
+    var $tabs;
+
     /*
      * for AJAX calls:
      */
@@ -60,7 +62,7 @@ abstract class selectionpage extends pm_page { // TBD
     function print_tabs() {
         $id = $this->required_param('id', PARAM_INT);
 
-        $page = $this->get_tab_page();
+        $page = $this; // TBD: $this->get_tab_page();
         $params = array('id' => $id);
         $rows = $row;
         $row = array();

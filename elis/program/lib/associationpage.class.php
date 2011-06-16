@@ -42,12 +42,14 @@ require_once elispm::lib('page.class.php');
 class associationpage extends pm_page {
     const LANG_FILE = 'elis_program';
 
+    var $tabs;
+
     public function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
         return has_capability('block/curr_admin:managecurricula', $context);
     }
 
-    public function can_do_update() {
+    public function can_do_edit() { // can_do_update()
         return $this->can_do('edit');
     }
 
@@ -55,7 +57,7 @@ class associationpage extends pm_page {
         return $this->can_do('add');
     }
 
-    public function can_do_confirm() {
+    public function can_do_delete() { // can_do_confirm()
         return $this->can_do('delete');
     }
 
@@ -76,7 +78,7 @@ class associationpage extends pm_page {
 
         parent::print_header();
         //$this->get_tab_page()->print_tabs(get_class($this), array('id' => $id));
-        $this->print_tabs('view', array('id' => $id)); // TBD
+        $this->print_tabs('edit', array('id' => $id)); // TBD: 'view'
     }
 
     /**

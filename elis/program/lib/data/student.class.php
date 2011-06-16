@@ -541,17 +541,7 @@ class student extends elis_data_object {
 /////////////////////////////////////////////////////////////////////
 
     protected function get_base_url() {
-        global $CFG;
-        $options = array('s', 'id', 'action', 'section', 'alpha', 'search', 'perpage', 'class'); // TBD
-        $params = array();
-        foreach ($options as $option) {
-            $val = optional_param($option, null, PARAM_CLEAN);
-            //error_log("student.class.php::get_base_url()  $option => $val");
-            if ($val != null) {
-                $params[$option] = $val;
-            }
-        }
-        return new moodle_url($CFG->wwwroot.'/elis/program/index.php', $params);
+        return get_pm_url();  // lib.php
     }
 
     /**

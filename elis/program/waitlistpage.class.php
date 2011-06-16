@@ -24,6 +24,7 @@
  *
  */
 
+require_once elispm::lib('lib.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/student.class.php');
 require_once elispm::lib('data/waitlist.class.php');
@@ -90,11 +91,7 @@ class waitlistpage extends selectionpage {
     }
 
     function create_selection_table($records, $baseurl) {
-        $id = $this->required_param('id', PARAM_INT); // TBD
-        return new waitlist_table($records,
-                   new moodle_url($baseurl, array('s' => $this->pagename,
-                                                  'id' => $id)
-                   ));
+        return new waitlist_table($records, get_pm_url($baseurl));
     }
 
     protected function get_base_params() {
@@ -104,7 +101,7 @@ class waitlistpage extends selectionpage {
     }
 
     function get_tab_page($params=array()) {
-        return new $this->tab_page($params);
+        return $this; // TBD: new $this->tab_page($params);
     }
 
     function print_header() {
@@ -112,7 +109,8 @@ class waitlistpage extends selectionpage {
 
         if (!$this->is_bare()) {
             $id = $this->required_param('id', PARAM_INT);
-            $this->get_tab_page()->print_tabs(get_class($this), array('id' => $id));
+            //$this->get_tab_page()->print_tabs(get_class($this), array('id' => $id));
+            $this->print_tabs(get_class($this), array('id' => $id));
         }
     }
 
@@ -124,8 +122,9 @@ class waitlistpage extends selectionpage {
         } else {
             $sparam = new stdClass;
             $sparam->num = count($data->_selection);
+            $sparam->action = $data->do;
             // ***TBD***
-            notice_yesno(get_string('confirm_waitlist_'.$data->do, self::LANG_FILE, $sparam),
+            notice_yesno(get_string('confirm_waitlist', self::LANG_FILE, $sparam),
                          'index.php', 'index.php',
                          array('s' => $this->pagename,
                                'id' => $id,
@@ -137,7 +136,7 @@ class waitlistpage extends selectionpage {
         }
     }
 
-    function action_remove() {
+    function do_remove() {
         $id = $this->required_param('id', PARAM_INT);
         $recs = explode(',', $this->required_param('selected',PARAM_TEXT));
 
@@ -167,7 +166,7 @@ class waitlistpage extends selectionpage {
         }
     }
 
-    function action_overenrol() {
+    function do_overenrol() {
         $id = $this->required_param('id', PARAM_INT);
         $recs = explode(',', $this->required_param('selected',PARAM_TEXT));
 
