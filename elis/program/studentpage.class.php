@@ -461,6 +461,7 @@ class studentpage extends associationpage {
 
         $cls = new pmclass($clsid);
 
+        // TBD: see student.class.php
         $columns = array(
             'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE)),
             'name'             => array('header' => get_string('student_name_1', self::LANG_FILE)),
@@ -470,7 +471,7 @@ class studentpage extends associationpage {
             'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
             'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
             'locked'           => array('header' => get_string('student_locked', self::LANG_FILE)),
-            'buttons'          => array('header' => ''), // TBD , ?
+            'buttons'          => array('header' => '', 'sortable' => false ), // TBD , ?
             );
 
         // TBD
@@ -615,7 +616,8 @@ class student_table extends association_page_table {
                    'completestatusid' => 'get_item_display_completestatusid',
                    'locked'           => 'get_item_display_locked',
                    'idnumber'         => 'get_item_display_idnumber',
-                   'name'             => 'get_item_display_name');
+                   'name'             => 'get_item_display_name',
+                   'buttons'          => 'get_items_display_buttons');
 
         foreach ($display_functions as $key => $val) {
             if (isset($columns[$key]) && is_array($columns[$key])) {
@@ -685,5 +687,10 @@ class student_table extends association_page_table {
 
         return $moodle_link_begin.$item->name.$moodle_link_end;
     }
+
+    function get_item_display_buttons($column, $item) {
+        return htmltab_display_function($column, $item);
+    }
+
 }
 

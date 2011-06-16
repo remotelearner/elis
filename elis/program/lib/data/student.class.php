@@ -30,6 +30,7 @@ require_once elis::lib('table.class.php');
 //require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
 //require_once CURMAN_DIRLOCATION . '/lib/attendance.class.php';
 
+require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/instructor.class.php');
@@ -530,7 +531,6 @@ class student extends elis_data_object {
     function update() {
         $retval = $this->data_update_record();
         events_trigger('crlm_class_completed', $this);
-
         return $retval;
     }
 
@@ -540,6 +540,19 @@ class student extends elis_data_object {
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
+    protected function get_base_url() {
+        global $CFG;
+        $options = array('s', 'id', 'action', 'section', 'alpha', 'search', 'perpage', 'class'); // TBD
+        $params = array();
+        foreach ($options as $option) {
+            $val = optional_param($option, null, PARAM_CLEAN);
+            //error_log("student.class.php::get_base_url()  $option => $val");
+            if ($val != null) {
+                $params[$option] = $val;
+            }
+        }
+        return new moodle_url($CFG->wwwroot.'/elis/program/index.php', $params);
+    }
 
     /**
      * Return the HTML to edit a specific student.
@@ -567,23 +580,30 @@ class student extends elis_data_object {
         if (empty($this->id)) {
             $columns = array(
                 'enrol'            => array('header' => get_string('enrol', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE),
                                             'display_function' => 'htmltab_display_function'),
                 'name'             => array('header' => get_string('student_name_1', self::LANG_FILE),
                                             'display_function' => 'htmltab_display_function'),
                 'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'grade'            => array('header' => get_string('student_grade', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'credits'          => array('header' => get_string('student_credits', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function')
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
             );
         } else {
             $columns = array(
@@ -592,17 +612,23 @@ class student extends elis_data_object {
                 'name'             => array('header' => get_string('student_name_1', self::LANG_FILE),
                                             'display_function' => 'htmltab_display_function'),
                 'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'grade'            => array('header' => get_string('student_grade', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'credits'          => array('header' => get_string('student_credits', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
                 'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function')
+                                            'display_function' => 'htmltab_display_function',
+                                            'sortable' => false),
             );
         }
 
@@ -765,7 +791,7 @@ class student extends elis_data_object {
                 $newarr[] = $tabobj;
                 //$table->data[] = $newarr;
             }
-            $table = new display_table($newarr, $columns);
+            $table = new display_table($newarr, $columns, $this->get_base_url());
         }
 
         if (empty($this->id)) {
@@ -820,7 +846,7 @@ class student extends elis_data_object {
 
             $select = 'classid = ? AND userid = ? ';
             $grades = $this->_db->get_records_select(student_grade::TABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
-            $columns = array(
+            $columns = array( // TBD
                 'element'    => array('header' => get_string('grade_element', self::LANG_FILE),
                                       'display_function' => 'htmltab_display_function'),
                 'grade'      => array('header' => get_string('grade_element', self::LANG_FILE),
@@ -932,7 +958,7 @@ class student extends elis_data_object {
                 //$table->data[] = $newarr;
             }
 
-            $table = new display_table($newarr, $columns);
+            $table = new display_table($newarr, $columns, $this->get_base_url());
             if (!empty($newarr)) { // TBD: $table or $newarr?
                 echo '<br />';
                 echo $table->get_html();
@@ -1172,7 +1198,7 @@ class student extends elis_data_object {
                 $newarr[] = $tabobj;
                 //$table->data[] = $newarr;
             }
-            $table = new display_table($newarr, $columns);
+            $table = new display_table($newarr, $columns, $this->get_base_url());
         }
 
         if (empty($this->id)) {
@@ -1341,7 +1367,7 @@ class student extends elis_data_object {
                 //$table->data[] = $newarr;
             }
 
-            $table = new display_table($newarr, $columns);
+            $table = new display_table($newarr, $columns, $this->get_base_url());
             if (!empty($table)) { // TBD: $newarr or $table?
                 echo '<br />';
                 echo $table->get_html();
@@ -2381,7 +2407,7 @@ class student_grade extends elis_data_object {
         $output = '';
         ob_start();
 
-        $columns = array(
+        $columns = array( // TBD
             'grade'      => array('header' => get_string('grade', self::LANG_FILE),
                                   'display_function' => 'htmltab_display_function'),
             'locked'     => array('header' => get_string('student_locked', self::LANG_FILE),
@@ -2455,7 +2481,7 @@ class student_grade extends elis_data_object {
             //$table->data[] = $newarr;
         }
         $newarr[] = $tabobj; // TBD: or in loop?
-        $table = new display_table($newarr, $columns);
+        $table = new display_table($newarr, $columns, $this->get_base_url());
 
         if (empty($this->id)) {
             echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
@@ -2687,13 +2713,5 @@ function student_get_class_from_course($crsid, $userid) {
     $params[] = $userid;
     $params[] = $crsid;
     return $DB->get_record_sql($sql, $params);
-}
-
-/**
- * New display function to allow HTML elements in table
- * see: /elis/core/lib/table.class.php
- */
-function htmltab_display_function($column, $item) {
-    return isset($item->{$column}) ? $item->{$column} : '';
 }
 

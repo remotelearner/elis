@@ -120,7 +120,7 @@ class waitlistpage extends selectionpage {
         $id = $this->required_param('id', PARAM_INT);
 
         if (empty($data->_selection)) {
-            echo print_error('no_items_selected', self::LANG_FILE);
+            print_error('no_items_selected', self::LANG_FILE);
         } else {
             $sparam = new stdClass;
             $sparam->num = count($data->_selection);
@@ -163,7 +163,7 @@ class waitlistpage extends selectionpage {
         } else {
             $sparam = new stdClass;
             $sparam->url = $tmppage->url;
-            print_error('error_waitlist_remove', self::LANG_FILE, $sparam);
+            print_error('error_waitlist_remove', self::LANG_FILE, '', $sparam);
         }
     }
 
@@ -191,7 +191,7 @@ class waitlistpage extends selectionpage {
         } else {
             $sparam = new stdClass;
             $sparam->url = $tmppage->url;
-            print_error('error_waitlist_overenrol', self::LANG_FILE, $sparam);
+            print_error('error_waitlist_overenrol', self::LANG_FILE, '', $sparam);
         }
     }
 }

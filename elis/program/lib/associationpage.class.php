@@ -75,8 +75,30 @@ class associationpage extends pm_page {
         $id = required_param('id', PARAM_INT);
 
         parent::print_header();
+        //$this->get_tab_page()->print_tabs(get_class($this), array('id' => $id));
+        $this->print_tabs('view', array('id' => $id)); // TBD
+    }
 
-        $this->get_tab_page()->print_tabs(get_class($this), array('id' => $id));
+    /**
+     * Prints the tab bar describe by the $tabs instance variable.
+     * - lifted from managmentpage.class.php
+     * @param $selected name of tab to display as selected
+     * @param $params extra parameters to insert into the tab links, such as an id
+     */
+    function print_tabs($selected, $params=array()) {
+        $row = array();
+
+        foreach($this->tabs as $tab) {
+            $tab = $this->add_defaults_to_tab($tab);
+            if($tab['showtab'] === true) {
+                $target = new $tab['page'](array_merge($tab['params'], $params));
+                if (!$target->can_do()) {
+                    continue;
+                }
+                $row[] = new tabobject($tab['tab_id'], $target->url, $tab['name']);
+            }
+        }
+        print_tabs(array($row), $selected);
     }
 
     function get_new_data_object($id=false) {
@@ -208,7 +230,7 @@ class associationpage extends pm_page {
 
         if($data) {
             $obj->set_from_data($data);
-            $obj->update();  // TODO: create a generalized "save" method that decides whether to do update or add
+            $obj->save();
             $target = $this->get_new_page(array('action' => 'default', 'id' => $parent_id));
             redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' updated.');
         } else {
@@ -222,8 +244,12 @@ class associationpage extends pm_page {
         return get_string('breadcrumb_' . get_class($this), self::LANG_FILE);
     }
 
-    public function build_navigation_default() {
-        $this->navbar->add($this->get_tab_page()->build_navigation_view());
+    public function build_navbar_default() { // build_navigation_default
+        parent::build_navbar_default();
+        $url = new moodle_url($this->_get_page_url(), array('s' => $this->pagename)); // TBD: $_GET ?
+        $this->navbar->add(get_string("association_{$this->data_class}",
+                                      self::LANG_FILE), $url); // TBD
+        // arg1 was: $this->get_tab_page()->build_navigation_view()
     }
 
     /**
@@ -237,7 +263,6 @@ class associationpage extends pm_page {
         }
 
         $obj = new $this->data_class($association_id);
-
         $this->print_delete_form($obj);
     }
 

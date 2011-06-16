@@ -94,3 +94,11 @@ function pmsearchbox($page, $searchname = 'search') {
     echo "</td></tr></table>";
 }
 
+/**
+ * New display function callback to allow HTML elements in table
+ * see: /elis/core/lib/table.class.php
+ */
+function htmltab_display_function($column, $item) {
+    return isset($item->{$column}) ? $item->{$column} : '';
+}
+
