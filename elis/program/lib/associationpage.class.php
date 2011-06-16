@@ -139,8 +139,9 @@ class associationpage extends pm_page {
         $this->print_add_form($parent_obj);
     }
 
-    function _do_add() {
-       $target = $this->get_new_page(array('action' => 'add'), true);
+    function do_add() {
+      /* **** TBD ****
+        $target = $this->get_new_page(array('action' => 'add'), true);
         $obj = NULL; // $this->get_default_object_for_add();
         $form = new $this->form_class($target->url, $obj ? array('obj' => $obj) : NULL);
 
@@ -164,6 +165,8 @@ class associationpage extends pm_page {
             $this->_form = $form;
             $this->display('add');
         }
+      **** */
+        $this->display('add'); // TBD !!!
     }
 
     /**
