@@ -37,6 +37,8 @@ define('CURR_EXPIRE_ENROL_COMPLETE', 2);
 class curriculumstudent extends elis_data_object {
     const TABLE = 'crlm_curriculum_assignment';
 
+    var $verbose_name = 'curriculumstudent';
+
     static $associations = array(
         'user' => array(
             'class' => 'user',
@@ -117,11 +119,13 @@ class curriculumstudent extends elis_data_object {
     }
 
 	public static function delete_for_curriculum($id) {
-		return $this->_db->delete_records(curriculumstudent::TABLE, array('curriculumid'=>$id));
+	    global $DB;
+		return $DB->delete_records(curriculumstudent::TABLE, array('curriculumid'=>$id));
 	}
 
 	public static function delete_for_user($id) {
-		return $this->_db->delete_records(curriculumstudent::TABLE, array('userid'=>$id));
+	    global $DB;
+		return $DB->delete_records(curriculumstudent::TABLE, array('userid'=>$id));
 	}
 
     /////////////////////////////////////////////////////////////////////
@@ -489,6 +493,10 @@ class curriculumstudent extends elis_data_object {
                 }
             }
         }
+    }
+
+   function get_verbose_name() {
+        return $this->verbose_name;
     }
 }
 

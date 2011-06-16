@@ -41,8 +41,10 @@ class studentcurriculumpage extends associationpage2 {
     var $section = 'users';
     var $tab_page = 'usermanagementpage';
     var $parent_data_class = 'user';
+    var $parent_page;
+    var $context;
 
-    public function __construct($params = false) {
+    public function __construct(array $params = null) {
         $this->section = $this->get_parent_page()->section;
         parent::__construct($params);
     }
@@ -58,7 +60,7 @@ class studentcurriculumpage extends associationpage2 {
     }
 
     public function _get_page_params() {
-        return parent::_get_page_params();
+        return array('id' => optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
     }
 
     function can_do_default() {
@@ -103,9 +105,10 @@ class studentcurriculumpage extends associationpage2 {
         return $this->context;
     }
 
-    protected function get_parent_page() {
+   protected function get_parent_page() {
         if (!isset($this->parent_page)) {
-            $id = isset($this->params['id']) ? $this->params['id'] : NULL;
+            //$id = isset($this->params['id']) ? $this->params['id'] : NULL;
+            $id = optional_param('id', NULL, PARAM_INT);
             $this->parent_page = new userpage(array('id' => $id, 'action' => 'view'));
         }
         return $this->parent_page;
@@ -350,8 +353,10 @@ class curriculumstudentpage extends associationpage2 {
     var $tab_page = 'curriculumpage';
     var $data_class = 'curriculumstudent';
     var $parent_data_class = 'curriculum';
+    var $parent_page;
+    var $context;
 
-    public function __construct($params = false) {
+    public function __construct(array $params = null) {
         $this->section = $this->get_parent_page()->section;
         parent::__construct($params);
     }
@@ -371,7 +376,8 @@ class curriculumstudentpage extends associationpage2 {
 
     protected function get_context() {
         if (!isset($this->context)) {
-            $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
+            //$id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
+            $id = required_param('id', PARAM_INT);
             $this->context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $id);
         }
         return $this->context;
@@ -379,7 +385,8 @@ class curriculumstudentpage extends associationpage2 {
 
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
-            $id = isset($this->params['id']) ? $this->params['id'] : NULL;
+            //$id = isset($this->params['id']) ? $this->params['id'] : NULL;
+            $id = optional_param('id', NULL, PARAM_INT);
             $this->parent_page = new curriculumpage(array('id' => $id, 'action' => 'view'));
         }
         return $this->parent_page;
