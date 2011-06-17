@@ -35,6 +35,7 @@ class curriculumcourse extends data_object_with_custom_fields {
     const TABLE = 'crlm_curriculum_course';
 
     var $verbose_name = 'curriculumcourse';
+    var $_dbloaded;
 
     static $associations = array(
         'curriculum' => array(
