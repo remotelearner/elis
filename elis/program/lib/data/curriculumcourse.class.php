@@ -129,11 +129,17 @@ class curriculumcourse extends data_object_with_custom_fields {
     }
 
     function delete() {
-        $this->delete_all_prerequisites();
-        $this->delete_all_corequisites();
-        $this->delete_all_track_classes();
+        // TO-DO: add to associations array
+        //$this->delete_all_prerequisites();
+        //$this->delete_all_corequisites();
+        //$this->delete_all_track_classes();
 
         parent::delete();
+    }
+
+    function __toString() {
+        // TO-DO: what should this return?
+        return $this->id;
     }
 
     /////////////////////////////////////////////////////////////////////
