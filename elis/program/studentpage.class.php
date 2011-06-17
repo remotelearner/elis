@@ -129,6 +129,10 @@ class studentpage extends associationpage {
         return pmclasspage::_has_capability('block/curr_admin:track:enrol', $id);
     }
 
+    function do_add() { // TBD: must overload the parents since no studentform
+        $this->display('add');
+    }
+
     function do_delete() { // action_confirm
         $stuid = required_param('association_id', PARAM_INT);
         $confirm = required_param('confirm', PARAM_TEXT);

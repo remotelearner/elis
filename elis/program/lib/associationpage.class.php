@@ -135,11 +135,11 @@ class associationpage extends pm_page {
     function display_add() { // do_add()
         $id = required_param('id', PARAM_INT);
         $parent_obj = new $this->parent_data_class($id);
+        $this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
         $this->print_add_form($parent_obj);
     }
 
     function do_add() {
-      /* **** TBD ****
         $target = $this->get_new_page(array('action' => 'add'), true);
         $obj = NULL; // $this->get_default_object_for_add();
         $form = new $this->form_class($target->url, $obj ? array('obj' => $obj) : NULL);
@@ -164,8 +164,6 @@ class associationpage extends pm_page {
             $this->_form = $form;
             $this->display('add');
         }
-      **** */
-        $this->display('add'); // TBD !!!
     }
 
     /**
@@ -189,11 +187,12 @@ class associationpage extends pm_page {
         $obj            = new $this->data_class($association_id);
         $parent_obj     = new $this->parent_data_class($id);
 
-
-        if(!$obj->get_dbloaded()) {
-            error('Invalid object id: ' . $id . '.');
+        if(!$obj->get_dbloaded()) { // TBD
+            $sparam = new stdClass;
+            $sparam->id = $id;
+            print_error('invalid_objectid', 'elis_program', '', $sparam);
         }
-
+        $this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
         $this->print_edit_form($obj, $parent_obj);
     }
 
@@ -246,9 +245,10 @@ class associationpage extends pm_page {
         $id = $this->required_param('id', PARAM_INT);
         $association_id = $this->required_param('association_id', PARAM_INT);
 
-
-        $this->print_tabs('edit', array('id' => $id, 'association_id'=>$association_id));
-
+        // TBD
+        $this->get_tab_page()->print_tabs('edit',
+                                   array('id' => $id,
+                                         'association_id' => $association_id));
         $this->_form->display();
     }*/
 
@@ -325,7 +325,7 @@ class associationpage extends pm_page {
             redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' updated.');
         } else {
             // Validation must have failed, redisplay form
-            $this->print_tabs('edit', array('id' => $id));
+            $this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
             $form->display();
         }
     }
@@ -361,13 +361,13 @@ class associationpage extends pm_page {
      * Generic handler for the delete action.  Prints the delete confirmation form.
      */
     public function display_delete() {
-        $association_id       = $this->required_param('association_id', PARAM_INT);
-
+        $association_id = $this->required_param('association_id', PARAM_INT);
         if(empty($association_id)) {
             print_error('invalid_id');
         }
 
         $obj = $this->get_new_data_object($association_id);
+        $this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
         $this->print_delete_form($obj);
     }
 

@@ -287,6 +287,7 @@ $string['id_same_as_user'] = 'Same as username';
 $string['inactive'] = 'Inactive';
 $string['instructors'] = 'Instructors';
 $string['items_found'] = '{$a->num} items found.';
+$string['invalid_objectid'] = 'Invalid object id: {$a->id}';
 $string['invalidconfirm'] = 'Invalid confirmation code!';
 
 $string['learningplan'] = 'Learning Plan';
