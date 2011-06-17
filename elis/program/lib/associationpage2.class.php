@@ -101,6 +101,7 @@ abstract class associationpage2 extends selectionpage {
             return $this->process_unassignment($data);
         }
     }
+
     abstract protected function process_assignment($data);
     abstract protected function process_unassignment($data);
 

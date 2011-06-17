@@ -89,7 +89,7 @@ class associationpage extends pm_page {
 
         parent::print_header();
         //$this->get_tab_page()->print_tabs(get_class($this), array('id' => $id));
-        $this->print_tabs('edit', array('id' => $id)); // TBD: 'view'
+        $this->get_tab_page()->print_tabs('view', array('id' => $id)); // TBD: 'edit'
     }
 
     /**

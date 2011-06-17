@@ -96,12 +96,13 @@ function pmsearchbox($page, $searchname = 'search') {
 
 /** Function to return pm page url with required params
  *
- * @param    string|moodle_url  the pages base url
+ * @param    string|moodle_url  $baseurl  the pages base url
  *           defaults to: $CFG->wwwroot .'/elis/program/index.php'
+ * @param    array              $extras   extra parameters for url.
  * @uses     $CFG
  * @return   moodle_url   the baseurl with required params
  */
-function get_pm_url($baseurl = null) {
+function get_pm_url($baseurl = null, $extras = array()) {
     global $CFG;
     if (empty($baseurl)) {
         $baseurl = $CFG->wwwroot .'/elis/program/index.php';
@@ -113,6 +114,9 @@ function get_pm_url($baseurl = null) {
         if ($val != null) {
             $params[$option] = $val;
         }
+    }
+    foreach ($extras as $key => $val) {
+        $params[$key] = $val;
     }
     return new moodle_url($baseurl, $params);
 }
