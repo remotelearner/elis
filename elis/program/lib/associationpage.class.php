@@ -338,13 +338,6 @@ class associationpage extends pm_page {
         return $this->get_page_title_default();
     }
 
-    public function get_page_title_view() { // TBD
-        $id = $this->required_param('id', PARAM_INT);
-        $obj = $this->get_new_data_object($id);
-        $obj->load();
-        return $obj;
-    }
-
     public function build_navbar_default() { // build_navigation_default
         parent::build_navbar_default();
         $uparams = array('s' => $this->pagename);
