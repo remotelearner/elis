@@ -278,7 +278,7 @@ class associationpage extends pm_page {
         $form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
 
         if ($form->is_cancelled()) {
-            $this->display_default(); // do_default()
+            $this->display('default'); // do_default()
             return;
         }
 
@@ -312,7 +312,7 @@ class associationpage extends pm_page {
         $form = new $this->form_class($target->url, array('obj' => $obj, 'parent_obj' => $parent_obj));
 
         if ($form->is_cancelled()) {
-            $this->display_default(); // do_default()
+            $this->display('default'); // do_default()
             return;
         }
 
