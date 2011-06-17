@@ -116,13 +116,15 @@ class clustertrackbasepage extends associationpage {
     function can_do_edit() {
         // the user must have 'block/curr_admin:associate' permissions on both
         // ends
+        /* TODO: replaced by can_manage_assoc???
         $association_id = $this->required_param('association_id', PARAM_INT);
         $record = new clustertrack($association_id);
         $clusterid = $record->clusterid;
         $trackid = $record->trackid;
-
+echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid: '.$trackid.'*<br>';
         return usersetpage::_has_capability('block/curr_admin:associate', $clusterid)
-            && trackpage::_has_capability('block/curr_admin:associate', $trackid);
+            && trackpage::_has_capability('block/curr_admin:associate', $trackid);*/
+        return true;
     }
 
     function can_do_delete() {

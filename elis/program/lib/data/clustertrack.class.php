@@ -44,7 +44,6 @@ require_once elispm::lib('data/track.class.php');
 
 class clustertrack extends elis_data_object {
     const TABLE = 'crlm_cluster_track';
-
     /**
      * User ID-number
      * @var    char
@@ -111,6 +110,7 @@ class clustertrack extends elis_data_object {
         return null;
     }
 */
+
     /**
      * Associates a cluster with a track.
      */
@@ -161,7 +161,7 @@ class clustertrack extends elis_data_object {
         //FIXME: is it correct to call parent::delete() ?
         //$return = $this->data_delete_record();
 
-        if ($return && $this->autounenrol) {
+        if ($this->autounenrol) {
             // Unenrol all users in the cluster from the track (unless they are
             // in another cluster associated with the track and autoenrolled by
             // that cluster).  Only work on users that were autoenrolled in the
@@ -170,6 +170,7 @@ class clustertrack extends elis_data_object {
             // $filter selects all users enrolled in the track due to being in
             // a(nother) cluster associated with the track.  We will left-join
             // with it, and only select non-matching records.
+            /* TODO: work out how this works with clusterassignment table :)
             $params = array();
             $filter = 'SELECT u.userid '
                 . 'FROM {' . clusteruser::TABLE . '} u '
@@ -191,7 +192,7 @@ class clustertrack extends elis_data_object {
                     $ut = new usertrack($usertrack->id);
                     $ut->unenrol();
                 }
-            }
+            }*/
         }
 
         //return $return;

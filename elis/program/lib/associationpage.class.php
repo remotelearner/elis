@@ -41,7 +41,6 @@ require_once elispm::lib('page.class.php');
  */
 class associationpage extends pm_page {
     const LANG_FILE = 'elis_program';
-
     /**
      * The name of the class used for data objects
      */
@@ -190,13 +189,68 @@ class associationpage extends pm_page {
         $obj            = new $this->data_class($association_id);
         $parent_obj     = new $this->parent_data_class($id);
 
-        /* TODO: is this still required?
+
         if(!$obj->get_dbloaded()) {
             error('Invalid object id: ' . $id . '.');
-        }*/
+        }
 
         $this->print_edit_form($obj, $parent_obj);
     }
+
+    /**
+     * Generic handler for the edit action.  Prints the form for editing an
+     * existing record, or updates the record.
+     */
+    function do_edit() {
+        $association_id = $this->required_param('association_id', PARAM_INT);
+
+        $target = $this->get_new_page(array('action' => 'edit', 'association_id' => $association_id), true);
+        $obj = $this->get_new_data_object($association_id);
+        $id = $this->required_param('id', PARAM_INT);
+
+        $obj->load();
+
+        $form = new $this->form_class($target->url, array('obj' => $obj->to_object()));
+
+        if ($form->is_cancelled()) {
+            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
+            redirect($target->url);
+            return;
+        }
+
+        $data = $form->get_data();
+
+        if($data) {
+            require_sesskey();
+
+            $obj->set_from_data($data);
+            $obj->save();
+            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
+            redirect($target->url);
+        } else {
+            $this->_form = $form;
+            $this->display('edit');
+        }
+    }
+
+    /**
+     * Prints the form to edit a new record.
+     */
+    //My version of display_edit
+    /*
+    public function display_edit() {
+        if (!isset($this->_form)) {
+            throw new ErrorException('Display called before Do');
+        }
+
+        $id = $this->required_param('id', PARAM_INT);
+        $association_id = $this->required_param('association_id', PARAM_INT);
+
+
+        $this->print_tabs('edit', array('id' => $id, 'association_id'=>$association_id));
+
+        $this->_form->display();
+    }*/
 
     /**
      * Prints the edit form.
@@ -306,14 +360,14 @@ class associationpage extends pm_page {
     /**
      * Generic handler for the delete action.  Prints the delete confirmation form.
      */
-    function display_delete() {
-        $association_id = required_param('association_id', PARAM_INT);
+    public function display_delete() {
+        $association_id       = $this->required_param('association_id', PARAM_INT);
 
         if(empty($association_id)) {
             print_error('invalid_id');
         }
 
-        $obj = new $this->data_class($association_id);
+        $obj = $this->get_new_data_object($association_id);
         $this->print_delete_form($obj);
     }
 
@@ -321,41 +375,52 @@ class associationpage extends pm_page {
      * Prints the delete confirmation form.
      * @param $obj Basic data object being associated with.
      */
-    function print_delete_form($obj) {
-        $id = required_param('id', PARAM_INT);
-        $a_id = required_param('association_id', PARAM_INT);
+    public function print_delete_form($obj) {
+        global $OUTPUT;
 
-        $url        = 'index.php';
+        $obj->load(); // force load, so that the confirmation notice has something to display
+        $message    = get_string('confirm_delete_association', 'elis_program', $obj->to_object());
 
-        $a = new object();
-        $a->object_name = $obj->__toString();
-        $a->type_name = $obj->get_verbose_name();
-        $a->id = $a_id;
+        $target_page = $this->get_new_page(array('action' => 'view', 'id' => $obj->id, 'sesskey' => sesskey()), true);
+        $no_url = $target_page->url;
+        $no = new single_button($no_url, get_string('no'), 'get');
 
-        $message    = get_string('confirm_delete_association', self::LANG_FILE, $a); // TBD: no param in lang string?
-        $optionsyes = array('s' => $this->pagename, 'action' => 'confirm',
-                            'association_id' => $a_id, 'id' => $id, 'confirm' => md5($a_id));
-        $optionsno = array('s' => $this->pagename, 'id' => $id);
+        $optionsyes = array('action' => 'delete', 'id' => $obj->id, 'confirm' => 1);
+        $yes_url = clone($no_url);
+        $yes_url->params($optionsyes);
+        $yes = new single_button($yes_url, get_string('yes'), 'get');
 
-        echo '<br />' . "\n";
-        echo cm_delete_form($url, $message, $optionsyes, $optionsno);
+        echo $OUTPUT->confirm($message, $yes, $no);
     }
 
-    /**
+/**
      * Generic handler for the confirm (confirm delete) action.  Tries to delete the object and then renders the appropriate page.
      */
-    function do_delete() { // TBD
-        $association_id = required_param('association_id', PARAM_INT);
-        $confirm = required_param('confirm', PARAM_ALPHANUM);
+    public function do_delete() {
+        global $CFG;
 
-        if (md5($association_id) != $confirm) {
-            echo cm_error(get_string('invalidconfirm', 'elis_program'));
-        } else {
-            $obj = new $this->data_class($association_id);
-            $obj->delete();
+        if (!$this->optional_param('confirm', 0, PARAM_INT)) {
+            return $this->display('delete');
         }
 
-        $target = $this->display_default(); // do_default()
+        require_sesskey();
+
+        $id = $this->required_param('id', PARAM_INT);
+
+        $obj = $this->get_new_data_object($id);
+        $obj->load(); // force load, so that the confirmation notice has something to display
+        $obj->delete();
+
+        $returnurl = optional_param('return_url', null, PARAM_URL);
+        if ($returnurl === null) {
+            $target_page = $this->get_new_page(array(), true);
+            $returnurl = $target_page->url;
+        } else {
+            $returnurl = $CFG->wwwroot.$returnurl;
+        }
+
+        //TODO: not returning something valid here... needs id=1
+        redirect($returnurl, get_string('notice_'.get_class($obj).'_deleted', 'elis_program', $obj->to_object()));
     }
 
     /**
