@@ -143,7 +143,7 @@ class studentpage extends associationpage {
             echo cm_error(get_string('studentunenrolled', self::LANG_FILE, $sparam));
         }
 
-        $this->display_default(); // do_default()
+        $this->display('default'); // do_default()
     }
 
     function display_bulkedit() { // action_bulkedit
@@ -166,7 +166,7 @@ class studentpage extends associationpage {
         if (!empty($users)) {
             $this->attempt_enrol($clsid, $users);
         } else {
-            $this->display_default(); // do_default()
+            $this->display('default'); // do_default()
         }
     }
 
@@ -219,7 +219,7 @@ class studentpage extends associationpage {
         if(!empty($waitlist)) {
             $this->get_waitlistform($waitlist);
         } else {
-            $this->display_default(); // do_default()
+            $this->display('default'); // do_default()
         }
     }
 
@@ -308,7 +308,7 @@ class studentpage extends associationpage {
             $sgrade->do_add();
         }
 
-        $this->display_default(); // do_default()
+        $this->display('default'); // do_default()
     }
 
     /**
@@ -361,7 +361,7 @@ class studentpage extends associationpage {
             }
         }
 
-        $this->display_default(); // do_default()
+        $this->display('default'); // do_default()
     }
 
     function do_updateattendance() { // action_updateattendance
@@ -441,7 +441,7 @@ class studentpage extends associationpage {
             }
         }
 
-        $this->display_default(); // do_default()
+        $this->display('default'); // do_default()
     }
 
     /**
