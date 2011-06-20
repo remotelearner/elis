@@ -217,11 +217,18 @@ class usersetpage extends managementpage {
         return !$contexts->is_empty();
     }
 
+    function build_navbar_view() {
+        // cluster name is already added by build_navbar_default, so don't
+        // print it again
+        return $this->build_navbar_default();
+    }
+
     public function build_navbar_default() {
         global $CFG, $DB;
 
         parent::build_navbar_default();
 
+        // add cluster hierarchy if cluster defined
         $id = $this->optional_param('id', 0, PARAM_INT);
         if ($id) {
             $level = context_level_base::get_custom_context_level('cluster', 'elis_program');
@@ -232,12 +239,10 @@ class usersetpage extends managementpage {
                     JOIN {" . userset::TABLE . "} cluster ON ctx.instanceid = cluster.id
                    WHERE ctx.id IN ($ancestorids) AND ctx.contextlevel = $level
                    ORDER BY ctx.depth";
-            $ancestors = $DB->get_records_sql($sql);
-            $ancestors = $ancestors ? $ancestors : array();
+            $ancestors = $DB->get_recordset_sql($sql);
             foreach ($ancestors as $ancestor) {
-                $url = new moodle_url($this->_get_page_url(), array('s' => $this->pagename,
-                                                                    'action' => 'view',
-                                                                    'id' => $ancestor->id));
+                $url = $this->get_new_page(array('action' => 'view',
+                                                 'id' => $ancestor->id), true)->url;
                 $this->navbar->add($ancestor->name, $url);
             }
         }
@@ -248,6 +253,8 @@ class usersetpage extends managementpage {
     }
 
     function display_default() {
+        global $OUTPUT;
+
         // Get parameters
         $sort         = optional_param('sort', 'name', PARAM_ALPHA);
         $dir          = optional_param('dir', 'ASC', PARAM_ALPHA);
