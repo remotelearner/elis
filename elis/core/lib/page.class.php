@@ -60,10 +60,6 @@ abstract class elis_page extends moodle_page {
         $this->params = $params;
         $this->set_context($this->_get_page_context());
         $this->set_url($this->_get_page_url(), $this->_get_page_params());
-        $this->set_pagetype($this->_get_page_type());
-        $this->set_title($this->get_page_title());
-        $this->set_heading($this->get_page_heading());
-        $this->build_navbar();
     }
 
     /**
@@ -220,16 +216,42 @@ abstract class elis_page extends moodle_page {
     }
 
     /**
+     * Initialize the page variables needed for display.
+     */
+    protected function _init_display() {
+        $this->set_pagetype($this->_get_page_type());
+        $this->set_title($this->get_page_title());
+        $this->set_heading($this->get_page_heading());
+        $this->build_navbar();
+    }
+
+    /**
+     * Print the page header.
+     */
+    public function print_header() {
+        global $OUTPUT;
+        echo $OUTPUT->header();
+    }
+
+    /**
+     * Print the page footer.
+     */
+    public function print_footer() {
+        global $OUTPUT;
+        echo $OUTPUT->footer();
+    }
+
+    /**
      * Display the page.
      */
     public function display($action=null) {
-        global $OUTPUT;
         if ($action === null) {
             $action = $this->optional_param('action', '', PARAM_ACTION);
         }
-        echo $OUTPUT->header();
+        $this->_init_display();
+        $this->print_header();
         call_user_func(array($this, 'display_' . $action));
-        echo $OUTPUT->footer();
+        $this->print_footer();
     }
 
     /**
