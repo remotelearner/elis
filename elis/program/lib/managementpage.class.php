@@ -464,7 +464,7 @@ abstract class managementpage extends pm_page {
     public function build_navbar_add() {
         $this->build_navbar_default();
 
-        $url = new moodle_url($this->_get_page_url(), array('s' => $this->pagename, 'action' => 'add'));
+        $url = $this->get_new_page(array('action' => 'add'), true)->url;
         $this->navbar->add(get_string("add_{$this->data_class}", 'elis_program'), $url);
     }
 
@@ -484,14 +484,14 @@ abstract class managementpage extends pm_page {
         $id = $this->required_param('id', PARAM_INT);
         $obj = $this->get_new_data_object($id);
         $obj->load();
-        $url = new moodle_url($this->_get_page_url(), array('s' => $this->pagename, 'action' => 'view', 'id' => $id));
+        $url = $this->get_new_page(array('action' => 'view', 'id' => $id), true)->url;
         $this->navbar->add(htmlspecialchars($obj), $url, navbar::TYPE_CUSTOM, null, null, new pix_icon('user', '', 'elis_program'));
     }
 
     public function build_navbar_default() {
         parent::build_navbar_default();
 
-        $url = new moodle_url($this->_get_page_url(), array('s' => $this->pagename));
+        $url = $this->get_new_page(array(), true)->url;
         $this->navbar->add(get_string("manage_{$this->data_class}", 'elis_program'), $url);
     }
 
