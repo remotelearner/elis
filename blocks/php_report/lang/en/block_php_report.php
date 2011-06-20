@@ -141,7 +141,7 @@ $string['schedule_user_access_error'] = 'Scheduled instance $a is no longer acce
 $string['schedule_reports'] = 'Schedule Reports';
 $string['schedule_this_report'] = 'Schedule this report';
 $string['successful_schedule'] = 'ELIS Report $a has been successfully scheduled';
-$string['return_to_schedules'] = '<br><br><a href=$a>Return to scheduled jobs</a>';
+$string['return_to_schedules'] = '<br><br><a href={$a}>Return to scheduled jobs</a>';
 $string['email_subject'] = 'Scheduled Report: ';
 
 //language strings for the "run scheduled jobs now" action
