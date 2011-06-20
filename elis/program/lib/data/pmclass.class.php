@@ -970,12 +970,14 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
 
     $select = 'SELECT cls.*, cls.starttimehour as starttimehour, cls.starttimeminute as starttimeminute, ' .
               'cls.endtimehour as endtimehour, cls.endtimeminute as endtimeminute, crs.name as crsname, ' .
-              'clsmoodle.moodlecourseid as moodlecourseid ';
+              'clsmoodle.moodlecourseid as moodlecourseid, mcrs.fullname as moodlecourse ';
     $tables = 'FROM {'.pmclass::TABLE.'} cls ';
     $join   = 'JOIN {'.course::TABLE.'} crs
                ON crs.id = cls.courseid
                LEFT JOIN {'.classmoodlecourse::TABLE.'} clsmoodle
                ON clsmoodle.classid = cls.id
+               LEFT JOIN {course} mcrs
+               ON clsmoodle.moodlecourseid = mcrs.id
               ';
 
     //class associated to a particular cluster via a track
