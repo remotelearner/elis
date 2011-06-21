@@ -928,13 +928,15 @@ class scheduling_page extends workflowpage {
         echo $OUTPUT->spacer();
 
         //button for scheduling a new instance
-        echo $OUTPUT->single_button($this->url, get_string('listinstancejobs_new', 'block_php_report'), 'post', array('report' => $report));
+        $url = new moodle_url($this->url, array('action' => 'default', 'report' => $report));
+        echo $OUTPUT->single_button($url, get_string('listinstancejobs_new', 'block_php_report'));
 
         echo '<hr>';
         echo $OUTPUT->spacer();
 
         //button for listing all reports
-        echo $OUTPUT->single_button($this->url, get_string('listinstancejobs_back_label', 'block_php_report'), 'post', array('action' => 'list'));
+        $url = new moodle_url($this->url, array('action' => 'list'));
+        echo $OUTPUT->single_button($url, get_string('listinstancejobs_back_label', 'block_php_report'));
     }
 
     /**
