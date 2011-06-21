@@ -79,13 +79,13 @@ abstract class workflowpage extends elis_page {
     /**
      * Displays the finish screen.
      */
-    abstract function display_finish();
+    abstract function display_finished();
 
     /**
      * Display a summary of what the user has already done (for resuming an
      * interrupted workflow)
      */
-    abstract function display_summary();
+    abstract function print_summary();
 
 
     /**************************************************************************
@@ -279,22 +279,24 @@ abstract class workflowpage extends elis_page {
     /**
      * Finish the workflow
      */
-    function action_finish() {
+    function do_finish() {
         $this->workflow->finish();
         $target = $this->get_new_page(array('_wfid' => $this->workflow->id,
                                             'action' => 'finished'));
-        return redirect($target->get_url());
+        return redirect($target->url);
     }
 
     /**
      * Display the final summary
      */
-    function action_finished() {
-        $this->display_finish();
-        $this->workflow->delete();
+    function print_footer() {
+        parent::print_footer();
+        if ($this->optional_param('action', '', PARAM_ACTION) == 'finished') {
+            $this->workflow->delete();
+        }
     }
 
-    function action_cancel() {
+    function do_cancel() {
         global $CFG;
         if (!empty($this->workflow->id)) {
             $this->workflow->delete();
