@@ -37,7 +37,7 @@ abstract class selectionpage extends pm_page { // TBD
 
     var $_basepage; // TBD
 
-    var $tabs;
+    var $tabs = array(); // TBD
 
     /*
      * for AJAX calls:
@@ -49,7 +49,8 @@ abstract class selectionpage extends pm_page { // TBD
 
     function print_header() {
         if (!$this->is_bare()) {
-            return parent::print_header();
+            parent::print_header();
+            $this->print_tabs();
         }
     }
 
@@ -64,7 +65,7 @@ abstract class selectionpage extends pm_page { // TBD
 
         $page = $this; // TBD: $this->get_tab_page();
         $params = array('id' => $id);
-        $rows = $row;
+        $rows = array(); // TBD was: = $row; -> Undefined variable error!
         $row = array();
 
         // main row of tabs
@@ -75,15 +76,18 @@ abstract class selectionpage extends pm_page { // TBD
                 $row[] = new tabobject($tab['tab_id'], $target->get_url(), $tab['name']);
             }
         }
-        $rows[] = $row;
+        if (!empty($row)) {
+            $rows[] = $row;
+        }
 
         // assigned/unassigned tabs
-        $assignedpage = $this->get_basepage();
-        $unassignedpage = clone($assignedpage);
-        $unassignedpage->params['mode'] = 'unassign';
-        $row = array(new tabobject('assigned', $assignedpage->get_url(),
+        $assignedpage = $this->get_new_page(array('id' => $id, 'mode' => 'assign')); // WAS: $this->get_basepage();
+        //$unassignedpage = clone($assignedpage);
+        //$unassignedpage->params['mode'] = 'unassign';
+        $unassignedpage = $this->get_new_page(array('id' => $id, 'mode' => 'unassign'));
+        $row = array(new tabobject('assigned', $assignedpage->url,
                                    get_string('assigned', self::LANG_FILE)),
-                     new tabobject('unassigned', $unassignedpage->get_url(),
+                     new tabobject('unassigned', $unassignedpage->url,
                                    get_string('unassigned', self::LANG_FILE)));
         $rows[] = $row;
 
@@ -97,7 +101,7 @@ abstract class selectionpage extends pm_page { // TBD
     function display_default() { // action_default
         $form = $this->get_selection_form();
 
-        $baseurl = htmlspecialchars_decode($this->_get_page_url()); // $this->get_basepage()->get_url()
+        $baseurl = htmlspecialchars_decode($this->_get_page_url()); // $this->get_basepage()->get_url() OR just use: $this->url ??? TBD
 
         if ($data = $form->get_data()) {
             $selection = json_decode($data->_selection);
@@ -108,7 +112,7 @@ abstract class selectionpage extends pm_page { // TBD
             $data->_selection = $selection;
             $this->process_selection($data);
             return;
-        } else if (($showselection = optional_param('_showselection','',PARAM_RAW))) {
+        } else if (($showselection = $this->optional_param('_showselection','',PARAM_RAW))) {
             $baseurl .= "&_showselection=$showselection";
             $selection = json_decode($showselection);
             $selection = $selection ? $selection : array();
@@ -139,7 +143,7 @@ abstract class selectionpage extends pm_page { // TBD
 
     protected function print_js_selection_table($table, $filter, $count, $form, $baseurl) {
         global $CFG, $OUTPUT, $PAGE;
-        $mode = optional_param('mode', '', PARAM_ACTION);
+        $mode = $this->optional_param('mode', '', PARAM_ACTION);
         if (!$this->is_bare()) {
             echo "<script>var basepage='$baseurl';</script>";
             // TBD
@@ -148,7 +152,7 @@ abstract class selectionpage extends pm_page { // TBD
             echo '<div class="mform" style="width: 100%"><fieldset><legend>'.get_string('select').'</legend><div id="list_display">';
         }
 
-        $pagenum = optional_param('page', 0, PARAM_INT);
+        $pagenum = $this->optional_param('page', 0, PARAM_INT);
         $perpage = 30;
 
         if ($filter != null) {
@@ -156,7 +160,7 @@ abstract class selectionpage extends pm_page { // TBD
         }
 
         // pager
-        $action = optional_param('action', '', PARAM_ACTION);
+        $action = $this->optional_param('action', '', PARAM_ACTION);
         $pagingbar = new paging_bar($count, $pagenum, $perpage, $this->get_basepage()->url . ($action ? "&amp;action=$action" : '' )); // TBD: '&amp;'
         echo $OUTPUT->render($pagingbar);
 
@@ -259,7 +263,12 @@ abstract class selectionpage extends pm_page { // TBD
  * have a column called '_selection'.
  */
 class selection_table extends display_table {
-    function __construct(&$items, $columns, $pageurl, $decorators=array()) {
+    function __construct(&$items, $columns, $pageurl, $decorators = array()) {
+        if (isset($columns['_selection']) && is_array($columns['_selection'])) {
+            $columns['_selection']['sortable'] = false;
+            $columns['_selection']['display_function'] =
+                        array(&$this, 'get_item_display__selection');
+        }
         parent::__construct($items, $columns, $pageurl);
         $this->table->id = 'selectiontable';
     }

@@ -54,7 +54,7 @@ class studentpage extends associationpage {
         $this->tabs = array( // TBD: 'currcourse_edit' -> 'edit'
             array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', self::LANG_FILE), 'showtab' => true),
             array('tab_id' => 'currcourse_edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', self::LANG_FILE), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
-            array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', self::LANG_FILE), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
+            array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', self::LANG_FILE), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'), // TBD: tab_id was 'edit' or 'bulkedit'???
            array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete', self::LANG_FILE), 'showbutton' => true, 'image' => 'delete'),
         );
 
@@ -101,14 +101,7 @@ class studentpage extends associationpage {
     }
 
     function can_do_edit() {
-        //$association_id = 0;
-        //if(!empty($this->params['association_id'])) {
-        //    $association_id = $this->params['association_id'];
-        //} else
-        {
-            $association_id = $this->optional_param('association_id', '', PARAM_INT);
-        }
-
+        $association_id = $this->optional_param('association_id', '', PARAM_INT);
         $student = new student($association_id);
         return student::can_manage_assoc($student->userid, $student->classid);
     }
@@ -134,8 +127,8 @@ class studentpage extends associationpage {
     }
 
     function do_delete() { // action_confirm
-        $stuid = required_param('association_id', PARAM_INT);
-        $confirm = required_param('confirm', PARAM_TEXT);
+        $stuid = $this->required_param('association_id', PARAM_INT);
+        $confirm = $this->required_param('confirm', PARAM_TEXT);
 
         $stu = new student($stuid);
         $sparam = new stdClass;
@@ -162,7 +155,8 @@ class studentpage extends associationpage {
         $alpha        = cm_get_param('alpha', '');
 
         // TBD: 'edit' or 'bulkedit' or ???; and array(params ???)
-        $this->get_tab_page()->print_tabs('edit', array('id' => $clsid));
+        // print_tabs now in parent::print_header()
+        // $this->get_tab_page()->print_tabs('edit', array('id' => $clsid));
         echo $this->get_view_form($clsid, $type, $sort, $dir, $page, $perpage, $namesearch, $alpha);
     }
 
@@ -399,7 +393,7 @@ class studentpage extends associationpage {
      *
      */
     public function do_waitlistconfirm() { // action_waitlistconfirm
-        $id = required_param('userid', PARAM_INT);
+        $id = $this->required_param('userid', PARAM_INT);
 
         $form_url = new moodle_url(null, array('s'=>$this->pagename, 'section'=>$this->section, 'action'=>'waitlistconfirm'));
 
@@ -494,7 +488,8 @@ class studentpage extends associationpage {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        $this->get_tab_page()->print_tabs('view', array('id' => $clsid)); // TBD
+        // print_tabs now in parent::print_header()
+        //$this->get_tab_page()->print_tabs('view', array('id' => $clsid)); // TBD
 
         $stus    = student_get_listing($clsid, $sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha);
         $numstus = student_count_records($clsid, $namesearch, $alpha);

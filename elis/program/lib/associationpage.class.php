@@ -85,11 +85,18 @@ class associationpage extends pm_page {
     }
 
     function print_header() {
-        $id = required_param('id', PARAM_INT);
+        $id = $this->required_param('id', PARAM_INT);
+        $default_tab = empty($this->default_tab) ? 'view' : $this->default_tab; // TBD
+        $action = $this->optional_param('action', $default_tab, PARAM_CLEAN);
+        $association_id = $this->optional_param('association_id', 0, PARAM_INT);
 
         parent::print_header();
+        $params = array('id' => $id);
+        if (!empty($association_id)) {
+            $params['association_id'] = $association_id;
+        }
         //$this->get_tab_page()->print_tabs(get_class($this), array('id' => $id));
-        $this->get_tab_page()->print_tabs('view', array('id' => $id)); // TBD: 'edit'
+        $this->get_tab_page()->print_tabs($action, $params); // TBD
     }
 
     /**
@@ -133,9 +140,8 @@ class associationpage extends pm_page {
      * Generic handler for the add action.  Prints the add form.
      */
     function display_add() { // do_add()
-        $id = required_param('id', PARAM_INT);
+        $id = $this->required_param('id', PARAM_INT);
         $parent_obj = new $this->parent_data_class($id);
-        $this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
         $this->print_add_form($parent_obj);
     }
 
@@ -171,7 +177,7 @@ class associationpage extends pm_page {
      * @param $parent_obj is the basic data object we are forming an association with.
      */
     function print_add_form($parent_obj) {
-        $id = required_param('id', PARAM_INT);
+        $id = $this->required_param('id', PARAM_INT);
         $target = $this->get_new_page(array('action' => 'savenew', 'id' => $id));
         $form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
         $form->set_data(array('id' => $id));
@@ -182,8 +188,8 @@ class associationpage extends pm_page {
      * Generic handler for the edit action.  Prints the edit form.
      */
     function display_edit() { // do_edit()
-        $association_id = required_param('association_id', PARAM_INT);
-        $id             = required_param('id', PARAM_INT);
+        $association_id = $this->required_param('association_id', PARAM_INT);
+        $id             = $this->required_param('id', PARAM_INT);
         $obj            = new $this->data_class($association_id);
         $parent_obj     = new $this->parent_data_class($id);
 
@@ -192,7 +198,6 @@ class associationpage extends pm_page {
             $sparam->id = $id;
             print_error('invalid_objectid', 'elis_program', '', $sparam);
         }
-        $this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
         $this->print_edit_form($obj, $parent_obj);
     }
 
@@ -241,14 +246,6 @@ class associationpage extends pm_page {
         if (!isset($this->_form)) {
             throw new ErrorException('Display called before Do');
         }
-
-        $id = $this->required_param('id', PARAM_INT);
-        $association_id = $this->required_param('association_id', PARAM_INT);
-
-        // TBD
-        $this->get_tab_page()->print_tabs('edit',
-                                   array('id' => $id,
-                                         'association_id' => $association_id));
         $this->_form->display();
     }*/
 
@@ -258,7 +255,7 @@ class associationpage extends pm_page {
      * @param $parent_obj The basic data object being associated with.
      */
     function print_edit_form($obj, $parent_obj) {
-    	$parent_id = required_param('id', PARAM_INT);
+        $parent_id = $this->required_param('id', PARAM_INT);
 
         $target = $this->get_new_page(array('action' => 'update', 'id' => $parent_id, 'association_id' => $obj->id));
 
@@ -271,7 +268,7 @@ class associationpage extends pm_page {
      * Generic handler for the savenew action.  Tries to save the object and then prints the appropriate page.
      */
     function display_savenew() { // TBD: do_savenew() ?
-        $parent_id = required_param('id', PARAM_INT);
+        $parent_id = $this->required_param('id', PARAM_INT);
         $parent_obj = new $this->parent_data_class($parent_id);
         $target = $this->get_new_page(array('action' => 'savenew', 'id' => $parent_id));
 
@@ -300,10 +297,10 @@ class associationpage extends pm_page {
      * Generic handler for the update action.  Tries to update the object and then prints the appropriate page.
      */
     function display_update() { // do_update()
-        $parent_id = required_param('id', PARAM_INT);
+        $parent_id = $this->required_param('id', PARAM_INT);
         $parent_obj = new $this->parent_data_class($parent_id);
 
-        $association_id = required_param('association_id', PARAM_INT);
+        $association_id = $this->required_param('association_id', PARAM_INT);
         $obj = new $this->data_class($association_id);
 
         $target = $this->get_new_page(array('action' => 'update'));
@@ -325,7 +322,6 @@ class associationpage extends pm_page {
             redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' updated.');
         } else {
             // Validation must have failed, redisplay form
-            $this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
             $form->display();
         }
     }
@@ -355,12 +351,11 @@ class associationpage extends pm_page {
      */
     public function display_delete() {
         $association_id = $this->required_param('association_id', PARAM_INT);
-        if(empty($association_id)) {
+        if (empty($association_id)) {
             print_error('invalid_id');
         }
 
         $obj = $this->get_new_data_object($association_id);
-        $this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
         $this->print_delete_form($obj);
     }
 
@@ -404,7 +399,7 @@ class associationpage extends pm_page {
         $obj->load(); // force load, so that the confirmation notice has something to display
         $obj->delete();
 
-        $returnurl = optional_param('return_url', null, PARAM_URL);
+        $returnurl = $this->optional_param('return_url', null, PARAM_URL);
         if ($returnurl === null) {
             $target_page = $this->get_new_page(array(), true);
             $returnurl = $target_page->url;
@@ -424,7 +419,7 @@ class associationpage extends pm_page {
     function print_list_view($items, $columns) { // TBD
         global $CFG;
 
-        $id = required_param('id', PARAM_INT);
+        $id = $this->required_param('id', PARAM_INT);
 
         if (empty($items)) {
             echo '<div>' . get_string('none', self::LANG_FILE) . '</div>';
@@ -466,7 +461,7 @@ class associationpage extends pm_page {
     function print_dropdown($items, $taken_items, $local_key, $nonlocal_key, $action='savenew', $namefield='name') {
         global $OUTPUT;
 
-        $id = required_param('id', PARAM_INT);
+        $id = $this->required_param('id', PARAM_INT);
 
         // As most of the listing functions return 'false' if there are no records.
         $taken_items = $taken_items ? $taken_items : array();
@@ -574,13 +569,13 @@ class association_page_table extends display_table {
     }
 
     function get_item_display_buttons($column, $item) {
-        $id = required_param('id', PARAM_INT);
+        $id = $this->required_param('id', PARAM_INT);
         return $this->page->get_buttons(array('id' => $id, 'association_id' => $item->id));
     }
 
     function get_item_display_manage($column, $item) {
         global $OUTPUT;
-        $id = required_param('id', PARAM_INT);
+        $id = $this->required_param('id', PARAM_INT);
         $target = $this->page->get_new_page(array('action' => 'delete', 'association_id' => $item->id, 'id' => $id));
         if ($target->can_do('delete')) {
             $deletebutton = '<a href="'. $target->url .'">'.

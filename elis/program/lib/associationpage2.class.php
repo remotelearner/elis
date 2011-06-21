@@ -35,11 +35,11 @@ abstract class associationpage2 extends selectionpage {
     }
 
     function print_header() {
-        $id = required_param('id', PARAM_INT);
+        $id = $this->required_param('id', PARAM_INT); // TBD
 
         parent::print_header();
 
-        $mode = optional_param('mode', '', PARAM_ACTION);
+        $mode = $this->optional_param('mode', '', PARAM_ACTION);
         if ($mode != 'bare') {
             $this->print_tabs();
         }
@@ -66,13 +66,17 @@ abstract class associationpage2 extends selectionpage {
                 $row[] = new tabobject($tab['tab_id'], $target->get_url(), $tab['name']);
             }
         }
-        $rows[] = $row;
+        if (!empty($row)) {
+            $rows[] = $row;
+        }
 
         // assigned/unassigned tabs
-        $assignedpage = clone($this->get_basepage());
-        unset($assignedpage->params['_assign']);
-        $unassignedpage = clone($assignedpage);
-        $unassignedpage->params['_assign'] = 'assign';
+        //$assignedpage = clone($this->get_basepage());
+        //unset($assignedpage->params['_assign']);
+        $assignedpage = $this->get_new_page(array('id' => $id /* , '_assign' => 'unassign' */));
+        //$unassignedpage = clone($assignedpage);
+        //$unassignedpage->params['_assign'] = 'assign';
+        $assignedpage = $this->get_new_page(array('id' => $id, '_assign' => 'assign'));
         list($assigned_string, $unassigned_string) = $this->get_assigned_strings();
         $row = array(new tabobject('assigned', $assignedpage->url, $assigned_string),
                      new tabobject('unassigned', $unassignedpage->url, $unassigned_string));
