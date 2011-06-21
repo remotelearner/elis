@@ -697,7 +697,7 @@ class scheduling_page extends workflowpage {
     /**
      * List the available reports to schedule
      */
-    public function action_list() {
+    public function display_list() {
         global $CFG;
         require_once($CFG->dirroot . '/blocks/php_report/sharedlib.php');
 
@@ -739,7 +739,8 @@ class scheduling_page extends workflowpage {
                     //set up a link for scheduling the report
                     $execute_report_url_params = array('action' => 'listinstancejobs',
                                                        'report' => $member_shortname);
-                    $execute_report_url = $this->get_url($execute_report_url_params);
+                    $execute_report_page = $this->get_new_page($execute_report_url_params);
+                    $execute_report_url = $execute_report_page->url;
                     $schedule_report_link = '';
                     if (php_report::get_default_instance($member_shortname, NULL, php_report::EXECUTION_MODE_SCHEDULED)) {
                         $schedule_report_link = '<a href="' . $execute_report_url . '">
