@@ -102,7 +102,7 @@ abstract class workflowpage extends elis_page {
         parent::__construct($params);
         $workflow_id = $this->optional_param('_wfid', null, PARAM_INT);
         if ($workflow_id) {
-            $this->workflow = _workflow_instance::load($workflow_id);
+            $this->workflow = _workflow_instance::load_instance($workflow_id);
             if ($this->workflow->type !== $this->data_class
                 || $this->workflow->userid != $USER->id) {
                 print_error('invalidid', 'elis_core');
@@ -220,7 +220,7 @@ abstract class workflowpage extends elis_page {
             if ($link) {
                 $target = $this->get_new_page(array('_wfid' => $this->workflow->id,
                                                     '_step' => $name));
-                echo "<a href=\"{$target->get_url()}\">";
+                echo "<a href=\"{$target->url}\">";
             }
             echo htmlspecialchars($display);
             if ($link) {
@@ -247,7 +247,7 @@ abstract class workflowpage extends elis_page {
     /**
      * Display the requested step
      */
-    function action_default() {
+    function display_default() {
         $this->display_progress();
         $this->display_step();
     }
@@ -255,7 +255,7 @@ abstract class workflowpage extends elis_page {
     /**
      * Save submitted values
      */
-    function action_save() {
+    function do_save() {
         $errors = $this->save_submitted_values();
         if ($errors !== null) {
             $this->print_header();
@@ -267,7 +267,7 @@ abstract class workflowpage extends elis_page {
             if ($next !== workflow::STEP_FINISH) {
                 $target = $this->get_new_page(array('_wfid' => $this->workflow->id,
                                                     '_step' => $next));
-                return redirect($target->get_url());
+                return redirect($target->url);
             } else {
                 $target = $this->get_new_page(array('_wfid' => $this->workflow->id,
                                                     'action' => 'finish'));

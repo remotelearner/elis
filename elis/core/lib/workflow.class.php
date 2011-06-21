@@ -32,36 +32,13 @@ require_once elis::lib('data/data_object.class.php');
  * functions.
  */
 class _workflow_instance extends elis_data_object {
-    static $table_name = 'elis_workflow_instances';
+    const TABLE = 'elis_workflow_instances';
 
-    public function __construct($data=false) {
-        if (is_numeric($data)) {
-            $data = get_record(self::$table_name, 'id', $data);
-        }
-
-        if (is_object($data)) {
-            if (isset($data->id)) {
-                $this->id = $data->id;
-            }
-            if (isset($data->type)) {
-                $this->type = $data->type;
-            } else {
-                $this->type = get_class($this);
-            }
-            if (isset($data->subtype)) {
-                $this->subtype = $data->subtype;
-            }
-            if (isset($data->userid)) {
-                $this->userid = $data->userid;
-            }
-            if (isset($data->data)) {
-                $this->data = $data->data;
-            }
-            if (isset($data->timemodified)) {
-                $this->timemodified = $data->timemodified;
-            }
-        }
-    }
+    protected $_dbfield_type;
+    protected $_dbfield_subtype;
+    protected $_dbfield_userid;
+    protected $_dbfield_data;
+    protected $_dbfield_timemodified;
 
     /**
      * Load a workflow data record from the database.  Returns an object of the
@@ -69,7 +46,7 @@ class _workflow_instance extends elis_data_object {
      *
      * @param mixed $data a record ID or a record object to load the data from
      */
-    static public function load($data) {
+    static public function load_instance($data) {
         $obj = new self($data);
         $type = $obj->type;
         $obj = new $type($obj);
@@ -81,18 +58,7 @@ class _workflow_instance extends elis_data_object {
      */
     public function save() {
         $this->timemodified = time();
-        if (!empty($this->id)) {
-            update_record(self::$table_name, addslashes_recursive($this));
-        } else {
-            $this->id = insert_record(self::$table_name, addslashes_recursive($this));
-        }
-    }
-
-    /**
-     * Deletes the current workflow data record from the database.
-     */
-    public function delete() {
-        return delete_records(self::$table_name, 'id', $this->id);
+        parent::save();
     }
 
     /**
@@ -111,7 +77,7 @@ class _workflow_instance extends elis_data_object {
      */
     static public function cleanup() {
         $oneweekago = time() - (7*DAYSECS);
-        delete_records_select(self::$table_name, "timemodified < $oneweekago");
+        delete_records_select(self::TABLE, "timemodified < $oneweekago");
     }
 }
 
