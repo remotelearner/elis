@@ -850,8 +850,12 @@ class scheduling_page extends workflowpage {
      *
      * @param  $have_jobs  true if the current report has at leeast one
      *                     scheduled job instance, otherwise false
+     *
+     * @uses   $OUTPUT
      */
     function render_listinstancejobs_header($have_jobs, $userid = NULL, $execmode = php_report::EXECUTION_MODE_INTERACTIVE) {
+        global $OUTPUT;
+
         //get the current report shortname
         $report = $this->required_param('report', PARAM_ALPHAEXT);
 
@@ -873,7 +877,7 @@ class scheduling_page extends workflowpage {
         //display the appropriate display strings
         notify($report_text,       'php_report_bold_header',   'left');
         notify($instructions_text, 'php_report_italic_header', 'left');
-        print_spacer();
+        echo $OUTPUT->spacer();
     }
 
     /**
@@ -895,7 +899,7 @@ class scheduling_page extends workflowpage {
                                 'copyjobs'   => get_string('listinstancejobs_action_copyjobs',   'block_php_report'),
                                 'deletejobs' => get_string('listinstancejobs_action_deletejobs', 'block_php_report'));
         //render the dropdown, disabled if necessary
-        choose_from_menu($action_options, 'action', '', '', '', '0', false, $disabled);
+        echo html_writer::select($action_options, 'action', '', array(''=>'choosedots'), array('disabled' => $disabled));
 
         //render the submit button in the appropriate state
         if ($disabled) {
@@ -912,21 +916,25 @@ class scheduling_page extends workflowpage {
      *
      * @param  $have_jobs  true if the current report has at leeast one
      *                     scheduled job instance, otherwise false
+     *
+     * @uses   $OUTPUT
      */
     function render_listinstancejobs_footer() {
+        global $OUTPUT;
+
         //get the current report shortname
         $report = $this->required_param('report', PARAM_ALPHAEXT);
 
-        print_spacer();
+        echo $OUTPUT->spacer();
 
         //button for scheduling a new instance
-        print_single_button($this->url, array('report' => $report), get_string('listinstancejobs_new', 'block_php_report'));
+        echo $OUTPUT->single_button($this->url, get_string('listinstancejobs_new', 'block_php_report'), 'post', array('report' => $report));
 
         echo '<hr>';
-        print_spacer();
+        echo $OUTPUT->spacer();
 
         //button for listing all reports
-        print_single_button($this->url, array('action' => 'list'), get_string('listinstancejobs_back_label', 'block_php_report'));
+        echo $OUTPUT->single_button($this->url, get_string('listinstancejobs_back_label', 'block_php_report'), 'post', array('action' => 'list'));
     }
 
     /**
@@ -935,9 +943,10 @@ class scheduling_page extends workflowpage {
      *
      * @uses $CFG
      * @uses $USER
+     * @uses $OUTPUT
      */
     function display_listinstancejobs() {
-        global $CFG, $USER;
+        global $CFG, $USER, $OUTPUT;
 
         //report specified by URL
         $report = $this->required_param('report', PARAM_ALPHAEXT);
@@ -976,7 +985,7 @@ class scheduling_page extends workflowpage {
             echo '<input type="hidden" id="report" name="report" value="' . $report . '"/>';
 
             //table setup
-            $table = new stdClass;
+            $table = new html_table();
 
             //headers, with a "select all" checkbox in the first column
             require_js($CFG->wwwroot . '/blocks/php_report/lib.js');
@@ -1041,9 +1050,9 @@ class scheduling_page extends workflowpage {
                                        userdate($config_data['timemodified']),);
             }
 
-            print_table($table);
+            echo html_writer::table($table);
 
-            print_spacer();
+            echo $OUTPUT->spacer();
 
             //display the dropdown and button in an enabled state
             $this->render_listinstancejobs_actions_dropdown(true);
@@ -1057,7 +1066,7 @@ class scheduling_page extends workflowpage {
             //display the dropdown and button in a disabled state
             $this->render_listinstancejobs_actions_dropdown(false);
 
-            print_spacer();
+            echo $OUTPUT->spacer();
         }
 
         //general footer
