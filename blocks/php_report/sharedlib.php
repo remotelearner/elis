@@ -133,8 +133,12 @@ function block_php_report_get_report_jobs_recordset($report_shortname, $fields =
  * @param   string  $parent_label  The label from the original schedule instance
  *
  * @return  string                 The label for the new schedule instance
+ *
+ * @uses    $DB
  */
 function block_php_report_get_copy_label($parent_label) {
+    global $DB;
+
     //first guess at to our copy number
     $i = 1;
     $done = false;
@@ -148,12 +152,13 @@ function block_php_report_get_copy_label($parent_label) {
 
         //look for records containing the proposed namy anywhere in their config data
         //(may include false-positives but very unlikely)
-        if ($records = get_recordset_select('php_report_schedule', 'config ' . sql_ilike() . " '%{$label}%'")) {
+        $like = $DB->sql_like('config', ':label');
+        if ($records = $DB->get_recordset_select('php_report_schedule', $like, array('label' => "%$label%"))) {
             //track whether an exact match was found
             $found = false;
             
             //go through all possible matches
-            while ($record = rs_fetch_next_record($records)) {
+            foreach ($records as $record) {
                 //perform an exact comparison
                 $config = unserialize($record->config);
                 if ($config['label'] == $label) {
@@ -185,9 +190,13 @@ function block_php_report_get_copy_label($parent_label) {
  * @param   int      $id  The record id of the PHP report schedule to copy
  *
  * @return  boolean       true on success, otherwise false
+ *
+ * @uses    $DB
  */
 function block_php_report_copy_schedule_instance($id) {
-    if ($php_report_record = get_record('php_report_schedule', 'id', $id)) {
+    global $DB;
+
+    if ($php_report_record = $DB->get_record('php_report_schedule', array('id' => $id))) {
 
         $config = unserialize($php_report_record->config);
         //update modified time to right now
@@ -195,17 +204,17 @@ function block_php_report_copy_schedule_instance($id) {
         //modify the label to prevent duplicates
         $config['label'] = block_php_report_get_copy_label($config['label']);
         $php_report_record->config = serialize($config);
-        $php_report_record->id = insert_record('php_report_schedule', addslashes_recursive($php_report_record));
+        $php_report_record->id = $DB->insert_record('php_report_schedule', $php_report_record);
 
         //handle associated ELIS schedule records
         $taskname = block_php_report_get_taskname_from_id($id);
-        if ($elis_records = get_recordset('elis_scheduled_tasks', 'taskname', $taskname)) {
-            while ($elis_record = rs_fetch_next_record($elis_records)) {
+        if ($elis_records = $DB->get_recordset('elis_scheduled_tasks', array('taskname' => $taskname))) {
+            foreach ($elis_records as $elis_record) {
                 //make sure this points back to the new PHP report schedule instance
                 $elis_record->taskname = block_php_report_get_taskname_from_id($php_report_record->id);
                 //new instance, so it's never run before
                 $elis_record->lastruntime = 0;
-                insert_record('elis_scheduled_tasks', addslashes_recursive($elis_record));
+                $DB->insert_record('elis_scheduled_tasks', $elis_record);
             }
             return true;
         }
@@ -222,15 +231,19 @@ function block_php_report_copy_schedule_instance($id) {
  * @param   int      $id  The record id of the PHP report schedule to delete
  *
  * @return  boolean       true on success, otherwise false
+ *
+ * @uses    $DB
  */
 function block_php_report_delete_schedule_instance($id) {
+    global $DB;
+
     //make sure the record is valid
-    if (record_exists('php_report_schedule', 'id', $id)) {
+    if ($DB->record_exists('php_report_schedule', array('id' => $id))) {
         //delete all associated ELIS scheduled tasks
         $taskname = block_php_report_get_taskname_from_id($id);
-        delete_records('elis_scheduled_tasks', 'taskname', $taskname);
+        $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
         //delete the task itself
-        delete_records('php_report_schedule', 'id', $id);
+        $DB->delete_records('php_report_schedule', array('id' => $id));
         return true;
     }
 

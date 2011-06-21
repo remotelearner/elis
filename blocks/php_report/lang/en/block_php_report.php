@@ -84,7 +84,7 @@ $string['label'] = 'Label';
 
 $string['job_completed'] = 'Job completed';
 $string['no_last_runtime'] = 'Never run';
-$string['task_copy_label'] = '$a->label - Copy $a->index';
+$string['task_copy_label'] = '{$a->label} - Copy {$a->index}';
 
 $string['recurrence_description'] = '2: Set when the report runs';
 $string['start'] = 'Start';

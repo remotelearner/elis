@@ -658,9 +658,12 @@ class scheduling_page extends workflowpage {
      *                                      of URL parameters
      *
      * @return  boolean                     true if allowed, otherwise false
+     *
+     * @uses    $USER
+     * @uses    $DB
      */
     function can_do_schedule_action($scheduleid, $report_shortname = '') {
-        global $USER;
+        global $USER, $DB;
 
         if (has_capability('block/php_report:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
             //permitted, since allowed globally
@@ -671,7 +674,7 @@ class scheduling_page extends workflowpage {
         //check for report / schedule-specific permissions
 
         //make sure the schedule is owned by the current user
-        if ($userid = get_field('php_report_schedule', 'userid', 'id', $scheduleid)) {
+        if ($userid = $DB->get_field('php_report_schedule', 'userid', array('id' => $scheduleid))) {
             if ($userid == $USER->id) {
 
                 if ($report_shortname == '') {
@@ -762,7 +765,7 @@ class scheduling_page extends workflowpage {
      * Mainline for running jobs from the "listinstancejobs" view
      * without changing any scheduling information
      */
-    function action_runjobs() {
+    function display_runjobs() {
         global $CFG;
 
         //need the code that defines the scheduled export behaviour
@@ -781,7 +784,7 @@ class scheduling_page extends workflowpage {
         }
 
         //re-display the list of scheduled jobs for this report
-        $this->action_listinstancejobs();
+        $this->display_listinstancejobs();
 
         if (count($scheduleids) > 0) {
             //include the necessary javascript libraries for the ASYNC request stuff
@@ -800,7 +803,7 @@ class scheduling_page extends workflowpage {
      * Mainline for deleting jobs from the "listinstancejobs" view
      * (i.e. view of all scheduled jobs for a particular report)
      */
-    function action_deletejobs() {
+    function do_deletejobs() {
         if ($data = data_submitted()) {
             foreach ($data as $key => $value) {
                 if (strpos($key, 'schedule_') === 0) {
@@ -813,14 +816,16 @@ class scheduling_page extends workflowpage {
         }
 
         //re-display the list of scheduled jobs for this report
-        $this->action_listinstancejobs();
+        $report = $this->required_param('report', PARAM_ALPHAEXT);
+        $tmppage = new scheduling_page(array('report' => $report, 'action' => 'listinstancejobs'));
+        redirect($tmppage->url);
     }
 
     /**
      * Mainline for copying jobs from the "listinstancejobs" view
      * (i.e. view of all scheduled jobs for a particular report)
      */
-    function action_copyjobs() {
+    function do_copyjobs() {
         if ($data = data_submitted()) {
             foreach ($data as $key => $value) {
                 if (strpos($key, 'schedule_') === 0) {
@@ -833,7 +838,9 @@ class scheduling_page extends workflowpage {
         }
 
         //re-display the list of scheduled jobs for this report
-        $this->action_listinstancejobs();
+        $report = $this->required_param('report', PARAM_ALPHAEXT);
+        $tmppage = new scheduling_page(array('report' => $report, 'action' => 'listinstancejobs'));
+        redirect($tmppage->url);
     }
 
     /**
@@ -912,13 +919,13 @@ class scheduling_page extends workflowpage {
         print_spacer();
 
         //button for scheduling a new instance
-        print_single_button($this->get_url(), array('report' => $report), get_string('listinstancejobs_new', 'block_php_report'));
+        print_single_button($this->url, array('report' => $report), get_string('listinstancejobs_new', 'block_php_report'));
 
         echo '<hr>';
         print_spacer();
 
         //button for listing all reports
-        print_single_button($this->get_url(), array('action' => 'list'), get_string('listinstancejobs_back_label', 'block_php_report'));
+        print_single_button($this->url, array('action' => 'list'), get_string('listinstancejobs_back_label', 'block_php_report'));
     }
 
     /**
@@ -942,8 +949,7 @@ class scheduling_page extends workflowpage {
         $createifnone = optional_param('createifnone', 0, PARAM_INT);
         if ($createifnone) {
             if (!$recordset
-                or $recordset->_numOfRows == 0
-                or $recordset->EOF) {
+                or !$recordset->valid()) {
 
                 //set up a job for this report
                 $this->display_default();
@@ -955,16 +961,15 @@ class scheduling_page extends workflowpage {
         $stylesheet_web_path = $CFG->wwwroot . '/blocks/php_report/styles.php';
         echo '<style>@import url("' . $stylesheet_web_path . '");</style>';
 
-        if ($recordset = block_php_report_get_report_jobs_recordset($report)
-            and $recordset->_numOfRows != 0
-            and !$recordset->EOF) {
+        if ($recordset = block_php_report_get_report_jobs_recordset($report) and
+            $recordset->valid()) {
             //we actually have scheduled instances for this report
 
             //display appropriate headers
             $this->render_listinstancejobs_header(true, NULL, php_report::EXECUTION_MODE_SCHEDULED);
 
             //set up our form
-            echo '<form action="' . $this->get_url() . '" method="post">';
+            echo '<form action="' . $this->url . '" method="post">';
             //used by the "select all" functionality to identify a defining div
             echo '<div id="list_display">';
             echo '<input type="hidden" id="report" name="report" value="' . $report . '"/>';
@@ -991,7 +996,7 @@ class scheduling_page extends workflowpage {
             $table->data = array();
 
             //run through available schedules
-            while ($record = rs_fetch_next_record($recordset)) {
+            foreach ($recordset as $record) {
                 $config_data = unserialize($record->config);
                 $tz = $config_data['timezone'];
                 //echo "action_listinstancejobs():: {$config_data['label']}: nextruntime = {$record->nextruntime}<br/>";
@@ -1023,7 +1028,8 @@ class scheduling_page extends workflowpage {
 
                 //link for editing this particular schedule instance
                 $edit_schedule_params = array('id' => $record->scheduleid);
-                $edit_schedule_link = '<a href="' . $this->get_url($edit_schedule_params) . '">' . $config_data['label'] . '</a>';
+                $edit_schedule_page = $this->get_new_page($edit_schedule_params);
+                $edit_schedule_link = '<a href="' . $edit_schedule_page->url . '">' . $config_data['label'] . '</a>';
 
                 //data row
                 $table->data[] = array($checkbox,
