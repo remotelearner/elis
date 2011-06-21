@@ -415,7 +415,7 @@ class student extends elis_data_object {
             }
         }
 
-        $status = $this->data_insert_record();
+        $status = parent::save(); // WAS: $this->data_insert_record()
 
         /// Enrol them into the Moodle class.
         if ($moodlecourseid = moodle_get_course($this->classid)) {
@@ -469,7 +469,7 @@ class student extends elis_data_object {
 
         /// Unenrol them from the Moodle class.
         if (!empty($this->classid) && !empty($this->userid) &&
-            ($moodlecourseid = get_field('crlm_class_moodle', 'moodlecourseid', 'classid', $this->classid)) &&
+            ($moodlecourseid = get_field('crlm_class_moodle', 'moodlecourseid', array('classid' => $this->classid))) &&
             ($muserid = cm_get_moodleuserid($this->userid))) {
 
             $context = get_context_instance(CONTEXT_COURSE, $moodlecourseid);
@@ -478,7 +478,7 @@ class student extends elis_data_object {
             }
         }
 
-        $result = $result && $this->data_delete_record();
+        $result = $result && parent::delete(); // WAS: $this->data_delete_record()
 
         if($this->completestatusid == STUSTATUS_NOTCOMPLETE) {
             $pmclass = new pmclass($this->classid);
@@ -529,7 +529,7 @@ class student extends elis_data_object {
      *
      */
     function update() {
-        $retval = $this->data_update_record();
+        $retval = $this->save(); // TBD: or parent::save(); WAS: data_update_record()
         events_trigger('crlm_class_completed', $this);
         return $retval;
     }

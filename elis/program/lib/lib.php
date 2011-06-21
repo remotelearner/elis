@@ -129,3 +129,26 @@ function htmltab_display_function($column, $item) {
     return isset($item->{$column}) ? $item->{$column} : '';
 }
 
+/**
+ * display function - originally a method in table.class.php
+ * see ELIS_1.9x:/curriculum/lib/table.class.php
+ */
+function get_date_item_display($column, $item) {
+    if (empty($item->$column)) {
+        return '-';
+    } else {
+        $timestamp = $item->$column;
+        return is_numeric($timestamp)
+               ? date(get_string('pm_date_format', 'elis_program'), $timestamp)
+               : '';
+    }
+}
+
+/**
+ * display function - originally a method in table.class.php
+ * see ELIS_1.9x:/curriculum/lib/table.class.php
+ */
+function get_yesno_item_display($column, $item) {
+    return get_string($item->$column ? 'yes' : 'no');
+}
+

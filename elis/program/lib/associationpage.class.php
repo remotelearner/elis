@@ -437,7 +437,7 @@ class associationpage extends pm_page {
         }
 
         $table = $this->create_table_object($items, $columns);
-        echo $table;
+        echo $table->get_html();
     }
 
     /**

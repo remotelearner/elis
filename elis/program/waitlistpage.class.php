@@ -222,7 +222,7 @@ class waitlist_table extends selection_table {
     }
 
     function get_item_display_timecreated($column, $item) {
-        return $this->get_date_item_display($column, $item);
+        return get_date_item_display($column, $item);
     }
 
 }

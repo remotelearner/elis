@@ -24,6 +24,7 @@
  *
  */
 
+require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php'); // cm_get_param()
 require_once elispm::lib('page.class.php');
 require_once elispm::lib('associationpage.class.php');
@@ -102,11 +103,19 @@ class studentpage extends associationpage {
 
     function can_do_edit() {
         $association_id = $this->optional_param('association_id', '', PARAM_INT);
+        if (empty($association_id)) { // TBD
+            error_log('studentpage.class.php::can_do_edit() - empty association_id!');
+            return false;
+        }
         $student = new student($association_id);
         return student::can_manage_assoc($student->userid, $student->classid);
     }
 
     function can_do_update() {
+        return $this->can_do_edit();
+    }
+
+    function can_do_view() {
         return $this->can_do_edit();
     }
 
@@ -123,7 +132,9 @@ class studentpage extends associationpage {
     }
 
     function do_add() { // TBD: must overload the parents since no studentform
-        $this->display('add');
+        //error_log('studentpage.class.php::do_add()');
+        $this->do_savenew();
+        //$this->display('add');
     }
 
     function do_delete() { // action_confirm
@@ -167,7 +178,7 @@ class studentpage extends associationpage {
         if (!empty($users)) {
             $this->attempt_enrol($clsid, $users);
         } else {
-            $this->display('default'); // do_default()
+            $this->display('add'); // do_default()
         }
     }
 
@@ -200,7 +211,7 @@ class studentpage extends associationpage {
                 $newstu = $this->build_student($uid, $classid, $user);
 
                 if($newstu->completestatusid != STUSTATUS_NOTCOMPLETE || empty($newstu->pmclass->maxstudents) || $newstu->pmclass->maxstudents > $newstu->count_enroled()) {
-                    $status = $this->do_add(); // $newstu->do_add();
+                    $status = $newstu->save(); // $newstu->do_add();
                 } else {
                     $waitlist[] = $newstu;
                     $status = true;
@@ -220,7 +231,7 @@ class studentpage extends associationpage {
         if(!empty($waitlist)) {
             $this->get_waitlistform($waitlist);
         } else {
-            $this->display('default'); // do_default()
+            $this->display('add'); // do_default() TBD???
         }
     }
 
@@ -259,7 +270,7 @@ class studentpage extends associationpage {
         $stu                           = new student($sturecord);
 
         if ($stu->completestatusid == STUSTATUS_PASSED &&
-            $this->_db->get_field(student::TABLE, 'completestatusid', 'id', $stuid) != STUSTATUS_PASSED) {
+            $this->_db->get_field(student::TABLE, 'completestatusid', array('id' => $stuid)) != STUSTATUS_PASSED) {
 
             $stu->complete();
         } else {
@@ -342,7 +353,7 @@ class studentpage extends associationpage {
             $stu                           = new student($sturecord);
 
             if ($stu->completestatusid == STUSTATUS_PASSED
-                && $this->_db->get_field(student::TABLE, 'completestatusid', 'id', $stu->id) != STUSTATUS_PASSED) {
+                && $this->_db->get_field(student::TABLE, 'completestatusid', array('id' => $stu->id)) != STUSTATUS_PASSED) {
                 $stu->complete();
             } else {
                 if (($status = $stu->update()) !== true) {
@@ -520,7 +531,7 @@ class studentpage extends associationpage {
         echo "</form>";
     }
 
-    public function create_table_object($items, $columns, $formatters) {
+    public function create_table_object($items, $columns /*, $formatters */) {
         return new student_table($items, $columns, $this);
     }
 
@@ -614,6 +625,7 @@ class studentpage extends associationpage {
 }
 
 class student_table extends association_page_table {
+    const LANG_FILE = 'elis_program';
 
     function __construct(&$items, $columns, $page) {
         $display_functions =
@@ -634,14 +646,14 @@ class student_table extends association_page_table {
     }
 
     function get_item_display_enrolmenttime($column, $item) {
-        return $this->get_date_item_display($column, $item);
+        return get_date_item_display($column, $item);
     }
 
     function get_item_display_completetime($column, $item) {
         if ($item->completestatusid == STUSTATUS_NOTCOMPLETE) {
             return '-';
         } else {
-            return $this->get_date_item_display($column, $item);
+            return get_date_item_display($column, $item);
         }
     }
 
@@ -651,7 +663,7 @@ class student_table extends association_page_table {
     }
 
     function get_item_display_locked($column, $id) {
-        return $this->get_yesno_item_display($column, $id);
+        return get_yesno_item_display($column, $id);
     }
 
     function is_column_wrapped_idnumber() {
@@ -665,8 +677,7 @@ class student_table extends association_page_table {
     function get_item_display_idnumber($column, $item) {
         global $CFG, $USER;
 
-        $usermanagementpage = new usermanagementpage();
-
+        $usermanagementpage = new studentpage(); // TBD, WAS: usermanagementpage();
         if ($usermanagementpage->can_do_view()) {
             $target = $usermanagementpage->get_new_page(array('action' => 'view', 'id' => $item->userid));
             $link = $target->url;
