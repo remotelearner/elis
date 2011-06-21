@@ -64,7 +64,7 @@ class clustertrackeditform extends moodleform {
 
         //association stuff
         $mform->addElement('header', 'associationinfo', get_string('association_info_group', 'elis_program'));
-        $mform->addElement('advcheckbox', 'autoenrol', get_string('usersettrack_auto_enrol', 'elis_program'), null, null, array('0', '1'));
+        $mform->addElement('advcheckbox', 'autoenrol', get_string('usersettrack_autoenrol', 'elis_program'), null, null, array('0', '1'));
         $mform->addHelpButton('autoenrol', 'usersettrackform:autoenrol', 'elis_program');
 
         $mform->addElement('hidden', 'association_id', '');

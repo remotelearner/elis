@@ -44,6 +44,9 @@ require_once elispm::lib('data/track.class.php');
 
 class clustertrack extends elis_data_object {
     const TABLE = 'crlm_cluster_track';
+
+    var $verbose_name = 'clustertrack';
+
     /**
      * User ID-number
      * @var    char
@@ -110,6 +113,16 @@ class clustertrack extends elis_data_object {
         return null;
     }
 */
+
+
+    function get_verbose_name() {
+        return $this->verbose_name;
+    }
+
+    function __toString() {
+        // TO-DO: what should this return?
+        return $this->id;
+    }
 
     /**
      * Associates a cluster with a track.
@@ -362,7 +375,7 @@ class clustertrack extends elis_data_object {
                     ORDER BY u.lastname';
             $params = array($cluster);
 
-            $users = $db->get_records_sql($sql, $params);
+            $users = $DB->get_records_sql($sql, $params);
 
             if ($users) {
                 foreach ($users as $user) {
@@ -373,4 +386,8 @@ class clustertrack extends elis_data_object {
 
         return $result;
 	}
+
+    public function set_from_data($data) {
+        $this->_load_data_from_record($data, true);
+    }
 }

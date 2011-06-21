@@ -136,7 +136,7 @@ class usertrackpage extends usertrackbasepage {
         if (!empty($id)) {
             //print curriculum tabs if viewing from the curriculum view
             $userpage = new userpage(array('id' => $id));
-            $userpage->print_tabs('usertrackpage', array('id' => $id));
+            //$userpage->print_tabs('usertrackpage', array('id' => $id));
         }
 
 
@@ -232,7 +232,7 @@ class trackuserpage extends usertrackbasepage {
         if (!empty($id)) {
             //print curriculum tabs if viewing from the curriculum view
             $trackpage = new userpage(array('id' => $id));
-            $trackpage->print_tabs('trackuserpage', array('id' => $id));
+            //$trackpage->print_tabs('trackuserpage', array('id' => $id));
         }
 
         $columns = array(

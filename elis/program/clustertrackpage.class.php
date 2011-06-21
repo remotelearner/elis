@@ -41,7 +41,7 @@ class clustertrackbasepage extends associationpage {
     var $data_class = 'clustertrack';
     var $form_class = 'clustertrackform';
     var $edit_form_class = 'clustertrackeditform';
-    var $tabs;
+//    var $tabs;
 
     function __construct(array $params=null) {
         $this->tabs = array(
@@ -63,7 +63,7 @@ class clustertrackbasepage extends associationpage {
         parent::__construct($params);
     }
 
-    function can_do_savenew() {
+    function can_do_add() {
         // the user must have 'block/curr_admin:associate' permissions on both ends
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $trackid = $this->required_param('trackid', PARAM_INT);
@@ -72,17 +72,40 @@ class clustertrackbasepage extends associationpage {
             && trackpage::_has_capability('block/curr_admin:associate', $trackid);
     }
 
-    function do_savenew() {
+    /**
+     * Generic handler for the add action.  Prints the add form.
+     */
+   // function display_add() { // do_add()
+//        $id = required_param('id', PARAM_INT);
+//        $parent_obj = new $this->parent_data_class($id);
+        //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
+//        $target = $this->get_new_page(array('action' => 'add', 'id' => $parent_obj->id, 'association_id' => $id));
+
+//        $form = new $this->form_class($target->url, array('obj' => $obj, 'parent_obj' => $parent_obj));
+
+     //   $form->display();
+   // }
+
+    /**
+     * Generic handler for the add action.  Prints the add form.
+     */
+    /*function display_add() { // do_add()
+        $id = required_param('id', PARAM_INT);
+        $clusterid = $this->required_param('clusterid', PARAM_INT);
+        $trackid = $this->required_param('trackid', PARAM_INT);
+        $parent_obj = new $this->parent_data_class($id);
+        //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
+        $this->print_add_form($parent_obj);
+    }*/
+
+    function do_add() {
         $id = $this->required_param('id', PARAM_INT);
         $autounenrol = $this->optional_param('autounenrol', 1, PARAM_INT);
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $trackid = $this->required_param('trackid', PARAM_INT);
 
-        //require_once(CURMAN_DIRLOCATION . '/form/' . $this->form_class . '.class.php');
-        // TODO: port cluster classification
-        //require_once elispm::file('plugins/cluster_classification/clusterclassification.class.php');
 
-        $target = $this->get_new_page(array('action'       => 'savenew',
+        $target = $this->get_new_page(array('action'       => 'add',
                                             'id'           => $id,
                                             'clusterid'    => $clusterid,
                                             'trackid'      => $trackid));
@@ -95,22 +118,53 @@ class clustertrackbasepage extends associationpage {
                               'trackid' => $trackid));
 
         if($data = $form->get_data()) {
+            echo '<br>*';
             if(!isset($data->cancel)) {
                 clustertrack::associate($clusterid, $trackid, $autounenrol, $data->autoenrol);
             }
-            $this->display_default();
+            //$this->display('default');
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
+            redirect($target->url);
         } else {
-            // TODO: port cluster classification
-//            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
-//            if (!empty($cluster_classification->param_autoenrol_tracks)) {
-//                $form->set_data(array('autoenrol' => 1));
-//            } else {
-                $form->set_data(array('autoenrol' => 0));
-//            }
+            echo '<br>**';
 
-            $form->display();
+            //$this->get_tab_page()->print_tabs('savenew', array('id' => $id)); // TBD
+            $this->display('add');
         }
 
+    }
+
+/**
+     * Prints the add form.
+     * @param $parent_obj is the basic data object we are forming an association with.
+     */
+    function print_add_form($parent_obj) {
+        $id = required_param('id', PARAM_INT);
+        $clusterid = $this->required_param('clusterid', PARAM_INT);
+        $trackid = $this->required_param('trackid', PARAM_INT);
+echo '<br>add form cluster: '.$clusterid.' and trackid: '.$trackid;
+        //require_once(CURMAN_DIRLOCATION . '/form/' . $this->form_class . '.class.php');
+        // TODO: port cluster classification
+        //require_once elispm::file('plugins/cluster_classification/clusterclassification.class.php');
+
+        //$target = $this->get_new_page(array('action' => 'add', 'id' => $id));
+        $target = $this->get_new_page(array('action'       => 'add',
+                                            'id'           => $id));
+        //$form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
+        $form = new $this->form_class($target->url, array('id'        => $id));
+$form->set_data(array('clusterid' => $clusterid,
+                              'trackid' => $trackid));
+        $form->set_data(array('id' => $id));
+        // TODO: port cluster classification
+//            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
+//            if (!empty($cluster_classification->param_autoenrol_tracks)) {
+                $form->set_data(array('autoenrol' => 1));
+//            } else {
+//                $form->set_data(array('autoenrol' => 0));
+//            }
+echo '<br>in add form:';
+print_object($form);
+        $form->display();
     }
 
     function can_do_edit() {
@@ -131,6 +185,24 @@ echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid:
         return $this->can_do_edit();
     }
 
+    /**
+     * handler for the edit action.  Prints the edit form.
+     */
+    function display_edit() { // do_edit()
+        $association_id = required_param('association_id', PARAM_INT);
+        $id             = required_param('id', PARAM_INT);
+        $obj            = new $this->data_class($association_id);
+        $parent_obj     = new $this->parent_data_class($id);
+
+        /*if(!$obj->get_dbloaded()) { // TBD
+            $sparam = new stdClass;
+            $sparam->id = $id;
+            print_error('invalid_objectid', 'elis_program', '', $sparam);
+        }*/
+       // $this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
+        $this->print_edit_form($obj, $parent_obj);
+    }
+
     function do_edit() {
         $id = $this->required_param('id', PARAM_INT);
         $association_id = $this->required_param('association_id', PARAM_INT);
@@ -149,15 +221,40 @@ echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid:
             if(!isset($data->cancel)) {
                 clustertrack::update_autoenrol($association_id, $data->autoenrol);
             }
-            $this->display_default();
+//            echo '<br>got data';
+//            die();
+            //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
+            //$this->display('default');
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
+            redirect($target->url);
+            //redirect
         } else {
-            $form->display();
+            //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
+            //$form->display();
+            $this->display('edit');
         }
     }
 
+    /**
+     * Prints the edit form.
+     * @param $obj The association object being edited.
+     * @param $parent_obj The basic data object being associated with.
+     */
+    function print_edit_form($obj, $parent_obj) {
+        $parent_id = required_param('id', PARAM_INT);
+//        $association_id = required_param('association_id', PARAM_INT);
+
+        $target = $this->get_new_page(array('action' => 'edit', 'id' => $parent_id));
+
+        $form = new $this->edit_form_class($target->url);
+        $form->set_data(array('id' => $parent_obj->id,
+                              'association_id' => $obj->id));
+        $form->display();
+    }
     function create_table_object($items, $columns) {
         return new clustertrack_page_table($items, $columns, $this);
     }
+
 }
 
 class clustertrackpage extends clustertrackbasepage {
@@ -165,6 +262,8 @@ class clustertrackpage extends clustertrackbasepage {
     var $tab_page = 'usersetpage';
 
     var $section = 'users';
+
+    var $parent_data_class = 'userset';
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
@@ -206,6 +305,8 @@ class clustertrackpage extends clustertrackbasepage {
             $columns[$sort]['sortable'] = $dir;
         }
 
+        //$this->get_tab_page()->print_tabs('default', array('id' => $id)); // TBD
+
         $items = clustertrack::get_tracks($id);
 
 
@@ -239,6 +340,7 @@ class trackclusterpage extends clustertrackbasepage {
     var $tab_page = 'trackpage';
 
     var $section = 'curr';
+    var $parent_data_class = 'track';
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
@@ -274,6 +376,8 @@ class trackclusterpage extends clustertrackbasepage {
             $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
+
+        //$this->get_tab_page()->print_tabs('default', array('id' => $id)); // TBD
 
         $items = clustertrack::get_clusters($id, $parent_clusterid, $sort, $dir);
 

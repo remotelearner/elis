@@ -64,7 +64,7 @@ class associationpage extends pm_page {
         return $this->can_do('edit');
     }
 
-    public function can_do_savenew() {
+    public function can_do_add() {
         return $this->can_do('add');
     }
 
@@ -142,6 +142,8 @@ class associationpage extends pm_page {
     function display_add() { // do_add()
         $id = $this->required_param('id', PARAM_INT);
         $parent_obj = new $this->parent_data_class($id);
+
+        //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
         $this->print_add_form($parent_obj);
     }
 
@@ -170,6 +172,7 @@ class associationpage extends pm_page {
             $this->_form = $form;
             $this->display('add');
         }
+
     }
 
     /**
@@ -177,8 +180,9 @@ class associationpage extends pm_page {
      * @param $parent_obj is the basic data object we are forming an association with.
      */
     function print_add_form($parent_obj) {
-        $id = $this->required_param('id', PARAM_INT);
-        $target = $this->get_new_page(array('action' => 'savenew', 'id' => $id));
+        $id = required_param('id', PARAM_INT);
+        $target = $this->get_new_page(array('action' => 'add', 'id' => $id));
+
         $form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
         $form->set_data(array('id' => $id));
         $form->display();
@@ -193,12 +197,24 @@ class associationpage extends pm_page {
         $obj            = new $this->data_class($association_id);
         $parent_obj     = new $this->parent_data_class($id);
 
-        if(!$obj->get_dbloaded()) { // TBD
+        /*if(!$obj->get_dbloaded()) { // TBD
             $sparam = new stdClass;
             $sparam->id = $id;
             print_error('invalid_objectid', 'elis_program', '', $sparam);
-        }
+        }*/
+        //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
+
         $this->print_edit_form($obj, $parent_obj);
+    }
+
+    /**
+     * Hook that gets called after a CM entity is added through this page
+     * Override in subclasses as needed
+     *
+     * @param  object  $obj  The CM entity added
+     */
+    function after_cm_entity_add($obj) {
+        //do nothing here, but allow subclass to override
     }
 
     /**
@@ -238,18 +254,6 @@ class associationpage extends pm_page {
     }
 
     /**
-     * Prints the form to edit a new record.
-     */
-    //My version of display_edit
-    /*
-    public function display_edit() {
-        if (!isset($this->_form)) {
-            throw new ErrorException('Display called before Do');
-        }
-        $this->_form->display();
-    }*/
-
-    /**
      * Prints the edit form.
      * @param $obj The association object being edited.
      * @param $parent_obj The basic data object being associated with.
@@ -257,7 +261,7 @@ class associationpage extends pm_page {
     function print_edit_form($obj, $parent_obj) {
         $parent_id = $this->required_param('id', PARAM_INT);
 
-        $target = $this->get_new_page(array('action' => 'update', 'id' => $parent_id, 'association_id' => $obj->id));
+        $target = $this->get_new_page(array('action' => 'edit', 'id' => $parent_id, 'association_id' => $obj->id));
 
         $form = new $this->form_class($target->url, array('obj' => $obj, 'parent_obj' => $parent_obj));
 
@@ -351,11 +355,13 @@ class associationpage extends pm_page {
      */
     public function display_delete() {
         $association_id = $this->required_param('association_id', PARAM_INT);
-        if (empty($association_id)) {
+        $id = $this->required_param('id', PARAM_INT);
+        if(empty($association_id)) {
             print_error('invalid_id');
         }
 
         $obj = $this->get_new_data_object($association_id);
+        //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
         $this->print_delete_form($obj);
     }
 
@@ -366,14 +372,16 @@ class associationpage extends pm_page {
     public function print_delete_form($obj) {
         global $OUTPUT;
 
+        $id = $this->required_param('id', PARAM_INT);
+
         $obj->load(); // force load, so that the confirmation notice has something to display
         $message    = get_string('confirm_delete_association', 'elis_program', $obj->to_object());
 
-        $target_page = $this->get_new_page(array('action' => 'view', 'id' => $obj->id, 'sesskey' => sesskey()), true);
+        $target_page = $this->get_new_page(array('action' => 'default', 'id' => $id, 'sesskey' => sesskey()), true);
         $no_url = $target_page->url;
         $no = new single_button($no_url, get_string('no'), 'get');
 
-        $optionsyes = array('action' => 'delete', 'id' => $obj->id, 'confirm' => 1);
+        $optionsyes = array('action' => 'delete', 'association_id' => $obj->id, 'id' => $id, 'confirm' => 1);
         $yes_url = clone($no_url);
         $yes_url->params($optionsyes);
         $yes = new single_button($yes_url, get_string('yes'), 'get');
@@ -394,14 +402,16 @@ class associationpage extends pm_page {
         require_sesskey();
 
         $id = $this->required_param('id', PARAM_INT);
+        $association_id = $this->required_param('association_id', PARAM_INT);
 
-        $obj = $this->get_new_data_object($id);
+
+        $obj = $this->get_new_data_object($association_id);
         $obj->load(); // force load, so that the confirmation notice has something to display
         $obj->delete();
 
         $returnurl = $this->optional_param('return_url', null, PARAM_URL);
         if ($returnurl === null) {
-            $target_page = $this->get_new_page(array(), true);
+            $target_page = $this->get_new_page(array('id'=> $id), true);
             $returnurl = $target_page->url;
         } else {
             $returnurl = $CFG->wwwroot.$returnurl;
@@ -458,7 +468,7 @@ class associationpage extends pm_page {
      * @param $action action to request when an item is selected from the dropdown
      * @param $namefield property name in the class to associate with that should be displayed in the dropdown rows
      */
-    function print_dropdown($items, $taken_items, $local_key, $nonlocal_key, $action='savenew', $namefield='name') {
+    function print_dropdown($items, $taken_items, $local_key, $nonlocal_key, $action='add', $namefield='name') {
         global $OUTPUT;
 
         $id = $this->required_param('id', PARAM_INT);

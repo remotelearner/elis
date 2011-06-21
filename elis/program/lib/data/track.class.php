@@ -54,6 +54,7 @@ require_once elispm::lib('deprecatedlib.php');
 class track extends data_object_with_custom_fields {
     const TABLE = 'crlm_track';
 
+    var $verbose_name = 'track';
     var $autocreate;
 
      /**

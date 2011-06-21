@@ -254,7 +254,7 @@ class trackpage extends managementpage {
         if (!empty($id)) {
             //print curriculum tabs if viewing from the curriculum view
             $curriculumpage = new curriculumpage(array('id' => $id));
-            $curriculumpage->print_tabs('trackpage', array('id' => $id));
+            //$curriculumpage->print_tabs('trackpage', array('id' => $id));
         }
 
         $this->print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=true, $searchflag=true);
