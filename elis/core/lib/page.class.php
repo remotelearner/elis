@@ -246,7 +246,7 @@ abstract class elis_page extends moodle_page {
      */
     public function display($action=null) {
         if ($action === null) {
-            $action = $this->optional_param('action', '', PARAM_ACTION);
+            $action = $this->optional_param('action', 'default', PARAM_ACTION);
         }
         $this->_init_display();
         $this->print_header();
