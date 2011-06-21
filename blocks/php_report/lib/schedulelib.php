@@ -204,13 +204,14 @@ class scheduling_workflow extends workflow {
 
         $form->set_data($values);
         $form->definition_after_data();
-        $form->_form->validate();
+        $form->validate();
         $errors = $form->validation($values, array());
-        if ((is_array($errors) && !empty($errors)) || !empty($form->_form->_errors)) {
+        $form_errors = $form->get_errors();
+        if ((is_array($errors) && !empty($errors)) || !empty($form_errors)) {
             if (!is_array($errors)) {
                 $errors = array();
             }
-            $errors = $errors + $form->_form->_errors;
+            $errors = $errors + $form_errors;
             return $errors;
         }
 
@@ -945,7 +946,7 @@ class scheduling_page extends workflowpage {
                 or $recordset->EOF) {
 
                 //set up a job for this report
-                $this->action_default();
+                $this->display_default();
                 return;
             }
         }
@@ -1356,7 +1357,7 @@ class scheduling_page extends workflowpage {
         $form = new scheduling_form_step_format(null, $this);
         if ($errors) {
             foreach ($errors as $element=>$msg) {
-                $form->_form->setElementError($element, $msg);
+                $form->setElementError($element, $msg);
             }
         }
         $workflowdata = $this->workflow->unserialize_data(array());
@@ -1445,4 +1446,13 @@ if (window.opener.location != "") {
 <?php
     }
 
+    /**
+     * Return the base URL for the page.  Used by the constructor for calling
+     * $this->set_url().  Although the default behaviour is somewhat sane, this
+     * method should be overridden by subclasses if the page may be created to
+     * represent a page that is not the current page.
+     */
+    protected function _get_page_url() {
+        return '/blocks/php_report/schedule.php';
+    }
 }

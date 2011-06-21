@@ -29,4 +29,4 @@ require_once $CFG->dirroot . '/blocks/php_report/lib/schedulelib.php';
 
 $page = new scheduling_page();
 
-$page->print_page();
+$page->run();

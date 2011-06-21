@@ -305,6 +305,29 @@ class scheduling_form_step_parameters extends parameter_form {
         }
         workflowpage::add_navigation_buttons($mform, scheduling_workflow::STEP_SCHEDULE);
     }
+
+    /**
+     * Performs the server side validation
+     * @access    public
+     * @since     1.0
+     * @return    boolean   true if no error found
+     */
+    function validate() {
+        return $this->_form->validate();
+    }
+
+    /**
+     * Obtains the errors currently associated with this form
+     *
+     * @return  array  The errors
+     */
+    function get_errors() {
+        if (empty($this->_form->_errors)) {
+            return array();
+        }
+
+        return $this->_form->_errors;
+    }
 }
 
 /**
@@ -351,6 +374,19 @@ class scheduling_form_step_format extends moodleform {
         $mform->addRule('format', get_string('required_field', 'block_curr_admin', get_string('format')), 'required', null, 'client');
 
         workflowpage::add_navigation_buttons($mform, scheduling_workflow::STEP_PARAMETERS);
+    }
+
+    /**
+     * Set error message for a form element
+     *
+     * @param     string    $element    Name of form element to set error for
+     * @param     string    $message    Error message, if empty then removes the current error message
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setElementError($element, $message = null) {
+        $this->_form->setElementError($element, $message);
     }
 }
 
