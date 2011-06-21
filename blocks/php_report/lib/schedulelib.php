@@ -253,7 +253,7 @@ class scheduling_workflow extends workflow {
     }
 
     public function finish() {
-        global $USER;
+        global $USER, $DB;
 
         $data = $this->unserialize_data(array());
         if (isset($data['schedule_user_id'])) {
@@ -273,15 +273,14 @@ class scheduling_workflow extends workflow {
         $schedule->userid   = $userid;
         $schedule->report   = $data['report'];
         $schedule->config   = $serialized_data;
-        $schedule = addslashes_recursive($schedule);
         if (isset($data['schedule_id'])) {
             $schedule->id = $data['schedule_id'];
-            update_record('php_report_schedule', $schedule);
+            $DB->update_record('php_report_schedule', $schedule);
             // Also find and remove any existing task record(s) for the old schedule
             $taskname     = 'scheduled_'.$schedule->id;
-            delete_records('elis_scheduled_tasks', 'taskname',$taskname);
+            $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
         } else {
-            $schedule->id = insert_record('php_report_schedule', $schedule);
+            $schedule->id = $DB->insert_record('php_report_schedule', $schedule);
         }
 
         // Save to scheduled_tasks
@@ -362,9 +361,8 @@ class scheduling_workflow extends workflow {
             // which is now corrected.
         }
         $task->runsremaining = $runsremaining;
-        $task = addslashes_recursive($task);
 
-        insert_record('elis_scheduled_tasks', $task);
+        $DB->insert_record('elis_scheduled_tasks', $task);
     }
 }
 
@@ -1078,7 +1076,7 @@ class scheduling_page extends workflowpage {
     /**
      * List the schedule for this report
      */
-    public function display_summary() {
+    public function print_summary() {
         // FIXME
     }
 
@@ -1439,7 +1437,7 @@ class scheduling_page extends workflowpage {
         $form->display();
     }
 
-    public function display_finish() {
+    public function display_finished() {
         global $CFG;
 
         // Get report parameter data
