@@ -224,8 +224,7 @@ class instructor extends elis_data_object {
             $alphabet = explode(',', get_string('alphabet'));
             $strall   = get_string('all');
 
-
-        /// Bar of first initials
+            // Bar of first initials
             echo "<p style=\"text-align:center\">";
             echo get_string('tag_name', self::LANG_FILE)." : ";
             if ($alpha) {
@@ -254,10 +253,10 @@ class instructor extends elis_data_object {
 
         } else {
             $users = array();
-            if (($user = $this->_db->get_record(user::TABLE, array('id' => $this->userid)))) {  // $this->user;
-                $user->name        = fullname($user);
-                $users[]           = $user;
-                $usercount         = 0; // TBD: 1 ???
+            if (($user = $this->_db->get_record(user::TABLE, array('id' => $this->userid)))) { // $this->user;
+                $user->name = fullname($user);
+                $users[]    = $user;
+                $usercount  = 0; // TBD: 1 ???
             }
         }
 
@@ -278,11 +277,13 @@ class instructor extends elis_data_object {
             $table->width = "100%"; // TBD
             foreach ($users as $user) {
                 $tabobj = new stdClass;
+              /* **** debug code
                 ob_start();
                 var_dump($user);
                 $tmp = ob_get_contents();
                 ob_end_clean();
                 error_log("instructor.class.php::edit_form_html() user = $tmp");
+              **** */
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
                         case 'assign':

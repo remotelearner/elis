@@ -24,6 +24,7 @@
  *
  */
 
+require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php'); // cm_get_param(), cm_error() ...
 require_once elispm::lib('associationpage.class.php');
 require_once elispm::lib('data/instructor.class.php');
@@ -80,14 +81,20 @@ class instructorpage extends associationpage {
         $event_object = $this->_db->get_record(instructor::TABLE, array('id' => $insid));
 
         if (md5($insid) != $confirm) {
-            echo cm_error('Invalid confirmation code!');
-        } else if (!$ins->delete()){
-            echo cm_error('Instructor "name: ' . cm_fullname($ins->user) . '" not deleted.');
+            echo cm_error(get_string('invalidconfirm', self::LANG_FILE));
         } else {
-            //instructor_successfully_deleted
-            echo cm_error('Instructor "name: ' . cm_fullname($ins->user) . '" deleted.');
+            $user = new user($ins->userid); // TBD: $event_object->userid
+            $user->name = fullname($user);
+            $status = $ins->delete(); // TBD: no return code from delete()
+          /* ****
+            if (!$status) {
+                echo cm_error(get_string('instructor_notdeleted', self::LANG_FILE, $user));
+            } else
+          **** */
+            { //instructor_successfully_deleted
+                echo cm_error(get_string('instructor_deleted', self::LANG_FILE, $user));
+            }
         }
-
         $this->display('default'); // $this->action_default();
     }
 
@@ -259,8 +266,8 @@ class instructorpage extends associationpage {
         $strall = get_string('all');
 
         $page_params = array('s' => 'ins', 'section' => 'curr', 'id' => $clsid,
-                        'sort' => $sort, 'dir' => $dir, 'perpage' => $perpage,
-                        'search' => $namesearch);
+                        'action' => $action, 'sort' => $sort, 'dir' => $dir,
+                        'perpage' => $perpage, 'search' => $namesearch);
 
         pmalphabox(new moodle_url($this->_get_page_url(), $page_params),
             'alpha', get_string('instructor_name', self::LANG_FILE) .':');
@@ -287,7 +294,8 @@ class instructorpage extends associationpage {
         echo "</p>";
       **** */
 
-        $full_url = "index.php?s=ins&amp;section=curr&amp;id=$clsid&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search="
+        // TBD: added action
+        $full_url = "index.php?s=ins&amp;section=curr&amp;id=$clsid&amp;action=$action&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search="
                     . urlencode(stripslashes($namesearch)) .'&amp;';
         $pagingbar = new paging_bar($numinss, $page, $perpage, $full_url);
         echo $OUTPUT->render($pagingbar);

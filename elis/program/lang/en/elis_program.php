@@ -291,13 +291,16 @@ $string['inactive'] = 'Inactive';
 $string['instructor_add'] = 'Add Instructor';
 $string['instructor_assignment'] = 'Assignment Time';
 $string['instructor_completion'] = 'Completion Time';
+$string['instructor_deleted'] = 'Instructor: {$a->name} deleted.';
 $string['instructor_idnumber'] = 'ID Number';
 $string['instructor_name'] = 'Name';
+$string['instructor_notdeleted'] = 'Instructor: {$a->name} not deleted.';
 $string['instructors'] = 'Instructors';
 $string['invalid_objectid'] = 'Invalid object id: {$a->id}';
 $string['invalidconfirm'] = 'Invalid confirmation code!';
 $string['items_found'] = '{$a->num} items found.';
 
+$string['lastname'] = 'Last Name';
 $string['learningplan'] = 'Learning Plan';
 $string['length_description'] = 'Length Description';
 
@@ -324,6 +327,7 @@ $string['no_instructor_matching'] = 'No instructors matching ';
 $string['no_items_matching'] = 'No items matching ';
 $string['no_items_selected'] = 'No items selected';
 $string['no_moodlecourse'] = 'No Moodle courses on this site';
+$string['no_users_matching'] = 'No users matching {$a->match}';
 $string['none'] = 'None';
 $string['notice_class_deleted'] = 'Deleted the class instance {$a->idnumber}';
 $string['notice_clustertrack_deleted'] = 'Deleted the cluster/track association {$a->id}';

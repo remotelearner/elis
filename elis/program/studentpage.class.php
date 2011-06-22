@@ -143,15 +143,20 @@ class studentpage extends associationpage {
 
         $stu = new student($stuid);
         $sparam = new stdClass;
-        $sparam->name = fullname($stu->user);
-        if (md5($stuid) != $confirm) {
+        $sparam->name = fullname($stu->user); // TBD ???
+        if (md5($stuid) != $confirm) { // TBD
             echo cm_error(get_string('invalidconfirm', self::LANG_FILE));
-        } else if (!$stu->delete()){
-            echo cm_error(get_string('studentnotunenrolled', self::LANG_FILE, $sparam));
         } else {
-            echo cm_error(get_string('studentunenrolled', self::LANG_FILE, $sparam));
+            $status = $stu->delete(); // TBD: no return code from delete()
+          /* ****
+            if (!$status) {
+                echo cm_error(get_string('studentnotunenrolled', self::LANG_FILE, $sparam));
+            } else
+          **** */
+            {
+                echo cm_error(get_string('studentunenrolled', self::LANG_FILE, $sparam));
+            }
         }
-
         $this->display('default'); // do_default()
     }
 
@@ -358,20 +363,25 @@ class studentpage extends associationpage {
                 && $this->_db->get_field(student::TABLE, 'completestatusid', array('id' => $stu->id)) != STUSTATUS_PASSED) {
                 $stu->complete();
             } else {
-                if (($status = $stu->update()) !== true) {
+                $status = $stu->save(); // ->update()
+              /* **** no return code from save()
+                if ($status !== true) {
                     echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
                 }
+              **** */
             }
 
             // Now once we've done all this, delete the student if we've been asked to
-            if(isset($user['unenrol'])
-               && pmclasspage::can_enrol_into_class($clsid)) {
+            if (isset($user['unenrol']) && pmclasspage::can_enrol_into_class($clsid)) {
                 $stu_delete = new student($user['association_id']);
-                if(!$stu_delete->delete()) {
+                $status = $stu_delete->delete();
+              /* **** no return code from delete()
+                if(!$status) {
                     $sparam = new stdClass;
                     $sparam->name = fullname($stu->user);
                     echo cm_error(get_string('studentnotunenrolled', self::LANG_FILE, $sparam));
                 }
+              **** */
             }
         }
 
