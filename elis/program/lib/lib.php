@@ -30,15 +30,18 @@
  * @param object $moodle_url the moodle url object for the alpha/letter links
  * @param string $pname      the parameter name to be appended to the moodle_url
  *                           i.e. 'pname=alpha'
+ * @param string $label      optional label - defaults to none
  */
-function pmalphabox($moodle_url, $pname = 'alpha') {
+function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
     $alpha        = optional_param($pname, null, PARAM_ALPHA);
 
     $alphabet = explode(',', get_string('alphabet', 'langconfig'));
     $strall = get_string('all');
 
     echo html_writer::start_tag('div', array('style' => 'text-align:center'));
-
+    if (!empty($label)) {
+        echo $label, ' '; // TBD: html_writer::???
+    }
     if ($alpha) {
         $url = clone($moodle_url); // TBD
         $url->remove_params($pname);
@@ -67,9 +70,10 @@ function pmalphabox($moodle_url, $pname = 'alpha') {
  * @param object $page       the page object for the search form action & links
  * @param string $searchname the parameter name for the search tag
  *                           i.e. 'searchname=search'
+ * @param string $method     the form submit method: 'post' (default) or 'get'
  * @todo convert echo HTML statements to use M2 html_writer, etc.
  */
-function pmsearchbox($page, $searchname = 'search') {
+function pmsearchbox($page, $searchname = 'search', $method = 'post') {
     $search = trim(optional_param($searchname, '', PARAM_TEXT));
 
     // TODO: with a little more work, we could keep the previously selected sort here
@@ -80,7 +84,7 @@ function pmsearchbox($page, $searchname = 'search') {
     $target = $page->get_new_page($params);
 
     echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
-    echo "<form action=\"" . $target->url . "\" method=\"post\">";
+    echo "<form action=\"{$target->url}\" method=\"{$method}\">";
     echo "<fieldset class=\"invisiblefieldset\">";
     echo "<input type=\"text\" name=\"{$searchname}\" value=\"" . s($search, true) . "\" size=\"20\" />";
     echo '<input type="submit" value="'.get_string('search').'" />';

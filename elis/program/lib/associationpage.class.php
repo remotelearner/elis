@@ -60,17 +60,19 @@ class associationpage extends pm_page {
         return has_capability('block/curr_admin:managecurricula', $context);
     }
 
+  /* **** TBD ****
     public function can_do_edit() { // can_do_update()
-        return $this->can_do('edit');
+        return $this->can_do('edit'); // TBD: 'edit'
     }
 
     public function can_do_add() {
-        return $this->can_do('add');
+        return $this->can_do('add'); // TBD: 'add'
     }
 
     public function can_do_delete() { // can_do_confirm()
-        return $this->can_do('delete');
+        return $this->can_do('delete'); // TBD: 'delete'
     }
+  **** */
 
     /**
      * Returns an instance of the page class that should provide the tabs for this association page.

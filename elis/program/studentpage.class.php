@@ -217,6 +217,7 @@ class studentpage extends associationpage {
                     $status = true;
                 }
 
+              /* **** TBD ->save() no return ****
                 if ($status !== true) {
                     if (!empty($status->message)) {
                         echo cm_error(get_string('record_not_created_reason',
@@ -225,6 +226,7 @@ class studentpage extends associationpage {
                         echo cm_error(get_string('record_not_created', self::LANG_FILE));
                     }
                 }
+              **** */
             }
         }
 
@@ -514,8 +516,8 @@ class studentpage extends associationpage {
 
         $pagingbar = new paging_bar($numstus, $page, $perpage,
                          "index.php?s=stu&amp;section=curr&amp;id=$clsid&amp;sort=$sort&amp;" .
-                         "dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;namesearch=" .
-                         urlencode(stripslashes($namesearch))); // .'&amp;'
+                         "dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search="
+                         . urlencode(stripslashes($namesearch))); // .'&amp;'
         echo $OUTPUT->render($pagingbar);
 
         echo "<form>";

@@ -95,9 +95,12 @@ class waitlistpage extends selectionpage {
     }
 
     protected function get_base_params() {
-        $params         = parent::get_base_params();
-        $params['id']   = $this->required_param('id', PARAM_INT);
-        $params['mode'] = $this->optional_param('mode', '', PARAM_CLEAN);
+        $params       = parent::get_base_params();
+        $params['id'] = $this->required_param('id', PARAM_INT);
+        $mode         = $this->optional_param('mode', '', PARAM_CLEAN);
+        if (!empty($mode)) {
+            $params['mode'] = $mode;
+        }
         return $params;
     }
 

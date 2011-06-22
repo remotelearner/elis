@@ -57,6 +57,16 @@ class instructor extends elis_data_object {
 
     var $_dbloaded;    // BOOLEAN - True if loaded from database.
 */
+
+    private $form_url = null;  //moodle_url object
+
+    protected $_dbfield_classid;
+    protected $_dbfield_userid;
+    protected $_dbfield_assigntime;
+    protected $_dbfield_completetime;
+
+    //var $pmclass;           // OBJECT - The class object
+
     // STRING - Styles to use for edit form.
     var $_editstyle = '
 .instructoreditform input,
@@ -205,6 +215,12 @@ class instructor extends elis_data_object {
                                                 $namesearch, $alpha);
             $usercount = $this->count_users_avail($namesearch, $alpha);
 
+            pmalphabox(new moodle_url('/elis/program/index.php', // TBD
+                               array('s' => 'ins', 'section' => 'curr',
+                                     'action' => 'add', 'id' => $classid,
+                                     'sort' => $sort, 'dir' => $dir,
+                                     'perpage' => $perpage)));
+         /* **** replaced by pmalphabox ****
             $alphabet = explode(',', get_string('alphabet'));
             $strall   = get_string('all');
 
@@ -227,6 +243,7 @@ class instructor extends elis_data_object {
                 }
             }
             echo "</p>";
+          **** */
 
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                              "index.php?s=ins&amp;section=curr&amp;id=$classid&amp;action=add&amp;" .
@@ -236,10 +253,12 @@ class instructor extends elis_data_object {
             flush();
 
         } else {
-            $user = $this->user;
-            $user->name        = fullname($this->user);
-            $users[]           = $user;
-            $usercount         = 0;
+            $users = array();
+            if (($user = $this->_db->get_record(user::TABLE, array('id' => $this->userid)))) {  // $this->user;
+                $user->name        = fullname($user);
+                $users[]           = $user;
+                $usercount         = 0; // TBD: 1 ???
+            }
         }
 
         if (empty($this->id) && !$users) {
@@ -259,6 +278,11 @@ class instructor extends elis_data_object {
             $table->width = "100%"; // TBD
             foreach ($users as $user) {
                 $tabobj = new stdClass;
+                ob_start();
+                var_dump($user);
+                $tmp = ob_get_contents();
+                ob_end_clean();
+                error_log("instructor.class.php::edit_form_html() user = $tmp");
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
                         case 'assign':
@@ -585,10 +609,10 @@ function instructor_get_listing($classid, $sort = 'name', $dir = 'ASC', $startre
                                 $perpage = 0, $namesearch = '', $alpha='') {
     global $DB;
     $params = array();
-    $FULLNAME = sql_concat('usr.firstname', "' '", 'usr.lastname');
-    $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-    $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
-    $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+    $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like');
+    $IDNUMBER_LIKE = $DB->sql_like('usr.idnumber', ':id_like');
+    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
 
     $select  = 'SELECT ins.* ';
     $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
@@ -624,7 +648,7 @@ function instructor_get_listing($classid, $sort = 'name', $dir = 'ASC', $startre
 
     $sql = $select.$tables.$join.$on.$where.$sort;
 //print_object($sql);
-    return $$DB->get_records_sql($sql, $params, $startrec, $perpage);
+    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
 
@@ -637,10 +661,10 @@ function instructor_get_listing($classid, $sort = 'name', $dir = 'ASC', $startre
 function instructor_count_records($classid, $namesearch = '', $alpha='') {
     global $DB;
     $params = array();
-    $FULLNAME = sql_concat('usr.firstname', "' '", 'usr.lastname');
-    $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-    $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
-    $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+    $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like');
+    $IDNUMBER_LIKE = $DB->sql_like('usr.idnumber', ':id_like');
+    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
 
     $select  = 'SELECT COUNT(ins.id) ';
     $tables  = 'FROM {'. instructor::TABLE .'} ins ';
@@ -667,6 +691,6 @@ function instructor_count_records($classid, $namesearch = '', $alpha='') {
     }
 
     $sql = $select . $tables . $join . $on . $where;
-    return $this->_db->count_records_sql($sql, $params);
+    return $DB->count_records_sql($sql, $params);
 }
 

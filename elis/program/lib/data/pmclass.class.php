@@ -753,12 +753,8 @@ class pmclass extends data_object_with_custom_fields {
 
     public static function count_students_by_section($clsid = 0){
         global $DB;
-        if(!$clsid) {
-            if(empty($this->id)) {
-                return array();
-            }
-
-            $clsid = $this->id;
+        if(!$clsid) { // static method cannot access $this
+            return array();
         }
 
         $select     = 'SELECT stu.completestatusid, COUNT(stu.id) as c ';
