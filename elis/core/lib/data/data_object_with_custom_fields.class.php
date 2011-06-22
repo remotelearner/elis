@@ -114,7 +114,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
      */
     public function __get($name) {
         $prefix_len = strlen(self::CUSTOM_FIELD_PREFIX);
-        if (strncmp($name, self::CUSTOM_FIELD_PREFIX, $prefix_len)) {
+        if (strncmp($name, self::CUSTOM_FIELD_PREFIX, $prefix_len) == 0) {
             $this->_load_fields();
             $shortname = substr($name, $prefix_len);
             if (isset(self::$_fields[$this->get_field_context_level()][$shortname])) {
@@ -147,7 +147,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
      */
     public function __set($name, $value) {
         $prefix_len = strlen(self::CUSTOM_FIELD_PREFIX);
-        if (strncmp($name, self::CUSTOM_FIELD_PREFIX, $prefix_len)) {
+        if (strncmp($name, self::CUSTOM_FIELD_PREFIX, $prefix_len) == 0) {
             $this->_load_fields();
             $contextlevel = $this->get_field_context_level();
             $shortname = substr($name, $prefix_len);
@@ -177,7 +177,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
      */
     public function __isset($name) {
         $prefix_len = strlen(self::CUSTOM_FIELD_PREFIX);
-        if (strncmp($name, self::CUSTOM_FIELD_PREFIX, $prefix_len)) {
+        if (strncmp($name, self::CUSTOM_FIELD_PREFIX, $prefix_len) == 0) {
             $this->_load_fields();
             $shortname = substr($name, $prefix_len);
             if (isset(self::$_fields[$this->get_field_context_level()][$shortname])) {
@@ -202,7 +202,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
      */
     public function __unset($name) {
         $prefix_len = strlen(self::CUSTOM_FIELD_PREFIX);
-        if (strncmp($name, self::CUSTOM_FIELD_PREFIX, $prefix_len)) {
+        if (strncmp($name, self::CUSTOM_FIELD_PREFIX, $prefix_len) == 0) {
             $this->_load_fields();
             $shortname = substr($name, $prefix_len);
             if (isset(self::$_fields[$this->get_field_context_level()][$shortname])) {
