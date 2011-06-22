@@ -837,6 +837,9 @@ class pmclass extends data_object_with_custom_fields {
             }
         }
 
+        // Due to lazy loading, we need to pre-load this object
+        $this->load();
+
         // clone main class object
         $clone = new pmclass($this);
         unset($clone->id);

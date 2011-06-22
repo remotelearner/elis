@@ -51,13 +51,13 @@ class clustertrackbasepage extends associationpage {
                   'name' => get_string('edit', 'elis_program'),
                   'showtab' => true,
                   'showbutton' => true,
-                  'image' => 'edit.gif'),
+                  'image' => 'edit'),
             array('tab_id' => 'delete',
                   'page' => get_class($this),
                   'params' => array('action' => 'delete'),
                   'name' => get_string('delete_label', 'elis_program'),
                   'showbutton' => true,
-                  'image' => 'delete.gif'),
+                  'image' => 'delete'),
         );
 
         parent::__construct($params);
@@ -118,7 +118,6 @@ class clustertrackbasepage extends associationpage {
                               'trackid' => $trackid));
 
         if($data = $form->get_data()) {
-            echo '<br>*';
             if(!isset($data->cancel)) {
                 clustertrack::associate($clusterid, $trackid, $autounenrol, $data->autoenrol);
             }
@@ -126,15 +125,12 @@ class clustertrackbasepage extends associationpage {
             $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
         } else {
-            echo '<br>**';
-
-            //$this->get_tab_page()->print_tabs('savenew', array('id' => $id)); // TBD
             $this->display('add');
         }
 
     }
 
-/**
+    /**
      * Prints the add form.
      * @param $parent_obj is the basic data object we are forming an association with.
      */
@@ -142,7 +138,7 @@ class clustertrackbasepage extends associationpage {
         $id = required_param('id', PARAM_INT);
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $trackid = $this->required_param('trackid', PARAM_INT);
-echo '<br>add form cluster: '.$clusterid.' and trackid: '.$trackid;
+
         //require_once(CURMAN_DIRLOCATION . '/form/' . $this->form_class . '.class.php');
         // TODO: port cluster classification
         //require_once elispm::file('plugins/cluster_classification/clusterclassification.class.php');
@@ -152,9 +148,9 @@ echo '<br>add form cluster: '.$clusterid.' and trackid: '.$trackid;
                                             'id'           => $id));
         //$form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
         $form = new $this->form_class($target->url, array('id'        => $id));
-$form->set_data(array('clusterid' => $clusterid,
+        $form->set_data(array('id' => $id,
+                              'clusterid' => $clusterid,
                               'trackid' => $trackid));
-        $form->set_data(array('id' => $id));
         // TODO: port cluster classification
 //            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
 //            if (!empty($cluster_classification->param_autoenrol_tracks)) {
@@ -162,8 +158,7 @@ $form->set_data(array('clusterid' => $clusterid,
 //            } else {
 //                $form->set_data(array('autoenrol' => 0));
 //            }
-echo '<br>in add form:';
-print_object($form);
+
         $form->display();
     }
 
@@ -251,6 +246,7 @@ echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid:
                               'association_id' => $obj->id));
         $form->display();
     }
+
     function create_table_object($items, $columns) {
         return new clustertrack_page_table($items, $columns, $this);
     }
@@ -289,7 +285,7 @@ class clustertrackpage extends clustertrackbasepage {
                                                                                   'trackid'),
                                                         'decorate')),
             'description' => array('header' => get_string('track_description','elis_program')),
-            'autoenrol'   => array('header' => get_string('usersettrack_auto_enrol', 'elis_program')),
+            'autoenrol'   => array('header' => get_string('usersettrack_autoenrol', 'elis_program')),
              //buttons triggers the use of "tabs" as buttons for editing and deleting
             'buttons'     => array('header' => ''),
         );

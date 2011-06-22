@@ -41,10 +41,10 @@ require_once (CURMAN_DIRLOCATION . '/curriculumpage.class.php');
 class clustercurriculumbasepage extends associationpage {
 
     var $data_class = 'clustercurriculum';
-    //var $form_class = 'clustercurriculumform';
-    //var $edit_form_class = 'clustercurriculumeditform';
+    var $form_class = 'clustercurriculumform';
+    var $edit_form_class = 'clustercurriculumeditform';
 
-    var $tabs;
+    //var $tabs;
 
     function __construct(array $params=null) {
 
@@ -85,7 +85,7 @@ class clustercurriculumbasepage extends associationpage {
             return parent::_get_page_context();
         }
     }
-    function can_do_savenew() {
+    function can_do_add() {
         // the user must have 'block/curr_admin:associate' permissions on both ends
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $curriculumid = $this->required_param('curriculumid', PARAM_INT);
@@ -97,7 +97,7 @@ class clustercurriculumbasepage extends associationpage {
     /**
      * @todo Refactor this once we have a common save() method for datarecord subclasses.
      */
-    function do_savenew() {
+    function do_add() {
         $id = $this->required_param('id', PARAM_INT);
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $curriculumid = $this->required_param('curriculumid', PARAM_INT);
@@ -106,30 +106,62 @@ class clustercurriculumbasepage extends associationpage {
         //TODO: needs this plugin to be ported
 //        require_once elispm::lib('/plugins/cluster_classification/clusterclassification.class.php');
 
-        $target = $this->get_new_page(array('action'       => 'savenew',
+        $target = $this->get_new_page(array('action'       => 'add',
                                             'id'           => $id,
                                             'clusterid'    => $clusterid,
                                             'curriculumid' => $curriculumid));
+
 
         $form = new $this->form_class($target->url, array('id'        => $id,
                                                           'clusterid' => $clusterid,
                                                           'curriculumid' => $curriculumid));
 
+        $form->set_data(array('clusterid' => $clusterid,
+                              'curriculumid' => $curriculumid));
+//echo '<br>form in do_add';
+//print_object($form);
         if($data = $form->get_data()) {
             if(!isset($data->cancel)) {
                 clustercurriculum::associate($clusterid, $curriculumid, !empty($data->autoenrol));
             }
-            $this->display_default();
+            //$this->display_default();
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
+            redirect($target->url);
         } else {
-            //TODO: no classification plugin
-//            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
-//            if ($cluster_classification->param_autoenrol_curricula) {
-//                $form->set_data(array('autoenrol' => 1));
-//            } else {
-                $form->set_data(array('autoenrol' => 0));
-//            }
-            $form->display();
+            $this->display('add');
         }
+    }
+
+    /**
+     * Prints the add form.
+     * @param $parent_obj is the basic data object we are forming an association with.
+     */
+    function print_add_form($parent_obj) {
+        $id = required_param('id', PARAM_INT);
+        $clusterid = $this->required_param('clusterid', PARAM_INT);
+        $curriculumid = $this->required_param('curriculumid', PARAM_INT);
+
+        //require_once(CURMAN_DIRLOCATION . '/form/' . $this->form_class . '.class.php');
+        // TODO: port cluster classification
+        //require_once elispm::file('plugins/cluster_classification/clusterclassification.class.php');
+
+        //$target = $this->get_new_page(array('action' => 'add', 'id' => $id));
+        $target = $this->get_new_page(array('action'       => 'add',
+                                            'id'           => $id));
+        //$form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
+        $form = new $this->form_class($target->url, array('id'        => $id));
+        $form->set_data(array('id' => $id,
+                              'clusterid' => $clusterid,
+                              'curriculumid' => $curriculumid));
+        // TODO: port cluster classification
+//            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
+//            if (!empty($cluster_classification->param_autoenrol_tracks)) {
+                $form->set_data(array('autoenrol' => 1));
+//            } else {
+//                $form->set_data(array('autoenrol' => 0));
+//            }
+
+        $form->display();
     }
 
     function can_do_edit() {
@@ -148,6 +180,23 @@ class clustercurriculumbasepage extends associationpage {
         return $this->can_do_edit();
     }
 
+    /**
+     * handler for the edit action.  Prints the edit form.
+     */
+    function display_edit() { // do_edit()
+        $association_id = required_param('association_id', PARAM_INT);
+        $id             = required_param('id', PARAM_INT);
+        $obj            = new $this->data_class($association_id);
+        $parent_obj     = new $this->parent_data_class($id);
+
+        /*if(!$obj->get_dbloaded()) { // TBD
+            $sparam = new stdClass;
+            $sparam->id = $id;
+            print_error('invalid_objectid', 'elis_program', '', $sparam);
+        }*/
+        $this->print_edit_form($obj, $parent_obj);
+    }
+
     function do_edit() {
         $id = $this->required_param('id', PARAM_INT);
         $association_id = $this->required_param('association_id', PARAM_INT);
@@ -158,8 +207,8 @@ class clustercurriculumbasepage extends associationpage {
                                             'id'             => $id,
                                             'association_id' => $association_id));
 
-        $form = new $this->edit_form_class($target->get_moodle_url(), array('id' => $id,
-                                                                            'association_id' => $association_id));
+        $form = new $this->edit_form_class($target->url, array('id' => $id,
+                                                               'association_id' => $association_id));
 
         $form->set_data(array('id' => $id,
                               'association_id' => $association_id));
@@ -168,10 +217,30 @@ class clustercurriculumbasepage extends associationpage {
             if(!isset($data->cancel)) {
                 clustercurriculum::update_autoenrol($association_id, $data->autoenrol);
             }
-            $this->display_default();
+            //$this->display_default();
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
+            redirect($target->url);
         } else {
-            $form->display();
+            //$form->display();
+            $this->display('edit');
         }
+    }
+
+    /**
+     * Prints the edit form.
+     * @param $obj The association object being edited.
+     * @param $parent_obj The basic data object being associated with.
+     */
+    function print_edit_form($obj, $parent_obj) {
+        $parent_id = required_param('id', PARAM_INT);
+//        $association_id = required_param('association_id', PARAM_INT);
+
+        $target = $this->get_new_page(array('action' => 'edit', 'id' => $parent_id));
+
+        $form = new $this->edit_form_class($target->url);
+        $form->set_data(array('id' => $parent_obj->id,
+                              'association_id' => $obj->id));
+        $form->display();
     }
 
     function create_table_object($items, $columns) {
@@ -238,8 +307,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
 
         $items = clustercurriculum::get_curricula($id);
 
-        //$formatters = $this->create_link_formatters(array('idnumber', 'name'), 'curriculumpage', 'curriculumid');
-        $this->print_list_view($items, $columns);
+       $this->print_list_view($items, $columns);
 
         // find the curricula that the user can associate with this cluster
         $contexts = curriculumpage::get_contexts('block/curr_admin:associate');
@@ -266,10 +334,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         }
 
         $options = array('id' => $id, 's' => 'clstcur', 'action' => 'copycurredit');
-        //print_single_button(null, $tmppage->get_moodle_url()->params, get_string('track_autocreate_button', 'elis_program'));
-        //$button = print_single_button('index.php', $options, get_string('userset_cpycurr','elis_program'), 'get', '_self', true);
         $button = new single_button(new moodle_url('index.php', $options), get_string('userset_cpycurr','elis_program'), 'get');
-        //echo $OUTPUT->render($button);
 
 
         // Add a more specific CSS class
@@ -364,16 +429,34 @@ class clustercurriculumpage extends clustercurriculumbasepage {
                     } else {
                         $curname = '';
                     }
+                    // Disable the last 3 options unless the first is checked
+                    $checkbox_ids = "'".self::CPY_CURR_PREFIX.$assocurrrec->curriculumid."',
+                                     '".self::CPY_CURR_TRK_PREFIX.$assocurrrec->curriculumid."',
+                                     '".self::CPY_CURR_CRS_PREFIX.$assocurrrec->curriculumid."',
+                                     '".self::CPY_CURR_CLS_PREFIX.$assocurrrec->curriculumid."'";
+                    $toggle_checkboxes = "cluster_copy_checkbox_changed(".$checkbox_ids.");";
                     $table->data[] = array($curname,
                                            format_string($assocurrrec->name),
-                                           print_checkbox(self::CPY_CURR_PREFIX.$assocurrrec->curriculumid,
+                                           /*print_checkbox(self::CPY_CURR_PREFIX.$assocurrrec->curriculumid,
                                                           1, false, '', '', '', true),
                                            print_checkbox(self::CPY_CURR_TRK_PREFIX.$assocurrrec->curriculumid,
                                                           1, false, '', '', '', true),
                                            print_checkbox(self::CPY_CURR_CRS_PREFIX.$assocurrrec->curriculumid,
                                                           1, false, '', '', '', true),
                                            print_checkbox(self::CPY_CURR_CLS_PREFIX.$assocurrrec->curriculumid,
-                                                          1, false, '', '', '', true),
+                                                          1, false, '', '', '', true),*/
+                                           html_writer::checkbox(self::CPY_CURR_PREFIX.$assocurrrec->curriculumid,
+                                                          1, false, '', array('id'=> self::CPY_CURR_PREFIX.$assocurrrec->curriculumid,
+                                                                              'onclick' => $toggle_checkboxes)),
+                                           html_writer::checkbox(self::CPY_CURR_TRK_PREFIX.$assocurrrec->curriculumid,
+                                                          1, false, '', array('disabled' => true,
+                                                                          'id' => self::CPY_CURR_TRK_PREFIX.$assocurrrec->curriculumid)),
+                                           html_writer::checkbox(self::CPY_CURR_CRS_PREFIX.$assocurrrec->curriculumid,
+                                                          1, false, '', array('disabled' => true,
+                                                                          'id' => self::CPY_CURR_CRS_PREFIX.$assocurrrec->curriculumid)),
+                                           html_writer::checkbox(self::CPY_CURR_CLS_PREFIX.$assocurrrec->curriculumid,
+                                                          1, false, '', array('disabled' => true,
+                                                                          'id' => self::CPY_CURR_CLS_PREFIX.$assocurrrec->curriculumid)),
                                            html_writer::select($mdlcrsoptions, self::CPY_CURR_MDLCRS_PREFIX.$assocurrrec->curriculumid),
                         );
                     $table->rowclass[] = 'clus_cpy_row';
@@ -392,19 +475,37 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         // been listed
         $curriculums = curriculum_get_listing($sort, $dir, 0, 0, '', '', $contexts);
 
+
         foreach ($curriculums as $curriculumid => $curriculumdata) {
 
             if (false === array_search($curriculumid, $curriculumshown)) {
+                $checkbox_ids = "'".self::CPY_CURR_PREFIX.$curriculumid."',
+                                 '".self::CPY_CURR_TRK_PREFIX.$curriculumid."',
+                                 '".self::CPY_CURR_CRS_PREFIX.$curriculumid."',
+                                 '".self::CPY_CURR_CLS_PREFIX.$curriculumid."'";
+                $toggle_checkboxes = "cluster_copy_checkbox_changed(".$checkbox_ids.");";
                 $table->data[] = array('',
                                        format_string($curriculumdata->name),
-                                       print_checkbox(self::CPY_CURR_PREFIX.$curriculumid,
+                                       html_writer::checkbox(self::CPY_CURR_PREFIX.$curriculumid,
+                                                      1, false, '', array('id'=> self::CPY_CURR_PREFIX.$curriculumid,
+                                                                          'onclick' => $toggle_checkboxes)),
+                                       html_writer::checkbox(self::CPY_CURR_TRK_PREFIX.$curriculumid,
+                                                      1, false, '', array('disabled' => true,
+                                                                          'id' => self::CPY_CURR_TRK_PREFIX.$curriculumid)),
+                                       html_writer::checkbox(self::CPY_CURR_CRS_PREFIX.$curriculumid,
+                                                      1, false, '', array('disabled' => true,
+                                                                          'id' => self::CPY_CURR_CRS_PREFIX.$curriculumid)),
+                                       html_writer::checkbox(self::CPY_CURR_CLS_PREFIX.$curriculumid,
+                                                      1, false, '', array('disabled' => true,
+                                                                          'id' => self::CPY_CURR_CLS_PREFIX.$curriculumid)),
+                                       /*print_checkbox(self::CPY_CURR_PREFIX.$curriculumid,
                                                       1, false, '', '', '', true),
                                        print_checkbox(self::CPY_CURR_TRK_PREFIX.$curriculumid,
                                                       1, false, '', '', '', true),
                                        print_checkbox(self::CPY_CURR_CRS_PREFIX.$curriculumid,
                                                       1, false, '', '', '', true),
                                        print_checkbox(self::CPY_CURR_CLS_PREFIX.$curriculumid,
-                                                      1, false, '', '', '', true),
+                                                      1, false, '', '', '', true),*/
 //                                       choose_from_menu($mdlcrsoptions, self::CPY_CURR_MDLCRS_PREFIX.$curriculumid,
 //                                                        '', '', '', 0, true),
                                        html_writer::select($mdlcrsoptions, self::CPY_CURR_MDLCRS_PREFIX.$curriculumid),
@@ -490,9 +591,6 @@ class clustercurriculumpage extends clustercurriculumbasepage {
                 if ($this->optional_param(self::CPY_CURR_CLS_PREFIX.$currid, 0, PARAM_INT)) {
                     $options['classes'] = true;
                 }
-                if ($this->optional_param(self::CPY_CURR_TRK_PREFIX.$currid, 0, PARAM_INT)) {
-                    $options['tracks'] = true;
-                }
                 $options['moodlecourses'] = $this->optional_param(self::CPY_CURR_MDLCRS_PREFIX.$currid, 'copyalways', PARAM_ALPHA);
                 $rv = $curr->duplicate($options);
                 if (!empty($rv['errors'])) {
@@ -547,10 +645,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         }
 
         $tmppage = new clustercurriculumpage(array('id' => $data['id']));
-        //redirect($CFG->wwwroot . '/elis/program/?id='.$data['id'].'&s=clstcur', '', 2);
         redirect($tmppage->url, '', 2);
-
-
     }
 
 }
@@ -559,7 +654,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
     var $pagename = 'curclst';
     var $tab_page = 'curriculumpage';
     var $parent_data_class = 'curriculum';
-    var $tabs;
+    //var $tabs;
 
     var $section = 'curr';
 
@@ -600,8 +695,6 @@ class curriculumclusterpage extends clustercurriculumbasepage {
         }
 
         $items = clustercurriculum::get_clusters($id, $parent_clusterid, $sort, $dir);
-
-        //$formatters = $this->create_link_formatters(array('name'), 'clusterpage', 'clusterid');
 
         $this->print_list_view($items, $columns);
 

@@ -153,12 +153,12 @@ class clustercurriculum extends elis_data_object {
         //only insert users if we are auto-enrolling
         if(!empty($autoenrol)) {
             $timenow = time();
-            $sql = 'INSERT INTO {' . curriculumassignment::TABLE . '} '
+            $sql = 'INSERT INTO {' . curriculumstudent::TABLE . '} '
                 . '(userid, curriculumid, timecreated, timemodified) '
                 . 'SELECT DISTINCT u.id, ' . $curriculum . ', ' . $timenow . ', ' . $timenow. ' '
                 . 'FROM {' . clusteruser::TABLE . '} clu '
                 . 'INNER JOIN {' . user::TABLE . '} u ON u.id = clu.userid '
-                . 'LEFT OUTER JOIN {' . curriculumassignment::TABLE . '} ca ON ca.userid = u.id AND ca.curriculumid = \'' . $curriculum . '\' '
+                . 'LEFT OUTER JOIN {' . curriculumstudent::TABLE . '} ca ON ca.userid = u.id AND ca.curriculumid = \'' . $curriculum . '\' '
                 . 'WHERE clu.clusterid = ? AND ca.curriculumid IS NULL';
             $params = array($cluster);
             $DB->execute_sql($sql,$params);
@@ -349,7 +349,8 @@ class clustercurriculum extends elis_data_object {
 	    $update_record->autoenrol = $autoenrol;
 	    $result = $DB->update_record(self::TABLE, $update_record);
 
-	    if(!empty($autoenrol) and
+	    // TODO: waiting for clusteruser port to ELIS2
+	    /*if(!empty($autoenrol) and
 	       empty($old_autoenrol) and
 	        $curriculum = $DB->get_field(self::TABLE, 'curriculumid', array('id'=> $association_id)) and
 	        $cluster = $DB->get_field(self::TABLE, 'clusterid', array('id'=> $association_id))) {
@@ -359,11 +360,11 @@ class clustercurriculum extends elis_data_object {
                 . 'SELECT DISTINCT u.id, ' . $curriculum . ', ' . $timenow . ', ' . $timenow. ' '
                 . 'FROM {' . clusteruser::TABLE . '} clu '
                 . 'INNER JOIN {' . user::TABLE . '} u ON u.id = clu.userid '
-                . 'LEFT OUTER JOIN {' . curriculumassignment::TABLE . '} ca ON ca.userid = u.id AND ca.curriculumid = \'' . $curriculum . '\' '
+                . 'LEFT OUTER JOIN {' . curriculumstudent::TABLE . '} ca ON ca.userid = u.id AND ca.curriculumid = \'' . $curriculum . '\' '
                 . 'WHERE clu.clusterid = ? AND ca.curriculumid IS NULL';
             $params = array($cluster);
             $DB->execute($sql,$params);
-	    }
+	    }*/
 
 	    return $result;
 	}

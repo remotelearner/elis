@@ -77,3 +77,50 @@ function cluster_copyclass_set_all_selected() {
     }
   }
 }
+function cluster_copy_checkbox_changed(selected_id, box1, box2, box3)
+{
+	var element = document.getElementById(selected_id);
+	
+	if(!element.checked) {
+        cluster_copy_disable_checkboxes(box1, box2, box3);
+    } else if(element.checked) {
+        cluster_copy_enable_checkboxes(box1, box2, box3);  
+    }
+}
+function cluster_copy_disable_checkboxes(box1, box2, box3)
+{
+    var blacklist = [box1, box2, box3];
+   
+    for(var i=0;i<blacklist.length;i++)
+    {
+        var element = document.getElementById(blacklist[i]);
+        if(element && element.nodeType === 1)
+        {
+            //check for element
+        	if(element.type === "checkbox")
+            {
+                element.disabled = "true";
+            }
+        }else if(!element || element.nodeType !== 1)
+        {
+            throw new Error("input blacklist item does not exist or is not an element");
+        }
+    }   
+}
+
+function cluster_copy_enable_checkboxes(box1, box2, box3)
+{
+	var blacklist = [box1, box2, box3];
+	
+	for(var i=0;i<blacklist.length;i++)
+    {
+        var element = document.getElementById(blacklist[i]);
+        
+        if(element.type === "checkbox")
+        {
+            element.disabled = "";
+        }
+    }   
+}
+
+	

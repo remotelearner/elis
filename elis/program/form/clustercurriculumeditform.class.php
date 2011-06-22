@@ -27,8 +27,8 @@
 class clustercurriculumeditform extends moodleform {
 
     function clustercurriculumeditform($action=null, $customdata=null, $method='post', $target='', $attributes=null, $editable=true) {
-        $this->cluster_fields = array('name'    => get_string('cluster_name', 'elis_program'),
-                                      'display' => get_string('cluster_description', 'elis_program'));
+        $this->cluster_fields = array('name'    => get_string('userset_name', 'elis_program'),
+                                      'display' => get_string('userset_description', 'elis_program'));
 
         $this->curriculum_fields = array('idnumber'    => get_string('curriculum_idnumber', 'elis_program'),
                                          'name'        => get_string('curriculum_name', 'elis_program'),
@@ -43,7 +43,7 @@ class clustercurriculumeditform extends moodleform {
         $mform =& $this->_form;
 
         //cluster stuff
-        $mform->addElement('header', 'clusterinfo', get_string('info_group_cluster', 'elis_program'));
+        $mform->addElement('header', 'clusterinfo', get_string('userset_info_group', 'elis_program'));
 
         foreach($this->cluster_fields as $id => $display) {
             $element =& $mform->createElement('text', 'cluster' . $id, $display);
@@ -52,7 +52,7 @@ class clustercurriculumeditform extends moodleform {
         }
 
         //curriculum stuff
-        $mform->addElement('header', 'curriculuminfo', get_string('info_group_curriculum', 'elis_program'));
+        $mform->addElement('header', 'curriculuminfo', get_string('program_info_group', 'elis_program'));
 
         foreach($this->curriculum_fields as $id => $display) {
             $element =& $mform->createElement('text', 'curriculum' . $id, $display);
@@ -61,8 +61,8 @@ class clustercurriculumeditform extends moodleform {
         }
 
         //association stuff
-        $mform->addElement('header', 'associationinfo', get_string('info_group_association', 'elis_program'));
-        $mform->addElement('advcheckbox', 'autoenrol', get_string('auto_enrol', 'elis_program'), null, null, array('0', '1'));
+        $mform->addElement('header', 'associationinfo', get_string('association_info_group', 'elis_program'));
+        $mform->addElement('advcheckbox', 'autoenrol', get_string('usersetprogram_auto_enrol', 'elis_program'), null, null, array('0', '1'));
         $mform->addHelpButton('autoenrol', 'usersetprogramform:autoenrol', 'elis_program');
 
         $mform->addElement('hidden', 'association_id', '');
@@ -80,7 +80,7 @@ class clustercurriculumeditform extends moodleform {
             if($record = $DB->get_record(clustercurriculum::TABLE, array('id'=> $association_id))) {
 
                 //cluster stuff
-                if($cluster_record = $DB->get_record(cluster::TABLE, array('id'=> $record->clusterid))) {
+                if($cluster_record = $DB->get_record(userset::TABLE, array('id'=> $record->clusterid))) {
                     foreach($this->cluster_fields as $id => $display) {
                         $element =& $mform->getElement('cluster' . $id);
                         $element->setValue($cluster_record->{$id});

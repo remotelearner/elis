@@ -42,8 +42,8 @@ class curriculum extends data_object_with_custom_fields {
             'class' => 'clustercurriculum',
             'foreignidfield' => 'curriculumid'
         ),
-        'curriculumassignment' => array(
-            'class' => 'curriculumassignment',
+        'curriculumstudent' => array(
+            'class' => 'curriculumstudent',
             'foreignidfield' => 'curriculumid'
         ),
         'curriculumcourse' => array(
@@ -501,10 +501,13 @@ class curriculum extends data_object_with_custom_fields {
         $objs = array('errors' => array());
         if (isset($options['targetcluster'])) {
             $cluster = $options['targetcluster'];
-            if (!is_object($cluster) || !is_a($cluster, 'cluster')) {
+            if (!is_object($cluster) || !is_a($cluster, 'userset')) {
                 $options['targetcluster'] = $cluster = new userset($cluster);
             }
         }
+
+        // Due to lazy loading, we need to pre-load this object
+        $this->load();
 
         // clone main curriculum object
         $clone = new curriculum($this);
@@ -514,6 +517,7 @@ class curriculum extends data_object_with_custom_fields {
             $clone->name = $clone->name . ' - ' . $cluster->name;
             $clone->idnumber = $clone->idnumber . ' - ' . $cluster->name;
         }
+
         $clone = new curriculum($clone);
         if (!$clone->save()) {
             $objs['errors'][] = get_string('failclustcpycurr', 'elis_program', $this);

@@ -127,7 +127,7 @@ class usersetpage extends managementpage {
         array('tab_id' => 'edit', 'page' => 'usersetpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
         array('tab_id' => 'subclusters', 'page' => 'usersetpage', 'params' => array(), 'name' => get_string('usersubsets','elis_program'), 'showtab' => true),
         array('tab_id' => 'clustertrackpage', 'page' => 'clustertrackpage', 'name' => get_string('tracks','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track'),
-        array('tab_id' => 'clusteruserpage', 'page' => 'clusteruserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
+//        array('tab_id' => 'clusteruserpage', 'page' => 'clusteruserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
         array('tab_id' => 'clustercurriculumpage', 'page' => 'clustercurriculumpage', 'name' => get_string('curricula','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
         //array('tab_id' => 'cluster_rolepage', 'page' => 'cluster_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 

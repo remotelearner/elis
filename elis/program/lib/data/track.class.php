@@ -62,7 +62,6 @@ class track extends data_object_with_custom_fields {
      * @var    char
      * @length 255
      */
-    protected $_dbfield_id;
     protected $_dbfield_curid;
     protected $_dbfield_idnumber;
     protected $_dbfield_name;
@@ -479,6 +478,9 @@ class track extends data_object_with_custom_fields {
                 $options['targetcluster'] = $cluster = new cluster($cluster);
             }
         }
+
+        // Due to lazy loading, we need to pre-load this object
+        $this->load();
 
         // clone main track object
         $clone = new track($this);
