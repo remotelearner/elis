@@ -31,13 +31,23 @@ require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/student.class.php');
 require_once elispm::file('form/curriculumcourseform.class.php');
 
-class curriculumcourse extends data_object_with_custom_fields {
+class curriculumcourse extends elis_data_object {
     const TABLE = 'crlm_curriculum_course';
 
     var $verbose_name = 'curriculumcourse';
     var $_dbloaded;
+    var $courseid;
+    var $curriculumid;
 
     static $associations = array(
+        'coursecorequisite' => array(
+            'class' => 'coursecorequisite',
+            'foreignidfield' => 'curriculumcourseid'
+        ),
+        'courseprerequisite' => array(
+            'class' => 'courseprerequisite',
+            'foreignidfield' => 'curriculumcourseid'
+        ),
         'curriculum' => array(
             'class' => 'curriculum',
             'idfield' => 'curriculumid'
@@ -130,9 +140,7 @@ class curriculumcourse extends data_object_with_custom_fields {
     }
 
     function delete() {
-        // TO-DO: add to associations array
-        //$this->delete_all_prerequisites();
-        //$this->delete_all_corequisites();
+        // TO-DO: since tracks do not have fields that are associated, should this delete function still be called or is something added to associations array?
         //$this->delete_all_track_classes();
 
         parent::delete();
@@ -695,7 +703,7 @@ class curriculumcourse extends data_object_with_custom_fields {
     public function save() {
         parent::save();
 
-        // TO-DO: add/update crap goes here
+        // TO-DO: add/update stuff goes here (if any)
 
         // TO-DO: what do we do about tables that aren't even defined as a variable?
         events_trigger('crlm_curriculum_course_associated', $this);
@@ -862,8 +870,6 @@ function curriculumcourse_get_curriculum_listing($crsid, $sort='position', $dir=
 
 function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $alpha = '', $contexts = null) {
     global $DB;
-
-    $select = '';
 
     $select = 'SELECT COUNT(curcrs.id) ';
     $tables = 'FROM {'.curriculumcourse::TABLE.'} curcrs ';

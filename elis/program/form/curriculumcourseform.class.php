@@ -83,7 +83,7 @@ class coursecurriculumform extends coursecurriculumbaseform {
         $coursecurriculum = new curriculumcourse();
         $coursecurriculum->courseid = $parent_obj->id;
 
-        if(isset($this->_customdata['obj'])) {
+        if(isset($this->_customdata['obj']->course) && isset($this->_customdata['obj']->curriculum)) {
             $course = $this->_customdata['obj']->course;
             $curriculum = $this->_customdata['obj']->curriculum;
             $curriculas[$curriculum->id] = $curriculum->name;
