@@ -360,7 +360,7 @@ class usersetpage extends managementpage {
         $cluster->parent = $id;
         $cluster->update();
 
-        redirect($target_page->get_url(), get_string('cluster_assigned','elis_program'));
+        redirect($target_page->url, get_string('cluster_assigned','elis_program'));
     }
 
     /**

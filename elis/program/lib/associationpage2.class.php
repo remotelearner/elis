@@ -63,7 +63,7 @@ abstract class associationpage2 extends selectionpage {
             $tab = $page->add_defaults_to_tab($tab);
             if($tab['showtab'] === true) {
                 $target = new $tab['page'](array_merge($tab['params'], $params));
-                $row[] = new tabobject($tab['tab_id'], $target->get_url(), $tab['name']);
+                $row[] = new tabobject($tab['tab_id'], $target->url, $tab['name']);
             }
         }
         if (!empty($row)) {

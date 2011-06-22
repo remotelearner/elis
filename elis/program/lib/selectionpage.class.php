@@ -25,7 +25,7 @@
  */
 
 require_once $CFG->libdir . '/weblib.php';
-require_once elis::lib('table.class.php'); 
+require_once elis::lib('table.class.php');
 require_once elispm::lib('lib.php');
 require_once elispm::lib('page.class.php');
 require_once elispm::file('form/selectionform.class.php');
@@ -73,7 +73,7 @@ abstract class selectionpage extends pm_page { // TBD
             $tab = $page->add_defaults_to_tab($tab);
             if($tab['showtab'] === true) {
                 $target = new $tab['page'](array_merge($tab['params'], $params));
-                $row[] = new tabobject($tab['tab_id'], $target->get_url(), $tab['name']);
+                $row[] = new tabobject($tab['tab_id'], $target->url, $tab['name']);
             }
         }
         if (!empty($row)) {
@@ -181,7 +181,7 @@ abstract class selectionpage extends pm_page { // TBD
             $sparam1->num = '<span id="numselected">0</span>';
             $sparam2 = new stdClass;
             $sparam2->num = '<span id="numonotherpages">0</span>';
- 
+
             echo '<div align="center">'.get_string('numselected', self::LANG_FILE, $sparam1).'<span id="selectedonotherpages" style="display: none"> ('.get_string('num_not_shown', self::LANG_FILE, $sparam2).')</span></div>';
             echo '<div align="center">';
             _print_checkbox('selectedonly', '', false, get_string('selectedonly', self::LANG_FILE), '', 'change_selected_display()');

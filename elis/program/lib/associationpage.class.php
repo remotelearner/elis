@@ -126,13 +126,17 @@ class associationpage extends pm_page {
     }
 
     function print_add_button($params=array(), $text=null) {
+        global $OUTPUT;
+
         $obj = $this->get_new_data_object();
 
         echo '<div align="center">';
         $options = array_merge(array('s' => $this->pagename, 'action' => 'add'), $params);
         $dellabel = get_string('delete_label', self::LANG_FILE);
         $objlabel = get_string($obj->get_verbose_name(), self::LANG_FILE); // TBD
-        echo print_single_button('index.php', $options, $text ? $text : $dellabel .' ' . $objlabel, 'get', '_self', true, $text ? $text : $dellabel .' ' . $objlabel);
+        //echo print_single_button('index.php', $options, $text ? $text : $dellabel .' ' . $objlabel, 'get', '_self', true, $text ? $text : $dellabel .' ' . $objlabel);
+        $button = new single_button(new moodle_url('index.php', $options), $text ? $text : $dellabel.' '.$objlabel, 'get', array('disabled'=>false, 'title'=>$text ? $text : $dellabel.' '.$objlabel));
+        echo $OUTPUT->render($button);
         echo '</div>';
     }
 
@@ -579,7 +583,7 @@ class association_page_table extends display_table {
     }
 
     function get_item_display_buttons($column, $item) {
-        $id = $this->required_param('id', PARAM_INT);
+        $id = required_param('id', PARAM_INT);
         return $this->page->get_buttons(array('id' => $id, 'association_id' => $item->id));
     }
 

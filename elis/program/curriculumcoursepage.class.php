@@ -124,8 +124,6 @@ class curriculumcoursepage extends curriculumcoursebasepage {
         $items = curriculumcourse_get_listing($id, $sort, $dir, 0, 0, $namesearch, $alpha);
         $numitems = curriculumcourse_count_records($id, $namesearch, $alpha);
 
-        $this->get_tab_page()->print_tabs('view', array('id' => $id));
-
         $this->print_num_items($numitems);
         $this->print_alpha();
         $this->print_search();
@@ -205,8 +203,6 @@ class curriculumcoursepage extends curriculumcoursebasepage {
             $prereqform = $curcrs->create_prerequisite_form();
         }
 
-        $this->get_tab_page()->print_tabs('edit', array('id' => $curid));
-
         $prereqform->display();
     }
 
@@ -271,8 +267,6 @@ class curriculumcoursepage extends curriculumcoursebasepage {
             $coreqform = $curcrs->create_corequisite_form();
         }
 
-        $this->get_tab_page()->print_tabs('edit', array('id' => $id));
-
         $coreqform->display();
     }
 }
@@ -322,8 +316,6 @@ class coursecurriculumpage extends curriculumcoursebasepage {
         $contexts = curriculumpage::get_contexts('block/curr_admin:associate');
         $items = curriculumcourse_get_curriculum_listing($id, $sort, $dir, 0, 0, $namesearch, $alpha, $contexts);
         $numitems = curriculumcourse_count_curriculum_records($id, $namesearch, $alpha, $contexts);
-
-        $this->get_tab_page()->print_tabs('view', array('id' => $id));
 
         $this->print_num_items($numitems);
         $this->print_alpha();
