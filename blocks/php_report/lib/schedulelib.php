@@ -371,12 +371,14 @@ class scheduling_page extends workflowpage {
 
     var $cancel_url = '/blocks/php_report/schedule.php?action=list';
 
-    public function get_title_default() {
+    public function get_page_title_default() {
+        global $DB;
+
         $schedule_id = optional_param('id',null,PARAM_INT);
 
         // If a schedule id was in the url, then attempt to retrieve it from the php_scheduled_tasks table
         if ($schedule_id != null) {
-            $schedule = get_record('php_report_schedule', 'id', $schedule_id);
+            $schedule = $DB->get_record('php_report_schedule', array('id' => $schedule_id));
             if (empty($schedule)) {
                 // TBD: better error handling
                 return '';
@@ -419,7 +421,7 @@ class scheduling_page extends workflowpage {
      *
      * @return  string  The title to display
      */
-    function get_title_list() {
+    function get_page_title_list() {
         return get_string('list_pagetitle', 'block_php_report');
     }
 
@@ -429,7 +431,7 @@ class scheduling_page extends workflowpage {
      *
      * @return  string  The title to display
      */
-    function get_title_listinstancejobs() {
+    function get_page_title_listinstancejobs() {
         return get_string('listinstancejobs_pagetitle', 'block_php_report');
     }
 
@@ -439,8 +441,8 @@ class scheduling_page extends workflowpage {
      *
      * @return  string  The title to display
      */
-    function get_title_runjobs() {
-        return $this->get_title_listinstancejobs();
+    function get_page_title_runjobs() {
+        return $this->get_page_title_listinstancejobs();
     }
 
     /**
@@ -449,8 +451,8 @@ class scheduling_page extends workflowpage {
      *
      * @return  string  The title to display
      */
-    function get_title_copyjobs() {
-        return $this->get_title_listinstancejobs();
+    function get_page_title_copyjobs() {
+        return $this->get_page_title_listinstancejobs();
     }
 
     /**
@@ -459,8 +461,8 @@ class scheduling_page extends workflowpage {
      *
      * @return  string  The title to display
      */
-    function get_title_deletejobs() {
-        return $this->get_title_listinstancejobs();
+    function get_page_title_deletejobs() {
+        return $this->get_page_title_listinstancejobs();
     }
 
     /**
@@ -499,9 +501,12 @@ class scheduling_page extends workflowpage {
      * scheduled report instance
      *
      * @return  boolean  true if allowed, otherwise false
+     *
+     * @global  $USER
+     * @global  $DB
      */
     function can_do_edit() {
-        global $USER;
+        global $USER, $DB;
 
         if (has_capability('block/php_report:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
             //user can manage schedules globally, so allow access
@@ -514,7 +519,7 @@ class scheduling_page extends workflowpage {
         //(applies only during first step of wizard interface)
         $id = $this->optional_param('id', 0, PARAM_INT);
         if ($id !== 0) {
-            if ($record = get_record('php_report_schedule', 'id', $id)) {
+            if ($record = $DB->get_record('php_report_schedule', array('id' => $id))) {
                 if ($record->userid != $USER->id) {
                     //disallow access to another user's schedule
                     return false;
