@@ -27,6 +27,6 @@
 require_once '../../config.php';
 require_once $CFG->dirroot . '/blocks/php_report/lib/schedulelib.php';
 
-$page = new scheduling_page();
+$PAGE = new scheduling_page();
 
-$page->run();
+$PAGE->run();

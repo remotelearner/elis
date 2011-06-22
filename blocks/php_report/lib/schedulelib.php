@@ -470,11 +470,9 @@ class scheduling_page extends workflowpage {
      *
      * @return  array navigation links for build_navigation()
      */
-    function get_navigation_default() {
-        return array(array('name' => get_string('listinstancejobs_pagetitle',
-                                                'block_php_report'),
-                           'link' => null, 'type' => 'misc')
-               );
+    function build_navbar_default() {
+        parent::build_navbar_default();
+        $this->navbar->add(get_string('listinstancejobs_pagetitle', 'block_php_report'), null);
     }
 
     /**
