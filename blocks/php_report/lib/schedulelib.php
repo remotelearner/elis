@@ -768,9 +768,11 @@ class scheduling_page extends workflowpage {
     /**
      * Mainline for running jobs from the "listinstancejobs" view
      * without changing any scheduling information
+     *
+     * @global  $CFG, $PAGE
      */
     function display_runjobs() {
-        global $CFG;
+        global $CFG, $PAGE;
 
         //need the code that defines the scheduled export behaviour
         require_once($CFG->dirroot . '/blocks/php_report/runschedule.php');
@@ -792,7 +794,7 @@ class scheduling_page extends workflowpage {
 
         if (count($scheduleids) > 0) {
             //include the necessary javascript libraries for the ASYNC request stuff
-            require_js(array('yui_yahoo', 'yui_event'));
+            $PAGE->requires->yui2_lib(array('yahoo', 'event'));
 
             //one or more schedules selected, so open the popup to run them
             echo '<script type="text/javascript">
@@ -949,9 +951,10 @@ class scheduling_page extends workflowpage {
      * @uses $CFG
      * @uses $USER
      * @uses $OUTPUT
+     * @uses $PAGE
      */
     function display_listinstancejobs() {
-        global $CFG, $USER, $OUTPUT;
+        global $CFG, $USER, $OUTPUT, $PAGE;
 
         //report specified by URL
         $report = $this->required_param('report', PARAM_ALPHAEXT);
@@ -993,8 +996,13 @@ class scheduling_page extends workflowpage {
             $table = new html_table();
 
             //headers, with a "select all" checkbox in the first column
-            require_js($CFG->wwwroot . '/blocks/php_report/lib.js');
-            $checkbox = print_checkbox('selectall', '', false, get_string('listinstancejobs_header_select', 'block_php_report'), '', 'select_all()', true);
+            $PAGE->requires->js('/blocks/php_report/js/lib.js');
+
+            //checkbox for selecting all
+            $checkbox_label = get_string('listinstancejobs_header_select', 'block_php_report');
+            $checkbox_attributes = array('onclick' => 'select_all()');
+            $checkbox = html_writer::checkbox('selectall', '', false, $checkbox_label, $checkbox_attributes);
+
             $table->head = array($checkbox,
                                  get_string('listinstancejobs_header_label',        'block_php_report'),
                                  get_string('listinstancejobs_header_owner',        'block_php_report'),
