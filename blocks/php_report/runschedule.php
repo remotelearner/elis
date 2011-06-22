@@ -233,11 +233,15 @@ function run_schedule($taskname) {
  * @param  string            $taskname             taskname which has the schedule id at the end
  * @return stdClass|boolean  $php_report_schedule  php report schedule record for the given schedule, or
  *                                                 false on error
+ *
+ * @uses   $DB
  */
 function php_report_schedule_get_instance($taskname) {
+    global $DB;
+
     // Get the associated php_report schedules
     $taskname_array = explode('_',$taskname);
     $schedule_id = $taskname_array[1];
-    $php_report_schedule = get_record('php_report_schedule', 'id', $schedule_id);
+    $php_report_schedule = $DB->get_record('php_report_schedule', array('id' => $schedule_id));
     return $php_report_schedule;
 }

@@ -797,11 +797,9 @@ class scheduling_page extends workflowpage {
             $PAGE->requires->yui2_lib(array('yahoo', 'event'));
 
             //one or more schedules selected, so open the popup to run them
-            echo '<script type="text/javascript">
-                  YAHOO.util.Event.onDOMReady(function() {
-                      openpopup(\'/blocks/php_report/lib/run_schedule_popup.php?scheduleids=' . urlencode(json_encode($scheduleids)) . '\', \'runjobsnow\', \'menubar=0,location=0,scrollbars,status,resizable,width=400,height=500\', 0);
-                  });
-                  </script>';
+            $js_params = array('url' => '/blocks/php_report/lib/run_schedule_popup.php?scheduleids='.urlencode(json_encode($scheduleids)));
+            $params = array(null, $js_params);
+            $PAGE->requires->js_function_call('openpopup', $params, true);
         }
     }
 
