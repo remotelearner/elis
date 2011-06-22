@@ -101,6 +101,14 @@ abstract class elis_page extends moodle_page {
     }
 
     /**
+     * Return the page layout.  Used by the constructor for calling
+     * $this->set_pagelayout().
+     */
+    protected function _get_page_layout() {
+        return 'standard';
+    }
+
+    /**
      * Create a new page object of the same class with the given parameters.
      *
      * @param array $params array of URL parameters.
@@ -219,6 +227,7 @@ abstract class elis_page extends moodle_page {
      * Initialize the page variables needed for display.
      */
     protected function _init_display() {
+        $this->set_pagelayout($this->_get_page_layout());
         $this->set_pagetype($this->_get_page_type());
         $this->set_title($this->get_page_title());
         $this->set_heading($this->get_page_heading());
