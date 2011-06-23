@@ -23,7 +23,7 @@ $string['eternal_cache'] = 'Cache Reports Until Logout';
 $string['export_link_csv'] = 'Download CSV';
 $string['export_link_pdf'] = 'Download PDF';
 $string['group_class_id'] = ' group';
-$string['infocurrent'] = 'This information is current as of $a';
+$string['infocurrent'] = 'This information is current as of {$a}';
 $string['invalidoperator'] = 'Invalid Operator';
 $string['label_no_parameters'] = 'Sorry, no parameters are defined for this report';
 $string['no_cache'] = 'Never Cache Reports';
@@ -31,7 +31,7 @@ $string['no_report_data'] = 'Sorry, no data was found for this report. Please tr
 $string['na'] = 'N/A';
 $string['notconfigured'] = 'Please complete this block\'s configuration';
 $string['percent_symbol'] = '%%';
-$string['pagetitle'] = 'Create/Modify Schedule for ELIS Report: $a';
+$string['pagetitle'] = 'Create/Modify Schedule for ELIS Report: {$a}';
 $string['pluginname'] = 'ELIS Report';
 
 // Capability strings.
@@ -97,15 +97,15 @@ $string['calendar_recurrence'] = 'Calendar';
 $string['simple_recurrence_settings'] = 'Simple recurrence settings';
 $string['runtype'] = 'The report runs:';
 $string['indefinitely'] = 'Once per day, every day, indefinitely';
-$string['simple_until'] = 'Once per day, every day, until $a';
-$string['simple_freq'] = '$a->num times total, once every $a->freq $a->freqtype(s)';
-$string['at_time'] = 'At $a, ';
-$string['on_days'] = 'on $a, ';
-$string['month_days'] = 'on days $a of the month, ';
+$string['simple_until'] = 'Once per day, every day, until {$a}';
+$string['simple_freq'] = '$a->num times total, once every {$a->freq} {$a->freqtype}(s)';
+$string['at_time'] = 'At {$a}, ';
+$string['on_days'] = 'on {$a}, ';
+$string['month_days'] = 'on days {$a} of the month, ';
 $string['every_day'] = 'every day, ';
-$string['for_month'] = 'for the month(s) $a';
+$string['for_month'] = 'for the month(s) {$a}';
 $string['every_month'] = 'every month';
-$string['until_date'] = ', until $a';
+$string['until_date'] = ', until {$a}';
 $string['until_indefinitely'] = ', indefinitely';
 $string['and'] = ' and ';
 $string['until'] = 'Once per day, until ';
@@ -137,10 +137,10 @@ $string['enter_emails'] = 'Enter email addresses to send the report to';
 $string['message'] = 'Enter a message for these users';
 $string['validemails'] = 'Required: valid emails only';
 
-$string['schedule_user_access_error'] = 'Scheduled instance $a is no longer accessible by scheduling user';
+$string['schedule_user_access_error'] = 'Scheduled instance {$a} is no longer accessible by scheduling user';
 $string['schedule_reports'] = 'Schedule Reports';
 $string['schedule_this_report'] = 'Schedule this report';
-$string['successful_schedule'] = 'ELIS Report $a has been successfully scheduled';
+$string['successful_schedule'] = 'ELIS Report {$a} has been successfully scheduled';
 $string['return_to_schedules'] = '<br><br><a href={$a}>Return to scheduled jobs</a>';
 $string['email_subject'] = 'Scheduled Report: ';
 
