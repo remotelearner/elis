@@ -27,6 +27,7 @@
 require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/curriculumstudent.class.php');
 require_once elispm::lib('data/user.class.php');
+require_once elispm::lib('data/clusterassignment.class.php');
 require_once elispm::lib('associationpage2.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('userpage.class.php');
@@ -34,7 +35,6 @@ require_once elispm::file('curriculumpage.class.php');
 require_once elispm::file('form/curriculumstudentform.class.php');
 
 //require_once (CURMAN_DIRLOCATION . '/lib/newpage.class.php');                   // missing
-//require_once (CURMAN_DIRLOCATION . '/lib/usercluster.class.php');               // missing
 
 class studentcurriculumpage extends associationpage2 {
     var $pagename = 'stucur';
@@ -78,16 +78,23 @@ class studentcurriculumpage extends associationpage2 {
             // member, and we have enrol cluster user capabilities
             $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
             $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
-            $cluster_filter = $cluster_object->get_sql(false, 'clst');
+            $cluster_filter_array = $cluster_object->get_sql(false, 'clst');
+            $cluster_filter = '';
+
+            if (isset($cluster_filter_array['where'])) {
+                $cluster_filter = ' WHERE '.$cluster_filter_array['where'];
+            }
+
+
             $sql = 'SELECT COUNT(curr.id)
                       FROM {'.userset::TABLE.'} clst
                       JOIN {'.clustercurriculum::TABLE.'} clstcurr
                            ON clst.id = clstcurr.clusterid
                       JOIN {'.curriculum::TABLE.'} curr
                            ON clstcurr.curriculumid = curr.id
-                    -- TO-DO: re-enable when clusterassignment is done
-                    --  JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
-                     WHERE '.$cluster_filter.' ';
+                      JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.
+                    $cluster_filter;
+
             return $DB->count_records_select($sql) > 0;
         } else {
             return userpage::_has_capability('block/curr_admin:user:view', $id);
@@ -196,14 +203,25 @@ class studentcurriculumpage extends associationpage2 {
         // only show curricula where user has enrol capabilities
         $curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
         $curriculum_object = $curriculum_contexts->get_filter('curr.id', 'curriculum');
-        $curriculum_filter = $curriculum_object->get_sql(false,'curr');
+        $curriculum_filter_array = $curriculum_object->get_sql(false,'curr');
+        $curriculum_filter = '0=1';
+
+        if (isset($curriculum_filter_array['where'])) {
+            $curriculum_filter = ' WHERE '.$curriculum_filter_array['where'];
+        }
+
         $where .= " AND (".$curriculum_filter;
 
         // or curricula attached to clusters where user has enrol cluster user
         // capabilities (and target user is a member of that cluster)
         $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
         $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
-        $cluster_filter = $cluster_object->get_sql(false,'clst');
+        $cluster_filter_array = $cluster_object->get_sql(false,'clst');
+        $cluster_filter = '';
+
+        if (isset($cluster_filter_array['where'])) {
+            $cluster_filter = ' WHERE '.$cluster_filter_array['where'];
+        }
 
         $where .= ' OR id IN (SELECT curr.id
                     FROM {'.userset::TABLE.'} clst
@@ -211,9 +229,8 @@ class studentcurriculumpage extends associationpage2 {
                          ON clst.id = clstcurr.clusterid
                     JOIN {'.curriculum::TABLE.'} curr
                          ON clstcurr.curriculumid = curr.id
-                 -- TO-DO: re-enable when clusterassignment is done
-                 -- JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
-                   WHERE '.$cluster_filter.'))';
+                    JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.
+                  $cluster_filter.'))';
 
         $count = $DB->count_records_select(curriculum::TABLE, $where);
         $users = $DB->get_records_select(curriculum::TABLE, $where, null, $sortclause, '*', $pagenum*$perpage, $perpage);
@@ -303,7 +320,12 @@ class user_curriculum_selection_table extends selection_table {
         $id = required_param('id', PARAM_INT);
         $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
         $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
-        $cluster_filter = $cluster_object->get_sql(false, 'clst');
+        $cluster_filter_array = $cluster_object->get_sql(false, 'clst');
+        $cluster_filter = '';
+
+        if (isset($cluster_filter_array['where'])) {
+            $cluster_filter = ' WHERE '.$cluster_filter_array['where'];
+        }
 
         $sql = 'SELECT curr.id
                   FROM {'.userset::TABLE.'} clst
@@ -311,9 +333,8 @@ class user_curriculum_selection_table extends selection_table {
                        ON clst.id = clstcurr.clusterid
                   JOIN {'.curriculum::TABLE.'} curr
                        ON clstcurr.curriculumid = curr.id
-               -- TO-DO: re-enable when clusterassignment is done
-               -- JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.'
-                 WHERE '.$cluster_filter;
+                  JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id
+                  .$cluster_filter;
 
         $this->cluster_curricula = $DB->get_records_sql($sql);
     }
@@ -486,10 +507,12 @@ class curriculumstudentpage extends associationpage2 {
 
         $where = 'id NOT IN (SELECT userid FROM {'.curriculumstudent::TABLE.' WHERE curriculumid='.$id.')';
 
+        /* TO-DO: re-enable this once I know how it's done
         $extrasql = $filter->get_sql_filter();
         if ($extrasql) {
             $where .= ' AND '.$extrasql;
         }
+        */
 
         if(!curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $id)) {
             //perform SQL filtering for the more "conditional" capability
