@@ -51,22 +51,6 @@ class instructorpage extends associationpage {
         parent::__construct($params);
     }
 
-    /*
-        $action       = cm_get_param('action', '');
-        $delete       = cm_get_param('delete', 0);
-        $confirm      = cm_get_param('confirm', '');   //md5 confirmation hash
-        $confirmuser  = cm_get_param('confirmuser', 0);
-        $insid        = cm_get_param('association_id', 0);
-        $clsid        = cm_get_param('id', 0);
-        $userid       = cm_get_param('userid', 0);
-        $sort         = cm_get_param('sort', 'assigntime');
-        $dir          = cm_get_param('dir', 'ASC');
-        $page         = cm_get_param('page', 0);
-        $perpage      = cm_get_param('perpage', 30);        // how many per page
-        $namesearch   = trim(cm_get_param('search', ''));
-        $alpha        = cm_get_param('alpha', '');
-     */
-
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
         $pmclasspage = new pmclasspage(array('id' => $id)); // cmclasspage
@@ -85,8 +69,8 @@ class instructorpage extends associationpage {
         } else {
             $user = new user($ins->userid); // TBD: $event_object->userid
             $user->name = fullname($user);
-            $status = $ins->delete(); // TBD: no return code from delete()
-          /* ****
+            $status = $ins->delete();
+          /* **** no return code from delete()
             if (!$status) {
                 echo cm_error(get_string('instructor_notdeleted', self::LANG_FILE, $user));
             } else
@@ -103,14 +87,14 @@ class instructorpage extends associationpage {
     }
 
     function display_add() {
-        $action       = cm_get_param('action', '');
+        $action       = cm_get_param('action', 'add'); // TBD was: ''
         $delete       = cm_get_param('delete', 0);
         $confirm      = cm_get_param('confirm', '');   //md5 confirmation hash
         $confirmuser  = cm_get_param('confirmuser', 0);
         $insid        = cm_get_param('association_id', 0);
         $clsid        = cm_get_param('id', 0);
         $userid       = cm_get_param('userid', 0);
-        $sort         = cm_get_param('sort', 'assigntime');
+        $sort         = cm_get_param('sort', 'name'); // TBD was: 'assigntime'
         $dir          = cm_get_param('dir', 'ASC');
         $page         = cm_get_param('page', 0);
         $perpage      = cm_get_param('perpage', 30);        // how many per page
@@ -125,9 +109,13 @@ class instructorpage extends associationpage {
         echo $this->get_delete_form($insid);
     }
 
-    function do_edit() { // action_edit
+    function display_edit() { // action_edit
         $insid = required_param('association_id', PARAM_INT);
         echo $this->get_edit_form($insid);
+    }
+
+    function do_edit() {
+        $this->do_savenew();
     }
 
     function do_savenew() { // action_savenew
@@ -152,8 +140,8 @@ class instructorpage extends associationpage {
                     $insrecord['completetime'] = mktime(0, 0, 0, $endmonth, $endday, $endyear);
 
                     $newins = new instructor($insrecord);
-                    $status = $newins->save(); // no return
-                  /* **** TBD ****
+                    $status = $newins->save();
+                  /* **** no return code from ->save()
                     if ($status !== true) {
                         if (!empty($status->message)) {
                             echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $status));
@@ -194,8 +182,8 @@ class instructorpage extends associationpage {
         $insrecord['completetime'] = mktime(0, 0, 0, $endmonth, $endday, $endyear);
 
         $ins = new instructor($insrecord);
-        $status = $ins->save(); // TBD: no return, WAS: $ins->data_update_record()
-      /* **** TBD ****
+        $status = $ins->save(); // WAS: $ins->data_update_record()
+      /* **** no return code from ->save()
         if ($status !== true) {
             echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $status));
         }
@@ -207,27 +195,33 @@ class instructorpage extends associationpage {
     function display_default() { // action_default()
         global $OUTPUT;
 
-        $action       = cm_get_param('action', '');
+        $action       = cm_get_param('action', 'default'); // TBD: was ''
         $delete       = cm_get_param('delete', 0);
-        $confirm      = cm_get_param('confirm', '');   //md5 confirmation hash
+        $confirm      = cm_get_param('confirm', ''); //md5 confirmation hash
         $confirmuser  = cm_get_param('confirmuser', 0);
         $insid        = cm_get_param('association_id', 0);
         $clsid        = cm_get_param('id', 0);
         $userid       = cm_get_param('userid', 0);
-        $sort         = cm_get_param('sort', 'assigntime');
+        $sort         = cm_get_param('sort', 'name'); // TBD 'assigntime'
         $dir          = cm_get_param('dir', 'ASC');
         $page         = cm_get_param('page', 0);
-        $perpage      = cm_get_param('perpage', 30);        // how many per page
+        $perpage      = cm_get_param('perpage', 30); // how many per page
         $namesearch   = trim(cm_get_param('search', ''));
         $alpha        = cm_get_param('alpha', '');
 
         $cls = new pmclass($clsid); // cmclass($clsid)
 
         $columns = array(
-            'idnumber'     => array('header' => get_string('instructor_idnumber', self::LANG_FILE)),
-            'name'         => array('header' => get_string('instructor_name', self::LANG_FILE)),
-            'assigntime'   => array('header' => get_string('instructor_assignment', self::LANG_FILE)),
-            'completetime' => array('header' => get_string('instructor_completion', self::LANG_FILE))
+            'idnumber'     => array('header' => get_string('instructor_idnumber', self::LANG_FILE),
+                                    'display_function' => 'htmltab_display_function'),
+            'name'         => array('header' => get_string('instructor_name', self::LANG_FILE),
+                                    'display_function' => 'htmltab_display_function'),
+            'assigntime'   => array('header' => get_string('instructor_assignment', self::LANG_FILE),
+                                    'display_function' => 'htmltab_display_function'),
+            'completetime' => array('header' => get_string('instructor_completion', self::LANG_FILE),
+                                    'display_function' => 'htmltab_display_function'),
+            'buttons'      => array('header' => '', 'sortable' => false,
+                                    'display_function' => 'htmltab_display_function')
         );
 
       /* **** TBD
@@ -262,9 +256,6 @@ class instructorpage extends associationpage {
         $inss    = instructor_get_listing($clsid, $sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha);
         $numinss = instructor_count_records($clsid);
 
-        $alphabet = explode(',', get_string('alphabet', 'langconfig'));
-        $strall = get_string('all');
-
         $page_params = array('s' => 'ins', 'section' => 'curr', 'id' => $clsid,
                         'action' => $action, 'sort' => $sort, 'dir' => $dir,
                         'perpage' => $perpage, 'search' => $namesearch);
@@ -273,7 +264,8 @@ class instructorpage extends associationpage {
             'alpha', get_string('instructor_name', self::LANG_FILE) .':');
 
       /* **** replaced by pmalphabox()
-        /// Bar of first initials
+        $alphabet = explode(',', get_string('alphabet', 'langconfig'));
+        $strall = get_string('all');
 
         echo "<p style=\"text-align:center\">";
         echo get_string('instructor_name', self::LANG_FILE)." : ";
@@ -294,7 +286,7 @@ class instructorpage extends associationpage {
         echo "</p>";
       **** */
 
-        // TBD: added action
+        // TBD: added action, '/elis/program/index.php' ???
         $full_url = "index.php?s=ins&amp;section=curr&amp;id=$clsid&amp;action=$action&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search="
                     . urlencode(stripslashes($namesearch)) .'&amp;';
         $pagingbar = new paging_bar($numinss, $page, $perpage, $full_url);
@@ -308,7 +300,7 @@ class instructorpage extends associationpage {
                $match[] = s($namesearch);
             }
             if ($alpha) {
-               $match[] = 'name'.": $alpha"."___";
+               $match[] = get_string('name', self::LANG_FILE) .": {$alpha}___";
             }
             $matchstring = implode(", ", $match);
             echo get_string('no_instructor_matching', self::LANG_FILE) . $matchstring;
@@ -317,15 +309,15 @@ class instructorpage extends associationpage {
             //$table->align = array ("left", "left", "center", "center");
             //$table->width = "95%";
 
+            $newarr = array();
             foreach ($inss as $ins) {
                 $deletebutton = '<a href="index.php?s=ins&amp;section=curr&amp;id=' . $clsid .
                                 '&amp;action=delete&amp;association_id=' . $ins->id . '">' .
-                                '<img src="pix/delete.gif" alt="Delete" title="Delete" /></a>';
+                                '<img src="'. $OUTPUT->pix_url('delete') . '" alt="Delete" title="Delete" /></a>';
                 $editbutton = '<a href="index.php?s=ins&amp;section=curr&amp;id=' . $clsid .
                               '&amp;action=edit&amp;association_id=' . $ins->id . '">' .
-                              '<img src="pix/edit.gif" alt="Edit" title="Edit" /></a>';
+                              '<img src="'. $OUTPUT->pix_url('edit') .'" alt="Edit" title="Edit" /></a>';
 
-                $newarr = array();
                 foreach ($columns as $column => $cdesc) {
                     if (($column == 'assigntime') || ($column == 'completetime')) {
                         $newarr[] = !empty($ins->$column)
@@ -333,11 +325,12 @@ class instructorpage extends associationpage {
                                                       self::LANG_FILE),
                                            $ins->$column)
                                     : '-';
+                    } else if ($column == 'buttons') {
+                        $newarr[] = $editbutton . ' ' . $deletebutton;
                     } else {
                         $newarr[] = $ins->$column;
                     }
                 }
-                $newarr[] = $editbutton . ' ' . $deletebutton; // TBD
                 //$table->data[] = $newarr;
             }
             if (!empty($newarr)) {
@@ -345,12 +338,12 @@ class instructorpage extends associationpage {
                 unset($page_params['sort']);
                 unset($page_params['dir']);
                 $table = new display_table($newarr, $columns,
-                                           $this->get_new_page($page_params));
+                                           get_pm_url(null, $page_params));
             }
         }
 
-        pmsearchbox($this, 'search', 'get'); // TBD: 'get' ???
-      /* **** replaced by pmsearchbox() ****
+        pmsearchbox($this, 'search', 'get', get_string('show_all_users', self::LANG_FILE));
+      /* **** following replaced by pmsearchbox() ****
         echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
         echo "<form action=\"index.php\" method=\"get\"><fieldset class=\"invisiblefieldset\">";
         echo '<input type="hidden" name="section" value="curr" />';
@@ -383,10 +376,9 @@ class instructorpage extends associationpage {
     function get_add_form($clsid, $sort, $dir, $page, $perpage, $namesearch, $alpha) {
         $output = '';
 
-        $newins = new instructor($clsid); // TBD
+        $newins = new instructor(); // TBD: was new instructor($clsid)
         //$newins->classid = $clsid;
-
-        $cls = new pmclass($clsid); // cmclass($clsid)
+        //$cls = new pmclass($clsid); // cmclass($clsid)
 
         $output .= $newins->edit_form_html($clsid, $sort, $dir, $page, $perpage, $namesearch, $alpha);
 

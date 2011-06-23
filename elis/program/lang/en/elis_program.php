@@ -425,6 +425,7 @@ $string['required_field'] = 'Error: {$a} is a required field';
 $string['save_enrolment_changes'] = 'Save Changes';
 $string['search'] = 'Search';
 $string['selectedonly'] = 'Show selected items only';
+$string['showallitems'] = 'Show all items';
 $string['show_all_users'] = 'Show All Users';
 $string['showinactive'] = 'Show inactive';
 $string['student_credits'] = 'Credits';

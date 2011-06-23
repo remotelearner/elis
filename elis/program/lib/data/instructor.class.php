@@ -150,15 +150,18 @@ class instructor extends elis_data_object {
         if (empty($this->id)) {
             $columns = array(
                 'assign'       => array('header' => get_string('assign', self::LANG_FILE),
-                                        'display_function' => 'htmltab_display_function'),
+                                        'display_function' => 'htmltab_display_function',
+                                        'sortable' => false),
                 'idnumber'     => array('header' => get_string('class_idnumber', self::LANG_FILE),
                                         'display_function' => 'htmltab_display_function'),
                 'name'         => array('header' => get_string('tag_name', self::LANG_FILE),
                                         'display_function' => 'htmltab_display_function'),
                 'assigntime'   => array('header' => get_string('assigntime', self::LANG_FILE),
-                                        'display_function' => 'htmltab_display_function'),
+                                        'display_function' => 'htmltab_display_function',
+                                        'sortable' => false),
                 'completetime' => array('header' => get_string('completion_time', self::LANG_FILE),
-                                        'display_function' => 'htmltab_display_function')
+                                        'display_function' => 'htmltab_display_function',
+                                        'sortable' => false)
             );
 
         } else {
@@ -168,9 +171,11 @@ class instructor extends elis_data_object {
                 'name'         => array('header' => get_string('tag_name', self::LANG_FILE),
                                         'display_function' => 'htmltab_display_function'),
                 'assigntime'   => array('header' => get_string('assigntime', self::LANG_FILE),
-                                        'display_function' => 'htmltab_display_function'),
+                                        'display_function' => 'htmltab_display_function',
+                                        'sortable' => false),
                 'completetime' => array('header' => get_string('completion_time', self::LANG_FILE),
-                                        'display_function' => 'htmltab_display_function'));
+                                        'display_function' => 'htmltab_display_function',
+                                        'sortable' => false));
         }
 
         if ($dir !== 'DESC') {
@@ -184,7 +189,6 @@ class instructor extends elis_data_object {
         }
     /* ****
         foreach ($columns as $column => $cdesc) {
-            // ***TBD***
             if ($sort != $column) {
                 $columnicon = "";
                 $columndir = "ASC";
@@ -202,7 +206,6 @@ class instructor extends elis_data_object {
             } else {
                 $$column = $cdesc;
             }
-            // TBD
             $table->head[]  = $$column;
             $table->align[] = "left";
             $table->wrap[]  = true;
@@ -211,16 +214,18 @@ class instructor extends elis_data_object {
 
         $newarr = array();
         if (empty($this->id)) {
-            $users     = $this->get_users_avail($sort, $dir, $page * $perpage, $perpage,
-                                                $namesearch, $alpha);
+            $users     = $this->get_users_avail($sort, $dir, $page * $perpage,
+                                                $perpage, $namesearch, $alpha);
             $usercount = $this->count_users_avail($namesearch, $alpha);
 
-            pmalphabox(new moodle_url('/elis/program/index.php', // TBD
+            pmalphabox(new moodle_url('/elis/program/index.php',
                                array('s' => 'ins', 'section' => 'curr',
                                      'action' => 'add', 'id' => $classid,
                                      'sort' => $sort, 'dir' => $dir,
-                                     'perpage' => $perpage)));
-         /* **** replaced by pmalphabox ****
+                                     'perpage' => $perpage)),
+                       'alpha', get_string('tag_name', self::LANG_FILE) .':');
+
+         /* **** following replaced by pmalphabox ****
             $alphabet = explode(',', get_string('alphabet'));
             $strall   = get_string('all');
 
@@ -253,7 +258,8 @@ class instructor extends elis_data_object {
 
         } else {
             $users = array();
-            if (($user = $this->_db->get_record(user::TABLE, array('id' => $this->userid)))) { // $this->user;
+            if (($user = new user($this->userid))) {
+                // TBD: $this->_db->get_record(user::TABLE, array('id' => $this->userid))
                 $user->name = fullname($user);
                 $users[]    = $user;
                 $usercount  = 0; // TBD: 1 ???
@@ -266,7 +272,7 @@ class instructor extends elis_data_object {
                $match[] = s($namesearch);
             }
             if ($alpha) {
-               $match[] = 'name'.": $alpha"."___";
+               $match[] = get_string('name', self::LANG_FILE) .": {$alpha}___";
             }
             $matchstring = implode(", ", $match);
             echo get_string('no_users_matching', self::LANG_FILE). $matchstring;
@@ -274,7 +280,7 @@ class instructor extends elis_data_object {
             $table = NULL;
         } else {
             $insobj = new instructor();
-            $table->width = "100%"; // TBD
+            $table->width = "100%";
             foreach ($users as $user) {
                 $tabobj = new stdClass;
               /* **** debug code
@@ -324,6 +330,8 @@ class instructor extends elis_data_object {
         }
 
         if (empty($this->id)) {
+            pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE));
+          /* **** following replaced with pmsearchbox() ****
             echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
             echo "<form action=\"index.php\" method=\"get\"><fieldset>";
             echo '<input type="hidden" name="s" value="ins" />';
@@ -340,6 +348,7 @@ class instructor extends elis_data_object {
             }
             echo "</fieldset></form>";
             echo "</td></tr></table>";
+          **** */
 
             echo '<form method="post" action="index.php?s=ins&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="savenew" />'."\n";
@@ -352,7 +361,7 @@ class instructor extends elis_data_object {
             echo '<input type="hidden" name="userid" value="' . $this->userid . '" />' . "\n";
         }
 
-        if (!empty($table) && !empty($newarr)) { // TBD: $newarr or $table?
+        if (!empty($table) && !empty($newarr)) {
             echo $table->get_html();
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                              "index.php?s=ins&amp;section=curr&amp;id=$classid&amp;action=add&amp;" .
@@ -510,7 +519,7 @@ class instructor extends elis_data_object {
     function count_users_avail($namesearch = '', $alpha = '') {
         global $CFG;
         $params = array();
-        $FULLNAME = sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
         $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 

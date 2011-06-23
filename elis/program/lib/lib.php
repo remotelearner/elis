@@ -33,10 +33,9 @@
  * @param string $label      optional label - defaults to none
  */
 function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
-    $alpha        = optional_param($pname, null, PARAM_ALPHA);
-
+    $alpha    = optional_param($pname, null, PARAM_ALPHA);
     $alphabet = explode(',', get_string('alphabet', 'langconfig'));
-    $strall = get_string('all');
+    $strall   = get_string('all');
 
     echo html_writer::start_tag('div', array('style' => 'text-align:center'));
     if (!empty($label)) {
@@ -63,55 +62,77 @@ function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
     echo html_writer::end_tag('div');
 }
 
-
 /**
  * Prints the text substring search interface.
  *
- * @param object $page       the page object for the search form action & links
- * @param string $searchname the parameter name for the search tag
- *                           i.e. 'searchname=search'
- * @param string $method     the form submit method: 'post' (default) or 'get'
+ * @param object|string $page_or_url the page object for the search form action
+ *                                   or the url string.
+ * @param string $searchname         the parameter name for the search tag
+ *                                   i.e. 'searchname=search'
+ * @param string $method             the form submit method: post(default)| get
+ * @param string $showall            label for the 'Show All' link - optional
+ *                                   defaults to get_string('showallitems' ...
+ * @uses $_GET
+ * @uses $CFG
  * @todo convert echo HTML statements to use M2 html_writer, etc.
  */
-function pmsearchbox($page, $searchname = 'search', $method = 'post') {
+function pmsearchbox($page_or_url, $searchname = 'search', $method = 'post', $showall = null) {
+    global $CFG;
     $search = trim(optional_param($searchname, '', PARAM_TEXT));
 
-    // TODO: with a little more work, we could keep the previously selected sort here
     $params = $_GET;
-    unset($params['page']);      // We want to go back to the first page
+    unset($params['page']);      // TBD: Do we want to go back to the first page
     unset($params[$searchname]); // And clear the search ???
 
-    $target = $page->get_new_page($params);
+    if (empty($page_or_url)) {
+        $target = new stdClass;
+        $target->url = $CFG->wwwroot .'/elis/program/index.php'; // TBD: 'index.php'
+    } else if (is_object($page_or_url)) {
+        $target = $page_or_url->get_new_page($params);
+    } else {
+        $target = new stdClass;
+        $target->url = $page_or_url;
+    }
+    $query_pos = strpos($target->url, '?');
+    $action_url = ($query_pos !== false) ? substr($target->url, 0, $query_pos)
+                                         : $target->url;
 
-    echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
-    echo "<form action=\"{$target->url}\" method=\"{$method}\">";
-    echo "<fieldset class=\"invisiblefieldset\">";
-    echo "<input type=\"text\" name=\"{$searchname}\" value=\"" . s($search, true) . "\" size=\"20\" />";
+    echo '<table class="searchbox" style="margin-left:auto;margin-right:auto" cellpadding="10"><tr><td>'; // TBD: style ???
+    echo "<form action=\"{$action_url}\" method=\"{$method}\">"; // TBD: is action even required???
+    echo '<fieldset class="invisiblefieldset">';
+    foreach($params as $key => $val) {
+        echo "<input type=\"hidden\" name=\"{$key}\" value=\"{$val}\" />";
+        if (!is_object($page_or_url)) { // TBD
+            $target->url .= (strpos($target->url, '?') === false) ? '?' : '&';
+            $target->url .= "{$key}={$val}"; // required for onclick, below
+        }
+    }
+    echo "<input type=\"text\" name=\"{$searchname}\" value=\"" . s($search, true) . '" size="20" />';
     echo '<input type="submit" value="'.get_string('search').'" />';
 
     if ($search) {
-        echo "<input type=\"button\" onclick=\"document.location='". $target->url ."';\" " .
-             "value=\"Show all items\" />";
+        if (empty($showall)) {
+            $showall = get_string('showallitems', 'elis_program');
+        }
+        echo "<input type=\"button\" onclick=\"document.location='{$target->url}';\" value=\"{$showall}\" />";
     }
 
-    echo "</fieldset></form>";
-    echo "</td></tr></table>";
+    echo '</fieldset></form>';
+    echo '</td></tr></table>';
 }
 
 /** Function to return pm page url with required params
  *
- * @param    string|moodle_url  $baseurl  the pages base url
- *           defaults to: $CFG->wwwroot .'/elis/program/index.php'
- * @param    array              $extras   extra parameters for url.
- * @uses     $CFG
- * @return   moodle_url   the baseurl with required params
+ * @param   string|moodle_url  $baseurl  the pages base url
+ *                             defaults to: '/elis/program/index.php'
+ * @param   array              $extras   extra parameters for url.
+ * @return  moodle_url         the baseurl with required params
  */
 function get_pm_url($baseurl = null, $extras = array()) {
-    global $CFG;
     if (empty($baseurl)) {
-        $baseurl = $CFG->wwwroot .'/elis/program/index.php';
+        $baseurl = '/elis/program/index.php';
     }
-    $options = array('s', 'id', 'action', 'section', 'alpha', 'search', 'perpage', 'class'); // TBD: add more parameters as required
+    $options = array('s', 'id', 'action', 'section', 'alpha', 'search', 'perpage', 'class'); // TBD: add more parameters as required: page, [sort, dir] ???
     $params = array();
     foreach ($options as $option) {
         $val = optional_param($option, null, PARAM_CLEAN);

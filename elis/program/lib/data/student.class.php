@@ -540,8 +540,12 @@ class student extends elis_data_object {
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-    protected function get_base_url() {
-        return get_pm_url();  // lib.php
+    protected function get_base_url($withquerystring = true) {
+        if ($withquerystring) {
+            return get_pm_url();
+        } else {
+            return get_pm_url()->out_omit_querystring();
+        }
     }
 
     /**
@@ -660,11 +664,18 @@ class student extends elis_data_object {
 
         $users = array(); // TBD
         if (empty($this->id)) {
-            $users     = $this->get_users_avail($sort, $dir, $page * $perpage, $perpage,
-                                                $namesearch, $alpha);
+            $users     = $this->get_users_avail($sort, $dir, $page * $perpage,
+                                                $perpage, $namesearch, $alpha);
             $usercount = $this->count_users_avail($namesearch, $alpha); // TBD
 
-            // TBD: replace the following with pmalphabox()
+            pmalphabox(new moodle_url('/elis/program/index.php', // TBD
+                               array('s' => 'stu', 'section' => 'curr',
+                                     'action' => 'add', 'id' => $classid,
+                                     'search' => $namesearch, 'sort' => $sort,
+                                     'dir' => $dir, 'perpage' => $perpage)),
+                       'alpha', get_string('tag_name', self::LANG_FILE) .':');
+
+          /* **** following replaced with pmalphabox()
             $alphabet  = explode(',', get_string('alphabet', 'langconfig'));
             $strall    = get_string('all');
 
@@ -686,6 +697,8 @@ class student extends elis_data_object {
                 }
             }
             echo "</p>";
+           **** */
+
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                     "index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;&amp;action=add&amp;" .
                     "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;stype=$type" .
@@ -787,7 +800,8 @@ class student extends elis_data_object {
         }
 
         if (empty($this->id)) {
-            // TBD: replace the following with pmsearchbox()
+            pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE));
+          /* **** following replaced with pmsearchbox()
             echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
             echo "<form action=\"index.php\" method=\"get\"><fieldset>";
             echo '<input type="hidden" name="s" value="stu" />';
@@ -796,13 +810,11 @@ class student extends elis_data_object {
             echo '<input type="hidden" name="id" value="' . $classid . '" />';
             echo '<input type="hidden" name="sort" value="' . $sort . '" />';
             echo '<input type="hidden" name="dir" value="' . $dir . '" />';
-            /* ****
-                echo '<input type="radio" name="stype" value="student" ' .
-                 (($type == 'student') ? ' checked' : '') . '/> Students ' .
-                 '<input type="radio" name="stype" value="instructor" ' .
-                 (($type == 'instructor') ? ' checked' : '') . '/> Instructors ' .
-                 '<input type="radio" name="stype" vale="" ' . (($type == '') ? ' checked' : '') . '/> All ';
-            **** */
+            //  echo '<input type="radio" name="stype" value="student" ' .
+            //   (($type == 'student') ? ' checked' : '') . '/> Students ' .
+            //   '<input type="radio" name="stype" value="instructor" ' .
+            //   (($type == 'instructor') ? ' checked' : '') . '/> Instructors ' .
+            //   '<input type="radio" name="stype" vale="" ' . (($type == '') ? ' checked' : '') . '/> All ';
             echo "<input type=\"text\" name=\"search\" value=\"".s($namesearch, true)."\" size=\"20\" />";
             echo "<input type=\"submit\" value=\"" . get_string('search', self::LANG_FILE) . "\" />";
             if ($namesearch) {
@@ -811,6 +823,7 @@ class student extends elis_data_object {
             }
             echo "</fieldset></form>";
             echo "</td></tr></table>";
+          **** */
 
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="savenew" />'."\n";
@@ -1080,7 +1093,14 @@ class student extends elis_data_object {
                                                 $namesearch, $alpha);
             $usercount = $this->count_users_enrolled($type, $namesearch, $alpha);
 
-            // TBD: replace following with pmalphabox()
+            pmalphabox(new moodle_url('/elis/program/index.php',
+                               array('s' => 'stu', 'section' => 'curr',
+                                     'action' => 'bulkedit', 'id' => $classid,
+                                     'class' => $classid, 'perpage' => $perpage,
+                                     'search' => $namesearch, 'sort' => $sort,
+                                     'dir' => $dir)),
+                       'alpha', get_string('lastname', self::LANG_FILE) .':');
+          /* **** following replaced with pmalphabox()
             $alphabet = explode(',', get_string('alphabet', 'langconfig'));
             $strall   = get_string('all');
 
@@ -1102,6 +1122,8 @@ class student extends elis_data_object {
                 }
             }
             echo "</p>";
+          **** */
+
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                     "index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;&amp;action=bulkedit&amp;" .
                     "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;stype=$type" .
@@ -1109,7 +1131,7 @@ class student extends elis_data_object {
             echo $OUTPUT->render($pagingbar);
             flush();
         } else {
-            $user       = $this->user;
+            $user       = new user($this->userid); // TBD: $this->user
             $user->name = fullname($user);
             $users[]    = $user;
             $usercount  = 0;
@@ -1201,7 +1223,8 @@ class student extends elis_data_object {
         }
 
         if (empty($this->id)) {
-            // TBD: replace the following with pmsearchbox()
+            pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE));
+          /* **** following replaced with pmsearchbox()
             echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
             echo "<form action=\"index.php\" method=\"get\"><fieldset>";
             echo '<input type="hidden" name="s" value="stu" />';
@@ -1210,13 +1233,11 @@ class student extends elis_data_object {
             echo '<input type="hidden" name="id" value="' . $classid . '" />';
             echo '<input type="hidden" name="sort" value="' . $sort . '" />';
             echo '<input type="hidden" name="dir" value="' . $dir . '" />';
-            /* ****
-                echo '<input type="radio" name="stype" value="student" ' .
-                 (($type == 'student') ? ' checked' : '') . '/> Students ' .
-                 '<input type="radio" name="stype" value="instructor" ' .
-                 (($type == 'instructor') ? ' checked' : '') . '/> Instructors ' .
-                 '<input type="radio" name="stype" vale="" ' . (($type == '') ? ' checked' : '') . '/> All ';
-            **** */
+            //  echo '<input type="radio" name="stype" value="student" ' .
+            //   (($type == 'student') ? ' checked' : '') . '/> Students ' .
+            //   '<input type="radio" name="stype" value="instructor" ' .
+            //   (($type == 'instructor') ? ' checked' : '') . '/> Instructors ' .
+            //   '<input type="radio" name="stype" vale="" ' . (($type == '') ? ' checked' : '') . '/> All ';
             echo "<input type=\"text\" name=\"search\" value=\"".s($namesearch, true)."\" size=\"20\" />";
             echo "<input type=\"submit\" value=\"" . get_string('search', self::LANG_FILE) . "\" />";
             if ($namesearch) {
@@ -1225,6 +1246,7 @@ class student extends elis_data_object {
             }
             echo "</fieldset></form>";
             echo "</td></tr></table>";
+          **** */
 
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="updatemultiple" />'."\n";

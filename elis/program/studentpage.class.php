@@ -216,13 +216,13 @@ class studentpage extends associationpage {
                 $newstu = $this->build_student($uid, $classid, $user);
 
                 if($newstu->completestatusid != STUSTATUS_NOTCOMPLETE || empty($newstu->pmclass->maxstudents) || $newstu->pmclass->maxstudents > $newstu->count_enroled()) {
-                    $status = $newstu->save(); // $newstu->do_add();
+                    $status = $newstu->update(); // TBD: ->save()? WAS: $newstu->do_add();
                 } else {
                     $waitlist[] = $newstu;
                     $status = true;
                 }
 
-              /* **** TBD ->save() no return ****
+              /* **** no return code from ->save()/update() ****
                 if ($status !== true) {
                     if (!empty($status->message)) {
                         echo cm_error(get_string('record_not_created_reason',
@@ -281,9 +281,12 @@ class studentpage extends associationpage {
 
             $stu->complete();
         } else {
-            if (($status = $stu->update()) !== true) {
+            $status = $stu->update();
+          /* *** no return code
+            if ($status !== true) {
                 echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
             }
+          **** */
         }
 
         /// Check for grade records...
@@ -363,7 +366,7 @@ class studentpage extends associationpage {
                 && $this->_db->get_field(student::TABLE, 'completestatusid', array('id' => $stu->id)) != STUSTATUS_PASSED) {
                 $stu->complete();
             } else {
-                $status = $stu->save(); // ->update()
+                $status = $stu->update(); // ->update() or ->save()
               /* **** no return code from save()
                 if ($status !== true) {
                     echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
@@ -407,9 +410,12 @@ class studentpage extends associationpage {
         $atnrecord['note'] = cm_get_param('note', '');
         $atn = new attendance($atnrecord);
 
-        if (($status = $atn->update()) !== true) {
+        $status = $atn->save(); // ->update
+      /* **** no return code
+        if ($status !== true) {
             echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
         }
+      **** */
     }
 
     /**
@@ -439,7 +445,7 @@ class studentpage extends associationpage {
                         $wait_record->position = 0;
 
                         $wait_list = new waitlist($wait_record);
-                        $wait_list->do_add();
+                        $wait_list->save(); // TBD: was $wait_list->do_add()
                     } else if($data->enrol[$uid] == 2) {
                         $user = new user($uid);
                         $student_data= array();
@@ -450,8 +456,8 @@ class studentpage extends associationpage {
                         $student_data['completestatusid'] = STUSTATUS_NOTCOMPLETE;
 
                         $newstu = new student($student_data);
-                        $status = $newstu->do_add();
-
+                        $status = $newstu->update(); // TBD: was $newstu->do_add()
+                      /* **** returns objects from student::update() & save()
                         if ($status !== true) {
                             if (!empty($status->message)) {
                                 echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $status));
@@ -460,6 +466,7 @@ class studentpage extends associationpage {
                                                   self::LANG_FILE));
                             }
                         }
+                      **** */
                     }
                 }
             }
