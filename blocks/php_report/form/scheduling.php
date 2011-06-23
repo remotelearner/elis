@@ -31,9 +31,9 @@ require_once ($CFG->dirroot.'/elis/core/lib/form/timeselector.php');
 
 // Javascript files required to convert enter from form cancel to next step
 function require_js_files() {
-    global $CFG;
-    require_js("{$CFG->wwwroot}/lib/javascript-static.js"); // addonload()
-    require_js("{$CFG->wwwroot}/blocks/php_report/entertonext.js");
+    global $PAGE;
+    $PAGE->requires->js('/lib/javascript-static.js'); // addonload()
+    $PAGE->requires->js('/blocks/php_report/js/entertonext.js');
 }
 
 class scheduling_form_step_label extends moodleform {
@@ -68,6 +68,7 @@ class scheduling_form_step_label extends moodleform {
 
 class scheduling_form_step_schedule extends moodleform {
     function definition() {
+        global $PAGE;
         require_js_files();
         $mform =& $this->_form;
 
@@ -77,9 +78,8 @@ class scheduling_form_step_schedule extends moodleform {
         $workflowdata = $workflow->unserialize_data(array());
 
         // Include required yui javascript needed for AJAX calls
-        require_js(array('yui_yahoo',
-                         'yui_dom'
-                  ),true);
+        $PAGE->requires->yui2_lib(array('yahoo',
+                                        'dom'));
 
         $mform->addElement('html','');
         // Add javascript function to toggle the simple/recurring calendar elements
