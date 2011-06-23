@@ -115,7 +115,7 @@ class curriculumstudent extends elis_data_object {
 //     }
 
     protected function get_field_context_level() {
-        return context_level_base::get_custom_context_level('user', 'elis_program');
+        return context_level_base::get_custom_context_level('curriculum', 'elis_program');
     }
 
 	public static function delete_for_curriculum($id) {
@@ -532,7 +532,7 @@ function curriculumstudent_count_students($type = 'student', $namesearch = '', $
     }
 
     if (!empty($where)) {
-        $where = 'WHERE '.implode(' AND ',$where).' ';
+        $where = 'WHERE '.implode(' AND ', $where).' ';
     } else {
         $where = '';
     }

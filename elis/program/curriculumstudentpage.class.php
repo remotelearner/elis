@@ -77,7 +77,8 @@ class studentcurriculumpage extends associationpage2 {
             // find curricula linked to clusters where the target user is a
             // member, and we have enrol cluster user capabilities
             $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
-            $cluster_filter = $cluster_contexts->sql_filter_for_context_level('clst.id', 'cluster');
+            $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
+            $cluster_filter = $cluster_object->get_sql(false, 'clst');
             $sql = 'SELECT COUNT(curr.id)
                       FROM {'.userset::TABLE.'} clst
                       JOIN {'.clustercurriculum::TABLE.'} clstcurr
@@ -93,7 +94,7 @@ class studentcurriculumpage extends associationpage2 {
         }
     }
 
-    function get_title() {
+    function get_title_default() {
         return get_string('breadcrumb_studentcurriculumpage','elis_program');
     }
 
@@ -118,10 +119,10 @@ class studentcurriculumpage extends associationpage2 {
         return $this->get_parent_page();
     }
 
-    function get_navigation_default() {
-        $navigation = $this->get_parent_page()->get_navigation_view();
+    function build_navigation_default() {
+        $navigation = parent::build_navigation_default();
 
-        return $navigation;
+        $this->navbar->add($navigation);
     }
 
     protected function get_selection_form() {
@@ -194,12 +195,15 @@ class studentcurriculumpage extends associationpage2 {
 
         // only show curricula where user has enrol capabilities
         $curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
-        $where .= " AND (" . $curriculum_contexts->sql_filter_for_context_level('id', 'curriculum');
+        $curriculum_object = $curriculum_contexts->get_filter('curr.id', 'curriculum');
+        $curriculum_filter = $curriculum_object->get_sql(false,'curr');
+        $where .= " AND (".$curriculum_filter;
 
         // or curricula attached to clusters where user has enrol cluster user
         // capabilities (and target user is a member of that cluster)
         $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
-        $cluster_filter = $cluster_contexts->sql_filter_for_context_level('clst.id', 'cluster');
+        $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
+        $cluster_filter = $cluster_object->get_sql(false,'clst');
 
         $where .= ' OR id IN (SELECT curr.id
                     FROM {'.userset::TABLE.'} clst
@@ -257,7 +261,7 @@ class studentcurriculumpage extends associationpage2 {
         $where = 'id IN (SELECT curriculumid FROM {'.curriculumstudent::TABLE.'} WHERE userid='.$id.')';
 
         $count = $DB->count_records_select(curriculum::TABLE, $where);
-        $curricula = $DB->get_records_sql($sql, $pagenum*$perpage, $perpage);
+        $curricula = $DB->get_records_sql($sql, array($sort=>$order), $pagenum*$perpage, $perpage);
 
         return array($curricula, $count);
     }
@@ -272,15 +276,15 @@ class studentcurriculumpage extends associationpage2 {
 
     protected function create_selection_table($records, $baseurl) {
         $records = $records ? $records : array();
-        $columns = array('_selection' => '',
-                         'idnumber' => get_string('idnumber','elis_program'),
-                         'name' => get_string('name','elis_program'),
-                         'description' => get_string('description','elis_program'),
-                         'reqcredits' => get_string('required_credits','elis_program'));
+        $columns = array('_selection' => array('header' => ''),
+                         'idnumber' => array('header' => get_string('idnumber','elis_program')),
+                         'name' => array('header' => get_string('name','elis_program')),
+                         'description' => array('header' => get_string('description','elis_program')),
+                         'reqcredits' => array('header' => get_string('required_credits','elis_program')));
         if (!$this->is_assigning()) {
-            $columns['numcourses'] = get_string('num_courses','elis_program');
-            $columns['timecompleted'] = get_string('date_completed','elis_program');
-            $columns['credits'] = get_string('credits_rec','elis_program');
+            $columns['numcourses'] = array('header' => get_string('num_courses','elis_program'));
+            $columns['timecompleted'] = array('header' => get_string('date_completed','elis_program'));
+            $columns['credits'] = array('header' => get_string('credits_rec','elis_program'));
         }
         return new user_curriculum_selection_table($records, $columns,
                                                    new moodle_url($baseurl));
@@ -298,7 +302,9 @@ class user_curriculum_selection_table extends selection_table {
 
         $id = required_param('id', PARAM_INT);
         $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
-        $cluster_filter = $cluster_contexts->sql_filter_for_context_level('clst.id', 'cluster');
+        $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
+        $cluster_filter = $cluster_object->get_sql(false, 'clst');
+
         $sql = 'SELECT curr.id
                   FROM {'.userset::TABLE.'} clst
                   JOIN {'.clustercurriculum::TABLE.'} clstcurr
@@ -370,7 +376,7 @@ class curriculumstudentpage extends associationpage2 {
         }
     }
 
-    function get_title() {
+    function get_title_default() {
         return get_string('breadcrumb_curriculumstudentpage','elis_program');
     }
 
@@ -396,10 +402,10 @@ class curriculumstudentpage extends associationpage2 {
         return $this->get_parent_page();
     }
 
-    function get_navigation_default() {
-        $navigation = $this->get_parent_page()->get_navigation_view();
+    function build_navigation_default() {
+        $navigation = parent::build_navigation_default();
 
-        return $navigation;
+        $this->navbar->add($navigation);
     }
 
     protected function get_selection_form() {
@@ -513,8 +519,8 @@ class curriculumstudentpage extends associationpage2 {
             }
         }
 
-        $count = $DB->count_records_select(user::TABLE.' usr', $where);
-        $users = $DB->get_records_select(user::TABLE.' usr', $where, null, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $count = $DB->count_records_select(user::TABLE, $where);
+        $users = $DB->get_records_select(user::TABLE, $where, null, $sortclause, '*', $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
@@ -556,16 +562,18 @@ class curriculumstudentpage extends associationpage2 {
                 WHERE curass.curriculumid='.$id;
         $where = 'id IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid='.$id.')';
 
+        /* TO-DO: re-enable this once I know how it's done
         $extrasql = $filter->get_sql_filter();
         if ($extrasql) {
             $where .= ' AND '.$extrasql;
             $sql .= ' AND '.$extrasql;
         }
+        */
 
         $sql .= ' ORDER BY '.$sortclause;
 
-        $count = $DB->count_records_select(user::TABLE.' usr', $where);
-        $users = $DB->get_records_sql($sql, $pagenum*$perpage, $perpage);
+        $count = $DB->count_records_select(user::TABLE, $where);
+        $users = $DB->get_records_sql($sql, array($sort=>$order), $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
@@ -579,13 +587,13 @@ class curriculumstudentpage extends associationpage2 {
 
     protected function create_selection_table($records, $baseurl) {
         $records = $records ? $records : array();
-        $columns = array('_selection' => '',
-                         'idnumber' => get_string('idnumber','elis_program'),
-                         'name' => get_string('name','elis_program'),
-                         'country' => get_string('country','elis_program'),
-                         'language' => get_string('user_language','elis_program'));
+        $columns = array('_selection' => array('header' => ''),
+                         'idnumber' => array('header' => get_string('idnumber','elis_program')),
+                         'name' => array('header' => get_string('name','elis_program')),
+                         'country' => array('header' => get_string('country','elis_program')),
+                         'language' => array('header' => get_string('user_language','elis_program')));
         if (!$this->is_assigning()) {
-            $columns['timecreated'] = get_string('registered_date','elis_program');
+            $columns['timecreated'] = array('header' => get_string('registered_date','elis_program'));
         }
         return new curriculum_user_selection_table($records, $columns,
                                                    new moodle_url($baseurl));

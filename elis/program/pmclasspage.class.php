@@ -263,7 +263,7 @@ class pmclasspage extends managementpage {
             $obj->set_from_data($data);
             $obj->add();
             $target = $this->get_new_page(array('action' => 'view', 'id' => $obj->id));
-            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->to_string() . ' saved.');
+            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' saved.');
         } else {
             // Validation must have failed, redisplay form
             $form->display();
