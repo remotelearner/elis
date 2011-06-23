@@ -368,7 +368,7 @@ function moodle_get_wwwroot($siteconfig = '') {
         $CURMAN = $GLOBALS['CURMAN'];
     }
 
-    $sitename = $DB->get_field('course', 'fullname', 'id', SITEID);
+    $sitename = $DB->get_field('course', 'fullname', array('id' => SITEID));
 
     if (!empty($siteconig)) {
         moodle_load_config($cfgbak);
@@ -397,7 +397,7 @@ function moodle_get_topcatid($siteconfig = '') {
         $CURMAN = $GLOBALS['CURMAN'];
     }
 
-    $catid = $DB->get_field('course_categories', 'id', 'parent', '0');
+    $catid = $DB->get_field('course_categories', 'id', array('parent' => '0'));
 
     if (!empty($siteconig)) {
         moodle_load_config($cfgbak);
@@ -502,5 +502,5 @@ function moodle_get_classes() {
 function moodle_get_course($clsid) {
     global $DB;
 
-    return $DB->get_field(classmoodlecourse::TABLE, 'moodlecourseid', 'classid', $clsid);
+    return $DB->get_field(classmoodlecourse::TABLE, 'moodlecourseid', array('classid' => $clsid));
 }
