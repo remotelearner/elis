@@ -94,8 +94,12 @@ function php_report_schedule_export_instance($report_schedule, $now = 0) {
  *
  * @param  stdClass  $report_schedule  The PHP report schedule record that specifies the number of
  *                                     remaining runs, if applicable
+ *
+ * @uses   $DB
  */
 function php_report_schedule_decrement_remaining_runs($report_schedule) {
+    global $DB;
+
     $data = unserialize($report_schedule->config);
 
     $upreport_schedule = new stdClass;
@@ -109,8 +113,8 @@ function php_report_schedule_decrement_remaining_runs($report_schedule) {
     }
 
     // Serialize the config before saving
-    $upreport_schedule->config = addslashes(serialize($data));
-    update_record('php_report_schedule', $upreport_schedule);
+    $upreport_schedule->config = serialize($data);
+    $DB->update_record('php_report_schedule', $upreport_schedule);
 }
 
 /**
@@ -121,8 +125,12 @@ function php_report_schedule_decrement_remaining_runs($report_schedule) {
  *                                     is the PHP report schedule id
  * @param  stdClass  $report_schedule  The PHP report schedule record that specifies the necessary
  *                                     timing information
+ *
+ * @uses   $DB
  */
 function php_report_schedule_set_next_runtime($taskname, $report_schedule) {
+    global $DB;
+
     $data = unserialize($report_schedule->config);
 
     // If this is a simple report, we need to update the schedule record
@@ -132,7 +140,7 @@ function php_report_schedule_set_next_runtime($taskname, $report_schedule) {
         $frequency = $data['schedule']['frequency'];
         $freq_type = $data['schedule']['frequencytype'];
         // Get the elis scheduled task last runtime for this taskname
-        $schedule = get_record('elis_scheduled_tasks', 'taskname', $taskname);
+        $schedule = $DB->get_record('elis_scheduled_tasks', array('taskname' => $taskname));
 
         // Create updated elis scheduled task with the next runtime
         $upschedule = new stdClass;
@@ -154,31 +162,33 @@ function php_report_schedule_set_next_runtime($taskname, $report_schedule) {
         // Assuming 1 (Monday) => 7 (Sunday)
         $upschedule->dayofweek = strftime('%u',$upschedule->nextruntime);
 
-        update_record('elis_scheduled_tasks', $upschedule);
+        $DB->update_record('elis_scheduled_tasks', $upschedule);
     }
 }
 
 /**
  * Removes orphaned PHP report schedule records (i.e. PHP report schedule records
  * that have no associated ELIS scheduled task)
+ *
+ * @uses  $DB;
  */
 function php_report_schedule_delete_unmatching_records() {
-    global $CFG;
+    global $DB;
 
     //need this concatenation to connect ELIS and PHP scheduling info
     $concat = block_php_report_get_taskname_from_column('php_sched.id');
 
     //query to find the appropriate PHP report task ids
     $sql = "SELECT php_sched.id as id
-            FROM {$CFG->prefix}php_report_schedule php_sched
-            LEFT JOIN {$CFG->prefix}elis_scheduled_tasks elis_sched
-                   ON (elis_sched.taskname={$concat})
+            FROM {php_report_schedule} php_sched
+            LEFT JOIN {elis_scheduled_tasks} elis_sched
+                   ON (elis_sched.taskname=:concat)
                 WHERE elis_sched.taskname IS NULL";
 
     //iterate and delete
-    $rs = get_recordset_sql($sql);
-    while ($res = rs_fetch_next_record($rs)) {
-        delete_records('php_report_schedule', 'id', $res->id);
+    $rs = $DB->get_recordset_sql($sql, array('concat' => $concat));
+    foreach ($rs as $res) {
+        $DB->delete_records('php_report_schedule', array('id' => $res->id));
     }
 }
 
