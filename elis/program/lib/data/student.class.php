@@ -32,6 +32,7 @@ require_once elis::lib('table.class.php');
 
 require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php');
+require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/instructor.class.php');
 require_once elispm::lib('data/pmclass.class.php');
@@ -90,6 +91,8 @@ class student extends elis_data_object {
     protected $_dbfield_grade;
     protected $_dbfield_credits;
     protected $_dbfield_locked;
+
+    static $delete_is_complex = true; // TBD
 
     var $pmclass;           // OBJECT - The class object
 
@@ -270,7 +273,8 @@ class student extends elis_data_object {
                         elis::$config->elis_program->notify_classcompleted_message;
             $search = array('%%userenrolname%%', '%%classname%%');
 
-            if (($clsmdl = $this->_db->get_record(CLSMDLTABLE, array('classid' => $this->classid))) &&
+            if (($clsmdl = $this->_db->get_record(classmoodlecourse::TABLE,
+                                   array('classid' => $this->classid))) &&
                 ($course = get_record('course', array('id' => $clsmdl->moodlecourseid)))) {
                 /// If its a Moodle class...
                 $replace = array(fullname($this->user), $course->fullname);
@@ -419,7 +423,7 @@ class student extends elis_data_object {
 
         /// Enrol them into the Moodle class.
         if ($moodlecourseid = moodle_get_course($this->classid)) {
-            if ($mcourse = get_record('course', array('id' => $moodlecourseid))) {
+            if ($mcourse = $this->_db->get_record('course', array('id' => $moodlecourseid))) {
                 $enrol = $mcourse->enrol;
                 if (!$enrol) {
                     $enrol = $CFG->enrol;
@@ -469,7 +473,7 @@ class student extends elis_data_object {
 
         /// Unenrol them from the Moodle class.
         if (!empty($this->classid) && !empty($this->userid) &&
-            ($moodlecourseid = get_field('crlm_class_moodle', 'moodlecourseid', array('classid' => $this->classid))) &&
+            ($moodlecourseid = $this->_db->get_field('crlm_class_moodle', 'moodlecourseid', array('classid' => $this->classid))) &&
             ($muserid = cm_get_moodleuserid($this->userid))) {
 
             $context = get_context_instance(CONTEXT_COURSE, $moodlecourseid);
@@ -480,13 +484,14 @@ class student extends elis_data_object {
 
         $result = $result && parent::delete(); // WAS: $this->data_delete_record()
 
-        if($this->completestatusid == STUSTATUS_NOTCOMPLETE) {
+        if ($this->completestatusid == STUSTATUS_NOTCOMPLETE) {
+            //error_log("student::delete() - classid = {$this->classid}");
             $pmclass = new pmclass($this->classid);
 
-            if(empty($pmclass->maxstudents) || $pmclass->maxstudents > student::count_enroled($pmclass->id)) {
+            if (empty($pmclass->maxstudents) || $pmclass->maxstudents > student::count_enroled($pmclass->id)) {
                 $wlst = waitlist::get_next($this->classid);
 
-                if(!empty($wlst)) {
+                if (!empty($wlst)) {
                     $wlst->enrol();
                 }
             }
@@ -506,7 +511,7 @@ class student extends elis_data_object {
         $retval = null;
 
         $student = $DB->get_record(student::TABLE, array('userid' => $userid, 'classid' => $classid));
-        if(!empty($student)) {
+        if (!empty($student)) {
             $retval = new student($student->id);
         }
         return $retval;
@@ -718,7 +723,7 @@ class student extends elis_data_object {
                $match[] = s($namesearch);
             }
             if ($alpha) {
-               $match[] = 'name'.": $alpha"."___";
+               $match[] = get_string('name', self::LANG_FILE) .": {$alpha}___";
             }
             $matchstring = implode(", ", $match);
             echo 'No users matching '.$matchstring;
@@ -1277,7 +1282,7 @@ class student extends elis_data_object {
             ($elements = $this->pmclass->course->get_completion_elements())) {
 
             $select = 'classid = ? AND userid = ? ';
-            $grades = $this->_db->get_records_select(CLSGRTABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
+            $grades = $this->_db->get_records_select(student_grade::TABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
 
             $columns = array(
                 'element'          => array('header' => get_string('grade_element', self::LANG_FILE),
@@ -2575,7 +2580,7 @@ class student_grade extends elis_data_object {
             $record = $this;
         }
 
-        if ($this->_db->record_exists(CLSGRTABLE, array('classid' => $record->classid, 'userid' => $record->userid, 'completionid' => $record->completionid))) {
+        if ($this->_db->record_exists(student_grade::TABLE, array('classid' => $record->classid, 'userid' => $record->userid, 'completionid' => $record->completionid))) {
             return true;
         }
         return false;

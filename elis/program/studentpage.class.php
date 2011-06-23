@@ -248,6 +248,7 @@ class studentpage extends associationpage {
      *      enrol the student
      */
     function do_update() { //action_update
+        global $DB;
         $stuid = $this->required_param('association_id', PARAM_INT);
         $clsid = $this->required_param('id', PARAM_INT);
         $users = $this->required_param('users');
@@ -277,7 +278,7 @@ class studentpage extends associationpage {
         $stu                           = new student($sturecord);
 
         if ($stu->completestatusid == STUSTATUS_PASSED &&
-            $this->_db->get_field(student::TABLE, 'completestatusid', array('id' => $stuid)) != STUSTATUS_PASSED) {
+            $DB->get_field(student::TABLE, 'completestatusid', array('id' => $stuid)) != STUSTATUS_PASSED) {
 
             $stu->complete();
         } else {
@@ -337,14 +338,15 @@ class studentpage extends associationpage {
      *
      */
     function do_updatemultiple() { // action_updatemultiple
+        global $DB;
         $clsid = $this->required_param('id', PARAM_INT);
         $users = $this->optional_param('users', array(), PARAM_CLEAN);
 
         foreach($users as $uid => $user) {
-            $sturecord                     = array();
-            $sturecord['id']               = $user['association_id'];
-            $sturecord['classid']          = $clsid;
-            $sturecord['userid']           = $uid;
+            $sturecord            = array();
+            $sturecord['id']      = $user['association_id'];
+            $sturecord['classid'] = $clsid;
+            $sturecord['userid']  = $uid;
 
             $startyear  = $user['startyear'];
             $startmonth = $user['startmonth'];
@@ -362,8 +364,8 @@ class studentpage extends associationpage {
             $sturecord['locked']           = !empty($user['locked']) ? 1 : 0;
             $stu                           = new student($sturecord);
 
-            if ($stu->completestatusid == STUSTATUS_PASSED
-                && $this->_db->get_field(student::TABLE, 'completestatusid', array('id' => $stu->id)) != STUSTATUS_PASSED) {
+            if ($stu->completestatusid == STUSTATUS_PASSED &&
+                $DB->get_field(student::TABLE, 'completestatusid', array('id' => $stu->id)) != STUSTATUS_PASSED) {
                 $stu->complete();
             } else {
                 $status = $stu->update(); // ->update() or ->save()
@@ -376,7 +378,7 @@ class studentpage extends associationpage {
 
             // Now once we've done all this, delete the student if we've been asked to
             if (isset($user['unenrol']) && pmclasspage::can_enrol_into_class($clsid)) {
-                $stu_delete = new student($user['association_id']);
+                $stu_delete = new student($sturecord); // TBD: param was $user['association_id']
                 $status = $stu_delete->delete();
               /* **** no return code from delete()
                 if(!$status) {

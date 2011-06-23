@@ -443,7 +443,8 @@ class instructor extends elis_data_object {
         $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
-        $select  = 'SELECT usr.id, ' . $FULLNAME . ' as name, usr.idnumber, ' .
+        // TBD: getting duplicate column id warning, added DISTINCT ???
+        $select  = 'SELECT DISTINCT usr.id, ' . $FULLNAME . ' as name, usr.idnumber, ' .
                    'ins.classid, ins.userid, ins.assigntime, ins.completetime ';
         $tables  = 'FROM {'. user::TABLE .'} usr ';
         $join    = 'LEFT JOIN {' . instructor::TABLE .'} ins ';
@@ -635,7 +636,7 @@ function instructor_get_listing($classid, $sort = 'name', $dir = 'ASC', $startre
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
         $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('.
-                          IDNUMBER_LIKE .')) ';
+                          $IDNUMBER_LIKE .')) ';
         $params['name_like'] = "%{$namesearch}%";
         $params['id_like']   = "%{$namesearch}%";
     }
@@ -686,7 +687,7 @@ function instructor_count_records($classid, $namesearch = '', $alpha='') {
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
         $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('.
-                          IDNUMBER_LIKE .')) ';
+                          $IDNUMBER_LIKE .')) ';
         $params['name_like'] = "%{$namesearch}%";
         $params['id_like']   = "%{$namesearch}%";
     }
