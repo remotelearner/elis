@@ -709,7 +709,7 @@ class scheduling_page extends workflowpage {
         $category_members = block_php_report_get_names_by_category(true, NULL, php_report::EXECUTION_MODE_SCHEDULED);
 
         //set up the basics of our table
-        $table = new stdClass;
+        $table = new html_table();
         $table->head = array(get_string('list_report_name_header', 'block_php_report'),
                              get_string('list_schedule_header', 'block_php_report'));
         $table->align = array('left',
@@ -757,7 +757,7 @@ class scheduling_page extends workflowpage {
         }
 
         if (count($table->data > 0)) {
-            print_table($table);
+            echo html_writer::table($table);
         } else {
             //error case
         }
