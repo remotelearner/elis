@@ -73,10 +73,10 @@ abstract class associationpage2 extends selectionpage {
         // assigned/unassigned tabs
         //$assignedpage = clone($this->get_basepage());
         //unset($assignedpage->params['_assign']);
-        $assignedpage = $this->get_new_page(array('id' => $id /* , '_assign' => 'unassign' */));
+        $assignedpage = $this->get_new_page(array('id' => $id, '_assign' => 'unassign')); // TBD: arbitrary != 'assign' ???
         //$unassignedpage = clone($assignedpage);
         //$unassignedpage->params['_assign'] = 'assign';
-        $assignedpage = $this->get_new_page(array('id' => $id, '_assign' => 'assign'));
+        $unassignedpage = $this->get_new_page(array('id' => $id, '_assign' => 'assign'));
         list($assigned_string, $unassigned_string) = $this->get_assigned_strings();
         $row = array(new tabobject('assigned', $assignedpage->url, $assigned_string),
                      new tabobject('unassigned', $unassignedpage->url, $unassigned_string));

@@ -123,14 +123,15 @@ class associationpage extends pm_page {
         print_tabs(array($row), $selected);
     }
 
-    function get_new_data_object($id=false) {
+    function get_new_data_object($id = false) {
         return new $this->data_class($id);
     }
 
     function print_add_button($params=array(), $text=null) {
         global $OUTPUT;
-
-        $obj = $this->get_new_data_object();
+        $pname = 'association_id'; // TBD: 'association_id' or 'id' ???
+        $obj_id = isset($params[$pname]) ? $params[$pname] : false;
+        $obj = $this->get_new_data_object($obj_id); // TBD
 
         echo '<div align="center">';
         $options = array_merge(array('s' => $this->pagename, 'action' => 'add'), $params);
@@ -140,6 +141,15 @@ class associationpage extends pm_page {
         $button = new single_button(new moodle_url('index.php', $options), $text ? $text : $dellabel.' '.$objlabel, 'get', array('disabled'=>false, 'title'=>$text ? $text : $dellabel.' '.$objlabel));
         echo $OUTPUT->render($button);
         echo '</div>';
+    }
+
+    /**To be overloaded in child class to return data_class::get_default() ...
+     * Eg. see: pmclasspage, usersetpage, trackpage, coursepage ...
+     *
+     * @return obj  the default data class object for page or NULL
+     */
+    function get_default_object_for_add() {
+        return NULL;
     }
 
     /**
@@ -154,18 +164,25 @@ class associationpage extends pm_page {
     }
 
     function do_add() {
-        $target = $this->get_new_page(array('action' => 'add'), true);
-        $obj = NULL; // $this->get_default_object_for_add();
-        $form = new $this->form_class($target->url, $obj ? array('obj' => $obj) : NULL);
-
+        $id = $this->required_param('id', PARAM_INT);
+        $target = $this->get_new_page(array('action' => 'add'), true); // TBD
+        $obj = $this->get_default_object_for_add();
+        $parent_obj = new $this->parent_data_class($id); // TBD
+        $params = array();
+        if ($obj != NULL) {
+            $params['obj'] = $obj;
+        }
+        if ($parent_obj != NULL) {
+            $params['parent_obj'] = $parent_obj;
+        }
+        $form = new $this->form_class($target->url, $params);
         if ($form->is_cancelled()) {
-            $target = $this->get_new_page(array(), true);
+            $target = $this->get_new_page(array(), true); // TBD: drop 'id' ???
             redirect($target->url);
             return;
         }
 
         $data = $form->get_data();
-
         if($data) {
             require_sesskey();
             $obj = $this->get_new_data_object();

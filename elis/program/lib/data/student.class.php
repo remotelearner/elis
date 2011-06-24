@@ -1012,6 +1012,7 @@ class student extends elis_data_object {
         if (empty($this->id)) {
             $columns = array(
                 'unenrol'          => array('header' => get_string('unenrol', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'idnumber'         => array('header' => get_string('student_idnumber', self::LANG_FILE),
                                             'display_function' => 'htmltab_display_function'),
@@ -1019,16 +1020,22 @@ class student extends elis_data_object {
                                             'display_function' => 'htmltab_display_function'),
 //                'description'      => 'Description',
                 'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'grade'            => array('header' => get_string('student_grade', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'credits'          => array('header' => get_string('student_credits', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function')
             );
 
@@ -1043,16 +1050,22 @@ class student extends elis_data_object {
                                             'display_function' => 'htmltab_display_function'),
 //                'description'      => 'Description',
                 'enrolmenttime'    => array('header' => get_string('enrolment_time', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'completetime'     => array('header' => get_string('completion_time', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'completestatusid' => array('header' => get_string('student_status', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'grade'            => array('header' => get_string('student_grade', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'credits'          => array('header' => get_string('student_credits', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
                 'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
+                                            'sortable' => false,
                                             'display_function' => 'htmltab_display_function')
             );
         }

@@ -132,7 +132,7 @@ function get_pm_url($baseurl = null, $extras = array()) {
     if (empty($baseurl)) {
         $baseurl = '/elis/program/index.php';
     }
-    $options = array('s', 'id', 'action', 'section', 'alpha', 'search', 'perpage', 'class'); // TBD: add more parameters as required: page, [sort, dir] ???
+    $options = array('s', 'id', 'action', 'section', 'alpha', 'search', 'perpage', 'class', 'association_id', 'mode', '_assign'); // TBD: add more parameters as required: page, [sort, dir] ???
     $params = array();
     foreach ($options as $option) {
         $val = optional_param($option, null, PARAM_CLEAN);
