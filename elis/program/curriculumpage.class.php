@@ -30,7 +30,7 @@ require_once elispm::lib('contexts.php');
 require_once elispm::lib('datedelta.class.php');
 require_once elispm::file('form/curriculumform.class.php');
 require_once elispm::file('curriculumcoursepage.class.php');
-//require_once elispm::file('curriculumstudentpage.class.php');
+require_once elispm::file('curriculumstudentpage.class.php');
 require_once elispm::file('clustercurriculumpage.class.php');
 
 //require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
@@ -133,7 +133,7 @@ class curriculumpage extends managementpage {
         array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
 
         //TO-DO: re-enable tabs once their associated pages are done
-        //array('tab_id' => 'curriculumstudentpage', 'page' => 'curriculumstudentpage', 'name' => get_string('users', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
+        array('tab_id' => 'curriculumstudentpage', 'page' => 'curriculumstudentpage', 'name' => get_string('users', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
         array('tab_id' => 'curriculumclusterpage', 'page' => 'curriculumclusterpage', 'name' => get_string('clusters', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
         array('tab_id' => 'curriculumcoursepage', 'page' => 'curriculumcoursepage', 'name' => get_string('courses', 'elis_program') , 'showtab' => true, 'showbutton' => true, 'image' => 'course'),
         //allow users to view the tracks associated with this curriculum

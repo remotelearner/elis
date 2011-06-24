@@ -38,7 +38,6 @@ require_once elispm::file('instructorpage.class.php');
 require_once elispm::file('studentpage.class.php');
 require_once elispm::file('waitlistpage.class.php');
 
-//require_once (CURMAN_DIRLOCATION . '/instructorpage.class.php');        // missing
 //require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
 //require_once (CURMAN_DIRLOCATION . '/reportlinkspage.class.php');       // missing
 
