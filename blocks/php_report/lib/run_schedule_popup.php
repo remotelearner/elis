@@ -28,6 +28,7 @@ require_once('../../../config.php');
 
 //prevent headers and footers from being displayed
 $PAGE->set_pagelayout('popup');
+$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 
 echo $OUTPUT->header();
 

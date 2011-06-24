@@ -28,6 +28,8 @@ require_once('../../../config.php');
 require_once($CFG->dirroot . '/blocks/php_report/runschedule.php');
 require_once($CFG->dirroot . '/blocks/php_report/sharedlib.php');
 
+$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+
 //database record id of the schedule to run
 $scheduleid = required_param('scheduleid', PARAM_INT);
 //represents the schedule name / label
