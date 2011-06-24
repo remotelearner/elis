@@ -142,6 +142,11 @@ function php_report_schedule_set_next_runtime($taskname, $report_schedule) {
         // Get the elis scheduled task last runtime for this taskname
         $schedule = $DB->get_record('elis_scheduled_tasks', array('taskname' => $taskname));
 
+        if (!$schedule) {
+            //last run, and elis scheduled task has already been deleted
+            return;
+        }
+
         // Create updated elis scheduled task with the next runtime
         $upschedule = new stdClass;
         $upschedule->id = $schedule->id;
@@ -182,11 +187,11 @@ function php_report_schedule_delete_unmatching_records() {
     $sql = "SELECT php_sched.id as id
             FROM {php_report_schedule} php_sched
             LEFT JOIN {elis_scheduled_tasks} elis_sched
-                   ON (elis_sched.taskname=:concat)
+                   ON (elis_sched.taskname = {$concat})
                 WHERE elis_sched.taskname IS NULL";
 
     //iterate and delete
-    $rs = $DB->get_recordset_sql($sql, array('concat' => $concat));
+    $rs = $DB->get_recordset_sql($sql);
     foreach ($rs as $res) {
         $DB->delete_records('php_report_schedule', array('id' => $res->id));
     }
