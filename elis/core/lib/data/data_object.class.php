@@ -902,3 +902,35 @@ function validate_not_empty(elis_data_object $record, $field) {
         // FIXME: new exception
     }
 }
+
+/**
+ * Helper class for validation rules.
+ *
+ * Calling validation_helper::not_empty_{field1}($record) is equivalent to
+ * calling validate_not_empty($record, '{field1}'), and calling
+ * validation_helper::is_unique_{field1}_{field2}($record) is equivalent to
+ * calling validate_is_unique($record, array('{field1}', '{field2}')).  (Note
+ * that in the second case, the field names cannot contain underscores.
+ *
+ * This allows you to use array('validation_helper', 'not_empty_{field1}') and
+ * array('validation_helper', 'is_unique_{field1}_{field2}') as in the
+ * $validation_rules array, instead of having to create custom functions.
+ */
+class validation_helper {
+    const NOTEMPTY = "not_empty_";
+    const UNIQUE = "is_unique_";
+
+    public static function __callStatic($name, $args) {
+        $prefix_len = strlen(self::NOTEMPTY);
+        if (strncmp($name, self::NOTEMPTY, $prefix_len) === 0) {
+            $args[] = substr($name, $prefix_len);
+            return call_user_func_array('validate_not_empty', $args);
+        }
+        $prefix_len = strlen(self::UNIQUE);
+        if (strncmp($name, self::UNIQUE, $prefix_len) === 0) {
+            $fields = explode('_', substr($name, $prefix_len));
+            $args[] = $fields;
+            return call_user_func_array('validate_is_unique', $args);
+        }
+    }
+}

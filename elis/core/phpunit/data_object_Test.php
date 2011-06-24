@@ -45,17 +45,9 @@ class config_object extends elis_data_object {
     protected $_dbfield_value;
 
     public static $validation_rules = array(
-        'validate_name_not_empty',
-        'validate_unique_name'
+        array('validation_helper', 'not_empty_name'),
+        array('validation_helper', 'is_unique_name'),
     );
-
-    function validate_name_not_empty() {
-        return validate_not_empty($this, 'name');
-    }
-
-    function validate_unique_name() {
-        return validate_is_unique($this, array('name'));
-    }
 }
 
 class user_object extends elis_data_object {
