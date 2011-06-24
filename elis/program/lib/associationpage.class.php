@@ -410,7 +410,6 @@ class associationpage extends pm_page {
         $id = $this->required_param('id', PARAM_INT);
         $association_id = $this->required_param('association_id', PARAM_INT);
 
-
         $obj = $this->get_new_data_object($association_id);
         $obj->load(); // force load, so that the confirmation notice has something to display
         $obj->delete();
@@ -532,8 +531,8 @@ class associationpage extends pm_page {
      */
     function get_buttons($params) {
         global $OUTPUT;
-        // TODO: function copied from managementpage.class.php.  Refactor at some point.
-        $buttons = '';
+
+        $buttons = array();
 
         foreach($this->tabs as $tab) {
             $tab = $this->add_defaults_to_tab($tab);
@@ -541,12 +540,12 @@ class associationpage extends pm_page {
                 $target = new $tab['page'](array_merge($tab['params'], $params));
 
                 if ($target->can_do()) {
-                    $buttons .= '<a href="'. $target->url .'"><img title="' . $tab['name'] . '" alt="' . $tab['name'] . '" src="'. $OUTPUT->pix_url($tab['image']) .'" /></a> ';
+                    $buttons[] = html_writer::link($target->url, html_writer::empty_tag('img', array('title' => $tab['name'], 'alt' => $tab['name'], 'src' => $OUTPUT->pix_url($tab['image'], 'elis_program'))));
                 }
             }
         }
 
-        return $buttons;
+        return implode('', $buttons);
     }
 
     /**
@@ -591,7 +590,7 @@ class association_page_table extends display_table {
 
     function get_item_display_manage($column, $item) {
         global $OUTPUT;
-        $id = $this->required_param('id', PARAM_INT);
+        $id = required_param('id', PARAM_INT);
         $target = $this->page->get_new_page(array('action' => 'delete', 'association_id' => $item->id, 'id' => $id));
         if ($target->can_do('delete')) {
             $deletebutton = '<a href="'. $target->url .'">'.

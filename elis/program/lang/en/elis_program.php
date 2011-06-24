@@ -338,6 +338,7 @@ $string['notice_curriculum_deleted'] = 'Deleted the program named {$a->name} (ID
 $string['notice_pmclass_deleted'] = 'Deleted the class instance {$a->idnumber}';
 $string['notice_user_deleted'] = 'Deleted the user named {$a->firstname} {$a->lastname} (ID number: {$a->idnumber})';
 $string['notice_userset_deleted'] = 'Deleted the user set named {$a->name}';
+$string['notice_usertrack_deleted'] = 'Unenroled the user from track: {$a->trackid}';
 $string['notice_track_deleted'] = 'Deleted the track {$a->idnumber}';
 $string['notifyclasscompletedmessagedef'] = "%%%%userenrolname%%%% has completed the class instance %%%%classname%%%%.";
 $string['notifyclassnotcompletedmessagedef'] = "%%%%userenrolname%%%% has not completed the class instance %%%%classname%%%%.";

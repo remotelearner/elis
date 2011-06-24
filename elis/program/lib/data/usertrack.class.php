@@ -321,10 +321,10 @@ class usertrack extends elis_data_object {
 
 
         //user just needs to be in one of the possible clusters
-        if(record_exists_select(clusteruser::TABLE, $select, $params)) {
-            return true;
-
-        }
+        // TODO: clusteruser needs to be ported to ELIS 2 as clusterassignment
+//        if(record_exists_select(clusteruser::TABLE, $select, $params)) {
+//            return true;
+//        }
 
         return false;
     }

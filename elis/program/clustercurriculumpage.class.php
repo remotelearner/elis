@@ -57,6 +57,7 @@ class clustercurriculumbasepage extends associationpage {
                   'showbutton' => true,
                   'image' => 'edit'),
 
+
             array('tab_id' => 'delete',
                   'page' => get_class($this),
                   'params' => array('action' => 'delete'),

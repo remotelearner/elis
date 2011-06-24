@@ -151,7 +151,8 @@ class clustercurriculum extends elis_data_object {
          */
 
         //only insert users if we are auto-enrolling
-        if(!empty($autoenrol)) {
+        // TODO: change clusteruser to clusterassignment when that is ported to ELIS2
+        /*if(!empty($autoenrol)) {
             $timenow = time();
             $sql = 'INSERT INTO {' . curriculumstudent::TABLE . '} '
                 . '(userid, curriculumid, timecreated, timemodified) '
@@ -162,7 +163,7 @@ class clustercurriculum extends elis_data_object {
                 . 'WHERE clu.clusterid = ? AND ca.curriculumid IS NULL';
             $params = array($cluster);
             $DB->execute_sql($sql,$params);
-        }
+        }*/
 
         events_trigger('crlm_cluster_curriculum_associated', $record);
     }
