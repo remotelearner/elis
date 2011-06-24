@@ -451,7 +451,9 @@ abstract class php_report {
             $result .= get_string('schedule_this_report', 'block_php_report').'&nbsp';
 
             //open popup code
-            $jsondata = array('url' => $schedule_report_url);
+            $jsondata = array('url' => $schedule_report_url,
+                              'name' => 'php_report_param_popup',
+                              'options' => "\"menubar=0,location=0,scrollbars,status,resizable,width=1600,height=600\"");
             $jsondata = json_encode($jsondata);
             $onclick = "return openpopup(null, $jsondata)";
             //start of anchor for link
