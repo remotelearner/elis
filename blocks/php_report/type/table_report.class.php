@@ -1061,48 +1061,6 @@ abstract class table_report extends php_report {
         return $input;
     }
 
-
-    /**
-     * Print the download menu.
-     *
-     * @return  string  HTML output for display.
-     */
-    function print_download_menu() {
-        $output = '';
-
-        if (!empty($this->fileformats)) {
-            $output .= '<form action="reportdownload.php" method="post">' . "\n";
-
-        /// Print out the necessary hidden form vars.
-            $parts = explode('?', $this->baseurl);
-            if (count($parts) == 2 && strlen($parts[1])) {
-                $args = explode('&', str_replace('&amp;', '&', $parts[1]));
-
-                if (count($args) === 0) {
-                    $args = explode('&amp;', $parts[1]);
-                }
-
-                if (!empty($args)) {
-                    foreach ($args as $arg) {
-                        $vals = explode('=', $arg);
-
-                        if (!empty($vals[1])) {
-                            $output .= '<input type="hidden" name="' . $vals[0] .
-                                       '" value="' . urldecode($vals[1]) . '" />';
-                        }
-                    }
-                }
-            }
-
-            $output .= cm_choose_from_menu($this->fileformats, 'download', '', 'choose', '', '0', true);
-            $output .= '<input type="submit" value="' . get_string('download_report', 'block_curr_admin') . '" />' . "\n";
-            $output .= '</form>' . "\n";
-        }
-
-        return $output;
-    }
-
-
     /**
      * Print the paging headers for the table.
      *

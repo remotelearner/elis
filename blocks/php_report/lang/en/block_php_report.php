@@ -150,3 +150,5 @@ $string['popup_jobs_error'] = 'Invalid job list specified';
 $string['popup_run_instructions'] = 'Please leave this window open while the selected jobs are running. Progress is indicated below.';
 $string['popup_running_label'] = 'Running job: ';
 $string['popup_status'] = '{$a->current} of {$a->total} jobs completed';
+
+$string['required_field'] = 'Error: {$a} is a required field';

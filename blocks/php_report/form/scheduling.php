@@ -57,7 +57,7 @@ class scheduling_form_step_label extends moodleform {
 
         $mform->addElement('text', 'label', get_string('label', 'block_php_report'));
         $mform->setType('label', PARAM_CLEAN);
-        $mform->addRule('label', get_string('required_field', 'block_curr_admin', get_string('label', 'block_php_report')), 'required', null, 'client');
+        $mform->addRule('label', get_string('required_field', 'block_php_report', get_string('label', 'block_php_report')), 'required', null, 'client');
 
         $options=array('cols'=>'30');
         $mform->addElement('textarea', 'description', get_string('description'),$options);
@@ -143,7 +143,7 @@ class scheduling_form_step_schedule extends moodleform {
         $group[] = $mform->createElement('date_selector', 'startdate', '', $date_options);
         $mform->addGroup($group, 'starttype', get_string('start', 'block_php_report'), '', false);
         $mform->setDefault('starttype', 0);
-        $mform->addRule('starttype', get_string('required_field', 'block_curr_admin', get_string('start', 'block_php_report')), 'required', null, 'client');
+        $mform->addRule('starttype', get_string('required_field', 'block_php_report', get_string('start', 'block_php_report')), 'required', null, 'client');
         $mform->disabledIf('startdate', 'starttype', 'neq', 1);
         $mform->disabledIf('startdate[day]', 'starttype', 'neq', 1);
         $mform->disabledIf('startdate[month]', 'starttype', 'neq', 1);
@@ -154,7 +154,7 @@ class scheduling_form_step_schedule extends moodleform {
         $group[] = $mform->createElement('radio', 'recurrencetype', '', get_string('calendar_recurrence', 'block_php_report'), scheduling_workflow::RECURRENCE_CALENDAR);
         $mform->addGroup($group, 'recurrencetype', get_string('recurrence', 'block_php_report'), '', false);
         $mform->setDefault('recurrencetype', scheduling_workflow::RECURRENCE_SIMPLE);
-        $mform->addRule('recurrencetype', get_string('required_field', 'block_curr_admin', get_string('recurrence', 'block_php_report')), 'required', null, 'client');
+        $mform->addRule('recurrencetype', get_string('required_field', 'block_php_report', get_string('recurrence', 'block_php_report')), 'required', null, 'client');
 
         $mform->addElement('header', 'simplerecurrencegroup', get_string('simple_recurrence_settings', 'block_php_report'));
         $group = array();
@@ -371,7 +371,7 @@ class scheduling_form_step_format extends moodleform {
         }
 
         $mform->addGroup($radioarray, 'format', get_string('format'), '', false);
-        $mform->addRule('format', get_string('required_field', 'block_curr_admin', get_string('format')), 'required', null, 'client');
+        $mform->addRule('format', get_string('required_field', 'block_php_report', get_string('format')), 'required', null, 'client');
 
         workflowpage::add_navigation_buttons($mform, scheduling_workflow::STEP_PARAMETERS);
     }
@@ -409,7 +409,7 @@ class scheduling_form_step_recipients extends moodleform {
 
 
         $mform->addElement('text', 'recipients', get_string('recipientslist'), array('size' => 60));
-        $mform->addRule('recipients', get_string('required_field', 'block_curr_admin', get_string('recipientslist')), 'required', null, 'client');
+        $mform->addRule('recipients', get_string('required_field', 'block_php_report', get_string('recipientslist')), 'required', null, 'client');
 
         $mform->addElement('htmleditor', 'message', '<div class="php_report_bold_header">'.htmlspecialchars(get_string('message', 'block_php_report')).'</div>');
 
