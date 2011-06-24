@@ -692,13 +692,7 @@ class curriculumcourse extends elis_data_object {
         return $required;
     }
 
-    static $validation_rules = array(
-        'validate_course_name_not_empty'
-    );
-
-    function validate_course_name_not_empty() {
-        return validate_not_empty($this, 'courseid');
-    }
+    static $validation_rules = array();
 
     public function save() {
         parent::save();
