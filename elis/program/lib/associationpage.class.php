@@ -155,19 +155,17 @@ class associationpage extends pm_page {
     /**
      * Generic handler for the add action.  Prints the add form.
      */
-    function display_add() { // do_add()
+    function display_add() { // action_add()
         $id = $this->required_param('id', PARAM_INT);
         $parent_obj = new $this->parent_data_class($id);
-
-        //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
         $this->print_add_form($parent_obj);
     }
 
-    function do_add() {
+    function do_add() { // action_savenew()
         $id = $this->required_param('id', PARAM_INT);
-        $target = $this->get_new_page(array('action' => 'add'), true); // TBD
+        $target = $this->get_new_page(array('action' => 'add', 'id' => $id), true); // TBD: 's' => ... && 2nd param true ???
         $obj = $this->get_default_object_for_add();
-        $parent_obj = new $this->parent_data_class($id); // TBD
+        $parent_obj = new $this->parent_data_class($id);
         $params = array();
         if ($obj != NULL) {
             $params['obj'] = $obj;
@@ -177,7 +175,7 @@ class associationpage extends pm_page {
         }
         $form = new $this->form_class($target->url, $params);
         if ($form->is_cancelled()) {
-            $target = $this->get_new_page(array(), true); // TBD: drop 'id' ???
+            $target = $this->get_new_page(array('id' => $id), true); // TBD: 's' => ... && 'action' => 'default' || 'view' && 2nd param true???
             redirect($target->url);
             return;
         }
@@ -189,13 +187,13 @@ class associationpage extends pm_page {
             $obj->set_from_data($data);
             $obj->save();
             $this->after_cm_entity_add($obj);
-            $target = $this->get_new_page(array('action' => 'view', 'id' => $obj->id), true);
-            redirect($target->url);
+            $target = $this->get_new_page(array('id' => $id), true); // TBD: 's' => ... && 'action' => 'default' || 'view' && 2nd param true???
+            redirect($target->url, ucwords(get_class($obj)) .' '. $obj->id .
+                                   ' '.  get_string('saved') .'.');
         } else {
             $this->_form = $form;
             $this->display('add');
         }
-
     }
 
     /**

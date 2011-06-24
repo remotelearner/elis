@@ -57,12 +57,13 @@ class waitlistpage extends selectionpage {
         return array('alpha' => $alpha, 'namesearch' => $namesearch);
     }
 
-    /* *** TBD *** */
     function print_selection_filter($filter) {
         $id = $this->required_param('id', PARAM_INT);
         pmalphabox(new moodle_url($this->_get_page_url(),
-                           array('s' => $this->pagename, 'id' => $id)));
-        pmsearchbox($this->get_basepage());
+                           array('s' => $this->pagename, 'id' => $id)),
+                   'alpha', get_string('tag_name', self::LANG_FILE) .':');
+        pmsearchbox($this, 'search', 'get', // TBD: 'post' || 'get'?
+                    get_string('show_all_users', self::LANG_FILE));
     }
 
     function get_records($filter) {

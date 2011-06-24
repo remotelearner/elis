@@ -75,8 +75,9 @@ function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
  * @uses $_GET
  * @uses $CFG
  * @todo convert echo HTML statements to use M2 html_writer, etc.
+ * @todo support moodle_url as 1st parameter and not just string url.
  */
-function pmsearchbox($page_or_url, $searchname = 'search', $method = 'post', $showall = null) {
+function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'post', $showall = null) {
     global $CFG;
     $search = trim(optional_param($searchname, '', PARAM_TEXT));
 
@@ -98,7 +99,7 @@ function pmsearchbox($page_or_url, $searchname = 'search', $method = 'post', $sh
                                          : $target->url;
 
     echo '<table class="searchbox" style="margin-left:auto;margin-right:auto" cellpadding="10"><tr><td>'; // TBD: style ???
-    echo "<form action=\"{$action_url}\" method=\"{$method}\">"; // TBD: is action even required???
+    echo "<form action=\"{$action_url}\" method=\"{$method}\">";
     echo '<fieldset class="invisiblefieldset">';
     foreach($params as $key => $val) {
         echo "<input type=\"hidden\" name=\"{$key}\" value=\"{$val}\" />";

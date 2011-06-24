@@ -713,11 +713,11 @@ class student_table extends association_page_table {
     }
 
     function get_item_display_name($column, $item) {
-        global $CFG, $USER;
+        global $CFG, $OUTPUT, $USER;
 
         if (has_capability('moodle/user:viewdetails', get_context_instance(CONTEXT_USER, $USER->id))) {
             $moodle_link_begin = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.cm_get_moodleuserid($item->userid).'" alt="Moodle profile" title="Moodle profile">';
-            $moodle_link_end = ' <img src="'.$CFG->wwwroot.'/curriculum/pix/moodle.gif" alt="Moodle profile" title="Moodle profile" /></a>';
+            $moodle_link_end = ' <img src="'. $OUTPUT->pix_url('i/moodle_host') .'" alt="Moodle profile" title="Moodle profile" /></a>';
         } else {
             $moodle_link_begin = '';
             $moodle_link_end = '';

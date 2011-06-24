@@ -426,6 +426,7 @@ $string['required_credits'] = 'Required Credits';
 $string['required_field'] = 'Error: {$a} is a required field';
 
 $string['save_enrolment_changes'] = 'Save Changes';
+$string['saved'] = 'saved';
 $string['search'] = 'Search';
 $string['selectedonly'] = 'Show selected items only';
 $string['showallitems'] = 'Show all items';
