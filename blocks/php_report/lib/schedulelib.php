@@ -702,10 +702,6 @@ class scheduling_page extends workflowpage {
         global $CFG;
         require_once($CFG->dirroot . '/blocks/php_report/sharedlib.php');
 
-        //import necessary CSS
-        $stylesheet_web_path = $CFG->wwwroot . '/blocks/php_report/styles.php';
-        echo '<style>@import url("' . $stylesheet_web_path . '");</style>';
-
         $category_members = block_php_report_get_names_by_category(true, NULL, php_report::EXECUTION_MODE_SCHEDULED);
 
         //set up the basics of our table
@@ -714,7 +710,7 @@ class scheduling_page extends workflowpage {
                              get_string('list_schedule_header', 'block_php_report'));
         $table->align = array('left',
                               'left');
-        $table->rowclass = array();
+        $table->rowclasses = array();
         $table->data = array();
 
         $categories = block_php_report_get_category_mapping();
@@ -726,7 +722,7 @@ class scheduling_page extends workflowpage {
                 //set up a row for the category header
                 $table->data[] = array($category_display, '');
                 //cass class for specially styling the category header row
-                $table->rowclass[] = 'php_report_scheduling_list_category';
+                $table->rowclasses[] = 'php_report_scheduling_list_category';
 
                 //go through and add all report entries below the category header
                 foreach ($category_members[$category_key] as $member_shortname => $member_display) {
@@ -751,7 +747,7 @@ class scheduling_page extends workflowpage {
 
                     //append info to the row
                     $table->data[] = array($execute_report_link, $schedule_report_link);
-                    $table->rowclass[] = '';
+                    $table->rowclasses[] = '';
                 }
             }
         }

@@ -28,5 +28,7 @@ require_once '../../config.php';
 require_once $CFG->dirroot . '/blocks/php_report/lib/schedulelib.php';
 
 $PAGE = new scheduling_page();
+//load necessary css classes
+$PAGE->requires->css('/blocks/php_report/styles.css');
 
 $PAGE->run();
