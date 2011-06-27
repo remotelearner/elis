@@ -969,10 +969,6 @@ class scheduling_page extends workflowpage {
             }
         }
 
-        //import necessary CSS
-        $stylesheet_web_path = $CFG->wwwroot . '/blocks/php_report/styles.php';
-        echo '<style>@import url("' . $stylesheet_web_path . '");</style>';
-
         if ($recordset = block_php_report_get_report_jobs_recordset($report) and
             $recordset->valid()) {
             //we actually have scheduled instances for this report
