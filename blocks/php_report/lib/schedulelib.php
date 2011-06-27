@@ -902,7 +902,7 @@ class scheduling_page extends workflowpage {
                                 'copyjobs'   => get_string('listinstancejobs_action_copyjobs',   'block_php_report'),
                                 'deletejobs' => get_string('listinstancejobs_action_deletejobs', 'block_php_report'));
         //render the dropdown, disabled if necessary
-        echo html_writer::select($action_options, 'action', '', array(''=>'choosedots'), array('disabled' => $disabled));
+        echo html_writer::select($action_options, 'action', '', false, array('disabled' => $disabled));
 
         //render the submit button in the appropriate state
         if ($disabled) {
