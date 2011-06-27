@@ -220,8 +220,8 @@ class instructorpage extends associationpage {
                                     'display_function' => 'htmltab_display_function'),
             'completetime' => array('header' => get_string('instructor_completion', self::LANG_FILE),
                                     'display_function' => 'htmltab_display_function'),
-            'buttons'      => array('header' => '', 'sortable' => false,
-                                    'display_function' => 'htmltab_display_function')
+            'insbuttons'      => array('header' => '', 'sortable' => false,
+                                      'display_function' => 'htmltab_display_function')
         );
 
       /* **** TBD
@@ -311,26 +311,27 @@ class instructorpage extends associationpage {
                               '<img src="'. $OUTPUT->pix_url('edit') .'" alt="Edit" title="Edit" /></a>';
 
                 foreach ($columns as $column => $cdesc) {
+                    $tabobj = new stdClass;
                     if (($column == 'assigntime') || ($column == 'completetime')) {
-                        $newarr[] = !empty($ins->$column)
+                        $tabobj->{$column} = !empty($ins->$column)
                                     ? date(get_string('pm_date_format',
                                                       self::LANG_FILE),
                                            $ins->$column)
                                     : '-';
-                    } else if ($column == 'buttons') {
-                        $newarr[] = $editbutton . ' ' . $deletebutton;
+                    } else if ($column == 'insbuttons') {
+                        $tabobj->insbuttons = $editbutton . ' ' . $deletebutton;
                     } else {
-                        $newarr[] = $ins->$column;
+                        $tabobj->{$column} = $ins->{$column};
                     }
                 }
+                $newarr[] = $tabobj;
                 //$table->data[] = $newarr;
             }
             if (!empty($newarr)) {
-                $page_params['alpha'] = $alpha;
-                unset($page_params['sort']);
-                unset($page_params['dir']);
-                $table = new display_table($newarr, $columns,
-                                           get_pm_url(null, $page_params));
+                //$page_params['alpha'] = $alpha;
+                //unset($page_params['sort']);
+                //unset($page_params['dir']);
+                $table = new association_page_table($newarr, $columns, &$this);
             }
         }
 

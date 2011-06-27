@@ -145,11 +145,13 @@ abstract class selectionpage extends pm_page { // TBD
         global $CFG, $OUTPUT, $PAGE;
         $mode = $this->optional_param('mode', '', PARAM_ACTION);
         if (!$this->is_bare()) {
+            $title = get_string('breadcrumb_waitlistpage', self::LANG_FILE); // WAS get_string('select');
             echo "<script>var basepage='$baseurl';</script>";
             // TBD
             //$PAGE->requires->js_module(array('yui_yahoo', 'yui_dom', 'yui_event', 'yui_connection'));
             $PAGE->requires->js('/elis/core/js/associate.class.js');
-            echo '<div class="mform" style="width: 100%"><fieldset><legend>'.get_string('select').'</legend><div id="list_display">';
+            echo '<div class="mform" style="width: 100%"><fieldset><legend>'.
+                 $title .'</legend><div id="list_display">';
         }
 
         $pagenum = $this->optional_param('page', 0, PARAM_INT);
@@ -169,30 +171,35 @@ abstract class selectionpage extends pm_page { // TBD
         }
 
         echo '<div style="float: right">';
-        $this->print_record_count($count);
+        $this->print_record_count($count, 'num_user_found');
         echo '</div>';
 
-        // select all button
-        _print_checkbox('selectall', '', false, get_string('selectall'), '', 'select_all()');
-
-        // table
-        echo $table->get_html();
+        if ($count) {
+            // select all button
+            _print_checkbox('selectall', '', false, get_string('selectall'), '', 'select_all()');
+            // table
+            echo $table->get_html();
+        }
 
         if (!$this->is_bare()) {
-            echo '</div>';
+            echo '</div>'; // from above
 
-            $sparam1 = new stdClass;
-            $sparam1->num = '<span id="numselected">0</span>';
-            $sparam2 = new stdClass;
-            $sparam2->num = '<span id="numonotherpages">0</span>';
+            if ($count) {
+                $sparam1 = new stdClass;
+                $sparam1->num = '<span id="numselected">0</span>';
+                $sparam2 = new stdClass;
+                $sparam2->num = '<span id="numonotherpages">0</span>';
 
-            echo '<div align="center">'.get_string('numselected', self::LANG_FILE, $sparam1).'<span id="selectedonotherpages" style="display: none"> ('.get_string('num_not_shown', self::LANG_FILE, $sparam2).')</span></div>';
-            echo '<div align="center">';
-            _print_checkbox('selectedonly', '', false, get_string('selectedonly', self::LANG_FILE), '', 'change_selected_display()');
-            echo '</div></fieldset></div>';
+                echo '<div align="center">'.get_string('numselected', self::LANG_FILE, $sparam1).'<span id="selectedonotherpages" style="display: none"> ('.get_string('num_not_shown', self::LANG_FILE, $sparam2).')</span></div>';
+                echo '<div align="center">';
+                _print_checkbox('selectedonly', '', false, get_string('selectedonly', self::LANG_FILE), '', 'change_selected_display()');
+                echo '</div>';
+            }
+            echo '</fieldset></div>'; // from above
 
-            $form->display();
-
+            if ($count) {
+                $form->display();
+            }
             echo '</div></div>';
         }
     }
@@ -253,10 +260,11 @@ abstract class selectionpage extends pm_page { // TBD
 
     abstract protected function get_records_from_selection($record_ids);
 
-    protected function print_record_count($count) {
+    protected function print_record_count($count, $label = null) {
         $sparam = new stdClass;
         $sparam->num = $count;
-        print_string('items_found', self::LANG_FILE, $sparam);
+        print_string(empty($label) ? 'items_found' : $label, self::LANG_FILE,
+                     $sparam);
     }
 
     abstract protected function create_selection_table($records, $baseurl);

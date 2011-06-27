@@ -175,7 +175,13 @@ class instructor extends elis_data_object {
                                         'sortable' => false),
                 'completetime' => array('header' => get_string('completion_time', self::LANG_FILE),
                                         'display_function' => 'htmltab_display_function',
-                                        'sortable' => false));
+                                        'sortable' => false)
+              /* ****
+                , 'buttons'      => array('header' => '',
+                                        'display_function' => 'htmltab_display_function',
+                                        'sortable' => false)
+              **** */
+            );
         }
 
         if ($dir !== 'DESC') {
@@ -187,30 +193,6 @@ class instructor extends elis_data_object {
             $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
-    /* ****
-        foreach ($columns as $column => $cdesc) {
-            if ($sort != $column) {
-                $columnicon = "";
-                $columndir = "ASC";
-            } else {
-                $columndir = $dir == "ASC" ? "DESC":"ASC";
-                $columnicon = $dir == "ASC" ? "down":"up";
-                $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
-            }
-
-            if (($column == 'name') || ($column == 'description')) {
-                $$column = "<a href=\"index.php?s=ins&amp;section=curr&amp;id=$classid&amp;" .
-                           "action=add&amp;sort=$column&amp;dir=$columndir&amp;search=" .
-                           urlencode(stripslashes($namesearch)) . "&amp;alpha=$alpha\">" .
-                           $cdesc . "</a>$columnicon";
-            } else {
-                $$column = $cdesc;
-            }
-            $table->head[]  = $$column;
-            $table->align[] = "left";
-            $table->wrap[]  = true;
-        }
-    **** */
 
         $newarr = array();
         if (empty($this->id)) {
@@ -465,6 +447,7 @@ class instructor extends elis_data_object {
         }
 
         $sql = $select.$tables.$join.$on.$where.$sort;
+        //error_log("instructor.class::get_users_avail(); sql = {$sql}");
         return $this->_db->get_records_sql($sql, $params, $startrec, $perpage);
     }
 

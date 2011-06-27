@@ -62,7 +62,7 @@ class waitlistpage extends selectionpage {
         pmalphabox(new moodle_url($this->_get_page_url(),
                            array('s' => $this->pagename, 'id' => $id)),
                    'alpha', get_string('tag_name', self::LANG_FILE) .':');
-        pmsearchbox($this, 'search', 'get', // TBD: 'post' || 'get'?
+        pmsearchbox($this, 'search', 'get',
                     get_string('show_all_users', self::LANG_FILE));
     }
 

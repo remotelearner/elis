@@ -123,7 +123,7 @@ $string['completion_time'] = 'Completion Time';
 $string['confirm_delete_association'] = 'Are you sure you want to delete this entry?';
 $string['confirm_delete_category'] = 'Are you sure you want to delete the category named \"{$a->name}\"?  This will delete all fields in that category.';
 $string['confirm_delete_class'] = 'Are you sure you want to delete the class instance {$a->idnumber}?';
-$string['confirm_delete_completion'] = 'Are you sure you want to delete the learning objective \"name: {$a}\"?';
+$string['confirm_delete_completion'] = 'Are you sure you want to delete the learning objective \"name: {$a->name}\"?';
 $string['confirm_delete_course'] = 'Are you sure you want to delete the course description named {$a->name} (ID number: {$a->idnumber})?';
 $string['confirm_delete_curriculum'] = 'Are you sure you want to delete the program named {$a->name} (ID number: {$a->idnumber})?';
 $string['confirm_delete_field'] = 'Are you sure you want to delete the {$a->datatype} field named \"{$a->name}\"?';
@@ -248,7 +248,7 @@ $string['edit_cancelled'] = 'Edit cancelled';
 $string['edit_course_corequisites'] = 'Edit Course Description Corequisites';
 $string['edit_course_prerequisites'] = 'Edit Course Description Prerequisites';
 $string['edit_student_attendance'] = 'Edit Student Attendance';
-$string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a}';
+$string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a->version}';
 $string['elis_doc_class_link'] = '<strong>Documentation for ELIS</strong> &mdash; we have over 200
 pages of documentation for ELIS in our <a href="http://training.remote-learner.net/course/view.php?id=1090">ELIS Support Course</a>.
 You can access this course by logging in as a guest.  If you have problems
@@ -308,7 +308,7 @@ $string['field_syncwithmoodle'] = 'Sync with Moodle';
 $string['form_error'] = 'Selection page form error - expecting array!';
 $string['frequency'] = 'Frequency';
 
-$string['health_check_link'] = 'The <a href="{$a}/elis/program/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
+$string['health_check_link'] = 'The <a href="{$a->wwwroot}/elis/program/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
 
 $string['id'] = 'ID';
 $string['idnumber'] = 'ID Number';
@@ -422,23 +422,23 @@ $string['notify_curriculumrecurrence'] = "Receive curriculum expiration notifica
 $string['notify_trackenrol'] = "Receive track enrollment notifications";
 $string['nouser'] = 'No user found for specified user id.';
 $string['nowenroled'] = 'You have been removed from the waiting list and placed in class instance {$a->idnum}.';
-$string['num_class_found'] = '{$a} class instance(s) found';
-$string['num_course_found'] = '{$a} course description(s) found';
+$string['num_class_found'] = '{$a->num} class instance(s) found';
+$string['num_course_found'] = '{$a->num} course description(s) found';
 $string['num_courses'] = 'Num Course Descriptions';
-$string['num_curricula_assigned'] = '{$a} programs assigned';
-$string['num_curricula_unassigned'] = '{$a} programs unassigned';
-$string['num_curriculum_found'] = '{$a} programs found';
+$string['num_curricula_assigned'] = '{$a->num} programs assigned';
+$string['num_curricula_unassigned'] = '{$a->num} programs unassigned';
+$string['num_curriculum_found'] = '{$a->num} programs found';
 $string['num_max_students'] = 'Max # of Students';
 $string['num_not_shown'] = '{$a->num} not shown';
-$string['num_pmclass_found'] = '{$a} class(es) found';
+$string['num_pmclass_found'] = '{$a->num} class(es) found';
 $string['num_students_failed'] = 'number of students failed';
 $string['num_students_not_complete'] = 'number of students not complete';
 $string['num_students_passed'] = 'number of students passed';
-$string['num_track_found'] = '{$a} track(s) found';
-$string['num_user_found'] = '{$a} user(s) found';
-$string['num_users_assigned'] = '{$a} users assigned';
-$string['num_users_unassigned'] = '{$a} users unassigned';
-$string['num_userset_found'] = '{$a} user set(s) found';
+$string['num_track_found'] = '{$a->num} track(s) found';
+$string['num_user_found'] = '{$a->num} user(s) found';
+$string['num_users_assigned'] = '{$a->num} users assigned';
+$string['num_users_unassigned'] = '{$a->num} users unassigned';
+$string['num_userset_found'] = '{$a->num} user set(s) found';
 $string['numselected'] = '{$a->num} currently selected';
 
 $string['o_active'] = 'Only active';
@@ -494,7 +494,7 @@ $string['remove_coreq'] = 'Remove co-requisites';
 $string['remove_prereq'] = 'Remove prerequisites';
 $string['required'] = 'Required';
 $string['required_credits'] = 'Required Credits';
-$string['required_field'] = 'Error: {$a} is a required field';
+$string['required_field'] = 'Error: {$a->name} is a required field';
 
 $string['save_enrolment_changes'] = 'Save Changes';
 $string['saved'] = 'saved';

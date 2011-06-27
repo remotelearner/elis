@@ -147,10 +147,10 @@ function pmshowmatches($alpha, $namesearch, $matchlabel = null, $nomatchlabel = 
     }
     $match = array();
     if ($namesearch !== '') {
-        $match[] = s($namesearch);
+        $match[] = '<b>'. s($namesearch) .'</b>';
     }
     if ($alpha) {
-        $match[] = get_string($matchlabel, 'elis_program') .": {$alpha}___";
+        $match[] = get_string($matchlabel, 'elis_program') .": <b>{$alpha}___</b>";
     }
     if (!empty($match)) {
         $matchstring = implode(", ", $match);
