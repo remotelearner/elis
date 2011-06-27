@@ -40,7 +40,7 @@ class customfieldpage extends pm_page {
     }
 
     function display_default() {
-        global $CFG, $DB;
+        global $CFG, $DB, $OUTPUT;
         $level = $this->required_param('level', PARAM_ACTION);
         $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
         if (!$ctxlvl) {
@@ -94,7 +94,7 @@ class customfieldpage extends pm_page {
                 print_string('field_no_fields_defined', 'elis_program');
             } else {
                 if ($level == 'user') {
-                    require_once $CFG->wwwroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
+                    require_once $CFG->dirroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
                     $table = new customuserfieldtable($fields, array('name' => get_string('name'),
                                                                      'datatype' => get_string('field_datatype', 'elis_program'),
                                                                      'syncwithmoodle' => get_string('field_syncwithmoodle', 'elis_program'),
@@ -124,7 +124,7 @@ class customfieldpage extends pm_page {
             if ($level == 'user') {
                 // create new field from Moodle field
                 $select = 'shortname NOT IN (SELECT shortname FROM {'.field::TABLE.'})';
-                $moodlefields = $DB->get_records_select('user_info_field', $select, 'sortorder', 'id,name');
+                $moodlefields = $DB->get_records_select('user_info_field', $select, array('sortorder'=>'id,name'));
                 $moodlefields = $moodlefields ? $moodlefields : array();
                 $tmppage->params['action'] = 'editfield';
                 $tmppage->params['from'] = 'moodle';
@@ -166,7 +166,7 @@ class customfieldpage extends pm_page {
             }
             $fields = field::get_for_context_level($ctxlvl);
             $fields = $fields ? $fields : array();
-            require_once $CFG->wwwroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
+            require_once $CFG->dirroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
             foreach ($fields as $field) {
                 $fieldobj = new field($field);
                 sync_profile_field_with_moodle($fieldobj);
@@ -179,7 +179,7 @@ class customfieldpage extends pm_page {
     function display_editcategory() {
         global $CFG;
 
-        require_once $CFG->wwwroot.'/elis/program/form/fieldcategoryform.class.php';
+        require_once $CFG->dirroot.'/elis/program/form/fieldcategoryform.class.php';
         $level = $this->required_param('level', PARAM_ACTION);
         $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
         if (!$ctxlvl) {
@@ -195,14 +195,14 @@ class customfieldpage extends pm_page {
             $data->id = $id;
             $category = new field_category($data);
             if ($category->id) {
-                $category->update();
+                $category->save();
             } else {
-                $category->add();
+                $category->save();
                 // assume each category only belongs to one context level (for now)
                 $categorycontext = new field_category_contextlevel();
                 $categorycontext->categoryid = $category->id;
                 $categorycontext->contextlevel = $ctxlvl;
-                $categorycontext->add();
+                $categorycontext->save();
             }
             $tmppage = new customfieldpage(array('level' => $level));
             redirect($tmppage->url, get_string('field_category_saved', 'elis_program', $category));
@@ -263,7 +263,7 @@ class customfieldpage extends pm_page {
         }
         $id = $this->optional_param('id', NULL, PARAM_INT);
 
-        require_once $CFG->wwwroot.'/elis/program/form/customfieldform.class.php';
+        require_once $CFG->dirroot.'/elis/program/form/customfieldform.class.php';
         $tmppage = new customfieldpage(array('level' => $level, 'action' => 'editfield'), $this);
         $form = new customfieldform($tmppage->get_moodle_url(), $this);
         if ($form->is_cancelled()) {
@@ -273,14 +273,14 @@ class customfieldpage extends pm_page {
             $field = new field($data);
             if ($id) {
                 $field->id = $id;
-                $field->update();
+                $field->save();
             } else {
-                $field->add();
+                $field->save();
                 // assume each field only belongs to one context level (for now)
                 $fieldcontext = new field_contextlevel();
                 $fieldcontext->fieldid = $field->id;
                 $fieldcontext->contextlevel = $ctxlvl;
-                $fieldcontext->add();
+                $fieldcontext->save();
             }
 
             if (!empty($data->defaultdata)) {
@@ -306,8 +306,8 @@ class customfieldpage extends pm_page {
 
             $plugins = get_list_of_plugins('curriculum/plugins');
             foreach ($plugins as $plugin) {
-                if (is_readable($CFG->wwwroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php')) {
-                    include_once($CFG->wwwroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php');
+                if (is_readable($CFG->dirroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php')) {
+                    include_once($CFG->dirroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php');
                     if (function_exists("{$plugin}_field_save_form_data")) {
                         call_user_func("{$plugin}_field_save_form_data", $form, $field, $data);
                     }
@@ -319,7 +319,7 @@ class customfieldpage extends pm_page {
         } else {
             if (!empty($id)) {
                 if ($this->optional_param('from', NULL, PARAM_CLEAN) == 'moodle' && $level == 'user') {
-                    $moodlefield = $DB->get_record('user_info_field', 'id', $id);
+                    $moodlefield = $DB->get_record('user_info_field', array('id'=>$id));
                     if (!$moodlefield) {
                         print_error('invalid_field_id', 'elis_program');
                     }
@@ -373,8 +373,8 @@ class customfieldpage extends pm_page {
 
                     $plugins = get_list_of_plugins('elis/program/plugins');
                     foreach ($plugins as $plugin) {
-                        if (is_readable($CFG->wwwroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php')) {
-                            include_once($CFG->wwwroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php');
+                        if (is_readable($CFG->dirroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php')) {
+                            include_once($CFG->dirroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php');
                             if (function_exists("{$plugin}_field_get_form_data")) {
                                 $data_array += call_user_func("{$plugin}_field_get_form_data", $form, $data);
                             }
