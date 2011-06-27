@@ -1519,7 +1519,8 @@ abstract class table_report extends php_report {
         $offset = $paging_info[table_report::offset];
         $limit = $paging_info[table_report::limit];
 
-        if($report_results = $DB->get_recordset_sql($sql, $params, $offset, $limit)) {
+        if($report_results = $DB->get_recordset_sql($sql, $params, $offset, $limit) and
+           $report_results->valid()) {
             $this->data = array();
             $this->summary = array();
             $report_result = $report_results->current();
