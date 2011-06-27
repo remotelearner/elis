@@ -32,7 +32,8 @@ require_once($CFG->dirroot . '/blocks/php_report/lib/filtering.php');
 
 //not using require_login here because permissions are determined
 //by the reports themselved
-//$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE = new moodle_page();
+$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 
 //report instance id
 $id = required_param('id', PARAM_CLEAN);
