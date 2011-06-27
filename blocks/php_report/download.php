@@ -34,6 +34,9 @@ $id = required_param('id', PARAM_CLEAN);
 //selected export format
 $format = required_param('format', PARAM_CLEAN);
 
+//needed to satisfy base page requirements
+$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+
 //load reporting-related dependencies, including the report definition
 php_report_block::require_dependencies($id);
 //load filter classes
