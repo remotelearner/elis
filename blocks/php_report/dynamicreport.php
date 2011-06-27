@@ -27,6 +27,9 @@
 require_once('../../config.php');
 require_once('php_report_block.class.php');
 
+//needed to satisfy the base page type
+$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+
 //report instance id can be a block instance id
 //or a general report shortname
 $id = required_param('id', PARAM_CLEAN);
