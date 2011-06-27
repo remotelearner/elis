@@ -28,11 +28,11 @@ require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('page.class.php');
 require_once elis::lib('table.class.php');
 
-//require_once CURMAN_DIRLOCATION.'/lib/newpage.class.php';
-
 class customfieldpage extends pm_page {
     var $pagename = 'field';
     var $section = 'admn';
+
+    var $params = array();
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
@@ -40,19 +40,19 @@ class customfieldpage extends pm_page {
     }
 
     function display_default() {
-        global $CFG, $CURMAN;
+        global $CFG, $DB;
         $level = $this->required_param('level', PARAM_ACTION);
-        $ctxlvl = context_level_base::get_custom_context_level($level, 'block_curr_admin');
+        $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
         if (!$ctxlvl) {
-            print_error('invalid_context_level', 'block_curr_admin');
+            print_error('invalid_context_level', 'elis_program');
         }
 
         $tmppage = new customfieldpage();
         $tabs = array();
-        require "$CFG->dirroot/blocks/curr_admin/db/access.php";
-        foreach($block_curr_admin_contextlevels as $contextlevel => $val) {
+        require $CFG->dirroot.'/elis/program/db/access.php';
+        foreach($contextlevels as $contextlevel => $val) {
             $tmppage->params['level'] = $contextlevel;
-            $tabs[] = new tabobject($contextlevel, $tmppage->get_url(), get_string($contextlevel, 'block_curr_admin'));
+            $tabs[] = new tabobject($contextlevel, $tmppage->url, get_string($contextlevel, 'elis_program'));
         }
         print_tabs(array($tabs), $level);
 
@@ -75,7 +75,7 @@ class customfieldpage extends pm_page {
         $edittxt = get_string('edit');
         $syncerr = false;
         if (empty($categories)) {
-            print_heading(get_string('field_no_categories_defined', 'block_curr_admin'));
+            print_heading(get_string('field_no_categories_defined', 'elis_program'));
         }
         foreach ($fieldsbycategory as $categoryid => $fields) {
             $tmppage = new customfieldpage();
@@ -86,18 +86,18 @@ class customfieldpage extends pm_page {
             $tmppage->params['action'] = 'editcategory';
             $editlink = $tmppage->get_url();
             echo "<h2>{$categories[$categoryid]->name} <a href=\"$editlink\">";
-            echo "<img src=\"{$CFG->wwwroot}/curriculum/pix/edit.gif\" alt=\"$edittxt\" title=\"$edittxt\" /></a>";
-            echo "<a href=\"$deletelink\"><img src=\"{$CFG->wwwroot}/curriculum/pix/delete.gif\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
+            echo "<img src=\"{$CFG->wwwroot}/elis/program/pix/edit.gif\" alt=\"$edittxt\" title=\"$edittxt\" /></a>";
+            echo "<a href=\"$deletelink\"><img src=\"{$CFG->wwwroot}/elis/program/pix/delete.gif\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
             echo "</h2>\n";
 
             if (empty($fields)) {
-                print_string('field_no_fields_defined', 'block_curr_admin');
+                print_string('field_no_fields_defined', 'elis_program');
             } else {
                 if ($level == 'user') {
-                    require_once CURMAN_DIRLOCATION . '/plugins/moodle_profile/custom_fields.php';
+                    require_once $CFG->wwwroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
                     $table = new customuserfieldtable($fields, array('name' => get_string('name'),
-                                                                     'datatype' => get_string('field_datatype', 'block_curr_admin'),
-                                                                     'syncwithmoodle' => get_string('field_syncwithmoodle', 'block_curr_admin'),
+                                                                     'datatype' => get_string('field_datatype', 'elis_program'),
+                                                                     'syncwithmoodle' => get_string('field_syncwithmoodle', 'elis_program'),
                                                                      'buttons' => ''), $this->get_moodle_url(array('level' => $level)));
                 } else {
                     $table = new customfieldtable($fields, array('name' => get_string('name'),
@@ -109,78 +109,88 @@ class customfieldpage extends pm_page {
             }
         }
         if ($syncerr) {
-            print_string('moodle_field_sync_warning', 'block_curr_admin');
+            print_string('moodle_field_sync_warning', 'elis_program');
         }
 
         // button for new category
         $options = array('s' => 'field',
                          'action'=>'editcategory',
                          'level' => $level);
-        print_single_button('index.php', $options, get_string('field_create_category', 'block_curr_admin'));
+        //print_single_button('index.php', $options, get_string('field_create_category', 'elis_program'));
+        $button = new single_button(new moodle_url('index.php', $options), get_string('field_create_category', 'elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('field_create_category', 'elis_program'), 'id'=>''));
+        echo $OUTPUT->render($button);
 
         if (!empty($categories)) {
             if ($level == 'user') {
                 // create new field from Moodle field
-                $select = "shortname NOT IN (SELECT shortname FROM {$CURMAN->db->prefix_table(FIELDTABLE)})";
-                $moodlefields = $CURMAN->db->get_records_select('user_info_field', $select, 'sortorder', 'id,name');
+                $select = 'shortname NOT IN (SELECT shortname FROM {'.field::TABLE.'})';
+                $moodlefields = $DB->get_records_select('user_info_field', $select, 'sortorder', 'id,name');
                 $moodlefields = $moodlefields ? $moodlefields : array();
                 $tmppage->params['action'] = 'editfield';
                 $tmppage->params['from'] = 'moodle';
                 $tmppage->params['level'] = 'user';
                 echo '<div>';
-                popup_form("{$tmppage->get_url()}&amp;id=",
+                popup_form("{$tmppage->url}&amp;id=",
                            array_map(create_function('$x', 'return $x->name;'), $moodlefields),
-                           'frommoodleform', '', 'choose', '', '', false, 'self', get_string('field_from_moodle', 'block_curr_admin'));
+                           'frommoodleform', '', 'choose', '', '', false, 'self', get_string('field_from_moodle', 'elis_program'));
                 echo '</div>';
 
                 $options = array('s' => 'field',
                                  'action' => 'forceresync');
-                print_single_button('index.php', $options, get_string('field_force_resync', 'block_curr_admin'));
+                //print_single_button('index.php', $options, get_string('field_force_resync', 'elis_program'));
+                $button = new single_button(new moodle_url('index.php', $options), get_string('field_force_resync', 'elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('field_force_resync', 'elis_program'), 'id'=>''));
+                echo $OUTPUT->render($button);
             } else {
                 // create new field from scratch
                 $options = array('s' => 'field',
                                  'action'=>'editfield',
                                  'level' => $level);
-                print_single_button('index.php', $options, get_string('field_create_new', 'block_curr_admin'));
+                //print_single_button('index.php', $options, get_string('field_create_new', 'elis_program'));
+                $button = new single_button(new moodle_url('index.php', $options), get_string('field_create_new', 'elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('field_create_new', 'elis_program'), 'id'=>''));
+                echo $OUTPUT->render($button);
             }
         }
     }
 
     function do_forceresync() {
+        global $CFG;
+
         $confirm = $this->optional_param('confirm', 0, PARAM_INT);
         if (!$confirm) {
-            notice_yesno(get_string('field_confirm_force_resync', 'block_curr_admin'), 'index.php', 'index.php', array('s' => 'field', 'action' => 'forceresync', 'confirm' => 1), array('s' => 'field', 'level' => 'user'), 'post', 'get');
+            notice_yesno(get_string('field_confirm_force_resync', 'elis_program'), 'index.php', 'index.php', array('s' => 'field', 'action' => 'forceresync', 'confirm' => 1), array('s' => 'field', 'level' => 'user'), 'post', 'get');
         } else {
-            print_string('field_resyncing', 'block_curr_admin');
-            $ctxlvl = context_level_base::get_custom_context_level('user', 'block_curr_admin');
+            print_string('field_resyncing', 'elis_program');
+            $ctxlvl = context_level_base::get_custom_context_level('user', 'elis_program');
             if (!$ctxlvl) {
-                print_error('invalid_context_level', 'block_curr_admin');
+                print_error('invalid_context_level', 'elis_program');
             }
             $fields = field::get_for_context_level($ctxlvl);
             $fields = $fields ? $fields : array();
-            require_once CURMAN_DIRLOCATION.'/plugins/moodle_profile/custom_fields.php';
+            require_once $CFG->wwwroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
             foreach ($fields as $field) {
                 $fieldobj = new field($field);
                 sync_profile_field_with_moodle($fieldobj);
             }
             $tmppage = new customfieldpage(array('level' => 'user'));
-            redirect($tmppage->get_url(), get_string('continue'));
+            redirect($tmppage->url, get_string('continue'));
         }
     }
 
     function display_editcategory() {
-        require_once CURMAN_DIRLOCATION.'/form/fieldcategoryform.class.php';
+        global $CFG;
+
+        require_once $CFG->wwwroot.'/elis/program/form/fieldcategoryform.class.php';
         $level = $this->required_param('level', PARAM_ACTION);
-        $ctxlvl = context_level_base::get_custom_context_level($level, 'block_curr_admin');
+        $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
         if (!$ctxlvl) {
-            print_error('invalid_context_level', 'block_curr_admin');
+            print_error('invalid_context_level', 'elis_program');
         }
         $id = $this->optional_param('id', 0, PARAM_INT);
         $tmppage = new customfieldpage(array('level' => $level, 'id' => $id, 'action' => 'editcategory', 'level' => $level));
-        $form = new fieldcategoryform($tmppage->get_moodle_url());
+        $form = new fieldcategoryform($tmppage->url);
         if ($form->is_cancelled()) {
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->get_url(), get_string('edit_cancelled', 'block_curr_admin'));
+            redirect($tmppage->url, get_string('edit_cancelled', 'elis_program'));
         } else if ($data = $form->get_data()) {
             $data->id = $id;
             $category = new field_category($data);
@@ -195,7 +205,7 @@ class customfieldpage extends pm_page {
                 $categorycontext->add();
             }
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->get_url(), get_string('field_category_saved', 'block_curr_admin', $category));
+            redirect($tmppage->url, get_string('field_category_saved', 'elis_program', $category));
         } else {
             if ($id) {
                 $category = new field_category($id);
@@ -212,16 +222,16 @@ class customfieldpage extends pm_page {
         $category = new field_category($id);
 
         if (!$category->id) {
-            print_error('invalidcategoryid', 'block_curr_admin');
+            print_error('invalid_category_id', 'elis_program');
         }
 
         $confirm = $this->optional_param('confirm', 0, PARAM_INT);
         if ($confirm) {
             $category->delete();
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->get_url(), get_string('category_deleted', 'block_curr_admin', $category));
+            redirect($tmppage->url, get_string('field_category_deleted', 'elis_program', $category));
         } else {
-            notice_yesno(get_string('confirm_delete_category', 'block_curr_admin', $category),
+            notice_yesno(get_string('confirm_delete_category', 'elis_program', $category),
                          'index.php', 'index.php',
                          array(
                              's' => $this->pagename,
@@ -244,20 +254,21 @@ class customfieldpage extends pm_page {
     }
 
     function display_editfield() {
-        global $CURMAN;
+        global $CFG, $DB;
+
         $level = $this->required_param('level', PARAM_ACTION);
-        $ctxlvl = context_level_base::get_custom_context_level($level, 'block_curr_admin');
+        $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
         if (!$ctxlvl) {
-            print_error('invalid_context_level', 'block_curr_admin');
+            print_error('invalid_context_level', 'elis_program');
         }
         $id = $this->optional_param('id', NULL, PARAM_INT);
 
-        require_once CURMAN_DIRLOCATION.'/form/customfieldform.class.php';
+        require_once $CFG->wwwroot.'/elis/program/form/customfieldform.class.php';
         $tmppage = new customfieldpage(array('level' => $level, 'action' => 'editfield'), $this);
         $form = new customfieldform($tmppage->get_moodle_url(), $this);
         if ($form->is_cancelled()) {
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->get_url(), get_string('edit_cancelled', 'block_curr_admin'));
+            redirect($tmppage->url, get_string('edit_cancelled', 'elis_program'));
         } else if ($data = $form->get_data()) {
             $field = new field($data);
             if ($id) {
@@ -295,8 +306,8 @@ class customfieldpage extends pm_page {
 
             $plugins = get_list_of_plugins('curriculum/plugins');
             foreach ($plugins as $plugin) {
-                if (is_readable(CURMAN_DIRLOCATION . '/plugins/' . $plugin . '/custom_fields.php')) {
-                    include_once(CURMAN_DIRLOCATION . '/plugins/' . $plugin . '/custom_fields.php');
+                if (is_readable($CFG->wwwroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php')) {
+                    include_once($CFG->wwwroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php');
                     if (function_exists("{$plugin}_field_save_form_data")) {
                         call_user_func("{$plugin}_field_save_form_data", $form, $field, $data);
                     }
@@ -304,13 +315,13 @@ class customfieldpage extends pm_page {
             }
 
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->get_url(), get_string('field_saved', 'block_curr_admin', $field));
+            redirect($tmppage->url, get_string('field_saved', 'elis_program', $field));
         } else {
             if (!empty($id)) {
                 if ($this->optional_param('from', NULL, PARAM_CLEAN) == 'moodle' && $level == 'user') {
-                    $moodlefield = $CURMAN->db->get_record('user_info_field', 'id', $id);
+                    $moodlefield = $DB->get_record('user_info_field', 'id', $id);
                     if (!$moodlefield) {
-                        print_error('invalidfieldid', 'block_curr_admin');
+                        print_error('invalid_field_id', 'elis_program');
                     }
                     unset($moodlefield->id);
                     $data_array = (array)$moodlefield;
@@ -360,10 +371,10 @@ class customfieldpage extends pm_page {
                     }
                     $data_array['defaultdata'] = $defaultdata;
 
-                    $plugins = get_list_of_plugins('curriculum/plugins');
+                    $plugins = get_list_of_plugins('elis/program/plugins');
                     foreach ($plugins as $plugin) {
-                        if (is_readable(CURMAN_DIRLOCATION . '/plugins/' . $plugin . '/custom_fields.php')) {
-                            include_once(CURMAN_DIRLOCATION . '/plugins/' . $plugin . '/custom_fields.php');
+                        if (is_readable($CFG->wwwroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php')) {
+                            include_once($CFG->wwwroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php');
                             if (function_exists("{$plugin}_field_get_form_data")) {
                                 $data_array += call_user_func("{$plugin}_field_get_form_data", $form, $data);
                             }
@@ -384,16 +395,16 @@ class customfieldpage extends pm_page {
         $field = new field($id);
 
         if (!$field->id) {
-            print_error('invalidfieldid', 'block_curr_admin');
+            print_error('invalid_field_id', 'elis_program');
         }
 
         $confirm = $this->optional_param('confirm', 0, PARAM_INT);
         if ($confirm) {
             $field->delete();
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->get_url(), get_string('field_deleted', 'block_curr_admin', $field));
+            redirect($tmppage->url, get_string('field_deleted', 'elis_program', $field));
         } else {
-            notice_yesno(get_string('confirm_delete_field', 'block_curr_admin', $field),
+            notice_yesno(get_string('confirm_delete_field', 'elis_program', $field),
                          'index.php', 'index.php',
                          array(
                              's' => $this->pagename,
@@ -422,7 +433,7 @@ class customfieldtable extends display_table {
     }
 
     function get_item_display_datatype($column, $item) {
-        return get_string("field_datatype_{$item->datatype}", 'block_curr_admin');
+        return get_string("field_datatype_{$item->datatype}", 'elis_program');
     }
 
     function get_item_display_buttons($column, $item) {
@@ -431,12 +442,12 @@ class customfieldtable extends display_table {
         $tmppage->params = array('action' => 'deletefield',
                                  'level' => $this->pageurl->params['level'],
                                  'id' => $item->id);
-        $deletelink = $tmppage->get_url();
+        $deletelink = $tmppage->url;
         $tmppage->params['action'] = 'editfield';
-        $editlink = $tmppage->get_url();
+        $editlink = $tmppage->url;
         $deletetxt = get_string('delete');
         $edittxt = get_string('edit');
-        return "<a href=\"$editlink\"><img src=\"{$CFG->wwwroot}/curriculum/pix/edit.gif\" alt=\"$edittxt\" title=\"$edittxt\" /></a> <a href=\"$deletelink\"><img src=\"{$CFG->wwwroot}/curriculum/pix/delete.gif\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
+        return "<a href=\"$editlink\"><img src=\"{$CFG->wwwroot}/elis/program/pix/edit.gif\" alt=\"$edittxt\" title=\"$edittxt\" /></a> <a href=\"$deletelink\"><img src=\"{$CFG->wwwroot}/elis/program/pix/delete.gif\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
     }
 }
 
@@ -449,11 +460,11 @@ class customuserfieldtable extends customfieldtable {
 
     function get_item_display_syncwithmoodle($column, $item) {
         if ($item->syncwithmoodle === NULL) {
-            return get_string('field_no_sync', 'block_curr_admin');
+            return get_string('field_no_sync', 'elis_program');
         } elseif ($item->syncwithmoodle == cm_moodle_profile::sync_from_moodle) {
-            $result = get_string('field_sync_from_moodle', 'block_curr_admin');
+            $result = get_string('field_sync_from_moodle', 'elis_program');
         } else {
-            $result = get_string('field_sync_to_moodle', 'block_curr_admin');
+            $result = get_string('field_sync_to_moodle', 'elis_program');
         }
         if (empty($item->mfieldid)) {
             $this->syncerr = true;

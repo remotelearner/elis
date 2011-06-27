@@ -29,6 +29,8 @@ require_once elispm::file('form/cmform.class.php');
 
 class customfieldform extends moodleform {
     function definition() {
+        global $CFG;
+
         $form =& $this->_form;
 
         $form->addElement('hidden', 'id');
@@ -47,7 +49,7 @@ class customfieldform extends moodleform {
         $form->setType('name', PARAM_MULTILANG);
 
         $level = $this->_customdata->required_param('level', PARAM_ACTION);
-        $ctxlvl = context_level_base::get_custom_context_level($level, 'block_curr_admin');
+        $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
         $categories = field_category::get_for_context_level($ctxlvl);
         $choices = array();
         foreach ($categories as $category) {
@@ -56,68 +58,66 @@ class customfieldform extends moodleform {
         $form->addElement('select', 'categoryid', get_string('profilecategory', 'admin'), $choices);
 
         $form->addElement('htmleditor', 'description', get_string('profiledescription', 'admin'));
-        $form->setHelpButton('description', array('text', get_string('helptext')));
+        $form->addHelpButton('description', array('text', get_string('helptext')));
 
         $choices = array(
-            'text' => get_string('field_datatype_text', 'block_curr_admin'),
-            'char' => get_string('field_datatype_char', 'block_curr_admin'),
-            'int' => get_string('field_datatype_int', 'block_curr_admin'),
-            'num' => get_string('field_datatype_num', 'block_curr_admin'),
-            'bool' => get_string('field_datatype_bool', 'block_curr_admin'),
+            'text' => get_string('field_datatype_text', 'elis_program'),
+            'char' => get_string('field_datatype_char', 'elis_program'),
+            'int' => get_string('field_datatype_int', 'elis_program'),
+            'num' => get_string('field_datatype_num', 'elis_program'),
+            'bool' => get_string('field_datatype_bool', 'elis_program'),
             );
-        $form->addElement('select', 'datatype', get_string('field_datatype', 'block_curr_admin'), $choices);
+        $form->addElement('select', 'datatype', get_string('field_datatype', 'elis_program'), $choices);
 
         $form->addElement('advcheckbox', 'forceunique', get_string('profileforceunique', 'admin'));
         $form->setAdvanced('forceunique');
 
-        $form->addElement('advcheckbox', 'multivalued', get_string('field_multivalued', 'block_curr_admin'));
+        $form->addElement('advcheckbox', 'multivalued', get_string('field_multivalued', 'elis_program'));
         $form->setAdvanced('multivalued');
 
         $form->addElement('text', 'defaultdata', get_string('profiledefaultdata', 'admin'), 'size="50"');
         $form->setType('defaultdata', PARAM_MULTILANG);
 
 
-        $plugins = get_list_of_plugins('curriculum/plugins');
+        $plugins = get_list_of_plugins('elis/program/plugins');
 
         foreach ($plugins as $plugin) {
-            if (is_readable(CURMAN_DIRLOCATION . '/plugins/' . $plugin . '/custom_fields.php')) {
-                include_once(CURMAN_DIRLOCATION . '/plugins/' . $plugin . '/custom_fields.php');
+            if (is_readable($CFG->dirroot.'/elis/program/plugins/'.$plugin.'/custom_fields.php')) {
+                include_once($CFG->dirroot.'/elis/program/plugins/'.$plugin.'/custom_fields.php');
                 if (function_exists("{$plugin}_field_edit_form_definition")) {
                     call_user_func("{$plugin}_field_edit_form_definition", $this);
                 }
             }
         }
 
-
         $this->add_action_buttons(true);
     }
 
     function validation($data, $files) {
         // copied from /user/profile/definelib.php
-        global $USER;
+        global $CFG, $USER, $DB;
 
         $err = array();
 
         /// Check the shortname was not truncated by cleaning
         if (empty($data['shortname'])) {
             $err['shortname'] = get_string('required');
-
         } else {
             /*
-        /// Fetch field-record from DB
-            $field = get_record(FIELDTABLE, 'shortname', $data['shortname']);
-        /// Check the shortname is unique
+            /// Fetch field-record from DB
+            $field = $DB->get_record(field::TABLE, array('shortname'=>$data['shortname']));
+            /// Check the shortname is unique
             if ($field and $field->id != $data['id']) {
                 $err['shortname'] = get_string('profileshortnamenotunique', 'admin');
             }
             */
         }
 
-        $plugins = get_list_of_plugins('curriculum/plugins');
+        $plugins = get_list_of_plugins('elis/program/plugins');
 
         foreach ($plugins as $plugin) {
-            if (is_readable(CURMAN_DIRLOCATION . '/plugins/' . $plugin . '/custom_fields.php')) {
-                include_once(CURMAN_DIRLOCATION . '/plugins/' . $plugin . '/custom_fields.php');
+            if (is_readable($CFG->dirroot.'elis/program/plugins/'.$plugin.'/custom_fields.php')) {
+                include_once($CFG->dirroot.'elis/program/plugins/'.$plugin.'/custom_fields.php');
                 if (function_exists("{$plugin}_field_edit_form_validation")) {
                     $err += call_user_func("{$plugin}_field_edit_form_validation", $this, $data, $files);
                 }
