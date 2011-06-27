@@ -461,7 +461,7 @@ class field_category extends elis_data_object {
         if (!is_numeric($contextlevel)) {
             $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
         }
-        return self::find(new join_filter('contextlevel',
+        return self::find(new join_filter('id',
                                           field_category_contextlevel::TABLE, 'categoryid',
                                           new field_filter('contextlevel', $contextlevel)),
                           array('sortorder' => 'ASC'));
