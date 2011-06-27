@@ -30,6 +30,9 @@ require_once('../../../config.php');
 $PAGE->set_pagelayout('popup');
 $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 
+//import necessary CSS
+$PAGE->requires->css('/blocks/php_report/styles.css');
+
 echo $OUTPUT->header();
 
 $scheduleids = required_param('scheduleids', PARAM_CLEAN);
@@ -44,10 +47,6 @@ echo $OUTPUT->box(get_string('popup_run_instructions', 'block_php_report'));
 //field to fill in with information on the current job that is running
 echo '<div id="php_report_schedule_current_job">
       </div>';
-
-//import necessary CSS
-$stylesheet_web_path = $CFG->wwwroot . '/blocks/php_report/styles.php';
-echo '<style>@import url("' . $stylesheet_web_path . '");</style>';
 
 //progress bar UI, to be manipulated
 echo '<div class="php_report_schedule_progress_bar" align="center">
