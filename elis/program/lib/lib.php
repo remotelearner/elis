@@ -178,3 +178,14 @@ function get_yesno_item_display($column, $item) {
     return get_string($item->$column ? 'yes' : 'no');
 }
 
+/**
+ *
+ * Call Moodle's set_config with 3rd parm 'elis_program'
+ *
+ * @param string $name the key to set
+ * @param string $value the value to set (without magic quotes)
+ * @return n/a
+ */
+function pm_set_config($name, $value) {
+    set_config($name,$value, 'elis_program');
+}
