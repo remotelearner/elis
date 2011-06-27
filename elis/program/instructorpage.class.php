@@ -335,24 +335,6 @@ class instructorpage extends associationpage {
         }
 
         pmsearchbox($this, 'search', 'get', get_string('show_all_users', self::LANG_FILE));
-      /* **** following replaced by pmsearchbox() ****
-        echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
-        echo "<form action=\"index.php\" method=\"get\"><fieldset class=\"invisiblefieldset\">";
-        echo '<input type="hidden" name="section" value="curr" />';
-        echo '<input type="hidden" name="s" value="ins" />';
-        echo '<input type="hidden" name="id" value="' . $clsid . '" />';
-        echo '<input type="hidden" name="sort" value="' . $sort . '" />';
-        echo '<input type="hidden" name="dir" value="' . $dir . '" />';
-        echo "<input type=\"text\" name=\"search\" value=\"".s($namesearch, true)."\" size=\"20\" />";
-        echo "<input type=\"submit\" value=\"Search\" />";
-        if ($namesearch) {
-            echo "<input type=\"button\" onclick=\"document.location='index.php?s=ins&amp;" .
-                 "section=curr&amp;id=$clsid&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage'\"" .
-                 "value=\"Show all users\" />";
-        }
-        echo "</fieldset></form>";
-        echo "</td></tr></table>";
-      **** */
 
         $add_instructor_link = '<a href="index.php?s=ins&amp;section=curr&amp;action=add&amp;id='. $clsid .'">'. get_string('instructor_add', self::LANG_FILE) .'</a>';
         if (!empty($table)) {

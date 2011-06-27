@@ -109,18 +109,6 @@ class waitlistpage extends selectionpage {
         return $this; // TBD: new $this->tab_page($params);
     }
 
-  /* **** moved to parent - TBD ****
-    function print_header() {
-        parent::print_header();
-
-        if (!$this->is_bare()) {
-            $id = $this->required_param('id', PARAM_INT);
-            //$this->get_tab_page()->print_tabs(get_class($this), array('id' => $id));
-            $this->print_tabs(); // WAS: $this->print_tabs(get_class($this), array('id' => $id)); // TBD
-        }
-    }
-  **** */
-
     function process_selection($data) {
         $id = $this->required_param('id', PARAM_INT);
 

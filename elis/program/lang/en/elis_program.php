@@ -515,6 +515,7 @@ $string['student_name'] = 'Student Name';
 $string['student_name_1'] = 'Name';
 $string['student_status'] = 'Status';
 $string['studentnotunenrolled'] = 'Student: {$a->name} not unenrolled.';
+$string['students'] = 'Students';
 $string['studentunenrolled'] = 'Student: {$a->name} unenrolled.';
 
 $string['tag_name'] = 'Name';

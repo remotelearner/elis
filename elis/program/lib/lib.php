@@ -73,12 +73,14 @@ function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
  *                                   TBD: 'post' method flakey, doesn't always work!
  * @param string $showall            label for the 'Show All' link - optional
  *                                   defaults to get_string('showallitems' ...
+ * @param string $extra              extra html for input fields displayed BEFORE search fields. i.e. student.class.php::edit_form_html() 
+ *                                   $extra defaults to none.
  * @uses $_GET
  * @uses $CFG
  * @todo convert echo HTML statements to use M2 html_writer, etc.
  * @todo support moodle_url as 1st parameter and not just string url.
  */
-function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get', $showall = null) {
+function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get', $showall = null, $extra = '') {
     global $CFG;
     $search = trim(optional_param($searchname, '', PARAM_TEXT));
 
@@ -108,6 +110,9 @@ function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get
             $target->url .= (strpos($target->url, '?') === false) ? '?' : '&';
             $target->url .= "{$key}={$val}"; // required for onclick, below
         }
+    }
+    if (!empty($extra)) {
+        echo $extra;
     }
     echo "<input type=\"text\" name=\"{$searchname}\" value=\"" . s($search, true) . '" size="20" />';
     echo '<input type="submit" value="'.get_string('search').'" />';

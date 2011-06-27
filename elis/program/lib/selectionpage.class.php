@@ -164,6 +164,10 @@ abstract class selectionpage extends pm_page { // TBD
         $pagingbar = new paging_bar($count, $pagenum, $perpage, $this->get_basepage()->url . ($action ? "&amp;action=$action" : '' )); // TBD: '&amp;'
         echo $OUTPUT->render($pagingbar);
 
+        if (!$count) {
+            pmshowmatches($filter['alpha'], $filter['namesearch']);
+        }
+
         echo '<div style="float: right">';
         $this->print_record_count($count);
         echo '</div>';
