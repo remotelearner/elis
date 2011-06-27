@@ -53,9 +53,9 @@ class studentpage extends associationpage {
 
     function __construct(array $params = null) {
         $this->tabs = array( // TBD: 'currcourse_edit' -> 'edit'
-            array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', self::LANG_FILE), 'showtab' => true),
-            array('tab_id' => 'currcourse_edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', self::LANG_FILE), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
-            array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', self::LANG_FILE), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'), // TBD: tab_id was 'edit' or 'bulkedit'???
+            //array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', self::LANG_FILE), 'showtab' => true),
+            array('tab_id' => 'currcourse_edit', 'page' => get_class($this), 'params' => array('action' => 'currcourse_edit'), 'name' => get_string('edit', self::LANG_FILE), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
+            //array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', self::LANG_FILE), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'), // TBD: tab_id was 'edit' or 'bulkedit'???
            array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete', self::LANG_FILE), 'showbutton' => true, 'image' => 'delete'),
         );
 
@@ -160,6 +160,10 @@ class studentpage extends associationpage {
         $this->display('default'); // do_default()
     }
 
+    function do_currcourse_edit() {
+        $this->display('edit');
+    }
+
     function display_bulkedit() { // action_bulkedit
         $clsid        = cm_get_param('id', 0);
         $type         = cm_get_param('stype', '');
@@ -172,7 +176,6 @@ class studentpage extends associationpage {
 
         // TBD: 'edit' or 'bulkedit' or ???; and array(params ???)
         // print_tabs now in parent::print_header()
-        // $this->get_tab_page()->print_tabs('edit', array('id' => $clsid));
         echo $this->get_view_form($clsid, $type, $sort, $dir, $page, $perpage, $namesearch, $alpha);
     }
 
@@ -506,7 +509,8 @@ class studentpage extends associationpage {
             'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
             'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
             'locked'           => array('header' => get_string('student_locked', self::LANG_FILE)),
-            'buttons'          => array('header' => '', 'sortable' => false ), // TBD , ?
+            'buttons'          => array('header' => '', 'sortable' => false,
+                                        'display_function' => 'htmltab_display_function'), // TBD , ?
             );
 
         // TBD
@@ -520,9 +524,6 @@ class studentpage extends associationpage {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        // print_tabs now in parent::print_header()
-        //$this->get_tab_page()->print_tabs('view', array('id' => $clsid)); // TBD
-
         $stus    = student_get_listing($clsid, $sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha);
         $numstus = student_count_records($clsid, $namesearch, $alpha);
 
@@ -530,6 +531,10 @@ class studentpage extends associationpage {
 
         $this->print_alpha();
         $this->print_search();
+
+        if (!$numstus) {
+            pmshowmatches($alpha, $namesearch);
+        }
 
         $this->print_list_view($stus, $columns);
 
@@ -659,6 +664,9 @@ class student_table extends association_page_table {
                    'buttons'          => 'get_items_display_buttons');
 
         foreach ($display_functions as $key => $val) {
+            //if (!isset($columns[$key]) || !is_array($columns[$key])) {
+            //    $columns[$key] = array('header' => '', 'sortable' => false);
+            //}
             if (isset($columns[$key]) && is_array($columns[$key])) {
                 $columns[$key]['display_function'] = array(&$this, $val);
             }
@@ -679,7 +687,9 @@ class student_table extends association_page_table {
     }
 
     function get_item_display_completestatusid($column, $id) {
-        $status = student::$completestatusid_values[$id->$column];
+        $val = $id->completestatusid; // $id->$column
+        $status = is_numeric($val) ? student::$completestatusid_values[$val] : $val;
+        //error_log("student_table::get_item_display_completestatusid() id->completestatusid = {$val}, '{$status}'");
         return get_string($status, self::LANG_FILE);
     }
 

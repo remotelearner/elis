@@ -255,11 +255,14 @@ class instructor extends elis_data_object {
                              "search=".urlencode(stripslashes($namesearch))); // TBD: .'&amp;'
             echo $OUTPUT->render($pagingbar);
             flush();
-
         } else {
-            $users = array();
-            if (($user = new user($this->userid))) {
+            if (($tmpuser = new user($this->userid))) {
                 // TBD: $this->_db->get_record(user::TABLE, array('id' => $this->userid))
+                $user = new stdClass;
+                $user->id = $this->userid;
+                foreach ($tmpuser as $key => $val) {
+                    $user->{$key} = $val;
+                }
                 $user->name = fullname($user);
                 $users[]    = $user;
                 $usercount  = 0; // TBD: 1 ???
@@ -267,16 +270,7 @@ class instructor extends elis_data_object {
         }
 
         if (empty($this->id) && !$users) {
-            $match = array();
-            if ($namesearch !== '') {
-               $match[] = s($namesearch);
-            }
-            if ($alpha) {
-               $match[] = get_string('name', self::LANG_FILE) .": {$alpha}___";
-            }
-            $matchstring = implode(", ", $match);
-            echo get_string('no_users_matching', self::LANG_FILE). $matchstring;
-
+            pmshowmatches($alpha, $namesearch);
             $table = NULL;
         } else {
             $insobj = new instructor();

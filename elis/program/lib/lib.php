@@ -69,7 +69,8 @@ function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
  *                                   or the url string.
  * @param string $searchname         the parameter name for the search tag
  *                                   i.e. 'searchname=search'
- * @param string $method             the form submit method: post(default)| get
+ * @param string $method             the form submit method: get(default)| post
+ *                                   TBD: 'post' method flakey, doesn't always work!
  * @param string $showall            label for the 'Show All' link - optional
  *                                   defaults to get_string('showallitems' ...
  * @uses $_GET
@@ -77,7 +78,7 @@ function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
  * @todo convert echo HTML statements to use M2 html_writer, etc.
  * @todo support moodle_url as 1st parameter and not just string url.
  */
-function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'post', $showall = null) {
+function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get', $showall = null) {
     global $CFG;
     $search = trim(optional_param($searchname, '', PARAM_TEXT));
 
@@ -120,6 +121,38 @@ function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'pos
 
     echo '</fieldset></form>';
     echo '</td></tr></table>';
+}
+
+/**
+ * Prints the current 'alpha' and 'search' settings for no table entries
+ *
+ * @param string $alpha         the current alpha/letter match
+ * @param string $namesearch    the current string search
+ * @param string $matchlabel    optional get_string identifier for label prefix of match settings
+ *                              default get_string('name', 'elis_program')
+ * @param string $nomatchlabel  optional get_string identifier for label prefix of no matches
+ *                              default get_string('no_users_matching', 'elis_program')
+ */
+function pmshowmatches($alpha, $namesearch, $matchlabel = null, $nomatchlabel = null) {
+    if (empty($matchlabel)) {
+        $matchlabel = 'name';
+    }
+    if (empty($nomatchlabel)) {
+        $nomatchlabel = 'no_users_matching';
+    }
+    $match = array();
+    if ($namesearch !== '') {
+        $match[] = s($namesearch);
+    }
+    if ($alpha) {
+        $match[] = get_string($matchlabel, 'elis_program') .": {$alpha}___";
+    }
+    if (!empty($match)) {
+        $matchstring = implode(", ", $match);
+        $sparam = new stdClass;
+        $sparam->match = $matchstring;
+        echo get_string($nomatchlabel, 'elis_program', $sparam), '<br/>'; // TBD
+    }
 }
 
 /** Function to return pm page url with required params

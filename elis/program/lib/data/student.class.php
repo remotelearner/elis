@@ -680,30 +680,6 @@ class student extends elis_data_object {
                                      'dir' => $dir, 'perpage' => $perpage)),
                        'alpha', get_string('tag_name', self::LANG_FILE) .':');
 
-          /* **** following replaced with pmalphabox()
-            $alphabet  = explode(',', get_string('alphabet', 'langconfig'));
-            $strall    = get_string('all');
-
-            // Bar of first initials
-            echo "<p style=\"text-align:center\">";
-            echo get_string('tag_name', self::LANG_FILE)." : "; // label
-            if ($alpha) {
-                echo " <a href=\"index.php?s=stu&amp;section=curr&amp;action=add&amp;id=$classid&amp;class=$classid&amp;" .
-                     "sort=name&amp;dir=ASC&amp;perpage=$perpage\">$strall</a> ";
-            } else {
-                echo " <b>$strall</b> ";
-            }
-            foreach ($alphabet as $letter) {
-                if ($letter == $alpha) {
-                    echo " <b>$letter</b> ";
-                } else {
-                    echo " <a href=\"index.php?s=stu&amp;section=curr&amp;action=add&amp;id=$classid&amp;class=$classid&amp;" .
-                         "sort=name&amp;dir=ASC&amp;perpage=$perpage&amp;alpha=$letter\">$letter</a> ";
-                }
-            }
-            echo "</p>";
-           **** */
-
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                     "index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;&amp;action=add&amp;" .
                     "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;stype=$type" .
@@ -711,25 +687,20 @@ class student extends elis_data_object {
             echo $OUTPUT->render($pagingbar);
             flush();
         } else {
-            $user       = new user($this->userid); // TBD
+            $tmpuser    = new user($this->userid); // TBD
+            $user       = new stdClass;
+            $user->id   = $this->userid;
+            foreach ($tmpuser as $key => $val) {
+                $user->{$key} = $val;
+            }
             $user->name = fullname($user);
             $users[]    = $user;
             $usercount  = 0;
         }
 
         if (empty($this->id) && !$users) {
-            $match = array();
-            if ($namesearch !== '') {
-               $match[] = s($namesearch);
-            }
-            if ($alpha) {
-               $match[] = get_string('name', self::LANG_FILE) .": {$alpha}___";
-            }
-            $matchstring = implode(", ", $match);
-            echo 'No users matching '.$matchstring;
-
+            pmshowmatches($alpha, $namesearch);
             $table = NULL;
-
         } else {
             $stuobj = new student();
 
@@ -801,6 +772,7 @@ class student extends elis_data_object {
                 $newarr[] = $tabobj;
                 //$table->data[] = $newarr;
             }
+            // TBD: student_table() ???
             $table = new display_table($newarr, $columns, $this->get_base_url());
         }
 
@@ -970,7 +942,7 @@ class student extends elis_data_object {
                 $newarr[] = $tabobj;
                 //$table->data[] = $newarr;
             }
-
+            // TBD: student_table() ???
             $table = new display_table($newarr, $columns, $this->get_base_url());
             if (!empty($newarr)) { // TBD: $table or $newarr?
                 echo '<br />';
@@ -1156,17 +1128,7 @@ class student extends elis_data_object {
         }
 
         if (empty($this->id) && !$users) {
-            $match = array();
-            if ($namesearch !== '') {
-               $match[] = s($namesearch);
-            }
-            if ($alpha) {
-               $match[] = get_string('name', self::LANG_FILE) .": {$alpha}___";
-            }
-            $matchstring = implode(", ", $match);
-            $sparam = new stdClass;
-            $sparam->match =  $matchstring;
-            echo get_string('no_users_matching', self::LANG_FILE, $sparam);
+            pmshowmatches($alpha, $namesearch);
             $table = NULL;
         } else {
             $stuobj = new student();
@@ -1237,6 +1199,7 @@ class student extends elis_data_object {
                 $newarr[] = $tabobj;
                 //$table->data[] = $newarr;
             }
+            // TBD: student_table() ???
             $table = new display_table($newarr, $columns, $this->get_base_url());
         }
 
@@ -1408,7 +1371,7 @@ class student extends elis_data_object {
                 $newarr[] = $tabobj;
                 //$table->data[] = $newarr;
             }
-
+            // TBD: student_table() ???
             $table = new display_table($newarr, $columns, $this->get_base_url());
             if (!empty($table)) { // TBD: $newarr or $table?
                 echo '<br />';
@@ -2523,9 +2486,11 @@ class student_grade extends elis_data_object {
             //$table->data[] = $newarr;
         }
         $newarr[] = $tabobj; // TBD: or in loop?
+        // TBD: student_table() ???
         $table = new display_table($newarr, $columns, $this->get_base_url());
 
         if (empty($this->id)) {
+            // TBD: replace following code with pmsearchbox()
             echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
             echo "<form action=\"index.php\" method=\"get\"><fieldset>";
             echo '<input type="hidden" name="s" value="stu" />';

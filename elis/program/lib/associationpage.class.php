@@ -223,8 +223,7 @@ class associationpage extends pm_page {
             $sparam->id = $id;
             print_error('invalid_objectid', 'elis_program', '', $sparam);
         }*/
-        //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
-
+        $obj->load();
         $this->print_edit_form($obj, $parent_obj);
     }
 
@@ -382,7 +381,6 @@ class associationpage extends pm_page {
         }
 
         $obj = $this->get_new_data_object($association_id);
-        //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
         $this->print_delete_form($obj);
     }
 
@@ -553,7 +551,6 @@ class associationpage extends pm_page {
             $tab = $this->add_defaults_to_tab($tab);
             if($tab['showbutton'] === true) {
                 $target = new $tab['page'](array_merge($tab['params'], $params));
-
                 if ($target->can_do()) {
                     $buttons[] = html_writer::link($target->url, html_writer::empty_tag('img', array('title' => $tab['name'], 'alt' => $tab['name'], 'src' => $OUTPUT->pix_url($tab['image'], 'elis_program'))));
                 }
@@ -582,11 +579,27 @@ class association_page_table extends display_table {
     function __construct(&$items, $columns, $page) {
         $this->page = $page;
         if (isset($columns['buttons']) && is_array($columns['buttons'])) {
-            $columns['buttons']['display_function'] = array(&$this, 'get_item_display_buttons');
+            $columns['buttons']['display_function'] = 'htmltab_display_function';
+            $id = required_param('id', PARAM_INT);
+            foreach($items as $item) {
+                $item->buttons = $this->page->get_buttons(array('id' => $id, 'association_id' => $item->id));
+            }
         }
         if (isset($columns['manage']) && is_array($columns['manage'])) {
-            $columns['manage']['display_function'] = array(&$this, 'get_item_display_manage');
+            $columns['manage']['display_function'] = 'htmltab_display_function';
+            $id = required_param('id', PARAM_INT);
+            foreach($items as $item) {
+                $target = $this->page->get_new_page(array('action' => 'delete', 'association_id' => $item->id, 'id' => $id));
+                if ($target->can_do('delete')) {
+                    $deletebutton = '<a href="'. $target->url .'">'.
+                        '<img src="'. $OUTPUT->pix_url('delete') .'" alt="Unenrol" title="Unenrol" /></a>';
+                } else {
+                    $deletebutton = '';
+                }
+                $items->manage = $deletebutton;
+            }
         }
+        //$url = (get_class($page) == 'moodle_url') ? $page : $page->url;
         parent::__construct($items, $columns, $page->url);
     }
 

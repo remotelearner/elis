@@ -295,15 +295,7 @@ class instructorpage extends associationpage {
 
         $table = NULL;
         if (!$inss) {
-            $match = array();
-            if ($namesearch !== '') {
-               $match[] = s($namesearch);
-            }
-            if ($alpha) {
-               $match[] = get_string('name', self::LANG_FILE) .": {$alpha}___";
-            }
-            $matchstring = implode(", ", $match);
-            echo get_string('no_instructor_matching', self::LANG_FILE) . $matchstring;
+            pmshowmatches($alpha, $namesearch, null, 'no_instructor_matching');
         } else {
             // TBD
             //$table->align = array ("left", "left", "center", "center");
