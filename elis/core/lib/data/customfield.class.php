@@ -738,7 +738,7 @@ class field_contextlevel extends elis_data_object {
  * Which contexts a field category applies to.
  */
 class field_category_contextlevel extends elis_data_object {
-    const TABLE = 'elis_fied_category_contexts';
+    const TABLE = 'elis_field_category_contexts';
 
     protected $_dbfield_categoryid;
     protected $_dbfield_contextlevel;
