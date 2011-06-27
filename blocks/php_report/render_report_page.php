@@ -29,4 +29,8 @@ require_once($CFG->dirroot . '/blocks/php_report/lib/reportpage.class.php');
 
 //display the page for the specific report
 $PAGE = new report_page();
+
+//css hook for report styles
+$PAGE->requires->css('/blocks/php_report/styles.css');
+
 $PAGE->run();

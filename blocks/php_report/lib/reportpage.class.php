@@ -97,10 +97,6 @@ class report_page extends elis_page {
         $reportblock = new php_report_block($this->report, TRUE, $this->report_instance->get_display_name(),
                                             0, REPORT_PAGE_NUM_RECORDS, $classname, '100%');
         
-        //import necessary CSS
-        $stylesheet_web_path = $CFG->wwwroot . '/blocks/php_report/styles.php';
-        echo html_writer::tag('style', '@import url("'.$stylesheet_web_path.'")');
-        
         //output the report contents
         echo $reportblock->display();
         
