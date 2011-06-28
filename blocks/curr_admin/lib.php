@@ -1228,10 +1228,10 @@ function block_curr_admin_get_report_category_items() {
  *                          but excluding the top-level report entry)
  */
 function block_curr_admin_get_report_tree_items() {
-    global $CFG;
+    global $CFG, $DB;
 
     //if the reports block is not installed, no entries will be displayed
-    if (!record_exists('block', 'name', 'php_report')) {
+    if (!$DB->record_exists('block', array('name' => 'php_report'))) {
         return array();
     }
 

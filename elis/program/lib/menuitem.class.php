@@ -51,8 +51,8 @@ class menuitemlisting {
      */
     private function filter_permissions() {
         global $CFG;
-
-        require_once($CFG->dirroot . '/curriculum/jasperreportpage.class.php');
+/*
+        require_once(elispm::file('jasperreportpage.class.php'));
 
         //determine the shortnames of all jasper reports
         $jasper_reports = array_keys(jasperreportpage::$reports);
@@ -72,7 +72,7 @@ class menuitemlisting {
             }
 
         }
-
+*/
     }
 
     /**
@@ -284,7 +284,8 @@ class menuitem {
 
             //create a valid URL from the page
             $target = empty($this->link_target) ? '' : ' target="' . $this->link_target . '"';
-            $url = $this->page->page_instance->get_moodle_url($param_array)->out();
+            $new_page = $this->page->page_instance->get_new_page($param_array);
+            $url = $new_page->url->out();
 
             //this prevents the tree from being expanded when clicking on links
             $stop_propagation_script = 'event.cancelButtle = true;
@@ -336,7 +337,7 @@ class menuitempage {
         $this->params = $params;
 
         //cache the actual instance
-        require_once($CFG->dirroot . '/curriculum/' . $this->classfile);
+        require_once(elispm::file($this->classfile));
         $this->page_instance = new $this->page($params);
     }
 

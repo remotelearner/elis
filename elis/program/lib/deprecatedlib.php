@@ -304,3 +304,72 @@ function cm_choose_from_menu($options, $name, $selected = '', $nothing = 'choose
     }
 }
 
+
+/**
+ * Determine the access level for the given user.
+ *
+ * @uses $USER
+ * @param int $uid The user ID (optional)
+ * @return string|bool The access level, or False on error.
+ */
+function cm_determine_access($uid = false) {
+    global $USER, $CFG, $DB;
+
+    if (!$uid) {
+        if (!isloggedin()) {
+            return 'newuser';
+        }
+        $uid = $USER->id;
+    }
+
+    if (!$DB->record_exists('user', array('id' => $uid))) {
+        return false;
+    }
+
+    $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+
+    //require_once($CFG->dirroot . '/curriculum/lib/cluster.class.php');
+
+    if (has_capability('block/curr_admin:managecurricula', $context)) {
+        return 'admin';
+    //} else if (has_capability('block/curr_admin:viewreports', $context)) {
+    //    return 'reviewer';
+    //} else if (has_capability('block/curr_admin:viewgroupreports', $context)) {
+    //    return 'groupreviewer';
+    } else if (has_capability('block/curr_admin:viewownreports', $context)){
+        return 'student';
+    }
+}
+
+/**
+ * Specifies whether the CM system should link to a Jasper
+ * reporting server
+ *
+ * @return  boolean  true if applicable, otherwise false
+ */
+function cm_jasper_link_enabled() {
+    $show_jasper_link = false;
+
+    //check the necessary auth plugins
+    $auths_enabled = get_enabled_auth_plugins();
+    $mnet_auth_enabled = in_array('mnet', $auths_enabled);
+    $elis_auth_enabled = in_array('elis', $auths_enabled);
+
+    if ($mnet_auth_enabled && $elis_auth_enabled) {
+        //check the necessary config data
+        $jasper_shortname = get_config('auth/elis', 'jasper_shortname');
+        $jasper_wwwroot = get_config('auth/elis', 'jasper_wwwroot');
+
+        if ($jasper_shortname !== false && $jasper_wwwroot !== false) {
+            //don't respond to bogus data
+            $jasper_shortname = trim($jasper_shortname);
+            $jasper_wwwroot = trim($jasper_wwwroot);
+
+            if (strlen($jasper_shortname) > 0 && strlen($jasper_wwwroot) > 0) {
+                $show_jasper_link = true;
+            }
+        }
+    }
+
+    return $show_jasper_link;
+}
