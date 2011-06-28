@@ -271,7 +271,9 @@ abstract class managementpage extends pm_page {
      * @param $searchflag boolean for whether to print the substring search interface
      */
     public function print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=false, $searchflag=false) {
-        echo html_writer::tag('div', get_string("num_{$this->data_class}_found", 'elis_program', $numitems), array('style', 'float: right'));
+        $sparam = new stdClass;
+        $sparam->num = $numitems;
+        echo html_writer::tag('div', get_string("num_{$this->data_class}_found", 'elis_program', $sparam), array('style', 'float: right'));
 
         if($alphaflag) {
             $this->print_alpha();
