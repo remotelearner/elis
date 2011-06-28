@@ -36,6 +36,7 @@ class instructorpage extends associationpage {
     var $data_class = 'instructor';
     var $pagename = 'ins';
     var $tab_page = 'pmclasspage'; // cmclasspage
+    var $default_tab = 'instructorpage';
 
     //var $form_class = 'instructorform';
 
@@ -59,7 +60,11 @@ class instructorpage extends associationpage {
 
     function do_delete() { // action_confirm
         $insid = required_param('association_id', PARAM_INT);
-        $confirm = required_param('confirm', PARAM_TEXT);
+        $confirm = optional_param('confirm', null, PARAM_CLEAN);
+        if ($confirm == null) {
+            $this->display('delete');
+            return;
+        }
 
         $ins = new instructor($insid);
         $event_object = $this->_db->get_record(instructor::TABLE, array('id' => $insid));
@@ -115,7 +120,7 @@ class instructorpage extends associationpage {
     }
 
     function do_edit() {
-        $this->do_savenew();
+        $this->display('edit');
     }
 
     function do_savenew() { // action_savenew
@@ -220,28 +225,9 @@ class instructorpage extends associationpage {
                                     'display_function' => 'htmltab_display_function'),
             'completetime' => array('header' => get_string('instructor_completion', self::LANG_FILE),
                                     'display_function' => 'htmltab_display_function'),
-            'insbuttons'      => array('header' => '', 'sortable' => false,
-                                      'display_function' => 'htmltab_display_function')
+            'ins_buttons'  => array('header' => '', 'sortable' => false,
+                                    'display_function' => 'htmltab_display_function')
         );
-
-      /* **** TBD
-        foreach ($columns as $column => $cdesc) {
-            if ($sort != $column) {
-                $columnicon = "";
-                $columndir = "ASC";
-            } else {
-                $columndir  = $dir == "ASC" ? "DESC":"ASC";
-                $columnicon = $dir == "ASC" ? "down":"up";
-                $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
-
-            }
-            $$column = "<a href=\"index.php?s=ins&amp;section=curr&amp;id=$clsid&amp;sort=$column&amp;dir=$columndir&amp;namesearch=".urlencode(stripslashes($namesearch))."&amp;alpha=$alpha\">".$cdesc."</a>$columnicon";
-            $table->head[]  = $$column;
-            $table->align[] = "left";
-        }
-        $table->head[]  = '';
-        $table->align[] = 'center';
-      **** */
 
         if ($dir !== 'DESC') {
             $dir = 'ASC';
@@ -263,32 +249,8 @@ class instructorpage extends associationpage {
         pmalphabox(new moodle_url($this->_get_page_url(), $page_params),
             'alpha', get_string('instructor_name', self::LANG_FILE) .':');
 
-      /* **** replaced by pmalphabox()
-        $alphabet = explode(',', get_string('alphabet', 'langconfig'));
-        $strall = get_string('all');
-
-        echo "<p style=\"text-align:center\">";
-        echo get_string('instructor_name', self::LANG_FILE)." : ";
-        if ($alpha) {
-            echo " <a href=\"index.php?s=ins&amp;section=curr&amp;id=$clsid&amp;sort=name&amp;dir=ASC&amp;".
-                 "perpage=$perpage\">$strall</a> ";
-        } else {
-            echo " <b>$strall</b> ";
-        }
-        foreach ($alphabet as $letter) {
-            if ($letter == $alpha) {
-                echo " <b>$letter</b> ";
-            } else {
-                echo " <a href=\"index.php?s=ins&amp;section=curr&amp;id=$clsid&amp;sort=name&amp;dir=ASC&amp;".
-                     "perpage=$perpage&amp;alpha=$letter\">$letter</a> ";
-            }
-        }
-        echo "</p>";
-      **** */
-
-        // TBD: added action, '/elis/program/index.php' ???
-        $full_url = "index.php?s=ins&amp;section=curr&amp;id=$clsid&amp;action=$action&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search="
-                    . urlencode(stripslashes($namesearch)) .'&amp;';
+        $full_url = "/elis/program/index.php?s=ins&amp;section=curr&amp;id=$clsid&amp;action=$action&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search="
+                    . urlencode(stripslashes($namesearch)) .'&amp;'; // TBD
         $pagingbar = new paging_bar($numinss, $page, $perpage, $full_url);
         echo $OUTPUT->render($pagingbar);
         flush();
@@ -305,21 +267,22 @@ class instructorpage extends associationpage {
             foreach ($inss as $ins) {
                 $deletebutton = '<a href="index.php?s=ins&amp;section=curr&amp;id=' . $clsid .
                                 '&amp;action=delete&amp;association_id=' . $ins->id . '">' .
-                                '<img src="'. $OUTPUT->pix_url('delete') . '" alt="Delete" title="Delete" /></a>';
+                                '<img src="'. $OUTPUT->pix_url('delete', 'elis_program') . '" alt="Delete" title="Delete" /></a>';
                 $editbutton = '<a href="index.php?s=ins&amp;section=curr&amp;id=' . $clsid .
                               '&amp;action=edit&amp;association_id=' . $ins->id . '">' .
-                              '<img src="'. $OUTPUT->pix_url('edit') .'" alt="Edit" title="Edit" /></a>';
+                              '<img src="'. $OUTPUT->pix_url('edit', 'elis_program') .'" alt="Edit" title="Edit" /></a>';
 
+                $tabobj = new stdClass;
+                $tabobj->id = $ins->id;
                 foreach ($columns as $column => $cdesc) {
-                    $tabobj = new stdClass;
                     if (($column == 'assigntime') || ($column == 'completetime')) {
                         $tabobj->{$column} = !empty($ins->$column)
                                     ? date(get_string('pm_date_format',
                                                       self::LANG_FILE),
                                            $ins->$column)
                                     : '-';
-                    } else if ($column == 'insbuttons') {
-                        $tabobj->insbuttons = $editbutton . ' ' . $deletebutton;
+                    } else if ($column == 'ins_buttons') {
+                        $tabobj->ins_buttons = $editbutton . ' ' . $deletebutton;
                     } else {
                         $tabobj->{$column} = $ins->{$column};
                     }
@@ -360,7 +323,6 @@ class instructorpage extends associationpage {
         return $output;
     }
 
-
     /**
      * Returns the edit ins form.
      *
@@ -368,15 +330,14 @@ class instructorpage extends associationpage {
      */
     function get_edit_form($insid, $sort = '', $dir = '', $startrec = 0,
                            $perpage = 0, $namesearch = '', $alpha = '') {
-        $output = '';
-
-        $ins = new instructor($insid);
-
-        $output .= $ins->edit_form_html($insid);
-
-        return $output;
+        $ins = new instructor(); // TBD: was ($insid) ???
+        $ins->id = $insid;
+        $ins->classid = required_param('id', PARAM_INT);
+        $ins->load(); // TBD
+        //print_object($ins);
+        return $ins->edit_form_html($ins->classid); // TBD: $insid == $classid ???
+                                             // or use: $ins->classid
     }
-
 
     /**
      * Returns the delete instructor form.
@@ -387,17 +348,18 @@ class instructorpage extends associationpage {
      *
      */
     function get_delete_form($insid) {
-        $ins = new instructor($insid);
-
-        $url     = 'index.php';
-        $message = get_string('confirm_delete_instructor', 'block_curr_admin', cm_fullname($ins->user));
+        global $DB;
+        $ins = new instructor($insid); // TBD ???
+        $url = 'index.php'; // TBD: '/elis/program/index.php'
+        $user = $DB->get_record(user::TABLE, array('id' => $ins->userid)); // TBD: new user($ins->userid);
+        $user->name = fullname($user);
+        $message = get_string('confirm_delete_instructor', self::LANG_FILE, $user);
         $optionsyes = array('s' => 'ins', 'section' => 'curr', 'id' => $ins->classid,
                             'action' => 'confirm', 'association_id' => $insid, 'confirm' => md5($insid));
         $optionsno = array('s' => 'ins', 'section' => 'curr', 'id' => $ins->classid,
-                           'search' => $ins->pmclass->idnumber); // TBD: cmclass
+                           /* 'search' => $ins->pmclass->idnumber */); // TBD???
 
         echo cm_delete_form($url, $message, $optionsyes, $optionsno);
-
     }
 }
 

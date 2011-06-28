@@ -141,9 +141,10 @@ class instructor extends elis_data_object {
      * @return string The form HTML, without the form.
      */
     function edit_form_html($classid, $sort = 'name', $dir = 'ASC', $page = 0,
-                            $perpage = 0, $namesearch = '', $alpha = '') {
-        global $CFG, $OUTPUT;
+                            $perpage = 30, $namesearch = '', $alpha = '') {
+        global $CFG, $OUTPUT; // ^^^ set new non-zero default for $perpage
 
+        $this->classid = $classid;
         $output = '';
         ob_start();
 
@@ -195,6 +196,7 @@ class instructor extends elis_data_object {
         }
 
         $newarr = array();
+        $users = array();
         if (empty($this->id)) {
             $users     = $this->get_users_avail($sort, $dir, $page * $perpage,
                                                 $perpage, $namesearch, $alpha);
@@ -214,8 +216,10 @@ class instructor extends elis_data_object {
             echo $OUTPUT->render($pagingbar);
             flush();
         } else {
-            if (($tmpuser = new user($this->userid))) {
-                // TBD: $this->_db->get_record(user::TABLE, array('id' => $this->userid))
+            //error_log("instructor.class.php::edit_form_html(); userid = {$this->userid}");
+            if (($tmpuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid)))) {
+                // TBD - above was: $tmpuser = new user($this->userid)
+                //print_object($tmpuser);
                 $user = new stdClass;
                 $user->id = $this->userid;
                 foreach ($tmpuser as $key => $val) {
@@ -377,8 +381,7 @@ class instructor extends elis_data_object {
         $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
         $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
 
-        // TBD: getting duplicate column id warning, added DISTINCT ???
-        $select  = 'SELECT DISTINCT usr.id, ' . $FULLNAME . ' as name, usr.idnumber, ' .
+        $select  = 'SELECT usr.id, ' . $FULLNAME . ' as name, usr.idnumber, ' .
                    'ins.classid, ins.userid, ins.assigntime, ins.completetime ';
         $tables  = 'FROM {'. user::TABLE .'} usr ';
         $join    = 'LEFT JOIN {' . instructor::TABLE .'} ins ';

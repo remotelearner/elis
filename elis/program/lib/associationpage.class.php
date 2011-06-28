@@ -394,7 +394,7 @@ class associationpage extends pm_page {
         $id = $this->required_param('id', PARAM_INT);
 
         $obj->load(); // force load, so that the confirmation notice has something to display
-        $message    = get_string('confirm_delete_association', 'elis_program', $obj->to_object());
+        $message = get_string('confirm_delete_association', 'elis_program', $obj->to_object());
 
         $target_page = $this->get_new_page(array('action' => 'default', 'id' => $id, 'sesskey' => sesskey()), true);
         $no_url = $target_page->url;

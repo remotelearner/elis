@@ -68,6 +68,11 @@ abstract class selectionpage extends pm_page { // TBD
         $rows = array(); // TBD was: = $row; -> Undefined variable error!
         $row = array();
 
+        if (!empty($this->tab_page)) {
+            $tabpage = new $this->tab_page();
+            $tabpage->print_tabs($this->default_tab, array('id' => $id));
+        }
+
         // main row of tabs
         foreach($page->tabs as $tab) {
             $tab = $page->add_defaults_to_tab($tab);

@@ -42,6 +42,7 @@ class studentpage extends associationpage {
     var $data_class = 'student';
     var $pagename = 'stu';
     var $tab_page = 'pmclasspage'; // TBD: was cmclasspage
+    var $default_tab = 'studentpage';
 
     //var $form_class = 'studentform';
 
@@ -139,9 +140,15 @@ class studentpage extends associationpage {
 
     function do_delete() { // action_confirm
         $stuid = $this->required_param('association_id', PARAM_INT);
-        $confirm = $this->required_param('confirm', PARAM_TEXT);
+        $confirm = optional_param('confirm', null, PARAM_CLEAN);
+        if ($confirm == null) {
+            $this->display('delete');
+            return;
+        }
 
-        $stu = new student($stuid);
+        $stu = new student($stuid); // TBD: $stuid
+        //$stu->id = $stuid;
+        //$stu->load();
         $sparam = new stdClass;
         $sparam->name = fullname($stu->user); // TBD ???
         if (md5($stuid) != $confirm) { // TBD
@@ -601,7 +608,6 @@ class studentpage extends associationpage {
         echo $stu->edit_form_html($stu->id);
     }
 
-
     /**
      * Returns the delete student form.
      *
@@ -610,17 +616,18 @@ class studentpage extends associationpage {
      *
      */
     function print_delete_form($stu) {
-        $url     = 'index.php';
-        $a = new stdClass;
-        $a->name = fullname($stu->user);
-        $message = get_string('student_deleteconfirm', self::LANG_FILE, $a);
+        global $DB;
+        $url        = 'index.php'; // TBD: '/elis/program/index.php'
+        $a          = new stdClass;
+        $user       = $DB->get_record(user::TABLE, array('id' => $stu->userid));
+        $a->name    = fullname($user);
+        $message    = get_string('student_deleteconfirm', self::LANG_FILE, $a);
         $optionsyes = array('s' => 'stu', 'section' => 'curr', 'id' => $stu->classid,
                             'action' => 'confirm', 'association_id' => $stu->id, 'confirm' => md5($stu->id));
-        $optionsno = array('s' => 'stu', 'section' => 'curr', 'id' => $stu->classid);
+        $optionsno  = array('s' => 'stu', 'section' => 'curr', 'id' => $stu->classid);
 
         echo cm_delete_form($url, $message, $optionsyes, $optionsno);
     }
-
 
     /**
      * override print_num_items to display the max number of students allowed in this class

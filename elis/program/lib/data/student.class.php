@@ -259,7 +259,7 @@ class student extends elis_data_object {
             $sendtosupervisor = elis::$config->elis_program->notify_classcompleted_supervisor;
 
             /// Make sure this is a valid user.
-            $enroluser = new user($this->userid);
+            $enroluser = new user($this->userid); // TBD
             if (empty($enroluser->id)) {
                 print_error('nouser', self::LANG_FILE);
                 return true;
@@ -442,7 +442,7 @@ class student extends elis_data_object {
 
                     /// Get the Moodle user ID or create a new account for this user.
                     if (!($muserid = cm_get_moodleuserid($this->userid))) {
-                        $user = new user($this->userid);
+                        $user = new user($this->userid); // TBD
 
                         if (!$muserid = $user->synchronize_moodle_user(true, true)) {
                             $status = new Object();
@@ -640,32 +640,6 @@ class student extends elis_data_object {
             $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
-    /* ****
-        foreach ($columns as $column => $colobj) {
-            $cdesc = $colobj['header'];
-            if ($sort != $column) {
-                $columnicon = "";
-                $columndir = "ASC";
-            } else {
-                $columndir = $dir == "ASC" ? "DESC":"ASC";
-                $columnicon = $dir == "ASC" ? "down":"up";
-                $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
-            }
-            // ***TBD***
-            if (($column == 'name') || ($column == 'description')) {
-                $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;".
-                           "action=add&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=".
-                           urlencode(stripslashes($namesearch)) ."&amp;alpha=$alpha\">".
-                           $cdesc ."</a>$columnicon";
-            } else {
-                $$column = $cdesc; // TBD
-            }
-            // ***TBD***
-            $table->head[]  = $$column;
-            $table->align[] = "left";
-            $table->wrap[]  = true;
-        }
-    **** */
 
         $users = array(); // TBD
         if (empty($this->id)) {
@@ -687,7 +661,7 @@ class student extends elis_data_object {
             echo $OUTPUT->render($pagingbar);
             flush();
         } else {
-            $tmpuser    = new user($this->userid); // TBD
+            $tmpuser    = $this->_db->get_record(user::TABLE, array('id' => $this->userid)); // TBD: new user($this->userid)
             $user       = new stdClass;
             $user->id   = $this->userid;
             foreach ($tmpuser as $key => $val) {
@@ -1075,7 +1049,7 @@ class student extends elis_data_object {
             echo $OUTPUT->render($pagingbar);
             flush();
         } else {
-            $tmpuser    = new user($this->userid); // TBD: $this->user
+            $tmpuser    = $this->_db->get_record(user::TABLE, array('id' => $this->userid)); // TBD: new user($this->userid)
             $user       = new stdClass;
             $user->id   = $this->userid;
             foreach ($tmpuser as $key => $val) {
@@ -2433,32 +2407,8 @@ class student_grade extends elis_data_object {
                  (($type == 'instructor') ? ' checked' : '') .'/> '. get_string('instructors', self::LANG_FILE) .
                ' <input type="radio" name="stype" vale="" ' . (($type == '') ? ' checked' : '') . '/> '. get_string('all') .' ');
 
-          /* **** the following code replaced with pmsearchbox()
-            echo "<table class=\"searchbox\" style=\"margin-left:auto;margin-right:auto\" cellpadding=\"10\"><tr><td>";
-            echo "<form action=\"index.php\" method=\"get\"><fieldset>";
-            echo '<input type="hidden" name="s" value="stu" />';
-            echo '<input type="hidden" name="section" value="curr" />';
-            echo '<input type="hidden" name="action" value="add" />';
-            echo '<input type="hidden" name="class" value="' . $classid . '" />';
-            echo '<input type="hidden" name="sort" value="' . $sort . '" />';
-            echo '<input type="hidden" name="dir" value="' . $dir . '" />';
-            echo '<input type="radio" name="stype" value="student" '.
-                 (($type == 'student') ? ' checked' : '') .'/> '. get_string('students', self::LANG_FILE) .
-                 ' <input type="radio" name="stype" value="instructor" '.
-                 (($type == 'instructor') ? ' checked' : '') .'/> '. get_string('instructors', self::LANG_FILE) .
-                 ' <input type="radio" name="stype" vale="" '. (($type == '') ? ' checked' : '') .'/> '. get_string('all') .' ';
-            echo '<input type="text" name="search" value="'. s($namesearch, true) .'" size="20" />';
-            echo '<input type="submit" value="Search" />'; // was type="'.get_string('search', self::LANG_FILE) .'"' ???
-            if ($namesearch) {
-                echo '<input type="button" onclick="document.location=\'index.php?s=stu&amp;section=curr&amp;action=add&amp;id=$classid\';" value="Show All Users" />';
-            }
-            echo '</fieldset></form>';
-            echo '</td></tr></table>';
-          **** */
-
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;class=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="savenew" />'."\n";
-
         } else {
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;class=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="update" />'."\n";
