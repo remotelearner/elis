@@ -397,7 +397,7 @@ class coursepage extends managementpage {
         $elemrecord = $this->_db->get_record(coursecompletion::TABLE, array('id'=>$elemid));
 
         if (!($elemrecord)) {
-            error ('Undefined completion element.');
+            print_error('Undefined completion element.');
         }
 
         $crs = new course($elemrecord->courseid);
@@ -415,4 +415,3 @@ class coursepage extends managementpage {
 function count_curricula($column, $item) {
     return $item->count_curriculumcourse();
 }
-

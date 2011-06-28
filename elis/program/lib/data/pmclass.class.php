@@ -99,63 +99,6 @@ class pmclass extends data_object_with_custom_fields {
 
     static $delete_is_complex = true;
 
-    /**
-     * Contructor.
-     *
-     * @param $mmclassdata int/object/array The data id of a data record or data elements to load manually.
-     *
-     */
-//     public function pmclass($pmclassdata=false) {
-//         global $CURMAN;
-
-//         parent::datarecord();
-
-//         $this->set_table(CLSTABLE);
-//         $this->add_property('id', 'int');
-//         $this->add_property('idnumber', 'string', true);
-//         $this->add_property('courseid', 'int', true);
-//         $this->add_property('startdate', 'int');
-//         $this->add_property('enddate', 'int');
-//         $this->add_property('duration', 'int');
-//         $this->add_property('starttimehour', 'int');
-//         $this->add_property('starttimeminute', 'int');
-//         $this->add_property('endtimehour', 'int');
-//         $this->add_property('endtimeminute', 'int');
-//         $this->add_property('maxstudents', 'int');
-//         $this->add_property('environmentid', 'int');
-//         $this->add_property('enrol_from_waitlist', 'int');
-
-//         if (is_numeric($pmclassdata)) {
-//             $this->data_load_record($pmclassdata);
-//         } else if (is_array($pmclassdata)) {
-//             $this->data_load_array($pmclassdata);
-//         } else if (is_object($pmclassdata)) {
-//             $this->data_load_array(get_object_vars($pmclassdata));
-//         }
-
-//         if (!empty($this->id)) {
-//             // custom fields
-//             $level = context_level_base::get_custom_context_level('class', 'block_curr_admin');
-//             if ($level) {
-//                 $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
-//                 $fielddata = $fielddata ? $fielddata : array();
-//                 foreach ($fielddata as $name => $value) {
-//                     $this->{"field_{$name}"} = $value;
-//                 }
-//             }
-//         }
-
-//         if (!empty($this->courseid)) {
-//             $this->course = new course($this->courseid);
-//         }
-
-//         if (!empty($this->environmentid)) {
-//             $this->environment = new environment($this->environmentid);
-//         }
-
-//         $this->moodlecourseid = $this->get_moodle_course_id();
-//     }
-
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('class', 'elis_program');
     }
@@ -286,26 +229,12 @@ class pmclass extends data_object_with_custom_fields {
      *
      */
     function delete() {
-        //$status = true;
         if (!empty($this->id)) {
-            //instructor::delete_for_class($this->id);
-            //student::delete_for_class($this->id);
-            //trackassignment::delete_for_class($this->id);
-            //classmoodlecourse::delete_for_class($this->id);
-            //student_grade::delete_for_class($this->id);
-            //attendance::delete_for_class($this->id);
-            //taginstance::delete_for_class($this->id);
-            //waitlist::delete_for_class($this->id);
-            //classmoodlecourse::delete_for_class($this->id);
-
             $level = context_level_base::get_custom_context_level('class', 'elis_program');
             $result = delete_context($level,$this->id);
 
-            //$status = $this->data_delete_record();
             parent::delete();
         }
-
-        //return $status;
     }
 
     function __toString() {
@@ -753,6 +682,7 @@ class pmclass extends data_object_with_custom_fields {
 
     public static function count_students_by_section($clsid = 0){
         global $DB;
+
         if(!$clsid) { // static method cannot access $this
             return array();
         }
@@ -889,9 +819,14 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     static $validation_rules = array(
+        'validate_courseid_not_empty',
         'validate_idnumber_not_empty',
         'validate_unique_idnumber'
     );
+
+    function validate_courseid_not_empty() {
+        return validate_not_empty($this, 'courseid');
+    }
 
     function validate_idnumber_not_empty() {
         return validate_not_empty($this, 'idnumber');

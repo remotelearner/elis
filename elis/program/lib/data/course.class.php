@@ -89,48 +89,6 @@ class course extends data_object_with_custom_fields {
 
     static $delete_is_complex = true;
 
-    /**
-     * Contructor.
-     *
-     * @param $coursedata int/object/array The data id of a data record or data elements to load manually.
-     *
-     */
-//     function course($coursedata = false) {
-//         parent::datarecord();
-
-//         if (is_numeric($coursedata)) {
-//             $this->data_load_record($coursedata);
-//         } else if (is_array($coursedata)) {
-//             $this->data_load_array($coursedata);
-//         } else if (is_object($coursedata)) {
-//             $this->data_load_array(get_object_vars($coursedata));
-//         }
-
-//         if (!empty($this->environmentid)) {
-//             $this->environment = new environment($this->environmentid);
-//         }
-
-//         // FIXME: this should be done every time the template is updated, i.e. through getter/setter methods
-//         if (!empty($this->id)) {
-//             $template = new coursetemplate($this->id);
-//             $course = $this->_db->get_record('course', 'id', $template->location);
-
-//             if (!empty($course)) {
-//                 $this->locationlabel = $course->fullname . ' ' . $course->shortname;
-//             }
-
-//             // custom fields
-//             $level = context_level_base::get_custom_context_level('course', 'elis_program');
-//             if ($level) {
-//                 $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
-//                 $fielddata = $fielddata ? $fielddata : array();
-//                 foreach ($fielddata as $name => $value) {
-//                     $this->{"field_{$name}"} = $value;
-//                 }
-//             }
-//         }
-//     }
-
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('course', 'elis_program');
     }
@@ -435,9 +393,9 @@ class course extends data_object_with_custom_fields {
 
     function course_exists($id=null) {
         if(empty($id)){
-            return record_exists(course::TABLE, 'id', $this->id);
+            return $this->_db->record_exists(course::TABLE, array('id'=>$this->id));
         } else {
-            return record_exists(course::TABLE, 'id', $id);
+            return $this->_db->record_exists(course::TABLE, array('id'=>$id));
         }
     }
 
@@ -469,7 +427,7 @@ class course extends data_object_with_custom_fields {
      *
      */
     function check_for_nags() {
-        global $CFG;
+        global $CFG, $DB;
 
         $sendtouser =       elis::$config->elis_program->notify_courserecurrence_user;
         $sendtorole =       elis::$config->elis_program->notify_courserecurrence_role;
@@ -529,9 +487,9 @@ class course extends data_object_with_custom_fields {
 
         $usertempl = new user(); // used just for its properties.
 
-        $rs = get_recordset_sql($sql, array($year,$month,$week,$day,$timenow));
+        $rs = $DB->get_recordset_sql($sql, array($year,$month,$week,$day,$timenow));
         if ($rs) {
-            while ($rec = rs_fetch_next_record($rs)) {
+            foreach ($rs as $rec) {
                 /// Load the student...
                 $userdata = array();
                 foreach ($usertempl->properties as $prop => $type) {
@@ -637,13 +595,8 @@ class course extends data_object_with_custom_fields {
 
 	public function delete() {
         $level = context_level_base::get_custom_context_level('course', 'elis_program');
-		//$return = curriculumcourse::delete_for_course($this->id);
-		//$return = $return && pmclass::delete_for_course($this->id);
-        //$return = $return && coursetemplate::delete_for_course($this->id);
-        //$return = $return && delete_context($level,$this->id);
         delete_context($level,$this->id);
 
-    	//return $return && $this->data_delete_record();
         parent::delete();
     }
 
@@ -665,9 +618,14 @@ class course extends data_object_with_custom_fields {
     }
 
     static $validation_rules = array(
+        'validate_name_not_empty',
         'validate_idnumber_not_empty',
         'validate_unique_idnumber'
     );
+
+    function validate_name_not_empty() {
+        return validate_not_empty($this, 'name');
+    }
 
     function validate_idnumber_not_empty() {
         return validate_not_empty($this, 'idnumber');
@@ -904,7 +862,7 @@ function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
     return $DB->count_records_select(course::TABLE, $where, $params);
 }
 
-class coursecompletion extends data_object_with_custom_fields {
+class coursecompletion extends elis_data_object {
     const TABLE = 'crlm_course_completion';
 
     protected $_dbfield_courseid;
