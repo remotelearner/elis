@@ -577,6 +577,8 @@ class associationpage extends pm_page {
 
 class association_page_table extends display_table {
     function __construct(&$items, $columns, $page) {
+        global $OUTPUT;
+
         $this->page = $page;
         if (isset($columns['buttons']) && is_array($columns['buttons'])) {
             $columns['buttons']['display_function'] = 'htmltab_display_function';
@@ -596,7 +598,7 @@ class association_page_table extends display_table {
                 } else {
                     $deletebutton = '';
                 }
-                $items->manage = $deletebutton;
+                $item->manage = $deletebutton;
             }
         }
         //$url = (get_class($page) == 'moodle_url') ? $page : $page->url;
