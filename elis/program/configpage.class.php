@@ -24,10 +24,8 @@
  *
  */
 
-//require_once CURMAN_DIRLOCATION . '/lib/newpage.class.php';
 require_once elispm::lib('page.class.php');
 require_once elispm::lib('lib.php');
-//require_once($CFG->dirroot.'/curriculum/form/configform.class.php');
 require_once elispm::file('/form/configform.class.php');
 
 
@@ -42,14 +40,13 @@ class configpage extends pm_page {
         return has_capability('block/curr_admin:managecurricula', $context);
     }
 
-    function build_navigation_default() {
-//        return array(
-//            array('name' => get_string('configuration'),
-//                  'link' => $this->get_url()),
-//            );
-        parent::build_navbar_default();
-        $url = $this->get_new_page(array('action' => 'default'), true)->url;
-        $this->navbar->add(get_string('configuration', 'elis_program'), $url);
+    function build_navbar_default() { // was build_navigation_default
+        global $CFG;
+
+        $page = $this->get_new_page(array('action' => 'default'), true);
+
+        $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
+        $this->navbar->add(get_string('notifications', 'elis_program'), $page->url);
     }
 
     function get_title_default() {
@@ -70,7 +67,14 @@ class configpage extends pm_page {
     function do_default() {
         global $CFG;
 
-        $configform = new pmconfigform('index.php', $this);
+        $target = $this->get_new_page(array('action' => 'default'));
+
+        $configform = new $this->form_class($target->url);
+        if ($configform->is_cancelled()) {
+            $target = $this->get_new_page(array('action' => 'default'), true);
+            redirect($target->url);
+            return;
+        }
         $configform->set_data(elis::$config->elis_program);
 
         if ($configdata = $configform->get_data()) {

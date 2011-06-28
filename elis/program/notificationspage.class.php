@@ -24,13 +24,10 @@
  *
  */
 
-//require_once CURMAN_DIRLOCATION . '/lib/newpage.class.php';
 require_once elispm::lib('page.class.php');
 require_once elispm::lib('lib.php');
 require_once elispm::file('/form/notificationform.class.php');
 require_once elispm::file('configpage.class.php');
-//require_once($CFG->dirroot.'/curriculum/form/notificationform.class.php');
-
 
 class notifications extends pm_page {
     var $pagename = 'ntf';
@@ -42,14 +39,13 @@ class notifications extends pm_page {
         return has_capability('block/curr_admin:managecurricula', $context);
     }
 
-    function build_navigation_default() {
-//        return array(
-//            array('name' => get_string('notifications', 'elis_program'),
-//                  'link' => $this->get_url()),
-//            );
-        parent::build_navbar_default();
-        $url = $this->get_new_page(array('action' => 'default'), true)->url;
-        $this->navbar->add(get_string('notifications', 'elis_program'), $url);
+    function build_navbar_default() { // was build_navigation_default
+        global $CFG;
+
+        $page = $this->get_new_page(array('action' => 'default'), true);
+
+        $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
+        $this->navbar->add(get_string('notifications', 'elis_program'), $page->url);
     }
 
     function get_title_default() {
@@ -57,10 +53,28 @@ class notifications extends pm_page {
     }
 
     function do_default() {
-        global $CFG;
 
+        $target = $this->get_new_page(array('action' => 'default'));
 
-        $configform = new pmnotificationform('index.php', $this);
+        $form = new $this->form_class($target->url);
+
+        if ($form->is_cancelled()) {
+            $target = $this->get_new_page(array('action' => 'default'), true);
+            redirect($target->url);
+            return;
+        }
+
+        $this->display('default');
+    }
+
+    /**
+     * handler for the default display action.  Prints the edit form.
+     */
+    function display_default() {
+
+        $target = $this->get_new_page(array('action' => 'default'));
+
+        $configform = new $this->form_class($target->url);
 
         $configform->set_data(elis::$config->elis_program);
 
@@ -147,18 +161,7 @@ class notifications extends pm_page {
             configpage::config_set_value($configdata, 'notify_curriculumrecurrence_days', 0);
         }
 
-        $this->display('default');
-    }
-
-    /**
-     * handler for the default display action.  Prints the edit form.
-     */
-    function display_default() {
-
-        $target = $this->get_new_page(array('action' => 'default'));
-
-        $form = new $this->form_class($target->url);
-        $form->display();
+        $configform->display();
     }
 }
 ?>

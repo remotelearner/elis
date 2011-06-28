@@ -44,9 +44,10 @@
  *
  */
 
-require_once($CFG->dirroot.'/curriculum/config.php');
-require_once(CURMAN_DIRLOCATION.'/lib/cmclass.class.php');
-require_once(CURMAN_DIRLOCATION.'/lib/instructor.class.php');
+global $CFG;
+
+require_once elispm::lib('data/pmclass.class.php');
+require_once elispm::lib('data/instructor.class.php');
 
 class message {
 
@@ -55,6 +56,7 @@ class message {
     /// not have to be replaced when upgraded to 2.0.
     /// If a message class is created, and is the same as this, it can be removed here and the notification
     /// class below can extend it instead.
+    // TODO: Not sure if we need to extend message_output_email or class_message_output
 
     public    $modulename;                // The name of the Moodle subsystem generating the event.
     public    $component;                 // The component in the subsystem.
@@ -145,13 +147,13 @@ class notification extends message {
      *
      */
     public function send_notification($message='', $userto=null, $userfrom=null, $logevent=false) {
-        global $USER;
+        global $DB, $USER;
 
         /// Handle parameters:
         if (!empty($userto)) {
             $this->userto = $userto;
         } else if (empty($this->userto)) {
-            print_error('message_nodestinationuser', 'block_curr_admin');
+            print_error('message_nodestinationuser', 'elis_program');
             return false;
         }
 
@@ -170,12 +172,12 @@ class notification extends message {
         if (get_class($this->userto) == 'user') {
             $tocmuserid = $this->userto->id;
             if (!($this->userto = cm_get_moodleuser($this->userto->id))) {
-                debugging(get_string('nomoodleuser', 'block_curr_admin'));
+                debugging(get_string('nomoodleuser', 'elis_program'));
             }
         }
         if (get_class($this->userfrom) == 'user') {
             if (!($this->userfrom = cm_get_moodleuser($this->userfrom->id))) {
-                debugging(get_string('nomoodleuser', 'block_curr_admin'));
+                debugging(get_string('nomoodleuser', 'elis_program'));
             }
         }
 
@@ -185,7 +187,6 @@ class notification extends message {
 
         $eventname='message_send';
         events_trigger($eventname, $this);
-
     /// Insert a notification log if we have data for it.
         if ($logevent !== false) {
             if (!empty($logevent->event)) {
@@ -209,7 +210,7 @@ class notification extends message {
                 } else {
                     $newlog->timecreated = time();
                 }
-                insert_record('crlm_notification_log', $newlog);
+                $DB->insert_record('crlm_notification_log', $newlog);
             }
         }
     }
@@ -296,7 +297,7 @@ function cm_notify_send_handler($eventdata){
     /// For 1.9, just user the messaging system until we have recreated the 2.0
     /// functionality.
     require_once($CFG->dirroot.'/message/lib.php');
-    message_post_message($eventdata->userfrom, $eventdata->userto, addslashes($eventdata->fullmessage), addslashes($eventdata->fullmessageformat), 'direct');
+    message_post_message($eventdata->userfrom, $eventdata->userto, $eventdata->fullmessage, addslashes($eventdata->fullmessageformat)); //, 'direct'
     return true;
 
 //        global $CFG, $DB;
@@ -390,7 +391,7 @@ function cm_notify_send_handler($eventdata){
  */
 function cm_assign_instructor_from_mdl($eventdata) {
 
-    global $CFG, $CURMAN;
+    global $CFG, $DB;
 
     //make sure we have course manager roles defined
     if(empty($CFG->coursemanager)) {
@@ -414,7 +415,7 @@ function cm_assign_instructor_from_mdl($eventdata) {
     $instructor = new user($instructorid);
 
     //get the role assignment context
-    if(!$context = get_record('context', 'id', $eventdata->contextid)) {
+    if(!$context = $DB->get_record('context', array('id'=> $eventdata->contextid))) {
         return;
     }
 
@@ -424,23 +425,24 @@ function cm_assign_instructor_from_mdl($eventdata) {
     }
 
     //make sure the Moodle course is not tied to other curriculum administartion classes
-    if(count_records(CLSMOODLETABLE, 'moodlecourseid', $context->instanceid) != 1) {
+    if($DB->count_records(classmoodlecourse::TABLE, array('moodlecourseid'=> $context->instanceid)) != 1) {
         return true;
     }
 
     //make sure the course is tied to at least one class
-    if(!$crlm_class = $CURMAN->db->get_record(CLSMOODLETABLE, 'moodlecourseid', $context->instanceid)) {
+    if(!$crlm_class = $DB->get_record(classmoodlecourse::TABLE, array('moodlecourseid'=> $context->instanceid))) {
         return;
     }
 
     //add user as instructor for the appropriate class
 
-    if(!$CURMAN->db->record_exists(INSTABLE, 'classid', $crlm_class->classid, 'userid', $instructorid)) {
+    if(!$DB->record_exists(instructor::TABLE, array('classid'=> $crlm_class->classid,
+                                                    'userid'=> $instructorid))) {
         $ins_record = new instructor(array('classid' => $crlm_class->classid,
                                            'userid' => $instructorid,
                                            'assigntime' => $eventdata->timestart,
                                            'completetime' => $eventdata->timeend));
-        $ins_record->data_insert_record();
+        $ins_record->save();
     }
 
 }
@@ -454,7 +456,7 @@ function cm_assign_instructor_from_mdl($eventdata) {
  *
  */
 function cm_assign_student_from_mdl($eventdata) {
-    global $CURMAN, $CFG;
+    global $CFG, $DB;
 
     /// We get all context assigns, so check that this is a class. If not, we're done.
     if (!($context = get_context_instance_by_id($eventdata->contextid))) {
@@ -475,25 +477,27 @@ function cm_assign_student_from_mdl($eventdata) {
     }
 
     /// synchronize enrolment to ELIS class (if applicable)
-    require_once CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php';
-    require_once CURMAN_DIRLOCATION . '/lib/student.class.php';
-    $classes = $CURMAN->db->get_records(CLSMDLTABLE, 'moodlecourseid', $context->instanceid);
+    require_once elispm::lib('data/classmoodlecourse.class.php');
+    require_once elispm::lib('data/student.class.php');
+    $classes = $DB->get_records(classmoodlecourse::TABLE, array('moodlecourseid'=> $context->instanceid));
     if (count($classes) == 1) { // only if course is associated with one class
         $class = current($classes);
-        if (!get_record(STUTABLE, 'classid', $class->classid, 'userid', $cmuserid)) {
+        if (!$DB->get_record(student::TABLE, array('classid'=> $class->classid,
+                                                   'userid'=> $cmuserid))) {
             $sturec = new Object();
             $sturec->classid = $class->classid;
             $sturec->userid = $cmuserid;
             /// Enrolment time will be the earliest found role assignment for this user.
-            $enroltime = get_field('role_assignments', 'MIN(timestart) as enroltime', 'contextid',
-                                   $context->id, 'userid', $eventdata->userid);
+            $enroltime = $DB->get_field('role_assignments', 'MIN(timestart) as enroltime',
+                                        array('contextid'=> $context->id,
+                                              'userid'=> $eventdata->userid));
             $sturec->enrolmenttime = (!empty($enroltime) ? $enroltime : $timenow);
             $sturec->completetime = 0;
             $sturec->completestatusid = STUSTATUS_NOTCOMPLETE;
             $sturec->grade = 0;
             $sturec->credits = 0;
             $sturec->locked = 0;
-            $sturec->id = insert_record(STUTABLE, $sturec);
+            $sturec->id = $DB->insert_record(STUTABLE, $sturec);
         }
     }
 }
@@ -509,18 +513,18 @@ function cm_assign_student_from_mdl($eventdata) {
  *
  */
 function cm_notify_role_assign_handler($eventdata){
-    global $CFG, $USER, $CURMAN;
+    global $CFG, $DB, $USER;
 
     cm_assign_instructor_from_mdl($eventdata);
     cm_assign_student_from_mdl($eventdata);
 
     /// Does the user receive a notification?
-    $sendtouser = !empty($CURMAN->config->notify_classenrol_user) ?
-                      $CURMAN->config->notify_classenrol_user : 0;
-    $sendtorole = !empty($CURMAN->config->notify_classenrol_role) ?
-                      $CURMAN->config->notify_classenrol_role : 0;
-    $sendtosupervisor = !empty($CURMAN->config->notify_classenrol_supervisor) ?
-                      $CURMAN->config->notify_classenrol_supervisor : 0;
+    $sendtouser = !empty(elis::$config->elis_program->notify_classenrol_user) ?
+                      elis::$config->elis_program->notify_classenrol_user : 0;
+    $sendtorole = !empty(elis::$config->elis_program->notify_classenrol_role) ?
+                      elis::$config->elis_program->notify_classenrol_role : 0;
+    $sendtosupervisor = !empty(elis::$config->elis_program->notify_classenrol_supervisor) ?
+                      elis::$config->elis_program->notify_classenrol_supervisor : 0;
 
     /// If nobody receives a notification, we're done.
     if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -536,13 +540,13 @@ function cm_notify_role_assign_handler($eventdata){
     }
 
     /// Make sure this is a valid user.
-    if (!($enroluser = get_record('user', 'id', $eventdata->userid))) {
-        debugging(get_string('nomoodleuser', 'block_curr_admin'));
+    if (!($enroluser = $DB->get_record('user', array('id'=> $eventdata->userid)))) {
+        debugging(get_string('nomoodleuser', 'elis_program'));
         return true;
     }
 
     /// Get the course record from the context id.
-    if (!($course = get_record('course', 'id', $context->instanceid))) {
+    if (!($course = $DB->get_record('course', array('id'=> $context->instanceid)))) {
         print_error('invalidcourse');
         return true;
     }
@@ -550,9 +554,9 @@ function cm_notify_role_assign_handler($eventdata){
     $message = new notification();
 
     /// Set up the text of the message
-    $text = empty($CURMAN->config->notify_classenrol_message) ?
-                get_string('notifyclassenrolmessagedef', 'block_curr_admin') :
-                $CURMAN->config->notify_classenrol_message;
+    $text = empty(elis::$config->elis_program->notify_classenrol_message) ?
+                  get_string('notifyclassenrolmessagedef', 'elis_program') :
+                  elis::$config->elis_program->notify_classenrol_message;
     $search = array('%%userenrolname%%', '%%classname%%');
     $replace = array(fullname($enroluser), $course->fullname);
     $text = str_replace($search, $replace, $text);
@@ -593,7 +597,7 @@ function cm_notify_role_assign_handler($eventdata){
  * @return unknown_type
  */
 function cm_notify_role_unassign_handler($eventdata){
-    global $CFG, $CURMAN;
+    global $CFG, $DB;
 
     //make sure we have course manager roles defined
     if(empty($CFG->coursemanager)) {
@@ -616,13 +620,14 @@ function cm_notify_role_unassign_handler($eventdata){
     }
 
     //retrieve the course context
-    if(!$course_context = get_record('context', 'contextlevel', CONTEXT_COURSE,
-                                                'id',           $eventdata->contextid)) {
+    if(!$course_context = $DB->get_record('context',
+                                          array('contextlevel'=> CONTEXT_COURSE,
+                                                'id'=> $eventdata->contextid))) {
         return true;
     }
 
     //if the course is not tied to any curriculum admin classes, then we are done
-    if(!$associated_classes = $CURMAN->db->get_records(CLSMOODLETABLE, 'moodlecourseid', $course_context->instanceid)) {
+    if(!$associated_classes = $DB->get_records(classmoodlecourse::TABLE, array('moodlecourseid'=> $course_context->instanceid))) {
         return true;
     }
 
@@ -633,8 +638,8 @@ function cm_notify_role_unassign_handler($eventdata){
 
     //clear out instructor assignments in all associated classes
     foreach($associated_classes as $associated_class) {
-        if($instructor_record = $CURMAN->db->get_record(INSTABLE, 'classid', $associated_class->classid,
-                                                                                 'userid',  $crlm_userid)) {
+        if($instructor_record = $DB->get_record(instructor::TABLE, array('classid'=> $associated_class->classid,
+                                                                         'userid'=>  $crlm_userid))) {
             $delete_record = new instructor($instructor_record->id);
             $delete_record->delete();
         }
@@ -654,12 +659,12 @@ function cm_notify_role_unassign_handler($eventdata){
  *
  */
 function cm_notify_track_assign_handler($eventdata){
-    global $CFG, $USER, $CURMAN;
+    global $CFG, $DB, $USER;
 
     /// Does the user receive a notification?
-    $sendtouser       = isset($CURMAN->config->notify_trackenrol_user) ? $CURMAN->config->notify_trackenrol_user : '';
-    $sendtorole       = isset($CURMAN->config->notify_trackenrol_role) ? $CURMAN->config->notify_trackenrol_role : '';
-    $sendtosupervisor = isset($CURMAN->config->notify_trackenrol_supervisor) ? $CURMAN->config->notify_trackenrol_supervisor : '';
+    $sendtouser       = isset(elis::$config->elis_program->notify_trackenrol_user) ? elis::$config->elis_program->notify_trackenrol_user : '';
+    $sendtorole       = isset(elis::$config->elis_program->notify_trackenrol_role) ? elis::$config->elis_program->notify_trackenrol_role : '';
+    $sendtosupervisor = isset(elis::$config->elis_program->notify_trackenrol_supervisor) ? elis::$config->elis_program->notify_trackenrol_supervisor : '';
 
     /// If nobody receives a notification, we're done.
     if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -671,23 +676,25 @@ function cm_notify_track_assign_handler($eventdata){
 
     /// Make sure this is a valid user.
     $enroluser = new user($eventdata->userid);
+    // Due to lazy loading, we need to pre-load this object
+    $enroluser->load();
     if (empty($enroluser->id)) {
-        print_error('nouser', 'block_curr_admin');
+        print_error('nouser', 'elis_program');
         return true;
     }
 
     /// Get the track record from the track id.
-    if (!($track = get_record('crlm_track', 'id', $eventdata->trackid))) {
-        print_error('notrack', 'block_curr_admin');
+    if (!($track = $DB->get_record('crlm_track', array('id'=> $eventdata->trackid)))) {
+        print_error('notrack', 'elis_program');
         return true;
     }
 
     $message = new notification();
 
     /// Set up the text of the message
-    $text = empty($CURMAN->config->notify_trackenrol_message) ?
-                get_string('notifytrackenrolmessagedef', 'block_curr_admin') :
-                $CURMAN->config->notify_trackenrol_message;
+    $text = empty(elis::$config->elis_program->notify_trackenrol_message) ?
+                  get_string('notifytrackenrolmessagedef', 'elis_program') :
+                  elis::$config->elis_program->notify_trackenrol_message;
     $search = array('%%userenrolname%%', '%%trackname%%');
     $replace = array(fullname($enroluser), $track->name);
     $text = str_replace($search, $replace, $text);
@@ -697,7 +704,7 @@ function cm_notify_track_assign_handler($eventdata){
     }
 
     $users = array();
-    
+
     if ($sendtorole) {
         /// Get all users with the notify_trackenrol capability.
         if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_trackenrol')) {
@@ -731,22 +738,22 @@ function cm_notify_instructor_assigned_handler($eventdata) {
     global $CFG, $CURMAN;
 
     //make sure we actually have a default instructor role specified
-    if(empty($CURMAN->config->default_instructor_role)) {
+    if(empty(elis::$config->elis_program->default_instructor_role)) {
         return true;
     }
 
     //get our curriculum admin class
-    if(!$cmclass = new cmclass($eventdata->classid)) {
+    if(!$pmclass = new pmclass($eventdata->classid)) {
         return true;
     }
 
     //make sure our class is tied to a Moodle course
-    if(empty($cmclass->moodlecourseid)) {
+    if(empty($pmclass->moodlecourseid)) {
         return true;
     }
 
     //retrieve the Moodle course's context
-    if(!$course_context = get_context_instance(CONTEXT_COURSE, $cmclass->moodlecourseid)) {
+    if(!$course_context = get_context_instance(CONTEXT_COURSE, $pmclass->moodlecourseid)) {
         return true;
     }
 
@@ -760,10 +767,11 @@ function cm_notify_instructor_assigned_handler($eventdata) {
         return true;
     }
 
+    /* TODO: roles must be ported to ELIS2
     //assign the Moodle user to the default instructor role
-    role_assign($CURMAN->config->default_instructor_role, $instructor->id, 0, $course_context->id,
+    role_assign(elis::$config->elis_program->default_instructor_role, $instructor->id, 0, $course_context->id,
                 $eventdata->assigntime, $eventdata->completetime);
-
+*/
     return true;
 }
 
@@ -776,7 +784,7 @@ function cm_notify_instructor_assigned_handler($eventdata) {
  */
 function cm_notify_instructor_unassigned_handler($eventdata) {
 
-    global $CFG;
+    global $CFG, $DB;
 
     //make sure users in some roles are identified as course managers
     if(empty($CFG->coursemanager)) {
@@ -784,22 +792,22 @@ function cm_notify_instructor_unassigned_handler($eventdata) {
     }
 
     //create the curriculum administration class
-    if(!$cmclass = new cmclass($eventdata->classid)) {
+    if(!$pmclass = new pmclass($eventdata->classid)) {
         return true;
     }
 
     //ensure that the class is tied to a Moodle course
-    if(empty($cmclass->moodlecourseid)) {
+    if(empty($pmclass->moodlecourseid)) {
         return true;
     }
 
     //retrieve the context for the Moodle course
-    if(!$course_context = get_context_instance(CONTEXT_COURSE, $cmclass->moodlecourseid)) {
+    if(!$course_context = get_context_instance(CONTEXT_COURSE, $pmclass->moodlecourseid)) {
         return true;
     }
 
     //make sure the Moodle course is not tied to other curriculum administartion classes
-    if(count_records(CLSMOODLETABLE, 'moodlecourseid', $cmclass->moodlecourseid) != 1) {
+    if($DB->count_records(classmoodlecourse::TABLE, array('moodlecourseid'=> $pmclass->moodlecourseid)) != 1) {
         return true;
     }
 
@@ -813,10 +821,11 @@ function cm_notify_instructor_unassigned_handler($eventdata) {
 
     foreach($roleids as $roleid) {
 
+         /* TODO: roles must be ported to ELIS2
         //unassign the role if found
         if(user_has_role_assignment($instructor->id, $roleid, $course_context->id)) {
             role_unassign($roleid, $instructor->id, 0, $course_context->id);
-        }
+        }*/
     }
 
     return true;

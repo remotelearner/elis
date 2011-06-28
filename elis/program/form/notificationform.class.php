@@ -190,6 +190,8 @@
             $mform->addElement('static', 'spacer', '', '');
 
             $this->add_action_buttons();
+//            echo '<br>form:';
+//            print_object($mform);
         }
     }
 ?>
