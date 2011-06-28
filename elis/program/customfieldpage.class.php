@@ -82,9 +82,9 @@ class customfieldpage extends pm_page {
             $tmppage->params = array('action' => 'deletecategory',
                                      'id' => $categoryid,
                                      'level' => $level);
-            $deletelink = $tmppage->get_url();
+            $deletelink = $tmppage->url;
             $tmppage->params['action'] = 'editcategory';
-            $editlink = $tmppage->get_url();
+            $editlink = $tmppage->url;
             echo "<h2>{$categories[$categoryid]->name} <a href=\"$editlink\">";
             echo "<img src=\"{$CFG->wwwroot}/elis/program/pix/edit.gif\" alt=\"$edittxt\" title=\"$edittxt\" /></a>";
             echo "<a href=\"$deletelink\"><img src=\"{$CFG->wwwroot}/elis/program/pix/delete.gif\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
@@ -265,7 +265,7 @@ class customfieldpage extends pm_page {
 
         require_once $CFG->dirroot.'/elis/program/form/customfieldform.class.php';
         $tmppage = new customfieldpage(array('level' => $level, 'action' => 'editfield'), $this);
-        $form = new customfieldform($tmppage->get_moodle_url(), $this);
+        $form = new customfieldform($tmppage->url, $this);
         if ($form->is_cancelled()) {
             $tmppage = new customfieldpage(array('level' => $level));
             redirect($tmppage->url, get_string('edit_cancelled', 'elis_program'));
