@@ -132,12 +132,12 @@ class curriculumpage extends managementpage {
         array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
         array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
 
-        //TO-DO: re-enable tabs once their associated pages are done
         array('tab_id' => 'curriculumstudentpage', 'page' => 'curriculumstudentpage', 'name' => get_string('users', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
         array('tab_id' => 'curriculumclusterpage', 'page' => 'curriculumclusterpage', 'name' => get_string('clusters', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
         array('tab_id' => 'curriculumcoursepage', 'page' => 'curriculumcoursepage', 'name' => get_string('courses', 'elis_program') , 'showtab' => true, 'showbutton' => true, 'image' => 'course'),
         //allow users to view the tracks associated with this curriculum
         array('tab_id' => 'trackpage', 'page' => 'trackpage', 'name' => get_string('tracks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track'),
+        //TO-DO: re-enable once rolepage is done
         //array('tab_id' => 'curriculum_rolepage', 'page' => 'curriculum_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),

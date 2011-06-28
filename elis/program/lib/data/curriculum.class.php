@@ -69,53 +69,6 @@ class curriculum extends data_object_with_custom_fields {
 
     static $delete_is_complex = true;
 
-    /**
-     * Contructor.
-     *
-     * @param $curriculumdata int/object/array The data id of a data record or data elements to load manually.
-     *
-     */
-//     function curriculum($curriculumdata=false) {
-//         parent::datarecord();
-
-//         $this->set_table(CURTABLE);
-//         $this->add_property('id', 'int');
-//         $this->add_property('idnumber', 'string', true);
-//         $this->add_property('name', 'string', true);
-//         $this->add_property('description', 'string');
-//         $this->add_property('reqcredits', 'int');
-//         $this->add_property('iscustom', 'int');
-//         $this->add_property('timecreated', 'int');
-//         $this->add_property('timemodified', 'int');
-//         $this->add_property('timetocomplete', 'string');
-//         $this->add_property('frequency', 'string');
-//         $this->add_property('priority', 'int');
-
-//         if (is_numeric($curriculumdata)) {
-//             $this->data_load_record($curriculumdata);
-//         } else if (is_array($curriculumdata)) {
-//             $this->data_load_array($curriculumdata);
-//         } else if (is_object($curriculumdata)) {
-//             $this->data_load_array(get_object_vars($curriculumdata));
-//         }
-
-//         if (!empty($this->userid)) {
-//             $this->user = new user($this->userid);
-//         }
-
-//         if (!empty($this->id)) {
-//             // custom fields
-//             $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
-//             if ($level) {
-//                 $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
-//                 $fielddata = $fielddata ? $fielddata : array();
-//                 foreach ($fielddata as $name => $value) {
-//                     $this->{"field_{$name}"} = $value;
-//                 }
-//             }
-//         }
-//     }
-
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('curriculum', 'elis_program');
     }
@@ -138,14 +91,8 @@ class curriculum extends data_object_with_custom_fields {
 
 	function delete() {
         $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
-		//$result = track::delete_for_curriculum($this->id);
-		//$result = $result && clustercurriculum::delete_for_curriculum($this->id);
-		//$result = $result && curriculumcourse::delete_for_curriculum($this->id);
-		//$result = $result && curriculumstudent::delete_for_curriculum($this->id);
-        //$result = $result && delete_context($level,$this->id);
         delete_context($level,$this->id);
 
-    	//return $result && $this->data_delete_record();
     	parent::delete();
     }
 
@@ -165,7 +112,7 @@ class curriculum extends data_object_with_custom_fields {
         }
 
         /// Check for valid idnumber - it can't already exist in the user table.
-        if ($this->_db->record_exists($this->table, 'idnumber', $record->idnumber)) {
+        if ($this->_db->record_exists($this->table, array('idnumber'=>$record->idnumber))) {
             return true;
         }
 
@@ -192,7 +139,7 @@ class curriculum extends data_object_with_custom_fields {
      * Check for any curriculum completed nags that need to be handled.
      */
     public static function check_for_completed_nags() {
-        global $CFG;
+        global $CFG, $DB;
 
         /// Completed curricula:
 
@@ -228,9 +175,9 @@ class curriculum extends data_object_with_custom_fields {
         $timenow = time();
         $secondsinaday = 60 * 60 * 24;
 
-        $rs = get_recordset_sql($sql);
+        $rs = $DB->get_recordset_sql($sql);
         if ($rs) {
-            while ($rec = rs_fetch_next_record($rs)) {
+            foreach ($rs as $rec) {
                 /// Loop through enrolment records grouped by curriculum and curriculum assignments,
                 /// counting the credits achieved and looking for all required courses to be complete.
                 /// Load a new curriculum assignment
@@ -259,7 +206,7 @@ class curriculum extends data_object_with_custom_fields {
                     $curid = $rec->curid;
                     $reqcredits = $rec->reqcredits;
                     $select = 'curriculumid = '.$curid.' AND required = 1';
-                    if (!($requiredcourseids = get_records_select(curriculumcourse::TABLE, $select, null, '', 'courseid,required'))) {
+                    if (!($requiredcourseids = $DB->get_records_select(curriculumcourse::TABLE, $select, null, '', 'courseid,required'))) {
                         $requiredcourseids = array();
                     }
                     $checkcourses = $requiredcourseids;
@@ -307,9 +254,9 @@ class curriculum extends data_object_with_custom_fields {
         $timenow = time();
         $secondsinaday = 60 * 60 * 24;
 
-        $rs = get_recordset_sql($sql);
+        $rs = $DB->get_recordset_sql($sql);
         if ($rs) {
-            while ($rec = rs_fetch_next_record($rs)) {
+            foreach ($rs as $rec) {
                 /// Loop through curriculum assignments checking for nags.
                 $deltad = new datedelta($rec->timetocomplete);
 
@@ -337,7 +284,7 @@ class curriculum extends data_object_with_custom_fields {
      * Check for any curriculum recurrence notifications that need to be sent out.
      */
     public static function check_for_recurrence_nags() {
-        global $CFG;
+        global $CFG, $DB;
 
         $sendtouser = elis::$config->elis_program->notify_curriculumrecurrence_user;
         $sendtorole = elis::$config->elis_program->notify_curriculumrecurrence_role;
@@ -363,9 +310,9 @@ class curriculum extends data_object_with_custom_fields {
 
         $usertempl = new user(); // used just for its properties.
 
-        $rs = get_recordset_sql($sql);
+        $rs = $DB->get_recordset_sql($sql);
         if ($rs) {
-            while ($rec = rs_fetch_next_record($rs)) {
+            foreach ($rs as $rec) {
                 /// Load the student...
                 $userdata = array();
                 $userdata['id'] = $rec->userid;
@@ -406,7 +353,7 @@ class curriculum extends data_object_with_custom_fields {
 
     public static function curriculum_recurrence_handler($user) {
         global $CFG;
-        // TO-DO: re-enable once notifications are done
+        // TO-DO: re-enable once notifications is done
         //require_once($CFG->dirroot.'/curriculum/lib/notifications.php');
 
         /// Does the user receive a notification?
@@ -421,10 +368,10 @@ class curriculum extends data_object_with_custom_fields {
 
         $context = get_system_context();
 
+        /* TO-DO: re-enable once notifications is done
         $message = new notification();
 
         /// Set up the text of the message
-        /* TO-DO: re-enable once notifications are done
         $text = empty(elis::$config->elis_program->notify_curriculumrecurrence_message) ?
                     get_string('notifycurriculumrecurrencemessagedef', 'elis_program') :
                     elis::$config->elis_program->notify_curriculumrecurrence_message;
@@ -464,7 +411,9 @@ class curriculum extends data_object_with_custom_fields {
     }
 
     public static function get_by_idnumber($idnumber) {
-        $retval = $this->_db->get_record(curriculum::TABLE, array('idnumber'=>$idnumber));
+        global $DB;
+
+        $retval = $DB->get_record(curriculum::TABLE, array('idnumber'=>$idnumber));
 
         if(!empty($retval)) {
             $retval = new curriculum($retval->id);
@@ -619,7 +568,6 @@ class curriculum extends data_object_with_custom_fields {
 
         if (!$isnew) {
             // If this setting is changed, we need to update the existing curriclum expiration values (ELIS-1172)
-            // TO-DO: enable this when curriculumassignment is done
             if ($rs = $this->_db->get_recordset_select(curriculumstudent::TABLE, "timeexpired != 0 AND curriculumid = {$this->id}", null, 'id, userid')) {
                 $timenow = time();
 
@@ -629,7 +577,7 @@ class curriculum extends data_object_with_custom_fields {
                     $update->timeexpired  = calculate_curriculum_expiry(NULL, $this->id, $rec->userid);
                     $update->timemodified = $timenow;
 
-                    update_record(curriculumstudent::TABLE, $update);
+                    $this->_db->update_record(curriculumstudent::TABLE, $update);
                  }
 
                 $rs->close();
@@ -753,7 +701,8 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
  * @return array Returned records.
  */
 function curriculum_get_menu() {
-    return get_records_menu(curriculum::TABLE, NULL, NULL, 'name', 'id,name');
+    global $DB;
+    return $DB->get_records_menu(curriculum::TABLE, NULL, NULL, 'name', 'id,name');
 }
 
 function curriculum_count_records($namesearch = '', $alpha = '', $contexts = null) {
