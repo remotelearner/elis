@@ -224,7 +224,7 @@ class waitlist extends elis_data_object {
         // enrol directly in the course
         $student = new student($this);
         $student->enrolmenttime = max(time(), $class->startdate);
-        $student->update(); // add()
+        $student->add();
 
         if ($courseid) {
             $course = $this->_db->get_record('course', array('id' => $this->id));
@@ -260,7 +260,7 @@ class waitlist extends elis_data_object {
     /**
      *
      */
-    public function save() { // add()
+    public function add() {
 
         if(empty($this->position)) {
             //SELECT MIN(userid) FROM eli_crlm_wait_list WHERE 1
@@ -268,7 +268,7 @@ class waitlist extends elis_data_object {
             $sql = 'SELECT MAX(position) as max 
                     FROM {'. waitlist::TABLE .'}  wl
                     WHERE wl.classid = ? ';
-            $max_record = get_record_sql($sql, array($this->classid));
+            $max_record = $this->_db->get_record_sql($sql, array($this->classid));
             $max = $max_record->max;
             $this->position = $max + 1;
         }
@@ -285,7 +285,7 @@ class waitlist extends elis_data_object {
         // TBD: notification::notify($message, $user, $from);
         email_to_user($user, $from, $subject, $message);
 
-        parent::save(); // add()
+        parent::save(); // was parent::add()
     }
 
     public static function get_next($clsid) {

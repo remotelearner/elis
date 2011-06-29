@@ -105,7 +105,7 @@ class studentpage extends associationpage {
     function can_do_edit() {
         $association_id = $this->optional_param('association_id', '', PARAM_INT);
         if (empty($association_id)) { // TBD
-            error_log('studentpage.class.php::can_do_edit() - empty association_id!');
+            error_log('studentpage.class.php::can_do_edit() - empty association_id! Returning: false');
             return false;
         }
         $student = new student($association_id);
@@ -134,8 +134,7 @@ class studentpage extends associationpage {
 
     function do_add() { // TBD: must overload the parents since no studentform
         //error_log('studentpage.class.php::do_add()');
-        $this->do_savenew();
-        //$this->display('add');
+        $this->display_savenew();
     }
 
     function do_delete() { // action_confirm
@@ -149,18 +148,16 @@ class studentpage extends associationpage {
         $stu = new student($stuid); // TBD: $stuid
         //$stu->id = $stuid;
         //$stu->load();
+        $user = new user($stu->userid); // TBD
         $sparam = new stdClass;
-        $sparam->name = fullname($stu->user); // TBD ???
+        $sparam->name = fullname($user);
         if (md5($stuid) != $confirm) { // TBD
             echo cm_error(get_string('invalidconfirm', self::LANG_FILE));
         } else {
-            $status = $stu->delete(); // TBD: no return code from delete()
-          /* ****
+            $status = $stu->delete();
             if (!$status) {
                 echo cm_error(get_string('studentnotunenrolled', self::LANG_FILE, $sparam));
-            } else
-          **** */
-            {
+            } else {
                 echo cm_error(get_string('studentunenrolled', self::LANG_FILE, $sparam));
             }
         }
@@ -186,7 +183,7 @@ class studentpage extends associationpage {
         echo $this->get_view_form($clsid, $type, $sort, $dir, $page, $perpage, $namesearch, $alpha);
     }
 
-    function do_savenew() { // action_savenew
+    function display_savenew() { // action_savenew
         $clsid = $this->required_param('id', PARAM_INT);
         $users = $this->optional_param('users', array(), PARAM_CLEAN);
 
@@ -224,15 +221,15 @@ class studentpage extends associationpage {
         foreach ($users as $uid => $user) {
             if (!empty($user['enrol'])) {
                 $newstu = $this->build_student($uid, $classid, $user);
-
-                if($newstu->completestatusid != STUSTATUS_NOTCOMPLETE || empty($newstu->pmclass->maxstudents) || $newstu->pmclass->maxstudents > $newstu->count_enroled()) {
-                    $status = $newstu->update(); // TBD: ->save()? WAS: $newstu->do_add();
+                $pmclass = new pmclass($classid);
+                $pmclass->load(); // TBD
+                error_log("studentpage::attempt_enrol({$classid}, users): max_students = {$pmclass->maxstudents}  tot_enrolled = ". $newstu->count_enroled());
+                if($newstu->completestatusid != STUSTATUS_NOTCOMPLETE || empty($pmclass->maxstudents) || $pmclass->maxstudents > $newstu->count_enroled()) {
+                    $status = $newstu->add();
                 } else {
                     $waitlist[] = $newstu;
                     $status = true;
                 }
-
-              /* **** no return code from ->save()/update() ****
                 if ($status !== true) {
                     if (!empty($status->message)) {
                         echo cm_error(get_string('record_not_created_reason',
@@ -241,7 +238,6 @@ class studentpage extends associationpage {
                         echo cm_error(get_string('record_not_created', self::LANG_FILE));
                     }
                 }
-              **** */
             }
         }
 
@@ -262,14 +258,14 @@ class studentpage extends associationpage {
         $stuid = $this->required_param('association_id', PARAM_INT);
         $clsid = $this->required_param('id', PARAM_INT);
         $users = $this->required_param('users');
-
+        //error_log("studentpage::do_update() stuid = {$stuid} clsid = {$clsid} ...");
         $uid   = key($users);
         $user  = current($users);
 
-        $sturecord                     = array();
-        $sturecord['id']               = $stuid;
-        $sturecord['classid']          = $clsid;
-        $sturecord['userid']           = $uid;
+        $sturecord            = array();
+        $sturecord['id']      = $stuid;
+        $sturecord['classid'] = $clsid;
+        $sturecord['userid']  = $uid;
 
         $startyear  = $user['startyear'];
         $startmonth = $user['startmonth'];
@@ -289,15 +285,12 @@ class studentpage extends associationpage {
 
         if ($stu->completestatusid == STUSTATUS_PASSED &&
             $DB->get_field(student::TABLE, 'completestatusid', array('id' => $stuid)) != STUSTATUS_PASSED) {
-
             $stu->complete();
         } else {
             $status = $stu->update();
-          /* *** no return code
             if ($status !== true) {
                 echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
             }
-          **** */
         }
 
         /// Check for grade records...
@@ -324,7 +317,7 @@ class studentpage extends associationpage {
             $graderec['locked'] = isset($locked[$gradeid]) ? $locked[$gradeid] : '0';
 
             $sgrade = new student_grade($graderec);
-            $sgrade->update();
+            $sgrade->save(); // update()
         }
 
         foreach ($newelement as $elementid => $element) {
@@ -338,7 +331,7 @@ class studentpage extends associationpage {
             $graderec['locked'] = isset($newlocked[$elementid]) ? $newlocked[$elementid] : '0';
 
             $sgrade = new student_grade($graderec);
-            $sgrade->do_add();
+            $sgrade->save();
         }
 
         $this->display('default'); // do_default()
@@ -379,24 +372,21 @@ class studentpage extends associationpage {
                 $stu->complete();
             } else {
                 $status = $stu->update(); // ->update() or ->save()
-              /* **** no return code from save()
                 if ($status !== true) {
                     echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
                 }
-              **** */
             }
 
             // Now once we've done all this, delete the student if we've been asked to
             if (isset($user['unenrol']) && pmclasspage::can_enrol_into_class($clsid)) {
                 $stu_delete = new student($sturecord); // TBD: param was $user['association_id']
                 $status = $stu_delete->delete();
-              /* **** no return code from delete()
                 if(!$status) {
+                    $user = new user($stu->userid); // TBD
                     $sparam = new stdClass;
-                    $sparam->name = fullname($stu->user);
+                    $sparam->name = fullname($user);
                     echo cm_error(get_string('studentnotunenrolled', self::LANG_FILE, $sparam));
                 }
-              **** */
             }
         }
 
@@ -422,12 +412,10 @@ class studentpage extends associationpage {
         $atnrecord['note'] = cm_get_param('note', '');
         $atn = new attendance($atnrecord);
 
-        $status = $atn->save(); // ->update
-      /* **** no return code
+        $status = $atn->update(); // TBD
         if ($status !== true) {
             echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
         }
-      **** */
     }
 
     /**
@@ -436,10 +424,10 @@ class studentpage extends associationpage {
     public function do_waitlistconfirm() { // action_waitlistconfirm
         $id = $this->required_param('userid', PARAM_INT);
 
-        $form_url = new moodle_url(null, array('s'=>$this->pagename, 'section'=>$this->section, 'action'=>'waitlistconfirm'));
-
+        $form_url = new moodle_url(null, array('s'       => $this->pagename,
+                                               'section' => $this->section,
+                                               'action'  => 'waitlistconfirm'));
         $waitlistform = new waitlistaddform($form_url, array('student_ids'=>$id));
-
         if($data = $waitlistform->get_data()) {
             $now = time();
 
@@ -457,7 +445,7 @@ class studentpage extends associationpage {
                         $wait_record->position = 0;
 
                         $wait_list = new waitlist($wait_record);
-                        $wait_list->save(); // TBD: was $wait_list->do_add()
+                        $wait_list->add();
                     } else if($data->enrol[$uid] == 2) {
                         $user = new user($uid);
                         $student_data= array();
@@ -468,8 +456,7 @@ class studentpage extends associationpage {
                         $student_data['completestatusid'] = STUSTATUS_NOTCOMPLETE;
 
                         $newstu = new student($student_data);
-                        $status = $newstu->update(); // TBD: was $newstu->do_add()
-                      /* **** returns objects from student::update() & save()
+                        $status = $newstu->add();
                         if ($status !== true) {
                             if (!empty($status->message)) {
                                 echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $status));
@@ -478,7 +465,6 @@ class studentpage extends associationpage {
                                                   self::LANG_FILE));
                             }
                         }
-                      **** */
                     }
                 }
             }
@@ -569,12 +555,13 @@ class studentpage extends associationpage {
     }
 
     public function get_waitlistform($students) {
-        $form_url = new moodle_url(null, array('s'=>$this->pagename, 'section'=>$this->section, 'action'=>'waitlistconfirm'));
-
+        $form_url = new moodle_url(null, array('s'       => $this->pagename,
+                                               'section' => $this->section,
+                                               'action'  => 'waitlistconfirm'));
         $student = current($students);
-        $data = $student->pmclass;
-        $waitlistform = new waitlistaddform($form_url, array('obj'=>$data, 'students'=>$students));
-
+        $data = new pmclass($student->classid); // TBD - was: $student->pmclass;
+        $waitlistform = new waitlistaddform($form_url,
+                                array('obj' => $data, 'students' => $students));
         $waitlistform->display();
     }
 
@@ -598,14 +585,14 @@ class studentpage extends associationpage {
         $namesearch   = trim($this->optional_param('search', '', PARAM_TEXT));
         $alpha        = $this->optional_param('alpha', '', PARAM_ALPHA);
 
-        $newstu = new student();
+        $newstu          = new student();
         $newstu->classid = $cmclass->id;
-
-        echo $newstu->edit_form_html($cmclass->id, $type, $sort, $dir, $page, $perpage, $namesearch, $alpha);
+        echo $newstu->edit_classid_html($cmclass->id, $type, $sort, $dir, $page, $perpage, $namesearch, $alpha);
     }
 
     function print_edit_form($stu, $cls) {
-        echo $stu->edit_form_html($stu->id);
+        $stu->classid = $cls->id; // TBD
+        echo $stu->edit_student_html($stu->id);
     }
 
     /**
@@ -623,7 +610,7 @@ class studentpage extends associationpage {
         $a->name    = fullname($user);
         $message    = get_string('student_deleteconfirm', self::LANG_FILE, $a);
         $optionsyes = array('s' => 'stu', 'section' => 'curr', 'id' => $stu->classid,
-                            'action' => 'confirm', 'association_id' => $stu->id, 'confirm' => md5($stu->id));
+                            'action' => 'delete', 'association_id' => $stu->id, 'confirm' => md5($stu->id)); // TBD - was: 'action' => 'confirm'
         $optionsno  = array('s' => 'stu', 'section' => 'curr', 'id' => $stu->classid);
 
         echo cm_delete_form($url, $message, $optionsyes, $optionsno);
@@ -732,8 +719,10 @@ class student_table extends association_page_table {
     function get_item_display_name($column, $item) {
         global $CFG, $OUTPUT, $USER;
 
-        if (has_capability('moodle/user:viewdetails', get_context_instance(CONTEXT_USER, $USER->id))) {
-            $moodle_link_begin = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.cm_get_moodleuserid($item->userid).'" alt="Moodle profile" title="Moodle profile">';
+        $mdluid = cm_get_moodleuserid($item->userid);
+        if (!empty($mdluid) && has_capability('moodle/user:viewdetails', get_context_instance(CONTEXT_USER, $USER->id))) {
+            $moodle_link_begin = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.
+                    $mdluid .'" alt="Moodle profile" title="Moodle profile">';
             $moodle_link_end = ' <img src="'. $OUTPUT->pix_url('i/moodle_host') .'" alt="Moodle profile" title="Moodle profile" /></a>';
         } else {
             $moodle_link_begin = '';

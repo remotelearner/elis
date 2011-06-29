@@ -255,6 +255,8 @@ class instructorpage extends associationpage {
         echo $OUTPUT->render($pagingbar);
         flush();
 
+        pmsearchbox($this, 'search', 'get', get_string('show_all_users', self::LANG_FILE));
+
         $table = NULL;
         if (!$inss) {
             pmshowmatches($alpha, $namesearch, null, 'no_instructor_matching');
@@ -297,8 +299,6 @@ class instructorpage extends associationpage {
                 $table = new association_page_table($newarr, $columns, &$this);
             }
         }
-
-        pmsearchbox($this, 'search', 'get', get_string('show_all_users', self::LANG_FILE));
 
         $add_instructor_link = '<a href="index.php?s=ins&amp;section=curr&amp;action=add&amp;id='. $clsid .'">'. get_string('instructor_add', self::LANG_FILE) .'</a>';
         if (!empty($table)) {

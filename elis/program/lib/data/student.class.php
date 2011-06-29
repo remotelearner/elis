@@ -336,14 +336,15 @@ class student extends elis_data_object {
      * @param boolean $notify whether or not notifications should be sent if a
      * check fails
      */
-    function save($checks = array(), $notify = false) { // add()
+    function add($checks = array(), $notify = false) {
         global $CFG;
 
         $status = true;
-
-        if ($this->_db->record_exists(student::TABLE, array('userid' => $this->userid,
-                                      'classid' => $this->classid))) {
+        if ($this->_db->record_exists(student::TABLE,
+                             array('userid' => $this->userid,
+                                   'classid' => $this->classid))) {
             // already enrolled -- pretend we succeeded
+            //error_log('student.class::save() - student already enrolled!');
             return true;
         }
 
@@ -371,6 +372,7 @@ class student extends elis_data_object {
                     $status = new Object();
                     $status->message = get_string('unsatisfiedprereqs', self::LANG_FILE);
                     $status->code = 'unsatisfiedprereqs';
+                    //error_log('student.class::save() - student missing prereqs!');
                     return $status;
                 }
             }
@@ -379,8 +381,9 @@ class student extends elis_data_object {
         if (!empty($checks['waitlist'])) {
             // check class enrolment limit
             $pmclass = new pmclass($this->classid);
+            $pmclass->load(); // TBD
             $limit = $pmclass->maxstudents;
-            if (!empty($limit) && $limit <= student::count_enroled($this->classid)) {
+            if (!empty($limit) && $limit <= $this->count_enroled($this->classid)) {
                 // class is full
                 // put student on wait list
                 $wait_list = new waitlist($this);
@@ -405,6 +408,7 @@ class student extends elis_data_object {
                 $status = new Object();
                 $status->message = get_string('user_waitlisted', self::LANG_FILE);
                 $status->code = 'user_waitlisted';
+                //error_log('student.class::save() - class full! wait-listed?');
                 return $status;
             }
         }
@@ -419,7 +423,9 @@ class student extends elis_data_object {
             }
         }
 
-        $status = parent::save(); // WAS: $this->data_insert_record()
+        /* $status = */ parent::save(); // WAS: $this->data_insert_record()
+        // no return status from save()
+        //error_log("student.class::save() - called parent::save() => {$status}");
 
         /// Enrol them into the Moodle class.
         if ($moodlecourseid = moodle_get_course($this->classid)) {
@@ -482,13 +488,12 @@ class student extends elis_data_object {
             }
         }
 
-        $result = $result && parent::delete(); // WAS: $this->data_delete_record()
+        /* $result = $result && */ parent::delete(); // WAS: $this->data_delete_record() - no return code from data_object::delete()
 
         if ($this->completestatusid == STUSTATUS_NOTCOMPLETE) {
             //error_log("student::delete() - classid = {$this->classid}");
             $pmclass = new pmclass($this->classid);
-
-            if (empty($pmclass->maxstudents) || $pmclass->maxstudents > student::count_enroled($pmclass->id)) {
+            if (empty($pmclass->maxstudents) || $pmclass->maxstudents > $this->count_enroled($pmclass->id)) {
                 $wlst = waitlist::get_next($this->classid);
 
                 if (!empty($wlst)) {
@@ -534,9 +539,9 @@ class student extends elis_data_object {
      *
      */
     function update() {
-        $retval = $this->save(); // TBD: or parent::save(); WAS: data_update_record()
+        parent::save(); // no return val
         events_trigger('crlm_class_completed', $this);
-        return $retval;
+        return true;    // TBD
     }
 
 /////////////////////////////////////////////////////////////////////
@@ -553,24 +558,37 @@ class student extends elis_data_object {
         }
     }
 
+    function edit_student_html($stuid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
+                               $perpage = 30, $namesearch = '', $alpha = '') {
+        $this->id = $stuid;
+        error_log("student.class.php::edit_student_html({$stuid}, {$type}, ... ); this->classid = {$this->classid}");
+        return $this->edit_form_html($this->id /* ->classid */, $type, $sort, $dir, $page,
+                                     $perpage, $namesearch, $alpha);
+    }
+
+    function edit_classid_html($classid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
+                               $perpage = 30, $namesearch = '', $alpha = '') {
+
+        error_log("student.class.php::edit_classid_html({$classid}, {$type}, ... ) - setting this->classid ({$this->classid}) = classid ({$classid})");
+        $this->classid = $classid; // TBD ???
+        return $this->edit_form_html($classid, $type, $sort, $dir, $page,
+                                     $perpage, $namesearch, $alpha);
+    }
+
     /**
      * Return the HTML to edit a specific student.
-     * This could be extended to allow for application specific editing, for example
-     * a Moodle interface to its formslib.
+     * This could be extended to allow for application specific editing,
+     * for example a Moodle interface to its formslib.
      *
-     * @param $formid string A suffix to put on all 'id' and index for all 'name' attributes.
-     *                       This should be unique if being used more than once in a form.
-     * @param $extraclass string Any extra class information to add to the output.
      * @uses $CFG
      * @uses $OUTPUT
      * @uses $PAGE
      * @return string The form HTML, without the form.
      */
     function edit_form_html($classid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
-                            $perpage = 0, $namesearch = '', $alpha = '') {
+                            $perpage = 30, $namesearch = '', $alpha = '') {
+                            // ^^^ set non-zero default for $perpage
         global $CFG, $OUTPUT, $PAGE;
-
-        $classid = $this->classid; // TBD ???
 
         $output = '';
         ob_start();
@@ -641,7 +659,7 @@ class student extends elis_data_object {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        $users = array(); // TBD
+        $users = array();
         if (empty($this->id)) {
             $users     = $this->get_users_avail($sort, $dir, $page * $perpage,
                                                 $perpage, $namesearch, $alpha);
@@ -660,6 +678,9 @@ class student extends elis_data_object {
                     "&amp;search=" . urlencode(stripslashes($namesearch))); // TBD: .'&amp;'
             echo $OUTPUT->render($pagingbar);
             flush();
+
+            pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE)); // TBD: moved from below
+
         } else {
             $tmpuser    = $this->_db->get_record(user::TABLE, array('id' => $this->userid)); // TBD: new user($this->userid)
             $user       = new stdClass;
@@ -751,11 +772,8 @@ class student extends elis_data_object {
         }
 
         if (empty($this->id)) {
-            pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE));
-
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="savenew" />'."\n";
-
         } else {
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="update" />'."\n";
@@ -802,33 +820,7 @@ class student extends elis_data_object {
                 $sort = 'element'; // TBD
                 $columns[$sort]['sortable'] = $dir;
             }
-        /* ****
-            foreach ($columns as $column => $colobj) {
-                $cdesc = $colobj['header'];
-                if ($sort != $column) {
-                    $columnicon = "";
-                    $columndir = "ASC";
-                } else {
-                    $columndir = $dir == "ASC" ? "DESC":"ASC";
-                    $columnicon = $dir == "ASC" ? "down":"up";
-                    $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
-                }
-                // ***TBD***
-                if (($column == 'name') || ($column == 'description')) {
-                    $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;" .
-                               "action=add&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=" .
-                               urlencode(stripslashes($namesearch)) . "&amp;alpha=$alpha\">" .
-                               $cdesc . "</a>$columnicon";
-                } else {
-                    $$column = $cdesc;
-                }
-                // TBD
-                $table->head[]  = $$column;
-                $table->align[] = "left";
-                $table->wrap[]  = true;
-            }
-        **** */
-            $table->width = "100%"; // TBD
+            //$table->width = "100%"; // TBD
 
             $newarr = array();
             foreach ($elements as $element) {
@@ -1002,33 +994,8 @@ class student extends elis_data_object {
             $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
-    /* ****
-        foreach ($columns as $column => $colobj) {
-            $cdesc = $colobj['header'];
-            if ($sort != $column) {
-                $columnicon = "";
-                $columndir = "ASC";
-            } else {
-                $columndir = $dir == "ASC" ? "DESC":"ASC";
-                $columnicon = $dir == "ASC" ? "down":"up";
-                $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
-            }
-            // ***TBD***
-            if (($column != 'unenrol')) {
-                $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;" .
-                           "action=bulkedit&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=" .
-                           urlencode(stripslashes($namesearch)) . "&amp;alpha=$alpha\">" .
-                           $cdesc . "</a>$columnicon";
-            } else {
-                $$column = $cdesc;
-            }
-            // TBD
-            $table->head[]  = $$column;
-            $table->align[] = "left";
-            $table->wrap[]  = true;
-        }
-    **** */
-        $users = array(); // TBD
+
+        $users = array();
         if (empty($this->id)) {
             $users     = $this->get_users_enrolled($type, $sort, $dir, $page * $perpage, $perpage,
                                                 $namesearch, $alpha);
@@ -1048,6 +1015,9 @@ class student extends elis_data_object {
                     "&amp;search=" . urlencode(stripslashes($namesearch))); // TBD: .'&amp;'
             echo $OUTPUT->render($pagingbar);
             flush();
+
+            pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE)); // TBD: moved from below
+
         } else {
             $tmpuser    = $this->_db->get_record(user::TABLE, array('id' => $this->userid)); // TBD: new user($this->userid)
             $user       = new stdClass;
@@ -1137,11 +1107,8 @@ class student extends elis_data_object {
         }
 
         if (empty($this->id)) {
-            pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE));
-
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="updatemultiple" />'."\n";
-
         } else {
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="updatemultiple" />'."\n";
@@ -1190,33 +1157,7 @@ class student extends elis_data_object {
                 $sort = 'element'; // TBD
                 $columns[$sort]['sortable'] = $dir;
             }
-        /* ****
-            foreach ($columns as $column => $colobj) {
-                $cdesc = $colobj['header'];
-                if ($sort != $column) {
-                    $columnicon = "";
-                    $columndir = "ASC";
-                } else {
-                    $columndir = $dir == "ASC" ? "DESC":"ASC";
-                    $columnicon = $dir == "ASC" ? "down":"up";
-                    $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
-                }
-                // ***TBD***
-                if (($column == 'name') || ($column == 'description')) {
-                    $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;" .
-                               "action=default&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=" .
-                               urlencode(stripslashes($namesearch)) . "&amp;alpha=$alpha\">" .
-                               $cdesc . "</a>$columnicon";
-                } else {
-                    $$column = $cdesc;
-                }
-                // TBD
-                $table->head[]  = $$column;
-                $table->align[] = "left";
-                $table->wrap[]  = true;
-            }
-        **** */
-            $table->width = "100%"; // TBD
+            //$table->width = "100%"; // TBD
 
             $newarr = array();
             foreach ($elements as $element) {
@@ -2340,36 +2281,10 @@ class student_grade extends elis_data_object {
             $sort = 'grade'; // TBD
             $columns[$sort]['sortable'] = $dir;
         }
-    /* ****
-        foreach ($columns as $column => $colobj) {
-            $cdesc = $colobj['header'];
-            if ($sort != $column) {
-                $columnicon = "";
-                $columndir = "ASC";
-            } else {
-                $columndir = $dir == "ASC" ? "DESC":"ASC";
-                $columnicon = $dir == "ASC" ? "down":"up";
-                $columnicon = ' <img src="'. $OUTPUT->pix_url("t/{$columnicon}") .'" alt="" />';
-            }
-            // ***TBD***
-            if (($column == 'name') || ($column == 'description')) {
-                $$column = "<a href=\"index.php?s=stu&amp;section=curr&amp;class=$classid&amp;" .
-                           "action=add&amp;sort=$column&amp;dir=$columndir&amp;stype=$type&amp;search=" .
-                           urlencode(stripslashes($namesearch)) . "&amp;alpha=$alpha\">" .
-                           $cdesc . "</a>$columnicon";
-            } else {
-                $$column = $cdesc;
-            }
-            // TBD
-            $table->head[]  = $$column;
-            $table->align[] = "left";
-            $table->wrap[]  = true;
-        }
-    **** */
-        $table->width = "100%"; // TBD
+        //$table->width = "100%"; // TBD
 
         $newarr = array();
-        $tabobj = new stdClass; // TBD: or in loop?
+        $tabobj = new stdClass;
         foreach ($columns as $column => $cdesc) {
             switch ($column) {
                 case 'timegraded':
@@ -2395,11 +2310,12 @@ class student_grade extends elis_data_object {
             }
             //$table->data[] = $newarr;
         }
-        $newarr[] = $tabobj; // TBD: or in loop?
+        $newarr[] = $tabobj;
         // TBD: student_table() ???
         $table = new display_table($newarr, $columns, $this->get_base_url());
 
         if (empty($this->id)) {
+            // TBD: move up and add pmalphabox() and pmshowmatches() ???
             pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE),
                '<input type="radio" name="stype" value="student" '.
                  (($type == 'student') ? ' checked' : '') .'/> '. get_string('students', self::LANG_FILE) .

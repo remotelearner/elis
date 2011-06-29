@@ -224,6 +224,7 @@ class associationpage extends pm_page {
             print_error('invalid_objectid', 'elis_program', '', $sparam);
         }*/
         $obj->load();
+        //error_log("associationpage::display_edit(): obj->id = {$obj->id}");
         $this->print_edit_form($obj, $parent_obj);
     }
 

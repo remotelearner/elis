@@ -139,6 +139,7 @@ function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get
  *                              default get_string('no_users_matching', 'elis_program')
  */
 function pmshowmatches($alpha, $namesearch, $matchlabel = null, $nomatchlabel = null) {
+    //error_log("pmshowmatches({$alpha}, {$namesearch}, {$matchlabel}, {$nomatchlabel})");
     if (empty($matchlabel)) {
         $matchlabel = 'name';
     }
