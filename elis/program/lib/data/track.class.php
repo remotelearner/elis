@@ -989,7 +989,7 @@ function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $
     }
 
     if ($parentclusterid) {
-        $where[] = "(id IN (SELECT trackid FROM {".class_track::TABLE."}
+        $where[] = "(id IN (SELECT trackid FROM {".clustertrack::TABLE."}
                             WHERE clusterid = :parentclusterid))";
         $params['parentclusterid'] = $parentclusterid;
     }

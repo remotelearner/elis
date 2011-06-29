@@ -1077,7 +1077,7 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
 
     //class associated to a particular cluster via a track
     if(!empty($clusterid)) {
-        $join .= 'JOIN {'.classtrack::TABLE.'} clstrk
+        $join .= 'JOIN {'.trackassignment::TABLE.'} clstrk
                   ON clstrk.classid = cls.id
                   JOIN {'.clustertrack::TABLE.'} clsttrk
                   ON clsttrk.trackid = clstrk.trackid
