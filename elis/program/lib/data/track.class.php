@@ -880,7 +880,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
     }
 
     if ($parentclusterid) {
-        $where[] = "(trk.id IN (SELECT trackid FROM {".trackassignment::TABLE."}
+        $where[] = "(trk.id IN (SELECT trackid FROM {".clustertrack::TABLE."}
                             WHERE clusterid = :parentclusterid))";
         $params['parentclusterid'] = $parentclusterid;
     }
