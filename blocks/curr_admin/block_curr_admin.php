@@ -158,7 +158,7 @@ class block_curr_admin extends block_base {
         $cm_entity_pages = array();
         $cm_entity_pages[] = new menuitem('root');
 
-        $num_block_icons = isset($CURMAN->config->num_block_icons) ? $CURMAN->config->num_block_icons : 5;
+        $num_block_icons = isset(elis::$config->elis_program->num_block_icons) ? elis::$config->elis_program->num_block_icons : 5;
 
         /*****************************************
          * Clusters

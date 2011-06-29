@@ -798,7 +798,7 @@ function block_curr_admin_load_menu_children($type, $id, $parent_cluster_id, $pa
     $extra_results = array();
 
     if(function_exists($function_name)) {
-        $num_block_icons = isset($CURMAN->config->num_block_icons) ? $CURMAN->config->num_block_icons : 5;
+        $num_block_icons = isset(elis::$config->elis_program->num_block_icons) ? elis::$config->elis_program->num_block_icons : 5;
 
         $extra_results = call_user_func($function_name, $id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path);
     }
