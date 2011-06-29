@@ -41,7 +41,7 @@ abstract class associationpage2 extends selectionpage {
 
         $mode = $this->optional_param('mode', '', PARAM_ACTION);
         if ($mode != 'bare') {
-            $this->print_tabs();
+            //$this->print_tabs();
         }
     }
 

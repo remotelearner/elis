@@ -29,8 +29,8 @@ require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/curriculum.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/student.class.php');
+require_once elispm::lib('lib.php');
 
-//define('CURASSTABLE', 			     'crlm_curriculum_assignment');
 define('CURR_EXPIRE_ENROL_START',    1);
 define('CURR_EXPIRE_ENROL_COMPLETE', 2);
 
@@ -76,49 +76,12 @@ class curriculumstudent extends elis_data_object {
     var $credits;
     var $locked;
 
-    /**
-     * Contructor.
-     *
-     * @param $curriculumstudentdata int/object/array The data id of a data record or data elements to load manually.
-     *
-     */
-//     function curriculumstudent($curriculumstudentdata = false) {
-//         parent::datarecord();
-
-//         $this->set_table(CURASSTABLE);
-//         $this->add_property('id', 'int');
-//         $this->add_property('userid', 'int');
-//         $this->add_property('curriculumid', 'int');
-//         $this->add_property('completed', 'int');
-//         $this->add_property('timecompleted', 'int');
-//         $this->add_property('timeexpired', 'int');
-//         $this->add_property('credits', 'int');
-//         $this->add_property('locked', 'int');
-//         $this->add_property('timecreated', 'int');
-//         $this->add_property('timemodified', 'int');
-
-//         if (is_numeric($curriculumstudentdata)) {
-//             $this->data_load_record($curriculumstudentdata);
-//         } else if (is_array($curriculumstudentdata)) {
-//             $this->data_load_array($curriculumstudentdata);
-//         } else if (is_object($curriculumstudentdata)) {
-//             $this->data_load_array(get_object_vars($curriculumstudentdata));
-//         }
-
-//         if (!empty($this->userid)) {
-//             $this->user = new user($this->userid);
-//         }
-
-//         if (!empty($this->curriculumid)) {
-//             $this->curriculum = new curriculum($this->curriculumid);
-//         }
-//     }
-
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('curriculum', 'elis_program');
     }
 
-	public static function delete_for_curriculum($id) {
+	/* no longer needed
+    public static function delete_for_curriculum($id) {
 	    global $DB;
 		return $DB->delete_records(curriculumstudent::TABLE, array('curriculumid'=>$id));
 	}
@@ -127,6 +90,7 @@ class curriculumstudent extends elis_data_object {
 	    global $DB;
 		return $DB->delete_records(curriculumstudent::TABLE, array('userid'=>$id));
 	}
+	*/
 
     /////////////////////////////////////////////////////////////////////
     //                                                                 //
@@ -261,7 +225,6 @@ class curriculumstudent extends elis_data_object {
      *
      * @return  boolean                      TRUE is successful, otherwise FALSE
      */
-
     public static function curriculum_completed_handler($student) {
         return $student->complete();
     }
@@ -270,7 +233,6 @@ class curriculumstudent extends elis_data_object {
      * Function to handle curriculum not completed events.
      *
      */
-
     public static function curriculum_notcompleted_handler($curstudent) {
         global $CFG, $DB;
 
@@ -349,7 +311,7 @@ class curriculumstudent extends elis_data_object {
     /**
      * Get a list of the curricula assigned to this student.
      *
-     * @param int $userud The user id.
+     * @param int $userid The user id.
      */
     public static function get_curricula($userid = 0) {
         global $USER, $DB;
@@ -372,7 +334,7 @@ class curriculumstudent extends elis_data_object {
         $join   .= 'LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs '.
                    'ON curcrs.curriculumid = cur.id ';
         $where   = 'WHERE curass.userid = ? ';
-        $group   = 'GROUP BY curass.id, curass.curriculumid, curass.completed, curass.timecompleted, curass.credits, ' .
+        $group   = 'GROUP BY curass.id, curass.curriculumid, curass.completed, curass.timecompleted, curass.credits, '.
                    'cur.idnumber, cur.name, cur.description, cur.reqcredits ';
         $sort    = 'ORDER BY cur.priority ASC, cur.name, curcrs.position DESC ';
 
@@ -463,11 +425,9 @@ class curriculumstudent extends elis_data_object {
         $select = "userid = {$userid} AND {$cluster_select}";
 
         //user just needs to be in one of the possible clusters
-        /* TO-DO: re-enable this when clusterassignment is done
         if($DB->record_exists_select(clusterassignment::TABLE, $select)) {
             return true;
         }
-        */
 
         return false;
     }
@@ -542,7 +502,6 @@ function curriculumstudent_count_students($type = 'student', $namesearch = '', $
     return $DB->count_records_sql($sql, $params);
 }
 
-
 /**
  * Determine if the given user has a curriculum assigned to them.
  *
@@ -554,7 +513,6 @@ function student_has_curriculum($uid) {
 
     return $DB->record_exists(curriculumstudent::TABLE, array('userid'=>$uid));
 }
-
 
 /**
  * Calculate a curriculum expiration value for a specific user in a curriculum.

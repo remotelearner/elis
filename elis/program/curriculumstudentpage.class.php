@@ -34,33 +34,39 @@ require_once elispm::file('userpage.class.php');
 require_once elispm::file('curriculumpage.class.php');
 require_once elispm::file('form/curriculumstudentform.class.php');
 
-//require_once (CURMAN_DIRLOCATION . '/lib/newpage.class.php');                   // missing
-
 class studentcurriculumpage extends associationpage2 {
     var $pagename = 'stucur';
     var $section = 'users';
-    var $tab_page = 'usermanagementpage';
+    var $tab_page = 'userpage';
+    var $data_class = 'curriculumstudent';
     var $parent_data_class = 'user';
     var $parent_page;
     var $context;
 
+    var $params = array();
+
+    //var $default_tab = 'curriculumstudent';
+
     public function __construct(array $params = null) {
         $this->section = $this->get_parent_page()->section;
+        $this->context = parent::_get_page_context();
+        $this->params = $this->_get_page_params();
         parent::__construct($params);
     }
 
     public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-
-        if ($id) {
-            return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
-        } else {
-            return parent::_get_page_context();
-        }
+//         $id = $this->optional_param('id', 0, PARAM_INT);
+//         if ($id) {
+//             return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
+//         } else {
+//             return parent::_get_page_context();
+//         }
+        return parent::_get_page_context();
     }
 
     public function _get_page_params() {
         return array('id' => optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
+        //return parent::_get_page_params();
     }
 
     function can_do_default() {
@@ -115,7 +121,6 @@ class studentcurriculumpage extends associationpage2 {
 
    protected function get_parent_page() {
         if (!isset($this->parent_page)) {
-            //$id = isset($this->params['id']) ? $this->params['id'] : NULL;
             $id = optional_param('id', NULL, PARAM_INT);
             $this->parent_page = new userpage(array('id' => $id, 'action' => 'view'));
         }
@@ -150,7 +155,9 @@ class studentcurriculumpage extends associationpage2 {
 
         $tmppage = $this->get_basepage();
         $tmppage->params['_assign'] = 'assign';
-        redirect($tmppage->url, get_string('num_curricula_assigned', 'elis_program', count($data->_selection)));
+        $sparam = stdClass;
+        $sparam->num = count($data->_selection);
+        redirect($tmppage->url, get_string('num_curricula_assigned', 'elis_program', $sparam));
     }
 
     protected function process_unassignment($data) {
@@ -163,7 +170,9 @@ class studentcurriculumpage extends associationpage2 {
         }
 
         $tmppage = $this->get_basepage();
-        redirect($tmppage->url, get_string('num_curricula_unassigned', 'elis_program', count($data->_selection)));
+        $sparam = stdClass;
+        $sparam->num = count($data->_selection);
+        redirect($tmppage->url, get_string('num_curricula_unassigned', 'elis_program', $sparam));
     }
 
     protected function get_available_records($filter) {
@@ -310,10 +319,10 @@ class studentcurriculumpage extends associationpage2 {
 }
 
 class user_curriculum_selection_table extends selection_table {
-    function __construct(&$items, $columns, $pageurl, $decorators=array()) {
+    function __construct(&$items, $columns, $pageurl) {
         global $DB;
 
-        parent::__construct($items, $columns, $pageurl, $decorators);
+        parent::__construct($items, $columns, $pageurl);
 
         $this->curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
 
@@ -352,7 +361,7 @@ class user_curriculum_selection_table extends selection_table {
     }
 
     function get_item_display_timecompleted($column, $item) {
-        return $this->get_date_item_display($column, $item);
+        return get_date_item_display($column, $item);
     }
 
     function is_sortable_timecompleted() {
@@ -383,9 +392,30 @@ class curriculumstudentpage extends associationpage2 {
     var $parent_page;
     var $context;
 
+    var $params = array();
+
+    //var $default_tab = 'curriculumstudent';
+
     public function __construct(array $params = null) {
         $this->section = $this->get_parent_page()->section;
+        $this->context = parent::_get_page_context();
+        $this->params = $this->_get_page_params();
         parent::__construct($params);
+    }
+
+    public function _get_page_context() {
+//         $id = $this->optional_param('id', 0, PARAM_INT);
+//         if ($id) {
+//             return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
+//         } else {
+//             return parent::_get_page_context();
+//         }
+        return parent::_get_page_context();
+    }
+
+    public function _get_page_params() {
+        return array('id' => optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
+        //return parent::_get_page_params();
     }
 
     function can_do_default() {
@@ -403,7 +433,6 @@ class curriculumstudentpage extends associationpage2 {
 
     protected function get_context() {
         if (!isset($this->context)) {
-            //$id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
             $id = required_param('id', PARAM_INT);
             $this->context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $id);
         }
@@ -412,7 +441,6 @@ class curriculumstudentpage extends associationpage2 {
 
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
-            //$id = isset($this->params['id']) ? $this->params['id'] : NULL;
             $id = optional_param('id', NULL, PARAM_INT);
             $this->parent_page = new curriculumpage(array('id' => $id, 'action' => 'view'));
         }
@@ -449,7 +477,9 @@ class curriculumstudentpage extends associationpage2 {
 
         $tmppage = $this->get_basepage();
         $tmppage->params['_assign'] = 'assign';
-        redirect($tmppage->url, get_string('num_users_assigned', 'elis_program', count($data->_selection)));
+        $sparam = new stdClass;
+        $sparam->num = count($data->_selection);
+        redirect($tmppage->url, get_string('num_users_assigned', 'elis_program', $sparam));
     }
 
     protected function process_unassignment($data) {
@@ -462,7 +492,9 @@ class curriculumstudentpage extends associationpage2 {
         }
 
         $tmppage = $this->get_basepage();
-        redirect($tmppage->url, get_string('num_users_unassigned', 'elis_program', count($data->_selection)));
+        $sparam = new stdClass;
+        $sparam->num = count($data->_selection);
+        redirect($tmppage->url, get_string('num_users_unassigned', 'elis_program', $sparam));
     }
 
     protected function get_selection_filter() {
@@ -505,7 +537,7 @@ class curriculumstudentpage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
-        $where = 'id NOT IN (SELECT userid FROM {'.curriculumstudent::TABLE.' WHERE curriculumid='.$id.')';
+        $where = 'id NOT IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid='.$id.')';
 
         /* TO-DO: re-enable this once I know how it's done
         $extrasql = $filter->get_sql_filter();
@@ -534,11 +566,9 @@ class curriculumstudentpage extends associationpage2 {
                 return array(array(), 0);
             } else {
                 $cluster_filter = implode(',', $allowed_clusters);
-                /* TO-DO: re-enable when clusterassignment is done
                 $cluster_filter = ' id IN (SELECT userid FROM {'.clusterassignment::TABLE.'}
                                             WHERE clusterid IN ('.$cluster_filter.'))';
                 $where .= ' AND '.$cluster_filter;
-                */
             }
         }
 
@@ -653,7 +683,7 @@ class curriculum_user_selection_table extends selection_table {
     }
 
     function get_item_display_timecreated($column, $item) {
-        return $this->get_date_item_display($column, $item);
+        return get_date_item_display($column, $item);
     }
 
     function get_item_display__selection($column, $item) {
@@ -661,11 +691,9 @@ class curriculum_user_selection_table extends selection_table {
 
         $userid = isset($item->userid) ? $item->userid : $item->id;
         if (isset($this->allowed_clusters)) {
-            /* TO-DO: re-enable when clusterassignment is done
             if (empty($this->allowed_clusters) || !$DB->record_exists_select(clusterassignment::TABLE, "userid = {$userid} AND clusterid IN (".implode(',',$this->allowed_clusters).')')) {
                 return '';
             }
-            */
         }
         return parent::get_item_display__selection($column, $item);
     }
