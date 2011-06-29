@@ -301,7 +301,7 @@ class clustercurriculum extends elis_data_object {
 
         $sql = $select.$tables.$join.$where.$group.$sort;
 
-        return $DB->get_records_sql($sql, $params);
+        return $DB->get_records_sql($sql, $params, $startrec, $perpage);
     }
 
     /**
@@ -318,16 +318,23 @@ class clustercurriculum extends elis_data_object {
             return 0;
         }
 
-        $select  = 'SELECT COUNT(*) ';
-        $tables  = 'FROM {' . clustercurriculum::TABLE . '} clstcur ';
-        $join    = 'LEFT JOIN {' . curriculum::TABLE . '} cur '.
-                   'ON cur.id = clstcur.curriculumid ';
-        $where   = 'WHERE clstcur.clusterid = ? ';
-        $params = array($clusterid);
-        $sort    = 'ORDER BY cur.idnumber ASC ';
-        $groupby = 'GROUP BY cur.idnumber ';
+        $select  = 'SELECT COUNT(cur.id) ';
+        $tables  = 'FROM {' . curriculum::TABLE . '} cur ';
+        $join    = '';
+        $where   = '';
+        $params  = array();
+        
+        if ($clusterid != 0) {
+            //looking by cluster, so join the association table and filter
+            $join     = 'JOIN {' . clustercurriculum::TABLE . '} clstcur '.
+                        'ON cur.id = clstcur.curriculumid ';
+            $where    = 'WHERE clstcur.clusterid = ? ';
+            $params[] = $clusterid;
+        }
 
-        $sql = $select . $tables . $join . $where . $groupby . $sort;
+        $groupby = '';
+
+        $sql = $select . $tables . $join . $where . $groupby;
 
         return $DB->count_records_sql($sql, $params);
     }
