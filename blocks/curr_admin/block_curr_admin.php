@@ -234,7 +234,7 @@ class block_curr_admin extends block_base {
                 new menuitem('dashboard', new menuitempage('dashboardpage'), 'root', '', block_curr_admin_get_item_css_class('dashboard')),
 
                 //Admin
-                //new menuitem('admn', null, 'root', get_string('admin'), block_curr_admin_get_item_css_class('admn', true)),
+                new menuitem('admn', null, 'root', get_string('admin'), block_curr_admin_get_item_css_class('admn', true)),
                 //new menuitem('bulkuser', new menuitempage('bulkuserpage'), null, get_string('userbulk', 'admin'), block_curr_admin_get_item_css_class('bulkuser'))
                 );
 
@@ -251,8 +251,8 @@ class block_curr_admin extends block_base {
         }
 
         $pages = array_merge($pages, array(
-                //new menuitem('customfields', new menuitempage('customfieldpage', '', array('level' => 'user')), null, '',
-                //             block_curr_admin_get_item_css_class('customfields')),
+                new menuitem('customfields', new menuitempage('customfieldpage', '', array('level' => 'user')), null, '',
+                             block_curr_admin_get_item_css_class('customfields')),
                 //new menuitem('clusterclassification',
                 //             new menuitempage('clusterclassificationpage', 'plugins/cluster_classification/clusterclassificationpage.class.php'),
                 //             null, get_string('cluster_classification', 'crlm_cluster_classification'), block_curr_admin_get_item_css_class('clusterclassification')),
@@ -327,8 +327,8 @@ class block_curr_admin extends block_base {
         switch($access) {
             case 'admin':
             case 'developer':
-                //$pages[] = new menuitem('configmanager', new menuitempage('configpage', '', array('section' => 'admn')), null, get_string('configuration'), block_curr_admin_get_item_css_class('configuration'));
-                //$pages[] = new menuitem('notifications', new menuitempage('notifications', 'notificationspage.class.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('notifications'));
+                $pages[] = new menuitem('configmanager', new menuitempage('configpage', '', array('section' => 'admn')), null, get_string('configuration'), block_curr_admin_get_item_css_class('configuration'));
+                $pages[] = new menuitem('notifications', new menuitempage('notifications', 'notificationspage.class.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('notifications'));
                 //$pages[] = new menuitem('dataimport', new menuitempage('dataimportpage', 'elis_ip/elis_ip_page.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('integrationpoint'));
                 //$pages[] = new menuitem('defaultcls', new menuitempage('configclsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcls'));
                 //$pages[] = new menuitem('defaultcrs', new menuitempage('configcrsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcrs'));
