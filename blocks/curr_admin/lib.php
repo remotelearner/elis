@@ -1032,7 +1032,8 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
      *****************************************/
     $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
-    $clusters = clustertrack::get_clusters($id, 0, 'priority, name', 'ASC', $num_block_icons, $parent_cluster_id);
+    $clusters = clustertrack::get_clusters($id, 0, 'name', 'ASC', $num_block_icons, $parent_cluster_id);
+    //$clusters = clustertrack::get_clusters($id, 0, 'priority, name', 'ASC', $num_block_icons, $parent_cluster_id);
 
     if(!empty($clusters)) {
         foreach($clusters as $cluster) {
