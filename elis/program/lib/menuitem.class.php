@@ -230,9 +230,12 @@ class menuitem {
 
         if(!empty($title)) {
             $this->title = $title;
-        } else {
+        } else if($name != 'root') {
             //the language string will usually correspond with the name
             $this->title = get_string($name, 'block_curr_admin');
+        } else {
+            //not a visible node
+            $this->title = '';
         }
 
         if(!empty($parent)) {
