@@ -163,7 +163,7 @@ class block_curr_admin extends block_base {
         /*****************************************
          * Clusters
          *****************************************/
-        //if(!isset($CURMAN->config->display_clusters_at_top_level) || !empty($CURMAN->config->display_clusters_at_top_level)) {
+        if(!isset(elis::$config->elis_program->display_clusters_at_top_level) || !empty(elis::$config->elis_program->display_clusters_at_top_level)) {
             $manageclusters_css_class = block_curr_admin_get_item_css_class('manageclusters');
             $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
@@ -191,12 +191,12 @@ class block_curr_admin extends block_base {
             if($num_block_icons < $num_records) {
                 $cm_entity_pages[] = block_curr_admin_get_menu_summary_item('userset', $cluster_css_class, $num_records - $num_block_icons);
             }
-        //}
+        }
 
         /*****************************************
          * Curricula
          *****************************************/
-        //if(!empty($CURMAN->config->display_curricula_at_top_level)) {
+        if(!empty(elis::$config->elis_program->display_curricula_at_top_level)) {
             $managecurricula_css_class = block_curr_admin_get_item_css_class('managecurricula');
             $curriculum_css_class = block_curr_admin_get_item_css_class('curriculum_instance');
 
@@ -223,7 +223,7 @@ class block_curr_admin extends block_base {
             if($num_block_icons < $num_records) {
                 $cm_entity_pages[] = block_curr_admin_get_menu_summary_item('curriculum', $curriculum_css_class, $num_records - $num_block_icons);
             }
-        //}
+        }
 
         global $SITE;
 
