@@ -1207,25 +1207,25 @@ $string['info_group_curriculum'] = 'Curriculum Information';
 $string['info_group_track'] = 'Track Information';
 
 // "More" links in curr admin menu
-$string['menu_summary_item_cluster'] = '$a more clusters...';
-$string['menu_summary_item_curriculum'] = '$a more curricula...';
-$string['menu_summary_item_clustercurriculum'] = '$a more curricula...';
-$string['menu_summary_item_curriculumcluster'] = '$a more clusters...';
-$string['menu_summary_item_curriculumcourse'] = '$a more courses...';
-$string['menu_summary_item_track'] = '$a more tracks...';
-$string['menu_summary_item_trackcluster'] = '$a more clusters...';
-$string['menu_summary_item_trackassignment'] = '$a more classes...';
-$string['menu_summary_item_cmclass'] = '$a more classes...';
+$string['menu_summary_item_userset'] = '{$a} more clusters...';
+$string['menu_summary_item_curriculum'] = '{$a} more curricula...';
+$string['menu_summary_item_clustercurriculum'] = '{$a} more curricula...';
+$string['menu_summary_item_curriculumcluster'] = '{$a} more clusters...';
+$string['menu_summary_item_curriculumcourse'] = '{$a} more courses...';
+$string['menu_summary_item_track'] = '{$a} more tracks...';
+$string['menu_summary_item_trackcluster'] = '{$a} more clusters...';
+$string['menu_summary_item_trackassignment'] = '{$a} more classes...';
+$string['menu_summary_item_pmclass'] = '{$a} more classes...';
 
-$string['menu_summary_item_cluster_singular'] = '$a more cluster...';
-$string['menu_summary_item_curriculum_singular'] = '$a more curriculum...';
-$string['menu_summary_item_clustercurriculum_singular'] = '$a more curriculum...';
-$string['menu_summary_item_curriculumcluster_singular'] = '$a more cluster...';
-$string['menu_summary_item_curriculumcourse_singular'] = '$a more course...';
-$string['menu_summary_item_track_singular'] = '$a more track...';
-$string['menu_summary_item_trackcluster_singular'] = '$a more cluster...';
-$string['menu_summary_item_trackassignment_singular'] = '$a more class...';
-$string['menu_summary_item_cmclass_singular'] = '$a more class...';
+$string['menu_summary_item_userset_singular'] = '{$a} more cluster...';
+$string['menu_summary_item_curriculum_singular'] = '{$a} more curriculum...';
+$string['menu_summary_item_clustercurriculum_singular'] = '{$a} more curriculum...';
+$string['menu_summary_item_curriculumcluster_singular'] = '{$a} more cluster...';
+$string['menu_summary_item_curriculumcourse_singular'] = '{$a} more course...';
+$string['menu_summary_item_track_singular'] = '{$a} more track...';
+$string['menu_summary_item_trackcluster_singular'] = '{$a} more cluster...';
+$string['menu_summary_item_trackassignment_singular'] = '{$a} more class...';
+$string['menu_summary_item_pmclass_singular'] = '{$a} more class...';
 
 // Default CM entity roles
 $string['default_role_assignment_settings'] = 'Default Role Assignment Settings';
