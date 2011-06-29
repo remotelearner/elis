@@ -35,9 +35,21 @@ require_once elispm::file('form/selectionform.class.php');
 abstract class selectionpage extends pm_page { // TBD
     const LANG_FILE = 'elis_program';
 
-    var $_basepage; // TBD
+    var $_basepage;
+
+    /**
+     * The name of the class used for data objects
+     */
+    var $data_class;
+
+    /**
+     * The name of the class used for the add/edit form
+     */
+    var $form_class;
 
     var $tabs = array(); // TBD
+
+    var $_form;
 
     /*
      * for AJAX calls:
@@ -85,16 +97,18 @@ abstract class selectionpage extends pm_page { // TBD
             $rows[] = $row;
         }
 
-        // assigned/unassigned tabs
-        $assignedpage = $this->get_new_page(array('id' => $id, 'mode' => 'assign')); // WAS: $this->get_basepage();
-        //$unassignedpage = clone($assignedpage);
-        //$unassignedpage->params['mode'] = 'unassign';
-        $unassignedpage = $this->get_new_page(array('id' => $id, 'mode' => 'unassign'));
-        $row = array(new tabobject('assigned', $assignedpage->url,
-                                   get_string('assigned', self::LANG_FILE)),
-                     new tabobject('unassigned', $unassignedpage->url,
-                                   get_string('unassigned', self::LANG_FILE)));
-        $rows[] = $row;
+        if (!empty($this->assign)) {
+            // assigned/unassigned tabs
+            $assignedpage = $this->get_new_page(array('id' => $id, 'mode' => 'assign')); // WAS: $this->get_basepage();
+            //$unassignedpage = clone($assignedpage);
+            //$unassignedpage->params['mode'] = 'unassign';
+            $unassignedpage = $this->get_new_page(array('id' => $id, 'mode' => 'unassign'));
+            $row = array(new tabobject('assigned', $assignedpage->url,
+                                 get_string('assigned', self::LANG_FILE)),
+                         new tabobject('unassigned', $unassignedpage->url,
+                                 get_string('unassigned', self::LANG_FILE)));
+            $rows[] = $row;
+        }
 
         print_tabs($rows, $this->optional_param('mode', 'unassign', PARAM_ACTION) == 'assign' ? 'assigned' : 'unassigned', array(), array(get_class($this)));
     }
@@ -148,13 +162,13 @@ abstract class selectionpage extends pm_page { // TBD
 
     protected function print_js_selection_table($table, $filter, $count, $form, $baseurl) {
         global $CFG, $OUTPUT, $PAGE;
-        $mode = $this->optional_param('mode', '', PARAM_ACTION);
         if (!$this->is_bare()) {
             $title = get_string('breadcrumb_waitlistpage', self::LANG_FILE); // WAS get_string('select');
             echo "<script>var basepage='$baseurl';</script>";
-            // TBD
+            // ***TBD***
             //$PAGE->requires->js_module(array('yui_yahoo', 'yui_dom', 'yui_event', 'yui_connection'));
             $PAGE->requires->js('/elis/core/js/associate.class.js');
+            $PAGE->requires->js('/elis/core/js/associate.js');
             echo '<div class="mform" style="width: 100%"><fieldset><legend>'.
                  $title .'</legend><div id="list_display">';
         }

@@ -270,6 +270,8 @@ $string['error_n_overenrol'] = 'The over enrol capability is required for this';
 $string['error_not_timeformat'] = 'time not in proper format';
 $string['error_not_durrationformat'] = 'durration not in proper format';
 $string['error_not_using_elis_enrolment'] = 'The associated Moodle course is not using the ELIS enrolment plugin';
+$string['error_waitlist_remove'] = 'Error removing users from waitlist.';
+$string['error_waitlist_overenrol'] = 'Error over enrolling.';
 $string['errorroleassign'] = 'Failed to assign role to Moodle course.';
 $string['errorsynchronizeuser'] = 'Could not create an associated Moodle user.';
 $string['existing_course_corequisites'] = 'Existing Course Description Corequisites';
@@ -541,6 +543,8 @@ $string['student_status'] = 'Status';
 $string['studentnotunenrolled'] = 'Student: {$a->name} not unenrolled.';
 $string['students'] = 'Students';
 $string['studentunenrolled'] = 'Student: {$a->name} unenrolled.';
+$string['success_waitlist_remove'] = 'Successfully removed from waitlist.';
+$string['success_waitlist_overenrol'] = 'Successfully over enrolled.';
 
 $string['tag_name'] = 'Name';
 $string['tags'] = 'Tags';

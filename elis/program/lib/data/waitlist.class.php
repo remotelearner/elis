@@ -216,9 +216,10 @@ class waitlist extends elis_data_object {
      */
     public function enrol() {
         global $CFG;
+        $classid = $this->classid;
         $this->delete(); // $this->data_delete_record()
 
-        $class = new pmclass($this->classid);
+        $class = new pmclass($classid);
         $courseid = $class->get_moodle_course_id();
 
         // enrol directly in the course

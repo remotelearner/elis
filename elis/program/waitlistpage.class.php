@@ -40,6 +40,7 @@ class waitlistpage extends selectionpage {
     var $tab_page    = 'pmclasspage';  // see: selectionpage::print_tabs()
     var $default_tab = 'waitlistpage'; // "    "
     var $section     = 'curr';         // TBD: 'curr'
+    var $assign      = null;
 
     public function __construct(array $params = null) {
         parent::__construct($params);
@@ -115,6 +116,7 @@ class waitlistpage extends selectionpage {
     }
 
     function process_selection($data) {
+        global $OUTPUT;
         $id = $this->required_param('id', PARAM_INT);
 
         if (empty($data->_selection)) {
@@ -123,9 +125,9 @@ class waitlistpage extends selectionpage {
             $sparam = new stdClass;
             $sparam->num = count($data->_selection);
             $sparam->action = $data->do;
-            // ***TBD***
-            notice_yesno(get_string('confirm_waitlist', self::LANG_FILE, $sparam),
-                         'index.php', 'index.php',
+            $msg = get_string('confirm_waitlist', self::LANG_FILE, $sparam);
+          /* ***TBD***
+            notice_yesno($msg, 'index.php', 'index.php',
                          array('s' => $this->pagename,
                                'id' => $id,
                                'action' => $data->do,
@@ -133,6 +135,14 @@ class waitlistpage extends selectionpage {
                              ),
                          array('s' => $this->pagename, 'id' => $id),
                          'POST', 'GET');
+           **** */
+            echo cm_delete_form('index.php', $msg,
+                         array('s' => $this->pagename,
+                               'id' => $id,
+                               'action' => $data->do,
+                               'selected' => implode(',',$data->_selection)
+                             ),
+                         array('s' => $this->pagename, 'id' => $id)); // TBD
         }
     }
 
@@ -160,9 +170,7 @@ class waitlistpage extends selectionpage {
         if ($result) {
             redirect($tmppage->url, get_string('success_waitlist_remove', self::LANG_FILE));
         } else {
-            $sparam = new stdClass;
-            $sparam->url = $tmppage->url;
-            print_error('error_waitlist_remove', self::LANG_FILE, '', $sparam);
+            print_error('error_waitlist_remove', self::LANG_FILE, $tmppage->url);
         }
     }
 
