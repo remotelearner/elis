@@ -152,6 +152,7 @@ $string['notassignedtocurricula'] = 'You are not assigned to any curricula yet.'
 $string['nomoreusernames'] = 'Limit of usernames had been reached. Contact administrator.';
 $string['noroleselected'] = 'N/A';
 $string['nonqualification'] = 'Non-Qualification';
+$string['pluginname'] = 'Curriculum Administration';
 $string['previouscourses'] = 'Previous Courses';
 $string['reports'] = 'Reports';
 $string['report'] = 'Report';

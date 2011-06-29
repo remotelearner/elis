@@ -50,7 +50,7 @@ class block_curr_admin extends block_base {
         global $PAGE, $CURMAN, $CFG, $DB;
         require_once elispm::file('version.php');
         $this->title            = get_string('blockname', 'block_curr_admin');
-        $this->release          = $CURMAN->release;
+        $this->release          = elispm::$release;
         $this->cron             = 300;
         $this->currentdepth     = 0;
         $this->spancounter      = 1;
@@ -300,12 +300,12 @@ class block_curr_admin extends block_base {
         ));
 
         if (has_capability('moodle/course:managegroups', get_context_instance(CONTEXT_COURSE, $SITE->id))) {
-            if ($CURMAN->config->site_course_cluster_groups) {
+            //if ($CURMAN->config->site_course_cluster_groups) {
                 //$pages[] = new menuitem('frontpagegroups', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/index.php?id={$SITE->id}"), 'admn', get_string('frontpagegroups', 'crlm_cluster_groups'), block_curr_admin_get_item_css_class('manageclusters'));
-            }
-            if ($CURMAN->config->cluster_groupings) {
+            //}
+            //if ($CURMAN->config->cluster_groupings) {
                 //$pages[] = new menuitem('frontpagegroupings', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/groupings.php?id={$SITE->id}"), 'admn', get_string('frontpagegroupings', 'crlm_cluster_groups'), block_curr_admin_get_item_css_class('manageclusters'));
-            }
+            //}
         }
 
         /**
