@@ -24,6 +24,8 @@
 
 .block_curr_admin .block_curr_admin_nonjs {
 	padding-left: 0px;
+	margin-left: 0px;
+	margin: 0px;
 }
 
 .block_curr_admin .block_curr_admin_nonjs ul {
