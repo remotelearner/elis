@@ -960,17 +960,17 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
     /*****************************************
      * Curriculum - Cluster Associations
      *****************************************/
-    /*
     $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
-    $clusters = clustercurriculum::get_clusters($id, $parent_cluster_id, 'priority, name', 'ASC', 0, $num_block_icons);
+    $clusters = clustercurriculum::get_clusters($id, $parent_cluster_id, 'name', 'ASC', 0, $num_block_icons);
+    //$clusters = clustercurriculum::get_clusters($id, $parent_cluster_id, 'priority, name', 'ASC', 0, $num_block_icons);
 
     if(!empty($clusters)) {
         foreach($clusters as $cluster) {
             $cluster->id = $cluster->clusterid;
             $params = array('id'     => $cluster->id,
                             'action' => 'view');
-            $result_items[] = block_curr_admin_get_menu_item('cluster', $cluster, 'root', $cluster_css_class, $cluster->id, $parent_curriculum_id, $params, false, $parent_path);
+            $result_items[] = block_curr_admin_get_menu_item('userset', $cluster, 'root', $cluster_css_class, $cluster->id, $parent_curriculum_id, $params, false, $parent_path);
         }
     }
 
@@ -986,7 +986,6 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
 
         $result_items[] = block_curr_admin_get_menu_summary_item('curriculumcluster', $cluster_css_class, $num_records - $num_block_icons, $params, 'clustercurriculumpage.class.php', $parent_path);
     }
-    */
 
     return $result_items;
 }
