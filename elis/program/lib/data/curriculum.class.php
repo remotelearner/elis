@@ -766,7 +766,7 @@ function curriculum_count_records($namesearch = '', $alpha = '', $contexts = nul
         $name_like = $DB->sql_like('name', '?');
 
         $where[] = "($name_like)";
-        $params += array("%$namesearch%");
+        $params[] = "%$namesearch%";
     }
 
     if ($alpha) {
@@ -780,7 +780,7 @@ function curriculum_count_records($namesearch = '', $alpha = '', $contexts = nul
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
-            $params += $filter_sql['where_params'];
+            $params[] = $filter_sql['where_params'];
         }
     }
 

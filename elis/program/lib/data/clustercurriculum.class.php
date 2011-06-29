@@ -251,13 +251,14 @@ class clustercurriculum extends elis_data_object {
      * @return  int                      The number of appropriate records
      */
     function count_clusters($curriculumid = 0, $parentclusterid = 0) {
+        global $DB;
 
         $select  = 'SELECT COUNT(*) ';
         $tables  = 'FROM {' . self::TABLE . '} clstcur ';
-        $join    = 'LEFT JOIN {' . cluster::TABLE . '} clst '.
+        $join    = 'LEFT JOIN {' . userset::TABLE . '} clst '.
                    'ON clst.id = clstcur.clusterid ';
         $where   = 'WHERE clstcur.curriculumid = :curriculumid ';
-        $params - array('curriculumid'=> $curriculumid);
+        $params = array('curriculumid'=> $curriculumid);
 
         if(!empty($parentclusterid)) {
             $where .= " AND clst.parent = :parentclusterid ";
@@ -268,7 +269,7 @@ class clustercurriculum extends elis_data_object {
 
         $sql = $select.$tables.$join.$where.$sort;
 
-        return $this->_db->count_records_sql($sql, $params);
+        return $DB->count_records_sql($sql, $params);
 
     }
 

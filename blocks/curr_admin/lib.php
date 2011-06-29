@@ -684,7 +684,7 @@ function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $
         case 'track':
             $display = 'name';
             break;
-        case 'cmclass':
+        case 'pmclass':
             $display = 'clsname';
             break;
         default:
@@ -701,7 +701,7 @@ function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $
     $result = new menuitem($item_id, $page, $parent, $instance->$display, $css_class, '', true, $parent_path);
 
     $current_path = '';
-    if (in_array($type, array('cluster', 'curriculum', 'course', 'track', 'cmclass'))) {
+    if (in_array($type, array('cluster', 'curriculum', 'course', 'track', 'pmclass'))) {
         $current_path = $type . '-' . $instance->id;
         
         if (!empty($parent_path)) {
@@ -774,7 +774,7 @@ function block_curr_admin_truncate_leaf($type, &$menuitem, $parent_cluster_id, $
     }
 
     //any class should also be a leaf node
-    if($type == 'cmclass') {
+    if($type == 'pmclass') {
         $menuitem->isLeaf = true;
     }
 }
@@ -909,7 +909,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
             $params = array('id'     => $item->id,
                             'action' => 'view');
                             
-            $class_count = cmclass_count_records('', '', $item->id, false, null, $parent_cluster_id);
+            $class_count = pmclass_count_records('', '', $item->id, false, null, $parent_cluster_id);
 
             $isLeaf = empty($class_count);
 
@@ -959,6 +959,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
     /*****************************************
      * Curriculum - Cluster Associations
      *****************************************/
+    /*
     $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
     $clusters = clustercurriculum::get_clusters($id, $parent_cluster_id, 'priority, name', 'ASC', 0, $num_block_icons);
@@ -984,6 +985,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
 
         $result_items[] = block_curr_admin_get_menu_summary_item('curriculumcluster', $cluster_css_class, $num_records - $num_block_icons, $params, 'clustercurriculumpage.class.php', $parent_path);
     }
+    */
 
     return $result_items;
 }
@@ -1013,7 +1015,7 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
             $item->id = $item->classid;
             $params = array('id'     => $item->id,
                             'action' => 'view');
-            $result_items[] = block_curr_admin_get_menu_item('cmclass', $item, 'root', $class_css_class, $parent_cluster_id, $parent_curriculum_id, $params, false, $parent_path);
+            $result_items[] = block_curr_admin_get_menu_item('pmclass', $item, 'root', $class_css_class, $parent_cluster_id, $parent_curriculum_id, $params, false, $parent_path);
         }
     }
 
@@ -1075,19 +1077,19 @@ function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $pa
      *****************************************/
     $class_css_class = block_curr_admin_get_item_css_class('class_instance');
 
-    $listing = cmclass_get_listing('crsname', 'asc', 0, $num_block_icons, '', '', $id, false, null, $parent_cluster_id);
+    $listing = pmclass_get_listing('crsname', 'asc', 0, $num_block_icons, '', '', $id, false, null, $parent_cluster_id);
 
     if(!empty($listing)) {
         foreach($listing as $item) {
             $item->clsname = $item->idnumber;
             $params = array('id' => $item->id,
                             'action' => 'view');
-            $result_items[] = block_curr_admin_get_menu_item('cmclass', $item, 'root', $class_css_class, $parent_cluster_id, $parent_curriculum_id, $params, false, $parent_path);
+            $result_items[] = block_curr_admin_get_menu_item('pmclass', $item, 'root', $class_css_class, $parent_cluster_id, $parent_curriculum_id, $params, false, $parent_path);
         }
     }
 
     //summary item
-    $num_records = cmclass_count_records('', '', $id, false, null, $parent_cluster_id);
+    $num_records = pmclass_count_records('', '', $id, false, null, $parent_cluster_id);
     if($num_block_icons < $num_records) {
         $params = array('action'           => 'default',
                         'id'               => $id);
@@ -1097,7 +1099,7 @@ function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $pa
             $params['parent_clusterid'] = $parent_cluster_id;
         }
 
-        $result_items[] = block_curr_admin_get_menu_summary_item('cmclass', $class_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
+        $result_items[] = block_curr_admin_get_menu_summary_item('pmclass', $class_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
 
     return $result_items;

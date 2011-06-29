@@ -95,7 +95,7 @@ class block_curr_admin extends block_base {
 
 
     function get_content() {
-        global $CFG, $ADMIN, $USER, $CURMAN, $HTTPSPAGEREQUIRED, $PAGE;
+        global $CFG, $ADMIN, $USER, $CURMAN, $HTTPSPAGEREQUIRED, $PAGE, $DB;
 
         require_once($CFG->libdir . '/adminlib.php');
         //require_once($CFG->dirroot . '/my/pagelib.php');
@@ -198,15 +198,14 @@ class block_curr_admin extends block_base {
         /*****************************************
          * Curricula
          *****************************************/
-        /*
-        if(!empty($CURMAN->config->display_curricula_at_top_level)) {
+        //if(!empty($CURMAN->config->display_curricula_at_top_level)) {
             $managecurricula_css_class = block_curr_admin_get_item_css_class('managecurricula');
             $curriculum_css_class = block_curr_admin_get_item_css_class('curriculum_instance');
 
-            require_once CURMAN_DIRLOCATION . '/curriculumpage.class.php';
+            require_once elispm::file('curriculumpage.class.php');
             $num_records = curriculum_count_records('', '', curriculumpage::get_contexts('block/curr_admin:curriculum:view'));
 
-            if($curricula = get_records(CURTABLE, '', '', 'priority ASC, name ASC', '*', 0, $num_block_icons)) {
+            if($curricula = $DB->get_records(curriculum::TABLE, null, 'priority ASC, name ASC', '*', 0, $num_block_icons)) {
                 foreach($curricula as $curriculum) {
                     $params = array('id'     => $curriculum->id,
                                     'action' => 'view');
@@ -226,8 +225,7 @@ class block_curr_admin extends block_base {
             if($num_block_icons < $num_records) {
                 $cm_entity_pages[] = block_curr_admin_get_menu_summary_item('curriculum', $curriculum_css_class, $num_records - $num_block_icons);
             }
-        }
-        */
+        //}
 
         global $SITE;
 
@@ -324,7 +322,7 @@ class block_curr_admin extends block_base {
         $pages = array_merge($pages, $report_pages);
 
         if (empty($CURMAN->config->userdefinedtrack)) {
-            //$pages[] = new menuitem('managetracks', new menuitempage('trackpage'), null, '', block_curr_admin_get_item_css_class('managetracks'));
+            $pages[] = new menuitem('managetracks', new menuitempage('trackpage'), null, '', block_curr_admin_get_item_css_class('managetracks'));
         }
 
         $access = cm_determine_access($USER->id);
