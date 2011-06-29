@@ -95,6 +95,19 @@ class usertrack extends elis_data_object {
         return null;
     }*/
 
+    public static function delete_for_user($id) {
+        global $DB;
+
+        return $DB->delete_records(self::TABLE, array('userid'=> $id));
+    }
+
+    public static function delete_for_track($id) {
+        global $DB;
+
+        return $DB->delete_records(self::TABLE, array('trackid'=> $id));
+    }
+
+
     /**
      * Enrols a user in a track.
      *

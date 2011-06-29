@@ -343,6 +343,18 @@ class clustertrack extends elis_data_object {
         return $DB->get_records_sql($sql, $params);
     }
 
+    public static function delete_for_cluster($id) {
+        global $DB;
+
+        return $DB->delete_records(self::TABLE, array('clusterid'=> $id));
+    }
+
+    public static function delete_for_track($id) {
+        global $DB;
+
+        return $DB->delete_records(self::TABLE, array('trackid'=> $id));
+    }
+
     /**
      * Updates the autoenrol flag for a particular cluster-track association
      *

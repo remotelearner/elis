@@ -105,6 +105,12 @@ class clustercurriculum extends elis_data_object {
         return null;
     }
 */
+    public static function delete_for_curriculum($id) {
+        global $DB;
+
+        return $DB->delete_records(self::TABLE, array('curriculumid'=> $id));
+    }
+
     static $validation_rules = array(
         'validate_clusterid_not_empty',
         'validate_curriculumid_not_empty',
@@ -300,7 +306,7 @@ class clustercurriculum extends elis_data_object {
 
         $sql = $select.$tables.$join.$where.$group.$sort;
 
-        return $DB->get_records_sql($sql, $params);
+        return $DB->get_records_sql($sql, $params, $startrec, $perpage);
     }
 
     /**

@@ -96,24 +96,27 @@ class clusterassignment extends elis_data_object {
 
 	public function delete() {
         $status = parent::delete();
-        cluster::cluster_update_assignments($this->clusterid, $this->userid);
+        // TODO: not sure what happened to cluster_update_assignments
+        //userset::cluster_update_assignments($this->clusterid, $this->userid);
         return $status;
 	}
 
-	/*public static function delete_for_user($id) {
-    	global $CURMAN;
+	public static function delete_for_user($id) {
+    	global $DB;
 
-    	$status = $CURMAN->db->delete_records(CLSTASSTABLE, 'userid', $id);
-    	cluster::cluster_update_assignments(null, $id);
+    	$status = $DB->delete_records(self::TABLE, array('userid'=> $id));
+    	// TODO: not sure what happened to cluster_update_assignments
+        //userset::cluster_update_assignments(null, $id);
     	return $status;
     }
 
 	public static function delete_for_cluster($id) {
-    	global $CURMAN;
+    	global $DB;
 
-    	$status = $CURMAN->db->delete_records(CLSTASSTABLE, 'clusterid', $id);
-    	cluster::cluster_update_assignments($id, null);
+    	$status = $DB->delete_records(self::TABLE, array('clusterid'=> $id));
+    	// TODO: not sure what happened to cluster_update_assignments
+        //userset::cluster_update_assignments($id, null);
     	return $status;
-    }*/
+    }
 }
 ?>

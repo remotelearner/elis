@@ -157,6 +157,20 @@ class track extends data_object_with_custom_fields {
         return context_level_base::get_custom_context_level('track', 'elis_program');
     }
 
+    public static function delete_for_curriculum($id) {
+        $result = true;
+
+        //look up and delete associated tracks
+        if($tracks = track_get_listing('name', 'ASC', 0, 0, '', '', $id)) {
+            foreach ($tracks as $track) {
+                $record = new track($track->id);
+                $result = $record->delete() && $result;
+            }
+        }
+
+        return $result;
+    }
+
     /**
      * Creates and associates a class with a track for every course that
      * belongs to the track curriculum
@@ -234,7 +248,6 @@ class track extends data_object_with_custom_fields {
 
             // Create and assign class to default system track
             // TODO: for now, use elis::$config->elis_program in place of $CURMAN->config
-
             if (!empty(elis::$config->elis_program->userdefinedtrack)) {
                 $trkid = $this->create_default_track();
 
@@ -584,6 +597,21 @@ class trackassignment extends elis_data_object {
             $this->data_load_array(get_object_vars($trackassign));
         }
     }*/
+    public static function delete_for_class($id) {
+        global $DB;
+
+        return $DB->delete_records(trackassignment::TABLE, array('classid'=> $id));
+    }
+
+    public static function delete_for_track($id) {
+        global $DB;
+
+        //TODO: Remove users from crlm_user_track table that use -
+        // this track
+
+        return $DB->delete_records(trackassignment::TABLE, array('trackid'=> $id));
+    }
+
 
     function count_assigned_classes_from_track() {
 
@@ -1052,7 +1080,6 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
                                       $alpha='') {
     global $DB;
 
-    //$LIKE = $this->_db->sql_compare();
     $params = array();
     $NAMESEARCH_LIKE = $DB->sql_like('cls.idnumber', ':search_namesearch');
     $ALPHA_LIKE = $DB->sql_like('cls.idnumber', ':search_alpha');
@@ -1067,7 +1094,7 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
                             FROM {". student::TABLE ."} s
                             JOIN {". usertrack::TABLE ."} t USING(userid)
                            WHERE t.trackid = :trackid
-                        GROUP BY s.classid) enr ON enr.classid = cls.id ";
+                        GROUP BY s.classid) enr ON enr.classid = cls.id) ";
     $params['trackid'] = $trackid;
 
     //apply the track filter to the outermost query if applicable

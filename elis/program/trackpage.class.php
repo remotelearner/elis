@@ -115,7 +115,7 @@ class trackpage extends managementpage {
      * Check if the user has the given capability for the requested track
      */
     public function _has_capability($capability, $id = null) {
-        $id = $id ? $id : required_param('id', PARAM_INT);
+        $id = $id ? $id : $this->required_param('id', PARAM_INT);
 
         $cached = trackpage::check_cached($capability, $id);
         if ($cached !== null) {
@@ -256,7 +256,6 @@ class trackpage extends managementpage {
             $curriculumpage = new curriculumpage(array('id' => $id));
             //$curriculumpage->print_tabs('trackpage', array('id' => $id));
         }
-
         $this->print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=true, $searchflag=true);
     }
 
