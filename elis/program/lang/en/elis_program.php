@@ -309,7 +309,39 @@ $string['field_syncwithmoodle'] = 'Sync with Moodle';
 $string['form_error'] = 'Selection page form error - expecting array!';
 $string['frequency'] = 'Frequency';
 
+$string['health_checking'] = "Checking...\n<ul>\n";
 $string['health_check_link'] = 'The <a href="{$a->wwwroot}/elis/program/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
+$string['health_cluster_orphans'] = 'Orphaned clusters found!';
+$string['health_cluster_orphansdesc'] = 'There are {$a->count} sub-clusters which have had their parent clusters deleted.<br/><ul>';
+$string['health_cluster_orphansdescnone'] = 'There were no orphaned clusters found.';
+$string['health_cluster_orphanssoln'] = 'From the command line change to the directory {$a->dirroot}/elis/program/scripts<br/>
+                Run the script fix_cluster_orphans.php to convert all clusters with missing parent clusters to top-level.';
+$string['health_completion'] = 'Completion export';
+$string['health_completiondesc'] = 'The Completion Export block, which conflicts with Integration Point, is present.';
+$string['health_completionsoln'] = 'The completion export block should be automatically removed when the site is properly upgraded via CVS or git.
+If it is still present, go to the <a href="{$a->wwwroot}/admin/blocks.php">Manage blocks</a> page and delete the completion export block,
+and then remove the <tt>{$a->dirroot}/blocks/completion_export</tt> directory.';
+$string['health_curriculum'] = 'Stale ELIS Course - Moodle Program record';
+$string['health_curriculumdesc'] = 'There are {$a->count} records in the {$a->table} table referencing nonexistent ELIS courses';
+$string['health_curriculumsoln'] = 'These records need to be removed from the database.<br/>Suggested SQL:';
+$string['health_duplicate'] = 'Duplicate enrolment records';
+$string['health_duplicatedesc'] = 'There were {$a->count} duplicate enrolments records in the ELIS enrolments table.';
+$string['health_duplicatesoln'] = 'The duplicate enrolments need to be removed directly from the database.  <b>DO NOT</b> try to remove them via the UI.<br/><br/>
+Recommended to escalate to development for solution.';
+$string['health_stale'] = 'Stale CM Class - Moodle Course record';
+$string['health_staledesc'] = 'There were {$a->count} records in the crlm_class_moodle table referencing nonexistent ELIS classes.';
+$string['health_stalesoln'] = 'These records need to be removed from the database.<br/>Suggested SQL:';
+$string['health_trackcheck'] = 'Unassociated classes found in tracks';
+$string['health_trackcheckdesc'] = 'Found {a->count} classes that are attached to tracks when associated courses are not attached to the curriculum.';
+$string['health_trackcheckdescnone'] = 'There were no issues found.';
+$string['health_trackchecksoln'] = 'Need to remove all classes in tracks that do not have an associated course in its associated curriculum by running the script linked below.<br/><br/>' .
+               '<a href="{$a->wwwroot}/elis/program/scripts/fix_track_classes.php">Fix this now</a>';
+$string['health_user_sync'] = 'User Records Mismatch - Synchronize Users';
+$string['health_user_syncdesc'] = 'There are {$a->count} extra user records for Moodle which don\'t exist for ELIS.';
+$string['health_user_syncsoln'] = 'Users need to be synchronized by running the script which is linked below.<br/><br/>
+                This process can take a long time, we recommend you run it during non-peak hours, and leave this window open until you see a success message.
+                If the script times out (stops loading before indicating success), please open a support ticket to have this run for you.<br/><br/>
+                <a href="{$a->wwwroot}/elis/program/scripts/migrate_moodle_users.php">Fix this now</a>';
 
 $string['id'] = 'ID';
 $string['idnumber'] = 'ID Number';
