@@ -561,7 +561,7 @@ class student extends elis_data_object {
     function edit_student_html($stuid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
                                $perpage = 30, $namesearch = '', $alpha = '') {
         $this->id = $stuid;
-        error_log("student.class.php::edit_student_html({$stuid}, {$type}, ... ); this->classid = {$this->classid}");
+        //error_log("student.class.php::edit_student_html({$stuid}, {$type}, ... ); this->classid = {$this->classid}");
         return $this->edit_form_html($this->id /* ->classid */, $type, $sort, $dir, $page,
                                      $perpage, $namesearch, $alpha);
     }
@@ -569,7 +569,7 @@ class student extends elis_data_object {
     function edit_classid_html($classid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
                                $perpage = 30, $namesearch = '', $alpha = '') {
 
-        error_log("student.class.php::edit_classid_html({$classid}, {$type}, ... ) - setting this->classid ({$this->classid}) = classid ({$classid})");
+        //error_log("student.class.php::edit_classid_html({$classid}, {$type}, ... ) - setting this->classid ({$this->classid}) = classid ({$classid})");
         $this->classid = $classid; // TBD ???
         return $this->edit_form_html($classid, $type, $sort, $dir, $page,
                                      $perpage, $namesearch, $alpha);
