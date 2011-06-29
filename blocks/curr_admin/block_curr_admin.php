@@ -163,8 +163,7 @@ class block_curr_admin extends block_base {
         /*****************************************
          * Clusters
          *****************************************/
-        /*
-        if(!isset($CURMAN->config->display_clusters_at_top_level) || !empty($CURMAN->config->display_clusters_at_top_level)) {
+        //if(!isset($CURMAN->config->display_clusters_at_top_level) || !empty($CURMAN->config->display_clusters_at_top_level)) {
             $manageclusters_css_class = block_curr_admin_get_item_css_class('manageclusters');
             $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
@@ -185,15 +184,14 @@ class block_curr_admin extends block_base {
                     $isLeaf = empty($cluster_count) &&
                               empty($curriculum_count);
 
-                    $cm_entity_pages[] = block_curr_admin_get_menu_item('cluster', $cluster, 'root', $manageclusters_css_class, $cluster->id, 0, $params, $isLeaf);
+                    $cm_entity_pages[] = block_curr_admin_get_menu_item('userset', $cluster, 'root', $manageclusters_css_class, $cluster->id, 0, $params, $isLeaf);
                 }
             }
 
             if($num_block_icons < $num_records) {
-                $cm_entity_pages[] = block_curr_admin_get_menu_summary_item('cluster', $cluster_css_class, $num_records - $num_block_icons);
+                $cm_entity_pages[] = block_curr_admin_get_menu_summary_item('userset', $cluster_css_class, $num_records - $num_block_icons);
             }
-        }
-        */
+        //}
 
         /*****************************************
          * Curricula

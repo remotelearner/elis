@@ -672,7 +672,7 @@ function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $
 
     //determine the display attribute from the entity type
     switch($type) {
-        case 'cluster':
+        case 'userset':
             $display = 'name';
             break;
         case 'curriculum':
@@ -701,7 +701,7 @@ function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $
     $result = new menuitem($item_id, $page, $parent, $instance->$display, $css_class, '', true, $parent_path);
 
     $current_path = '';
-    if (in_array($type, array('cluster', 'curriculum', 'course', 'track', 'pmclass'))) {
+    if (in_array($type, array('userset', 'curriculum', 'course', 'track', 'pmclass'))) {
         $current_path = $type . '-' . $instance->id;
         
         if (!empty($parent_path)) {
@@ -816,7 +816,7 @@ function block_curr_admin_load_menu_children($type, $id, $parent_cluster_id, $pa
  * @param   string          $parent_path           Path of parent curriculum elements in the tree
  * @return  menuitem array                         The appropriate child items
  */
-function block_curr_admin_load_menu_children_cluster($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
+function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
     $result_items = array();
 
     /*****************************************
@@ -824,7 +824,8 @@ function block_curr_admin_load_menu_children_cluster($id, $parent_cluster_id, $p
      *****************************************/
     $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
-    $listing = cluster_get_listing('priority, name', 'ASC', 0, $num_block_icons, '', '', array('parent' => $id));
+    $listing = cluster_get_listing('name', 'ASC', 0, $num_block_icons, '', '', array('parent' => $id));
+    //$listing = cluster_get_listing('priority, name', 'ASC', 0, $num_block_icons, '', '', array('parent' => $id));
 
     if(!empty($listing)) {
         foreach($listing as $item) {
@@ -837,7 +838,7 @@ function block_curr_admin_load_menu_children_cluster($id, $parent_cluster_id, $p
             $isLeaf = empty($cluster_count) &&
                       empty($curriculum_count);
 
-            $result_items[] = block_curr_admin_get_menu_item('cluster', $item, 'root', $cluster_css_class, $item->id, $parent_curriculum_id, $params, $isLeaf, $parent_path);
+            $result_items[] = block_curr_admin_get_menu_item('userset', $item, 'root', $cluster_css_class, $item->id, $parent_curriculum_id, $params, $isLeaf, $parent_path);
         }
     }
 
@@ -845,7 +846,7 @@ function block_curr_admin_load_menu_children_cluster($id, $parent_cluster_id, $p
     $num_records = cluster_count_records('', '', array('parent' => $id));
     if($num_block_icons < $num_records) {
         $params = array('id' => $parent_cluster_id);
-        $result_items[] = block_curr_admin_get_menu_summary_item('cluster', $cluster_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
+        $result_items[] = block_curr_admin_get_menu_summary_item('userset', $cluster_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
 
     /*****************************************
