@@ -47,8 +47,9 @@ class trackassignmentpage extends associationpage {
         parent::__construct($params);
 
         $this->tabs = array(
-            array('tab_id' => 'view', 'page' => 'trackassignmentpage', 'params' => array('action' => 'view'), 'name' => get_string('detail','elis_program'), 'showtab' => true),
-            array('tab_id' => 'edit', 'page' => 'trackassignmentpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
+            array('tab_id' => 'view', 'page' => 'trackassignmentpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
+            array('tab_id' => 'edit', 'page' => 'trackassignmentpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'delete.gif'),
+
         );
     }
 
@@ -82,7 +83,7 @@ class trackassignmentpage extends associationpage {
         $classid = $this->required_param('classid', PARAM_INT);
 
         return trackpage::_has_capability('block/curr_admin:associate', $trackid)
-            && cmclasspage::_has_capability('block/curr_admin:associate', $classid);
+            && pmclasspage::_has_capability('block/curr_admin:associate', $classid);
     }
 
     function can_do_edit() {
@@ -94,7 +95,7 @@ class trackassignmentpage extends associationpage {
         $classid = $record->classid;
 
         return trackpage::_has_capability('block/curr_admin:associate', $trackid)
-            && cmclasspage::_has_capability('block/curr_admin:associate', $classid);
+            && pmclasspage::_has_capability('block/curr_admin:associate', $classid);
     }
 
     function can_do_delete() {
@@ -109,7 +110,7 @@ class trackassignmentpage extends associationpage {
 
         $target = $this->get_new_page(array('action' => 'savenew', 'id' => $id, 'trackid' => $trackid, 'clsid' => $clsid));
 
-        $form = new $this->form_class($target->get_moodle_url(), array('trackid' => $trackid, 'classid' => $clsid));
+        $form = new $this->form_class($target->url, array('trackid' => $trackid, 'classid' => $clsid));
 
         $form->set_data(array('trackid' => $trackid, 'classid' => $clsid, 'id' => $id));
 

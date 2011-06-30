@@ -179,6 +179,8 @@ class track extends data_object_with_custom_fields {
      */
     function track_auto_create() {
 
+        // Had to load $this due to lazy-loading
+        $this->load();
         if (empty($this->curid) or
             empty($this->id)) {
             cm_error('trackid and curid have not been properly initialized');
@@ -195,7 +197,9 @@ class track extends data_object_with_custom_fields {
             'INNER JOIN {' . course::TABLE . '} cc ON cc.id = ccc.courseid '.
             'WHERE ccc.curriculumid = ? ';
         $params = array($this->curid);
+
         $curcourse = $this->_db->get_records_sql($sql, $params);
+
         if (empty($curcourse)) {
             $curcourse = array();
         }
@@ -204,7 +208,7 @@ class track extends data_object_with_custom_fields {
         // to have their auto enrol flag set
         foreach ($curcourse as $recid => $curcourec) {
             $idnumber = (!empty($curcourec->idnumber) ? $curcourec->idnumber.'-' : '') . $this->idnumber;
-            $classojb = new cmclass(array('courseid' => $curcourec->courseid,
+            $classojb = new pmclass(array('courseid' => $curcourec->courseid,
                                           'idnumber' => $idnumber));
 
             // Course is required
@@ -226,6 +230,8 @@ class track extends data_object_with_custom_fields {
             // Create class
             if (!($classid = $classojb->auto_create_class(array('courseid'=>$curcourec->courseid)))) {
                 cm_error('Could not create class');
+                echo '<br>could not create class';
+                die();
                 return false;
             }
 
@@ -335,6 +341,10 @@ class track extends data_object_with_custom_fields {
 
     function __toString() {
         return $this->name . ' (' . $this->idnumber . ')';
+    }
+
+    function get_verbose_name() {
+        return $this->verbose_name;
     }
 
     public function set_from_data($data) {
@@ -556,6 +566,9 @@ class track extends data_object_with_custom_fields {
 
 /** ------ trackassignment class ------ **/
 class trackassignment extends elis_data_object {
+
+    var $verbose_name = 'trackassignment';
+
     const TABLE = 'crlm_track_class';
 
     /**
@@ -850,6 +863,7 @@ class trackassignment extends elis_data_object {
             print_string('all_users_already_enrolled', 'elis_program');
         }
     }
+
 }
 /// Non-class supporting functions. (These may be able to replaced by a generic container/listing class)
 
@@ -1094,7 +1108,7 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
                             FROM {". student::TABLE ."} s
                             JOIN {". usertrack::TABLE ."} t USING(userid)
                            WHERE t.trackid = :trackid
-                        GROUP BY s.classid) enr ON enr.classid = cls.id) ";
+                        GROUP BY s.classid) enr ON enr.classid = cls.id ";
     $params['trackid'] = $trackid;
 
     //apply the track filter to the outermost query if applicable
@@ -1125,7 +1139,6 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
     }
 
     $sql = $select.$tables.$join.$where.$sort;
-
     return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 

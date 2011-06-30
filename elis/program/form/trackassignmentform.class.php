@@ -38,7 +38,7 @@ class trackassignmentform extends cmform {
         $mform->addElement('hidden', 'trackid');
         $mform->addElement('hidden', 'classid');
 
-        $mform->addElement('advcheckbox', 'autoenrol', null, get_string('auto_enrol_long', 'elis_program'), null, array('0', '1'));
+        $mform->addElement('advcheckbox', 'autoenrol', null, get_string('trackassignmentform:track_autoenrol_long', 'elis_program'), null, array('0', '1'));
         $mform->addHelpButton('autoenrol', 'trackassignmentform:track_autoenrol', 'elis_program');
 
         if (isset($this->_customdata['obj'])) {

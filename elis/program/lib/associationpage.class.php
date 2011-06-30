@@ -305,13 +305,13 @@ class associationpage extends pm_page {
         }
 
         $data = $form->get_data();
-
         if($data) {
-            $obj = new $this->data_class();
-            $obj->set_from_data($data);
+            $obj = new $this->data_class($data);
+            //$obj->set_from_data($data);
             $obj->save();
-            $target = $this->get_new_page(array('action' => 'default', 'id' => $parent_id));
-            redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' saved.');
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $parent_id), true);
+            //redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' saved.');
+            redirect($target->url);
         } else {
             // Validation must have failed, redisplay form
             $form->display();
