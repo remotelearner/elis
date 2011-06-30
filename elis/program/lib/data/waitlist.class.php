@@ -216,21 +216,19 @@ class waitlist extends elis_data_object {
      */
     public function enrol() {
         global $CFG;
-        $id      = $this->id;
-        $classid = $this->classid;
-        $userid  = $this->userid;
-        $this->delete(); // $this->data_delete_record()
 
-        $class = new pmclass($classid);
+        $class = new pmclass($this->classid);
         $courseid = $class->get_moodle_course_id();
 
         // enrol directly in the course
-        $student = new student($this);
+        $student                = new student(); // TBD: new student($this); didn't work!!!
+        $student->userid        = $this->userid;
+        $student->classid       = $this->classid;
         $student->enrolmenttime = max(time(), $class->startdate);
         $student->add();
 
         if ($courseid) {
-            $course = $this->_db->get_record('course', array('id' => $id));
+            $course = $this->_db->get_record('course', array('id' => $this->id));
             // the elis plugin is treated specially
             if ($course->enrol != 'elis') {
                 // send the user to the Moodle enrolment page
@@ -238,7 +236,6 @@ class waitlist extends elis_data_object {
                 $a->crs = $course;
                 $a->class = $class;
                 $a->wwwroot = $CFG->wwwroot;
-                // update strings in block_curr_admin, add {} where missing
                 $subject = get_string('moodleenrol_subj', self::LANG_FILE, $a);
                 $message = get_string('moodleenrol', self::LANG_FILE, $a);
             }
@@ -252,12 +249,14 @@ class waitlist extends elis_data_object {
         }
 
         // TBD: $user = cm_get_moodleuser($this->userid);
-        $cuser = new user($userid);
+        $cuser = new user($this->userid);
         $user = $cuser->get_moodleuser();
         $from = get_admin();
 
         // TBD: notification::notify($message, $user, $from);
         email_to_user($user, $from, $subject, $message);
+
+        $this->delete(); // $this->data_delete_record() - moved below
     }
 
     /**
@@ -278,7 +277,9 @@ class waitlist extends elis_data_object {
 
         $subject = get_string('waitlist', self::LANG_FILE);
         $pmclass = new pmclass($this->classid);
-        $message = get_string('added_to_waitlist_message', self::LANG_FILE, $pmclass);
+        $sparam = new stdClass;
+        $sparam->idnumber = $pmclass->idnumber;
+        $message = get_string('added_to_waitlist_message', self::LANG_FILE, $sparam);
 
         // TBD: $user = cm_get_moodleuser($this->userid);
         $cuser = new user($this->userid);

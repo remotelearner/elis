@@ -175,7 +175,7 @@ class waitlistpage extends selectionpage {
 
     function do_overenrol() {
         $id = $this->required_param('id', PARAM_INT);
-        $recs = explode(',', $this->required_param('selected',PARAM_TEXT));
+        $recs = explode(',', $this->required_param('selected', PARAM_TEXT));
 
         // make sure everything is an int
         foreach ($recs as $key => $val) {
@@ -185,7 +185,7 @@ class waitlistpage extends selectionpage {
             }
         }
 
-        $result = true;
+        $result = !empty($recs);
         foreach ($recs as $recid) {
             $waitlistobj = new waitlist($recid);
             $waitlistobj->enrol();
@@ -195,9 +195,7 @@ class waitlistpage extends selectionpage {
         if ($result) {
             redirect($tmppage->url, get_string('success_waitlist_overenrol', self::LANG_FILE));
         } else {
-            $sparam = new stdClass;
-            $sparam->url = $tmppage->url;
-            print_error('error_waitlist_overenrol', self::LANG_FILE, '', $sparam);
+            print_error('error_waitlist_overenrol', self::LANG_FILE, $tmppage->url);
         }
     }
 }
