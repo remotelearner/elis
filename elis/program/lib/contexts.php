@@ -94,7 +94,6 @@ class cm_context_set {
 
         $contexts = array($contextlevel => array());
 
-        $timenow = time();
         // find all contexts at the given context level where the user has a direct
         // role assignment
         $contextlevelnum = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
@@ -102,7 +101,6 @@ class cm_context_set {
                   FROM {role_assignments} ra
                   JOIN {context} c ON ra.contextid = c.id
                  WHERE ra.userid = $userid
-                   AND (ra.timeend = 0 OR ra.timeend >= $timenow)
                    AND c.contextlevel = $contextlevelnum";
         $possiblecontexts = $DB->get_records_sql($sql);
         $possiblecontexts = $possiblecontexts ? $possiblecontexts : array();

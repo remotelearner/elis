@@ -257,13 +257,14 @@ class clustercurriculum extends elis_data_object {
      * @return  int                      The number of appropriate records
      */
     function count_clusters($curriculumid = 0, $parentclusterid = 0) {
+        global $DB;
 
         $select  = 'SELECT COUNT(*) ';
         $tables  = 'FROM {' . self::TABLE . '} clstcur ';
-        $join    = 'LEFT JOIN {' . cluster::TABLE . '} clst '.
+        $join    = 'LEFT JOIN {' . userset::TABLE . '} clst '.
                    'ON clst.id = clstcur.clusterid ';
         $where   = 'WHERE clstcur.curriculumid = :curriculumid ';
-        $params - array('curriculumid'=> $curriculumid);
+        $params = array('curriculumid'=> $curriculumid);
 
         if(!empty($parentclusterid)) {
             $where .= " AND clst.parent = :parentclusterid ";
@@ -274,7 +275,7 @@ class clustercurriculum extends elis_data_object {
 
         $sql = $select.$tables.$join.$where.$sort;
 
-        return $this->_db->count_records_sql($sql, $params);
+        return $DB->count_records_sql($sql, $params);
 
     }
 
@@ -323,16 +324,23 @@ class clustercurriculum extends elis_data_object {
             return 0;
         }
 
-        $select  = 'SELECT COUNT(*) ';
-        $tables  = 'FROM {' . clustercurriculum::TABLE . '} clstcur ';
-        $join    = 'LEFT JOIN {' . curriculum::TABLE . '} cur '.
-                   'ON cur.id = clstcur.curriculumid ';
-        $where   = 'WHERE clstcur.clusterid = ? ';
-        $params = array($clusterid);
-        $sort    = 'ORDER BY cur.idnumber ASC ';
-        $groupby = 'GROUP BY cur.idnumber ';
+        $select  = 'SELECT COUNT(cur.id) ';
+        $tables  = 'FROM {' . curriculum::TABLE . '} cur ';
+        $join    = '';
+        $where   = '';
+        $params  = array();
+        
+        if ($clusterid != 0) {
+            //looking by cluster, so join the association table and filter
+            $join     = 'JOIN {' . clustercurriculum::TABLE . '} clstcur '.
+                        'ON cur.id = clstcur.curriculumid ';
+            $where    = 'WHERE clstcur.clusterid = ? ';
+            $params[] = $clusterid;
+        }
 
-        $sql = $select . $tables . $join . $where . $groupby . $sort;
+        $groupby = '';
+
+        $sql = $select . $tables . $join . $where . $groupby;
 
         return $DB->count_records_sql($sql, $params);
     }

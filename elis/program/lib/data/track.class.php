@@ -908,7 +908,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
     }
 
     if ($parentclusterid) {
-        $where[] = "(trk.id IN (SELECT trackid FROM {".trackassignment::TABLE."}
+        $where[] = "(trk.id IN (SELECT trackid FROM {".clustertrack::TABLE."}
                             WHERE clusterid = :parentclusterid))";
         $params['parentclusterid'] = $parentclusterid;
     }
@@ -1017,7 +1017,7 @@ function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $
     }
 
     if ($parentclusterid) {
-        $where[] = "(id IN (SELECT trackid FROM {".class_track::TABLE."}
+        $where[] = "(id IN (SELECT trackid FROM {".clustertrack::TABLE."}
                             WHERE clusterid = :parentclusterid))";
         $params['parentclusterid'] = $parentclusterid;
     }

@@ -51,8 +51,8 @@ class dashboardpage extends pm_page {
      * @return moodle_url
      */
     function get_moodle_url($extra = array()) {
-        $url = parent::get_moodle_url($extra);
-        unset($url->params['s']);
+        $page = $this->get_new_page($extra);
+        $url = $page->url;
 
         return $url;
     }
