@@ -42,7 +42,6 @@ class coursetemplate extends elis_data_object {
 
 //     function __construct($templatedata = false) {
 //         parent::datarecord();
-
 //         if (is_numeric($templatedata)) {
 //             $this->data_load_record($templatedata);
 //         } else if (is_array($templatedata)) {

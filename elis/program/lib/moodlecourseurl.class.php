@@ -49,7 +49,7 @@ class moodlecourseurl {
     var $_templateValues = array();
     var $_referenceId;
 
-    function moodlecourseurl() {
+    function __construct() {
         $this->_templateType = get_string('moodlecourseurlclassname', 'elis_program');
         $this->_templateTypeString = get_string('moodlecourseurl', 'elis_program');
         $this->_referenceTable =  'course';
@@ -105,9 +105,9 @@ class moodlecourseurl {
         $js_escaped_name =  str_replace("'", "\\'", "{$courseObj->fullname} ({$courseObj->shortname})");
         $html_escaped_name = htmlspecialchars($courseObj->fullname);
         $output = "-> <a name=\"template\" ".
-                  "onClick=\"courseSelect({$courseObj->id}, '$js_escaped_name');".
+                  "onClick=\"courseSelect({$courseObj->id}, '{$js_escaped_name}');".
                   "selectedCourse({$courseObj->id}, 'new'); self.close(); return false;\"".
-                  "id=\"{$courseObj->id}\" class=\"notselect\">$html_escaped_name</a><br />";
+                  "id=\"{$courseObj->id}\" class=\"notselect\">{$html_escaped_name}</a><br />";
         return $output;
     }
 
@@ -116,7 +116,7 @@ class moodlecourseurl {
         $html_escaped_name = htmlspecialchars($catObj->name);
         if ($subCat) {
             $output = "<a href=\"{$CFG->wwwroot}/elis/program/coursetemplatepage.php".
-                      "?class={$this->_templateType}&category={$catObj->id}&selected=$selected\">$html_escaped_name".
+                      "?class={$this->_templateType}&category={$catObj->id}&selected={$selected}\">{$html_escaped_name}".
                       " (click to expand)</a><br />";
         } else {
             $output = $html_escaped_name;
@@ -131,12 +131,12 @@ class moodlecourseurl {
      * @param int selected course id of previously selected course
      */
     function displayPage($category = 0, $selected = 0) {
-        global $CFG, $PAGE;
+        global $CFG, $PAGE, $OUTPUT;
 
         $PAGE->requires->js('/elis/program/js/moodlecourseurl.js');
 
         if (!$site = get_site()) {
-            error('Site isn\'t defined!');
+            print_error('Site isn\'t defined!');
         }
 
         $strcourses = get_string('courses');
@@ -151,8 +151,12 @@ class moodlecourseurl {
         // Build breadcrumb of course subcategories
         $navigation['navlinks'] .= $this->buildNavLinks($category,'');
 
-        // TO-DO: fix the header to moodle2 methods
-        //print_header_simple($site->fullname, $site->shortname, $navigation, '', '', true, '', false, '', true);
+        $PAGE->set_title($site->fullname);
+        $PAGE->set_heading($site->shortname);
+        $PAGE->set_cacheable(true);
+        $PAGE->set_button('');
+        echo $OUTPUT->header();
+
         $categories = $this->getSubCategories($category);
 
         echo '<form name="moodlecourseurl">'."\n";
@@ -181,7 +185,7 @@ class moodlecourseurl {
         echo '</form>'."\n";
 
         echo '<br />';
-        close_window_button();
+        $OUTPUT->close_window_button();
     }
 
     /**
