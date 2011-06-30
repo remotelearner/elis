@@ -177,7 +177,7 @@ class moodlecourseurl {
                 echo $this->printCourses($course);
             }
             if (empty($courses)) {
-                echo get_string('no_courses', 'elis_program');
+                echo get_string('no_courses', 'elis_program').'<br />';
             }
 
         }
@@ -191,7 +191,9 @@ class moodlecourseurl {
         echo '</form>'."\n";
 
         echo '<br />';
-        $OUTPUT->close_window_button();
+        echo $OUTPUT->close_window_button();
+
+        echo $OUTPUT->footer();
     }
 
     /**
@@ -217,9 +219,9 @@ class moodlecourseurl {
     private function addCss() {
         // Add custom style
         echo '<style type="text/css">
-        .oldselect {background-color: yellow}
-        .newselect {background-color: #00CC33}
-        .logininfo {visibility: hidden}
+        .oldselect {background-color: yellow;}
+        .newselect {background-color: #00CC33;}
+        .logininfo {visibility: hidden;}
         </style>';
     }
 }

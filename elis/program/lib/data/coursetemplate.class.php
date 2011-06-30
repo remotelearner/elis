@@ -40,17 +40,6 @@ class coursetemplate extends elis_data_object {
     protected $_dbfield_location;
     protected $_dbfield_templateclass;
 
-//     function __construct($templatedata = false) {
-//         parent::datarecord();
-//         if (is_numeric($templatedata)) {
-//             $this->data_load_record($templatedata);
-//         } else if (is_array($templatedata)) {
-//             $this->data_load_array($templatedata);
-//         } else if (is_object($templatedata)) {
-//             $this->data_load_array(get_object_vars($templatedata));
-//         }
-//     }
-
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('course', 'elis_program');
     }
@@ -58,7 +47,7 @@ class coursetemplate extends elis_data_object {
     // overriding method, parameter is now the course id
     function data_load_record($id) {
         if (is_string($id) && !is_numeric($id)) {
-        /// $id can be a select string...
+            /// $id can be a select string...
             $select = $id;
         } else {
             $select = 'courseid = ' . $id;
