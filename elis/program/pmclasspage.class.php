@@ -121,8 +121,11 @@ class pmclasspage extends managementpage {
      * Check if the user has the given capability for the requested track
      */
     public function _has_capability($capability, $id = null) {
-        $req_id = isset($this) ? $this->required_param('id', PARAM_INT) : required_param('id', PARAM_INT);
-        $id = $id ? $id : $req_id;
+        if (empty($id)) {
+            $id = (isset($this) && method_exists($this, 'required_param'))
+                  ? $this->required_param('id', PARAM_INT)
+                  : required_param('id', PARAM_INT);
+        }
         // class contexts are different -- we rely on the cache because tracks
         // require special logic
         pmclasspage::get_contexts($capability);
