@@ -51,20 +51,4 @@ abstract class pm_page extends elis_page {
 
         $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
     }
-
-    /**
-     * Specifies a unique shortname for the entity represented by
-     * a page of this type, transforming the supplied value if necessary
-     *
-     * @param   string       $parent_path  Path of all parent elements, or the empty string
-     *                                     if none
-     * @param   string       $name         Initial name provided for the element
-     *
-     * @return  string|NULL                A valid name to identify the item with, or NULL if
-     *                                     not applicable
-     */
-    static function get_entity_name($parent_path, $name) {
-        //implement in child class if necessary
-        return NULL;
-    }
 }

@@ -295,7 +295,7 @@ class block_curr_admin extends block_base {
                 //             get_string('waitlistcourses', 'block_curr_admin'), block_curr_admin_get_item_css_class('waitlist')),
 
                 //Reports
-                //new menuitem('rept', null, 'root', get_string('reports', 'block_curr_admin'), block_curr_admin_get_item_css_class('rept', true))
+                new menuitem('rept', null, 'root', get_string('reports', 'block_curr_admin'), block_curr_admin_get_item_css_class('rept', true))
 
         ));
 

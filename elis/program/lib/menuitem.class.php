@@ -391,7 +391,7 @@ class generic_menuitempage extends menuitempage {
  */
 class url_page {
     public function __construct($url) {
-        $this->url = $url;
+        $this->url = new moodle_url($url);
     }
 
     public function can_do() {
@@ -428,6 +428,19 @@ class url_page {
     static function get_entity_name($parent_path, $name) {
         //implement in child class, if necessary
         return NULL;
+    }
+
+    /**
+     * Create a new page object of the same class with the given parameters.
+     *
+     * @param string $url An overriding URL, if applicable.
+     */
+    public function get_new_page(array $url=null) {
+        $pageclass = get_class($this);
+        if ($url == null) {
+            $url = $this->url;
+        }
+        return new $pageclass($url);
     }
 }
 
