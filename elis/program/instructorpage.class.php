@@ -73,7 +73,7 @@ class instructorpage extends associationpage {
         if (md5($insid) != $confirm) {
             echo cm_error(get_string('invalidconfirm', self::LANG_FILE));
         } else {
-            $user = $DB->get_record(user::TABLE, array('id' => $ins->userid)); // TBD: new user( $ins->userid or $event_object->userid ) didn't work???
+            $user = $DB->get_record(user::TABLE, array('id' => $ins->userid));
             $user->name = fullname($user);
             $status = $ins->delete();
           /* **** no return code from delete()
@@ -337,7 +337,7 @@ class instructorpage extends associationpage {
         $ins = new instructor($insid);
         $ins->load(); // TBD: no user name w/o ???
         $url = 'index.php'; // TBD: '/elis/program/index.php'
-        $user = $DB->get_record(user::TABLE, array('id' => $ins->userid)); // TBD: new user($ins->userid);
+        $user = $DB->get_record(user::TABLE, array('id' => $ins->userid));
         $user->name = fullname($user);
         $message = get_string('confirm_delete_instructor', self::LANG_FILE, $user);
         $optionsyes = array('s' => 'ins', 'section' => 'curr', 'id' => $ins->classid,

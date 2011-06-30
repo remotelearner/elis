@@ -214,7 +214,7 @@ class student extends elis_data_object {
      * @param   mixed  $grade    Grade in the class (ignored if FALSE)
      * @param   mixed  $credits  Number of credits awarded (ignored if FALSE)
      * @param   mixed  $locked   If TRUE, the assignment record becomes locked
-     *
+     * @uses    $CFG
      * @return  boolean          TRUE is successful, otherwise FALSE
      */
     function complete($status = false, $time = false, $grade = false, $credits = false, $locked = false) {
@@ -273,18 +273,19 @@ class student extends elis_data_object {
                         elis::$config->elis_program->notify_classcompleted_message;
             $search = array('%%userenrolname%%', '%%classname%%');
 
+            $pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
             if (($clsmdl = $this->_db->get_record(classmoodlecourse::TABLE,
                                    array('classid' => $this->classid))) &&
                 ($course = get_record('course', array('id' => $clsmdl->moodlecourseid)))) {
                 /// If its a Moodle class...
-                $replace = array(fullname($this->user), $course->fullname);
+                $replace = array(fullname($pmuser), $course->fullname);
                 if (!($context = get_context_instance(CONTEXT_COURSE, $course->id))) {
                     print_error('invalidcontext');
                     return true;
                 }
             } else {
                 $pmclass = new pmclass($this->classid);
-                $replace = array(fullname($this->user), $pmclass->course->name);
+                $replace = array(fullname($pmuser), $pmclass->course->name);
                 if (!($context = get_system_context())) {
                     print_error('invalidcontext');
                     return true;
@@ -294,7 +295,7 @@ class student extends elis_data_object {
             $text = str_replace($search, $replace, $text);
 
             if ($sendtouser) {
-                $message->send_notification($text, $this->user);
+                $message->send_notification($text, $pmuser);
             }
 
             $users = array();
@@ -682,12 +683,7 @@ class student extends elis_data_object {
             pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE)); // TBD: moved from below
 
         } else {
-            $tmpuser    = $this->_db->get_record(user::TABLE, array('id' => $this->userid)); // TBD: new user($this->userid)
-            $user       = new stdClass;
-            $user->id   = $this->userid;
-            foreach ($tmpuser as $key => $val) {
-                $user->{$key} = $val;
-            }
+            $user       = $this->_db->get_record(user::TABLE, array('id' => $this->userid)); 
             $user->name = fullname($user);
             $users[]    = $user;
             $usercount  = 0;
@@ -711,9 +707,6 @@ class student extends elis_data_object {
                             break;
 
                         case 'name':
-                            //print_object($user);
-                            //$tabobj->{$column} = fullname($user);
-                            //break;
                         case 'idnumber':
                         case 'description';
                             $tabobj->{$column} = isset($user->{$column}) ? $user->{$column} : '';
@@ -1019,12 +1012,7 @@ class student extends elis_data_object {
             pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE)); // TBD: moved from below
 
         } else {
-            $tmpuser    = $this->_db->get_record(user::TABLE, array('id' => $this->userid)); // TBD: new user($this->userid)
-            $user       = new stdClass;
-            $user->id   = $this->userid;
-            foreach ($tmpuser as $key => $val) {
-                $user->{$key} = $val;
-            }
+            $user       = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
             $user->name = fullname($user);
             $users[]    = $user;
             $usercount  = 0;
@@ -1955,12 +1943,13 @@ class student extends elis_data_object {
      * Function to handle class not started events.
      *
      * @param   student  $student  The class enrolment object
-     *
+     * @uses    $CFG
+     * @uses    $DB
      * @return  boolean            TRUE is successful, otherwise FALSE
      */
 
     public static function class_notstarted_handler($student) {
-        global $CFG;
+        global $CFG, $DB;
         // *** TBD ***
         //require_once($CFG->dirroot .'/curriculum/lib/notifications.php');
 
@@ -1990,7 +1979,8 @@ class student extends elis_data_object {
                     get_string('notifyclassnotstartedmessagedef', self::LANG_FILE) :
                     elis::$config->elis_program->notify_classnotstarted_message;
         $search = array('%%userenrolname%%', '%%classname%%');
-        $replace = array(fullname($student->user), $student->pmclass->course->name);
+        $pmuser = $DB->get_record(user::TABLE, array('id' => $student->userid));
+        $replace = array(fullname($pmuser), $student->pmclass->course->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
@@ -2027,12 +2017,13 @@ class student extends elis_data_object {
      * Function to handle class not completed events.
      *
      * @param   student  $student  The class enrolment / student object who is "not completed"
-     * @uses CFG
+     * @uses    $CFG
+     * @uses    $DB
      * @return  boolean            TRUE is successful, otherwise FALSE
      */
 
     public static function class_notcompleted_handler($student) {
-        global $CFG;
+        global $CFG, $DB;
         // *** TBD ***
         //require_once($CFG->dirroot .'/curriculum/lib/notifications.php');
 
@@ -2061,14 +2052,15 @@ class student extends elis_data_object {
                     get_string('notifyclassnotcompletedmessagedef', self::LANG_FILE) :
                     elis::$config->elis_program->notify_classnotcompleted_message;
         $search = array('%%userenrolname%%', '%%classname%%');
-        $replace = array(fullname($student->user), $student->pmclass->course->name);
+        $pmuser = $DB->get_record(user::TABLE, array('id' => $student->userid));
+        $replace = array(fullname($pmuser), $student->pmclass->course->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
         $eventlog->event = 'class_notcompleted';
         $eventlog->instance = $student->classid;
         if ($sendtouser) {
-            $message->send_notification($text, $student->user, null, $eventlog);
+            $message->send_notification($text, $pmuser, null, $eventlog);
         }
 
         $users = array();

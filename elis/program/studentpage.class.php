@@ -134,11 +134,11 @@ class studentpage extends associationpage {
 
     function do_add() { // TBD: must overload the parents since no studentform
         //error_log('studentpage.class.php::do_add()');
-        $this->display_savenew();
+        $this->display('savenew');
     }
 
     function do_delete() { // action_confirm
-        global $DB; // TBD
+        global $DB;
         $stuid = $this->required_param('association_id', PARAM_INT);
         $confirm = optional_param('confirm', null, PARAM_CLEAN);
         if ($confirm == null) {
@@ -146,13 +146,7 @@ class studentpage extends associationpage {
             return;
         }
 
-        $stu = new student($stuid); // TBD: $stuid
-        //$stu->id = $stuid;
-        //$stu->load();
-        /* *** TBD: following doesn't work ???
-        $user = new user($stu->userid);
-        $user->load();
-        **** */
+        $stu = new student($stuid);
         $user = $DB->get_record(user::TABLE, array('id' => $stu->userid));
         $sparam = new stdClass;
         $sparam->name = fullname($user);
@@ -196,7 +190,7 @@ class studentpage extends associationpage {
         if (!empty($users)) {
             $this->attempt_enrol($clsid, $users);
         } else {
-            $this->display('add'); // do_default()
+            $this->display_add();
         }
     }
 
@@ -340,7 +334,7 @@ class studentpage extends associationpage {
             $sgrade->save();
         }
 
-        $this->display('default'); // do_default()
+        $this->display('default');
     }
 
     /**
@@ -388,7 +382,7 @@ class studentpage extends associationpage {
                 $stu_delete = new student($sturecord); // TBD: param was $user['association_id']
                 $status = $stu_delete->delete();
                 if(!$status) {
-                    $user = new user($stu->userid); // TBD
+                    $user = $DB->get_record(user::TABLE, array('id' => $stu->userid));
                     $sparam = new stdClass;
                     $sparam->name = fullname($user);
                     echo cm_error(get_string('studentnotunenrolled', self::LANG_FILE, $sparam));
@@ -396,7 +390,7 @@ class studentpage extends associationpage {
             }
         }
 
-        $this->display('default'); // do_default()
+        $this->display('default');
     }
 
     function do_updateattendance() { // action_updateattendance
@@ -422,6 +416,8 @@ class studentpage extends associationpage {
         if ($status !== true) {
             echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
         }
+
+        $this->display('default'); // TBD ???
     }
 
     /**
