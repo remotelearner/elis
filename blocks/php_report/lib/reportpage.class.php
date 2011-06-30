@@ -47,12 +47,16 @@ class report_page extends elis_page {
     
     public function __construct($params = null) {
         //URL parameter specifies the report instance
-        $this->report = $this->required_param('report');
-        
-        //convert shortname to report instance
-        $this->report_instance = php_report::get_default_instance($this->report);
+        $this->report = $this->optional_param('report', '', PARAM_ALPHAEXT);
+
+        if (isset($params['report'])) {
+            $this->report = $params['report'];
+        }
 
         parent::__construct($params);
+
+        //convert shortname to report instance
+        $this->report_instance = php_report::get_default_instance($this->report);
     }
     
     /**
@@ -126,7 +130,13 @@ class report_page extends elis_page {
         return $this->report_instance->get_display_name();
     }
 
+    protected function _get_page_url() {
+        global $CFG;
+        return "{$CFG->wwwroot}/blocks/php_report/render_report_page.php";
+    }
+
     protected function _get_page_params() {
+        
         return array('report' => $this->report) + parent::_get_page_params();
     }
 }
