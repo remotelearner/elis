@@ -70,7 +70,8 @@ class coursepage extends managementpage {
      * Check if the user has the given capability for the requested curriculum
      */
     public function _has_capability($capability, $id = null) {
-        $id = $id ? $id : $this->required_param('id', PARAM_INT);
+        $req_id = isset($this) ? $this->required_param('id', PARAM_INT) : required_param('id', PARAM_INT);
+        $id = $id ? $id : $req_id;
         // course contexts are different -- we rely on the cache because curricula
         // require special logic
         coursepage::get_contexts($capability);

@@ -50,9 +50,15 @@ class moodlecourseurl {
     var $_referenceId;
 
     function __construct() {
+        global $ME, $PAGE;
+
         $this->_templateType = 'moodlecourseurl';
         $this->_templateTypeString = get_string('moodlecourseurl', 'elis_program');
         $this->_referenceTable =  'course';
+
+        $context = get_context_instance(CONTEXT_SYSTEM);
+        $PAGE->set_context($context);
+        $PAGE->set_url($ME, $_GET);
     }
 
     /**

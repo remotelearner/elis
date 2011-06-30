@@ -104,7 +104,8 @@ class curriculumpage extends managementpage {
      * Check if the user has the given capability for the requested curriculum
      */
     function _has_capability($capability, $id = null) {
-        $id = $id ? $id : $this->required_param('id', PARAM_INT);
+        $req_id = isset($this) ? $this->required_param('id', PARAM_INT) : required_param('id', PARAM_INT);
+        $id = $id ? $id : $req_id;
         $cached = curriculumpage::check_cached($capability, $id);
         if ($cached !== null) {
             return $cached;
