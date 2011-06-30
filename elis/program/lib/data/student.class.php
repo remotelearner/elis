@@ -1532,6 +1532,7 @@ class student extends elis_data_object {
      * @return INT
      */
     public function count_enroled($classid = 0, $namesearch = '', $alpha = '') {
+        global $DB; // NOTE: method called statically from pmclassform.class.php::validation()
 
         if (!$classid) {
             if (empty($this->classid)) {
@@ -1541,9 +1542,9 @@ class student extends elis_data_object {
         }
 
         $params = array();
-        $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+        $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like');
+        $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
 
         $select  = 'SELECT COUNT(stu.id) ';
         $tables  = 'FROM {'. student::TABLE .'} stu ';
@@ -1568,7 +1569,7 @@ class student extends elis_data_object {
         }
 
         $sql = $select . $tables . $join . $on . $where;
-        return $this->_db->count_records_sql($sql, $params);
+        return $DB->count_records_sql($sql, $params);
     }
 
     /**

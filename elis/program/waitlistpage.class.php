@@ -161,9 +161,8 @@ class waitlistpage extends selectionpage {
         $result = true;
         foreach ($recs as $recid) {
             $waitlistobj = new waitlist($recid);
-            if (!($result = $waitlistobj->delete())) {
-                break;
-            }
+            /* $result = */ $waitlistobj->delete(); // No return code from delete()
+            /* if (!$result) break; */
         }
 
         $tmppage = new waitlistpage(array('id' => $id));

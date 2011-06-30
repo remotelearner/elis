@@ -138,6 +138,7 @@ class studentpage extends associationpage {
     }
 
     function do_delete() { // action_confirm
+        global $DB; // TBD
         $stuid = $this->required_param('association_id', PARAM_INT);
         $confirm = optional_param('confirm', null, PARAM_CLEAN);
         if ($confirm == null) {
@@ -148,10 +149,14 @@ class studentpage extends associationpage {
         $stu = new student($stuid); // TBD: $stuid
         //$stu->id = $stuid;
         //$stu->load();
-        $user = new user($stu->userid); // TBD
+        /* *** TBD: following doesn't work ???
+        $user = new user($stu->userid);
+        $user->load();
+        **** */
+        $user = $DB->get_record(user::TABLE, array('id' => $stu->userid));
         $sparam = new stdClass;
         $sparam->name = fullname($user);
-        if (md5($stuid) != $confirm) { // TBD
+        if (md5($stuid) != $confirm) {
             echo cm_error(get_string('invalidconfirm', self::LANG_FILE));
         } else {
             $status = $stu->delete();
@@ -161,7 +166,8 @@ class studentpage extends associationpage {
                 echo cm_error(get_string('studentunenrolled', self::LANG_FILE, $sparam));
             }
         }
-        $this->display('default'); // do_default()
+        $this->display('default'); // TBD: redirect??? Missing blocks on page
+            // ... but then we'd lose the student[not]unenrolled message!
     }
 
     function do_currcourse_edit() {
@@ -223,7 +229,7 @@ class studentpage extends associationpage {
                 $newstu = $this->build_student($uid, $classid, $user);
                 $pmclass = new pmclass($classid);
                 $pmclass->load(); // TBD
-                error_log("studentpage::attempt_enrol({$classid}, users): max_students = {$pmclass->maxstudents}  tot_enrolled = ". $newstu->count_enroled());
+                //error_log("studentpage::attempt_enrol({$classid}, users): max_students = {$pmclass->maxstudents}  tot_enrolled = ". $newstu->count_enroled());
                 if($newstu->completestatusid != STUSTATUS_NOTCOMPLETE || empty($pmclass->maxstudents) || $pmclass->maxstudents > $newstu->count_enroled()) {
                     $status = $newstu->add();
                 } else {
@@ -244,7 +250,7 @@ class studentpage extends associationpage {
         if(!empty($waitlist)) {
             $this->get_waitlistform($waitlist);
         } else {
-            $this->display('add'); // do_default() TBD???
+            $this->display_add(); // TBD: redirect???
         }
     }
 
@@ -470,7 +476,7 @@ class studentpage extends associationpage {
             }
         }
 
-        $this->display('default'); // do_default()
+        $this->display('default'); // TBD: redirect? missing blocks on page?
     }
 
     /**

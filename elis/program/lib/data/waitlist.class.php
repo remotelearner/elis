@@ -216,7 +216,9 @@ class waitlist extends elis_data_object {
      */
     public function enrol() {
         global $CFG;
+        $id      = $this->id;
         $classid = $this->classid;
+        $userid  = $this->userid;
         $this->delete(); // $this->data_delete_record()
 
         $class = new pmclass($classid);
@@ -228,7 +230,7 @@ class waitlist extends elis_data_object {
         $student->add();
 
         if ($courseid) {
-            $course = $this->_db->get_record('course', array('id' => $this->id));
+            $course = $this->_db->get_record('course', array('id' => $id));
             // the elis plugin is treated specially
             if ($course->enrol != 'elis') {
                 // send the user to the Moodle enrolment page
@@ -250,7 +252,7 @@ class waitlist extends elis_data_object {
         }
 
         // TBD: $user = cm_get_moodleuser($this->userid);
-        $cuser = new user($this->userid);
+        $cuser = new user($userid);
         $user = $cuser->get_moodleuser();
         $from = get_admin();
 

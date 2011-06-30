@@ -59,6 +59,7 @@ class instructorpage extends associationpage {
     }
 
     function do_delete() { // action_confirm
+        global $DB;
         $insid = required_param('association_id', PARAM_INT);
         $confirm = optional_param('confirm', null, PARAM_CLEAN);
         if ($confirm == null) {
@@ -67,12 +68,12 @@ class instructorpage extends associationpage {
         }
 
         $ins = new instructor($insid);
-        $event_object = $this->_db->get_record(instructor::TABLE, array('id' => $insid));
-
+        $ins->load(); // TBD
+        //$event_object = $DB->get_record(instructor::TABLE, array('id' => $insid));
         if (md5($insid) != $confirm) {
             echo cm_error(get_string('invalidconfirm', self::LANG_FILE));
         } else {
-            $user = new user($ins->userid); // TBD: $event_object->userid
+            $user = $DB->get_record(user::TABLE, array('id' => $ins->userid)); // TBD: new user( $ins->userid or $event_object->userid ) didn't work???
             $user->name = fullname($user);
             $status = $ins->delete();
           /* **** no return code from delete()
@@ -84,7 +85,8 @@ class instructorpage extends associationpage {
                 echo cm_error(get_string('instructor_deleted', self::LANG_FILE, $user));
             }
         }
-        $this->display('default'); // $this->action_default();
+        $this->display('default'); // TBD: redirect??? Missing blocks on page
+            // ... but then we'd lose the instructor_deleted message!
     }
 
     function do_add() {
@@ -146,15 +148,6 @@ class instructorpage extends associationpage {
 
                     $newins = new instructor($insrecord);
                     $status = $newins->save();
-                  /* **** no return code from ->save()
-                    if ($status !== true) {
-                        if (!empty($status->message)) {
-                            echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $status));
-                        } else {
-                            echo cm_error(get_string('record_not_created', self::LANG_FILE));
-                        }
-                    }
-                  **** */
                 }
             }
         }
@@ -188,11 +181,6 @@ class instructorpage extends associationpage {
 
         $ins = new instructor($insrecord);
         $status = $ins->save(); // WAS: $ins->data_update_record()
-      /* **** no return code from ->save()
-        if ($status !== true) {
-            echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $status));
-        }
-      **** */
 
         $this->display('default'); // $this->action_default();
     }
@@ -293,9 +281,6 @@ class instructorpage extends associationpage {
                 //$table->data[] = $newarr;
             }
             if (!empty($newarr)) {
-                //$page_params['alpha'] = $alpha;
-                //unset($page_params['sort']);
-                //unset($page_params['dir']);
                 $table = new association_page_table($newarr, $columns, &$this);
             }
         }
@@ -349,13 +334,14 @@ class instructorpage extends associationpage {
      */
     function get_delete_form($insid) {
         global $DB;
-        $ins = new instructor($insid); // TBD ???
+        $ins = new instructor($insid);
+        $ins->load(); // TBD: no user name w/o ???
         $url = 'index.php'; // TBD: '/elis/program/index.php'
         $user = $DB->get_record(user::TABLE, array('id' => $ins->userid)); // TBD: new user($ins->userid);
         $user->name = fullname($user);
         $message = get_string('confirm_delete_instructor', self::LANG_FILE, $user);
         $optionsyes = array('s' => 'ins', 'section' => 'curr', 'id' => $ins->classid,
-                            'action' => 'confirm', 'association_id' => $insid, 'confirm' => md5($insid));
+                            'action' => 'delete', 'association_id' => $insid, 'confirm' => md5($insid));
         $optionsno = array('s' => 'ins', 'section' => 'curr', 'id' => $ins->classid,
                            /* 'search' => $ins->pmclass->idnumber */); // TBD???
 
