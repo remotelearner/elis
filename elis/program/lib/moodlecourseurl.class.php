@@ -50,7 +50,7 @@ class moodlecourseurl {
     var $_referenceId;
 
     function __construct() {
-        $this->_templateType = get_string('moodlecourseurlclassname', 'elis_program');
+        $this->_templateType = 'moodlecourseurl';
         $this->_templateTypeString = get_string('moodlecourseurl', 'elis_program');
         $this->_referenceTable =  'course';
     }
