@@ -129,8 +129,7 @@ class coursetemplate extends elis_data_object {
 
         parent::save();
 
-        // TO-DO: put proper update code here
-
+        // TO-DO: not sure if anything is actually needed here from data_update_record()
     }
 
 	public static function delete_for_course($id) {

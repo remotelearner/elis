@@ -34,7 +34,6 @@ require_once elispm::lib('moodlecourseurl.class.php');
 
 //require_once CURMAN_DIRLOCATION . '/lib/rollover/sharelib.php';     // missing
 
-//define ('CLSMDLTABLE', 'crlm_class_moodle');
 define ('CLSMDLENROLAUTO', 0);          // Automatically assign roles in Moodle course.
 define ('CLSMDLENROLCHOICE', 1);        // Allow user to choose at time of assignment.
 
@@ -55,37 +54,6 @@ class classmoodlecourse extends data_object_with_custom_fields {
     protected $_dbfield_enrolplugin;
     protected $_dbfield_timemodified;
 
-    /**
-     * Contructor.
-     *
-     * @param $classmoodlecoursedata int/object/array The data id of a data record or data elements to load manually.
-     *
-     */
-//     function classmoodlecourse($classmoodlecoursedata = false) {
-//         parent::datarecord();
-
-//         $this->set_table(CLSMDLTABLE);
-//         $this->add_property('id', 'int');
-//         $this->add_property('classid', 'int');
-//         $this->add_property('moodlecourseid', 'int');
-//         $this->add_property('siteconfig', 'string');
-//         $this->add_property('enroltype', 'int');
-//         $this->add_property('enrolplugin', 'string');
-//         $this->add_property('timemodified', 'int');
-
-//         if (is_numeric($classmoodlecoursedata)) {
-//             $this->data_load_record($classmoodlecoursedata);
-//         } else if (is_array($classmoodlecoursedata)) {
-//             $this->data_load_array($classmoodlecoursedata);
-//         } else if (is_object($classmoodlecoursedata)) {
-//             $this->data_load_array(get_object_vars($classmoodlecoursedata));
-//         }
-
-//         if (!empty($this->classid)) {
-//             $this->class = new cmclass($this->classid);
-//         }
-//     }
-
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('course', 'elis_program');
     }
@@ -99,7 +67,6 @@ class classmoodlecourse extends data_object_with_custom_fields {
     //  DATA FUNCTIONS:                                                //
     //                                                                 //
     /////////////////////////////////////////////////////////////////////
-
 
     /**
      * Enrol the instructors associated with the class into the attached Moodle
@@ -115,7 +82,6 @@ class classmoodlecourse extends data_object_with_custom_fields {
             return false;
         }
 
-        /* TO-DO: re-enable once instructors is ready
         $ins = new instructor();
 
         if (elis::$config->elis_program->default_instructor_role && $instructors = $ins->get_instructors($this->classid)) {
@@ -126,8 +92,6 @@ class classmoodlecourse extends data_object_with_custom_fields {
 
             /// This has to be put here in case we have a site config reload.
             $CFG    = $GLOBALS['CFG'];
-            // TO-DO: how should this be migrated?
-            $CURMAN = $GLOBALS['CURMAN'];
             $db     = $GLOBALS['db'];
 
             if (!$context = get_context_instance(CONTEXT_COURSE, $this->moodlecourseid)) {
@@ -154,20 +118,19 @@ class classmoodlecourse extends data_object_with_custom_fields {
 
                 /// If we have a vald Moodle user account, apply the role.
                 if (!empty($muser->id)) {
-                    role_assign(elis::$config->elis_program->default_instructor_role, $muser->id, 0, $context->id, 0, 0, 0, 'manual');
+                    // TO-DO: re-enable once roles are ready
+                    //role_assign(elis::$config->elis_program->default_instructor_role, $muser->id, 0, $context->id, 0, 0, 0, 'manual');
                 }
             }
 
-        /// Reset $CFG object.
+            /// Reset $CFG object.
             if (!empty($this->siteconfig)) {
                 moodle_load_config($cfgbak->dirroot . '/config.php');
             }
         }
-        */
 
         return true;
     }
-
 
     /**
      * Enrol the students associated with the class into the attached Moodle
@@ -193,8 +156,6 @@ class classmoodlecourse extends data_object_with_custom_fields {
 
             /// This has to be put here in case we have a site config reload.
             $CFG    = $GLOBALS['CFG'];
-            // TO-DO: how should this be migrated?
-            $CURMAN = $GLOBALS['CURMAN'];
             $db     = $GLOBALS['db'];
 
             $role = get_default_course_role($this->moodlecourseid);
@@ -237,16 +198,13 @@ class classmoodlecourse extends data_object_with_custom_fields {
     }
 }
 
-
 /// Non-class supporting functions. (These may be able to replaced by a generic container/listing class)
-
 
 /**
  * Load a config file from another local Moodle instance and set the database
  * values in the $CFG global and initializing the new ADODB database connection.
  *
  * @uses $CFG
- * @uses $CURMAN
  * @uses $db
  * @param string $file    The full system path to the config.php file.
  * @param bool   $justroot Just get and set the wwwroot value, don't actually reset the
@@ -300,7 +258,7 @@ function moodle_load_config($file, $justroot = false) {
 
         require_once ($CFG->libdir . '/adodb/adodb.inc.php');
 
-    /// Initialize the new DB connection.
+        /// Initialize the new DB connection.
         $db->Disconnect();
         unset($db);
         $db = &ADONewConnection($CFG->dbtype);
@@ -320,16 +278,12 @@ function moodle_load_config($file, $justroot = false) {
             //$this->_db = database_factory(CURMAN_APPPLATFORM);
             //$this->_db = database_factory('airtran');
 
-            // TO-DO: how should this be migrated?
-            $GLOBALS['CURMAN'] = $CURMAN;
-
             $return = true;
         }
     }
 
     return $return;
 }
-
 
 /**
  * Return the $CFG->wwwroot value for the specific Moodle site.
@@ -348,7 +302,6 @@ function moodle_get_wwwroot($siteconfig = '') {
     return moodle_load_config($siteconfig, true);
 }
 
-
 /**
  * Return the 'fullname' for the specific Moodle site.
  *
@@ -356,7 +309,7 @@ function moodle_get_wwwroot($siteconfig = '') {
  * @param string $siteconfig The full system path to the config.php file (optional).
  * @return string The 'fullname' value for the site course.
  */
- function moodle_get_sitename($siteconfig = '') {
+function moodle_get_sitename($siteconfig = '') {
     global $CFG, $DB;
 
     $sitename = '';
@@ -364,8 +317,6 @@ function moodle_get_wwwroot($siteconfig = '') {
 
     if (!empty($siteconfig)) {
         moodle_load_config($siteconfig);
-        // TO-DO: how should this be migrated?
-        $CURMAN = $GLOBALS['CURMAN'];
     }
 
     $sitename = $DB->get_field('course', 'fullname', array('id' => SITEID));
@@ -393,8 +344,6 @@ function moodle_get_topcatid($siteconfig = '') {
 
     if (!empty($siteconfig)) {
         moodle_load_config($siteconfig);
-        // TO-DO: how should this be migrated?
-        $CURMAN = $GLOBALS['CURMAN'];
     }
 
     $catid = $DB->get_field('course_categories', 'id', array('parent' => '0'));
@@ -438,7 +387,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
             $temp->data_load_record($cls->courseid);
             // no template defined, so do nothing
             if (empty($temp->id) || empty($temp->location)) {
-                print_error('notemplate', 'block_curr_admin');
+                print_error('notemplate', 'elis_program');
             }
             $classname  = $temp->templateclass;
 
@@ -461,7 +410,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
         );
 
         $clsmdl = new classmoodlecourse($newrec);
-        $result = ($clsmdl->data_insert_record() === true);
+        $result = ($clsmdl->save() === true);
 
     } else {
         $clsmdl = new classmoodlecourse($clsmdl->id);
@@ -491,7 +440,6 @@ function moodle_get_classes() {
 
     return $DB->get_records_sql($sql);
 }
-
 
 /**
  * Get the Moodle course ID for a specific class ID.
