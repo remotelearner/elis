@@ -105,106 +105,9 @@ class student extends elis_data_object {
 }
 ';
 
-    /**
-     * Constructor.
-     *
-     * @param $studentdata int/object/array The data id of a data record or data elements to load manually.
-     * @param $classdata object Optional cmclass object to load into the structure.
-     * @param $complelements array Optional array of completion elements associated with the class.
-     *
-     */
-/* **** disable constructor ****
-    function __construct($studentdata=false, $classdata=false, $compelements=false) {
-        global $CURMAN;
-
-        parent::datarecord();
-
-        $this->set_table(STUTABLE);
-        $this->add_property('id', 'int');
-        $this->add_property('classid', 'int', true);
-        $this->add_property('userid', 'int', true);
-        $this->add_property('enrolmenttime', 'int');
-        $this->add_property('completetime', 'int');
-        $this->add_property('endtime', 'int');
-        $this->add_property('completestatusid', 'int');
-        $this->completestatusid = key(student::$completestatusid_values);
-        $this->add_property('grade', 'int');
-        $this->add_property('credits', 'int');
-        $this->add_property('locked', 'int');
-
-        if (is_numeric($studentdata)) {
-            $this->data_load_record($studentdata);
-        } else if (is_array($studentdata)) {
-            $this->data_load_array($studentdata);
-        } else if (is_object($studentdata)) {
-            $this->data_load_array(get_object_vars($studentdata));
-        }
-
-        $this->load_cmclass($classdata, $compelements);
-
-        if (!empty($this->userid)) {
-            $this->user = new user($this->userid);
-        } else {
-            $this->user = new user();
-        }
-    }
-**** */
-
     function is_available() { // TBD: Move to parent class or library with class as param?
         return $this->_db->get_manager()->table_exists(self::TABLE);
     }
-
-    /**
-     *  @param $classdata int/object Optional id, or cmclass object to load.
-     *  @param $compelements array Optional array of completion elements associated with the class.
-     *
-     */
-/* **** function only used in disabled constructor ****
-    function load_cmclass($classdata=false, $compelements=false) {
-
-        if ($classdata !== false) {
-            if (is_int($classdata) || is_numeric($classdata)) {
-                $this->classid = $classdata;
-                $this->pmclass = null;
-            } else if (is_object($classdata) && (get_class($classdata) == 'cmclass')) {
-                $this->classid = $classdata->id;
-                $this->pmclass = $classdata;
-            }
-        }
-
-        if (!empty($this->classid)) {
-
-            if (empty($this->pmclass)) {
-                $this->pmclass = new pmclass($this->classid);
-            }
-
-            /// Load up any completion and grade elements
-            if (isset($this->pmclass->course)) {
-
-                if ($compelements === false) {
-                    $compelements = $this->pmclass->course->get_completion_elements();
-                }
-                $select ='classid = ? AND userid = ? ';
-                $grades = $this->_db->get_records_select
-                            (student_grade::TABLE, $select, array($this->classid, $this->userid),
-                             '', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
-                $this->grades = array();
-
-                if (!empty($compelements)) {
-                    foreach ($compelements as $compelement) {
-                        if (isset($grades[$compelement->id])) {
-                            $this->grades[$compelement->id] = new student_grade($grades[$compelement->id]);
-                        } else {
-                            $this->grades[$compelement->id] = new student_grade();
-                        }
-                    }
-                }
-            }
-        } else {
-            $this->pmclass = new pmclass();
-        }
-    }
-**** */
 
     /**
      * Perform all actions to mark this student record complete.
@@ -2167,48 +2070,6 @@ class student_grade extends elis_data_object {
     protected $_dbfield_locked;
     protected $_dbfield_timegraded;
     protected $_dbfield_timemodified;
-
-    /**
-     * Contructor.
-     *
-     * @param $studentdata int/object/array The data id of a data record or data elements to load manually.
-     *
-     */
-/* **** disable constructor ****
-    function student_grade($sgradedata=false) {
-        $this->set_table(GRDTABLE);
-        $this->add_property('id', 'int');
-        $this->add_property('classid', 'int');
-        $this->add_property('userid', 'int');
-        $this->add_property('completionid', 'int');
-        $this->add_property('grade', 'int');
-        $this->add_property('locked', 'int');
-        $this->add_property('timegraded', 'int');
-        $this->add_property('timemodified', 'int');
-
-        $this->completestatusid_values = array(
-            STUSTATUS_NOTCOMPLETE => 'Not Completed',
-            STUSTATUS_FAILED      => 'Failed',
-            STUSTATUS_PASSED      => 'Passed'
-        );
-
-        $this->_editstyle = '
-.attendanceeditform input,
-.attendanceeditform textarea {
-    margin: 0;
-    display: block;
-}
-        ';
-
-        if (is_numeric($sgradedata)) {
-            $this->data_load_record($sgradedata);
-        } else if (is_array($sgradedata)) {
-            $this->data_load_array($sgradedata);
-        } else if (is_object($sgradedata)) {
-            $this->data_load_array(get_object_vars($sgradedata));
-        }
-    }
-**** */
 
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
