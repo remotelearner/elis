@@ -1066,8 +1066,7 @@ $string['onenroledlist'] = 'You are currently enrolled';
 $string['onpassed'] = 'You passed this course';
 $string['onfailed'] = 'You failed this course';
 
-$string['incomplete_course_subject'] = 'Class not completed';
-$string['incomplete_course_message'] = 'You have not completeed the class $a before the end date';
+$string['incomplete_course_message'] = 'You have not completed the class {$a} before the end date';
 
 $string['interfacesettings'] = 'Interface Settings';
 $string['time_format_12h'] = 'Display time selection in a 12 hour format';

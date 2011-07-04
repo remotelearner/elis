@@ -79,7 +79,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field = new XMLDBField('frequency');
         $field->setAttributes(XMLDB_TYPE_CHAR, '64', NULL, XMLDB_NOTNULL, NULL, NULL, NULL, '0h, 0d, 0w, 0m, 0y', 'timetocomplete');
         $result = $result && $dbmanager->add_field($table, $field);
-        upgrade_block_savepoint($result 2009010103, 'curr_admin');
+        upgrade_block_savepoint($result, 2009010103, 'curr_admin');
     }
 
     if ($oldversion < 2009010104) {
@@ -942,7 +942,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         foreach ($rs as $rec) {
             get_context_instance($ctxlvl, $rec->id);
         }
-        $rs->close
+        $rs->close();
 
         // sync profile fields
         $fields = field::get_for_context_level($ctxlvl);
