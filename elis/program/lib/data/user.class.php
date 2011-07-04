@@ -125,29 +125,6 @@ class user extends data_object_with_custom_fields {
     protected $_dbfield_timemodified;
     protected $_dbfield_inactive;
 
-    /**
-     * Contructor.
-     */
-    /*
-      FIXME: add support for custom fields
-    function __construct($src=false, $field_map=null, array $associations=array(), moodle_database $database=null) {
-        parent::datarecord($src, $field_map, $associations, $database);
-
-        if (!empty($this->id)) {
-            /// Load any other data we may want that is associated with the id number...
-            // custom fields
-            $level = context_level_base::get_custom_context_level('user', 'elis_program');
-            if ($level) {
-                $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
-                $fielddata = $fielddata ? $fielddata : array();
-                foreach ($fielddata as $name => $value) {
-                    $this->{"field_{$name}"} = $value;
-                }
-            }
-        }
-    }
-    */
-
     static $delete_is_complex = true;
 
     protected function get_field_context_level() {
@@ -211,17 +188,6 @@ class user extends data_object_with_custom_fields {
         if(!empty($data->id_same_user)) {
             $data->username = $data->idnumber;
         }
-
-        /**
-        $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'elis_program'));
-        $fields = $fields ? $fields : array();
-        foreach ($fields as $field) {
-            $fieldname = "field_{$field->shortname}";
-            if (isset($data->$fieldname)) {
-                $this->$fieldname = $data->$fieldname;
-            }
-        }
-        */
 
         $this->_load_data_from_record($data, true);
     }
