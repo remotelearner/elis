@@ -98,8 +98,10 @@ function cm_get_param($param, $default = false) {
  * @return string The formatted message.
  */
 function cm_error($message) {
+    //global $OUTPUT;
     /// Using Moodle...
     return notify($message, 'notifyproblem', 'center', true);
+    //return $OUTPUT->box($message, 'errorbox');
 }
 
 /**

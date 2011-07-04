@@ -30,6 +30,7 @@ require_once elispm::file('form/selectionform.class.php');
 class waitlistaddform extends cmform {
 
     public function definition() {
+        global $DB;
         parent::definition();
 
         $mform = &$this->_form;
@@ -58,12 +59,9 @@ class waitlistaddform extends cmform {
                     $enrol_options[] = $mform->createElement('radio', 'enrol[' . $student->userid . ']', '', get_string('over_enrol', 'elis_program'), 2);
                 }
 
-                $user = new user($student->userid);
-                $name = new object();
-                $name->name = $user->__toString(); // to_string()
-                $name->username = $user->username;
-
-                $mform->addGroup($enrol_options, 'options[' . $student->userid . ']', get_string('add_to_waitinglist', 'elis_program', $name), '', false);
+                $user = $DB->get_record(user::TABLE, array('id' => $student->userid));
+                $user->name = fullname($user);
+                $mform->addGroup($enrol_options, 'options[' . $student->userid . ']', get_string('add_to_waitinglist', 'elis_program', $user), '', false);
             }
         } else if(!empty($this->_customdata['student_ids'])) {
             $student_id = $this->_customdata['student_ids'];

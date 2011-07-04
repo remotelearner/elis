@@ -201,8 +201,6 @@ abstract class selectionpage extends pm_page { // TBD
         }
 
         if (!$this->is_bare()) {
-            echo '</div>'; // from above
-
             if ($count) {
                 $sparam1 = new stdClass;
                 $sparam1->num = '<span id="numselected">0</span>';
@@ -219,7 +217,6 @@ abstract class selectionpage extends pm_page { // TBD
             if ($count) {
                 $form->display();
             }
-            echo '</div></div>';
         }
     }
 
