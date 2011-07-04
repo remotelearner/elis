@@ -70,7 +70,7 @@ abstract class data_filter {
      *
      * @param string $prefix the table prefix to use
      */
-    protected function _get_unique_name($prefix='table') {
+    protected static function _get_unique_name($prefix='table') {
         self::$_prefix_num = self::$_prefix_num + 1;
         $num = self::$_prefix_num;
         return "_{$prefix}_{$num}";

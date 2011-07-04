@@ -256,10 +256,12 @@ class elis_data_object {
      */
     public function duplicate(array $options) {
         $objs = array('_errors' => array());
+        $this->load();
         $classname = get_class($this);
         $clone = new $classname($this);
         $clone->_dbfield_id = self::$_unset;
-        if (!$clone->save()) {
+        $clone->save();
+        if (!$clone->id) {
             $objs['_errors'][] = get_string('failed_duplicate', 'elis_cm', $this);
             return $objs;
         }
