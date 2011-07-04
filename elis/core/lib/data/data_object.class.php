@@ -563,7 +563,7 @@ class elis_data_object {
             if (isset($association['idfield'])) {
                 if (!isset($this->_associated_objects[$name])) {
                     // we don't have a cached copy, so load it and cache
-                    $id_field_name = self::FIELD_PREFIX.$association['idfield'];
+                    $id_field_name = $association['idfield'];
                     $this->_associated_objects[$name] = new $classname($this->$id_field_name, null, array(), false, array(), $this->_db);
                 }
                 return $this->_associated_objects[$name];
