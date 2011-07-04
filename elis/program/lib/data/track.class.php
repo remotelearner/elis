@@ -668,6 +668,10 @@ class trackassignment extends elis_data_object {
                                                                 'trackid'=> $this->trackid));
     }
 
+    public function set_from_data($data) {
+        $this->_load_data_from_record($data, true);
+    }
+
     /**
      * Assign a class to a track, this function also creates
      * and assigns the class to the curriculum default track
@@ -888,14 +892,13 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
                            $alpha='', $curriculumid = 0, $parentclusterid = 0, $contexts = null, $userid = 0) {
     global $USER, $DB;
 
-    //$LIKE = $this->_db->sql_compare();
     $params = array();
     $NAMESEARCH_LIKE = $DB->sql_like('trk.name', ':search_namesearch');
     $ALPHA_LIKE = $DB->sql_like('trk.name', ':search_alpha');
 
     $select = 'SELECT trk.*, cur.name AS parcur, (SELECT COUNT(*) ' .
               'FROM {' . trackassignment::TABLE . '} '.
-              "WHERE trackid = 'trk.id' ) as class ";
+              "WHERE trackid = trk.id ) as class ";
     $tables = 'FROM {' . track::TABLE . '} trk '.
               'JOIN {' .curriculum::TABLE . '} cur ON trk.curid = cur.id ';
     $join   = '';
@@ -905,7 +908,6 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        //$where[] = "(trk.name $LIKE  '%$namesearch%')";
         $where[] = $NAMESEARCH_LIKE;
         $params['search_namesearch'] = "%{$namesearch}%";
     }
@@ -928,10 +930,6 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
     }
 
     if ($contexts !== null) {
-        //$where[] = $contexts->sql_filter_for_context_level('trk.id', 'track');
-        /* TODO: Causes fatal error right now
-        $filter_object = $contexts->filter_for_context_level('trk.id', 'track');
-        $where[] = $filter_object->get_sql();*/
         $filter_object = $contexts->get_filter('trk.id', 'track');
         $filter_sql = $filter_object->get_sql(false, 'trk');
         if (isset($filter_sql['where'])) {
@@ -950,8 +948,6 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
         $curriculum_context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol', $USER->id);
-        //$curriculum_filter_object = $curriculum_context->filter_for_context_level('trk.id', 'track');
-        //$curriculum_filter = $curriculum_filter_object->get_sql();
         $curriculum_filter_object = $curriculum_context->get_filter('trk.id', 'track');
         $curriculum_filter = $curriculum_filter_object->get_sql();
 

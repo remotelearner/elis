@@ -189,7 +189,7 @@ class associationpage extends pm_page {
             $this->after_cm_entity_add($obj);
             $target = $this->get_new_page(array('id' => $id), true); // TBD: 's' => ... && 'action' => 'default' || 'view' && 2nd param true???
             redirect($target->url, ucwords(get_class($obj)) .' '. $obj->id .
-                                   ' '.  get_string('saved') .'.');
+                                   ' '.  get_string('saved','elis_program') .'.');
         } else {
             $this->_form = $form;
             $this->display('add');

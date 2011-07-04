@@ -108,7 +108,7 @@ class trackassignmentpage extends associationpage {
         $clsid = required_param('clsid', PARAM_INT);
         $id = required_param('id', PARAM_INT);
 
-        $target = $this->get_new_page(array('action' => 'savenew', 'id' => $id, 'trackid' => $trackid, 'clsid' => $clsid));
+        $target = $this->get_new_page(array('action' => 'add', 'id' => $id, 'trackid' => $trackid, 'clsid' => $clsid));
 
         $form = new $this->form_class($target->url, array('trackid' => $trackid, 'classid' => $clsid));
 
