@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -42,23 +42,24 @@
 // using the functions defined in lib/ddllib.php
 
 function xmldb_block_curr_admin_upgrade($oldversion = 0) {
-    global $CFG, $THEME, $db;
+    global $CFG, $THEME, $DB;
+    require_once($CFG->dirroot . '/elis/program/lib/setup.php');
+    $dbmanager = $DB->get_manager();
 
     $result = true;
 
     if ($oldversion < 2009010102) {
         $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
 
-        if ($role = get_record('role', 'shortname', 'curriculumadmin')) {
+        if ($role = $DB->get_record('role', array('shortname' => 'curriculumadmin'))) {
             if ($role->name == 'Bundle Administrator') {
                 $role->name = 'Curriculum Administrator';
-                addslashes_object($role);
-                update_record('role', $role);
+                $DB->update_record('role', $role);
             }
         }
 
         if (!empty($role->id)) {
-            require_once dirname(__FILE__) . '/access.php';
+            require_once(dirname(__FILE__) . '/access.php');
 
             if (!empty($block_curr_admin_capabilities)) {
                 foreach ($block_curr_admin_capabilities as $capname => $caprules) {
@@ -66,17 +67,19 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                 }
             }
         }
+        upgrade_block_savepoint($result, 2009010102, 'curr_admin');
     }
 
     if ($oldversion < 2009010103) {
         $table = new XMLDBTable('crlm_curriculum');
         $field = new XMLDBField('timetocomplete');
         $field->setAttributes(XMLDB_TYPE_CHAR, '64', NULL, XMLDB_NOTNULL, NULL, NULL, NULL, '0h, 0d, 0w, 0m, 0y', 'timemodified');
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
 
         $field = new XMLDBField('frequency');
         $field->setAttributes(XMLDB_TYPE_CHAR, '64', NULL, XMLDB_NOTNULL, NULL, NULL, NULL, '0h, 0d, 0w, 0m, 0y', 'timetocomplete');
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result 2009010103, 'curr_admin');
     }
 
     if ($oldversion < 2009010104) {
@@ -91,7 +94,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         // PK and indexes
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('name_ix', XMLDB_INDEX_UNIQUE, array('name'));
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009010104, 'curr_admin');
     }
 
     if ($oldversion < 2009010105) {
@@ -107,7 +111,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         // PK and indexes
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('courseid_ix', XMLDB_INDEX_UNIQUE, array('courseid'));
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009010105, 'curr_admin');
     }
 
     if ($oldversion < 2009010106) {
@@ -124,7 +129,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         // PK and indexes
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('cluster_idx', XMLDB_INDEX_NOTUNIQUE, array('clusterid'));
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009010106, 'curr_admin');
     }
 
     if ($oldversion < 2009010108) {
@@ -143,7 +149,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         // PK and indexes
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('cluster_idx', XMLDB_INDEX_NOTUNIQUE, array('clusterid'));
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
 
         $table = new XMLDBTable('crlm_usercluster');
@@ -152,7 +158,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $f->setAttributes(XMLDB_TYPE_INTEGER, '1', null, true, null, null, null, 1, 'clusterid');
         $f->comment = 'Whether users should be autoenrolled in tracks associated with this cluster.';
 
-        $result = $result && add_field($table, $f);
+        $result = $result && $dbmanager->add_field($table, $f);
+        upgrade_block_savepoint($result, 2009010108, 'curr_admin');
     }
 
     if ($oldversion < 2009010109) {
@@ -172,7 +179,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addKeyInfo('mdl_currclasmood_clamoo_uix', XMLDB_KEY_UNIQUE, array('classid', 'moodlecourseid'));
 
     /// Launch create table for crlm_class_moodle
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009010109, 'curr_admin');
     }
 
     if ($oldversion < 2009010110) {
@@ -188,7 +196,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
 
         // PK and indexes
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009010110, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010112) {
@@ -211,7 +220,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addIndexInfo('event_inst_user_ix', XMLDB_INDEX_NOTUNIQUE, array('event', 'instance', 'userid'));
 
     /// Launch create table for crlm_notification_log
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009010112, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010113) {
@@ -221,7 +231,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('event', 'instance', 'userid'));
 
     /// Launch drop index event_inst_user_ix
-        $result = $result && drop_index($table, $index);
+        $result = $result && $dbmanager->drop_index($table, $index);
 
     /// Define index event_inst_user_ix (not unique) to be added to crlm_notification_log
         $table = new XMLDBTable('crlm_notification_log');
@@ -229,7 +239,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('userid', 'instance', 'event'));
 
     /// Launch add index event_inst_user_ix
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
+        upgrade_block_savepoint($result, 2009010113, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010114) {
@@ -251,7 +262,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         // PK and indexes
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('track_curr_idx', XMLDB_INDEX_NOTUNIQUE, array('curid'));
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
         $table = new XMLDBTable('crlm_track_class');
         $table->comment = 'Track class table';
@@ -270,7 +281,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addIndexInfo('track_classid_idx', XMLDB_INDEX_NOTUNIQUE, array('classid'));
         $table->addIndexInfo('track_courseid_idx', XMLDB_INDEX_NOTUNIQUE, array('courseid'));
 
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009010114, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010115) {
@@ -288,7 +300,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
 
     /// Launch create table for crlm_cluster_profile
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
 
     /// Define table crlm_cluster_assignments to be created
@@ -304,7 +316,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
 
     /// Launch create table for crlm_cluster_assignments
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009010115, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010116) {
@@ -312,25 +325,26 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
 
         $field = new XMLDBField('default');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0', 'autoenrol');
-        $result = $result && drop_field($table,$field);
+        $result = $result && $dbmanager->drop_field($table,$field);
 
         $field = new XMLDBField('defaulttrack');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0', 'autoenrol');
-        $result = $result && add_field($table,$field);
-
+        $result = $result && $dbmanager->add_field($table,$field);
+        upgrade_block_savepoint($result, 2009010116, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010117) {
     /// Remove obsolete job code tables if they exist.
         $table = new XMLDBTable('crlm_jobcode_list');
-        if (table_exists($table)) {
-            drop_table($table);
+        if ($dbmanager->table_exists($table)) {
+            $dbmanager->drop_table($table);
         }
 
         $table = new XMLDBTable('crlm_curriculum_jobcode');
-        if (table_exists($table)) {
-            drop_table($table);
+        if ($dbmanager->table_exists($table)) {
+            $dbmanager->drop_table($table);
         }
+        upgrade_block_savepoint($result, 2009010117, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010118) {
@@ -339,13 +353,14 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
 
         $field = new XMLDBField('defaulttrack');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0', 'autoenrol');
-        $result = $result && drop_field($table,$field);
+        $result = $result && $dbmanager->drop_field($table,$field);
 
     /// Adding defaulttrack column to table
         $table = new XMLDBTable('crlm_track');
         $field = new XMLDBField('defaulttrack');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0', 'enddate');
-        $result = $result && add_field($table,$field);
+        $result = $result && $dbmanager->add_field($table,$field);
+        upgrade_block_savepoint($result, 2009010118, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010119) {
@@ -356,21 +371,21 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '2', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0', 'curriculumid');
 
     /// Launch add field completed
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
 
     /// Define field completiontime to be added to crlm_curriculum_assignment
         $field = new XMLDBField('timecompleted');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0', 'completed');
 
     /// Launch add field completiontime
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
 
     /// Define field credits to be added to crlm_curriculum_assignment
         $field = new XMLDBField('credits');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0', 'timecompleted');
 
     /// Launch add field credits
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
 
     /// Define field locked to be added to crlm_curriculum_assignment
         $table = new XMLDBTable('crlm_curriculum_assignment');
@@ -378,28 +393,29 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '2', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0', 'credits');
 
     /// Launch add field locked
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
 
     /// Define key mdl_currcurrassi_usecur_uix (unique) to be dropped from crlm_curriculum_assignment
         $key = new XMLDBKey('mdl_currcurrassi_usecur_uix');
         $key->setAttributes(XMLDB_KEY_UNIQUE, array('userid', 'curriculumid'));
 
     /// Launch drop key mdl_currcurrassi_usecur_uix
-        $result = $result && drop_key($table, $key);
+        $result = $result && $dbmanager->drop_key($table, $key);
 
     /// Define index mdl_currcurrassi_usecurcom_ix (not unique) to be added to crlm_curriculum_assignment
         $index = new XMLDBIndex('mdl_currcurrassi_usecurcom_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('userid', 'curriculumid', 'completed'));
 
     /// Launch add index mdl_currcurrassi_usecurcom_ix
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
     /// Define index completed_ix (not unique) to be added to crlm_curriculum_assignment
         $index = new XMLDBIndex('completed_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('completed'));
 
     /// Launch add index completed_ix
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
+        upgrade_block_savepoint($result, 2009010119, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010120) {
@@ -410,18 +426,20 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '1', 'plugin');
 
     /// Launch add field autoenrol
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result, 2009010120, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010121) {
-        if (!record_exists('mnet_application', 'name', 'java')) {
+        if (!record_exists('mnet_application', array('name' => 'java'))) {
             $application = new stdClass();
             $application->name = 'java';
             $application->display_name = 'Java servlet';
             $application->xmlrpc_server_url = '/mnet/server';
             $application->sso_land_url = '/mnet/land.jsp';
-            $result = $result && insert_record('mnet_application', $application, false);
+            $result = $result && $DB->insert_record('mnet_application', $application, false);
         }
+        upgrade_block_savepoint($result, 2009010121, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010122) {
@@ -429,11 +447,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
 
         $field = new XMLDBField('requried');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0', 'courseid');
-        $result = $result && drop_field($table,$field);
-    }
-
-    if ($result && $oldversion < 2009010125) {
-        $result = $result && execute_sql('CREATE OR REPLACE VIEW `courseNforums` AS select `f`.`id` AS `forumid`,concat(`c`.`shortname`,_utf8\' | \',`f`.`name`) AS `courseNforumname` from (`mdl_forum` `f` join `mdl_course` `c` on((`c`.`id` = `f`.`course`))) order by `c`.`shortname`,`f`.`name`');
+        $result = $result && $dbmanager->drop_field($table,$field);
+        upgrade_block_savepoint($result, 2009010122, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010126) {
@@ -450,7 +465,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         // PK and indexes
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('cluster_idx', XMLDB_INDEX_NOTUNIQUE, array('clusterid'));
-        $result = $result && (table_exists($table) || create_table($table));
+        $result = $result && ($dbmanager->table_exists($table) || $dbmanager->create_table($table));
 
 
         $table = new XMLDBTable('crlm_cluster_track');
@@ -468,23 +483,26 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         // PK and indexes
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('cluster_idx', XMLDB_INDEX_NOTUNIQUE, array('clusterid'));
-        $result = $result && (table_exists($table) || create_table($table));
+        $result = $result && ($dbmanager->table_exists($table) || $dbmanager->create_table($table));
+        upgrade_block_savepoint($result, 2009010126, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010127) {
         // fix silly typos
         $newtable = new XMLDBTable('crlm_user_track');
         $oldtable = new XMLDBTable('clrm_user_track');
-        $result = $result && (table_exists($newtable) || rename_table($oldtable, 'crlm_user_track'));
+        $result = $result && ($dbmanager->table_exists($newtable) || $dbmanager->rename_table($oldtable, 'crlm_user_track'));
         $oldtable = new XMLDBTable('clrm_cluster_track');
-        $result = $result && (!table_exists($oldtable) || drop_table($oldtable));
+        $result = $result && (!$dbmanager->table_exists($oldtable) || $dbmanager->drop_table($oldtable));
         $oldtable = new XMLDBTable('clrm_cluster_curriculum');
-        $result = $result && (!table_exists($oldtable) || drop_table($oldtable));
+        $result = $result && (!$dbmanager->table_exists($oldtable) || $dbmanager->drop_table($oldtable));
+        upgrade_block_savepoint($result, 2009010127, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010128) {
-        require_once($CFG->dirroot . '/curriculum/lib/lib.php');
-        cm_migrate_moodle_users();
+        require_once(elispm::lib('lib.php'));
+        pm_migrate_moodle_users();
+        upgrade_block_savepoint($result, 2009010128, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010131) {
@@ -498,7 +516,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                         WHERE c.id IS NULL
                     )";
 
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
 
             $sql = "DELETE FROM {$CFG->prefix}crlm_cluster_curriculum
                     WHERE id IN (
@@ -508,7 +526,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                         WHERE c.id IS NULL
                     )";
 
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
 
             $sql = "DELETE FROM {$CFG->prefix}crlm_cluster_profile
                     WHERE id IN (
@@ -518,7 +536,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                         WHERE c.id IS NULL
                     )";
 
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
 
             $sql = "DELETE FROM {$CFG->prefix}crlm_cluster_track
                     WHERE id IN (
@@ -528,7 +546,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                         WHERE c.id IS NULL
                     )";
 
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
 
             $sql = "DELETE FROM {$CFG->prefix}crlm_usercluster
                     WHERE id IN (
@@ -538,38 +556,39 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                         WHERE c.id IS NULL
                     )";
 
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
         } else {
             $sql = "DELETE ca FROM {$CFG->prefix}crlm_cluster_assignments ca
                     LEFT JOIN {$CFG->prefix}crlm_cluster c ON c.id = ca.clusterid
                     WHERE c.id IS NULL";
 
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
 
             $sql = "DELETE cc FROM {$CFG->prefix}crlm_cluster_curriculum cc
                     LEFT JOIN {$CFG->prefix}crlm_cluster c ON c.id = cc.clusterid
                     WHERE c.id IS NULL";
 
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
 
             $sql = "DELETE cp FROM {$CFG->prefix}crlm_cluster_profile cp
                     LEFT JOIN {$CFG->prefix}crlm_cluster c ON c.id = cp.clusterid
                     WHERE c.id IS NULL";
 
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
 
             $sql = "DELETE ct FROM {$CFG->prefix}crlm_cluster_track ct
                     LEFT JOIN {$CFG->prefix}crlm_cluster c ON c.id = ct.clusterid
                     WHERE c.id IS NULL";
 
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
 
             $sql = "DELETE uc FROM {$CFG->prefix}crlm_usercluster uc
                     LEFT JOIN {$CFG->prefix}crlm_cluster c ON c.id = uc.clusterid
                     WHERE c.id IS NULL";
 
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
         }
+        upgrade_block_savepoint($result, 2009010131, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010133) {
@@ -579,7 +598,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0', 'autoenrol');
 
     /// Launch add field leader
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
 
     /// Define field leader to be added to crlm_usercluster
         $table = new XMLDBTable('crlm_usercluster');
@@ -587,7 +606,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0', 'autoenrol');
 
     /// Launch add field leader
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result, 2009010133, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010134) {
@@ -598,15 +618,16 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, null, null, null, null, '0', 'timemodified');
 
     /// Launch add field inactive
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result, 2009010134, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010137) {
-        $roleid = get_field('role', 'id', 'shortname', 'curriculumadmin');
+        $roleid = $DB->get_field('role', 'id', array('shortname' => 'curriculumadmin'));
 
         if (!empty($roleid)) {
             $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
-            require_once dirname(dirname(__FILE__)) . '/db/access.php';
+            require_once(dirname(__FILE__) . '/access.php');
 
             if (!empty($block_curr_admin_capabilities)) {
                 foreach ($block_curr_admin_capabilities as $capname => $caprules) {
@@ -614,37 +635,44 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                 }
             }
         }
+        upgrade_block_savepoint($result, 2009010137, 'curr_admin');
     }
 
     if($result && $oldversion < 2009010139) {
         global $CURMAN;
 
-        require_once ($CFG->dirroot.'/curriculum/lib/classmoodlecourse.class.php');
+        require_once(elispm::lib('data/classmoodlecourse.class.php'));
         $moodleclasses = moodle_get_classes();
 
         if (!empty($moodleclasses)) {
             foreach ($moodleclasses as $class) {
                 $context = get_context_instance(CONTEXT_COURSE, $class->moodlecourseid);
 
+                list($gradebookrolessql, $params) = $DB->get_in_or_equal(explode(',', $CFG->gradebookroles), SQL_PARAMS_NAMED, 'grbr0', false);
                 $sql = "DELETE cmce
-                    FROM {$CURMAN->db->prefix_table('user')} u
-                    JOIN {$CURMAN->db->prefix_table('role_assignments')} ra ON u.id = ra.userid
-                    JOIN {$CURMAN->db->prefix_table(STUTABLE)} cmce ON u.idnumber = cmce.user_idnumber
-                    WHERE ra.roleid NOT IN ({$CFG->gradebookroles})
+                    FROM {user} u
+                    JOIN {role_assignments} ra ON u.id = ra.userid
+                    JOIN {crlm_class_enrolment} cmce ON u.idnumber = cmce.user_idnumber
+                    WHERE ra.roleid {$gradebookrolessql}
                     AND ra.contextid " . get_related_contexts_string($context) .
                     "AND cmce.classid = {$class->classid}";
 
-                $result = $result && execute_sql($sql);
+                $params['classid'] = $class->classid;
+
+                $result = $result && $DB->execute($sql, $params);
             }
         }
+        upgrade_block_savepoint($result, 2009010139, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010140) {
-        delete_records('crlm_cluster_profile', 'fieldid', 0);
+        $DB->delete_records('crlm_cluster_profile', array('fieldid' => 0));
+        upgrade_block_savepoint($result, 2009010140, 'curr_admin');
     }
 
     if($result && $oldversion < 2009010141) {
         set_config('field_lock_idnumber', 'locked', 'auth/manual');
+        upgrade_block_savepoint($result, 2009010141, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010143) {
@@ -664,7 +692,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
 
     /// Launch create table for crlm_wait_list
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009010143, 'curr_admin');
     }
 
     if($result && $oldversion < 2009010145) {
@@ -673,7 +702,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field = new XMLDBField('enrolmenttime');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0');
 
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result, 2009010145, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010146) {
@@ -681,38 +711,40 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
 
         // Let's just assume that all non-Postgres DB's use the same syntax as MySQL and call it a day.
         if ($CFG->dbfamily == 'postgres') {
-            $sql = "UPDATE {$CFG->prefix}crlm_track_class
+            $sql = "UPDATE {crlm_track_class}
                        SET courseid = c.courseid
-                      FROM {$CFG->prefix}crlm_track_class tc, {$CFG->prefix}crlm_class c
+                      FROM {crlm_track_class} tc, {crlm_class} c
                      WHERE tc.classid = c.id AND tc.courseid = 0";
         } else {
-            $sql = "UPDATE {$CFG->prefix}crlm_track_class tc, {$CFG->prefix}crlm_class c
+            $sql = "UPDATE {crlm_track_class} tc, {crlm_class} c
                        SET tc.courseid = c.courseid
                      WHERE tc.classid = c.id AND tc.courseid = 0";
         }
 
-        $result = $result && execute_sql($sql);
+        $result = $result && $DB->execute($sql);
+        upgrade_block_savepoint($result, 2009010146, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010147) {
         // make sure all users have an idnumber
-        $users = get_records('crlm_user', 'idnumber', '');
+        $users = $DB->get_recordset('crlm_user', array('idnumber' => ''));
 
         foreach ($users as $user) {
-            $user = addslashes_recursive($user);
-            $mu = addslashes_recursive(get_record('user', 'username', $user->username));
+            $mu = $DB->get_record('user', array('username' => $user->username));
             if (empty($mu->idnumber)) {
                 $user->idnumber = $mu->idnumber = $mu->username;
-                update_record('user', $mu);
-                update_record('crlm_user', $user);
-            } else if (!get_record('crlm_user', 'idnumber', $mu->idnumber)) {
+                $DB->update_record('user', $mu);
+                $DB->update_record('crlm_user', $user);
+            } else if (!$DB->get_record('crlm_user', array('idnumber' => $mu->idnumber))) {
                 $user->idnumber = $mu->idnumber;
-                update_record('crlm_user', $user);
-            } else if (!get_record('crlm_user', 'idnumber', $user->username)) {
+                $DB->update_record('crlm_user', $user);
+            } else if (!$DB->get_record('crlm_user', array('idnumber' => $user->username))) {
                 $user->idnumber = $mu->idnumber;
-                update_record('crlm_user', $user);
+                $DB->update_record('crlm_user', $user);
             }
         }
+        $users->close();
+        upgrade_block_savepoint($result, 2009010147, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009010149) {
@@ -722,7 +754,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('clusterid'));
 
     /// Launch add index clusterid_idx
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
     /// Define index userid_idx (not unique) to be added to crlm_cluster_assignments
         $table = new XMLDBTable('crlm_cluster_assignments');
@@ -730,7 +762,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('userid'));
 
     /// Launch add index userid_idx
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
     /// Define index clusterid_idx (not unique) to be added to crlm_cluster_profile
         $table = new XMLDBTable('crlm_cluster_profile');
@@ -738,33 +770,23 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('clusterid'));
 
     /// Launch add index clusterid_idx
-        $result = $result && add_index($table, $index);
-    }
-
-    if ($result && $oldversion < 2009010151) {
-        $table = new XMLDBTable('crlm_curriculum');
-
-        $field = new XMLDBField('priority');
-        $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0');
-
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_index($table, $index);
+        upgrade_block_savepoint($result, 2009010149, 'curr_admin');
     }
 
     if($result && $oldversion < 2009010150) {
-        require_once (CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php');
+        require_once(elispm::lib('data/curriculumcourse.class.php'));
 
         $sql = "SELECT cp.id, cp.courseid, cc.curriculumid
-                FROM {$CFG->prefix}crlm_course_prerequisite cp
-                JOIN {$CFG->prefix}crlm_curriculum_course cc ON cc.id = cp.curriculumcourseid
+                FROM {crlm_course_prerequisite} cp
+                JOIN {crlm_curriculum_course} cc ON cc.id = cp.curriculumcourseid
                 WHERE cp.courseid NOT IN (
                     SELECT _cc.courseid
-                    FROM {$CFG->prefix}crlm_curriculum_course _cc
+                    FROM {crlm_curriculum_course} _cc
                     WHERE _cc.curriculumid = cc.curriculumid
                 )";
 
-        $students = get_records_sql($sql);
-
-        $retval = 0;
+        $students = $DB->get_recordset_sql($sql);
 
         foreach($students as $student) {
             $data = new object();
@@ -774,10 +796,20 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
 
             $currprereq = new curriculumcourse($data);
 
-            $retval = $result && $currprereq->add();
+            $results = $result && $currprereq->add();
         }
+        $students->close();
+        upgrade_block_savepoint($result, 2009010150, 'curr_admin');
+    }
 
-        $results = $retval;
+    if ($result && $oldversion < 2009010151) {
+        $table = new XMLDBTable('crlm_curriculum');
+
+        $field = new XMLDBField('priority');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0');
+
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result, 2009010151, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009103001) {
@@ -786,7 +818,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field = new XMLDBField('priority');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0');
 
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
 
     /// Define table context_levels to be created
         $table = new XMLDBTable('context_levels');
@@ -804,7 +836,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addIndexInfo('component', XMLDB_INDEX_NOTUNIQUE, array('component'));
 
     /// Launch create table for context_levels
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009103001, 'curr_admin');
     }
 
     if ($result && $oldversion < 2009103003)  {
@@ -835,7 +868,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addIndexInfo('shortname_idx', XMLDB_INDEX_NOTUNIQUE, array('shortname'));
 
     /// Launch create table for crlm_field
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
     /// Define table crlm_field_category to be created
         $table = new XMLDBTable('crlm_field_category');
@@ -849,7 +882,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
 
     /// Launch create table for crlm_field_category
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
     /// Define table crlm_field_contextlevel to be created
         $table = new XMLDBTable('crlm_field_contextlevel');
@@ -863,7 +896,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
 
     /// Launch create table for crlm_field_contextlevel
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
     /// Define table crlm_field_data to be created
         $table = new XMLDBTable('crlm_field_data');
@@ -881,14 +914,9 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addIndexInfo('context_idx', XMLDB_INDEX_NOTUNIQUE, array('contextid'));
 
     /// Launch create table for crlm_field_data
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
+        upgrade_block_savepoint($result, 2009103003, 'curr_admin');
     }
-
-    //if ($result && $oldversion < 2010040501) {
-    //    require_once($CFG->dirroot . '/blocks/curr_admin/lib.php');
-    //    $result = $result && create_views(); // create with default prefix
-    //    $result = $result && create_views(''); // create with no prefix
-    //}
 
     if ($result && $oldversion < 2010040501) {
         $table = new XMLDBTable('crlm_field_map');
@@ -904,79 +932,55 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
 
     /// Launch create table for crlm_field_data
-        $result = $result && create_table($table);
-    }
+        $result = $result && $dbmanager->create_table($table);
 
-    if ($result && $oldversion < 2010040501) {
-        require_once "{$CFG->dirroot}/curriculum/lib/customfield.class.php";
+        require_once(elis::lib('data/customfield.class.php'));
         // make sure all ELIS users have a context
         update_capabilities('block/curr_admin');
         $ctxlvl = context_level_base::get_custom_context_level('user', 'block_curr_admin');
         $rs = get_recordset('crlm_user');
-        while($rec = rs_fetch_next_record($rs)){
+        foreach ($rs as $rec) {
             get_context_instance($ctxlvl, $rec->id);
         }
+        $rs->close
 
         // sync profile fields
         $fields = field::get_for_context_level($ctxlvl);
         $fields = $fields ? $fields : array();
-        require_once($CFG->dirroot . '/curriculum/plugins/moodle_profile/custom_fields.php');
+        require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
         foreach ($fields as $field) {
             $fieldobj = new field($field);
-            $sync_profile_field_with_moodle();
+            sync_profile_field_with_moodle($fieldobj);
         }
-    }
 
-    if($result && $oldversion < 2010040501) {
-
-        require_once($CFG->dirroot . '/curriculum/lib/notifications.php');
+        require_once(elispm::lib('notifications.php'));
 
         if(!empty($CFG->coursemanager)) {
 
             $context_course = CONTEXT_COURSE;
 
-            $sql = "SELECT role_assignments.* FROM {$CFG->prefix}role_assignments role_assignments
-                    JOIN {$CFG->prefix}context context
+            list($managerrolessql, $params) = $DB->get_in_or_equal(explode(',', $this->gradebookroles), SQL_PARAMS_NAMED, 'mgr0', false);
+
+            $sql = "SELECT role_assignments.* FROM {role_assignments} role_assignments
+                    JOIN {context} context
                     ON role_assignments.contextid = context.id
-                    WHERE role_assignments.roleid IN ({$CFG->coursemanager})
+                    WHERE role_assignments.roleid {$managerrolessql}
                     AND context.contextlevel = {$context_course}";
 
-            if($records = get_records_sql($sql)) {
-                foreach($records as $record) {
-                    cm_assign_instructor_from_mdl($record);
-                }
+            $records = $DB->get_recordset_sql($sql, $params);
+            foreach($records as $record) {
+                cm_assign_instructor_from_mdl($record);
             }
+            $records->close();
 
         }
+        upgrade_block_savepoint($result, 2010040501, 'curr_admin');
     }
-
-    if($result && $oldversion < 2010063001) {
-        $table = new XMLDBTable('crlm_curriculum_assignment');
-        $field = new XMLDBField('user_idnumber');
-        $result = $result && drop_field($table, $field);
-
-        $table = new XMLDBTable('crlm_class_enrolment');
-        $field = new XMLDBField('user_idnumber');
-        $result = $result && drop_field($table, $field);
-
-        $table = new XMLDBTable('crlm_class_instructor');
-        $field = new XMLDBField('user_idnumber');
-        $result = $result && drop_field($table, $field);
-
-        $table = new XMLDBTable('crlm_class_attendance');
-        $field = new XMLDBField('user_idnumber');
-        $result = $result && drop_field($table, $field);
-    }
-
-    //if ($result && $oldversion < 2010063002) {
-    //    require_once($CFG->dirroot . '/blocks/curr_admin/lib.php');
-    //    $result = $result && create_views(); // create with default prefix
-    //    $result = $result && create_views(''); // create with no prefix
-    //}
 
     if ($result && $oldversion < 2010040505) {
-        require_once($CFG->dirroot . '/curriculum/lib/lib.php');
+        require_once(elispm::lib('lib.php'));
         $result = $result && cm_notify_duplicate_user_info(true);
+        upgrade_block_savepoint($result, 2010040505, 'curr_admin');
     }
 
     if ($result && $oldversion < 2010040506 && $oldversion >= 2010040501) {
@@ -989,34 +993,56 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $context_course = CONTEXT_COURSE;
 
         $sql = "DELETE
-                  FROM {$CFG->prefix}crlm_class_instructor
-                 WHERE NOT EXISTS (SELECT 'x' FROM {$CFG->prefix}crlm_class cmclass
-                                    WHERE cmclass.id = {$CFG->prefix}crlm_class_instructor.classid)";
+                  FROM {crlm_class_instructor}
+                 WHERE NOT EXISTS (SELECT 'x' FROM {crlm_class} cmclass
+                                    WHERE cmclass.id = {crlm_class_instructor.classid})";
 
-        $result = $result && execute_sql($sql);
+        $result = $result && $DB->execute($sql);
 
         // warn about other potentially incorrect instructor assignments
-        require_once($CFG->dirroot . '/curriculum/lib/lib.php');
+        require_once(elispm::lib('lib.php'));
         cm_notify_incorrect_instructor_assignment(true);
 
         // make sure the correct assignments are added
         if(!empty($CFG->coursemanager)) {
-            require_once($CFG->dirroot . '/curriculum/lib/notifications.php');
+            require_once(elispm::lib('notifications.php'));
 
             $context_course = CONTEXT_COURSE;
 
-            $sql = "SELECT role_assignments.* FROM {$CFG->prefix}role_assignments role_assignments
-                    JOIN {$CFG->prefix}context context
+            list($managerrolessql, $params) = $DB->get_in_or_equal(explode(',', $this->gradebookroles), SQL_PARAMS_NAMED, 'mgr0', false);
+
+            $sql = "SELECT role_assignments.* FROM {role_assignments} role_assignments
+                    JOIN {context} context
                     ON role_assignments.contextid = context.id
-                    WHERE role_assignments.roleid IN ({$CFG->coursemanager})
+                    WHERE role_assignments.roleid {$managerrolessql}
                     AND context.contextlevel = {$context_course}";
 
-            if($records = get_records_sql($sql)) {
-                foreach($records as $record) {
-                    cm_assign_instructor_from_mdl($record);
-                }
+            $records = $DB->get_recordset_sql($sql, $params);
+            foreach($records as $record) {
+                cm_assign_instructor_from_mdl($record);
             }
+            $records->close();
         }
+        upgrade_block_savepoint($result, 2010040506, 'curr_admin');
+    }
+
+    if($result && $oldversion < 2010063001) {
+        $table = new XMLDBTable('crlm_curriculum_assignment');
+        $field = new XMLDBField('user_idnumber');
+        $result = $result && $dbmanager->drop_field($table, $field);
+
+        $table = new XMLDBTable('crlm_class_enrolment');
+        $field = new XMLDBField('user_idnumber');
+        $result = $result && $dbmanager->drop_field($table, $field);
+
+        $table = new XMLDBTable('crlm_class_instructor');
+        $field = new XMLDBField('user_idnumber');
+        $result = $result && $dbmanager->drop_field($table, $field);
+
+        $table = new XMLDBTable('crlm_class_attendance');
+        $field = new XMLDBField('user_idnumber');
+        $result = $result && $dbmanager->drop_field($table, $field);
+        upgrade_block_savepoint($result, 2010063001, 'curr_admin');
     }
 
     if ($result && $oldversion < 2010063002) {
@@ -1027,7 +1053,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field = new XMLDBField('enrol_from_waitlist');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null, null, '0');
 
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result, 2010063002, 'curr_admin');
     }
 
     if ($result && $oldversion < 2010063005) {
@@ -1036,7 +1063,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table = new XMLDBTable('crlm_field_map');
 
     /// Launch drop table for crlm_field_data
-        $result = $result && drop_table($table);
+        $result = $result && $dbmanager->drop_table($table);
+        upgrade_block_savepoint($result, 2010063005, 'curr_admin');
     }
 
     if ($result && $oldversion < 2010063006) {
@@ -1049,7 +1077,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('contextid'));
 
     /// Launch drop index context_idx
-        $result = $result && drop_index($table, $index);
+        $result = $result && $dbmanager->drop_index($table, $index);
 
     /// Changing nullability of field contextid on table crlm_field_data_text to null
         $field = new XMLDBField('contextid');
@@ -1060,20 +1088,20 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('contextid'));
 
     /// Launch add index context_idx
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
     /// Define index field_idx (not unique) to be added to crlm_field_data_text
         $index = new XMLDBIndex('field_idx');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
 
     /// Launch add index field_idx
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
     /// Launch change of nullability for field contextid
-        $result = $result && change_field_notnull($table, $field);
+        $result = $result && $dbmanager->change_field_notnull($table, $field);
 
     /// Launch rename table for crlm_field_data
-        $result = $result && rename_table($table, 'crlm_field_data_text');
+        $result = $result && $dbmanager->rename_table($table, 'crlm_field_data_text');
 
 
     /// Define table crlm_field_owner to be created
@@ -1093,7 +1121,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addIndexInfo('field_idx', XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
 
     /// Launch create table for crlm_field_owner
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
 
     /// Define table crlm_field_category_context to be created
@@ -1112,7 +1140,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addIndexInfo('category_idx', XMLDB_INDEX_NOTUNIQUE, array('categoryid'));
 
     /// Launch create table for crlm_field_category_context
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
 
         $usercontextid = context_level_base::get_custom_context_level('user', 'block_curr_admin');
@@ -1121,7 +1149,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                            (categoryid, contextlevel)
                     SELECT id, $usercontextid
                       FROM {$CFG->prefix}crlm_field_category";
-            $result = $result && execute_sql($sql);
+            $result = $result && $DB->execute($sql);
         }
 
 
@@ -1142,7 +1170,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addIndexInfo('field_idx', XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
 
     /// Launch create table for crlm_field_data_int
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
 
     /// Define table crlm_field_data_num to be created
@@ -1162,7 +1190,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addIndexInfo('field_idx', XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
 
     /// Launch create table for crlm_field_data_num
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
 
     /// Define table crlm_field_data_char to be created
@@ -1182,120 +1210,121 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table->addIndexInfo('field_idx', XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
 
     /// Launch create table for crlm_field_data_char
-        $result = $result && create_table($table);
+        $result = $result && $dbmanager->create_table($table);
 
 
-        $records = get_records('crlm_field');
-        if ($records) {
-            // FIXME: set data type based on old data type
-            foreach ($records as $record) {
-                unset($record->name);
-                unset($record->shortname);
-                unset($record->description);
-                $record->defaultdata = addslashes($record->defaultdata);
-                if (isset($record->syncwithmoodle)) {
-                    // make sure the crlm_field table hasn't been upgraded yet
-                    switch ($record->syncwithmoodle) {
-                    case 2:
-                        // sync from Moodle
-                        // create "moodle_profile" owner
-                        if (!record_exists('crlm_field_owner', 'fieldid', $record->id, 'plugin', 'moodle_profile')) {
-                            $owner = new stdClass;
-                            $owner->fieldid = $record->id;
-                            $owner->plugin = 'moodle_profile';
-                            $owner->exclude = true;
-                            $result = $result && insert_record('crlm_field_owner', $owner);
-                        }
-                        // create "manual" owner
-                        if (!record_exists('crlm_field_owner', 'fieldid', $record->id, 'plugin', 'manual')) {
-                            $owner = new stdClass;
-                            $owner->fieldid = $record->id;
-                            $owner->plugin = 'manual';
-                            $owner->exclude = false;
-                            $owner->params = array('edit_capability' => 'disabled');
-                            if (!$record->visible) {
-                                $owner->params['view_capability'] = 'moodle/user:viewhiddendetails';
-                            }
-                            $owner->params = serialize($owner->params);
-                            $result = $result && insert_record('crlm_field_owner', $owner);
-                        }
-                        $record->datatype = 'text';
-                        break;
-                    case 1:
-                        // sync to Moodle
-                        // create "moodle_profile" owner
-                        if (!record_exists('crlm_field_owner', 'fieldid', $record->id, 'plugin', 'moodle_profile')) {
-                            $owner = new stdClass;
-                            $owner->fieldid = $record->id;
-                            $owner->plugin = 'moodle_profile';
-                            $owner->exclude = false;
-                            $result = $result && insert_record('crlm_field_owner', $owner);
-                        }
-                        // NOTE: fall through
-                    default:
-                        // no sync or invalid user
-                        // create "manual" owner
-                        $controltype = $record->datatype;
-                        $record->datatype = 'text';
-                        if (!record_exists('crlm_field_owner', 'fieldid', $record->id, 'plugin', 'manual')) {
-                            $owner = new stdClass;
-                            $owner->fieldid = $record->id;
-                            $owner->plugin = 'manual';
-                            $owner->exclude = false;
-                            $owner->params = array('control' => $controltype,
-                                                   'required' => $record->required);
-                            if ($record->locked) {
-                                $owner->params['edit_capability'] = 'moodle/user:update';
-                            }
-                            if (!$record->visible) {
-                                $owner->params['view_capability'] = 'moodle/user:viewhiddendetails';
-                            }
-                            if (!empty($record->params)) {
-                                $owner->params += unserialize($record->params);
-                            }
-                            switch ($controltype) {
-                            case 'checkbox':
-                                // legacy checkboxes are all boolean
-                                $record->datatype = 'bool';
-                                $data_recs = get_records('crlm_field_data_text', 'fieldid', $record->id);
-                                foreach ($data_recs as $data_rec) {
-                                    delete_records('crlm_field_data_text', 'id', $data_rec->id);
-                                    unset($data_rec->id);
-                                    insert_record('crlm_field_data_int', $data_rec);
-                                }
-                                break;
-                            case 'menu':
-                                // menu items should be short text
-                                $record->datatype = 'char';
-                                $data_recs = get_records('crlm_field_data_text', 'fieldid', $record->id);
-                                foreach ($data_recs as $data_rec) {
-                                    delete_records('crlm_field_data_text', 'id', $data_rec->id);
-                                    unset($data_rec->id);
-                                    insert_record('crlm_field_data_char', $data_rec);
-                                }
-                            case 'text':
-                                $owner->params['columns'] = $owner->params['size'];
-                                unset($owner->params['size']);
-                                break;
-                            }
-                            $owner->params = addslashes(serialize($owner->params));
-                            $result = $result && insert_record('crlm_field_owner', $owner);
-                        }
-                        break;
+        $records = $DB->get_recordset('crlm_field');
+        // FIXME: set data type based on old data type
+        foreach ($records as $record) {
+            unset($record->name);
+            unset($record->shortname);
+            unset($record->description);
+            if (isset($record->syncwithmoodle)) {
+                // make sure the crlm_field table hasn't been upgraded yet
+                switch ($record->syncwithmoodle) {
+                case 2:
+                    // sync from Moodle
+                    // create "moodle_profile" owner
+                    if (!$DB->record_exists('crlm_field_owner', array('fieldid' => $record->id, 'plugin' => 'moodle_profile'))) {
+                        $owner = new stdClass;
+                        $owner->fieldid = $record->id;
+                        $owner->plugin = 'moodle_profile';
+                        $owner->exclude = true;
+                        $result = $result && $DB->insert_record('crlm_field_owner', $owner);
                     }
-                    $record->params = '';
-                    $result = $result && update_record('crlm_field', $record);
-                    if (!empty($record->defaultdata)) {
-                        if (!record_exists_select('crlm_field_data_text', "fieldid = {$record->id} AND contextid IS NULL")) {
-                            $defaultdata = new stdClass;
-                            $defaultdata->fieldid = $record->id;
-                            $defaultdata->data = $record->defaultdata;
-                            $result = $result && insert_record('crlm_field_data_text', $defaultdata);
+                    // create "manual" owner
+                    if (!$DB->record_exists('crlm_field_owner', array('fieldid' => $record->id, 'plugin' => 'manual'))) {
+                        $owner = new stdClass;
+                        $owner->fieldid = $record->id;
+                        $owner->plugin = 'manual';
+                        $owner->exclude = false;
+                        $owner->params = array('edit_capability' => 'disabled');
+                        if (!$record->visible) {
+                            $owner->params['view_capability'] = 'moodle/user:viewhiddendetails';
                         }
+                        $owner->params = serialize($owner->params);
+                        $result = $result && $DB->insert_record('crlm_field_owner', $owner);
+                    }
+                    $record->datatype = 'text';
+                    break;
+                case 1:
+                    // sync to Moodle
+                    // create "moodle_profile" owner
+                    if (!$DB->record_exists('crlm_field_owner', array('fieldid' => $record->id, 'plugin' => 'moodle_profile'))) {
+                        $owner = new stdClass;
+                        $owner->fieldid = $record->id;
+                        $owner->plugin = 'moodle_profile';
+                        $owner->exclude = false;
+                        $result = $result && $DB->insert_record('crlm_field_owner', $owner);
+                    }
+                    // NOTE: fall through
+                default:
+                    // no sync or invalid user
+                    // create "manual" owner
+                    $controltype = $record->datatype;
+                    $record->datatype = 'text';
+                    if (!$DB->record_exists('crlm_field_owner', array('fieldid' => $record->id, 'plugin' => 'manual'))) {
+                        $owner = new stdClass;
+                        $owner->fieldid = $record->id;
+                        $owner->plugin = 'manual';
+                        $owner->exclude = false;
+                        $owner->params = array('control' => $controltype,
+                                               'required' => $record->required);
+                        if ($record->locked) {
+                            $owner->params['edit_capability'] = 'moodle/user:update';
+                        }
+                        if (!$record->visible) {
+                            $owner->params['view_capability'] = 'moodle/user:viewhiddendetails';
+                        }
+                        if (!empty($record->params)) {
+                            $owner->params += unserialize($record->params);
+                        }
+                        switch ($controltype) {
+                        case 'checkbox':
+                            // legacy checkboxes are all boolean
+                            $record->datatype = 'bool';
+                            $data_recs = $DB->get_recordset('crlm_field_data_text', array('fieldid' => $record->id));
+                            foreach ($data_recs as $data_rec) {
+                                $DB->delete_records('crlm_field_data_text', 'id', $data_rec->id);
+                                unset($data_rec->id);
+                                $DB->insert_record('crlm_field_data_int', $data_rec);
+                            }
+                            $data_recs->close();
+                            break;
+                        case 'menu':
+                            // menu items should be short text
+                            $record->datatype = 'char';
+                            $data_recs = $DB->get_recordset('crlm_field_data_text', array('fieldid' => $record->id));
+                            foreach ($data_recs as $data_rec) {
+                                $DB->delete_records('crlm_field_data_text', 'id', $data_rec->id);
+                                unset($data_rec->id);
+                                $DB->insert_record('crlm_field_data_char', $data_rec);
+                            }
+                            $data_recs->close();
+                            break;
+                        case 'text':
+                            $owner->params['columns'] = $owner->params['size'];
+                            unset($owner->params['size']);
+                            break;
+                        }
+                        $owner->params = serialize($owner->params);
+                        $result = $result && $DB->insert_record('crlm_field_owner', $owner);
+                    }
+                    break;
+                }
+                $record->params = '';
+                $result = $result && $DB->update_record('crlm_field', $record);
+                if (!empty($record->defaultdata)) {
+                    if (!$DB->record_exists_select('crlm_field_data_text', "fieldid = {$record->id} AND contextid IS NULL")) {
+                        $defaultdata = new stdClass;
+                        $defaultdata->fieldid = $record->id;
+                        $defaultdata->data = $record->defaultdata;
+                        $result = $result && $DB->insert_record('crlm_field_data_text', $defaultdata);
                     }
                 }
             }
         }
+        $records->close;
 
         $table = new XMLDBTable('crlm_field');
 
@@ -1303,35 +1332,35 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field = new XMLDBField('required');
 
     /// Launch drop field required
-        $result = $result && drop_field($table, $field);
+        $result = $result && $dbmanager->drop_field($table, $field);
 
 
     /// Define field locked to be dropped from crlm_field
         $field = new XMLDBField('locked');
 
     /// Launch drop field locked
-        $result = $result && drop_field($table, $field);
+        $result = $result && $dbmanager->drop_field($table, $field);
 
 
     /// Define field visible to be dropped from crlm_field
         $field = new XMLDBField('visible');
 
     /// Launch drop field visible
-        $result = $result && drop_field($table, $field);
+        $result = $result && $dbmanager->drop_field($table, $field);
 
 
     /// Define field defaultdata to be dropped from crlm_field
         $field = new XMLDBField('defaultdata');
 
     /// Launch drop field defaultdata
-        $result = $result && drop_field($table, $field);
+        $result = $result && $dbmanager->drop_field($table, $field);
 
 
     /// Define field syncwithmoodle to be dropped from crlm_field
         $field = new XMLDBField('syncwithmoodle');
 
     /// Launch drop field syncwithmoodle
-        $result = $result && drop_field($table, $field);
+        $result = $result && $dbmanager->drop_field($table, $field);
 
 
     /// Define field multivalued to be added to crlm_field
@@ -1339,7 +1368,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, null, null, null, null, '0', 'sortorder');
 
     /// Launch add field multivalued
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result, 2010063006, 'curr_admin');
     }
 
     if ($result && $oldversion < 2010063007) {
@@ -1351,7 +1381,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, null, null, 'fieldid');
 
     /// Launch change of type for field data
-        $result = $result && change_field_type($table, $field);
+        $result = $result && $dbmanager->change_field_type($table, $field);
+        upgrade_block_savepoint($result, 2010063007, 'curr_admin');
     }
 
     if ($result && $oldversion < 2010063008) {
@@ -1359,13 +1390,13 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field = new XMLDBField('autoenrol');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '1', 'curriculumid');
 
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
 
         $table = new XMLDBTable('crlm_cluster_track');
         $field = new XMLDBField('autoenrol');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '1', 'trackid');
 
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
 
     /// Define field parent to be added to crlm_cluster
         $table = new XMLDBTable('crlm_cluster');
@@ -1373,14 +1404,15 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0', 'display');
 
     /// Launch add field parent
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
 
     /// Define field depth to be added to crlm_cluster
         $field = new XMLDBField('depth');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '1', 'parent');
 
     /// Launch add field depth
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result, 2010063008, 'curr_admin');
     }
 
     if ($result && $oldversion < 2010063013) {
@@ -1393,7 +1425,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index = new XMLDBIndex('name_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('name'));
         if(!index_exists($table, $index)) {
-            $result = $result && add_index($table, $index);
+            $result = $result && $dbmanager->add_index($table, $index);
         }
 
         /*
@@ -1405,14 +1437,14 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index = new XMLDBIndex('name_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('name'));
         if(!index_exists($table, $index)) {
-            $result = $result && add_index($table, $index);
+            $result = $result && $dbmanager->add_index($table, $index);
         }
 
         //credits field
         $index = new XMLDBIndex('credits_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('credits'));
         if(!index_exists($table, $index)) {
-            $result = $result && add_index($table, $index);
+            $result = $result && $dbmanager->add_index($table, $index);
         }
 
         /*
@@ -1424,14 +1456,14 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index = new XMLDBIndex('idnumber_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('idnumber'));
         if(!index_exists($table, $index)) {
-            $result = $result && add_index($table, $index);
+            $result = $result && $dbmanager->add_index($table, $index);
         }
 
         //enddate field
         $index = new XMLDBIndex('enddate_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('enddate'));
         if(!index_exists($table, $index)) {
-            $result = $result && add_index($table, $index);
+            $result = $result && $dbmanager->add_index($table, $index);
         }
 
         /*
@@ -1443,14 +1475,14 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index = new XMLDBIndex('completetime_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('completetime'));
         if(!index_exists($table, $index)) {
-            $result = $result && add_index($table, $index);
+            $result = $result && $dbmanager->add_index($table, $index);
         }
 
         //completestatusid field
         $index = new XMLDBIndex('completestatusid_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('completestatusid'));
         if(!index_exists($table, $index)) {
-            $result = $result && add_index($table, $index);
+            $result = $result && $dbmanager->add_index($table, $index);
         }
 
         /*
@@ -1462,15 +1494,16 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $index = new XMLDBIndex('lastname_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('lastname'));
         if(!index_exists($table, $index)) {
-            $result = $result && add_index($table, $index);
+            $result = $result && $dbmanager->add_index($table, $index);
         }
 
         //firstname field
         $index = new XMLDBIndex('firstname_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('firstname'));
         if(!index_exists($table, $index)) {
-            $result = $result && add_index($table, $index);
+            $result = $result && $dbmanager->add_index($table, $index);
         }
+        upgrade_block_savepoint($result, 2010063013, 'curr_admin');
     }
 
     if ($result && $oldversion < 2010063015) {
@@ -1481,7 +1514,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, null, null, '-1', 'timemodified');
 
     /// Launch add field autocreated
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result, 2010063015, 'curr_admin');
     }
 
     if ($result && $oldversion < 2010111300) {
@@ -1491,18 +1525,20 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0', 'timecompleted');
 
         // Launch add field multivalued
-        $result = $result && add_field($table, $field);
+        $result = $result && $dbmanager->add_field($table, $field);
+        upgrade_block_savepoint($result, 2011011300, 'curr_admin');
     }
 
     if ($result && $oldversion < 2011011802) {
         // delete duplicate records
         $sql = "DELETE FROM g
-                 USING mdl_crlm_class_graded g, mdl_crlm_class_graded g2
+                 USING {crlm_class_graded} g, {crlm_class_graded} g2
                  WHERE g.userid = g2.userid
                        AND g.classid = g2.classid
                        AND g.completionid = g2.completionid
                        AND g.id < g2.id";
-        execute_sql($sql);
+        $DB->execute($sql);
+        upgrade_block_savepoint($result, 2011011802, 'curr_admin');
     }
 
     if ($result && $oldversion < 2011050200) {
@@ -1510,100 +1546,108 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table = new XMLDBTable('crlm_class');
         $index = new XMLDBIndex('startdate_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('startdate'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index enrolmenttime_ix (not unique) to be added to crlm_class_enrolment
         $table = new XMLDBTable('crlm_class_enrolment');
         $index = new XMLDBIndex('enrolmenttime_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('enrolmenttime'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index locked_ix (not unique) to be added to crlm_class_graded
         $table = new XMLDBTable('crlm_class_graded');
         $index = new XMLDBIndex('locked_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('locked'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index timegraded_ix (not unique) to be added to crlm_class_graded
         $table = new XMLDBTable('crlm_class_graded');
         $index = new XMLDBIndex('timegraded_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('timegraded'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index classid_ix (not unique) to be added to crlm_class_moodle
         $table = new XMLDBTable('crlm_class_moodle');
         $index = new XMLDBIndex('classid_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('classid'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index curriculumid_ix (not unique) to be added to crlm_cluster_curriculum
         $table = new XMLDBTable('crlm_cluster_curriculum');
         $index = new XMLDBIndex('curriculumid_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('curriculumid'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index fieldid_ix (not unique) to be added to crlm_cluster_profile
         $table = new XMLDBTable('crlm_cluster_profile');
         $index = new XMLDBIndex('fieldid_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index trackid_ix (not unique) to be added to crlm_cluster_track
         $table = new XMLDBTable('crlm_cluster_track');
         $index = new XMLDBIndex('trackid_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('trackid'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index idnumber_ix (not unique) to be added to crlm_course_completion
         $table = new XMLDBTable('crlm_course_completion');
         $index = new XMLDBIndex('idnumber_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('idnumber'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index sortorder_ix (not unique) to be added to crlm_field
         $table = new XMLDBTable('crlm_field');
         $index = new XMLDBIndex('sortorder_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('sortorder'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index username_ix (not unique) to be added to crlm_user
         $table = new XMLDBTable('crlm_user');
         $index = new XMLDBIndex('username_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('username'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index inactive_ix (not unique) to be added to crlm_user
         $table = new XMLDBTable('crlm_user');
         $index = new XMLDBIndex('inactive_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('inactive'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index userid_ix (not unique) to be added to crlm_user_track
         $table = new XMLDBTable('crlm_user_track');
         $index = new XMLDBIndex('userid_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('userid'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index trackid_ix (not unique) to be added to crlm_user_track
         $table = new XMLDBTable('crlm_user_track');
         $index = new XMLDBIndex('trackid_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('trackid'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index classid_ix (not unique) to be added to crlm_wait_list
         $table = new XMLDBTable('crlm_wait_list');
         $index = new XMLDBIndex('classid_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('classid'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
 
         /// Define index userid_ix (not unique) to be added to crlm_wait_list
         $table = new XMLDBTable('crlm_wait_list');
         $index = new XMLDBIndex('userid_ix');
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('userid'));
-        $result = $result && add_index($table, $index);
+        $result = $result && $dbmanager->add_index($table, $index);
+        upgrade_block_savepoint($result, 2011050200, 'curr_admin');
+    }
+
+    if ($result && $oldversion < 2011050201) {
+        // make sure that hours are within 24 hours
+        $sql = "UPDATE {crlm_class}
+                   SET starttimehour = MOD(starttimehour, 24),
+                       endtimehour = MOD(endtimehour, 24)";
+        $result = $result && $DB->execute($sql);
+        upgrade_block_savepoint($result, 2011050201, 'curr_admin');
     }
 
     return $result;
 }
-
-?>
