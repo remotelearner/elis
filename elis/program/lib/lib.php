@@ -228,3 +228,291 @@ function get_yesno_item_display($column, $item) {
 function pm_set_config($name, $value) {
     set_config($name,$value, 'elis_program');
 }
+
+/**
+ * Synchronize Moodle enrolments over to the PM system based on associations of Moodle
+ * courses to PM classes, as well as converting grade item grades to learning objective grades
+ */
+function pm_synchronize_moodle_class_grades() {
+    global $CFG, $DB;
+    require_once($CFG->dirroot.'/grade/lib.php');
+    require_once(elispm::lib('data/classmoodlecourse.class.php'));
+
+    if ($moodleclasses = moodle_get_classes()) {
+        $timenow = time();
+        foreach ($moodleclasses as $class) {
+            $pmclass = new pmclass($class->classid);
+            $context = get_context_instance(CONTEXT_COURSE, $class->moodlecourseid);
+            $moodlecourse = $DB->get_record('course', array('id' => $class->moodlecourseid));
+
+            // Get CM enrolment information (based on Moodle enrolments)
+            // IMPORTANT: this record set must be sorted using the Moodle
+            // user ID
+            $relatedcontextsstring = get_related_contexts_string($context);
+            $sql = "SELECT DISTINCT u.id AS muid, u.username, cu.id AS cmid, stu.*
+                      FROM {user} u
+                      JOIN {role_assignments} ra ON u.id = ra.userid
+                 LEFT JOIN {".user::TABLE."} cu ON cu.idnumber = u.idnumber
+                 LEFT JOIN {".student::TABLE."} stu on stu.userid = cu.id AND stu.classid = :classid
+                     WHERE ra.roleid in (:roles)
+                       AND ra.contextid {$relatedcontextsstring}
+                  ORDER BY muid ASC";
+            $causers = $DB->get_recordset_sql($sql, array('classid' => $pmclass->id,
+                                                          'roles' => $CFG->gradebookroles));
+
+            if(empty($causers)) {
+                // nothing to see here, move on
+                continue;
+            }
+
+            /// Get CM completion elements and related Moodle grade items
+            $comp_elements = array();
+            $gis = array();
+            if (isset($pmclass->course) && (get_class($pmclass->course) == 'course')
+                && ($elements = $pmclass->course->get_completion_elements())) {
+
+                foreach ($elements as $element) {
+                    // It looks like Moodle actually stores the "slashes" on the idnumber field in the grade_items
+                    // table so we need to addslashes twice to this value if it needs them. =(  - ELIS-1830
+                    $idnumber = $element->idnumber;
+                    if ($gi = $DB->get_record('grade_items', array('courseid' => $class->moodlecourseid,
+                                                                   'idnumber' => $idnumber))) {
+                        $gis[$gi->id] = $gi;
+                        $comp_elements[$gi->id] = $element;
+                    } else if ($gi = $DB->get_record('grade_items', array('courseid' => $class->moodlecourseid,
+                                                                          'idnumber' => addslashes($idnumber)))) {
+                        $gis[$gi->id] = $gi;
+                        $comp_elements[$gi->id] = $element;
+                    }
+                }
+            }
+            // add grade item for the overall course grade
+            $coursegradeitem = grade_item::fetch_course_item($moodlecourse->id);
+            $gis[$coursegradeitem->id] = $coursegradeitem;
+
+            if ($coursegradeitem->grademax == 0) {
+                // no maximum course grade, so we can't calculate the
+                // student's grade
+                continue;
+            }
+
+            if (!empty($elements)) {
+                // get current completion element grades if we have any
+                // IMPORTANT: this record set must be sorted using the Moodle
+                // user ID
+
+                //todo: use table constant
+                $sql = "SELECT grades.*, mu.id AS muid
+                          FROM {crlm_class_graded} grades
+                          JOIN {".user::TABLE."} cu ON grades.userid = cu.id
+                          JOIN {user} mu ON cu.idnumber = mu.idnumber
+                         WHERE grades.classid = :classid
+                      ORDER BY mu.id";
+                $allcompelemgrades = $DB->get_recordset_sql($sql, array('classid' => $pmclass->id));
+                $last_rec = null; // will be used to store the last completion
+                                  // element that we fetched from the
+                                  // previous iteration (which may belong
+                                  // to the current user)
+            }
+
+            // get the Moodle course grades
+            // IMPORTANT: this iterator must be sorted using the Moodle
+            // user ID
+            $gradedusers = new graded_users_iterator($moodlecourse, $gis, 0, 'id', 'ASC', null);
+            $gradedusers->init();
+
+            // only create a new enrolment record if there is only one CM
+            // class attached to this Moodle course
+            $doenrol = ($DB->count_records(classmoodlecourse::TABLE, array('moodlecourseid' => $class->moodlecourseid)) == 1);
+
+            // main loop -- go through the student grades
+            foreach ($causers as $sturec) {
+                if (!$stugrades = $gradedusers->next_user()) {
+                    break;
+                }
+
+                // skip user records that don't match up
+                // (this works since both sets are sorted by Moodle user ID)
+                // (in theory, we shouldn't need this, but just in case...)
+                while ($sturec && $sturec->muid < $stugrades->user->id) {
+                    $sturec = rs_fetch_next_record($causers);
+                }
+                if (!$sturec) {
+                    break;
+                }
+                while($stugrades && $stugrades->user->id < $sturec->muid) {
+                    $stugrades = $gradedusers->next_user();
+                }
+                if (!$stugrades) {
+                    break;
+                }
+
+                /// If the user doesn't exist in CM, skip it -- should we flag it?
+                if (empty($sturec->cmid)) {
+                    mtrace("No user record for Moodle user id: {$sturec->muid}: {$sturec->username}<br />\n");
+                    continue;
+                }
+                $cmuserid = $sturec->cmid;
+
+                /// If no enrolment record in ELIS, then let's set one.
+                if (empty($sturec->id)) {
+                    if(!$doenrol) {
+                        continue;
+                    }
+                    $sturec->classid = $class->classid;
+                    $sturec->userid = $cmuserid;
+                    /// Enrolment time will be the earliest found role assignment for this user.
+                    $enroltime = $DB->get_field('user_enrolments', 'timestart as enroltime', array('enrolid' => $class->moodlecourseid,
+                                                                                                   'userid'  => $sturec->muid));
+                    $sturec->enrolmenttime = (!empty($enroltime) ? $enroltime : $timenow);
+                    $sturec->completetime = 0;
+                    $sturec->endtime = 0;
+                    $sturec->completestatusid = STUSTATUS_NOTCOMPLETE;
+                    $sturec->grade = 0;
+                    $sturec->credits = 0;
+                    $sturec->locked = 0;
+                    $sturec->id = $DB->insert_record(STUTABLE, $sturec);
+                }
+
+                /// Handle the course grade
+                if (isset($stugrades->grades[$coursegradeitem->id]->finalgrade)) {
+
+                    /// Set the course grade if there is one and it's not locked.
+                    $usergradeinfo = $stugrades->grades[$coursegradeitem->id];
+                    if (!$sturec->locked && !is_null($usergradeinfo->finalgrade)) {
+                        // clone of student record, to see if we actually change anything
+                        $old_sturec = clone($sturec);
+
+                        $grade = $usergradeinfo->finalgrade / $coursegradeitem->grademax * 100.0;
+                        $sturec->grade = $grade;
+
+                        /// Update completion status if all that is required is a course grade.
+                        if (empty($elements)) {
+                            if ($pmclass->course->completion_grade <= $sturec->grade) {
+                                $sturec->completetime = $usergradeinfo->get_dategraded();
+                                $sturec->completestatusid = STUSTATUS_PASSED;
+                                $sturec->credits = floatval($pmclass->course->credits);
+                            } else {
+                                $sturec->completetime = 0;
+                                $sturec->completestatusid = STUSTATUS_NOTCOMPLETE;
+                                $sturec->credits = 0;
+                            }
+                        } else {
+                            $sturec->completetime = 0;
+                            $sturec->completestatusid = STUSTATUS_NOTCOMPLETE;
+                            $sturec->credits = 0;
+                        }
+
+                        // only update if we actually changed anything
+                        // (exception: if the completetime gets smaller,
+                        // it's probably because $usergradeinfo->get_dategraded()
+                        // returned an empty value, so ignore that change)
+                        if ($old_sturec->grade != $sturec->grade
+                            || $old_sturec->completetime < $sturec->completetime
+                            || $old_sturec->completestatusid != $sturec->completestatusid
+                            || $old_sturec->credits != $sturec->credits) {
+
+                            if ($sturec->completestatusid == STUSTATUS_PASSED && empty($sturec->completetime)) {
+                                // make sure we have a valid complete time, if we passed
+                                $sturec->completetime = $timenow;
+                            }
+
+                            $DB->update_record(student::TABLE, $sturec);
+                        }
+                    }
+                }
+
+                /// Handle completion elements
+                if (!empty($allcompelemgrades)) {
+                    // get student's completion elements
+                    $cmgrades = array();
+                    // NOTE: we use a do-while loop, since $last_rec might
+                    // be set from the last run, so we need to check it
+                    // before we load from the database
+
+                    //need to track whether we're on the first record because of how
+                    //recordsets work
+                    $first = true;
+
+                    do {
+                        if (isset($last_rec->muid)) {
+                            if ($last_rec->muid > $sturec->muid) {
+                                // we've reached the end of this student's
+                                // grades ($last_rec will save this record
+                                // for the next student's run)
+                                break;
+                            }
+                            if ($last_rec->muid == $sturec->muid) {
+                                $cmgrades[$last_rec->completionid] = $last_rec;
+                            }
+                        }
+
+                        if (!$first) {
+                            //not using a cached record, so advance the recordset
+                            $allcompelemgrades->next();
+                        }
+
+                        //obtain the next record
+                        $last_rec = $allcompelemgrades->current();
+                        //signal that we are now within the current recordset
+                        $first = false;
+                    } while ($allcompelemgrades->valid());
+
+                    foreach ($comp_elements as $gi_id => $element) {
+                        if (!isset($stugrades->grades[$gi_id]->finalgrade)) {
+                            continue;
+                        }
+                        // calculate Moodle grade as a percentage
+                        $gradeitem = $stugrades->grades[$gi_id];
+                        $maxgrade = $gis[$gi_id]->grademax;
+                        /// Ignore mingrade for now... Don't really know what to do with it.
+                        $gradepercent =  ($gradeitem->finalgrade >= $maxgrade) ? 100.0
+                                      : (($gradeitem->finalgrade <= 0) ? 0.0
+                                      :  ($gradeitem->finalgrade / $maxgrade * 100.0));
+
+                        if (isset($cmgrades[$element->id])) {
+                            // update existing completion element grade
+                            $grade_element = $cmgrades[$element->id];
+                            if (!$grade_element->locked
+                                && ($gradeitem->get_dategraded() > $grade_element->timegraded)) {
+
+                                // clone of record, to see if we actually change anything
+                                $old_grade = clone($grade_element);
+
+                                $grade_element->grade = $gradepercent;
+                                $grade_element->timegraded = $gradeitem->get_dategraded();
+                                /// If completed, lock it.
+                                $grade_element->locked = ($grade_element->grade >= $element->completion_grade) ? 1 : 0;
+
+                                // only update if we actually changed anything
+                                if ($old_grade->grade != $grade_element->grade
+                                    || $old_grade->timegraded != $grade_element->timegraded
+                                    || $old_grade->grade != $grade_element->grade
+                                    || $old_grade->locked != $grade_element->locked) {
+
+                                    $grade_element->timemodified = $timenow;
+                                    //todo: use class constant
+                                    $DB->update_record('crlm_class_graded', $grade_element);
+                                }
+                            }
+                        } else {
+                            // no completion element grade exists: create a new one
+                            $grade_element = new Object();
+                            $grade_element->classid = $class->classid;
+                            $grade_element->userid = $cmuserid;
+                            $grade_element->completionid = $element->id;
+                            $grade_element->grade = $gradepercent;
+                            $grade_element->timegraded = $gradeitem->get_dategraded();
+                            $grade_element->timemodified = $timenow;
+                            /// If completed, lock it.
+                            $grade_element->locked = ($grade_element->grade >= $element->completion_grade) ? 1 : 0;
+                            //todo: use class constant
+                            $DB->insert_record('crlm_class_graded', $grade_element);
+                        }
+                    }
+                }
+            }
+            set_time_limit(600);
+        }
+    }
+}
