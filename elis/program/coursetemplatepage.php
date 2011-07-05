@@ -34,14 +34,13 @@ if ($CFG->forcelogin) {
 }
 
 if (!$site = get_site()) {
-    print_error('Site isn\'t defined!');
+    print_error('site_not_defined', 'elis_program');
 }
 
 if (!empty($class)) {
-    $templatetype = new $class();
-
     switch ($class) {
         case 'moodlecourseurl':
+            $templatetype = new moodlecourseurl();
             $category = optional_param('category', 0, PARAM_INT);
             $selected = optional_param('selected', 0, PARAM_INT);
             $templatetype->displayPage($category, $selected);

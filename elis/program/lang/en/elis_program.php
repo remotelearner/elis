@@ -614,6 +614,7 @@ $string['selectedonly'] = 'Show selected items only';
 $string['showallitems'] = 'Show all items';
 $string['show_all_users'] = 'Show All Users';
 $string['showinactive'] = 'Show inactive';
+$string['site_not_defined'] = 'Site is not defined';
 $string['student_credits'] = 'Credits';
 $string['student_deleteconfirm'] = 'Are you sure you want to unenrol the student name: {$a->name} ?<br />'.
                                    'NOTE: This will delete all records for this student in this class instance and will unenrol them from any connected Moodle class!';

@@ -163,6 +163,8 @@ class moodlecourseurl {
         $PAGE->set_button('');
         echo $OUTPUT->header();
 
+        echo $navigation['navlinks'].'<br />';
+
         $categories = $this->getSubCategories($category);
 
         echo '<form name="moodlecourseurl">'."\n";

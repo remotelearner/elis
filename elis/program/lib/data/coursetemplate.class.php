@@ -50,7 +50,7 @@ class coursetemplate extends elis_data_object {
             /// $id can be a select string...
             $select = $id;
         } else {
-            $select = 'courseid = ' . $id;
+            $select = 'courseid = '.$id;
         }
 
         $record = $this->_db->get_record_select(self::TABLE, $select);
@@ -71,70 +71,38 @@ class coursetemplate extends elis_data_object {
         return true;
     }
 
-    /**
-     * Data function to update the database record with the object contents.
-     * timecreated/modified not used for this table
-     *
-     * @param $createnew boolean If true, and the record doesn't exist, creates a new one.
-     * @return boolean Status of the operation.
-     */
-    /*
-    function data_update_record($createnew = false) {
-        if ($this->_dbloaded || !empty($this->id)) {
-            $record = new stdClass();
-
-            if (!empty($this->properties)) {
-                foreach ($this->properties as $prop => $type) {
-                    if (!isset($this->$prop)) {
-                        continue;
-                    }
-
-                    if ($prop == 'timemodified') {
-                        $record->$prop = time();
-                    } else {
-                        switch ($type) {
-                            case 'int':
-                                $record->$prop = $this->_db->clean_int($this->$prop);
-                                break;
-
-                            case 'string':
-                                $record->$prop = $this->_db->clean_text($this->$prop);
-                                break;
-
-                            case 'html':
-                                $record->$prop = $this->_db->clean_html($this->$prop);
-                                break;
-                        }
-                    }
-                }
-            }
-
-            if ($this->_db->update_record($this->table, $record)) {
-                return true;
-            } else if (!$createnew) {
-                return false;
-            }
-        }
-
-        if ($createnew) {
-            return ($this->data_insert_record());
-        } else {
-            return false;
-        }
-    }
-    */
-
     public function save() {
         $isnew = empty($this->id);
 
         parent::save();
 
-        // TO-DO: not sure if anything is actually needed here from data_update_record()
+        // TO-DO: not sure how much of code from old data_update_record() is needed here
+        if (!$isnew && !empty($this->properties)) {
+            $record = new stdClass();
+            foreach ($this->properties as $prop => $type) {
+                if (!isset($this->$prop)) {
+                    continue;
+                }
+
+                if ($prop == 'timemodified') {
+                    $record->$prop = time();
+                } else {
+                    switch ($type) {
+                        case 'int':
+                            $record->$prop = $this->_db->clean_int($this->$prop);
+                            break;
+
+                        case 'string':
+                            $record->$prop = $this->_db->clean_text($this->$prop);
+                            break;
+
+                        case 'html':
+                            $record->$prop = $this->_db->clean_html($this->$prop);
+                            break;
+                    }
+                }
+            }
+            $this->_db->update_record($this->table, $record);
+        }
     }
-
-	public static function delete_for_course($id) {
-	    global $DB;
-		return $DB->delete_records(coursetemplate::TABLE, array('courseid'=>$id));
-	}
-
 }
