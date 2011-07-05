@@ -553,3 +553,140 @@ function pm_update_student_enrolment() {
 
     return true;
 }
+
+/**
+ * Migrate any existing Moodle users to the Curriculum Management
+ * system.
+ */
+function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
+    global $CFG, $DB;
+
+    require_once(elispm::lib('data/user.class.php'));
+
+    $timenow = time();
+    $result  = true;
+
+    // set time modified if not set, so we can keep track of "new" users
+    $sql = "UPDATE {user}
+               SET timemodified = :timenow
+             WHERE timemodified = 0";
+    $result = $result && $DB->execute($sql, array('timenow' => $timenow));
+
+    if ($setidnumber || elis::$config->elis_program->auto_assign_user_idnumber) {
+        $sql = "UPDATE {user}
+                   SET idnumber = username
+                 WHERE idnumber=''
+                   AND username != 'guest'
+                   AND deleted = 0
+                   AND confirmed = 1
+                   AND mnethostid = :hostid";
+        $result = $result && $DB->execute($sql, array('hostid' => $CFG->mnet_localhost_id));
+    }
+
+    $rs = $DB->get_recordset_select('user',
+                  "username != 'guest'
+               AND deleted = 0
+               AND confirmed = 1
+               AND mnethostid = {$CFG->mnet_localhost_id}
+               AND idnumber != ''
+               AND timemodified >= $fromtime
+               AND NOT EXISTS (SELECT 'x'
+                               FROM {".user::TABLE."} cu
+                               WHERE cu.idnumber = {user}.idnumber)");
+
+    if ($rs) {
+        require_once elispm::file('cluster/profile/lib.php');
+
+        foreach ($rs as $user) {
+            // FIXME: shouldn't depend on cluster functionality -- should
+            // be more modular
+            cluster_profile_update_handler($user);
+        }
+    }
+    return $result;
+}
+
+/**
+ * Migrate a single Moodle user to the Program Management system.  Will
+ * only do this for users who have an idnumber set.
+ */
+function pm_moodle_user_to_pm($mu) {
+    global $CFG, $DB;
+    require_once(elis::lib('data/customfield.class.php'));
+    require_once(elispm::lib('data/user.class.php'));
+    require_once($CFG->dirroot . '/user/profile/lib.php');
+    // re-fetch, in case this is from a stale event
+    $mu = $DB->get_record('user', array('id' => $mu->id));
+    if (empty($mu->idnumber) && elis::$config->elis_program->auto_assign_user_idnumber) {
+        $mu->idnumber = $mu->username;
+        $DB->update_record('user', $mu);
+    }
+    if (empty($mu->idnumber)) {
+        return true;
+    } else if ($cu = $DB->get_record(user::TABLE, array('idnumber' => $mu->idnumber))) {
+        $cu = new user($cu);
+
+        // synchronize any profile changes
+        $cu->username = $mu->username;
+        $cu->password = $mu->password;
+        $cu->idnumber = $mu->idnumber;
+        $cu->firstname = $mu->firstname;
+        $cu->lastname = $mu->lastname;
+        $cu->email = $mu->email;
+        $cu->address = $mu->address;
+        $cu->city = $mu->city;
+        $cu->country = $mu->country;
+        $cu->phone = empty($mu->phone1)?empty($cu->phone)? '': $cu->phone: $mu->phone1;
+        $cu->phone2 = empty($mu->phone2)?empty($cu->phone2)? '': $cu->phone2: $mu->phone2;
+        $cu->language = empty($mu->lang)?empty($cu->language)? '': $cu->language: $mu->lang;
+        $cu->timemodified = time();
+
+        //todo: implement this section once necessary profile field code is available
+        // synchronize custom profile fields
+        //profile_load_data($mu);
+        //$fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'block_curr_admin'));
+        //$fields = $fields ? $fields : array();
+        //require_once (CURMAN_DIRLOCATION . '/plugins/moodle_profile/custom_fields.php');
+        //foreach ($fields as $field) {
+        //    $field = new field($field);
+        //    if (isset($field->owners['moodle_profile']) && $field->owners['moodle_profile']->exclude == cm_moodle_profile::sync_from_moodle) {
+        //        $fieldname = "field_{$field->shortname}";
+        //        $cu->$fieldname = $mu->{"profile_field_{$field->shortname}"};
+        //    }
+        //}
+        $cu->save();
+     } else {
+        $cu = new user();
+        $cu->username = $mu->username;
+        $cu->password = $mu->password;
+        $cu->idnumber = $mu->idnumber;
+        $cu->firstname = $mu->firstname;
+        $cu->lastname = $mu->lastname;
+        $cu->email = $mu->email;
+        $cu->address = $mu->address;
+        $cu->city = $mu->city;
+        $cu->country = $mu->country;
+        $cu->phone = $mu->phone1;
+        $cu->phone2 = $mu->phone2;
+        $cu->language = $mu->lang;
+        $cu->transfercredits = 0;
+        $cu->timecreated = $cu->timemodified = time();
+
+        //todo: implement this section once necessary profile field code is available
+        // synchronize profile fields
+        //profile_load_data($mu);
+        //$fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'block_curr_admin'));
+        //$fields = $fields ? $fields : array();
+        //require_once (CURMAN_DIRLOCATION . '/plugins/moodle_profile/custom_fields.php');
+        //foreach ($fields as $field) {
+        //    $field = new field($field);
+        //    if (isset($field->owner['moodle_profile']) && $field->owner['moodle_profile']->exclude == cm_moodle_profile::sync_from_moodle) {
+        //        $fieldname = "field_{$field->shortname}";
+        //        $cu->$fieldname = $mu->{"profile_field_{$field->shortname}"};
+        //    }
+        //}
+
+        $cu->save();
+    }
+    return true;
+}

@@ -133,6 +133,12 @@ class userpage extends managementpage {
         // make sure we don't delete the admin user, or ourselves
         $cuser = new user($this->required_param('id', PARAM_INT));
         $muser = $cuser->get_moodleuser();
+
+        if (!isset($muser->id)) {
+            //no corresponding Moodle user, so just check the capability
+            return $this->_has_capability('block/curr_admin:user:delete');
+        }
+
         return !is_primary_admin($muser->id) && $muser->id != $USER->id && $this->_has_capability('block/curr_admin:user:delete');
     }
 
