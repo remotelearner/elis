@@ -87,7 +87,8 @@ class classmoodlecourse extends data_object_with_custom_fields {
         if (elis::$config->elis_program->default_instructor_role && $instructors = $ins->get_instructors($this->classid)) {
             /// At this point we must switch over the other Moodle site's DB config, if needed
             if (!empty($this->siteconfig)) {
-                $cfgbak = moodle_load_config($this->siteconfig);
+                // TBD: implement this in the future if needed in v2
+                //$cfgbak = moodle_load_config($this->siteconfig);
             }
 
             /// This has to be put here in case we have a site config reload.
@@ -118,14 +119,14 @@ class classmoodlecourse extends data_object_with_custom_fields {
 
                 /// If we have a vald Moodle user account, apply the role.
                 if (!empty($muser->id)) {
-                    // TO-DO: re-enable once roles are ready
-                    //role_assign(elis::$config->elis_program->default_instructor_role, $muser->id, 0, $context->id, 0, 0, 0, 'manual');
+                    role_assign(elis::$config->elis_program->default_instructor_role, $muser->id, 0, $context->id, 0, 0, 0, 'manual');
                 }
             }
 
             /// Reset $CFG object.
             if (!empty($this->siteconfig)) {
-                moodle_load_config($cfgbak->dirroot . '/config.php');
+                // TBD: implement this in the future if needed in v2
+                //moodle_load_config($cfgbak->dirroot . '/config.php');
             }
         }
 
@@ -151,7 +152,8 @@ class classmoodlecourse extends data_object_with_custom_fields {
         if ($students = $stu->get_students($this->classid)) {
             /// At this point we must switch over the other Moodle site's DB config, if needed
             if (!empty($this->siteconfig)) {
-                $cfgbak = moodle_load_config($this->siteconfig);
+                // TBD: implement this in the future if needed in v2
+                //$cfgbak = moodle_load_config($this->siteconfig);
             }
 
             /// This has to be put here in case we have a site config reload.
@@ -190,7 +192,8 @@ class classmoodlecourse extends data_object_with_custom_fields {
 
             /// Reset $CFG object.
             if (!empty($this->siteconfig)) {
-                moodle_load_config($cfgbak->dirroot . '/config.php');
+                // TBD: implement this in the future if needed in v2
+                //moodle_load_config($cfgbak->dirroot . '/config.php');
             }
         }
 
@@ -203,6 +206,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
 /**
  * Load a config file from another local Moodle instance and set the database
  * values in the $CFG global and initializing the new ADODB database connection.
+ * NOTE: nothing should be calling this function until (if) we need this functionality in v2
  *
  * @uses $CFG
  * @uses $db
@@ -236,7 +240,6 @@ function moodle_load_config($file, $justroot = false) {
                 if ($arg == '$CFG->wwwroot') {
                     return $val;
                 }
-
             } else {
                 if ($arg == '$CFG->dbtype') {
                     $CFG->dbtype = $val;
@@ -274,9 +277,8 @@ function moodle_load_config($file, $justroot = false) {
             $GLOBALS['CFG'] = $CFG;
             $GLOBALS['db']  = $db;
 
-            // TO-DO: re-enable once factory is ready
-            //$this->_db = database_factory(CURMAN_APPPLATFORM);
-            //$this->_db = database_factory('airtran');
+            $this->_db = database_factory(CURMAN_APPPLATFORM);
+            $this->_db = database_factory('airtran');
 
             $return = true;
         }
@@ -299,7 +301,9 @@ function moodle_get_wwwroot($siteconfig = '') {
         return $CFG->wwwroot;
     }
 
-    return moodle_load_config($siteconfig, true);
+    // TBD: implement this in the future if needed in v2
+    //return moodle_load_config($siteconfig, true);
+    return $CFG->wwwroot;
 }
 
 /**
@@ -316,13 +320,15 @@ function moodle_get_sitename($siteconfig = '') {
     $cfgbak   = $CFG->dirroot . '/config.php';
 
     if (!empty($siteconfig)) {
-        moodle_load_config($siteconfig);
+        // TBD: implement this in the future if needed in v2
+        //moodle_load_config($siteconfig);
     }
 
     $sitename = $DB->get_field('course', 'fullname', array('id' => SITEID));
 
     if (!empty($siteconig)) {
-        moodle_load_config($cfgbak);
+        // TBD: implement this in the future if needed in v2
+        //moodle_load_config($cfgbak);
     }
 
     return $sitename;
@@ -343,13 +349,15 @@ function moodle_get_topcatid($siteconfig = '') {
     $cfgbak = $CFG->dirroot . '/config.php';
 
     if (!empty($siteconfig)) {
-        moodle_load_config($siteconfig);
+        // TBD: implement this in the future if needed in v2
+        //moodle_load_config($siteconfig);
     }
 
     $catid = $DB->get_field('course_categories', 'id', array('parent' => '0'));
 
     if (!empty($siteconig)) {
-        moodle_load_config($cfgbak);
+        // TBD: implement this in the future if needed in v2
+        //moodle_load_config($cfgbak);
     }
 
     return $catid;
@@ -382,7 +390,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 
         if ($autocreate) {
             // auto create is checked, create connect to moodle course
-            $cls        = new cmclass($clsid);
+            $cls        = new pmclass($clsid);
             $temp       = new coursetemplate();
             $temp->data_load_record($cls->courseid);
             // no template defined, so do nothing
@@ -393,13 +401,13 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 
             $obj        = new $classname();
             $courseId   = $temp->location;
-            $moodlecourseid   = content_rollover($courseId, $cls->startdate);
 
-            // Rename the fullname, shortname and idnumber of the restored course
-            $restore->id = $moodlecourseid;
-            $restore->fullname = addslashes($cls->course->name . '_' . $cls->idnumber);
-            $restore->shortname = addslashes($cls->idnumber);
-            $DB->update_record('course', $restore);
+            // TO-DO: re-enable once rollover code is ready
+            //$moodlecourseid   = content_rollover($courseId, $cls->startdate);
+            //$restore->id = $moodlecourseid;
+            //$restore->fullname = addslashes($cls->course->name . '_' . $cls->idnumber);
+            //$restore->shortname = addslashes($cls->idnumber);
+            //$DB->update_record('course', $restore);
         }
 
         $newrec = array(

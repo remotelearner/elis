@@ -397,6 +397,7 @@ $string['no_items_selected'] = 'No items selected';
 $string['no_moodlecourse'] = 'No Moodle courses on this site';
 $string['no_users_matching'] = 'No users matching {$a->match}';
 $string['none'] = 'None';
+$string['notemplate'] = 'Could not auto-create Moodle course: no template defined in course.  Created class without an associated Moodle course.';
 $string['notice_class_deleted'] = 'Deleted the class instance {$a->idnumber}';
 $string['notice_clustercurriculum_deleted'] = 'Deleted the cluster/track association {$a->id}';
 $string['notice_clustertrack_deleted'] = 'Deleted the cluster/track association {$a->id}';
