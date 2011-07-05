@@ -433,19 +433,26 @@ class userset extends data_object_with_custom_fields {
      *
      * @return  int array  The ids of the applicable clusters
      */
-    public static function get_viewable_clusters() {
+    public static function get_viewable_clusters($capabilities = null) {
         global $USER;
 
+        if ($capabilities === null ) {
+            $capabilities = array('block/curr_admin:cluster:view', 'block/curr_admin:cluster:edit');
+        }
+        if (!is_array($capabilities)) {
+            $capabilities = array($capabilities);
+        }
+
+        $clusters = array();
         //retrieve the context at which the current user has the sufficient capability
-        $viewable_contexts = get_contexts_by_capability_for_user('cluster', 'block/curr_admin:cluster:view', $USER->id);
-        $editable_contexts = get_contexts_by_capability_for_user('cluster', 'block/curr_admin:cluster:edit', $USER->id);
+        foreach ($capabilities as $capability) {
+            $contexts = get_contexts_by_capability_for_user('cluster', $capability, $USER->id);
+            //convert context sets to cluster ids
+            $clusters[] = empty($contexts->contexts['cluster']) ? array() : $contexts->contexts['cluster'];
+        }
 
-        //convert context sets to cluster ids
-        $viewable_clusters = empty($viewable_contexts->contexts['cluster']) ? array() : $viewable_contexts->contexts['cluster'];
-        $editable_clusters = empty($editable_contexts->contexts['cluster']) ? array() : $editable_contexts->contexts['cluster'];
-
-        //merge the two sets to get our final result
-        $result = array_unique(array_merge($viewable_clusters, $editable_clusters));
+        //merge the sets to get our final result
+        $result = array_unique(call_user_func_array('array_merge', $clusters));
 
         return $result;
     }

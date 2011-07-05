@@ -192,7 +192,9 @@ class usersetpage extends managementpage {
      * cluster tree parameter for reports)
      */
     function can_do_viewreport() {
-        global $CFG;
+        global $CFG, $DB;
+
+        $id = $this->required_param('id', PARAM_INT);
 
         //needed for execution mode constants
         require_once($CFG->dirroot . '/blocks/php_report/php_report_base.php');
@@ -201,11 +203,45 @@ class usersetpage extends managementpage {
         $execution_mode = $this->optional_param('execution_mode', php_report::EXECUTION_MODE_SCHEDULED, PARAM_INT);
 
         //check the correct capability
-        if ($execution_mode == php_report::EXECUTION_MODE_SCHEDULED) {
-            return $this->_has_capability('block/php_report:schedule');
-        } else {
-            return $this->_has_capability('block/php_report:view');
+        $capability = ($execution_mode == php_report::EXECUTION_MODE_SCHEDULED) ? 'block/php_report:schedule' : 'block/php_report:view';
+        if ($this->_has_capability($capability)) {
+            return true;
         }
+
+        /*
+         * Start of cluster hierarchy extension
+         */
+        $viewable_clusters = cluster::get_viewable_clusters($capability);
+
+        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'block_curr_admin');
+
+        //if the user has no additional access through parent clusters, then they can't view this cluster
+        if (empty($viewable_clusters)) {
+            return false;
+        }
+
+        $like_clause = $DB->sql_like('child_context.path', '?');
+        $parent_path = sql_concat('parent_context.path', "'/%'");
+
+        array($in_clause, $params) = $DB->get_in_or_equal($viewable_clusters);
+
+        //determine if this cluster is the parent of some accessible child cluster
+        $sql = "SELECT parent_context.instanceid
+                FROM {context} parent_context
+                JOIN {context} child_context
+                  ON child_context.instanceid {$in_clause}
+                  AND {$like_clause}
+                  AND parent_context.contextlevel = {$cluster_context_level}
+                  AND child_context.contextlevel = {$cluster_context_level}
+                  AND parent_context.instanceid = {$id}";
+
+        $params += array($parent_path, $cluster_context_level, $cluster_context_level, $id);
+
+        return $DB->record_exists_sql($sql, $params);
+
+        /*
+         * End of cluster hierarchy extension
+         */
     }
 
     function can_do_default() {
