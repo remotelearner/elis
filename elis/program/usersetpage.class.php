@@ -223,7 +223,7 @@ class usersetpage extends managementpage {
         $like_clause = $DB->sql_like('child_context.path', '?');
         $parent_path = sql_concat('parent_context.path', "'/%'");
 
-        array($in_clause, $params) = $DB->get_in_or_equal($viewable_clusters);
+        list($in_clause, $params) = $DB->get_in_or_equal($viewable_clusters);
 
         //determine if this cluster is the parent of some accessible child cluster
         $sql = "SELECT parent_context.instanceid
