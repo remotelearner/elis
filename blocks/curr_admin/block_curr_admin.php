@@ -327,7 +327,13 @@ class block_curr_admin extends block_base {
         switch($access) {
             case 'admin':
             case 'developer':
-                $pages[] = new menuitem('configmanager', new menuitempage('configpage', '', array('section' => 'admn')), null, get_string('configuration'), block_curr_admin_get_item_css_class('configuration'));
+                $pages[] = new menuitem('configmanager',
+                                   new menuitempage('url_page',
+                                           'lib/menuitem.class.php',
+                                           "{$CFG->wwwroot}/admin/settings.php?section=elis_program_settings"),
+                                   'admn', get_string('configuration'),
+                            block_curr_admin_get_item_css_class('configuration')
+                           );
                 $pages[] = new menuitem('notifications', new menuitempage('notifications', 'notificationspage.class.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('notifications'));
                 //$pages[] = new menuitem('dataimport', new menuitempage('dataimportpage', 'elis_ip/elis_ip_page.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('integrationpoint'));
                 //$pages[] = new menuitem('defaultcls', new menuitempage('configclsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcls'));
