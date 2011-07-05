@@ -44,6 +44,7 @@ class studentcurriculumpage extends associationpage2 {
     var $context;
 
     var $params = array();
+    var $curriculum_contexts;
 
     //var $default_tab = 'curriculumstudent';
 
@@ -55,18 +56,16 @@ class studentcurriculumpage extends associationpage2 {
     }
 
     public function _get_page_context() {
-//         $id = $this->optional_param('id', 0, PARAM_INT);
-//         if ($id) {
-//             return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
-//         } else {
-//             return parent::_get_page_context();
-//         }
-        return parent::_get_page_context();
+        $id = $this->optional_param('id', 0, PARAM_INT);
+        if ($id) {
+            return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
+        } else {
+            return parent::_get_page_context();
+        }
     }
 
     public function _get_page_params() {
-        return array('id' => optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
-        //return parent::_get_page_params();
+        return array('id' => $this->optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
     }
 
     function can_do_default() {
@@ -90,7 +89,6 @@ class studentcurriculumpage extends associationpage2 {
             if (isset($cluster_filter_array['where'])) {
                 $cluster_filter = ' WHERE '.$cluster_filter_array['where'];
             }
-
 
             $sql = 'SELECT COUNT(curr.id)
                       FROM {'.userset::TABLE.'} clst
@@ -121,7 +119,8 @@ class studentcurriculumpage extends associationpage2 {
 
    protected function get_parent_page() {
         if (!isset($this->parent_page)) {
-            $id = optional_param('id', NULL, PARAM_INT);
+            $id = isset($this->params['id']) ? $this->params['id'] : NULL;
+            //$id = optional_param('id', NULL, PARAM_INT);
             $this->parent_page = new userpage(array('id' => $id, 'action' => 'view'));
         }
         return $this->parent_page;
@@ -404,18 +403,16 @@ class curriculumstudentpage extends associationpage2 {
     }
 
     public function _get_page_context() {
-//         $id = $this->optional_param('id', 0, PARAM_INT);
-//         if ($id) {
-//             return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
-//         } else {
-//             return parent::_get_page_context();
-//         }
-        return parent::_get_page_context();
+        $id = $this->optional_param('id', 0, PARAM_INT);
+        if ($id) {
+            return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
+        } else {
+            return parent::_get_page_context();
+        }
     }
 
     public function _get_page_params() {
-        return array('id' => optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
-        //return parent::_get_page_params();
+        return array('id' => $this->optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
     }
 
     function can_do_default() {
@@ -441,7 +438,8 @@ class curriculumstudentpage extends associationpage2 {
 
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
-            $id = optional_param('id', NULL, PARAM_INT);
+            $id = isset($this->params['id']) ? $this->params['id'] : NULL;
+            //$id = optional_param('id', NULL, PARAM_INT);
             $this->parent_page = new curriculumpage(array('id' => $id, 'action' => 'view'));
         }
         return $this->parent_page;

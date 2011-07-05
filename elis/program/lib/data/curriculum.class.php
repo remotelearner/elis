@@ -353,8 +353,8 @@ class curriculum extends data_object_with_custom_fields {
 
     public static function curriculum_recurrence_handler($user) {
         global $CFG;
-        // TO-DO: re-enable once notifications is done
-        //require_once($CFG->dirroot.'/curriculum/lib/notifications.php');
+
+        require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
         $sendtouser       = elis::$config->elis_program->notify_curriculumrecurrence_user;

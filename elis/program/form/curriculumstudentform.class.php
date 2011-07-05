@@ -36,9 +36,8 @@ class assigncurriculumform extends selectionform {
 
         $mform->addElement('hidden', 'id');
         $mform->addElement('hidden', '_assign', 'assign');
-        $mform->addElement('hidden', 's', 'curstu');
+        $mform->addElement('hidden', 's', 'stucur');
         $mform->addElement('hidden', '_selection');
-
         $this->add_action_buttons(false, $this->get_submit_button_name());
     }
 }
@@ -52,9 +51,8 @@ class unassigncurriculumform extends selectionform {
         $mform =& $this->_form;
 
         $mform->addElement('hidden', 'id');
-        $mform->addElement('hidden', 's', 'curstu');
+        $mform->addElement('hidden', 's', 'stucur');
         $mform->addElement('hidden', '_selection');
-
         $this->add_action_buttons(false, $this->get_submit_button_name());
     }
 }
