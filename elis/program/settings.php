@@ -51,7 +51,7 @@ if ($ADMIN->fulltree) {
     // Disable Certificates
     $settings->add(new admin_setting_configcheckbox('elis_program/disablecertificates',
                            get_string('disable_cert_setting', 'elis_program'),
-                           '' /* get_string('disable_cert_help', 'elis_program') */, 0));
+                           '' /* get_string('disable_cert_help', 'elis_program') */, 1));
 
     // Certificate border image
     $borders = function_exists('cm_certificate_get_borders')
@@ -92,7 +92,7 @@ if ($ADMIN->fulltree) {
     // Automatically assign an ID number to Moodle users without one
     $settings->add(new admin_setting_configcheckbox('elis_program/auto_assign_user_idnumber',
                            get_string('auto_idnumber_setting', 'elis_program'),
-                           get_string('auto_idnumber_help', 'elis_program'), 0));
+                           get_string('auto_idnumber_help', 'elis_program'), 1));
     // Default Instructor Role
     $roles = array();
     if (!defined('NO_ROLE_ID')) { // TBD
@@ -142,7 +142,7 @@ if ($ADMIN->fulltree) {
     // Display Clusters as the Top Level
     $settings->add(new admin_setting_configcheckbox('elis_program/display_clusters_at_top_level',
                            get_string('top_clusters_setting', 'elis_program'),
-                           get_string('top_clusters_help', 'elis_program'), 0));
+                           get_string('top_clusters_help', 'elis_program'), 1));
     // Display Curricula at the Top Level
     $settings->add(new admin_setting_configcheckbox('elis_program/display_curricula_at_top_level',
                            get_string('top_curricula_setting', 'elis_program'),
@@ -211,7 +211,7 @@ if ($ADMIN->fulltree) {
     // Moodle courses with unknown status treated as auto-created
     $settings->add(new admin_setting_configcheckbox('elis_program/autocreated_unknown_is_yes',
                            get_string('auto_create_setting', 'elis_program'),
-                           get_string('auto_create_help', 'elis_program'), 0));
+                           get_string('auto_create_help', 'elis_program'), 1));
 
     $ADMIN->add('elis_program', $settings);
 }

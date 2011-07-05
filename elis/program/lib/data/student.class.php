@@ -248,7 +248,7 @@ class student extends elis_data_object {
                              array('userid' => $this->userid,
                                    'classid' => $this->classid))) {
             // already enrolled -- pretend we succeeded
-            //error_log('student.class::save() - student already enrolled!');
+            //error_log('student.class::add() - student already enrolled!');
             return true;
         }
 
@@ -276,7 +276,7 @@ class student extends elis_data_object {
                     $status = new Object();
                     $status->message = get_string('unsatisfiedprereqs', self::LANG_FILE);
                     $status->code = 'unsatisfiedprereqs';
-                    //error_log('student.class::save() - student missing prereqs!');
+                    //error_log('student.class::add() - student missing prereqs!');
                     return $status;
                 }
             }
@@ -312,7 +312,7 @@ class student extends elis_data_object {
                 $status = new Object();
                 $status->message = get_string('user_waitlisted', self::LANG_FILE);
                 $status->code = 'user_waitlisted';
-                //error_log('student.class::save() - class full! wait-listed?');
+                //error_log('student.class::add() - class full! wait-listed?');
                 return $status;
             }
         }
@@ -329,7 +329,7 @@ class student extends elis_data_object {
 
         /* $status = */ parent::save(); // WAS: $this->data_insert_record()
         // no return status from save()
-        //error_log("student.class::save() - called parent::save() => {$status}");
+        //error_log("student.class::add() - called parent::save() => {$status}");
 
         /// Enrol them into the Moodle class.
         if ($moodlecourseid = moodle_get_course($this->classid)) {

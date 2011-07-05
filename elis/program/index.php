@@ -143,8 +143,6 @@ $pages = array(
                          'file' => 'plugins/cluster_classification/clusterclassificationpage.class.php'),
     'dim' => array('class' => 'dataimportpage',
                    'file' => 'elis_ip/elis_ip_page.php'),
-    'cfg' => array('class' => 'configpage',
-                   'file' => 'configpage.class.php'),
     'dftcls' => array('class' => 'configclsdefaultpage',
                       'file' => 'configclsdefaultpage.class.php'),
     'dftcrs' => array('class' => 'configcrsdefaultpage',

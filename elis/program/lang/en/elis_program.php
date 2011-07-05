@@ -301,7 +301,7 @@ pages of documentation for ELIS in our <a href="http://training.remote-learner.n
 You can access this course by logging in as a guest.  If you have problems
 accessing this course, please contact your sales representative.';
 $string['elis_settings'] = 'ELIS Settings';
-$string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a->version}';
+$string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a}';
 $string['email'] = 'Email address';
 $string['email2'] = 'Email address 2';
 $string['enrol'] = 'Enrol'; // TBD: Enroll ?
