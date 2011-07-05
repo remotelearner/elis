@@ -692,3 +692,75 @@ function pm_moodle_user_to_pm($mu) {
     }
     return true;
 }
+
+/**
+ * Get all of the data from Moodle and update the curriculum system.
+ * This should do the following:
+ *      - Get all Moodle courses connected with classes.
+ *      - Get all users in each Moodle course.
+ *      - Get grade records from the class's course and completion elements.
+ *      - For each user:
+ *          - Check if they have an enrolment record in CM, and add if not.
+ *          - Update grade information in the enrollment and grade tables in CM.
+ *
+ */
+function pm_update_student_progress() {
+    global $CFG;
+
+    require_once ($CFG->dirroot.'/grade/lib.php');
+    require_once ($CFG->dirroot.'/grade/querylib.php');
+
+    /// Get all grades in all relevant courses for all relevant users.
+    require_once (elispm::lib('data/classmoodlecourse.class.php'));
+    require_once (elispm::lib('data/student.class.php'));
+    require_once (elispm::lib('data/pmclass.class.php'));
+    require_once (elispm::lib('data/course.class.php'));
+
+/// Start with the Moodle classes...
+    mtrace("Synchronizing Moodle class grades<br />\n");
+    pm_synchronize_moodle_class_grades();
+
+    flush(); sleep(1);
+
+/// Now we need to check all of the student and grade records again, since data may have come from sources
+/// other than Moodle.
+    mtrace("Updating all class grade completions.<br />\n");
+    pm_update_enrolment_status();
+
+    return true;
+}
+
+/**
+ * Update enrolment status of users enroled in all classes, completing and locking
+ * records where applicable based on class grade and required completion elements
+ */
+function pm_update_enrolment_status() {
+    global $CFG, $DB;
+
+    require_once(elispm::lib('data/pmclass.class.php'));
+    require_once(elispm::lib('data/student.class.php'));
+
+/// Need to separate this out so that the enrolments by class are checked for completion.
+/// ... for each class and then for each enrolment...
+/// Goal is to minimize database reads, so we can't just instantiate a student object, as
+/// each one will go and get the same things for one class. So, we probably need a class-level
+/// function that then manages the student objects. Once this is in place, add completion notice
+/// to the code.
+
+
+    /// Get all classes with unlocked enrolments.
+    $select = 'SELECT cce.classid as classid, COUNT(cce.userid) as numusers ';
+    $from   = 'FROM {'.student::TABLE.'} cce ';
+    $where  = 'WHERE cce.locked = 0 ';
+    $group  = 'GROUP BY classid ';
+    $order  = 'ORDER BY classid ASC ';
+    $sql    = $select . $from . $where . $group . $order;
+
+    $rs = $DB->get_recordset_sql($sql);
+    foreach ($rs as $rec) {
+        $pmclass = new pmclass($rec->classid);
+        $pmclass->update_enrolment_status();
+        //todo: investigate as to whether ten minutes is too long for one class
+        set_time_limit(600);
+    }
+}

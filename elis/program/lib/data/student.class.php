@@ -179,7 +179,7 @@ class student extends elis_data_object {
             $pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
             if (($clsmdl = $this->_db->get_record(classmoodlecourse::TABLE,
                                    array('classid' => $this->classid))) &&
-                ($course = get_record('course', array('id' => $clsmdl->moodlecourseid)))) {
+                ($course = $this->_db->get_record('course', array('id' => $clsmdl->moodlecourseid)))) {
                 /// If its a Moodle class...
                 $replace = array(fullname($pmuser), $course->fullname);
                 if (!($context = get_context_instance(CONTEXT_COURSE, $course->id))) {

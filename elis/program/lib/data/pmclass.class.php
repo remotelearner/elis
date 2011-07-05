@@ -296,11 +296,10 @@ class pmclass extends data_object_with_custom_fields {
     /////////////////////////////////////////////////////////////////////
 
     /**
-     * Update grades for this class
-     *
-     * @param array The class grades
+     * Update enrolment status of users enroled in the current class, completing and locking
+     * records where applicable based on class grade and required completion elements
      */
-    function update_all_class_grades($classgrades = array()) {
+    function update_enrolment_status() {
         if (isset($this->course) && (get_class($this->course) == 'course')) {
             $elements = $this->course->get_completion_elements();
         } else {
@@ -319,22 +318,24 @@ class pmclass extends data_object_with_custom_fields {
                                     MAX(timegraded) AS maxtime
                               FROM {'.student::TABLE.'} s
                               JOIN {'.coursecompletion::TABLE.'} cc
-                                   ON cc.courseid = '.$this->courseid.'
+                                   ON cc.courseid = :courseid
                          LEFT JOIN {'.student_grade::TABLE.'} grades
                                    ON grades.userid = s.userid
                                       AND grades.completionid = cc.id
                                       AND grades.classid = '.$this->id.'
                                       AND grades.grade >= cc.completion_grade
-                             WHERE s.classid = '.$this->id.' AND s.locked = 0
+                             WHERE s.classid = :innerclassid AND s.locked = 0
                           GROUP BY s.userid
                            ) grades ON grades.userid = s.userid
-                     WHERE s.classid = '.$this->id.' AND s.locked = 0';
+                     WHERE s.classid = :outerclassid AND s.locked = 0';
 
-            $rs = $this->_db->get_recordset_sql($sql);
+            $rs = $this->_db->get_recordset_sql($sql, array('courseid' => $this->courseid,
+                                                            'innerclassid' => $this->id,
+                                                            'outerclassid' => $this->id));
             foreach ($rs as $rec) {
                 if ($rec->incomplete == 0 && $rec->grade > 0 &&
                     $rec->grade >= $this->course->completion_grade) {
-                    $student = new student($rec, $this, null);
+                    $student = new student($rec);
                     $student->completestatusid = STUSTATUS_PASSED;
                     $student->completetime     = $rec->maxtime;
                     $student->credits          = $this->course->credits;
