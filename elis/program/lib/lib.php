@@ -587,12 +587,14 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
                   "username != 'guest'
                AND deleted = 0
                AND confirmed = 1
-               AND mnethostid = {$CFG->mnet_localhost_id}
+               AND mnethostid = :hostid
                AND idnumber != ''
-               AND timemodified >= $fromtime
+               AND timemodified >= :time
                AND NOT EXISTS (SELECT 'x'
                                FROM {".user::TABLE."} cu
-                               WHERE cu.idnumber = {user}.idnumber)");
+                               WHERE cu.idnumber = {user}.idnumber)",
+                  array('hostid' => $CFG->mnet_localhost_id,
+                        'time'   => $fromtime));
 
     if ($rs) {
         require_once elispm::file('cluster/profile/lib.php');
