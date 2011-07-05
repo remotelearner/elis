@@ -61,6 +61,20 @@ $string['association_student'] = 'Associate Student'; // TBD
 $string['association_trackassignment'] = 'Associate Track';
 $string['association_usertrack'] = 'Associate User';
 $string['autocreate'] = 'Auto Create Moodle course from template';
+$string['auto_collapse_setting'] = 'Number of curricula to display before automatically collapsing';
+$string['auto_create_help'] = 'Moodle courses that are linked to ELIS classes are marked as having been auto-created or created manually since ELIS 1.8.7. For courses created prior to 1.8.7, the auto-created status is unknown. This setting indicates whether these courses should be treated as having been auto-created or not.
+
+Currently, this only affects the functionality for copying curricula to a cluster.';
+$string['auto_create_setting'] = 'Moodle courses with unknown status treated as auto-created';
+$string['auto_create_settings'] = 'Auto-create Settings';
+$string['auto_idnumber_help'] = 'Automatically set a Moodle user\'s ID number to be the same as his/her username if he/she does not have one already set.
+
+If a Moodle user does not have an ID number, then no corresponding user will be created in the Curriculum Management system.
+
+However, changing a user\'s ID number may result in duplicate users within the Curriculum Management system, so this option should be turned off if users will be created in Moodle before they are assigned a permanent ID number.
+
+In general, this option should be set to off unless a user\'s ID number will always be the same as his/her username. However, the default is on for backwards compatibility.';
+$string['auto_idnumber_setting'] = 'Automatically assign an ID number to Moodle users without one';
 $string['available_course_corequisites'] = 'Available Course Corequisites';
 $string['available_course_prerequisites'] = 'Available Course Prerequisites';
 
@@ -87,6 +101,13 @@ $string['breadcrumb_waitlistpage'] = 'Waiting List';
 $string['browse'] = 'Browse';
 $string['bulkedit_select_all'] = 'Select All';
 
+$string['cert_border_help'] = 'The certificate border image is what gets displayed as the background for certificates in the curriculum.
+You can add more border images by uploading them to your moodledata directory under the directory: TBD/pix/certificate/borders/';
+$string['cert_border_setting'] = 'Certificate border image';
+$string['cert_seal_help'] = 'The certificate seal image is what gets displayed as the logo on certificates in the curriculum.
+You can add more seal images by uploading them to your moodledata directory under the directory: TBD/pix/certificate/seals/';
+$string['cert_seal_setting'] = 'Certificate seal image';
+$string['certificates'] = 'Certificates';
 $string['class'] = 'Class Instance';
 $string['classreportlinks'] = 'Reports';
 $string['class_assigntrackhead'] = 'Assigned Tracks';
@@ -97,12 +118,21 @@ $string['class_endtime'] = 'End Time';
 $string['class_idnumber'] = 'ID Number';
 $string['class_maxstudents'] = 'Max # of Students';
 $string['class_moodle_course'] = 'Moodle Course';
+$string['class_role_help'] = 'This is the default role to assign to a Curriculum Management user in any classes they create.
+This type of role assignment will not take place for a particular class if that user is already permitted to edit that class.
+To disable this functionality, select "N/A" from the list.';
+$string['class_role_setting'] = 'Default Class Role';
 $string['class_startdate'] = 'Start Date';
 $string['class_starttime'] = 'Start Time';
 $string['class_unassigntrackhead'] = 'Unassigned Tracks';
 $string['clear'] = 'Clear';
 $string['cluster'] = 'User Set';
 $string['clusters'] = 'User Sets';
+$string['cluster_grp_settings'] = 'Cluster Group Settings';
+$string['cluster_role_help'] = 'This is the default role to assign to a Curriculum Management user in any clusters they create.
+This type of role assignment will not take place for a particular cluster if that user is already permitted to edit that cluster.
+To disable this functionality, select "N/A" from the list.';
+$string['cluster_role_setting'] = 'Default Cluster Role';
 $string['completionform:completion_grade'] = 'Completion grade';
 $string['completionform:completion_grade_help'] = '<p>Minimum grade the learner must received to identify the element as &ldquo;completed&rdquo;.</p>';
 $string['completionform:course_idnumber'] = 'ID Number';
@@ -173,11 +203,17 @@ $string['course_code'] = 'Code';
 $string['course_curricula'] = 'Programs';
 $string['course_idnumber'] = 'ID Number';
 $string['course_name'] = 'Name';
+$string['course_role_help'] = 'This is the default role to assign to a Curriculum Management user in any courses they create.
+This type of role assignment will not take place for a particular course if that user is already permitted to edit that course.
+To disable this functionality, select "N/A" from the list.';
+$string['course_role_setting'] = 'Default Course Role';
 $string['course_syllabus'] = 'Description';
 $string['course_version'] = 'Version';
 $string['coursetemplate'] = 'Course Template in Moodle';
 $string['credits'] = 'Credits';
 $string['credits_rec'] = 'Credits Rec\'vd.';
+$string['crlm_admin_blk_settings'] = 'Curriculum Administration Block Settings';
+$string['crlm_expire_setting'] = 'Enable curriculum expiration';
 $string['curricula'] = 'Programs';
 $string['curriculaform:curriculum_description'] = 'Long description';
 $string['curriculaform:curriculum_description_help'] = '<p>Description information about the program. A complete and thorough
@@ -219,13 +255,21 @@ $string['curriculumcourseform:required'] = 'Required';
 $string['curriculumcourseform:required_help'] = '<p>If enabled, completion of the associated course description is required in order for students to complete the selected program.</p>';
 $string['curriculumcourseform:time_period'] = 'Timepreriod';
 $string['curriculumcourseform:time_period_help'] = '<p>The units used in specifying the course description frequency.</p>';
+$string['curriculum_expire_enrol_start'] = 'enrolled into a curriculum';
+$string['curriculum_expire_enrol_complete'] = 'completed a curriculum';
+
 $string['curriculum_idnumber'] = 'ID Number';
 $string['curriculum_description'] = 'Long description';
 $string['curriculum_name'] = 'Name';
 $string['curriculum_reqcredits'] = ' Required Credits';
+$string['curriculum_role_help'] = 'This is the default role to assign to a Curriculum Management user in any curricula they create.
+This type of role assignment will not take place for a particular curriculum if that user is already permitted to edit that curriculum.
+To disable this functionality, select "N/A" from the list.';
+$string['curriculum_role_setting'] = 'Default Curriculum Role';
 $string['curriculum_shortdescription'] = 'Short description';
 
 $string['date_completed'] = 'Date Completed';
+$string['default_role_settings'] = 'Default Role Assignments Settings';
 $string['delete'] = 'Delete';
 $string['deleted_corequisite'] = 'Deleted <b>{$a}</b> corequisite';
 $string['deleted_corequisites'] = 'Deleted <b>{$a}</b> corequisites';
@@ -242,6 +286,7 @@ $string['delete_userset'] = 'Delete User Set';
 $string['deleting_completion_element'] = 'Deleting Learning Objective';
 $string['description'] = 'Description';
 $string['detail'] = 'Detail';
+$string['disable_cert_setting'] = 'Disable Certificates';
 $string['duration'] = 'Duration';
 
 $string['edit'] = 'Edit';
@@ -250,16 +295,29 @@ $string['edit_cancelled'] = 'Edit cancelled';
 $string['edit_course_corequisites'] = 'Edit Course Description Corequisites';
 $string['edit_course_prerequisites'] = 'Edit Course Description Prerequisites';
 $string['edit_student_attendance'] = 'Edit Student Attendance';
-$string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a->version}';
+$string['elis_config'] = 'ELIS Configuration';
 $string['elis_doc_class_link'] = '<strong>Documentation for ELIS</strong> &mdash; we have over 200
 pages of documentation for ELIS in our <a href="http://training.remote-learner.net/course/view.php?id=1090">ELIS Support Course</a>.
 You can access this course by logging in as a guest.  If you have problems
 accessing this course, please contact your sales representative.';
+$string['elis_settings'] = 'ELIS Settings';
+$string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a->version}';
 $string['email'] = 'Email address';
 $string['email2'] = 'Email address 2';
 $string['enrol'] = 'Enrol'; // TBD: Enroll ?
+$string['enrol_elis_help'] = 'If this setting is set, then ELIS will not enrol a user in an ELIS class that is linked with a Moodle class that uses an enrolment plugin other than the ELIS enrolment plugin.
+
+In brief, if an ELIS class is:
+
+* Not linked to a Moodle class: it is enrollable.
+* Linked to a Moodle class that uses the ELIS enrolment plugin: it is enrollable.
+* Linked to a Moodle class that does not use the ELIS enrolment plugin: it is not enrollable.
+
+This does not affect enrolments from Moodle.';
+$string['enrol_elis_setting'] = 'Only allow enrolments to Moodle courses that use the ELIS plugin';
 $string['enrol_select_all'] = 'Select All';
 $string['enrol_selected'] = 'Enrol Selected';
+$string['enrole_sync_settings'] = 'Enrolment Role Sync Settings';
 $string['enrolment'] = 'Enrollment';
 $string['enrolment_time'] = 'Enrollment Time';
 $string['enrolments'] = 'Enrollments';
@@ -279,6 +337,7 @@ $string['existing_course_corequisites'] = 'Existing Course Description Corequisi
 $string['existing_course_prerequisites'] = 'Existing Course Description Prerequisites';
 $string['exit'] = 'Exit';
 $string['expiration'] = 'Expiration';
+$string['expire_basis_setting'] = 'Calculate curriculum expiration based on the time a student';
 
 $string['failclustcpycls'] = 'Failed to copy class instance with idnumber {$a->idnumber}';
 $string['failclustcpycurr'] = 'Program {$a->name} failed to copy';
@@ -310,7 +369,16 @@ $string['field_sync_from_moodle'] = 'Use values from Moodle';
 $string['field_sync_to_moodle'] = 'Copy values to Moodle';
 $string['field_syncwithmoodle'] = 'Sync with Moodle';
 $string['form_error'] = 'Selection page form error - expecting array!';
+$string['fp_grp_cluster_help'] = 'Enabling these setting allows the Curriculum Management system to automatically add users to groups in Moodle courses based on cluster membership. Groups will be created as needed.
+
+For this to work, the associated cluster setting must be turned on for each appropriate cluster as well.
+
+Also, be cautious when enabling these setting, as it will cause the Curriculum Management system to immediately search for all appropriate users across all necessary clusters, which may take a long time.';
+$string['fp_grp_cluster_setting'] = 'Allow front page grouping creation from cluster-based groups';
+$string['fp_pop_clusters_setting'] = 'Allow front page group population from clusters';
 $string['frequency'] = 'Frequency';
+
+$string['grp_pop_cluster_setting'] = 'Allow course-level group population from clusters';
 
 $string['health_checking'] = "Checking...\n<ul>\n";
 $string['health_check_link'] = 'The <a href="{$a->wwwroot}/elis/program/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
@@ -346,6 +414,10 @@ $string['health_user_syncsoln'] = 'Users need to be synchronized by running the 
                 If the script times out (stops loading before indicating success), please open a support ticket to have this run for you.<br/><br/>
                 <a href="{$a->wwwroot}/elis/program/scripts/migrate_moodle_users.php">Fix this now</a>';
 
+$string['icon_collapse_help'] = 'This setting determines the number of icons of each type to display in the Curriculum Administration block.
+This setting applies at the top level and also for nest entities.
+Please set this value to a number greater than zero.';
+$string['icon_collapse_setting'] = 'Number of entity icons to display before collapsing';
 $string['id'] = 'ID';
 $string['idnumber'] = 'ID Number';
 $string['idnumber_already_used'] = 'ID Number is already in use';
@@ -358,7 +430,12 @@ $string['instructor_deleted'] = 'Instructor: {$a->name} deleted.';
 $string['instructor_idnumber'] = 'ID Number';
 $string['instructor_name'] = 'Name';
 $string['instructor_notdeleted'] = 'Instructor: {$a->name} not deleted.';
+$string['instructor_role_help'] = 'The default role assigned to instructors when they are synchronized into Moodle.
+This synchronization typically takes place when user is assigned as an instructor of a class or when a class becomes associated with a Moodle course.
+If this setting not associated with a valid Moodle role, instructors will not be assigned roles when this synchonization takes place.';
+$string['instructor_role_setting'] = 'Default Instructor Role';
 $string['instructors'] = 'Instructors';
+$string['interface_settings'] = 'Interface Settings';
 $string['invalid_category_id'] = 'Invalid category ID';
 $string['invalid_context_level'] = 'Invalid context level';
 $string['invalid_field_id'] = 'Invalid field ID';
@@ -368,6 +445,7 @@ $string['items_found'] = '{$a->num} items found.';
 
 $string['lastname'] = 'Last Name';
 $string['learningplan'] = 'Learning Plan';
+$string['learning_plan_setting'] = 'Turn off learning plan';
 $string['length_description'] = 'Length Description';
 
 $string['makecurcourse'] = 'Make a program for this course description';
@@ -392,12 +470,14 @@ $string['name'] = 'Name';
 $string['n_completed'] = 'Not Completed';
 $string['no_completion_elements'] = 'There are no learning objectives defined.';
 $string['no_courses'] = 'No courses found';
+$string['no_default_role'] = 'N/A';
 $string['no_instructor_matching'] = 'No instructors matching {$a->match}';
 $string['no_items_matching'] = 'No items matching ';
 $string['no_items_selected'] = 'No items selected';
 $string['no_moodlecourse'] = 'No Moodle courses on this site';
 $string['no_users_matching'] = 'No users matching {$a->match}';
 $string['none'] = 'None';
+$string['noroleselected'] = 'N/A';
 $string['notemplate'] = 'Could not auto-create Moodle course: no template defined in course.  Created class without an associated Moodle course.';
 $string['notice_class_deleted'] = 'Deleted the class instance {$a->idnumber}';
 $string['notice_clustercurriculum_deleted'] = 'Deleted the cluster/track association {$a->id}';
@@ -519,7 +599,7 @@ $string['program_reqcredits'] = ' Required Credits';
 $string['record_not_created'] = 'Record not created.';
 $string['record_not_created_reason'] = 'Record not created. Reason: {$a->message}';
 $string['record_not_updated'] = 'Record not updated. Reason: {$a->message}';
-
+$string['redirect_dashbrd_setting'] = 'Redirect users accessing My Moodle to the dashboard';
 $string['registered_date'] = 'Registered date';
 $string['remove_coreq'] = 'Remove co-requisites';
 $string['remove_prereq'] = 'Remove prerequisites';
@@ -550,14 +630,25 @@ $string['students'] = 'Students';
 $string['studentunenrolled'] = 'Student: {$a->name} unenrolled.';
 $string['success_waitlist_remove'] = 'Successfully removed from waitlist.';
 $string['success_waitlist_overenrol'] = 'Successfully over enrolled.';
+$string['sync_instructor_role_help'] = 'If you select a role here, then any user with this role in an ELIS class will be assigned as an instructor in the class.';
+$string['sync_instructor_role_setting'] = 'Instructor Role';
+$string['sync_student_role_help'] = 'If you select a role here, then any user with this role in an ELIS class will be enrolled as a student in the class.';
+$string['sync_student_role_setting'] = 'Student Role';
 
 $string['tag_name'] = 'Name';
 $string['tags'] = 'Tags';
 $string['timecreated'] = 'Creation time';
+$string['time_12h_setting'] = 'Display time selection in a 12 hour format';
 $string['time_period'] = 'Timeperiod';
 $string['time_settings'] = 'Time Settings';
 $string['tips_time_format'] = "The format of this is ' *h, *d, *w, *m, *y ' (representing hours, days, weeks, months and years - where * can be any number) Each format must be separated by a comma";
 $string['time_to_complete'] = 'Time to complete';
+$string['top_clusters_help'] = 'This setting controls whether existing clusters are listed at the top level of the Curriculum Administration block.
+When changing the value of this setting, please navigate to another page to determine whether this functionality is working as expected.';
+$string['top_clusters_setting'] = 'Display Clusters as the Top Level';
+$string['top_curricula_help'] = 'This setting controls whether existing curricula are listed at the top level of the Curriculum Administration block.
+When changing the value of this setting, please navigate to another page to determine whether this functionality is working as expected.';
+$string['top_curricula_setting'] = 'Display Curricula at the Top Level';
 $string['track'] = 'Track';
 $string['trackform:curriculum_curid'] = 'Program';
 $string['trackform:curriculum_curid_help'] = '<p>The program this track is an instance or replica of.</p>';;
@@ -587,7 +678,6 @@ $string['trackuserset_auto_enrol'] = 'Auto-enrol';
 $string['track_assign_users'] = 'Assign users';
 $string['track_autocreate'] = 'Create all class instances';
 $string['track_autocreate_button'] = 'Auto-create class instances';
-$string['track_success_autocreate'] = 'Auto-created class instances for this track';
 $string['track_auto_enrol'] = 'Auto-enrol';
 $string['track_classes'] = 'Class Instances';
 $string['track_click_user_enrol_track'] = 'Click on a user to enrol him/her in the track.';
@@ -602,7 +692,13 @@ $string['track_name'] = 'Name';
 $string['track_no_matching_users'] = 'No matching users.';
 $string['track_num_classes'] = 'Number of class instances';
 $string['track_parcur'] = 'Parent program';
+$string['track_role_help'] = 'This is the default role to assign to a Curriculum Management user in any tracks they create.
+This type of role assignment will not take place for a particular track if that user is already permitted to edit that track.
+To disable this functionality, select "N/A" from the list.';
+$string['track_role_setting'] = 'Default Track Role';
+$string['track_settings'] = 'Track Settings';
 $string['track_startdate'] = 'Start Date';
+$string['track_success_autocreate'] = 'Auto-created class instances for this track';
 $string['transfercredits'] = 'Transfer credits';
 
 $string['unassign'] = 'unassign';
@@ -614,10 +710,12 @@ $string['update_enrolment'] = 'Update Enrollment';
 $string['update_grade'] = 'Update Grade';
 $string['user'] = 'User';
 $string['user_language'] = 'Language';
+$string['user_settings'] = 'User Settings';
 $string['user_waitlisted'] = 'user added to waitlist';
 $string['user_waitlisted_msg'] = 'user with idnumber {$a->user} has been added to the waitlist for class instances {$a->pmclass}';
 $string['users'] = 'Users';
 $string['userbirthdate'] = 'Birth date';
+$string['userdef_tracks_setting'] = 'Turn off user defined tracks';
 $string['usergender'] = 'Gender';
 $string['usermi'] = 'Middle initials';
 $string['useridnumber'] = 'ID number';
