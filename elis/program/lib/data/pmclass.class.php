@@ -322,7 +322,7 @@ class pmclass extends data_object_with_custom_fields {
                          LEFT JOIN {'.student_grade::TABLE.'} grades
                                    ON grades.userid = s.userid
                                       AND grades.completionid = cc.id
-                                      AND grades.classid = '.$this->id.'
+                                      AND grades.classid = :joinclassid
                                       AND grades.grade >= cc.completion_grade
                              WHERE s.classid = :innerclassid AND s.locked = 0
                           GROUP BY s.userid
@@ -330,6 +330,7 @@ class pmclass extends data_object_with_custom_fields {
                      WHERE s.classid = :outerclassid AND s.locked = 0';
 
             $rs = $this->_db->get_recordset_sql($sql, array('courseid' => $this->courseid,
+                                                            'joinclassid' => $this->id,
                                                             'innerclassid' => $this->id,
                                                             'outerclassid' => $this->id));
             foreach ($rs as $rec) {
