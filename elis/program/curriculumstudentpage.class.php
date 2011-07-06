@@ -46,7 +46,7 @@ class studentcurriculumpage extends associationpage2 {
     var $params = array();
     var $curriculum_contexts;
 
-    //var $default_tab = 'curriculumstudent';
+    var $default_tab = 'curriculumstudent';
 
     public function __construct(array $params = null) {
         $this->section = $this->get_parent_page()->section;
@@ -120,7 +120,6 @@ class studentcurriculumpage extends associationpage2 {
    protected function get_parent_page() {
         if (!isset($this->parent_page)) {
             $id = isset($this->params['id']) ? $this->params['id'] : NULL;
-            //$id = optional_param('id', NULL, PARAM_INT);
             $this->parent_page = new userpage(array('id' => $id, 'action' => 'view'));
         }
         return $this->parent_page;
@@ -212,10 +211,11 @@ class studentcurriculumpage extends associationpage2 {
         $curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
         $curriculum_object = $curriculum_contexts->get_filter('curr.id', 'curriculum');
         $curriculum_filter_array = $curriculum_object->get_sql(false,'curr');
-        $curriculum_filter = '0=1';
 
         if (isset($curriculum_filter_array['where'])) {
-            $curriculum_filter = ' WHERE '.$curriculum_filter_array['where'];
+            $curriculum_filter = '('.$curriculum_filter_array['where'].')';
+        } else {
+            $curriculum_filter = 'TRUE';
         }
 
         $where .= " AND (".$curriculum_filter;
@@ -318,9 +318,10 @@ class studentcurriculumpage extends associationpage2 {
 }
 
 class user_curriculum_selection_table extends selection_table {
+    var $cluster_curricula = array();
+
     function __construct(&$items, $columns, $pageurl) {
         global $DB;
-
         parent::__construct($items, $columns, $pageurl);
 
         $this->curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
@@ -393,7 +394,7 @@ class curriculumstudentpage extends associationpage2 {
 
     var $params = array();
 
-    //var $default_tab = 'curriculumstudent';
+    var $default_tab = 'curriculumstudent';
 
     public function __construct(array $params = null) {
         $this->section = $this->get_parent_page()->section;
@@ -439,7 +440,6 @@ class curriculumstudentpage extends associationpage2 {
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
             $id = isset($this->params['id']) ? $this->params['id'] : NULL;
-            //$id = optional_param('id', NULL, PARAM_INT);
             $this->parent_page = new curriculumpage(array('id' => $id, 'action' => 'view'));
         }
         return $this->parent_page;
@@ -537,12 +537,10 @@ class curriculumstudentpage extends associationpage2 {
 
         $where = 'id NOT IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid='.$id.')';
 
-        /* TO-DO: re-enable this once I know how it's done
         $extrasql = $filter->get_sql_filter();
-        if ($extrasql) {
-            $where .= ' AND '.$extrasql;
+        if ($extrasql[0]) {
+            $where .= ' AND '.$extrasql[0];
         }
-        */
 
         if(!curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $id)) {
             //perform SQL filtering for the more "conditional" capability
@@ -613,13 +611,11 @@ class curriculumstudentpage extends associationpage2 {
                 WHERE curass.curriculumid='.$id;
         $where = 'id IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid='.$id.')';
 
-        /* TO-DO: re-enable this once I know how it's done
         $extrasql = $filter->get_sql_filter();
-        if ($extrasql) {
-            $where .= ' AND '.$extrasql;
-            $sql .= ' AND '.$extrasql;
+        if ($extrasql[0]) {
+            $where .= ' AND '.$extrasql[0];
+            $sql .= ' AND '.$extrasql[0];
         }
-        */
 
         $sql .= ' ORDER BY '.$sortclause;
 
@@ -653,10 +649,10 @@ class curriculumstudentpage extends associationpage2 {
 }
 
 class curriculum_user_selection_table extends selection_table {
-    function __construct(&$items, $columns, $pageurl, $decorators=array()) {
+    function __construct(&$items, $columns, $pageurl) {
         global $USER;
 
-        parent::__construct($items, $columns, $pageurl, $decorators);
+        parent::__construct($items, $columns, $pageurl);
         $id = required_param('id', PARAM_INT);
         if (!curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $id)) {
             $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);

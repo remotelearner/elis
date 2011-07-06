@@ -80,18 +80,6 @@ class curriculumstudent extends elis_data_object {
         return context_level_base::get_custom_context_level('curriculum', 'elis_program');
     }
 
-	/* no longer needed
-    public static function delete_for_curriculum($id) {
-	    global $DB;
-		return $DB->delete_records(curriculumstudent::TABLE, array('curriculumid'=>$id));
-	}
-
-	public static function delete_for_user($id) {
-	    global $DB;
-		return $DB->delete_records(curriculumstudent::TABLE, array('userid'=>$id));
-	}
-	*/
-
     /////////////////////////////////////////////////////////////////////
     //                                                                 //
     //  STANDARD FUNCTIONS:                                            //
@@ -108,8 +96,7 @@ class curriculumstudent extends elis_data_object {
     function complete($time = false, $credits = false, $locked = false) {
         global $CFG;
 
-        // TO-DO: re-enable when notifications are done
-        //require_once $CFG->dirroot . 'elis/program/lib/notifications.php';
+        require_once elispm::lib('notifications.php');
 
         $this->completed = STUSTATUS_PASSED;
 
@@ -236,8 +223,7 @@ class curriculumstudent extends elis_data_object {
     public static function curriculum_notcompleted_handler($curstudent) {
         global $CFG, $DB;
 
-        // TO-DO: re-enable when notifications are done
-        //require_once $CFG->dirroot . 'elis/program/lib/notifications.php';
+        require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
         $sendtouser       = elis::$config->elis_program->notify_curriculumnotcompleted_user;
