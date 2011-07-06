@@ -153,7 +153,7 @@ $string['completion_time'] = 'Completion Time';
 $string['confirm_delete_association'] = 'Are you sure you want to delete this entry?';
 $string['confirm_delete_category'] = 'Are you sure you want to delete the category named "{$a->name}"?  This will delete all fields in that category.';
 $string['confirm_delete_class'] = 'Are you sure you want to delete the class instance {$a->idnumber}?';
-$string['confirm_delete_completion'] = 'Are you sure you want to delete the learning objective "name: {$a->name}"?';
+$string['confirm_delete_completion'] = 'Are you sure you want to delete the learning objective "name: {$a}"?';
 $string['confirm_delete_course'] = 'Are you sure you want to delete the course description named {$a->name} (ID number: {$a->idnumber})?';
 $string['confirm_delete_curriculum'] = 'Are you sure you want to delete the program named {$a->name} (ID number: {$a->idnumber})?';
 $string['confirm_delete_field'] = 'Are you sure you want to delete the {$a->datatype} field named "{$a->name}"?';
@@ -605,7 +605,7 @@ $string['remove_coreq'] = 'Remove co-requisites';
 $string['remove_prereq'] = 'Remove prerequisites';
 $string['required'] = 'Required';
 $string['required_credits'] = 'Required Credits';
-$string['required_field'] = 'Error: {$a->name} is a required field';
+$string['required_field'] = 'Error: {$a} is a required field';
 
 $string['save_enrolment_changes'] = 'Save Changes';
 $string['saved'] = 'saved';
