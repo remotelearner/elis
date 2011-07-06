@@ -24,6 +24,27 @@
  *
  */
 
+/**Callback function for ELIS Config/admin: Cluster Group Settings
+ *
+ * @param string $name  the fullname of the parameter that changed
+ * @uses  $DB
+ */
+function cluster_groups_changed($name) {
+    global $DB;
+    $shortname = substr($name, strpos($name, 'elis_program_') + strlen('elis_program_'));
+    // TBD: following didn't work?
+    //$value = elis::$config->elis_program->$shortname;
+    $value = $DB->get_field('config_plugins', 'value',
+                            array('plugin' => 'elis_program',
+                                  'name'   => $shortname));
+    //error_log("/elis/program/lib/lib.php::cluster_groups_changed({$name}) {$shortname} = '{$value}'");
+    if (!empty($value)) {
+        $event = 'crlm_'. $shortname .'_enabled';
+        error_log("Triggering event: $event");
+        events_trigger($event, 0);
+    }
+}
+
 /**
  * Prints the 'All A B C ...' alphabetical filter bar.
  *

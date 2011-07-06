@@ -1676,14 +1676,35 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
     /// Launch change of type for field reqcredits
         $result = $result && change_field_type($table, $field);
 
+        // Fix: Database Error if c.credits empty in SQL, below
+        $sql = "UPDATE mdl_crlm_course SET credits = 0 WHERE credits = ''";
+        $result = $result && $DB->execute($sql);
+
         // update student class credits with decimal credits
         $sql = "UPDATE mdl_crlm_class_enrolment e, mdl_crlm_class cls, mdl_crlm_course c
                    SET e.credits = c.credits
                  WHERE e.classid = cls.id
                    AND cls.courseid = c.id
                    AND e.credits = cast(c.credits as unsigned)";
-        $result = $result && execute_sql($sql);
+
+        $result = $result && $DB->execute($sql);
         upgrade_block_savepoint($result, 2011050202, 'curr_admin');
+    }
+
+    if ($result && $oldversion < 2011070600) {
+        // Convert crlm_config to config_plugins with plugin = 'elis_program'
+        $settings = $DB->get_records('crlm_config');
+        foreach ($settings as $setting) {
+            $setting->plugin = 'elis_program';
+            $result = $DB->insert_record('config_plugins', $setting);
+            if (!$result) {
+                break;
+            }
+        }
+        if ($result) {
+            $DB->delete_records('crlm_config'); // TBD: delete ALL???
+        }
+        upgrade_block_savepoint($result, 2011070600, 'curr_admin');
     }
 
     return $result;
