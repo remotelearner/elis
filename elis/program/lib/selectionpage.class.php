@@ -186,11 +186,30 @@ abstract class selectionpage extends pm_page { // TBD
         echo $OUTPUT->render($pagingbar);
 
         if (!$count) {
-            pmshowmatches($filter['alpha'], $filter['namesearch']);
+            $nomatchlabel = null;
+            if (!empty($this->data_class)) {
+                $nomatchlabel = 'no_'. $this->data_class .'_matching';
+                if (!get_string_manager()->string_exists($nomatchlabel, self::LANG_FILE)) {
+                    error_log("/elis/program/lib/selectionpage.class.php:: string '{$nomatchlabel}' not found.");
+                    $nomatchlabel = null;
+                }
+            }
+            pmshowmatches($filter['alpha'], $filter['namesearch'], null, $nomatchlabel);
         }
 
         echo '<div style="float: right">';
-        $this->print_record_count($count, 'num_user_found');
+        $label = null;
+        if (!empty($this->data_class)) {
+            $label = 'num_'. $this->data_class .'_found';
+            if (!get_string_manager()->string_exists($label, self::LANG_FILE)) {
+                error_log("/elis/program/lib/selectionpage.class.php:: string '{$label}' not found.");
+                $label = null;
+            }
+        }
+        if (empty($label)) {
+            $label = 'num_user_found'; // default if no 'num_{data_class}_found'
+        }
+        $this->print_record_count($count, $label);
         echo '</div>';
 
         if ($count) {

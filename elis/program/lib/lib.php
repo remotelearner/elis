@@ -108,28 +108,32 @@ function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get
     $params = $_GET;
     unset($params['page']);      // TBD: Do we want to go back to the first page
     unset($params[$searchname]); // And clear the search ???
-
-    if (empty($page_or_url)) {
-        $target = new stdClass;
-        $target->url = $CFG->wwwroot .'/elis/program/index.php'; // TBD: 'index.php'
-    } else if (is_object($page_or_url)) {
-        $target = $page_or_url->get_new_page($params);
-    } else {
-        $target = new stdClass;
-        $target->url = $page_or_url;
+    if (isset($params['mode']) && $params['mode'] == 'bare') {
+        unset($params['mode']);
     }
-    $query_pos = strpos($target->url, '?');
-    $action_url = ($query_pos !== false) ? substr($target->url, 0, $query_pos)
-                                         : $target->url;
 
+    $id = optional_param('id', null, PARAM_INT); // TBD: shouldn't be needed???
+    if ($id !== null) {
+        $params['id'] = $id;
+    }
+
+    $target = is_object($page_or_url) ? $page_or_url->get_new_page($params)->url
+                                      : get_pm_url($page_or_url, $params);
+    if (method_exists($target, 'remove_params')) {
+        $target->remove_params($searchname);
+    }
+    $query_pos = strpos($target, '?');
+    $action_url = ($query_pos !== false) ? substr($target, 0, $query_pos)
+                                         : $target;
     echo '<table class="searchbox" style="margin-left:auto;margin-right:auto" cellpadding="10"><tr><td>'; // TBD: style ???
     echo "<form action=\"{$action_url}\" method=\"{$method}\">";
     echo '<fieldset class="invisiblefieldset">';
+    // TBD: merge parameters from $target - if exists
     foreach($params as $key => $val) {
         echo "<input type=\"hidden\" name=\"{$key}\" value=\"{$val}\" />";
-        if (!is_object($page_or_url)) { // TBD
-            $target->url .= (strpos($target->url, '?') === false) ? '?' : '&';
-            $target->url .= "{$key}={$val}"; // required for onclick, below
+        if ($query_pos === false) {
+            $target .= (strpos($target, '?') === false) ? '?' : '&';
+            $target .= "{$key}={$val}"; // required for onclick, below
         }
     }
     if (!empty($extra)) {
@@ -142,7 +146,8 @@ function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get
         if (empty($showall)) {
             $showall = get_string('showallitems', 'elis_program');
         }
-        echo "<input type=\"button\" onclick=\"document.location='{$target->url}';\" value=\"{$showall}\" />";
+        echo "<input type=\"button\" onclick=\"document.location='{$target}';\" value=\"{$showall}\" />";
+        //error_log("/elis/program/lib/lib.php::pmsearchbox() show_all_url = {$target}");
     }
 
     echo '</fieldset></form>';
@@ -165,7 +170,7 @@ function pmshowmatches($alpha, $namesearch, $matchlabel = null, $nomatchlabel = 
         $matchlabel = 'name';
     }
     if (empty($nomatchlabel)) {
-        $nomatchlabel = 'no_users_matching';
+        $nomatchlabel = 'no_item_matching';
     }
     $match = array();
     if ($namesearch !== '') {

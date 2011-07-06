@@ -232,7 +232,6 @@ class instructor extends elis_data_object {
         }
 
         if (empty($this->id) && !$users) {
-            pmshowmatches($alpha, $namesearch);
             $table = NULL;
         } else {
             $insobj = new instructor();
@@ -309,6 +308,9 @@ class instructor extends elis_data_object {
         }
 
         if (empty($this->id)) {
+            if (!$users) {
+                pmshowmatches($alpha, $namesearch);
+            }
             echo '<br /><input type="submit" value="' . get_string('assign_selected', self::LANG_FILE) . '">'."\n";
         } else {
             echo '<br /><input type="submit" value="' . get_string('update_assignment', self::LANG_FILE) . '">'."\n";
