@@ -163,7 +163,7 @@ abstract class selectionpage extends pm_page { // TBD
     protected function print_js_selection_table($table, $filter, $count, $form, $baseurl) {
         global $CFG, $OUTPUT, $PAGE;
         if (!$this->is_bare()) {
-            $title = get_string('breadcrumb_waitlistpage', self::LANG_FILE); // WAS get_string('select');
+            $title = get_string('breadcrumb_'. get_class($this), self::LANG_FILE); // WAS get_string('select');
             echo "<script>var basepage='$baseurl';</script>";
             // ***TBD***
             //$PAGE->requires->js_module(array('yui_yahoo', 'yui_dom', 'yui_event', 'yui_connection'));
