@@ -154,7 +154,7 @@ class studentcurriculumpage extends associationpage2 {
 
         $tmppage = $this->get_basepage();
         $tmppage->params['_assign'] = 'assign';
-        $sparam = stdClass;
+        $sparam = new stdClass;
         $sparam->num = count($data->_selection);
         redirect($tmppage->url, get_string('num_curricula_assigned', 'elis_program', $sparam));
     }
@@ -169,7 +169,7 @@ class studentcurriculumpage extends associationpage2 {
         }
 
         $tmppage = $this->get_basepage();
-        $sparam = stdClass;
+        $sparam = new stdClass;
         $sparam->num = count($data->_selection);
         redirect($tmppage->url, get_string('num_curricula_unassigned', 'elis_program', $sparam));
     }
