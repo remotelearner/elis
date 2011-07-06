@@ -883,7 +883,7 @@ function validate_is_unique(elis_data_object $record, array $fields) {
     foreach ($fields as $field) {
         $filters[] = new field_filter($field, $record->$field);
     }
-    if (isset($record->id)) {
+    if (!empty($record->id)) {
         $filters[] = new field_filter('id', $record->id, field_filter::NEQ);
     }
     if ($classname::exists($filters, $record->get_db())) {
