@@ -56,7 +56,7 @@ class curriculumcoursebasepage extends associationpage {
 
     function can_do_add() {
         // the user must have 'block/curr_admin:associate' permissions on both ends
-        /* TO-DO: re-enable this check when correct params are being passed
+        /* TO-DO: the following required params are not available for some reason
         $curriculumid = $this->required_param('curriculumid', PARAM_INT);
         $courseid = $this->required_param('courseid', PARAM_INT);
 
@@ -93,6 +93,19 @@ class curriculumcoursepage extends curriculumcoursebasepage {
     var $section = 'curr';
 
     var $parent_data_class = 'curriculum';
+
+    public function _get_page_context() {
+        $id = $this->optional_param('id', 0, PARAM_INT);
+        if ($id) {
+            return get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $id);
+        } else {
+            return parent::_get_page_context();
+        }
+    }
+
+    public function _get_page_params() {
+        return array('id' => $this->optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
+    }
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
@@ -193,14 +206,15 @@ class curriculumcoursepage extends curriculumcoursebasepage {
                 $output .= "\n";
             }
 
+            /* TO-DO: make this check work again; what is the proper way to get iscustom value?
             $curriculum = $curcrs->curriculum;
-
             if ($curriculum->iscustom) {
                 $curassid = $this->_db->get_field(curriculumstudent::TABLE, 'id', array('curriculumid'=>$curriculum->id));
                 $stucur   = new curriculumstudent($curassid);
                 redirect('index.php?s=stucur&amp;section=curr&amp;id=' . $stucur->id .
                                  '&amp;action=edit', $output, 3);
             }
+            */
 
             echo $output;
             // recreate the form, to reflect changes in the lists
@@ -258,14 +272,14 @@ class curriculumcoursepage extends curriculumcoursebasepage {
                 $output .= "\n";
             }
 
-            $curriculum = $curcrs->curriculum;
-
+            /* TO-DO: make this check work again; what is the proper way to get iscustom value?
             if ($curriculum->iscustom) {
                 $curassid = $this->_db->get_field(curriculumstudent::TABLE, 'id', array('curriculumid'=>$curriculum->id));
                 $stucur   = new curriculumstudent($curassid);
                 redirect('index.php?s=stucur&amp;section=curr&amp;id=' . $stucur->id .
                                  '&amp;action=edit', $output, 3);
             }
+            */
 
             echo $output;
             // recreate the form, to reflect changes in the lists
@@ -285,6 +299,19 @@ class coursecurriculumpage extends curriculumcoursebasepage {
     var $section = 'curr';
 
     var $parent_data_class = 'course';
+
+    public function _get_page_context() {
+        $id = $this->optional_param('id', 0, PARAM_INT);
+        if ($id) {
+            return get_context_instance(context_level_base::get_custom_context_level('course', 'elis_program'), $id);
+        } else {
+            return parent::_get_page_context();
+        }
+    }
+
+    public function _get_page_params() {
+        return array('id' => $this->optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
+    }
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);

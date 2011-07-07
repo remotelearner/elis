@@ -85,7 +85,7 @@ class course extends data_object_with_custom_fields {
     private $form_url = null;
 
     var $courseid;
-    var $_dbloaded;
+    var $_dbloaded = true;
 
     static $delete_is_complex = true;
 
@@ -98,6 +98,14 @@ class course extends data_object_with_custom_fields {
     //  FORM FUNCTIONS:                                                //
     //                                                                 //
     /////////////////////////////////////////////////////////////////////
+
+    protected function get_base_url($withquerystring = true) {
+        if ($withquerystring) {
+            return get_pm_url();
+        } else {
+            return get_pm_url()->out_omit_querystring();
+        }
+    }
 
     public function setUrl($url = null, $action = array()) {
         if(!($url instanceof moodle_url)) {

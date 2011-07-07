@@ -35,9 +35,10 @@ class curriculumcourse extends elis_data_object {
     const TABLE = 'crlm_curriculum_course';
 
     var $verbose_name = 'curriculumcourse';
-    var $_dbloaded;
-    var $courseid;
-    var $curriculumid;
+    var $_dbloaded = TRUE;  // TO-DO: we probably don't need this anymore?
+
+    var $courseid;      // TO-DO: this needs to be initially set someplace
+    var $curriculumid;  // TO-DO: this needs to be initially set someplace
 
     static $associations = array(
         'coursecorequisite' => array(
@@ -89,58 +90,12 @@ class curriculumcourse extends elis_data_object {
     }
     ';
 
-    /**
-     * Contructor.
-     *
-     * @param $curcrsdata int/object/array The data id of a data record or data elements to load manually.
-     */
-//     function curriculumcourse ($curcrsdata = false) {
-//         parent::datarecord();
-
-//         $this->set_table(CURCRSTABLE);
-//         $this->add_property('id', 'int');
-//         $this->add_property('curriculumid', 'int');
-//         $this->add_property('courseid', 'int');
-//         $this->add_property('required', 'int');
-//         $this->add_property('frequency', 'int');
-//         $this->add_property('timeperiod', 'string');
-//         $this->add_property('position', 'int');
-//         $this->add_property('timecreated', 'int');
-//         $this->add_property('timemodifieid', 'int');
-
-//         if (is_numeric($curcrsdata)) {
-//             $this->data_load_record($curcrsdata);
-//         } else if (is_array($curcrsdata)) {
-//             $this->data_load_array($curcrsdata);
-//         } else if (is_object($curcrsdata)) {
-//             $this->data_load_array(get_object_vars($curcrsdata));
-//         }
-
-//         if (!empty($this->curriculumid)) {
-//             $this->curriculum = new curriculum($this->curriculumid);
-//         }
-
-//         if (!empty($this->courseid)) {
-//             $this->course = new course($this->courseid);
-//         }
-//     }
-
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('curriculum', 'elis_program');
     }
 
-    public static function delete_for_curriculum($id) {
-        global $DB;
-        return $DB->delete_records(curriculumcourse::TABLE, array('curriculumid'=>$id));
-    }
-
-    public static function delete_for_course($id) {
-        global $DB;
-    	return $DB->delete_records(curriculumcourse::TABLE, array('courseid'=>$id));
-    }
-
     function delete() {
-        // TO-DO: since tracks do not have fields that are associated, should this delete function still be called or is something added to associations array?
+        // TO-DO: since tracks seem not (?) have fields that are associated, should this delete function still be called or is something added to associations array?
         //$this->delete_all_track_classes();
 
         parent::delete();
@@ -306,7 +261,6 @@ class curriculumcourse extends elis_data_object {
         return new prerequisiteform($this->form_url, $config_data);
     }
 
-
     /**
      * Return the HTML to edit the prerequisites for a specific course.
      *
@@ -355,7 +309,6 @@ class curriculumcourse extends elis_data_object {
         unset($courseListing[$this->courseid]);
 
         if (!empty($courseListing)) {
-
             $availableCorequisites = array();
 
             foreach ($courseListing as $crsid => $crs) {
@@ -394,7 +347,6 @@ class curriculumcourse extends elis_data_object {
 
         return $output;
     }
-
 
     /////////////////////////////////////////////////////////////////////
     //                                                                 //
@@ -470,7 +422,6 @@ class curriculumcourse extends elis_data_object {
         return $result;
     }
 
-
     /**
      * Delete a course pre-requisite.
      *
@@ -485,7 +436,6 @@ class curriculumcourse extends elis_data_object {
         return $this->_db->delete_records(courseprerequisite::TABLE, array('curriculumcourseid'=>$this->id, 'courseid'=>$cid));
     }
 
-
     /**
      * Determine if a given course ID is a prerequisite for the current course.
      *
@@ -499,7 +449,6 @@ class curriculumcourse extends elis_data_object {
 
         return $this->_db->record_exists(courseprerequisite::TABLE, array('curriculumcourseid'=>$this->id, 'courseid'=>$cid));
     }
-
 
     /**
      * Get a list of the course IDs that are a prerequisite for the current corse.
@@ -549,7 +498,6 @@ class curriculumcourse extends elis_data_object {
         return !$this->_db->record_exists_sql($sql, array($userid, $this->curriculumid, $this->courseid));
     }
 
-
     /**
      * Add a new corequisite for a course.
      *
@@ -587,7 +535,6 @@ class curriculumcourse extends elis_data_object {
         return $result;
     }
 
-
     /**
      * Delete a course pre-requisite.
      *
@@ -602,7 +549,6 @@ class curriculumcourse extends elis_data_object {
         return $this->_db->delete_records(coursecorequisite::TABLE, array('curriculumcourseid'=>$this->id, 'courseid'=>$cid));
     }
 
-
     /**
      * Determine if a given course ID is a corequisite for the current course.
      *
@@ -616,7 +562,6 @@ class curriculumcourse extends elis_data_object {
 
         return $this->_db->record_exists(coursecorequisite::TABLE, array('curriculumcourseid'=>$this->id, 'courseid'=>$cid));
     }
-
 
     /**
      * Get a list of the course IDs that are a corequisite for the current corse.
@@ -726,9 +671,7 @@ class curriculumcourse extends elis_data_object {
     }
 }
 
-
 /// Non-class supporting functions. (These may be able to replaced by a generic container/listing class)
-
 
 /**
  * Gets a curriculum course listing with specific sort and other filters.
@@ -780,7 +723,6 @@ function curriculumcourse_get_listing($curid, $sort='position', $dir='ASC', $sta
 
     return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
-
 
 function curriculumcourse_count_records($curid, $namesearch = '', $alpha = '') {
     global $DB;

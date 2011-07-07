@@ -31,6 +31,7 @@ require_once elispm::lib('data/curriculumcourse.class.php');
  * class for the course curriculum and curriculum course form that needs to be sublcassed
  */
 class coursecurriculumbaseform extends cmform {
+
     private $timeperiod_values = array(
         'year'  => 'Years',  // Default
         'month' => 'Months',
@@ -39,7 +40,7 @@ class coursecurriculumbaseform extends cmform {
     );
 
     public function body_definition() {
-        print_error('Abstract form_definition() method in class '.get_class($this).' must be overriden, please fix the code.');
+        print_error('Abstract body_definition() method in class '.get_class($this).' must be overriden, please fix the code.');
     }
 
     public function definition() {
@@ -83,7 +84,7 @@ class coursecurriculumform extends coursecurriculumbaseform {
         $coursecurriculum = new curriculumcourse();
         $coursecurriculum->courseid = $parent_obj->id;
 
-        if(isset($this->_customdata['obj']->course) && isset($this->_customdata['obj']->curriculum)) {
+        if(isset($this->_customdata['obj'])) {
             $course = $this->_customdata['obj']->course;
             $curriculum = $this->_customdata['obj']->curriculum;
             $curriculas[$curriculum->id] = $curriculum->name;

@@ -256,17 +256,17 @@ class coursepage extends managementpage {
 
         if ($elements) {
             $columns = array(
-                'idnumber'          => get_string('completion_idnumber','elis_program'),
-                'name'              => get_string('completion_name','elis_program'),
-                'description'       => get_string('completion_description','elis_program'),
-                'completion_grade'  => get_string('completion_grade','elis_program'),
-                'required'          => get_string('required','elis_program')
+                'idnumber'          => array('header'=>get_string('completion_idnumber','elis_program')),
+                'name'              => array('header'=>get_string('completion_name','elis_program')),
+                'description'       => array('header'=>get_string('completion_description','elis_program')),
+                'completion_grade'  => array('header'=>get_string('completion_grade','elis_program')),
+                'required'          => array('header'=>get_string('required','elis_program'))
                 );
 
             foreach ($columns as $column => $cdesc) {
                 $columndir = "ASC";
                 $columnicon = $columndir == "ASC" ? "down":"up";
-                $columnicon = " <img src=\"$CFG->pixpath/t/$columnicon.gif\" alt=\"\" />";
+                $columnicon = " <img src=\"".$OUTPUT->pix_url('t/'.$columnicon)."\" alt=\"\" />";
 
                 $$column = $cdesc;
                 $table->head[]  = $$column;
@@ -298,6 +298,7 @@ class coursepage extends managementpage {
                 $table->data[] = $newarr;
             }
 
+            $table = new display_table($newarr, $columns);
             $output .= $table->get_html();
         } else {
             $output .= '<div align="center">' . get_string('no_completion_elements', 'elis_program') . '</div>';
