@@ -97,6 +97,7 @@ function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
  * @param string $extra              extra html for input fields displayed BEFORE search fields. i.e. student.class.php::edit_form_html() 
  *                                   $extra defaults to none.
  * @uses $_GET
+ * @uses $_POST
  * @uses $CFG
  * @todo convert echo HTML statements to use M2 html_writer, etc.
  * @todo support moodle_url as 1st parameter and not just string url.
@@ -111,16 +112,20 @@ function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get
     if (isset($params['mode']) && $params['mode'] == 'bare') {
         unset($params['mode']);
     }
-
-    $id = optional_param('id', null, PARAM_INT); // TBD: shouldn't be needed???
-    if ($id !== null) {
-        $params['id'] = $id;
+    if (empty($params)) {
+        //error_log("pmsearchbox() _GET empty using _POST");
+        $params = $_POST;
+        unset($params['page']);      // TBD: Do we want to go back to the first page
+        unset($params[$searchname]); // And clear the search ???
+        if (isset($params['mode']) && $params['mode'] == 'bare') {
+            unset($params['mode']);
+        }
     }
 
     $target = is_object($page_or_url) ? $page_or_url->get_new_page($params)->url
                                       : get_pm_url($page_or_url, $params);
     if (method_exists($target, 'remove_params')) {
-        $target->remove_params($searchname);
+        $target->remove_params($searchname); // TBD: others too???
     }
     $query_pos = strpos($target, '?');
     $action_url = ($query_pos !== false) ? substr($target, 0, $query_pos)
