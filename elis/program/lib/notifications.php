@@ -45,7 +45,7 @@
  */
 
 global $CFG;
-
+require_once ($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/instructor.class.php');
 
