@@ -240,7 +240,7 @@ class curriculumcoursepage extends curriculumcoursebasepage {
             /// Process requested corequisite additions.
             $coreqs = isset($form_data->coreqs)? $form_data->coreqs: array();
             foreach ($coreqs as $coreq) {
-                if (coursepage::_has_capability('block/curr_admin:course:view', $prereq)
+                if (coursepage::_has_capability('block/curr_admin:course:view', $coreq)
                     && $curcrs->add_corequisite($coreq, !empty($form_data->add_to_curriculum))) {
                     $added++;
                 }
