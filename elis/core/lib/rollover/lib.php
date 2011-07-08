@@ -53,8 +53,9 @@ function course_rollover($courseid, $categoryid = null) {
             return false;
         }
 
-        //perform backup
+        //perform backup without including user info
         $controller = new rollover_backup_controller($courseid);
+        $controller->get_plan()->get_setting('users')->set_value(false);
         $controller->execute_plan();
 
         //get directory name for use in restore
@@ -66,8 +67,9 @@ function course_rollover($courseid, $categoryid = null) {
         //create the new course
         $result = restore_dbops::create_new_course($course->fullname, $course->shortname, $categoryid);
 
-        //restore the content into it within the current transaction
+        //restore the content into it within the current transaction without including user information
         $controller = new rollover_restore_controller($backupid, $result);
+        $controller->get_plan()->get_setting('users')->set_value(false);
         $controller->execute_precheck();
         $controller->execute_plan();
 
