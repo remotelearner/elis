@@ -163,7 +163,16 @@ abstract class selectionpage extends pm_page { // TBD
     protected function print_js_selection_table($table, $filter, $count, $form, $baseurl) {
         global $CFG, $OUTPUT, $PAGE;
         if (!$this->is_bare()) {
-            $title = get_string('breadcrumb_'. get_class($this), self::LANG_FILE); // WAS get_string('select');
+            $title_sid = 'breadcrumb_'. get_class($this);
+            if (method_exists($this, 'is_assigning') && !$this->is_assigning() &&
+                get_string_manager()->string_exists($title_sid .'_unassign', self::LANG_FILE)) {
+                $title_sid .= '_unassign';
+            }
+            if (!get_string_manager()->string_exists($title_sid, self::LANG_FILE)) {
+                $title_sid = get_string('select');
+            }
+            $title = get_string($title_sid, self::LANG_FILE);
+
             echo "<script>var basepage='$baseurl';</script>";
             // ***TBD***
             //$PAGE->requires->yui2_lib(array('yahoo', 'dom', 'event', 'connection'));
