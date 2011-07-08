@@ -168,10 +168,11 @@ abstract class selectionpage extends pm_page { // TBD
                 get_string_manager()->string_exists($title_sid .'_unassign', self::LANG_FILE)) {
                 $title_sid .= '_unassign';
             }
-            if (!get_string_manager()->string_exists($title_sid, self::LANG_FILE)) {
-                $title_sid = get_string('select');
+            if (get_string_manager()->string_exists($title_sid, self::LANG_FILE)) {
+                $title = get_string($title_sid, self::LANG_FILE);
+            } else {
+                $title = get_string('select');
             }
-            $title = get_string($title_sid, self::LANG_FILE);
 
             echo "<script>var basepage='$baseurl';</script>";
             // ***TBD***
