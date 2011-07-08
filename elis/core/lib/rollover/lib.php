@@ -38,10 +38,21 @@ require_once(elis::lib('rollover/restore/rollover_restore_controller.class.php')
  * @param int $categoryid
  * @return int|boolean Id of the newly created course
  */
-function course_rollover($courseid, $categoryid = NULL) {
+function course_rollover($courseid, $categoryid = null) {
     global $DB;
 
     if ($course = $DB->get_record('course', array('id' => $courseid))) {
+        //figure out the category
+        if ($categoryid === null) {
+            $categoryid = $course->category;
+        }
+
+        //make sure the category is valid
+        if (!$DB->record_exists('course_categories', array('id' => $categoryid))) {
+            //invalid category
+            return false;
+        }
+
         //perform backup
         $controller = new rollover_backup_controller($courseid);
         $controller->execute_plan();
@@ -53,10 +64,10 @@ function course_rollover($courseid, $categoryid = NULL) {
         $transaction = $DB->start_delegated_transaction();
 
         //create the new course
-        $result = restore_dbops::create_new_course($course->fullname, $course->shortname, $course->category);
+        $result = restore_dbops::create_new_course($course->fullname, $course->shortname, $categoryid);
 
         //restore the content into it within the current transaction
-        $controller = new rollover_restore_controller($backupid, $courseid);
+        $controller = new rollover_restore_controller($backupid, $result);
         $controller->execute_precheck();
         $controller->execute_plan();
 
@@ -69,5 +80,8 @@ function course_rollover($courseid, $categoryid = NULL) {
         }
 
         return $result;
+    } else {
+        //invalid course specified
+        return false;
     }
 }
