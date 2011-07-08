@@ -6,19 +6,19 @@
   <TABLES>
     <TABLE NAME="crlm_class" COMMENT="crlm_class table retrofitted from MySQL" NEXT="crlm_class_enrolment">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="courseid"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="idnumber"/>
-        <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="courseid" NEXT="startdate"/>
-        <FIELD NAME="startdate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="idnumber" NEXT="enddate"/>
-        <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="startdate" NEXT="duration"/>
-        <FIELD NAME="duration" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="enddate" NEXT="starttimehour"/>
-        <FIELD NAME="starttimehour" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="duration" NEXT="starttimeminute"/>
-        <FIELD NAME="starttimeminute" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="starttimehour" NEXT="endtimehour"/>
-        <FIELD NAME="endtimehour" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="starttimeminute" NEXT="endtimeminute"/>
-        <FIELD NAME="endtimeminute" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="endtimehour" NEXT="maxstudents"/>
-        <FIELD NAME="maxstudents" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="endtimeminute" NEXT="environmentid"/>
-        <FIELD NAME="environmentid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="maxstudents" NEXT="enrol_from_waitlist"/>
-        <FIELD NAME="enrol_from_waitlist" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="environmentid"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="idnumber"/>
+        <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="courseid" NEXT="startdate"/>
+        <FIELD NAME="startdate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="idnumber" NEXT="enddate"/>
+        <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="startdate" NEXT="duration"/>
+        <FIELD NAME="duration" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="enddate" NEXT="starttimehour"/>
+        <FIELD NAME="starttimehour" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="duration" NEXT="starttimeminute"/>
+        <FIELD NAME="starttimeminute" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="starttimehour" NEXT="endtimehour"/>
+        <FIELD NAME="endtimehour" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="starttimeminute" NEXT="endtimeminute"/>
+        <FIELD NAME="endtimeminute" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="endtimehour" NEXT="maxstudents"/>
+        <FIELD NAME="maxstudents" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="endtimeminute" NEXT="environmentid"/>
+        <FIELD NAME="environmentid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="maxstudents" NEXT="enrol_from_waitlist"/>
+        <FIELD NAME="enrol_from_waitlist" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="environmentid"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -32,16 +32,16 @@
     </TABLE>
     <TABLE NAME="crlm_class_enrolment" COMMENT="crlm_class_enrolment table retrofitted from MySQL" PREVIOUS="crlm_class" NEXT="crlm_class_graded">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="classid"/>
-        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="classid" NEXT="enrolmenttime"/>
-        <FIELD NAME="enrolmenttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="userid" NEXT="completetime"/>
-        <FIELD NAME="completetime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="enrolmenttime" NEXT="endtime"/>
-        <FIELD NAME="endtime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="the date the course must be completed by" PREVIOUS="completetime" NEXT="completestatusid"/>
-        <FIELD NAME="completestatusid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="endtime" NEXT="grade"/>
-        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="completestatusid" NEXT="credits"/>
-        <FIELD NAME="credits" TYPE="number" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" DECIMALS="2" COMMENT="Credits awarded for this class." PREVIOUS="grade" NEXT="locked"/>
-        <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Lock the enrolment value." PREVIOUS="credits"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
+        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="classid" NEXT="enrolmenttime"/>
+        <FIELD NAME="enrolmenttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid" NEXT="completetime"/>
+        <FIELD NAME="completetime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="enrolmenttime" NEXT="endtime"/>
+        <FIELD NAME="endtime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="the date the course must be completed by" PREVIOUS="completetime" NEXT="completestatusid"/>
+        <FIELD NAME="completestatusid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="endtime" NEXT="grade"/>
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="completestatusid" NEXT="credits"/>
+        <FIELD NAME="credits" TYPE="number" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" DECIMALS="2" COMMENT="Credits awarded for this class." PREVIOUS="grade" NEXT="locked"/>
+        <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Lock the enrolment value." PREVIOUS="credits"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -55,14 +55,14 @@
     </TABLE>
     <TABLE NAME="crlm_class_graded" COMMENT="Elements from crlm_course_completion that have been recorded for a given class of that course." PREVIOUS="crlm_class_enrolment" NEXT="crlm_class_instructor">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="classid"/>
-        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The foreign key id of crlm_class." PREVIOUS="id" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The foreign key if of crlm_user." PREVIOUS="classid" NEXT="completionid"/>
-        <FIELD NAME="completionid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The foreign key id of crlm_course_completion." PREVIOUS="userid" NEXT="grade"/>
-        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The numeric grade (0-100)." PREVIOUS="completionid" NEXT="locked"/>
-        <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="If locked, will not be updated by external systems." PREVIOUS="grade" NEXT="timegraded"/>
-        <FIELD NAME="timegraded" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Time that the activity was graded in Moodle" PREVIOUS="locked" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Last time stamp the grade was changed." PREVIOUS="timegraded"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
+        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key id of crlm_class." PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key if of crlm_user." PREVIOUS="classid" NEXT="completionid"/>
+        <FIELD NAME="completionid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key id of crlm_course_completion." PREVIOUS="userid" NEXT="grade"/>
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="The numeric grade (0-100)." PREVIOUS="completionid" NEXT="locked"/>
+        <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="If locked, will not be updated by external systems." PREVIOUS="grade" NEXT="timegraded"/>
+        <FIELD NAME="timegraded" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time that the activity was graded in Moodle" PREVIOUS="locked" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last time stamp the grade was changed." PREVIOUS="timegraded"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -76,11 +76,11 @@
     </TABLE>
     <TABLE NAME="crlm_class_instructor" COMMENT="crlm_class_instructor table retrofitted from MySQL" PREVIOUS="crlm_class_graded" NEXT="crlm_class_moodle">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="classid"/>
-        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="classid" NEXT="assigntime"/>
-        <FIELD NAME="assigntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="userid" NEXT="completetime"/>
-        <FIELD NAME="completetime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="assigntime"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
+        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="classid" NEXT="assigntime"/>
+        <FIELD NAME="assigntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid" NEXT="completetime"/>
+        <FIELD NAME="completetime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="assigntime"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -92,13 +92,13 @@
     </TABLE>
     <TABLE NAME="crlm_class_moodle" COMMENT="crlm_class_moodle table retrofitted from MySQL" PREVIOUS="crlm_class_instructor" NEXT="crlm_course">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="classid"/>
-        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="moodlecourseid"/>
-        <FIELD NAME="moodlecourseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="classid" NEXT="enroltype"/>
-        <FIELD NAME="enroltype" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Automatically assign roles in Moodle course, or allow user to choose. 0 = auto; 1 = choice." PREVIOUS="moodlecourseid" NEXT="enrolplugin"/>
-        <FIELD NAME="enrolplugin" TYPE="char" LENGTH="20" NOTNULL="false" DEFAULT="crlm" SEQUENCE="false" ENUM="false" COMMENT="The CM enrolment plug-in name used for this connection." PREVIOUS="enroltype" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="enrolplugin" NEXT="autocreated"/>
-        <FIELD NAME="autocreated" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="false" DEFAULT="-1" SEQUENCE="false" ENUM="false" PREVIOUS="timemodified"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
+        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="moodlecourseid"/>
+        <FIELD NAME="moodlecourseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="classid" NEXT="enroltype"/>
+        <FIELD NAME="enroltype" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Automatically assign roles in Moodle course, or allow user to choose. 0 = auto; 1 = choice." PREVIOUS="moodlecourseid" NEXT="enrolplugin"/>
+        <FIELD NAME="enrolplugin" TYPE="char" LENGTH="20" NOTNULL="false" DEFAULT="crlm" SEQUENCE="false" COMMENT="The CM enrolment plug-in name used for this connection." PREVIOUS="enroltype" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="enrolplugin" NEXT="autocreated"/>
+        <FIELD NAME="autocreated" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="false" DEFAULT="-1" SEQUENCE="false" PREVIOUS="timemodified"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="mdl_currclasmood_clamoo_uix"/>
@@ -107,21 +107,21 @@
     </TABLE>
     <TABLE NAME="crlm_course" COMMENT="crlm_course table retrofitted from MySQL" PREVIOUS="crlm_class_moodle" NEXT="crlm_course_completion">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="code"/>
-        <FIELD NAME="code" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="name" NEXT="idnumber"/>
-        <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="code" NEXT="syllabus"/>
-        <FIELD NAME="syllabus" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="idnumber" NEXT="documents"/>
-        <FIELD NAME="documents" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="syllabus" NEXT="lengthdescription"/>
-        <FIELD NAME="lengthdescription" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="documents" NEXT="length"/>
-        <FIELD NAME="length" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="lengthdescription" NEXT="credits"/>
-        <FIELD NAME="credits" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="length" NEXT="completion_grade"/>
-        <FIELD NAME="completion_grade" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The grade required for course completion (0-100)" PREVIOUS="credits" NEXT="environmentid"/>
-        <FIELD NAME="environmentid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="completion_grade" NEXT="cost"/>
-        <FIELD NAME="cost" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="environmentid" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="cost" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated" NEXT="version"/>
-        <FIELD NAME="version" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="timemodified"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="code"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="name" NEXT="idnumber"/>
+        <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="code" NEXT="syllabus"/>
+        <FIELD NAME="syllabus" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="idnumber" NEXT="documents"/>
+        <FIELD NAME="documents" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="syllabus" NEXT="lengthdescription"/>
+        <FIELD NAME="lengthdescription" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="documents" NEXT="length"/>
+        <FIELD NAME="length" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="lengthdescription" NEXT="credits"/>
+        <FIELD NAME="credits" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" PREVIOUS="length" NEXT="completion_grade"/>
+        <FIELD NAME="completion_grade" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="The grade required for course completion (0-100)" PREVIOUS="credits" NEXT="environmentid"/>
+        <FIELD NAME="environmentid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="completion_grade" NEXT="cost"/>
+        <FIELD NAME="cost" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" PREVIOUS="environmentid" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="cost" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated" NEXT="version"/>
+        <FIELD NAME="version" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="timemodified"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -135,13 +135,13 @@
     </TABLE>
     <TABLE NAME="crlm_course_completion" COMMENT="Defines any extra elements that must be completed for a course." PREVIOUS="crlm_course" NEXT="crlm_course_corequisite">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="courseid"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Foreign key to crlm_course." PREVIOUS="id" NEXT="idnumber"/>
-        <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Unique identifier used to link with external grade elements." PREVIOUS="courseid" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Normal language name to give grade element." PREVIOUS="idnumber" NEXT="description"/>
-        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Text field for further description of the element." PREVIOUS="name" NEXT="completion_grade"/>
-        <FIELD NAME="completion_grade" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Grade to be achieved for course completion (0-100)" PREVIOUS="description" NEXT="required"/>
-        <FIELD NAME="required" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" COMMENT="Whether this element is a required part of the completion, or is optional." PREVIOUS="completion_grade"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key to crlm_course." PREVIOUS="id" NEXT="idnumber"/>
+        <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Unique identifier used to link with external grade elements." PREVIOUS="courseid" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Normal language name to give grade element." PREVIOUS="idnumber" NEXT="description"/>
+        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" COMMENT="Text field for further description of the element." PREVIOUS="name" NEXT="completion_grade"/>
+        <FIELD NAME="completion_grade" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="Grade to be achieved for course completion (0-100)" PREVIOUS="description" NEXT="required"/>
+        <FIELD NAME="required" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether this element is a required part of the completion, or is optional." PREVIOUS="completion_grade"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -152,9 +152,9 @@
     </TABLE>
     <TABLE NAME="crlm_course_corequisite" COMMENT="crlm_course_corequisite table retrofitted from MySQL" PREVIOUS="crlm_course_completion" NEXT="crlm_course_prerequisite">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="curriculumcourseid"/>
-        <FIELD NAME="curriculumcourseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="courseid"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="curriculumcourseid"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="curriculumcourseid"/>
+        <FIELD NAME="curriculumcourseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="curriculumcourseid"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -166,9 +166,9 @@
     </TABLE>
     <TABLE NAME="crlm_course_prerequisite" COMMENT="crlm_course_prerequisite table retrofitted from MySQL" PREVIOUS="crlm_course_corequisite" NEXT="crlm_curriculum">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="curriculumcourseid"/>
-        <FIELD NAME="curriculumcourseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="courseid"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="curriculumcourseid"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="curriculumcourseid"/>
+        <FIELD NAME="curriculumcourseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="curriculumcourseid"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -180,17 +180,17 @@
     </TABLE>
     <TABLE NAME="crlm_curriculum" COMMENT="crlm_curriculum table retrofitted from MySQL" PREVIOUS="crlm_course_prerequisite" NEXT="crlm_curriculum_assignment">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="idnumber"/>
-        <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="idnumber" NEXT="description"/>
-        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="name" NEXT="reqcredits"/>
-        <FIELD NAME="reqcredits" TYPE="number" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" ENUM="false" DECIMALS="2" PREVIOUS="description" NEXT="iscustom"/>
-        <FIELD NAME="iscustom" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="reqcredits" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="iscustom" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated" NEXT="timetocomplete"/>
-        <FIELD NAME="timetocomplete" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT="0y" SEQUENCE="false" ENUM="false" PREVIOUS="timemodified" NEXT="frequency"/>
-        <FIELD NAME="frequency" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT="0y" SEQUENCE="false" ENUM="false" PREVIOUS="timetocomplete" NEXT="priority"/>
-        <FIELD NAME="priority" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="frequency"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="idnumber"/>
+        <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" PREVIOUS="idnumber" NEXT="description"/>
+        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="name" NEXT="reqcredits"/>
+        <FIELD NAME="reqcredits" TYPE="number" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" DECIMALS="2" PREVIOUS="description" NEXT="iscustom"/>
+        <FIELD NAME="iscustom" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="reqcredits" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="iscustom" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated" NEXT="timetocomplete"/>
+        <FIELD NAME="timetocomplete" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT="0y" SEQUENCE="false" PREVIOUS="timemodified" NEXT="frequency"/>
+        <FIELD NAME="frequency" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT="0y" SEQUENCE="false" PREVIOUS="timetocomplete" NEXT="priority"/>
+        <FIELD NAME="priority" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="frequency"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -201,16 +201,16 @@
     </TABLE>
     <TABLE NAME="crlm_curriculum_assignment" COMMENT="crlm_curriculum_assignment table retrofitted from MySQL" PREVIOUS="crlm_curriculum" NEXT="crlm_curriculum_course">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="curriculumid"/>
-        <FIELD NAME="curriculumid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="userid" NEXT="completed"/>
-        <FIELD NAME="completed" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Set if this assignment has been noted as completed." PREVIOUS="curriculumid" NEXT="timecompleted"/>
-        <FIELD NAME="timecompleted" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Time of completion (timestamp)" PREVIOUS="completed" NEXT="timeexpired"/>
-        <FIELD NAME="timeexpired" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Time of curriculum expiry (timestamp)" PREVIOUS="timecompleted" NEXT="credits"/>
-        <FIELD NAME="credits" TYPE="number" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" DECIMALS="2" COMMENT="The credits completed with." PREVIOUS="timeexpired" NEXT="locked"/>
-        <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Whether or not this completion can be changed." PREVIOUS="credits" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="locked" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="curriculumid"/>
+        <FIELD NAME="curriculumid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid" NEXT="completed"/>
+        <FIELD NAME="completed" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Set if this assignment has been noted as completed." PREVIOUS="curriculumid" NEXT="timecompleted"/>
+        <FIELD NAME="timecompleted" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time of completion (timestamp)" PREVIOUS="completed" NEXT="timeexpired"/>
+        <FIELD NAME="timeexpired" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time of curriculum expiry (timestamp)" PREVIOUS="timecompleted" NEXT="credits"/>
+        <FIELD NAME="credits" TYPE="number" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" DECIMALS="2" COMMENT="The credits completed with." PREVIOUS="timeexpired" NEXT="locked"/>
+        <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not this completion can be changed." PREVIOUS="credits" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="locked" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -222,15 +222,15 @@
     </TABLE>
     <TABLE NAME="crlm_curriculum_course" COMMENT="crlm_curriculum_course table retrofitted from MySQL" PREVIOUS="crlm_curriculum_assignment" NEXT="crlm_environment">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="curriculumid"/>
-        <FIELD NAME="curriculumid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="courseid"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="curriculumid" NEXT="required"/>
-        <FIELD NAME="required" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" PREVIOUS="courseid" NEXT="frequency"/>
-        <FIELD NAME="frequency" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="required" NEXT="timeperiod"/>
-        <FIELD NAME="timeperiod" TYPE="char" LENGTH="5" NOTNULL="false" DEFAULT="year" SEQUENCE="false" ENUM="true" ENUMVALUES="'day', 'week', 'month', 'year'" PREVIOUS="frequency" NEXT="position"/>
-        <FIELD NAME="position" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="timeperiod" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="position" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="curriculumid"/>
+        <FIELD NAME="curriculumid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="curriculumid" NEXT="required"/>
+        <FIELD NAME="required" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" PREVIOUS="courseid" NEXT="frequency"/>
+        <FIELD NAME="frequency" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="required" NEXT="timeperiod"/>
+        <FIELD NAME="timeperiod" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="frequency" NEXT="position"/>
+        <FIELD NAME="position" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timeperiod" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="position" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -242,11 +242,11 @@
     </TABLE>
     <TABLE NAME="crlm_environment" COMMENT="crlm_environment table retrofitted from MySQL" PREVIOUS="crlm_curriculum_course" NEXT="crlm_tag">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="description"/>
-        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="name" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="description" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="description"/>
+        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="name" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="description" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -254,11 +254,11 @@
     </TABLE>
     <TABLE NAME="crlm_tag" COMMENT="crlm_tag table retrofitted from MySQL" PREVIOUS="crlm_environment" NEXT="crlm_tag_instance">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="description"/>
-        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="name" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="description" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="description"/>
+        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="name" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="description" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -266,13 +266,13 @@
     </TABLE>
     <TABLE NAME="crlm_tag_instance" COMMENT="crlm_tag_instance table retrofitted from MySQL" PREVIOUS="crlm_tag" NEXT="crlm_user">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="instancetype"/>
-        <FIELD NAME="instancetype" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="instanceid"/>
-        <FIELD NAME="instanceid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="instancetype" NEXT="tagid"/>
-        <FIELD NAME="tagid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="instanceid" NEXT="data"/>
-        <FIELD NAME="data" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="tagid" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="data" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="instancetype"/>
+        <FIELD NAME="instancetype" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="instanceid"/>
+        <FIELD NAME="instanceid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="instancetype" NEXT="tagid"/>
+        <FIELD NAME="tagid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="instanceid" NEXT="data"/>
+        <FIELD NAME="data" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="tagid" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="data" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="mdl_currtaginst_insinstag_uix"/>
@@ -281,34 +281,34 @@
     </TABLE>
     <TABLE NAME="crlm_user" COMMENT="crlm_user table retrofitted from MySQL" PREVIOUS="crlm_tag_instance" NEXT="crlm_cluster">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="username"/>
-        <FIELD NAME="username" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="password"/>
-        <FIELD NAME="password" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="username" NEXT="idnumber"/>
-        <FIELD NAME="idnumber" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="password" NEXT="firstname"/>
-        <FIELD NAME="firstname" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="idnumber" NEXT="lastname"/>
-        <FIELD NAME="lastname" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="firstname" NEXT="mi"/>
-        <FIELD NAME="mi" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="lastname" NEXT="email"/>
-        <FIELD NAME="email" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="mi" NEXT="email2"/>
-        <FIELD NAME="email2" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="email" NEXT="address"/>
-        <FIELD NAME="address" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="email2" NEXT="address2"/>
-        <FIELD NAME="address2" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="address" NEXT="city"/>
-        <FIELD NAME="city" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="address2" NEXT="state"/>
-        <FIELD NAME="state" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="city" NEXT="postalcode"/>
-        <FIELD NAME="postalcode" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="state" NEXT="country"/>
-        <FIELD NAME="country" TYPE="char" LENGTH="2" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="postalcode" NEXT="phone"/>
-        <FIELD NAME="phone" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="country" NEXT="phone2"/>
-        <FIELD NAME="phone2" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="phone" NEXT="fax"/>
-        <FIELD NAME="fax" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="phone2" NEXT="birthdate"/>
-        <FIELD NAME="birthdate" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="fax" NEXT="gender"/>
-        <FIELD NAME="gender" TYPE="char" LENGTH="1" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="birthdate" NEXT="language"/>
-        <FIELD NAME="language" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="gender" NEXT="transfercredits"/>
-        <FIELD NAME="transfercredits" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Credits applied to the undergraduate program from elsewhere." PREVIOUS="language" NEXT="comments"/>
-        <FIELD NAME="comments" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="transfercredits" NEXT="notes"/>
-        <FIELD NAME="notes" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="comments" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="notes" NEXT="timeapproved"/>
-        <FIELD NAME="timeapproved" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="timeapproved" NEXT="inactive"/>
-        <FIELD NAME="inactive" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Set to 1 if the user is inactive." PREVIOUS="timemodified"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="username"/>
+        <FIELD NAME="username" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="id" NEXT="password"/>
+        <FIELD NAME="password" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" PREVIOUS="username" NEXT="idnumber"/>
+        <FIELD NAME="idnumber" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="password" NEXT="firstname"/>
+        <FIELD NAME="firstname" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="idnumber" NEXT="lastname"/>
+        <FIELD NAME="lastname" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="firstname" NEXT="mi"/>
+        <FIELD NAME="mi" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="lastname" NEXT="email"/>
+        <FIELD NAME="email" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="mi" NEXT="email2"/>
+        <FIELD NAME="email2" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="email" NEXT="address"/>
+        <FIELD NAME="address" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="email2" NEXT="address2"/>
+        <FIELD NAME="address2" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="address" NEXT="city"/>
+        <FIELD NAME="city" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="address2" NEXT="state"/>
+        <FIELD NAME="state" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="city" NEXT="postalcode"/>
+        <FIELD NAME="postalcode" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" PREVIOUS="state" NEXT="country"/>
+        <FIELD NAME="country" TYPE="char" LENGTH="2" NOTNULL="false" SEQUENCE="false" PREVIOUS="postalcode" NEXT="phone"/>
+        <FIELD NAME="phone" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="country" NEXT="phone2"/>
+        <FIELD NAME="phone2" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="phone" NEXT="fax"/>
+        <FIELD NAME="fax" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="phone2" NEXT="birthdate"/>
+        <FIELD NAME="birthdate" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" PREVIOUS="fax" NEXT="gender"/>
+        <FIELD NAME="gender" TYPE="char" LENGTH="1" NOTNULL="false" SEQUENCE="false" PREVIOUS="birthdate" NEXT="language"/>
+        <FIELD NAME="language" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" PREVIOUS="gender" NEXT="transfercredits"/>
+        <FIELD NAME="transfercredits" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Credits applied to the undergraduate program from elsewhere." PREVIOUS="language" NEXT="comments"/>
+        <FIELD NAME="comments" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" PREVIOUS="transfercredits" NEXT="notes"/>
+        <FIELD NAME="notes" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" PREVIOUS="comments" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="notes" NEXT="timeapproved"/>
+        <FIELD NAME="timeapproved" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timecreated" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timeapproved" NEXT="inactive"/>
+        <FIELD NAME="inactive" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Set to 1 if the user is inactive." PREVIOUS="timemodified"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -321,11 +321,11 @@
     </TABLE>
     <TABLE NAME="crlm_cluster" COMMENT="Cluster definitions." PREVIOUS="crlm_user" NEXT="crlm_usercluster">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Data name" PREVIOUS="id" NEXT="display"/>
-        <FIELD NAME="display" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Screen display" PREVIOUS="name" NEXT="parent"/>
-        <FIELD NAME="parent" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="display" NEXT="depth"/>
-        <FIELD NAME="depth" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" PREVIOUS="parent"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Data name" PREVIOUS="id" NEXT="display"/>
+        <FIELD NAME="display" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Screen display" PREVIOUS="name" NEXT="parent"/>
+        <FIELD NAME="parent" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="display" NEXT="depth"/>
+        <FIELD NAME="depth" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" PREVIOUS="parent"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -333,11 +333,11 @@
     </TABLE>
     <TABLE NAME="crlm_usercluster" COMMENT="Contains cluster assignments for CM users." PREVIOUS="crlm_cluster" NEXT="crlm_config">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="The CM user id" PREVIOUS="id" NEXT="clusterid"/>
-        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="The cluster assigned to." PREVIOUS="userid" NEXT="autoenrol"/>
-        <FIELD NAME="autoenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" COMMENT="Whether users should be autoenrolled in tracks associated with this cluster." PREVIOUS="clusterid" NEXT="leader"/>
-        <FIELD NAME="leader" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Whether or not the user is a cluster leader" PREVIOUS="autoenrol"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The CM user id" PREVIOUS="id" NEXT="clusterid"/>
+        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The cluster assigned to." PREVIOUS="userid" NEXT="autoenrol"/>
+        <FIELD NAME="autoenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether users should be autoenrolled in tracks associated with this cluster." PREVIOUS="clusterid" NEXT="leader"/>
+        <FIELD NAME="leader" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not the user is a cluster leader" PREVIOUS="autoenrol"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -349,9 +349,9 @@
     </TABLE>
     <TABLE NAME="crlm_config" COMMENT="The config elements for the curriculum management system." PREVIOUS="crlm_usercluster" NEXT="crlm_coursetemplate">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Name of the config element" PREVIOUS="id" NEXT="value"/>
-        <FIELD NAME="value" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="The configuration value" PREVIOUS="name"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Name of the config element" PREVIOUS="id" NEXT="value"/>
+        <FIELD NAME="value" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" COMMENT="The configuration value" PREVIOUS="name"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -362,10 +362,10 @@
     </TABLE>
     <TABLE NAME="crlm_coursetemplate" COMMENT="Course templates" PREVIOUS="crlm_config" NEXT="crlm_user_track">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="courseid"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="location"/>
-        <FIELD NAME="location" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="location of template" PREVIOUS="courseid" NEXT="templateclass"/>
-        <FIELD NAME="templateclass" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="template class" PREVIOUS="location"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="location"/>
+        <FIELD NAME="location" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="location of template" PREVIOUS="courseid" NEXT="templateclass"/>
+        <FIELD NAME="templateclass" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="template class" PREVIOUS="location"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -376,9 +376,9 @@
     </TABLE>
     <TABLE NAME="crlm_user_track" COMMENT="User enrolment in tracks" PREVIOUS="crlm_coursetemplate" NEXT="crlm_notification_log">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Foreign key to user id" PREVIOUS="id" NEXT="trackid"/>
-        <FIELD NAME="trackid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Foreign key to track id" PREVIOUS="userid"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to user id" PREVIOUS="id" NEXT="trackid"/>
+        <FIELD NAME="trackid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to track id" PREVIOUS="userid"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -386,12 +386,12 @@
     </TABLE>
     <TABLE NAME="crlm_notification_log" COMMENT="Contains logs of notifications for events." PREVIOUS="crlm_user_track" NEXT="crlm_track">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="event"/>
-        <FIELD NAME="event" TYPE="char" LENGTH="166" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="The event used." PREVIOUS="id" NEXT="instance"/>
-        <FIELD NAME="instance" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="An id of an element instance that the event was generated for." PREVIOUS="event" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="CM user id that the notification was sent to." PREVIOUS="instance" NEXT="data"/>
-        <FIELD NAME="data" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Any other data needed for the notification log." PREVIOUS="userid" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The timestamp for the notification." PREVIOUS="data"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="event"/>
+        <FIELD NAME="event" TYPE="char" LENGTH="166" NOTNULL="false" SEQUENCE="false" COMMENT="The event used." PREVIOUS="id" NEXT="instance"/>
+        <FIELD NAME="instance" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="An id of an element instance that the event was generated for." PREVIOUS="event" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="CM user id that the notification was sent to." PREVIOUS="instance" NEXT="data"/>
+        <FIELD NAME="data" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Any other data needed for the notification log." PREVIOUS="userid" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The timestamp for the notification." PREVIOUS="data"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -402,16 +402,16 @@
     </TABLE>
     <TABLE NAME="crlm_track" COMMENT="Track table" PREVIOUS="crlm_notification_log" NEXT="crlm_track_class">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="curid"/>
-        <FIELD NAME="curid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Curriculum id" PREVIOUS="id" NEXT="idnumber"/>
-        <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Idnumber" PREVIOUS="curid" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Name of track" PREVIOUS="idnumber" NEXT="description"/>
-        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Text field for further description of the element." PREVIOUS="name" NEXT="startdate"/>
-        <FIELD NAME="startdate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="description" NEXT="enddate"/>
-        <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="startdate" NEXT="defaulttrack"/>
-        <FIELD NAME="defaulttrack" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Default template flag" PREVIOUS="enddate" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="defaulttrack" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Last time stamp the grade was changed." PREVIOUS="timecreated"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="curid"/>
+        <FIELD NAME="curid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Curriculum id" PREVIOUS="id" NEXT="idnumber"/>
+        <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Idnumber" PREVIOUS="curid" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Name of track" PREVIOUS="idnumber" NEXT="description"/>
+        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" COMMENT="Text field for further description of the element." PREVIOUS="name" NEXT="startdate"/>
+        <FIELD NAME="startdate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="description" NEXT="enddate"/>
+        <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="startdate" NEXT="defaulttrack"/>
+        <FIELD NAME="defaulttrack" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Default template flag" PREVIOUS="enddate" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="defaulttrack" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last time stamp the grade was changed." PREVIOUS="timecreated"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -422,13 +422,13 @@
     </TABLE>
     <TABLE NAME="crlm_track_class" COMMENT="Track class table" PREVIOUS="crlm_track" NEXT="crlm_cluster_profile">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="trackid"/>
-        <FIELD NAME="trackid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Track id number" PREVIOUS="id" NEXT="classid"/>
-        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="CM Class id number" PREVIOUS="trackid" NEXT="courseid"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="CM Course id number" PREVIOUS="classid" NEXT="autoenrol"/>
-        <FIELD NAME="autoenrol" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Auto-enrol flag" PREVIOUS="courseid" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Auto-enrol flag" PREVIOUS="autoenrol" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Auto-enrol flag" PREVIOUS="timecreated"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="trackid"/>
+        <FIELD NAME="trackid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Track id number" PREVIOUS="id" NEXT="classid"/>
+        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="CM Class id number" PREVIOUS="trackid" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="CM Course id number" PREVIOUS="classid" NEXT="autoenrol"/>
+        <FIELD NAME="autoenrol" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Auto-enrol flag" PREVIOUS="courseid" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Auto-enrol flag" PREVIOUS="autoenrol" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Auto-enrol flag" PREVIOUS="timecreated"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -441,10 +441,10 @@
     </TABLE>
     <TABLE NAME="crlm_cluster_profile" COMMENT="Profile fields to use for automatic cluster association." PREVIOUS="crlm_track_class" NEXT="crlm_cluster_assignments">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="clusterid"/>
-        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Cluster ID" PREVIOUS="id" NEXT="fieldid"/>
-        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Field ID (from user_info_field)" PREVIOUS="clusterid" NEXT="value"/>
-        <FIELD NAME="value" TYPE="text" LENGTH="big" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Value of field for automatically assigning a user to the cluster." PREVIOUS="fieldid"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="clusterid"/>
+        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Cluster ID" PREVIOUS="id" NEXT="fieldid"/>
+        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Field ID (from user_info_field)" PREVIOUS="clusterid" NEXT="value"/>
+        <FIELD NAME="value" TYPE="text" LENGTH="big" NOTNULL="true" SEQUENCE="false" COMMENT="Value of field for automatically assigning a user to the cluster." PREVIOUS="fieldid"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -455,12 +455,12 @@
     </TABLE>
     <TABLE NAME="crlm_cluster_assignments" COMMENT="Cluster assignments from cluster plugins." PREVIOUS="crlm_cluster_profile" NEXT="crlm_cluster_curriculum">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="clusterid"/>
-        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Cluster ID" PREVIOUS="id" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Curriculum user ID" PREVIOUS="clusterid" NEXT="plugin"/>
-        <FIELD NAME="plugin" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="The cluster plugin that made this assignment." PREVIOUS="userid" NEXT="autoenrol"/>
-        <FIELD NAME="autoenrol" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" COMMENT="Whether users should be autoenrolled in tracks associated with this cluster.  (If any plugins have this flag set, then the final cluster assignment will have this flag set.)" PREVIOUS="plugin" NEXT="leader"/>
-        <FIELD NAME="leader" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Whether or not the user is a cluster leader" PREVIOUS="autoenrol"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="clusterid"/>
+        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Cluster ID" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Curriculum user ID" PREVIOUS="clusterid" NEXT="plugin"/>
+        <FIELD NAME="plugin" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" COMMENT="The cluster plugin that made this assignment." PREVIOUS="userid" NEXT="autoenrol"/>
+        <FIELD NAME="autoenrol" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether users should be autoenrolled in tracks associated with this cluster.  (If any plugins have this flag set, then the final cluster assignment will have this flag set.)" PREVIOUS="plugin" NEXT="leader"/>
+        <FIELD NAME="leader" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not the user is a cluster leader" PREVIOUS="autoenrol"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -472,10 +472,10 @@
     </TABLE>
     <TABLE NAME="crlm_cluster_curriculum" COMMENT="Association between clusters and curricula" PREVIOUS="crlm_cluster_assignments" NEXT="crlm_cluster_track">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="clusterid"/>
-        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Foreign key to cluster id" PREVIOUS="id" NEXT="curriculumid"/>
-        <FIELD NAME="curriculumid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Foreign key to curriculum id" PREVIOUS="clusterid" NEXT="autoenrol"/>
-        <FIELD NAME="autoenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" PREVIOUS="curriculumid"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="clusterid"/>
+        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to cluster id" PREVIOUS="id" NEXT="curriculumid"/>
+        <FIELD NAME="curriculumid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to curriculum id" PREVIOUS="clusterid" NEXT="autoenrol"/>
+        <FIELD NAME="autoenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" PREVIOUS="curriculumid"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -486,12 +486,12 @@
     </TABLE>
     <TABLE NAME="crlm_cluster_track" COMMENT="Association between clusters and tracks" PREVIOUS="crlm_cluster_curriculum" NEXT="crlm_wait_list">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="clusterid"/>
-        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Foreign key to cluster id" PREVIOUS="id" NEXT="trackid"/>
-        <FIELD NAME="trackid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Foreign key to track id" PREVIOUS="clusterid" NEXT="autoenrol"/>
-        <FIELD NAME="autoenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" PREVIOUS="trackid" NEXT="autounenrol"/>
-        <FIELD NAME="autounenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="Whether or not to remove a user from classes when removed from cluster" PREVIOUS="autoenrol" NEXT="enrolmenttime"/>
-        <FIELD NAME="enrolmenttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="autounenrol"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="clusterid"/>
+        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to cluster id" PREVIOUS="id" NEXT="trackid"/>
+        <FIELD NAME="trackid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to track id" PREVIOUS="clusterid" NEXT="autoenrol"/>
+        <FIELD NAME="autoenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" PREVIOUS="trackid" NEXT="autounenrol"/>
+        <FIELD NAME="autounenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Whether or not to remove a user from classes when removed from cluster" PREVIOUS="autoenrol" NEXT="enrolmenttime"/>
+        <FIELD NAME="enrolmenttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="autounenrol"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -502,12 +502,12 @@
     </TABLE>
     <TABLE NAME="crlm_wait_list" COMMENT="Wait list for classes" PREVIOUS="crlm_cluster_track">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="classid"/>
-        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="classid" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="userid" NEXT="timemodified"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated" NEXT="position"/>
-        <FIELD NAME="position" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="timemodified"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
+        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="classid" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated" NEXT="position"/>
+        <FIELD NAME="position" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timemodified"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
