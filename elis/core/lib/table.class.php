@@ -28,6 +28,7 @@
 
 class display_table {
     private $table = null;
+    private $attributes;
     private $items;
     private $columns;
     private $base_url;
@@ -78,13 +79,16 @@ class display_table {
      * $pageurl to specify the column to sort by.
      * @param string $sortdir_param the name of the URL parameter to add to
      * $pageurl to specify the direction of the sort.
+     * @param array $attributes associative array of table attributes like:
+     * 'id' => 'tableid', 'width' => '90%', 'cellpadding', 'cellspacing' ...
      */
-    public function __construct($items, $columns, moodle_url $base_url=null, $sort_param='sort', $sortdir_param='dir') {
+    public function __construct($items, $columns, moodle_url $base_url=null, $sort_param='sort', $sortdir_param='dir', array $attributes = array()) {
         $this->items = $items;
         $this->columns = $columns;
         $this->base_url = $base_url;
         $this->sort_param = $sort_param;
         $this->sortdir_param = $sortdir_param;
+        $this->attributes = $attributes;
     }
 
     protected function column_to_header($columnid, $column) {
@@ -141,7 +145,13 @@ class display_table {
         }
 
         $table = new html_table;
-        $table->width = '90%';
+        $table->attributes = array_merge(array('width' => '90%'),
+                                         $this->attributes);
+        // We have to copy attributes to table properties because
+        // html_writer::table() overrides some attributes with these!
+        foreach ($table->attributes as $key => $val) {
+            $table->{$key} = $val;
+        }
         $head = array();
         $align = array();
         $wrap = array();
