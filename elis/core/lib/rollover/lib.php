@@ -73,6 +73,9 @@ function course_rollover($courseid, $categoryid = null) {
         $controller->execute_precheck();
         $controller->execute_plan();
 
+        //make sure the sort order is defined as expected
+        fix_course_sortorder();
+
         try {
             //try to finalize
             $transaction->allow_commit();
