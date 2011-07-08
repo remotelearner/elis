@@ -150,7 +150,9 @@ class display_table {
         // We have to copy attributes to table properties because
         // html_writer::table() overrides some attributes with these!
         foreach ($table->attributes as $key => $val) {
-            $table->{$key} = $val;
+            if (property_exists($table, $key)) {
+                $table->{$key} = $val;
+            }
         }
         $head = array();
         $align = array();
