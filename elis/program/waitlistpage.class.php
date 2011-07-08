@@ -120,22 +120,13 @@ class waitlistpage extends selectionpage {
         $id = $this->required_param('id', PARAM_INT);
 
         if (empty($data->_selection)) {
-            print_error('no_items_selected', self::LANG_FILE);
+            $tmppage = new waitlistpage(array('id' => $id));
+            print_error('no_items_selected', self::LANG_FILE, $tmppage->url);
         } else {
             $sparam = new stdClass;
             $sparam->num = count($data->_selection);
             $sparam->action = $data->do;
             $msg = get_string('confirm_waitlist', self::LANG_FILE, $sparam);
-          /* ***TBD***
-            notice_yesno($msg, 'index.php', 'index.php',
-                         array('s' => $this->pagename,
-                               'id' => $id,
-                               'action' => $data->do,
-                               'selected' => implode(',',$data->_selection)
-                             ),
-                         array('s' => $this->pagename, 'id' => $id),
-                         'POST', 'GET');
-           **** */
             echo cm_delete_form('index.php', $msg,
                          array('s' => $this->pagename,
                                'id' => $id,

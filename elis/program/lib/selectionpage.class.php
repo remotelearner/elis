@@ -120,13 +120,13 @@ abstract class selectionpage extends pm_page { // TBD
     function display_default() { // action_default
         $form = $this->get_selection_form();
 
-        $baseurl = htmlspecialchars_decode($this->_get_page_url()); // $this->get_basepage()->get_url() OR just use: $this->url ??? TBD
+        $baseurl = htmlspecialchars_decode($this->url);
 
         if ($data = $form->get_data()) {
             $selection = json_decode($data->_selection);
             $selection = $selection ? $selection : array();
             if (!is_array($selection)) {
-                print_error('form_error', self::LANG_FILE);
+                print_error('form_error', self::LANG_FILE, $baseurl);
             }
             $data->_selection = $selection;
             $this->process_selection($data);
@@ -136,7 +136,7 @@ abstract class selectionpage extends pm_page { // TBD
             $selection = json_decode($showselection);
             $selection = $selection ? $selection : array();
             if (!is_array($selection)) {
-                print_error('form_error', self::LANG_FILE);
+                print_error('form_error', self::LANG_FILE, $baseurl);
             }
 
             if (!empty($selection)) {
@@ -166,7 +166,7 @@ abstract class selectionpage extends pm_page { // TBD
             $title = get_string('breadcrumb_'. get_class($this), self::LANG_FILE); // WAS get_string('select');
             echo "<script>var basepage='$baseurl';</script>";
             // ***TBD***
-            //$PAGE->requires->js_module(array('yui_yahoo', 'yui_dom', 'yui_event', 'yui_connection'));
+            //$PAGE->requires->yui2_lib(array('yahoo', 'dom', 'event', 'connection'));
             $PAGE->requires->js('/elis/core/js/associate.class.js');
             $PAGE->requires->js('/elis/core/js/associate.js');
             echo '<div class="mform" style="width: 100%"><fieldset><legend>'.
@@ -185,7 +185,8 @@ abstract class selectionpage extends pm_page { // TBD
         $pagingbar = new paging_bar($count, $pagenum, $perpage, $this->get_basepage()->url . ($action ? "&amp;action=$action" : '' )); // TBD: '&amp;'
         echo $OUTPUT->render($pagingbar);
 
-        if (!$count) {
+        if (!$count &&
+            (!empty($filter['alpha']) || !empty($filter['namesearch']))) {
             $nomatchlabel = null;
             if (!empty($this->data_class)) {
                 $nomatchlabel = 'no_'. $this->data_class .'_matching';
@@ -220,7 +221,9 @@ abstract class selectionpage extends pm_page { // TBD
         }
 
         if (!$this->is_bare()) {
-            if ($count) {
+            echo '</div>';
+            //if ($count)
+            {
                 $sparam1 = new stdClass;
                 $sparam1->num = '<span id="numselected">0</span>';
                 $sparam2 = new stdClass;
@@ -233,7 +236,8 @@ abstract class selectionpage extends pm_page { // TBD
             }
             echo '</fieldset></div>'; // from above
 
-            if ($count) {
+            //if ($count)
+            {
                 $form->display();
             }
         }
@@ -316,8 +320,9 @@ class selection_table extends display_table {
             $columns['_selection']['display_function'] =
                         array(&$this, 'get_item_display__selection');
         }
-        parent::__construct($items, $columns, $pageurl);
-        $this->table->id = 'selectiontable';
+        //$this->table->id = 'selectiontable';
+        parent::__construct($items, $columns, $pageurl, 'sort', 'dir',
+                            array('id' => 'selectiontable'));
     }
 
     function is_sortable__selection() {
