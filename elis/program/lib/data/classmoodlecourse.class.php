@@ -399,7 +399,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
             }
 
             // no template defined, so do nothing
-            if (empty($temp->id) || empty($temp->location)) {
+            if (empty($template->id) || empty($template->location)) {
                 print_error('notemplate', 'elis_program');
             }
             $classname  = $template->templateclass;
