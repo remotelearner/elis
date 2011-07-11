@@ -45,8 +45,8 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $dbman->drop_field($table, $field);
 
         // re-add w/o ENUM - convert to text, small
-        $field->set_attributes(XMLDB_TYPE_TEXT, 'small', null, XMLDB_NOTNULL,
-                               null, null, 'frequency'); 
+        $field->set_attributes(XMLDB_TYPE_TEXT, 'small', null, null, null,
+                               null, 'frequency');
         $dbman->add_field($table, $field);
 
         // Restore old field data to new field
