@@ -640,6 +640,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
                 if (!empty($rv['curricula'])) {
                     $newcurr = new curriculum($rv['curricula'][$curr->id]);
                     $tempcurr = new stdClass;
+                    $tempcurr->name = $curr->name;
                     $tempcurr->newname = $newcurr->name;
                     notify(get_string('clustcpycurr', 'elis_program', $tempcurr), 'notifysuccess');
                 }

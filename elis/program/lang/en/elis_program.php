@@ -128,6 +128,7 @@ $string['class_startdate'] = 'Start Date';
 $string['class_starttime'] = 'Start Time';
 $string['class_unassigntrackhead'] = 'Unassigned Tracks';
 $string['clear'] = 'Clear';
+$string['clustcpycurr'] = 'Curriculum {$a->name} copied to {$a->newname}';
 $string['cluster'] = 'User Set';
 $string['clusters'] = 'User Sets';
 $string['cluster_grp_settings'] = 'Cluster Group Settings';
