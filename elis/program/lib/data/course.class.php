@@ -659,7 +659,7 @@ class course extends data_object_with_custom_fields {
 
             $template->save();
         } else {
-            coursetemplate::delete_for_course($this->id);
+            coursetemplate::delete_records(new field_filter('courseid', $this->id));
         }
 
         field_data::set_for_context_from_datarecord('course', $this);
@@ -702,14 +702,14 @@ class course extends data_object_with_custom_fields {
      * object.
      */
     function duplicate($options) {
-        require_once elispm::lib('pmclass.class.php');
-        require_once elispm::lib('coursetemplate.class.php');
+        require_once elispm::lib('data/pmclass.class.php');
+        require_once elispm::lib('data/coursetemplate.class.php');
 
         $objs = array('errors' => array());
         if (isset($options['targetcluster'])) {
-            $cluster = $options['targetcluster'];
-            if (!is_object($cluster) || !is_a($cluster, 'cluster')) {
-                $options['targetcluster'] = $cluster = new cluster($cluster);
+            $userset = $options['targetcluster'];
+            if (!is_object($userset) || !is_a($userset, 'userset')) {
+                $options['targetcluster'] = $userset = new userset($userset);
             }
         }
 
@@ -719,16 +719,12 @@ class course extends data_object_with_custom_fields {
         // clone main course object
         $clone = new course($this);
         unset($clone->id);
-        if (isset($cluster)) {
+        if (isset($userset)) {
             // if cluster specified, append cluster's name to course
-            $clone->name = $clone->name . ' - ' . $cluster->name;
-            $clone->idnumber = $clone->idnumber . ' - ' . $cluster->name;
+            $clone->name = $clone->name.' - '.$userset->name;
+            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
         }
-        $clone = new course(addslashes_recursive($clone));
-        if (!$clone->save()) {
-            $objs['errors'][] = get_string('failclustcpycurrcrs', 'elis_program', $this);
-            return $objs;
-        }
+        $clone->save();
 
         $objs['courses'] = array($this->id => $clone->id);
         $options['targetcourse'] = $clone->id;
@@ -737,9 +733,8 @@ class course extends data_object_with_custom_fields {
         $compelems = $this->get_completion_elements();
         if (!empty($compelems)) {
             foreach ($compelems as $compelem) {
-                $compelem = addslashes_recursive($compelem);
                 unset($compelem->id);
-                $clone->save_completion_esement($compelem);
+                $clone->save_completion_element($compelem);
             }
         }
 
@@ -752,11 +747,11 @@ class course extends data_object_with_custom_fields {
 
         // copy the classes
         if (!empty($options['classes'])) {
-            $classes = cmclass_get_record_by_courseid($this->id);
+            $classes = pmclass_get_record_by_courseid($this->id);
             if (!empty($classes)) {
                 $objs['classes'] = array();
                 foreach ($classes as $class) {
-                    $class = new cmclass($class);
+                    $class = new pmclass($class);
                     $rv = $class->duplicate($options);
                     if (isset($rv['errors']) && !empty($rv['errors'])) {
                         $objs['errors'] = array_merge($objs['errors'], $rv['errors']);

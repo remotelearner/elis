@@ -633,14 +633,15 @@ class clustercurriculumpage extends clustercurriculumbasepage {
                     foreach ($rv['classes'] as $classid) {
                         $class = new stdClass;
                         $class->id = $classid;
-                        cmclasspage::after_cm_entity_add($class);
+                        pmclasspage::after_cm_entity_add($class);
                     }
                 }
 
                 if (!empty($rv['curricula'])) {
                     $newcurr = new curriculum($rv['curricula'][$curr->id]);
-                    $curr->newname = $newcurr->name;
-                    notify(get_string('clustcpycurr', 'elis_program', $curr), 'notifysuccess');
+                    $tempcurr = new stdClass;
+                    $tempcurr->newname = $newcurr->name;
+                    notify(get_string('clustcpycurr', 'elis_program', $tempcurr), 'notifysuccess');
                 }
             }
         }

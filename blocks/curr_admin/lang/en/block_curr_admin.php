@@ -369,13 +369,9 @@ $string['clscpycurr'] = 'Copy Curriculum';
 $string['clscpycurr_instruction'] = 'Use the copy button to make a copy of a curriculum and link it to this cluster.';
 $string['clsaddcurr_instruction'] = 'Use the add drop down to LINK this cluster to a curriculum.';
 $string['clustcpycurr'] = 'Curriculum $a->name copied to $a->newname';
-$string['failclustcpycurr'] = 'Curriculum $a->name failed to copy';
 $string['failcurrcpycrs'] = 'Courses from curriculum $a->name could not be copied because the curriculum failed to copy';
 $string['clustcpycurrcrs'] = 'Copied curriculum $a->name courses';
-$string['failclustcpycurrcrs'] = 'Failed to copy course $a->name';
 $string['failassoclustcpycurrcrs'] = 'Failed associate course $a->newcrsname to curriculum $a->newname';
-$string['failclustcpycls'] = 'Failed to copy class with idnumber $a->idnumber';
-$string['failclustcpytrk'] = 'Failed to copy track $a->name';
 $string['clustcpycurrcomplete'] = 'Completed copying operation';
 
 // Curriculum course form strings.

@@ -341,9 +341,6 @@ $string['exit'] = 'Exit';
 $string['expiration'] = 'Expiration';
 $string['expire_basis_setting'] = 'Calculate curriculum expiration based on the time a student';
 
-$string['failclustcpycls'] = 'Failed to copy class instance with idnumber {$a->idnumber}';
-$string['failclustcpycurr'] = 'Program {$a->name} failed to copy';
-$string['failclustcpycurrcrs'] = 'Failed to copy course description {$a->name}';
 $string['failed'] = 'Failed';
 $string['fax'] = 'Fax';
 $string['female'] = 'Female';

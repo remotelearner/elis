@@ -320,12 +320,15 @@ class pmclassform extends cmform {
             $courseid = $this->_customdata['obj']->courseid;
         }
 
-        /* TO-DO: make this work again
-        $template = new coursetemplate();
-        if (empty($courseid) || false !== $template->data_load_record($courseid) && !empty($template->location)) {
+        //attempt to retrieve the course template
+        $template = coursetemplate::find(new field_filter('courseid', $courseid));
+        if ($template->valid()) {
+            $template = $template->current();
+        }
+
+        if (empty($courseid) || !empty($template->location)) {
             $moodleCourses[] = $mform->createElement('checkbox', 'autocreate', '', get_string('autocreate', 'elis_program'));
         }
-        */
 
         if(count($cselect) != 1) {
             $mform->addGroup($moodleCourses, 'moodleCourses', get_string('moodlecourse', 'elis_program') . ':');

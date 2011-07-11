@@ -761,11 +761,15 @@ class pmclass extends data_object_with_custom_fields {
      * object.
      */
     function duplicate($options=array()) {
+        //needed by the rollover lib
+        global $CFG;
+        require_once(elis::lib('rollover/lib.php'));
+
         $objs = array('errors' => array());
         if (isset($options['targetcluster'])) {
-            $cluster = $options['targetcluster'];
-            if (!is_object($cluster) || !is_a($cluster, 'cluster')) {
-                $options['targetcluster'] = $cluster = new cluster($cluster);
+            $userset = $options['targetcluster'];
+            if (!is_object($userset) || !is_a($userset, 'userset')) {
+                $options['targetcluster'] = $userset = new userset($userset);
             }
         }
 
@@ -779,16 +783,12 @@ class pmclass extends data_object_with_custom_fields {
         if (isset($options['targetcourse'])) {
             $clone->courseid = $options['targetcourse'];
         }
-        if (isset($cluster)) {
+        if (isset($userset)) {
             // if cluster specified, append cluster's name to class
-            $clone->idnumber = $clone->idnumber . ' - ' . $cluster->name;
+            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
         }
-        $clone = new pmclass(addslashes_recursive($clone));
         $clone->autocreate = false; // avoid warnings
-        if (!$clone->add()) {
-            $objs['errors'][] = get_string('failclustcpycls', 'elis_program', $this);
-            return $objs;
-        }
+        $clone->save();
         $objs['classes'] = array($this->id => $clone->id);
 
         $cmc = $this->_db->get_record(classmoodlecourse::TABLE, array('classid'=>$this->id));
@@ -799,7 +799,7 @@ class pmclass extends data_object_with_custom_fields {
             if (empty($options['moodlecourses']) || $options['moodlecourses'] == 'copyalways'
                 || ($options['moodlecourses'] == 'copyautocreated' && $cmc->autocreated)) {
                 // create a new Moodle course based on the current class's Moodle course
-                $moodlecourseid   = content_rollover($cmc->moodlecourseid, $clone->startdate);
+                $moodlecourseid   = course_rollover($cmc->moodlecourseid, $clone->startdate);
                 // Rename the fullname, shortname and idnumber of the restored course
                 $restore->id = $moodlecourseid;
                 $restore->fullname = addslashes($clone->course->name . '_' . $clone->idnumber);

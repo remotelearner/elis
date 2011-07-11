@@ -37,9 +37,6 @@ class curriculumcourse extends elis_data_object {
     var $verbose_name = 'curriculumcourse';
     var $_dbloaded = TRUE;  // TO-DO: we probably don't need this anymore?
 
-    var $courseid;      // TO-DO: this needs to be initially set someplace
-    var $curriculumid;  // TO-DO: this needs to be initially set someplace
-
     static $associations = array(
         'coursecorequisite' => array(
             'class' => 'coursecorequisite',

@@ -449,9 +449,9 @@ class curriculum extends data_object_with_custom_fields {
 
         $objs = array('errors' => array());
         if (isset($options['targetcluster'])) {
-            $cluster = $options['targetcluster'];
-            if (!is_object($cluster) || !is_a($cluster, 'userset')) {
-                $options['targetcluster'] = $cluster = new userset($cluster);
+            $userset = $options['targetcluster'];
+            if (!is_object($userset) || !is_a($userset, 'userset')) {
+                $options['targetcluster'] = $userset = new userset($userset);
             }
         }
 
@@ -461,23 +461,20 @@ class curriculum extends data_object_with_custom_fields {
         // clone main curriculum object
         $clone = new curriculum($this);
         unset($clone->id);
-        if (isset($cluster)) {
+        if (isset($userset)) {
             // if cluster specified, append cluster's name to curriculum
-            $clone->name = $clone->name . ' - ' . $cluster->name;
-            $clone->idnumber = $clone->idnumber . ' - ' . $cluster->name;
+            $clone->name = $clone->name.' - '.$userset->name;
+            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
         }
 
         $clone = new curriculum($clone);
-        if (!$clone->save()) {
-            $objs['errors'][] = get_string('failclustcpycurr', 'elis_program', $this);
-            return $objs;
-        }
+        $clone->save();
         $objs['curricula'] = array($this->id => $clone->id);
         $options['targetcurriculum'] = $clone->id;
 
         // associate with target cluster (if any)
-        if (isset($cluster)) {
-            clustercurriculum::associate($cluster->id, $clone->id);
+        if (isset($userset)) {
+            clustercurriculum::associate($userset->id, $clone->id);
         }
 
         if (!empty($options['courses'])) {

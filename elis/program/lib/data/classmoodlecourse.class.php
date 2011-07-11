@@ -376,7 +376,8 @@ function moodle_get_topcatid($siteconfig = '') {
  */
 function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor = false,
                              $enrolstudent = false, $autocreate = false) {
-    global $DB;
+    //$CFG global is needed by the rollover lib
+    global $DB, $CFG;
 
     $result = true;
     $moodlecourseid = $mdlid;
@@ -391,23 +392,31 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
         if ($autocreate) {
             // auto create is checked, create connect to moodle course
             $cls        = new pmclass($clsid);
-            $temp       = new coursetemplate();
-            $temp->data_load_record($cls->courseid);
+            //attempt to obtain the course template
+            $template = coursetemplate::find(new field_filter('courseid', $cls->courseid));
+            if ($template->valid()) {
+                $template = $template->current();
+            }
+
             // no template defined, so do nothing
             if (empty($temp->id) || empty($temp->location)) {
                 print_error('notemplate', 'elis_program');
             }
-            $classname  = $temp->templateclass;
+            $classname  = $template->templateclass;
 
             $obj        = new $classname();
-            $courseId   = $temp->location;
+            $courseid   = $template->location;
 
-            // TO-DO: re-enable once rollover code is ready
-            //$moodlecourseid   = content_rollover($courseId, $cls->startdate);
-            //$restore->id = $moodlecourseid;
-            //$restore->fullname = addslashes($cls->course->name . '_' . $cls->idnumber);
-            //$restore->shortname = addslashes($cls->idnumber);
-            //$DB->update_record('course', $restore);
+            //perform the rollover
+            require_once(elis::lib('rollover/lib.php'));
+            $moodlecourseid   = course_rollover($courseid, $cls->startdate);
+
+            //set the Moodle course name as expected
+            $restoredcourse = new stdClass;
+            $restoredcourse->id = $moodlecourseid;
+            $restoredcourse->fullname = $cls->course->name.'_'.$cls->idnumber;
+            $restoredcourse->shortname = $cls->idnumber;
+            $DB->update_record('course', $restoredcourse);
         }
 
         $newrec = array(

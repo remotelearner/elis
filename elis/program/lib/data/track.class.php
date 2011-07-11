@@ -216,7 +216,11 @@ class track extends data_object_with_custom_fields {
                 $autoenrol = true;
             }
 
-            $cortemplate = new coursetemplate($curcourec->courseid);
+            //attempte to obtain the course template
+            $cortemplate = coursetemplate::find(new field_filter('courseid', $curcourec->courseid));
+            if ($cortemplate->valid()) {
+                $cortemplate = $cortemplate->current();
+            }
 
             // Course is using a Moodle template
             if (!empty($cortemplate->location)) {
@@ -366,13 +370,13 @@ class track extends data_object_with_custom_fields {
         return validate_is_unique($this, array('idnumber'));
     }
     public function save() { //add
-        $status = parent::save(); //add
+        parent::save(); //add
 
-        if ($status && $this->autocreate) {
+        if ($this->autocreate) {
             $this->track_auto_create();
         }
 
-        $status = $status && field_data::set_for_context_from_datarecord('track', $this);
+        $status = field_data::set_for_context_from_datarecord('track', $this);
 
         return $status;
     }
@@ -496,9 +500,9 @@ class track extends data_object_with_custom_fields {
 
         $objs = array('errors' => array());
         if (isset($options['targetcluster'])) {
-            $cluster = $options['targetcluster'];
-            if (!is_object($cluster) || !is_a($cluster, 'cluster')) {
-                $options['targetcluster'] = $cluster = new cluster($cluster);
+            $userset = $options['targetcluster'];
+            if (!is_object($userset) || !is_a($userset, 'userset')) {
+                $options['targetcluster'] = $userset = new userset($userset);
             }
         }
 
@@ -512,22 +516,18 @@ class track extends data_object_with_custom_fields {
         if (isset($options['targetcurriculum'])) {
             $clone->curid = $options['targetcurriculum'];
         }
-        if (isset($cluster)) {
+        if (isset($userset)) {
             // if cluster specified, append cluster's name to track
-            $clone->idnumber = $clone->idnumber . ' - ' . $cluster->name;
-            $clone->name = $clone->name . ' - ' . $cluster->name;
+            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
+            $clone->name = $clone->name.' - '.$userset->name;
         }
-        $clone = new track(addslashes_recursive($clone));
         $clone->autocreate = false; // avoid warnings
-        if (!$clone->save()) {
-            $objs['errors'][] = get_string('failclustcpytrk', 'elis_program', $this);
-            return $objs;
-        }
+        $clone->save();
         $objs['tracks'] = array($this->id => $clone->id);
 
         // associate with target cluster (if any)
-        if (isset($cluster)) {
-            clustertrack::associate($cluster->id, $clone->id);
+        if (isset($userset)) {
+            clustertrack::associate($userset->id, $clone->id);
         }
 
         // copy classes
@@ -546,7 +546,7 @@ class track extends data_object_with_custom_fields {
                     $class = new cmclass($options['classmap'][$clstrkdata->clsid]);
                 } else {
                     // no existing duplicate -> duplicate class
-                    $class = new cmclass($clstrkdata->clsid);
+                    $class = new pmclass($clstrkdata->clsid);
                     $rv = $class->duplicate($options);
                     if (isset($rv['errors']) && !empty($rv['errors'])) {
                         $objs['errors'] = array_merge($objs['errors'], $rv['errors']);
