@@ -405,7 +405,7 @@ class usersetpage extends managementpage {
      */
     function print_delete_form($obj) {
         global $DB;
-        if (($count = $userset::count(new field_filter('parent', $obj->id)))) {
+        if (($count = userset::count(new field_filter('parent', $obj->id)))) {
             // cluster has sub-clusters, so ask the user if they want to
             // promote or delete the sub-clusters
             $a = new stdClass;
