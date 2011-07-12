@@ -60,20 +60,6 @@ class associationpage extends pm_page {
         return has_capability('block/curr_admin:managecurricula', $context);
     }
 
-  /* **** TBD ****
-    public function can_do_edit() { // can_do_update()
-        return $this->can_do('edit'); // TBD: 'edit'
-    }
-
-    public function can_do_add() {
-        return $this->can_do('add'); // TBD: 'add'
-    }
-
-    public function can_do_delete() { // can_do_confirm()
-        return $this->can_do('delete'); // TBD: 'delete'
-    }
-  **** */
-
     /**
      * Returns an instance of the page class that should provide the tabs for this association page.
      * This allows the association interface to be located "under" the general management interface for
@@ -360,15 +346,13 @@ class associationpage extends pm_page {
     }
 
     public function build_navbar_default() { // build_navigation_default
-        parent::build_navbar_default();
-        $uparams = array('s' => $this->pagename);
-        if (($id = $this->optional_param('id', null, PARAM_INT)) != null) {
-            $uparams['id'] = $id;
-        }
-        $url = new moodle_url($this->_get_page_url(), $uparams); // TBD: $_GET?
+        //parent::build_navbar_default();
+        $id = $this->required_param('id', PARAM_INT);
+        $tabpage = $this->get_tab_page(array('action' => 'view', 'id' => $id));
+        $tabpage->build_navbar_view();
+        $this->_navbar = $tabpage->navbar;
         $this->navbar->add(get_string("association_{$this->data_class}",
-                                      self::LANG_FILE), $url); // TBD
-        // arg1 was: $this->get_tab_page()->build_navigation_view()
+                                      self::LANG_FILE), $this->url);
     }
 
     /**
@@ -578,31 +562,8 @@ class associationpage extends pm_page {
 
 class association_page_table extends display_table {
     function __construct(&$items, $columns, $page) {
-        global $OUTPUT;
-
         $this->page = $page;
-        if (isset($columns['buttons']) && is_array($columns['buttons'])) {
-            $columns['buttons']['display_function'] = 'htmltab_display_function';
-            $id = required_param('id', PARAM_INT);
-            foreach($items as $item) {
-                $item->buttons = $this->page->get_buttons(array('id' => $id, 'association_id' => $item->id));
-            }
-        }
-        if (isset($columns['manage']) && is_array($columns['manage'])) {
-            $columns['manage']['display_function'] = 'htmltab_display_function';
-            $id = required_param('id', PARAM_INT);
-            foreach($items as $item) {
-                $target = $this->page->get_new_page(array('action' => 'delete', 'association_id' => $item->id, 'id' => $id));
-                if ($target->can_do('delete')) {
-                    $deletebutton = '<a href="'. $target->url .'">'.
-                        '<img src="'. $OUTPUT->pix_url('delete') .'" alt="Unenrol" title="Unenrol" /></a>';
-                } else {
-                    $deletebutton = '';
-                }
-                $item->manage = $deletebutton;
-            }
-        }
-        //$url = (get_class($page) == 'moodle_url') ? $page : $page->url;
+
         parent::__construct($items, $columns, $page->url);
     }
 
@@ -624,8 +585,7 @@ class association_page_table extends display_table {
         $id = required_param('id', PARAM_INT);
         $target = $this->page->get_new_page(array('action' => 'delete', 'association_id' => $item->id, 'id' => $id));
         if ($target->can_do('delete')) {
-            $deletebutton = '<a href="'. $target->url .'">'.
-                '<img src="'. $OUTPUT->pix_url('delete') .'" alt="Unenrol" title="Unenrol" /></a>';
+            $deletebutton = html_writer::link($target->url, html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/delete'), 'alt' => 'Unenrol', 'title' => 'Unenrol')));
         } else {
             $deletebutton = '';
         }
