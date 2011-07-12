@@ -73,16 +73,28 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         $this->overlaydb->import_record('context', $sitecontext);
     }
 
-    /**
-     * Test that a record can be created in the database.
-     */
-    public function testCreateRecord() {
+    protected function load_csv_data() {
+        // load initial data from a CSV file
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv')); // TBD: more generic 'phpunit/' . get_class($this) ???
+        load_phpunit_data_set($dataset, true, $this->overlaydb);
+    }
+
+    protected function setUp()
+    {
+        // called before each test function
         global $DB;
         $this->origdb = $DB;
         $DB = $this->overlaydb = new overlay_database($DB, array('context' => 'moodle',
                                                                  'course' => 'moodle',
                                                                  userset::TABLE => 'elis_program'));
         $this->setUpContextsTable();
+    }
+
+    /**
+     * Test that a record can be created in the database.
+     */
+    public function testCreateRecord() {
 
         // create a record
         $src = new userset(false, null, array(), false, array(), $this->overlaydb);
@@ -100,17 +112,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
      * Test that a record can be modified.
      */
     public function testUpdate() {
-        global $DB;
-        $this->origdb = $DB;
-        $DB = $this->overlaydb = new overlay_database($DB, array('context' => 'moodle',
-                                                                 'course' => 'moodle',
-                                                                 userset::TABLE => 'elis_program'));
-        $this->setUpContextsTable();
-
-        // load initial data from a CSV file
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv'));
-        load_phpunit_data_set($dataset, true, $this->overlaydb);
+        $this->load_csv_data();
 
         // read a record
         $src = new userset(3, null, array(), false, array(), $this->overlaydb);
@@ -132,17 +134,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
      * Test that you can delete and promote sub user sets
      */
     public function testDeletePromote() {
-        global $DB;
-        $this->origdb = $DB;
-        $DB = $this->overlaydb = new overlay_database($DB, array('context' => 'moodle',
-                                                                 'course' => 'moodle',
-                                                                 userset::TABLE => 'elis_program'));
-        $this->setUpContextsTable();
-
-        // load initial data from a CSV file
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv'));
-        load_phpunit_data_set($dataset, true, $this->overlaydb);
+        $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
         $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
@@ -168,17 +160,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
      * Test that you can delete a user set and all its sub user sets
      */
     public function testDeleteSubs() {
-        global $DB;
-        $this->origdb = $DB;
-        $DB = $this->overlaydb = new overlay_database($DB, array('context' => 'moodle',
-                                                                 'course' => 'moodle',
-                                                                 userset::TABLE => 'elis_program'));
-        $this->setUpContextsTable();
-
-        // load initial data from a CSV file
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv'));
-        load_phpunit_data_set($dataset, true, $this->overlaydb);
+        $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
         $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
