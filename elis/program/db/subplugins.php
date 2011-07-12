@@ -26,4 +26,5 @@
 
 $subplugins = array(
     'usersetenrol' => 'elis/program/enrol/userset',
+    'pmplugins' => 'elis/program/plugins',
 );

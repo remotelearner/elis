@@ -563,6 +563,7 @@ $string['over_enrol'] = 'Over Enrol'; // TBD: Enroll
 
 $string['passed'] = 'Passed';
 $string['phone2'] = 'Phone 2';
+$string['pluginname'] = 'ELIS Program';
 $string['pm_date_format'] = 'M j, Y';
 $string['pmclassform:class_idnumber'] = 'ID Number';
 $string['pmclassform:class_idnumber_help'] = '<p>Class Instance ID number.</p>';
