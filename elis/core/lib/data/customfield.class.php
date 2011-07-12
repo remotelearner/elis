@@ -43,6 +43,8 @@ class field extends elis_data_object {
     protected $_dbfield_multivalued;
     protected $_dbfield_params;
 
+    private $_owners = null;
+
     const CHECKBOX = 'checkbox';
     const MENU = 'menu';
     const TEXT = 'text';
@@ -68,8 +70,10 @@ class field extends elis_data_object {
             return $params[$paramname];
         }
         if ($name == 'owners') {
-            $this->owners = field_owner::get_for_field($this);
-            return $this->owners;
+            if (!$this->_owners) {
+                $this->_owners = field_owner::get_for_field($this);
+            }
+            return $this->_owners;
         }
 
         return parent::__get($name);
