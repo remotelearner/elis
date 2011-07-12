@@ -41,11 +41,12 @@ function xmldb_pmplugins_userset_display_priority_install() {
 
     $field = new field();
     $field->shortname = USERSET_DISPLAY_PRIORITY_FIELD;
-    $field->name = get_string('display_priority_field_name', 'plugins_userset_display_priority');
+
+    $field->name = get_string('display_priority_field_name', 'pmplugins_userset_display_priority');
     $field->datatype = 'int';
 
     $category = new field_category();
-    $category->name = get_string('display_settings_category_name', 'plugins_userset_display_priority');
+    $category->name = get_string('display_settings_category_name', 'pmplugins_userset_display_priority');
 
     $field = field::ensure_field_exists_for_context_level($field, 'cluster', $category);
 
