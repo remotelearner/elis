@@ -639,9 +639,8 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
             $allowed_clusters_list = implode(',', $allowed_clusters);
 
             $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-            $path = sql_concat('parentctxt.path', "'/%'");
+            $path = $DB->sql_concat('parentctxt.path', "'/%'");
 
-            $like = sql_ilike();
             $LIKE = $DB->sql_like('childctxt.path', $path);
 
             //this allows both the indirect capability and the direct curriculum filter to work
