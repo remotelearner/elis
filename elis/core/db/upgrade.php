@@ -90,6 +90,38 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         }
 
     }
+    if ($result && $oldversion < 2011071200) {
+
+        // Changing the default of field sortorder on table elis_field to 0
+        $table = new xmldb_table('elis_field');
+        $field = new xmldb_field('sortorder', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'categoryid');
+
+        // Launch change of default for field sortorder
+        $dbman->change_field_default($table, $field);
+
+        // Changing the default of field sortorder on table elis_field_categories to 0
+        $table = new xmldb_table('elis_field_categories');
+        $field = new xmldb_field('sortorder', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'name');
+
+        // Launch change of default for field sortorder
+        $dbman->change_field_default($table, $field);
+
+        // core savepoint reached
+        upgrade_plugin_savepoint(true, 2011071200, 'elis', 'core');
+    }
+    if ($result && $oldversion < 2011071201) {
+
+        // Changing the default of field forceunique on table elis_field to 0
+        $table = new xmldb_table('elis_field');
+        $field = new xmldb_field('forceunique', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'multivalued');
+
+        // Launch change of default for field forceunique
+        $dbman->change_field_default($table, $field);
+
+        // core savepoint reached
+        upgrade_plugin_savepoint(true, 2011071201, 'elis', 'core');
+    }
+
 
     return $result;
 }
