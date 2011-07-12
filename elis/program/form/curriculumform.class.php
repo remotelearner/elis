@@ -117,7 +117,7 @@ class cmCurriculaForm extends cmform {
                 $lastcat = $rec->categoryid;
                 $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
             }
-            manual_field_add_form_element($this, $context, $field);
+            manual_field_add_form_element($this, $mform, $context, $field);
         }
         */
 
