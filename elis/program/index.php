@@ -54,7 +54,7 @@ $pages = array(
     'stucur' => array('class' => 'studentcurriculumpage',
                       'file' => 'curriculumstudentpage.class.php'),
     'usrclst' => array('class' => 'userclusterpage',
-                       'file' => 'cluster/manual/assignpage.class.php'),
+                       'file' => 'enrol/userset/manual/usersetassignmentpage.class.php'),
     'usrtrk' => array('class' => 'usertrackpage',
                       'file' => 'usertrackpage.class.php'),
     'usrrole' => array('class' => 'user_rolepage',
@@ -68,11 +68,11 @@ $pages = array(
     'clsttrk' => array('class' => 'clustertrackpage',
                        'file' => 'clustertrackpage.class.php'),
     'clstusr' => array('class' => 'clusteruserpage',
-                       'file' => 'cluster/manual/assignpage.class.php'),
+                       'file' => 'enrol/userset/manual/usersetassignmentpage.class.php'),
     'clstrole' => array('class' => 'cluster_rolepage',
                         'file' => 'rolepage.class.php'),
     'clstusrsel' => array('class' => 'clusteruserselectpage',
-                          'file' => 'cluster/manual/selectpage.class.php'),
+                          'file' => 'enrol/userset/manual/selectpage.class.php'),
 
     // Manage Curricula
     'cur' => array('class' => 'curriculumpage',

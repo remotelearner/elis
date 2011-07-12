@@ -30,12 +30,12 @@ require_once(elispm::lib('data/clustercurriculum.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('contexts.php'));
 require_once(elispm::file('form/usersetform.class.php'));
+require_once(elis::plugin_file('usersetenrol_manual', 'usersetassignmentpage.class.php'));
 /*
 require_once (CURMAN_DIRLOCATION . '/lib/cluster.class.php');
 require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');
 require_once (CURMAN_DIRLOCATION . '/clustertrackpage.class.php');
 require_once (CURMAN_DIRLOCATION . '/clustercurriculumpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/cluster/manual/assignpage.class.php');
 require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');
 require_once (CURMAN_DIRLOCATION . '/lib/contexts.php');
 */
@@ -127,7 +127,7 @@ class usersetpage extends managementpage {
         array('tab_id' => 'edit', 'page' => 'usersetpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
         array('tab_id' => 'subclusters', 'page' => 'usersetpage', 'params' => array(), 'name' => get_string('usersubsets','elis_program'), 'showtab' => true),
         array('tab_id' => 'clustertrackpage', 'page' => 'clustertrackpage', 'name' => get_string('tracks','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track'),
-//        array('tab_id' => 'clusteruserpage', 'page' => 'clusteruserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
+        array('tab_id' => 'clusteruserpage', 'page' => 'clusteruserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
         array('tab_id' => 'clustercurriculumpage', 'page' => 'clustercurriculumpage', 'name' => get_string('curricula','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
         //array('tab_id' => 'cluster_rolepage', 'page' => 'cluster_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
@@ -235,7 +235,7 @@ class usersetpage extends managementpage {
                   AND child_context.contextlevel = {$cluster_context_level}
                   AND parent_context.instanceid = {$id}";
 
-        $params += array($parent_path, $cluster_context_level, $cluster_context_level, $id);
+        $params = array_merge($params, array($parent_path, $cluster_context_level, $cluster_context_level, $id));
 
         return $DB->record_exists_sql($sql, $params);
 

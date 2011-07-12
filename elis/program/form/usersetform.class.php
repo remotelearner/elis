@@ -63,7 +63,7 @@ class usersetform extends cmform {
         $plugins = get_plugin_list(userset::ENROL_PLUGIN_TYPE);
         foreach ($plugins as $plugin => $plugindir) {
             require_once(elis::plugin_file(userset::ENROL_PLUGIN_TYPE.'_'.$plugin, 'lib.php'));
-            call_user_func('cluster_' . $plugin . '_edit_form', $this);
+            call_user_func('cluster_' . $plugin . '_edit_form', $this, $mform, $current_cluster_id);
         }
 
         // custom fields

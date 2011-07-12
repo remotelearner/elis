@@ -628,7 +628,7 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
                         'time'   => $fromtime));
 
     if ($rs) {
-        require_once elispm::file('cluster/profile/lib.php');
+        require_once elis::plugin_file('usersetenrol_moodle_profile', 'lib.php');
 
         foreach ($rs as $user) {
             // FIXME: shouldn't depend on cluster functionality -- should

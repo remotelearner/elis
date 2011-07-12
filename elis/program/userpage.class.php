@@ -109,7 +109,7 @@ class userpage extends managementpage {
             array('tab_id' => 'edit', 'page' => 'userpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
 
             array('tab_id' => 'studentcurriculumpage', 'page' => 'studentcurriculumpage', 'name' => get_string('curricula', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
-            //array('tab_id' => 'userclusterpage', 'page' => 'userclusterpage', 'name' => get_string('clusters', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
+            array('tab_id' => 'userclusterpage', 'page' => 'userclusterpage', 'name' => get_string('clusters', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
             array('tab_id' => 'usertrackpage', 'page' => 'usertrackpage', 'name' => get_string('tracks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track'),
             //array('tab_id' => 'user_rolepage', 'page' => 'user_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
@@ -231,5 +231,9 @@ class userpage extends managementpage {
 }
 
 function user_table_fullname($column, $item) {
-    return $item->fullname();
+    if (method_exists($item, 'fullname')) {
+        return $item->fullname();
+    } else {
+        return fullname($item);
+    }
 }
