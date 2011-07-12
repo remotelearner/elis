@@ -543,7 +543,7 @@ class track extends data_object_with_custom_fields {
                 unset($newclstrk->id);
                 if (isset($options['classmap'][$clstrkdata->clsid])) {
                     // use existing duplicate class
-                    $class = new cmclass($options['classmap'][$clstrkdata->clsid]);
+                    $class = new pmclass($options['classmap'][$clstrkdata->clsid]);
                 } else {
                     // no existing duplicate -> duplicate class
                     $class = new pmclass($clstrkdata->clsid);
