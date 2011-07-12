@@ -394,7 +394,7 @@ class field_owner extends elis_data_object {
             $params = unserialize($this->params);
             return isset($params[$paramname]);
         } else {
-            return parent::__isset($name, $value);
+            return parent::__isset($name);
         }
     }
 
@@ -611,6 +611,7 @@ abstract class field_data extends elis_data_object {
      */
     public static function set_for_context_and_field($context, field $field, $data) {
         global $DB;
+
         if ($context) {
             $contextid = $context->id;
         } else {
@@ -638,7 +639,8 @@ abstract class field_data extends elis_data_object {
             // add new data
             $toadd = array_diff($data, $existing);
             foreach ($toadd as $value) {
-                $rec = new field_data(false, $field->data_type());
+                $fielddatatype = "field_data_{$field->data_type()}";
+                $rec = new $fielddatatype();
                 $rec->contextid = $contextid;
                 $rec->fieldid = $field->id;
                 $rec->data = $value;
@@ -647,7 +649,9 @@ abstract class field_data extends elis_data_object {
             return !empty($toadd) || !empty($todelete);
         } else {
             if (($rec = $DB->get_record($data_table, array('contextid' => $contextid, 'fieldid' => $field->id)))) {
-                $fielddata = new field_data($rec, $field->data_type());
+//                $fielddata = new field_data($rec, $field->data_type());
+                $fielddatatype = "field_data_{$field->data_type()}";
+                $fielddata = new $fielddatatype($rec);
                 if ($data === null) {
                     $fielddata->delete();
                     return true;
@@ -657,14 +661,15 @@ abstract class field_data extends elis_data_object {
                 }
                 $fielddata->contextid = $contextid; // needed, or else NULL becomes 0
                 $fielddata->data = $data;
-                $fielddata->update();
+                $fielddata->save();
                 return true;
             } else if ($data !== null) {
-                $rec = new field_data(false, $field->data_type());
+                $fielddatatype = "field_data_{$field->data_type()}";
+                $rec = new $fielddatatype();
                 $rec->contextid = $contextid;
                 $rec->fieldid = $field->id;
                 $rec->data = $data;
-                $rec->add();
+                $rec->save();
                 return true;
             }
         }

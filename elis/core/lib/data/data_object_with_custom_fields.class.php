@@ -91,7 +91,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
             if ($changed) {
                 $field = self::$_fields[$contextlevel][$name];
                 if (isset($this->_field_data[$name])) {
-                    field_data::set_for_context_and_field($contextlevel, $field, $this->_field_data[$name]);
+                    field_data::set_for_context_and_field($this->_context, $field, $this->_field_data[$name]);
                 } else {
                     // field data was unset, so delete values
                     $fielddatatype = "field_data_{$field->data_type()}";
