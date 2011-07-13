@@ -30,10 +30,19 @@ require_once elispm::file('form/cmform.class.php');
 
 class cmCourseForm extends cmform {
     public function definition() {
-        global $CFG, $PAGE;
+        global $CFG, $PAGE, $DB;
+
+        $locationlabel = '';
 
         if (isset($this->_customdata['obj']->id)) {
             $id = $this->_customdata['obj']->id;
+
+            // TO-DO: this should probably be moved to a different location
+            $template = new coursetemplate($id);
+            $course = $DB->get_record('course', array('id'=>$template->location));
+            if (!empty($course)) {
+                $locationlabel = $course->fullname . ' ' . $course->shortname;
+            }
         }
 
         $PAGE->requires->js('/elis/program/js/courseform.js');
@@ -98,8 +107,7 @@ class cmCourseForm extends cmform {
 
         $mform->addElement('html', '<br />');
         $mform->addElement('hidden', 'templateclass', 'moodlecourseurl', array('id'=>'id_templateclass'));
-
-        $mform->addElement('text', 'locationlabel', get_string('coursetemplate', 'elis_program'), array('readonly'=>'readonly'));
+        $mform->addElement('text', 'locationlabel', get_string('coursetemplate', 'elis_program'), array('readonly'=>'readonly', 'value'=>$locationlabel));
         $mform->setType('locationlabel', PARAM_TEXT);
         $mform->addHelpButton('locationlabel', 'courseform:coursetemplate', 'elis_program');
 
@@ -108,9 +116,7 @@ class cmCourseForm extends cmform {
             $mform->addElement('hidden', 'temptype', '', array('id'=>'tempid'));
         } else {
             $template = new coursetemplate($id);
-
             $mform->addElement('hidden', 'location', $template->location, array('id'=>'id_location'));
-
             $mform->addElement('hidden', 'tempid', $template->id, array('id'=>'tempid'));
         }
 

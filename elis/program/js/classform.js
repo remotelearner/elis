@@ -1,6 +1,6 @@
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ String.prototype.ends_with = function (str) {
 
 function class_enrol_set_all_selected() {
 	var checkbox = document.getElementById('class_enrol_select_all');
-	
+
 	var input_elements = document.getElementsByTagName('input');
 	for(var i = 0; i < input_elements.length; i++) {
 		var element = input_elements[i];
@@ -45,7 +45,7 @@ function class_enrol_set_all_selected() {
 
 function class_bulkedit_set_all_selected() {
   var checkbox = document.getElementById('class_bulkedit_select_all');
-  
+
   var input_elements = document.getElementsByTagName('input');
   for(var i = 0; i < input_elements.length; i++) {
     var element = input_elements[i];
