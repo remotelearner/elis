@@ -519,9 +519,9 @@ abstract class field_data extends elis_data_object {
         $values = array();
         $default_values = array();
         foreach ($data_types as $datatype => $unused) {
-            $fielddatatype = "field_data_{$record->data_type()}";
-            $records = $fielddatatype::find(new OR_filter(new field_filter('contextid', $context->id),
-                                                          new field_filter('contextid', null)));
+            $fielddatatype = "field_data_{$datatype}";
+            $records = $fielddatatype::find(new OR_filter(array(new field_filter('contextid', $context->id),
+                                                                new field_filter('contextid', null))));
             foreach ($records as $record) {
                 if (!isset($fields[$record->fieldid]) || $fields[$record->fieldid]->data_type() != $datatype) {
                     // nonexistent field, or this data isn't supposed to come from this table

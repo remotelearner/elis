@@ -103,6 +103,23 @@ abstract class data_object_with_custom_fields extends elis_data_object {
         }
     }
 
+    /**
+     * Converts the data_object a dumb object representation (without
+     * associations).  This is required when using the Moodle *_record
+     * functions, or get_string.
+     *
+     * Overridden to add custom fields.
+     */
+    public function to_object() {
+        $obj = parent::to_object();
+        $this->_load_field_data();
+        foreach ($this->_field_data as $name => $value) {
+            $fieldname = "field_{$name}";
+            $obj->$fieldname = $value;
+        }
+        return $obj;
+    }
+
     /**************************************************************************
      * Magic Methods
      *************************************************************************/
@@ -247,11 +264,12 @@ abstract class data_object_with_custom_fields extends elis_data_object {
      * Load the custom field values from the database.
      */
     private function _load_field_data() {
-        if (isset($this->id)) {
+        if (isset($this->id) && !$this->_fields_loaded) {
             $this->_load_context();
+            $this->_load_fields();
             $data = field_data::get_for_context($this->_context);
             foreach (self::$_fields[$this->_context->contextlevel] as $name => $field) {
-                if (!empty($this->_field_changed[$name]) && isset($data[$name])) {
+                if (empty($this->_field_changed[$name]) && isset($data[$name])) {
                     // only set the field data if it hasn't been changed
                     $this->_field_data[$name] = $data[$name];
                 }
@@ -292,8 +310,9 @@ abstract class data_object_with_custom_fields extends elis_data_object {
             }
         }
 
-        if (!$from_db) {
-            $this->_fields_loaded = true;
-        }
+        // TODO: causes problems with custom fields
+//        if ($from_db) {
+//            $this->_fields_loaded = true;
+//        }
     }
 }
