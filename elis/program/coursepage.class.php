@@ -260,7 +260,10 @@ class coursepage extends managementpage {
                 'name'              => array('header'=>get_string('completion_name','elis_program')),
                 'description'       => array('header'=>get_string('completion_description','elis_program')),
                 'completion_grade'  => array('header'=>get_string('completion_grade','elis_program')),
-                'required'          => array('header'=>get_string('required','elis_program'))
+                'required'          => array('header'=>get_string('required','elis_program')),
+                'actions'           => array('header' =>'',
+                                             'display_function' => 'htmltab_display_function',
+                                             'sortable' => false),
                 );
 
             foreach ($columns as $column => $cdesc) {
@@ -277,25 +280,26 @@ class coursepage extends managementpage {
             $table->align[] = "center";
             $table->wrap[]  = true;
 
-            foreach ($elements as $element) {
+            $newarr = array();
 
+            foreach ($elements as $element) {
                 $deletebutton = '<a href="index.php?s=crs&amp;section=curr&amp;action=delem&amp;id='.$crs->id.
                                 '&amp;elemid='.$element->id.'">'.
                                 '<img src="pix/delete.gif" alt="Delete" title="Delete" /></a>';
                 $editbutton   = '<a href="index.php?s=crs&amp;section=curr&amp;action=eelem&amp;id='.$crs->id.
                                 '&amp;elemid='.$element->id.'">'.
                                 '<img src="pix/edit.gif" alt="Edit" title="Edit" /></a>';
-
-                $newarr = array();
-                foreach ($columns as $column => $cdesc) {
+                $newobj = new stdClass;
+                foreach ($columns as $column=>$cdesc) {
                     if ($column == 'required') {
-                        $newarr[] = empty($element->required) ? get_string('no') :  get_string('yes');
+                        $newobj->required = empty($element->required) ? get_string('no') : get_string('yes');
+                    } elseif ($column == 'actions') {
+                        $newobj->actions = $editbutton.' '.$deletebutton;
                     } else {
-                        $newarr[] = $element->$column;
+                        $newobj->$column = $element->$column;
                     }
                 }
-                $newarr[] = $editbutton . ' ' . $deletebutton;
-                $table->data[] = $newarr;
+                $newarr[] = $newobj;
             }
 
             $table = new display_table($newarr, $columns);
@@ -399,7 +403,9 @@ class coursepage extends managementpage {
     }
 
     function get_delete_element_form($elemid) {
-        $elemrecord = $this->_db->get_record(coursecompletion::TABLE, array('id'=>$elemid));
+        global $DB;
+
+        $elemrecord = $DB->get_record(coursecompletion::TABLE, array('id'=>$elemid));
 
         if (!($elemrecord)) {
             print_error('Undefined completion element.');
