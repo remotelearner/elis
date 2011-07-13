@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@
  *
  */
 
-require_once $CFG->libdir . '/weblib.php';
-require_once elispm::lib('lib.php');
-require_once elispm::lib('page.class.php');
+require_once($CFG->libdir . '/weblib.php');
+require_once(elispm::lib('lib.php'));
+require_once(elispm::lib('page.class.php'));
 
 /**
  * This is the base class for a page that manages the basic data object types,
@@ -104,7 +104,7 @@ abstract class managementpage extends pm_page {
      * form that executes the delete action when submitted.
      */
     public function display_delete() {
-        $id       = $this->required_param('id', PARAM_INT);
+        $id = $this->required_param('id', PARAM_INT);
 
         if(empty($id)) {
             print_error('invalid_id');
@@ -123,7 +123,7 @@ abstract class managementpage extends pm_page {
         global $OUTPUT;
 
         $obj->load(); // force load, so that the confirmation notice has something to display
-        $message    = get_string('confirm_delete_'.get_class($obj), 'elis_program', $obj->to_object());
+        $message = get_string('confirm_delete_'.get_class($obj), 'elis_program', $obj->to_object());
 
         $target_page = $this->get_new_page(array('action' => 'view', 'id' => $obj->id, 'sesskey' => sesskey()), true);
         $no_url = $target_page->url;
@@ -141,8 +141,8 @@ abstract class managementpage extends pm_page {
      * Displays the page for when there are no items to list.
      */
     public function print_no_items() {
-        $namesearch   = trim(optional_param('search', '', PARAM_TEXT));
-        $alpha        = optional_param('alpha', '', PARAM_ALPHA);
+        $namesearch = trim($this->optional_param('search', '', PARAM_TEXT));
+        $alpha = $this->optional_param('alpha', '', PARAM_ALPHA);
 
         $match = array();
         if ($namesearch) {
@@ -163,8 +163,8 @@ abstract class managementpage extends pm_page {
     public function print_paging_bar($numitems) {
         global $OUTPUT;
 
-        $page         = optional_param('page', 0, PARAM_INT);
-        $perpage      = optional_param('perpage', 30, PARAM_INT);
+        $page = $this->optional_param('page', 0, PARAM_INT);
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
 
         echo $OUTPUT->paging_bar($numitems, $page, $perpage, $this->url);
     }
