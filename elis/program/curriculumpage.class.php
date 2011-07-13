@@ -33,7 +33,7 @@ require_once elispm::file('curriculumcoursepage.class.php');
 require_once elispm::file('curriculumstudentpage.class.php');
 require_once elispm::file('clustercurriculumpage.class.php');
 
-//require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');              // missing
+require_once (elispm::file('rolepage.class.php'));
 
 /// The main management page.
 class curriculumpage extends managementpage {
@@ -141,8 +141,7 @@ class curriculumpage extends managementpage {
         array('tab_id' => 'curriculumcoursepage', 'page' => 'curriculumcoursepage', 'name' => get_string('courses', 'elis_program') , 'showtab' => true, 'showbutton' => true, 'image' => 'course'),
         //allow users to view the tracks associated with this curriculum
         array('tab_id' => 'trackpage', 'page' => 'trackpage', 'name' => get_string('tracks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track'),
-        //TO-DO: re-enable once rolepage is done
-        //array('tab_id' => 'curriculum_rolepage', 'page' => 'curriculum_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
+        array('tab_id' => 'curriculum_rolepage', 'page' => 'curriculum_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
         );
