@@ -195,6 +195,7 @@ abstract class selectionpage extends pm_page { // TBD
         $pagingbar = new paging_bar($count, $pagenum, $perpage, $this->get_basepage()->url . ($action ? "&amp;action=$action" : '' )); // TBD: '&amp;'
         echo $OUTPUT->render($pagingbar);
 
+        /* TODO: move to subclasses
         if (!$count &&
             (!empty($filter['alpha']) || !empty($filter['namesearch']))) {
             $nomatchlabel = null;
@@ -207,6 +208,7 @@ abstract class selectionpage extends pm_page { // TBD
             }
             pmshowmatches($filter['alpha'], $filter['namesearch'], null, $nomatchlabel);
         }
+        */
 
         echo '<div style="float: right">';
         $label = null;
