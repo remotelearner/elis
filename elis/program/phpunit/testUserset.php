@@ -85,10 +85,19 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         // called before each test function
         global $DB;
         $this->origdb = $DB;
-        $DB = $this->overlaydb = new overlay_database($DB, array('context' => 'moodle',
-                                                                 'course' => 'moodle',
-                                                                 userset::TABLE => 'elis_program'));
+        $DB = $this->overlaydb = new overlay_database($DB,
+                                         array('context'      => 'moodle',
+                                               'course'       => 'moodle',
+                                               userset::TABLE => 'elis_program'));
         $this->setUpContextsTable();
+    }
+
+    /**
+     * Test that data class has correct DB fields
+     */
+    public function testDBfields() {
+        $testobj = new userset(false, null, array(), false, array(), $this->origdb);
+        $this->assertTrue($testobj->_test_dbfields());
     }
 
     /**
