@@ -121,8 +121,8 @@ abstract class elis_page extends moodle_page {
         if (!$replace_params) {
             if ($params === null) {
                 $params = $this->params;
-            } else if ($this->params !== null) {
-                $params += $this->params;
+            } else if ($this->url->params() !== null) {
+                $params += $this->url->params();
             }
         }
         return new $pageclass($params);
