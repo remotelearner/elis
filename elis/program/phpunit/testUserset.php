@@ -101,6 +101,14 @@ class usersetTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * Test that data class has correct associations
+     */
+    public function testAssociations() {
+        $testobj = new userset(false, null, array(), false, array(), $this->origdb);
+        $this->assertTrue($testobj->_test_associations());
+    }
+
+    /**
      * Test that a record can be created in the database.
      */
     public function testCreateRecord() {
