@@ -212,10 +212,14 @@ function manual_field_add_form_element($form, $mform, $context, $field, $check_r
  */
 function manual_field_add_help_button($mform, $elementname, $field) {
     $manual = new field_owner($field->owners['manual']);
-    if (!empty($manual->param_help_file)) {
+    // TODO: when we have time... convert to M2 help style
+    /*if (!empty($manual->param_help_file)) {
         list($plugin,$filename) = explode('/', $manual->param_help_file, 2);
-        $mform->addHelpButton($elementname, array($filename, $field->name, $plugin));
-    }
+
+//    echo '<br>in add help button for plugin:'.$plugin;
+        $mform->addHelpButton($elementname, 'customfields:'.$elementname,'elis_core');
+//        array($filename, $field->name, $plugin));
+    }*/
 }
 
 ?>
