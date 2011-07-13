@@ -36,4 +36,7 @@ $string['dont_auto'] = '(don\'t auto-associate)';
 
 $string['option_profile_field'] = '(please select a profile field first)';
 
+
+$string['pluginname'] = 'Moodle profile field-based user set assignments';
+
 $string['set_to'] = 'set to';

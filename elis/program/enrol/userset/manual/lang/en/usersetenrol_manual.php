@@ -30,3 +30,5 @@ $string['assign_users'] = 'Assign users';
 
 $string['manually_assigned_users'] = 'Manually-assigned users';
 $string['manually_assigned_usersets'] = 'Manually-assigned user sets';
+
+$string['pluginname'] = 'Manual user set assignments';
