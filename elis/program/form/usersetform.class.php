@@ -74,18 +74,6 @@ class usersetform extends cmform {
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
             ? get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
-
-//        $formplugins = get_plugin_list('elis/program/plugins');
-   //     ;
-
-//        $formelisplugins = array();
-        /*foreach ($elisplugins as $elisplugin => $formatdir) {
-            $formelisplugins[$elisplugin] = get_string('pluginname', "format_$elisplugin");
-        }
-        $mform->addElement('select', 'format', get_string('format'), $formcourseformats);
-        $mform->addHelpButton('format', 'format');
-        $mform->setDefault('format', $courseconfig->format);*/
-
         require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
 
         foreach ($fields as $rec) {
@@ -97,6 +85,7 @@ class usersetform extends cmform {
                 $lastcat = $rec->categoryid;
                 $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
             }
+            echo '<br>adding field: ';
             manual_field_add_form_element($this, $mform, $context, $field);
         }
 

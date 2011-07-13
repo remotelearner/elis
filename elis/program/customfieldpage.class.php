@@ -94,7 +94,8 @@ class customfieldpage extends pm_page {
                 print_string('field_no_fields_defined', 'elis_program');
             } else {
                 if ($level == 'user') {
-                    require_once $CFG->dirroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
+//                    require_once $CFG->dirroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
+                    require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
                     $table = new customuserfieldtable($fields, array('name' => get_string('name'),
                                                                      'datatype' => get_string('field_datatype', 'elis_program'),
                                                                      'syncwithmoodle' => get_string('field_syncwithmoodle', 'elis_program'),
@@ -166,7 +167,8 @@ class customfieldpage extends pm_page {
             }
             $fields = field::get_for_context_level($ctxlvl);
             $fields = $fields ? $fields : array();
-            require_once $CFG->dirroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
+//            require_once $CFG->dirroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
+            require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
             foreach ($fields as $field) {
                 $fieldobj = new field($field);
                 sync_profile_field_with_moodle($fieldobj);
@@ -304,10 +306,11 @@ class customfieldpage extends pm_page {
                 }
             }
 
-            $plugins = get_list_of_plugins('curriculum/plugins');
+            $plugins = get_list_of_plugins('elis/core/fields');
             foreach ($plugins as $plugin) {
-                if (is_readable($CFG->dirroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php')) {
-                    include_once($CFG->dirroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php');
+                if (is_readable($CFG->dirroot . '/elis/core/fields/' . $plugin . '/custom_fields.php')) {
+//                    include_once($CFG->dirroot . '/elis/core/fields/' . $plugin . '/custom_fields.php');
+                    require_once(elis::plugin_file('elisfields_'.$plugin, 'custom_fields.php'));
                     if (function_exists("{$plugin}_field_save_form_data")) {
                         call_user_func("{$plugin}_field_save_form_data", $form, $field, $data);
                     }
@@ -371,10 +374,10 @@ class customfieldpage extends pm_page {
                     }
                     $data_array['defaultdata'] = $defaultdata;
 
-                    $plugins = get_list_of_plugins('elis/program/plugins');
+                    $plugins = get_list_of_plugins('elis/core/fields');
                     foreach ($plugins as $plugin) {
-                        if (is_readable($CFG->dirroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php')) {
-                            include_once($CFG->dirroot . '/elis/program/plugins/' . $plugin . '/custom_fields.php');
+                        if (is_readable($CFG->dirroot . '/elis/core/fields/' . $plugin . '/custom_fields.php')) {
+                            include_once($CFG->dirroot . '/elis/core/fields/' . $plugin . '/custom_fields.php');
                             if (function_exists("{$plugin}_field_get_form_data")) {
                                 $data_array += call_user_func("{$plugin}_field_get_form_data", $form, $data);
                             }
