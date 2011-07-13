@@ -798,6 +798,46 @@ class elis_data_object {
     protected function _has_association($name) {
         return isset(static::$associations[$name]);
     }
+
+    public function _test_dbfields() {
+        $dbfields = array();
+        // find all the fields from the current object
+        $objclass = get_class($this);
+        $reflect = new ReflectionClass($objclass);
+        $prefix_len = strlen(self::FIELD_PREFIX);
+        foreach ($reflect->getProperties() as $prop) {
+            if (strncmp($prop->getName(), self::FIELD_PREFIX, $prefix_len) === 0) {
+                $dbfields[] = substr($prop->getName(), $prefix_len);
+            }
+        }
+
+        // implode $dbfields, re-arranging so 'id' is first
+        $allfields = '';
+        foreach ($dbfields as $dbfield) {
+            $allfields = trim($allfields, ', ');
+            if ($dbfield == 'id') {
+                $allfields = 'id, '. $allfields;
+            } else {
+                $allfields .= ', '. $dbfield;
+            }
+        }
+        $allfields = trim($allfields, ', ');
+        error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): '{$allfields}' for class: {$objclass}");
+        // TBD: try { } catch(e) { ... return false; }
+        $recs = $this->_db->get_records($this::TABLE, null, '', $allfields);
+        $ret = true;
+        if ($rec = current($recs)) {
+            foreach ($rec as $key => $value) {
+                if (!in_array($key, $dbfields)) {
+                    error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): class: {$objclass}  missing dbfield: {$key}");
+                    $ret = false;
+                }
+            }
+        } else {
+            error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): '". $this::TABLE ."' table empty, could not test dbfields complete.");
+        }
+        return $ret;
+    }
 }
 
 /**
