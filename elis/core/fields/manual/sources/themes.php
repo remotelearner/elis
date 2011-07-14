@@ -32,7 +32,7 @@ class manual_options_themes extends manual_options_base_class {
         $themes = get_list_of_themes();
         foreach ($themes as $theme) {
             //we just need the name of each theme
-            $result[] = $theme->name;
+            $result[$theme->name] = $theme->name;
         }
         //option for not setting a cluster theme
         $unset_option = array('' => get_string('unset_theme_option', 'elisfields_manual'));
