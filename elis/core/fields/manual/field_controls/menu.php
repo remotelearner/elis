@@ -9,10 +9,11 @@ require_once elis::plugin_file('elisfields_manual', 'custom_fields.php');
  * @param  field                         $field      The definition of the field defining the controls
  * @param  boolean                       $as_filter  Whether to display a "choose" message
  */
-function menu_control_display($form, $mform, $field, $as_filter=false) {
+function menu_control_display($form, $mform, $customdata, $field, $as_filter=false) {
     if (!($form instanceof moodleform)) {
         $mform = $form;
         $form->_customdata = null;
+        $customdata = null;
     }
 
     $manual = new field_owner($field->owners['manual']);
@@ -28,11 +29,13 @@ function menu_control_display($form, $mform, $field, $as_filter=false) {
             }
         } else {
             $source = $manual->param_options_source;
-            require_once (CURMAN_DIRLOCATION . '/plugins/manual/sources.php');
-            require_once(CURMAN_DIRLOCATION."/plugins/manual/sources/$source.php");
+
+            require_once elis::plugin_file('elisfields_manual', 'sources.php');
+            require_once elis::plugin_file('elisfields_manual', "sources/$source.php");
             $classname = "manual_options_$source";
             $plugin = new $classname();
-            $options = $plugin->get_options($form->_customdata);
+
+            $options = $plugin->get_options($customdata);
         }
     } else {
         if ($as_filter) {

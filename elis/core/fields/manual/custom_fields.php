@@ -176,7 +176,7 @@ function manual_field_save_form_data($form, $field, $data) {
 /**
  * Add an element to a form for a field.
  */
-function manual_field_add_form_element($form, $mform, $context, $field, $check_required = true) {
+function manual_field_add_form_element($form, $mform, $context, $customdata, $field, $check_required = true) {
     //$mform = $form->_form;
     $manual = new field_owner($field->owners['manual']);
     if (!empty($manual->param_edit_capability)) {
@@ -194,7 +194,7 @@ function manual_field_add_form_element($form, $mform, $context, $field, $check_r
     }
     $control = $manual->param_control;
     require_once elis::plugin_file('elisfields_manual',"field_controls/{$control}.php");
-    call_user_func("{$control}_control_display", $form, $mform, $field);
+    call_user_func("{$control}_control_display", $form, $mform, $customdata, $field);
     if ($check_required) {
         $manual_params = unserialize($manual->params);
         if (!empty($manual_params['required'])) {

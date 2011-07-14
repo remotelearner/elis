@@ -148,13 +148,14 @@ abstract class data_object_with_custom_fields extends elis_data_object {
                     }
                 }
                 // we have no data for this field
-                $trace = debug_backtrace();
-                $classname = get_class($this);
-                trigger_error(
-                    "Undefined property via __get(): $classname::\${$name} in {$trace[1]['file']} on line {$trace[1]['line']}",
-                    E_USER_NOTICE);
                 return null;
             }
+            $trace = debug_backtrace();
+            $classname = get_class($this);
+            trigger_error(
+                "Undefined property via __get(): $classname::\${$name} in {$trace[1]['file']} on line {$trace[1]['line']}",
+                E_USER_NOTICE);
+            return null;
         }
         return parent::__get($name);
     }

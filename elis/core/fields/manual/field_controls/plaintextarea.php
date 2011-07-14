@@ -8,7 +8,7 @@ require_once elis::plugin_file('elisfields_manual', 'custom_fields.php');
  * @param  moodleform or HTML_QuickForm  $form   The form to add the appropriate element to
  * @param  field                         $field  The definition of the field defining the controls
  */
-function plaintextarea_control_display($form, $mform, $field) {
+function plaintextarea_control_display($form, $mform, $customdata, $field) {
     if (!($form instanceof moodleform)) {
         $mform = $form;
         $form->_customdata = null;

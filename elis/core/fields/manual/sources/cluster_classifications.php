@@ -26,9 +26,10 @@
 
 class manual_options_cluster_classifications extends manual_options_base_class {
     function get_options($dataobject) {
-        global $CURMAN;
-        require_once(CURMAN_DIRLOCATION . '/plugins/cluster_classification/clusterclassification.class.php');
-        $recs = $CURMAN->db->get_records(CLUSTERCLASSTABLE, '', '', 'name ASC', 'shortname, name');
+        global $DB;
+        //TODO: port to ELIS2 when required
+        require_once($CFG->dirroot . '/elis/plugins/cluster_classification/clusterclassification.class.php');
+        $recs = $DB->get_records(CLUSTERCLASSTABLE, '', '', 'name ASC', 'shortname, name');
         if (!$recs) {
             return array();
         }
@@ -40,7 +41,8 @@ class manual_options_cluster_classifications extends manual_options_base_class {
     }
 
     function is_applicable($contextlevel) {
-        return $contextlevel === 'cluster' && is_readable(CURMAN_DIRLOCATION . '/plugins/cluster_classification/clusterclassification.class.php');
+        //TODO: port to ELIS2 when required
+        return $contextlevel === 'cluster' && is_readable($CFG->dirroot . '/elis/plugins/cluster_classification/clusterclassification.class.php');
     }
 }
 

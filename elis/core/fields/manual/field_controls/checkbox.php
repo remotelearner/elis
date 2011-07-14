@@ -9,7 +9,7 @@ require_once elis::plugin_file('elisfields_manual', 'custom_fields.php');
  * @param  field                         $field      The definition of the field defining the controls
  * @param  boolean                       $as_filter  Whether to display a "choose" message
  */
-function checkbox_control_display($form, $mform, $field, $as_filter=false) {
+function checkbox_control_display($form, $mform, $customdata, $field, $as_filter=false) {
     if (!($form instanceof moodleform)) {
         $mform = $form;
         $form->_customdata = null;
@@ -20,7 +20,8 @@ function checkbox_control_display($form, $mform, $field, $as_filter=false) {
         manual_field_add_help_button($mform, "field_{$field->shortname}", $field);
     } else {
         if ($as_filter || $field->multivalued) {
-            require_once(CURMAN_DIRLOCATION.'/plugins/manual/field_controls/menu.php');
+//            require_once(CURMAN_DIRLOCATION.'/plugins/manual/field_controls/menu.php');
+            require_once elis::plugin_file('elisfields_manual', 'field_controls/menu.php');
             return menu_control_display($form, $field, $as_filter);
         }
         $manual = new field_owner($field->owners['manual']);

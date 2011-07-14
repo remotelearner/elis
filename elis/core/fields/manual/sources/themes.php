@@ -26,10 +26,16 @@
 
 class manual_options_themes extends manual_options_base_class {
     function get_options($dataobject) {
-        $result = get_list_of_themes();
+        $result = array();
 
+        //get list of theme objects
+        $themes = get_list_of_themes();
+        foreach ($themes as $theme) {
+            //we just need the name of each theme
+            $result[] = $theme->name;
+        }
         //option for not setting a cluster theme
-        $unset_option = array('' => get_string('unset_theme_option', 'crlm_manual'));
+        $unset_option = array('' => get_string('unset_theme_option', 'elisfields_manual'));
 
         return $unset_option + $result;
     }
