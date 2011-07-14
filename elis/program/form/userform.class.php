@@ -195,7 +195,6 @@ class userform extends cmform {
         $mform->setType('inactive', PARAM_TEXT);
         $mform->addHelpButton('inactive', 'user_inactive', 'elis_program');
 
-
         $fields = field::get_for_context_level('user');
         $fields = $fields ? $fields : array();
 
@@ -204,7 +203,6 @@ class userform extends cmform {
             ? get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
         require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
-
         foreach ($fields as $rec) {
             $field = new field($rec);
             if (!isset($field->owners['manual'])) {
@@ -236,7 +234,7 @@ class userform extends cmform {
 
         if (!empty($data['username'])) {
             if (!$this->check_unique(user::TABLE, 'username', $data['username'], $data['id'])) {
-                $errors['username_group'] = get_string('badusername', 'block_curr_admin');
+                $errors['username_group'] = get_string('badusername', 'elis_program');
             }
         } else if(!$data['id'] && empty($data['id_same_user'])) {
             $errors['username_group'] = get_string('required');
@@ -244,7 +242,7 @@ class userform extends cmform {
 
         if (!empty($data['idnumber'])) {
             if (!$this->check_unique(user::TABLE, 'idnumber', $data['idnumber'], $data['id'])) {
-                $errors['idnumber'] = get_string('badidnumber', 'block_curr_admin');
+                $errors['idnumber'] = get_string('badidnumber', 'elis_program');
             }
         }
 
@@ -268,11 +266,11 @@ class userform extends cmform {
         }
 
         // validate custom profile fields
-        /*
-        $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'block_curr_admin'));
+        $usercontextlevel = context_level_base::get_custom_context_level('user', 'elis_program');
+        $fields = field::get_for_context_level($usercontextlevel);
         $fields = $fields ? $fields : array();
         if ($data['id']) {
-            $context = get_context_instance(context_level_base::get_custom_context_level('user', 'block_curr_admin'), $data['id']);
+            $context = get_context_instance($usercontextlevel, $data['id']);
             $contextid = $context->id;
         } else {
             $contextid = 0;
@@ -286,7 +284,6 @@ class userform extends cmform {
                 }
             }
         }
-        */
 
         return $errors;
     }

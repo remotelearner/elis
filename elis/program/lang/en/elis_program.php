@@ -78,6 +78,8 @@ $string['auto_idnumber_setting'] = 'Automatically assign an ID number to Moodle 
 $string['available_course_corequisites'] = 'Available Course Corequisites';
 $string['available_course_prerequisites'] = 'Available Course Prerequisites';
 
+$string['badusername'] = 'Specified username already exists, or must be specified or generated.';
+$string['badidnumber'] = 'Specified ID number already exists.';
 // TBD: associationpage.class.php::get_title_default()
 $string['breadcrumb_trackassignmentpage'] = 'Assign Class Instances';
 $string['breadcrumb_usertrackpage'] = 'Assign Tracks';
@@ -423,6 +425,7 @@ $string['idnumber'] = 'ID Number';
 $string['idnumber_already_used'] = 'ID Number is already in use';
 $string['id_same_as_user'] = 'Same as username';
 $string['inactive'] = 'Inactive';
+$string['incomplete_course_message'] = 'You have not completed the class {$a} before the end date';
 $string['instructor_add'] = 'Add Instructor';
 $string['instructor_assignment'] = 'Assignment Time';
 $string['instructor_completion'] = 'Completion Time';
@@ -764,6 +767,7 @@ $string['userset_parent'] = 'Parent user set';
 $string['userset_parent_help'] = 'Parent user set of this user set.  "Top Level" indicates no parent user set.';
 $string['userset_saveexit'] = 'Save and Exit';
 $string['userset_top_level'] = 'Top level';
+$string['userset_user_assigned'] = 'Assigned $a user(s) to the user set.';
 $string['userset_userassociation'] = 'User association';
 $string['usersettrack_autoenrol'] = 'Auto-enrol';
 $string['usersettrack_auto_enrol'] = 'Auto-enrol users into this track when they are added to this cluster';

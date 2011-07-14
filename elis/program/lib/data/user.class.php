@@ -25,16 +25,17 @@
  */
 
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
-
+require_once elispm::lib('data/clusterassignment.class.php');
+require_once elispm::lib('data/student.class.php');
+require_once elispm::lib('data/waitlist.class.php');
+require_once elispm::lib('data/instructor.class.php');
+require_once elispm::lib('data/curriculumstudent.class.php');
+require_once elispm::lib('data/usertrack.class.php');
 /*
 require_once CURMAN_DIRLOCATION . '/lib/cluster.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/usercluster.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/clusterassignment.class.php';
 require_once CURMAN_DIRLOCATION . '/lib/cmclass.class.php';
 require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/student.class.php';
 require_once CURMAN_DIRLOCATION . '/form/userform.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/customfield.class.php';
 */
 require_once $CFG->dirroot . '/user/filters/text.php';
 require_once $CFG->dirroot . '/user/filters/date.php';
@@ -139,13 +140,13 @@ class user extends data_object_with_custom_fields {
             // delete associated data
             require_once elis::lib('data/data_filter.class.php');
             $filter = new field_filter('userid', $this->id);
-            //curriculumstudent::delete_records($filter, $this->_db);
-            //instructor::delete_records($filter, $this->_db);
-            //student::delete_records($filter, $this->_db);
-            //student_grade::delete_records($filter, $this->_db);
-            //usertrack::delete_records($filter, $this->_db);
-            //usersetassignment::delete_records($filter, $this->_db);
-            //waitlist::delete_records($filter, $this->_db);
+            curriculumstudent::delete_records($filter, $this->_db);
+            student::delete_records($filter, $this->_db);
+            student_grade::delete_records($filter, $this->_db);
+            waitlist::delete_records($filter, $this->_db);
+            instructor::delete_records($filter, $this->_db);
+            usertrack::delete_records($filter, $this->_db);
+            clusterassignment::delete_records($filter, $this->_db);
 
             $level = context_level_base::get_custom_context_level('user', 'elis_program');
             delete_context($level,$this->id);
@@ -244,17 +245,15 @@ class user extends data_object_with_custom_fields {
     }
 
     static $validation_rules = array(
-        'validate_idnumber_not_empty',
-        'validate_unique_idnumber'
+        array('validation_helper', 'not_empty_idnumber'),
+        array('validation_helper', 'is_unique_idnumber'),
+        array('validation_helper', 'not_empty_username'),
+        array('validation_helper', 'is_unique_username'),
+        array('validation_helper', 'not_empty_firstname'),
+        array('validation_helper', 'not_empty_lastname'),
+        array('validation_helper', 'not_empty_email'),
+        array('validation_helper', 'not_empty_country'),
     );
-
-    function validate_idnumber_not_empty() {
-        return validate_not_empty($this, 'idnumber');
-    }
-
-    function validate_unique_idnumber() {
-        return validate_is_unique($this, array('idnumber'));
-    }
 
     public function save() {
         $isnew = empty($this->id);
@@ -357,7 +356,6 @@ class user extends data_object_with_custom_fields {
             $mu_loop_detect[$this->id] = true;
 
             // synchronize profile fields
-            /*
             $origrec = clone($record);
             profile_load_data($origrec);
             $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'elis_user'));
@@ -379,12 +377,11 @@ class user extends data_object_with_custom_fields {
                 }
             }
             profile_save_data(addslashes_recursive($record));
-            */
 
             if ($muserid) {
-                //if ($changed) {
+                if ($changed) {
                     events_trigger('user_updated', $record);
-                //}
+                }
             } else {
                 events_trigger('user_created', $record);
             }
@@ -867,7 +864,7 @@ class cm_user_filtering extends user_filtering {
 
             /*
               FIXME:
-            $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'block_curr_admin'));
+            $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'elis_program'));
             $fields = $fields ? $fields : array();
             foreach ($fields as $field) {
                 $fieldnames["field_{$field->shortname}"] = 1;
@@ -919,11 +916,11 @@ class cm_user_filtering extends user_filtering {
 
             //case 'clusterid':
             //$clusters = cm_get_list_of_clusters();
-            //return new user_filter_select('clusterid', get_string('usercluster', 'block_curr_admin'), $advanced, 'clusterid', $clusters);
+            //return new user_filter_select('clusterid', get_string('usercluster', 'elis_program'), $advanced, 'clusterid', $clusters);
 
             //case 'curriculumid':
             //$choices = curriculum_get_menu();
-            //return new user_filter_select('curriculumid', get_string('usercurricula', 'block_curr_admin'), $advanced, 'curass.curriculumid', $choices);
+            //return new user_filter_select('curriculumid', get_string('usercurricula', 'elis_program'), $advanced, 'curass.curriculumid', $choices);
 
         case 'inactive':
             $inactive_options = array(get_string('o_active', 'elis_program'), get_string('all'), get_string('o_inactive', 'elis_program'));
