@@ -66,15 +66,16 @@ class DataObjectBuiltInTest extends PHPUnit_Framework_TestCase {
         }
         $error_str = '';
         if ($dbfield_errors) {
-            $error_str .= "{$dbfield_errors} Error(s) with \$_dbfield_ properties. ";
+            $error_str .= "{$dbfield_errors} files(s) with \$_dbfield_ property errors. ";
         }
         if ($association_errors) {
-            $error_str .= "{$association_errors} Error(s) with associations. ";
+            $error_str .= "{$association_errors} files(s) with association errors. ";
         }
         if (!empty($error_str)) {
             $error_str .= 'Check error_log for details!';
         }
-        $this->assertEquals(0, $dbfield_errors + $association_errors, $error_str);
+        // TBD: $this->assertEquals() has bug that double prints error message!?
+        $this->assertLessThanOrEqual(0, $dbfield_errors + $association_errors, $error_str);
     }
 
 }
