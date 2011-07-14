@@ -264,7 +264,7 @@ abstract class data_object_with_custom_fields extends elis_data_object {
      * Load the custom field values from the database.
      */
     private function _load_field_data() {
-        if (isset($this->id) && !$this->_fields_loaded) {
+        if (!empty($this->id) && !$this->_fields_loaded) {
             $this->_load_context();
             $this->_load_fields();
             $data = field_data::get_for_context($this->_context);

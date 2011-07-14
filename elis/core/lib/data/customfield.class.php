@@ -508,7 +508,7 @@ abstract class field_data extends elis_data_object {
         // in
         $fields = field::get_for_context_level($context->contextlevel);
         $fieldarray = array();
-        $data_tables = array();
+        $data_types = array();
         foreach ($fields as $field) {
             $fieldarray[$field->id] = $field;
             $data_types[$field->data_type()] = true;
