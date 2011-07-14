@@ -177,23 +177,23 @@ class userform extends cmform {
         $language = get_string_manager()->get_list_of_languages();
         $mform->addElement('select', 'language', get_string('language'), $language);
         $mform->setDefault('language', 'en');
-        $mform->setHelpButton('language', array('userform/language', get_string('userlanguage', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('language', 'user_language', 'elis_program');
 
-        $mform->addElement('text', 'transfercredits', get_string('transfercredits', 'elis_program'));
+        $mform->addElement('text', 'transfercredits', get_string('user_transfercredits', 'elis_program'));
         $mform->setType('transfercredits', PARAM_INT);
-        $mform->setHelpButton('transfercredits', array('userform/transfercredits', get_string('transfercredits', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('transfercredits', 'user_transfercredits', 'elis_program');
 
         $mform->addElement('textarea', 'comments', get_string('comments'));
         $mform->setType('comments', PARAM_CLEAN);
-        $mform->setHelpButton('comments', array('userform/comments', get_string('usercomments', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('comments', 'user_comments', 'elis_program');
 
-        $mform->addElement('textarea', 'notes', get_string('notes', 'notes'));
+        $mform->addElement('textarea', 'notes', get_string('user_notes', 'elis_program'));
         $mform->setType('notes', PARAM_CLEAN);
-        $mform->setHelpButton('notes', array('userform/notes', get_string('notes', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('notes', 'user_notes', 'elis_program');
 
-        $mform->addElement('advcheckbox', 'inactive', get_string('inactive', 'elis_program'));
+        $mform->addElement('advcheckbox', 'inactive', get_string('user_inactive', 'elis_program'));
         $mform->setType('inactive', PARAM_TEXT);
-        $mform->setHelpButton('inactive', array('userform/inactive', get_string('inactive', 'elis_program'), 'elis_program'));
+        $mform->addHelpButton('inactive', 'user_inactive', 'elis_program');
 
         /*
         $fields = field::get_for_context_level('user');
