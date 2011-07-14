@@ -129,7 +129,7 @@ class usersetpage extends managementpage {
         array('tab_id' => 'clustertrackpage', 'page' => 'clustertrackpage', 'name' => get_string('tracks','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track'),
         array('tab_id' => 'clusteruserpage', 'page' => 'clusteruserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
         array('tab_id' => 'clustercurriculumpage', 'page' => 'clustercurriculumpage', 'name' => get_string('curricula','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
-        //array('tab_id' => 'cluster_rolepage', 'page' => 'cluster_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
+        array('tab_id' => 'cluster_rolepage', 'page' => 'cluster_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
         array('tab_id' => 'delete', 'page' => 'usersetpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete_label','elis_program') , 'showbutton' => true, 'image' => 'delete'),
         );

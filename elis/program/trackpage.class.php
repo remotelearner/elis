@@ -133,7 +133,7 @@ class trackpage extends managementpage {
         //array('tab_id' => 'trackclusterpage', 'page' => 'trackclusterpage', 'name' => get_string('clusters','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster.gif'),
         array('tab_id' => 'trackuserpage', 'page' => 'trackuserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
         array('tab_id' => 'trackassignmentpage', 'page' => 'trackassignmentpage', 'name' => get_string('track_classes','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class.gif'),
-        //array('tab_id' => 'track_rolepage', 'page' => 'track_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
+        array('tab_id' => 'track_rolepage', 'page' => 'track_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
 
         array('tab_id' => 'delete', 'page' => 'trackpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete','elis_program'), 'showbutton' => true, 'image' => 'delete.gif'),
         );
