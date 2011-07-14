@@ -43,11 +43,11 @@ function xmldb_pmplugins_pre_post_test_install() {
     // Pre-test field
     $field = new field();
     $field->shortname = PRE_TEST_FIELD;
-    $field->name = get_string('pre_test_field_name', 'crlm_pre_post_test');
+    $field->name = get_string('pre_test_field_name', 'pmplugins_pre_post_test');
     $field->datatype = 'char';
 
     $category = new field_category();
-    $category->name = get_string('pre_post_test_category_name', 'crlm_pre_post_test');
+    $category->name = get_string('pre_post_test_category_name', 'pmplugins_pre_post_test');
 
     $field = field::ensure_field_exists_for_context_level($field, 'course', $category);
 
@@ -59,18 +59,18 @@ function xmldb_pmplugins_pre_post_test_install() {
         $owner->param_view_capability = '';
         $owner->param_edit_capability = '';
         $owner->param_control = 'menu';
-        $owner->param_options_source = 'completion_elements';
-        $owner->add();
+        $owner->param_options_source = 'learning_objectives';
+        $owner->save();
     }
 
     // Post-test field
     $field = new field();
     $field->shortname = POST_TEST_FIELD;
-    $field->name = get_string('post_test_field_name', 'crlm_pre_post_test');
+    $field->name = get_string('post_test_field_name', 'pmplugins_pre_post_test');
     $field->datatype = 'char';
 
     $category = new field_category();
-    $category->name = get_string('pre_post_test_category_name', 'crlm_pre_post_test');
+    $category->name = get_string('pre_post_test_category_name', 'pmplugins_pre_post_test');
 
     $field = field::ensure_field_exists_for_context_level($field, 'course', $category);
 
@@ -82,8 +82,8 @@ function xmldb_pmplugins_pre_post_test_install() {
         $owner->param_view_capability = '';
         $owner->param_edit_capability = '';
         $owner->param_control = 'menu';
-        $owner->param_options_source = 'completion_elements';
-        $owner->add();
+        $owner->param_options_source = 'learning_objectives';
+        $owner->save();
     }
 
     return true;
