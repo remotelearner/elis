@@ -248,13 +248,13 @@ abstract class rolepage extends associationpage2 {
                                  FROM {user} mu
                                  JOIN {role_assignments} ra
                                       ON ra.userid = mu.id
-                                WHERE ra.contextid = ?
-                                  AND ra.roleid = ?
-                                  AND mu.mnethostid = ?)";
+                                WHERE ra.contextid = :contextid
+                                  AND ra.roleid = :roleid
+                                  AND mu.mnethostid = :mnethostid)";
 
-        $params = array($context->id,
-                        $roleid,
-                        $CFG->mnet_localhost_id);
+        $params = array('contextid' => $context->id,
+                        'roleid' => $roleid,
+                        'mnethostid' => $CFG->mnet_localhost_id);
 
         list($extrasql, $extraparams) = $filter->get_sql_filter();
         if ($extrasql) {
@@ -300,11 +300,13 @@ abstract class rolepage extends associationpage2 {
                                      FROM {user} mu
                                 LEFT JOIN {role_assignments} ra
                                           ON ra.userid = mu.id
-                                    WHERE ra.contextid = ?
-                                      AND ra.roleid = ?
-                                      AND mu.mnethostid = ?)";
+                                    WHERE ra.contextid = :contextid
+                                      AND ra.roleid = :roleid
+                                      AND mu.mnethostid = :mnethostid)";
 
-        $params = array($context->id, $roleid, $CFG->mnet_localhost_id);
+        $params = array('contextid' => $context->id,
+                        'roleid' => $roleid,
+                        'mnethostid' => $CFG->mnet_localhost_id);
 
         list($extrasql, $extraparams) = $filter->get_sql_filter();
 
@@ -333,10 +335,42 @@ abstract class rolepage extends associationpage2 {
     protected function create_selection_table($records, $baseurl) {
         $pagenum = optional_param('page', 0, PARAM_INT);
         $baseurl .= "&page={$pagenum}"; // ELISAT-349: part 2
+
+        //persist our specific parameters
+        $id = $this->required_param('id', PARAM_INT);
+        $baseurl .= "&id={$id}";
+        $assign = $this->optional_param('_assign', 'unassign', PARAM_ACTION);
+        $baseurl .= "&_assign={$assign}";
+        $role = $this->required_param('role', PARAM_INT);
+        $baseurl .= "&role={$role}";
+
         $records = $records ? $records : array();
         $columns = array('_selection' => array('header' => ''),
                          'idnumber'   => array('header' => get_string('idnumber')),
-                         'name'       => array('header' => get_string('name')));
+                         'name'       => array('header' => array('firstname' => array('header' => get_string('firstname')),
+                                                                 'lastname' => array('header' => get_string('lastname'))
+                                                                 ),
+                                               'display_function' => 'user_table_fullname'
+
+                        )
+        );
+
+        //determine sort order
+        $sort = optional_param('sort', 'lastname', PARAM_ALPHA);
+        $dir  = optional_param('dir', 'ASC', PARAM_ALPHA);
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } elseif (isset($columns['name']['header'][$sort])) {
+            $columns['name']['header'][$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'lastname';
+            $columns['name']['header']['lastname']['sortable'] = $dir;
+        }
+
         return new user_selection_table($records, $columns, new moodle_url($baseurl));
     }
 }
