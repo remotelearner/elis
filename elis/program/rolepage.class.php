@@ -373,9 +373,11 @@ class track_rolepage extends rolepage {
 
     protected function get_context() {
         if (!isset($this->context)) {
-            $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
+            $id = $this->required_param('id', PARAM_INT);
 
-            $this->context = get_context_instance(context_level_base::get_custom_context_level('track', 'block_curr_admin'), $id);
+            $context_level = context_level_base::get_custom_context_level('track', 'elis_program');
+            $context_instance = get_context_instance($context_level, $id);
+            $this->set_context($context_instance);
         }
         return $this->context;
     }
@@ -383,8 +385,8 @@ class track_rolepage extends rolepage {
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
             global $CFG, $CURMAN;
-            require_once CURMAN_DIRLOCATION . '/trackpage.class.php';
-            $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
+            require_once elispm::file('trackpage.class.php');
+            $id = $this->required_param('id');
             $this->parent_page = new trackpage(array('id' => $id,
                                                      'action' => 'view'));
         }
