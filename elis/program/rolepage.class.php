@@ -349,7 +349,9 @@ class curriculum_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $this->set_context(get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $id));
+            $context_level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
+            $context_instance = get_context_instance($context_level, $id);
+            $this->set_context($context_instance);
         }
         return $this->context;
     }
@@ -395,9 +397,11 @@ class course_rolepage extends rolepage {
 
     protected function get_context() {
         if (!isset($this->context)) {
-            $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
+            $id = $this->required_param('id', PARAM_INT);
 
-            $this->context = get_context_instance(context_level_base::get_custom_context_level('course', 'block_curr_admin'), $id);
+            $context_level = context_level_base::get_custom_context_level('course', 'elis_program');
+            $context_instance = get_context_instance($context_level, $id);
+            $this->set_context($context_instance);
         }
         return $this->context;
     }
@@ -405,8 +409,8 @@ class course_rolepage extends rolepage {
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
             global $CFG, $CURMAN;
-            require_once CURMAN_DIRLOCATION . '/coursepage.class.php';
-            $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
+            require_once elispm::file('coursepage.class.php');
+            $id = $this->required_param('id', PARAM_INT);
             $this->parent_page = new coursepage(array('id' => $id,
                                                       'action' => 'view'));
         }
