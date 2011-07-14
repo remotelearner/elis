@@ -32,7 +32,7 @@ require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('data/user.class.php'));
 require_once(elis::plugin_file('usersetenrol_moodle_profile', 'userset_profile.class.php'));
 
-function cluster_profile_delete_for_cluster($id) {
+function cluster_moodle_profile_delete_for_cluster($id) {
     userset_profile::delete_records(new field_filter('clusterid', $id));
 }
 
@@ -273,7 +273,7 @@ function userset_moodle_profile_update($cluster) {
                     (clusterid, userid, plugin)
                     SELECT ?, cu.id, 'moodle_profile'
                     FROM {" . user::TABLE . "} cu
-                    INNER JOIN {$CFG->prefix}user mu ON mu.idnumber = cu.idnumber
+                    INNER JOIN {user} mu ON mu.idnumber = cu.idnumber
                     $join
                     WHERE $where";
             $params = array_merge(array($cluster->id), $join_params, $where_params);
@@ -295,10 +295,6 @@ function cluster_profile_update_handler($userdata) {
         // not a curriculum user -- (guest?)
         return true;
     }
-
-    $usrtable      = $CURMAN->db->prefix_table(USRTABLE);
-    $clstproftable = $CURMAN->db->prefix_table(CLSTPROFTABLE);
-    $clstasstable  = $CURMAN->db->prefix_table(CLSTASSTABLE);
 
     // the cluster assignments that the plugin wants to exist
     // we figure this out by counting the number of profile fields that the

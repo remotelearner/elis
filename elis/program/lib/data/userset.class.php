@@ -190,7 +190,7 @@ class userset extends data_object_with_custom_fields {
 
             // Cascade to all plugins
             foreach ($plugins as $plugin => $plugindir) {
-                $result = $result && call_user_func('usersetenrol_' . $plugin . '_delete_for_userset', $userset->id);
+                $result = $result && call_user_func('cluster_' . $plugin . '_delete_for_cluster', $userset->id);
             }
 
             $userset->deletesimple = true;

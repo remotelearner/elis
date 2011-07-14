@@ -139,7 +139,7 @@ class clusteruserselectpage extends selectionpage {
             cluster_manual_assign_user($data->id, $userid, !empty($data->autoenrol), !empty($data->leader));
         }
         $tmppage = new clusteruserpage(array('id' => $data->id));
-        redirect($tmppage->url, get_string('cluster_user_assigned', 'block_curr_admin', count($data->_selection)));
+        redirect($tmppage->url, get_string('userset_user_assigned', 'elis_program', count($data->_selection)));
     }
 }
 

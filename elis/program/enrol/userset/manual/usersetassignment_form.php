@@ -38,11 +38,6 @@ class assignpage_form extends cmform {
         $mform->addElement('hidden', 'userid');
         $mform->addElement('hidden', 'clusterid');
 
-        $mform->addElement('advcheckbox', 'autoenrol', get_string('cluster_manual_autoenrol_label', 'block_curr_admin'));
-        $mform->addElement('static', '', '', get_string('cluster_manual_autoenrol_help', 'block_curr_admin'));
-        $mform->addElement('advcheckbox', 'leader', get_string('cluster_manual_leader_label', 'block_curr_admin'));
-        $mform->addElement('static', '', '', get_string('cluster_manual_leader_help', 'block_curr_admin'));
-
         $this->add_action_buttons();
 
         parent::definition();
