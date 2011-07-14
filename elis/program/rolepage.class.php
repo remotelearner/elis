@@ -50,25 +50,27 @@ abstract class rolepage extends associationpage2 {
         return print_context_name($this->get_context(), false);
     }
 
-    function get_navigation_default() {
-        global $CURMAN;
+    function build_navbar_default() {
+        global $DB;
 
-        $navigation = $this->get_parent_page()->get_navigation_view();
+        //obtain the base of the navbar from the parent page class
+        $parent_template = $this->get_parent_page()->get_new_page();
+        $parent_template->build_navbar_view();
+        $this->_navbar = $parent_template->navbar;
 
-        $tmppage = clone($this);
-        $tmppage->params = array('id' => $this->required_param('id', PARAM_INT));
-        array_push($navigation, array('name' => get_string('roles', 'role'),
-                                      'link' => $tmppage->get_url()));
+        //add a link to the first role screen where you select a role
+        $id = $this->required_param('id', PARAM_INT);
+        $page = $this->get_new_page(array('id' => $id), true);
+        $this->navbar->add(get_string('roles', 'role'), $page->url);
 
-        $roleid = $this->optional_param('role', '0', PARAM_INT);
-        if ($roleid) {
-            $tmppage->params = array('id' => $this->required_param('id', PARAM_INT),
-                                     'role' => $roleid);
-            array_push($navigation, array('name' => $CURMAN->db->get_field('role', 'name', 'id', $roleid),
-                                          'link' => $tmppage->get_url()));
+        //if we are looking at a particular role, add it to the navigation
+        $roleid = $this->optional_param('role', 0, PARAM_INT);
+        if ($roleid != 0) {
+            $rolename = $DB->get_field('role', 'name', array('id' => $roleid));
+            $page = $this->get_new_page(array('id' => $id,
+                                              'role' => $roleid), true);
+            $this->navbar->add($rolename, $page->url);
         }
-
-        return $navigation;
     }
 
     function print_tabs() {
