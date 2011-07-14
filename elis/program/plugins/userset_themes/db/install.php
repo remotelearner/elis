@@ -40,7 +40,7 @@ function xmldb_pmplugins_userset_themes_install() {
 
     //set up the theme priority field
     $theme_priority_field = new field();
-    $theme_priority_field->shortname = 'userset_themepriority';
+    $theme_priority_field->shortname = '_elis_userset_themepriority';
     $theme_priority_field->name = get_string('userset_theme_priority', 'pmplugins_userset_themes');
     $theme_priority_field->datatype = 'int';
 
@@ -53,12 +53,12 @@ function xmldb_pmplugins_userset_themes_install() {
                            'columns' => 30,
                            'rows' => 10,
                            'maxlength' => 2048,
-                           'help_file' => 'pmplugins_userset_themes/userset_themepriority');
+                           'help_file' => 'pmplugins_userset_themes/_elis_userset_themepriority');
     field_owner::ensure_field_owner_exists($theme_priority_field, 'manual', $owner_options);
 
     //set up the field for selecting the applicable theme
     $theme_field = new field();
-    $theme_field->shortname = 'userset_theme';
+    $theme_field->shortname = '_elis_userset_theme';
     $theme_field->name = get_string('userset_theme', 'pmplugins_userset_themes');
     $theme_field->datatype = 'char';
 
@@ -72,7 +72,7 @@ function xmldb_pmplugins_userset_themes_install() {
                            'columns' => 30,
                            'rows' => 10,
                            'maxlength' => 2048,
-                           'help_file' => 'pmplugins_userset_themes/userset_theme');
+                           'help_file' => 'pmplugins_userset_themes/_elis_userset_theme');
     field_owner::ensure_field_owner_exists($theme_field, 'manual', $owner_options);
 
     return true;
