@@ -46,7 +46,7 @@ abstract class rolepage extends associationpage2 {
         return $this->get_parent_page();
     }
 
-    function get_title() {
+    function get_page_title_default() {
         return print_context_name($this->get_context(), false);
     }
 
