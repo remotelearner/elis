@@ -709,6 +709,7 @@ $string['track_success_autocreate'] = 'Auto-created class instances for this tra
 
 $string['unassign'] = 'unassign';
 $string['unassigned'] = 'Unassigned';
+$string['unassignroles'] = 'Unassign roles';
 $string['unenrol'] = 'Unenrol'; // TBD: Unenroll ?
 $string['unsatisfiedprereqs'] = 'One or more prerequisites are not completed yet.';
 $string['update_assignment'] = 'Update Assignment';
@@ -736,6 +737,8 @@ $string['usermi'] = 'Middle initials';
 $string['useridnumber'] = 'ID number';
 $string['useridnumber_help'] = 'An id number is a unique value used to identify you within your organization.
 It also serves as way to tie Program Management users to Moodle users.';
+$string['users_assigned_to_role'] = '{$a} users assigned to role';
+$string['users_removed_from_role'] = '{$a} users removed from role';
 $string['usersetprogramform:autoenrol'] = 'Auto-enrol';
 $string['usersetprogramform:autoenrol_help'] = '<p>If this box is checked then new users will be enrolled in this program when they are added to this user set.</p>';
 $string['usersetprogramform_auto_enrol'] = 'Auto-enrol users into this program when they are added to this user set';
@@ -766,6 +769,7 @@ $string['usersettrack_autoenrol'] = 'Auto-enrol';
 $string['usersettrack_auto_enrol'] = 'Auto-enrol users into this track when they are added to this cluster';
 $string['usersettrackform:autoenrol'] = 'Auto-enrol';
 $string['usersettrackform:autoenrol_help'] = '<p>If this box is checked then new users will be enrolled in this track when they are added to this cluster.</p>';
+$string['usersfound'] = '{$a} users found';
 $string['usersubsets'] = 'User subsets';
 
 $string['waiting'] = 'Waiting';

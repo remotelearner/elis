@@ -47,7 +47,7 @@ class addroleform extends selectionform {
 
 class removeroleform extends selectionform {
     function get_submit_button_name() {
-        return get_string('unassignroles', 'block_curr_admin');
+        return get_string('unassignroles', 'elis_program');
     }
 
     function definition() {

@@ -180,7 +180,7 @@ abstract class rolepage extends associationpage2 {
         $tmppage = $this->get_new_page(array('_assign' => 'assign',
                                              'id'      => $id,
                                              'role'    => $role));
-        redirect($tmppage->url, get_string('users_assigned_to_role','block_curr_admin',count($data->_selection)));
+        redirect($tmppage->url, get_string('users_assigned_to_role','elis_program',count($data->_selection)));
     }
 
     protected function process_unassignment($data) {
@@ -203,7 +203,7 @@ abstract class rolepage extends associationpage2 {
         $role = $this->required_param('role', PARAM_INT);
         $tmppage = $this->get_new_page(array('id'   => $id,
                                              'role' => $role));
-        redirect($tmppage->url, get_string('users_removed_from_role','block_curr_admin',count($data->_selection)));
+        redirect($tmppage->url, get_string('users_removed_from_role','elis_program',count($data->_selection)));
     }
 
     protected function get_selection_filter() {
@@ -331,7 +331,7 @@ abstract class rolepage extends associationpage2 {
     }
 
     protected function print_record_count($count) {
-        print_string('usersfound','block_curr_admin',$count);
+        print_string('usersfound','elis_program',$count);
     }
 
     protected function create_selection_table($records, $baseurl) {
