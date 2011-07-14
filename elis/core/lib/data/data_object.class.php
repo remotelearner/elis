@@ -818,7 +818,7 @@ class elis_data_object {
         foreach ($dbfields as $dbfield) {
             if (!$this->_db->get_manager()->field_exists($this::TABLE, $dbfield)) {
                 $ret = false;
-                error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields() - class: {$objclass}  has invalid '\$_dbfield_{$dbfield}' property or TABLE spec.");
+                error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  has invalid '\$_dbfield_{$dbfield}' property or TABLE spec.");
             }
         }
 
@@ -827,12 +827,12 @@ class elis_data_object {
         if ($rec = current($recs)) {
             foreach ($rec as $key => $value) {
                 if (!in_array($key, $dbfields)) {
-                    error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): class: {$objclass}  missing dbfield: {$key} (\$_dbfield_{$key})");
+                    error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  missing dbfield: {$key} (\$_dbfield_{$key})");
                     $ret = false;
                 }
             }
         } else {
-            error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): '". $this::TABLE ."' table empty, could not test dbfields complete.");
+            error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): WARNING '". $this::TABLE ."' table empty, could not test dbfields complete.");
         }
         return $ret;
     }
