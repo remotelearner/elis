@@ -27,7 +27,8 @@
  */
 
 require_once elispm::lib('associationpage2.class.php');
-require_once elispm::file('/form/addroleform.class.php');
+require_once elispm::lib('data/user.class.php');
+require_once elispm::file('form/addroleform.class.php');
 
 abstract class rolepage extends associationpage2 {
     protected $parent_page;
@@ -264,8 +265,8 @@ abstract class rolepage extends associationpage2 {
             $params = array_merge($params, $extraparams);
         }
 
-        $count = $DB->count_records_select('crlm_user', $where, $params);
-        $users = $DB->get_records_select('crlm_user', $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $count = $DB->count_records_select(user::TABLE, $where, $params);
+        $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
@@ -317,8 +318,8 @@ abstract class rolepage extends associationpage2 {
             $params = array_merge($params, $extraparams);
         }
 
-        $count = $DB->count_records_select('crlm_user', $where, $params);
-        $users = $DB->get_records_select('crlm_user', $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $count = $DB->count_records_select(user::TABLE, $where, $params);
+        $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
@@ -326,7 +327,7 @@ abstract class rolepage extends associationpage2 {
     function get_records_from_selection($record_ids) {
         global $CURMAN;
         $usersstring = implode(',', $record_ids);
-        $records = $CURMAN->db->get_records_select('crlm_user', "id in ($usersstring)");
+        $records = $CURMAN->db->get_records_select(user::TABLE, "id in ($usersstring)");
         return $records;
     }
 
@@ -589,8 +590,8 @@ class cluster_rolepage extends rolepage {
                 $params = array_merge($params, $extraparams);
             }
 
-            $count = $DB->count_records_select('crlm_user', $where, $params);
-            $users = $DB->get_records_select('crlm_user', $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
+            $count = $DB->count_records_select(user::TABLE, $where, $params);
+            $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
 
             return array($users, $count);
         } else {
@@ -654,8 +655,8 @@ class cluster_rolepage extends rolepage {
                 $params = array_merge($params, $extraparams);
             }
 
-            $count = $DB->count_records_select('crlm_user', $where, $params);
-            $users = $DB->get_records_select('crlm_user', $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
+            $count = $DB->count_records_select(user::TABLE, $where, $params);
+            $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
 
             return array($users, $count);
         } else {
