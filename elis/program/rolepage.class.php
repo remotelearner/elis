@@ -451,9 +451,11 @@ class user_rolepage extends rolepage {
 
     protected function get_context() {
         if (!isset($this->context)) {
-            $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
+            $id = $this->required_param('id', PARAM_INT);
 
-            $this->context = get_context_instance(context_level_base::get_custom_context_level('user', 'block_curr_admin'), $id);
+            $context_level = context_level_base::get_custom_context_level('user', 'elis_program');
+            $context_instance = get_context_instance($context_level, $id);
+            $this->set_context($context_instance);
         }
         return $this->context;
     }
@@ -461,10 +463,10 @@ class user_rolepage extends rolepage {
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
             global $CFG, $CURMAN;
-            require_once CURMAN_DIRLOCATION . '/usermanagementpage.class.php';
-            $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
-            $this->parent_page = new usermanagementpage(array('id' => $id,
-                                                              'action' => 'view'));
+            require_once elispm::file('userpage.class.php');
+            $id = $this->required_param('id', PARAM_INT);
+            $this->parent_page = new userpage(array('id' => $id,
+                                                    'action' => 'view'));
         }
         return $this->parent_page;
     }
