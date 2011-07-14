@@ -288,6 +288,8 @@ abstract class rolepage extends associationpage2 {
 
         static $sortfields = array(
             'name' => array('lastname', 'firstname'),
+            'lastname' => array('lastname', 'firstname'),
+            'firstname' => array('firstname', 'lastname'),
             'idnumber' => 'idnumber',
             );
         if (!array_key_exists($sort, $sortfields)) {
