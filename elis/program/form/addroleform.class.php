@@ -38,13 +38,6 @@ class addroleform extends selectionform {
         $mform->addElement('hidden', 'role');
         $mform->addElement('hidden', '_assign', 'assign');
 
-        $periodmenu[0] = get_string('unlimited');
-        for ($i=1; $i<=365; $i++) {
-            $seconds = $i * 86400;
-            $periodmenu[$seconds] = get_string('numdays', '', $i);
-        }
-        $mform->addElement('select', 'duration', get_string('enrolperiod'), $periodmenu);
-
         // Moodle doesn't enforce starttime
         //$mform->addElement('select', 'starttime', get_string('startingfrom','role'), array(0=>'foo'));
 
