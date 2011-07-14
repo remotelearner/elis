@@ -97,7 +97,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
      */
     public function testDBfields() {
         $testobj = new userset(false, null, array(), false, array(), $this->origdb);
-        $this->assertTrue($testobj->_test_dbfields());
+        $this->assertTrue($testobj->_test_dbfields(), 'Error(s) with class $_dbfield_ properties.');
     }
 
     /**
@@ -105,7 +105,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
      */
     public function testAssociations() {
         $testobj = new userset(false, null, array(), false, array(), $this->origdb);
-        $this->assertTrue($testobj->_test_associations());
+        $this->assertTrue($testobj->_test_associations(), 'Error(s) with class associations.');
     }
 
     /**
