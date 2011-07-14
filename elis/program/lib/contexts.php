@@ -314,7 +314,7 @@ class cm_context_set {
     function _cluster_allowed($id) {
         global $DB;
         if (isset($this->contexts['cluster'])) {
-            $ctxlvl = context_level_base::get_custom_context_level('cluster', 'block_curr_admin');
+            $ctxlvl = context_level_base::get_custom_context_level('cluster', 'elis_program');
             $context = get_context_instance($ctxlvl, $id);
             $ancestorids = substr(str_replace('/',',',$context->path),1);
             $select = "id IN ($ancestorids)
@@ -379,7 +379,7 @@ function cm_get_users_by_capability($contextlevel, $instance_id, $capability) {
     static $cm_context_extra_parents = array('course' => array('curriculum'),
                                              'class' => array('track'),
                                              'user' => array('cluster'));
-    $contextlevelnum = context_level_base::get_custom_context_level($contextlevel, 'block_curr_admin');
+    $contextlevelnum = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
     $context = get_context_instance($contextlevelnum, $instance_id);
     $users = get_users_by_capability($context, $capability);
     $users = $users ? $users : array();

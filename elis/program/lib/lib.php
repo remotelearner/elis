@@ -568,7 +568,7 @@ function pm_update_student_enrolment() {
             //send message
             $a = $DB->get_field(pmclass::TABLE, 'idnumber', array('id' => $s->classid));
 
-            $message = get_string('incomplete_course_message', 'block_curr_admin', $a);
+            $message = get_string('incomplete_course_message', 'elis_program', $a);
 
             $user = cm_get_moodleuser($s->userid);
             $from = get_admin();
