@@ -227,7 +227,7 @@ class clustercurriculum extends elis_data_object {
 
         //determine if we are handling the priority field for ordering
         if($display_priority_enabled && in_array('priority', $sort_fields)) {
-            cluster_display_priority_append_sort_data('clst.id', $select, $join);
+            userset_display_priority_append_sort_data('clst.id', $select, $join);
         }
 
         $where   = 'WHERE clstcur.curriculumid = :curriculumid ';
@@ -329,7 +329,7 @@ class clustercurriculum extends elis_data_object {
         $join    = '';
         $where   = '';
         $params  = array();
-        
+
         if ($clusterid != 0) {
             //looking by cluster, so join the association table and filter
             $join     = 'JOIN {' . clustercurriculum::TABLE . '} clstcur '.

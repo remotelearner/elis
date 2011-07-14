@@ -106,8 +106,8 @@ class cmCurriculaForm extends cmform {
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
             ? get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
-        /* TO-DO: re-enable when custom fields are done
         require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
+
         foreach ($fields as $rec) {
             $field = new field($rec);
             if (!isset($field->owners['manual'])) {
@@ -117,9 +117,8 @@ class cmCurriculaForm extends cmform {
                 $lastcat = $rec->categoryid;
                 $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
             }
-            manual_field_add_form_element($this, $mform, $context, $field);
+            manual_field_add_form_element($this, $mform, $context, $this->_customdata, $field);
         }
-        */
 
         $this->add_action_buttons();
     }

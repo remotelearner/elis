@@ -85,7 +85,7 @@ class usersetform extends cmform {
                 $lastcat = $rec->categoryid;
                 $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
             }
-            manual_field_add_form_element($this, $mform, $context, $field);
+            manual_field_add_form_element($this, $mform, $context, $this->_customdata, $field);
         }
 
         $this->add_action_buttons();

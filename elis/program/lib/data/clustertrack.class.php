@@ -265,7 +265,7 @@ class clustertrack extends elis_data_object {
 
         //determine if we are handling the priority field for ordering
         if($display_priority_enabled && in_array('priority', $sort_fields)) {
-            cluster_display_priority_append_sort_data('clst.id', $select, $join);
+            userset_display_priority_append_sort_data('clst.id', $select, $join);
         }
 
         $params = array();

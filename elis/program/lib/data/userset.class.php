@@ -681,7 +681,7 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
 
     //determine if we are handling the priority field for ordering
     if($display_priority_enabled && in_array('priority', $sort_fields)) {
-        cluster_display_priority_append_sort_data('clst.id', $select, $join);
+        userset_display_priority_append_sort_data('clst.id', $select, $join);
     }
 
     $filter = new AND_filter($filters);

@@ -195,15 +195,16 @@ class userform extends cmform {
         $mform->setType('inactive', PARAM_TEXT);
         $mform->addHelpButton('inactive', 'user_inactive', 'elis_program');
 
-        /*
+
         $fields = field::get_for_context_level('user');
         $fields = $fields ? $fields : array();
 
         $lastcat = null;
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? get_context_instance(context_level_base::get_custom_context_level('user', 'block_curr_admin'), $this->_customdata['obj']->id)
+            ? get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
-        require_once CURMAN_DIRLOCATION.'/plugins/manual/custom_fields.php';
+        require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
+
         foreach ($fields as $rec) {
             $field = new field($rec);
             if (!isset($field->owners['manual'])) {
@@ -213,9 +214,8 @@ class userform extends cmform {
                 $lastcat = $rec->categoryid;
                 $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
             }
-            manual_field_add_form_element($this, $mform, $context, $field);
+            manual_field_add_form_element($this, $mform, $context, $this->_customdata, $field);
         }
-        */
 
         $this->add_action_buttons();
     }

@@ -94,7 +94,7 @@ function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
  *                                   TBD: 'post' method flakey, doesn't always work!
  * @param string $showall            label for the 'Show All' link - optional
  *                                   defaults to get_string('showallitems' ...
- * @param string $extra              extra html for input fields displayed BEFORE search fields. i.e. student.class.php::edit_form_html() 
+ * @param string $extra              extra html for input fields displayed BEFORE search fields. i.e. student.class.php::edit_form_html()
  *                                   $extra defaults to none.
  * @uses $_GET
  * @uses $_POST
@@ -794,4 +794,20 @@ function pm_update_enrolment_status() {
         //todo: investigate as to whether ten minutes is too long for one class
         set_time_limit(600);
     }
+}
+
+/**
+ * Get Curriculum user id for a given Moodle user id.
+ *
+ */
+function pm_get_crlmuserid($userid) {
+    global $DB;
+    require_once(elispm::lib('data/user.class.php'));
+
+    $select = 'SELECT cu.id ';
+    $from   = 'FROM {user} mu ';
+    $join   = 'INNER JOIN {'.user::TABLE.'} cu ON cu.idnumber = mu.idnumber ';
+    $where  = 'WHERE mu.id = :userid';
+    $params  = array('userid'=>$userid);
+    return $DB->get_field_sql($select.$from.$join.$where, $params);
 }
