@@ -213,7 +213,7 @@ class usersetpage extends managementpage {
          */
         $viewable_clusters = cluster::get_viewable_clusters($capability);
 
-        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'block_curr_admin');
+        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
         //if the user has no additional access through parent clusters, then they can't view this cluster
         if (empty($viewable_clusters)) {
