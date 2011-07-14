@@ -477,9 +477,11 @@ class cluster_rolepage extends rolepage {
 
     protected function get_context() {
         if (!isset($this->context)) {
-            $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
+            $id = $this->required_param('id', PARAM_INT);
 
-            $this->context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'block_curr_admin'), $id);
+            $context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
+            $context_instance = get_context_instance($context_level, $id);
+            $this->set_context($context_instance);
         }
         return $this->context;
     }
@@ -487,9 +489,9 @@ class cluster_rolepage extends rolepage {
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
             global $CFG, $CURMAN;
-            require_once CURMAN_DIRLOCATION . '/clusterpage.class.php';
-            $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
-            $this->parent_page = new clusterpage(array('id' => $id,
+            require_once elispm::file('usersetpage.class.php');
+            $id = $this->required_param('id', PARAM_INT);
+            $this->parent_page = new usersetpage(array('id' => $id,
                                                        'action' => 'view'));
         }
         return $this->parent_page;
@@ -501,7 +503,7 @@ class cluster_rolepage extends rolepage {
      */
     protected function get_assigned_records($filter) {
         if (has_capability('block/curr_admin:cluster:role_assign_cluster_users', $this->get_context(), NULL, false)) {
-            global $CURMAN, $CFG;
+            global $CFG, $DB;
 
             $context = $this->get_context();
             $roleid = required_param('role', PARAM_INT);
@@ -529,23 +531,30 @@ class cluster_rolepage extends rolepage {
             }
 
             $where = "idnumber IN (SELECT mu.idnumber
-                                     FROM {$CURMAN->db->prefix_table('user')} mu
-                                     JOIN {$CURMAN->db->prefix_table('role_assignments')} ra
+                                     FROM {user} mu
+                                     JOIN {role_assignments} ra
                                           ON ra.userid = mu.id
-                                    WHERE ra.contextid = $context->id
-                                      AND ra.roleid = $roleid
-                                      AND mu.mnethostid = {$CFG->mnet_localhost_id})
+                                    WHERE ra.contextid = :contextid
+                                      AND ra.roleid = :roleid
+                                      AND mu.mnethostid = :mnethostid)
                         AND id IN (SELECT userid
-                                     FROM {$CURMAN->db->prefix_table('crlm_usercluster')} uc
-                                    WHERE uc.clusterid = {$context->instanceid})";
+                                     FROM {".clusterassignment::TABLE."} uc
+                                    WHERE uc.clusterid = :clusterid)";
 
-            $extrasql = $filter->get_sql_filter();
+            $params = array('contextid' => $context->id,
+                            'roleid' => $roleid,
+                            'mnethostid' => $CFG->mnet_localhost_id,
+                            'clusterid' => $context->instanceid);
+
+            list($extrasql, $extraparams) = $filter->get_sql_filter();
+
             if ($extrasql) {
                 $where .= " AND $extrasql";
+                $params = array_merge($params, $extraparams);
             }
 
-            $count = $CURMAN->db->count_records_select('crlm_user usr', $where);
-            $users = $CURMAN->db->get_records_select('crlm_user usr', $where, $sortclause, '*', $pagenum*$perpage, $perpage);
+            $count = $DB->count_records_select('crlm_user', $where, $params);
+            $users = $DB->get_records_select('crlm_user', $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
 
             return array($users, $count);
         } else {
@@ -559,7 +568,7 @@ class cluster_rolepage extends rolepage {
      */
     protected function get_available_records($filter) {
         if (has_capability('block/curr_admin:cluster:role_assign_cluster_users', $this->get_context(), NULL, false)) {
-            global $CURMAN, $CFG;
+            global $CFG, $DB;
 
             $context = $this->get_context();
             $roleid = required_param('role', PARAM_INT);
@@ -587,23 +596,30 @@ class cluster_rolepage extends rolepage {
             }
 
             $where = "idnumber NOT IN (SELECT mu.idnumber
-                                         FROM {$CURMAN->db->prefix_table('user')} mu
-                                    LEFT JOIN {$CURMAN->db->prefix_table('role_assignments')} ra
+                                         FROM {user} mu
+                                    LEFT JOIN {role_assignments} ra
                                               ON ra.userid = mu.id
-                                        WHERE ra.contextid = $context->id
-                                          AND ra.roleid = $roleid
-                                          AND mu.mnethostid = {$CFG->mnet_localhost_id})
+                                        WHERE ra.contextid = :contextid
+                                          AND ra.roleid = :roleid
+                                          AND mu.mnethostid = :mnethostid)
                             AND id IN (SELECT userid
-                                         FROM {$CURMAN->db->prefix_table('crlm_usercluster')} uc
-                                        WHERE uc.clusterid = {$context->instanceid})";
+                                         FROM {".clusterassignment::TABLE."} uc
+                                        WHERE uc.clusterid = :clusterid)";
 
-            $extrasql = $filter->get_sql_filter();
+            $params = array('contextid' => $context->id,
+                            'roleid' => $roleid,
+                            'mnethostid' => $CFG->mnet_localhost_id,
+                            'clusterid' => $context->instanceid);
+
+            list($extrasql, $extraparams) = $filter->get_sql_filter();
+
             if ($extrasql) {
                 $where .= " AND $extrasql";
+                $params = array_merge($params, $extraparams);
             }
 
-            $count = $CURMAN->db->count_records_select('crlm_user usr', $where);
-            $users = $CURMAN->db->get_records_select('crlm_user usr', $where, $sortclause, '*', $pagenum*$perpage, $perpage);
+            $count = $DB->count_records_select('crlm_user', $where, $params);
+            $users = $DB->get_records_select('crlm_user', $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
 
             return array($users, $count);
         } else {
