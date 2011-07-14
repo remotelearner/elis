@@ -811,25 +811,23 @@ class elis_data_object {
             }
         }
 
-        // implode $dbfields, re-arranging so 'id' is first
-        $allfields = '';
+        $allfields = implode(', ', $dbfields);
+        error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): '{$allfields}' for class: {$objclass}");
+        // Test that all data_object's fields are in the database table.
+        $ret = true;
         foreach ($dbfields as $dbfield) {
-            $allfields = trim($allfields, ', ');
-            if ($dbfield == 'id') {
-                $allfields = 'id, '. $allfields;
-            } else {
-                $allfields .= ', '. $dbfield;
+            if (!$this->_db->get_manager()->field_exists($this::TABLE, $dbfield)) {
+                $ret = false;
+                error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields() - class: {$objclass}  has invalid '\$_dbfield_{$dbfield}' property or TABLE spec.");
             }
         }
-        $allfields = trim($allfields, ', ');
-        error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): '{$allfields}' for class: {$objclass}");
-        // TBD: try { } catch(e) { ... return false; }
-        $recs = $this->_db->get_records($this::TABLE, null, '', $allfields);
-        $ret = true;
+
+        // Get all database fields to make sure all are in data_object
+        $recs = $this->_db->get_records($this::TABLE, null, '', '*', 0, 1);
         if ($rec = current($recs)) {
             foreach ($rec as $key => $value) {
                 if (!in_array($key, $dbfields)) {
-                    error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): class: {$objclass}  missing dbfield: {$key}");
+                    error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): class: {$objclass}  missing dbfield: {$key} (\$_dbfield_{$key})");
                     $ret = false;
                 }
             }
