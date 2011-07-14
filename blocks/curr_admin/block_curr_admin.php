@@ -26,16 +26,18 @@
 
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once(elispm::lib('lib.php'));
-require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
+require_once(elis::plugin_file('block_curr_admin', 'lib.php'));
 require_once(elispm::lib('menuitem.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('deprecatedlib.php'));
 
 /// Add curriculum stylesheets...
+/*
 if (file_exists($CFG->dirroot.'/curriculum/styles.css')) {
 //    echo '<link style="text/css" REL=StyleSheet HREF="' . $CFG->wwwroot . '/curriculum/styles.css" />';
     $CFG->stylesheets[] = $CFG->wwwroot . '/curriculum/styles.css';
 }
+*/
 
 class block_curr_admin extends block_base {
 
@@ -47,7 +49,7 @@ class block_curr_admin extends block_base {
     var $destination;
 
     function init() {
-        global $PAGE, $CURMAN, $CFG, $DB;
+        global $PAGE, $CFG, $DB;
         require_once elispm::file('version.php');
         $this->title            = get_string('blockname', 'block_curr_admin');
         $this->release          = elispm::$release;
@@ -55,7 +57,7 @@ class block_curr_admin extends block_base {
         $this->currentdepth     = 0;
         $this->spancounter      = 1;
         $this->tempcontent      = '';
-        $this->section          = (isset($CURMAN->page->section) ? $CURMAN->page->section : (isset($PAGE->section) ? $PAGE->section : ''));
+        $this->section          = (isset($PAGE->section) ? $PAGE->section : '');
         $this->pathtosection    = array();
         $this->expandjavascript = '';
         $this->lastcron         = $DB->get_field('block', 'lastcron', array('name' => 'curr_admin'));
@@ -64,15 +66,11 @@ class block_curr_admin extends block_base {
 
 
     function applicable_formats() {
-        if (has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
-            return array(
-                'my'         => true,
-                'admin'      => true,
-                'site-index' => true
-            );
-        } else {
-            return array('my' => true);
-        }
+        return array(
+            'my'         => true,
+            'admin'      => true,
+            'site-index' => true
+        );
     }
 
 
@@ -100,37 +98,16 @@ class block_curr_admin extends block_base {
         require_once($CFG->libdir . '/adminlib.php');
         //require_once($CFG->dirroot . '/my/pagelib.php');
 
-// ELIS-1251 - Don't display a useless message if in the center column
-//        if ($this->instance->position == BLOCK_POS_CENTRE) {
-//            $this->content = new stdClass;
-//            $output = "This is content to display if in the middle...";
-//            $this->content->text = $output;
-//            $this->content->footer = '';
-//            return $this->content;
-//        }
-
-    /// Display a link to the admin interface if on the main site index page and the current user has
-    /// admin or developer access.
-//        if ($this->instance->pageid == SITEID &&
-//            has_capability('block/curr_admin:config', get_context_instance(CONTEXT_SYSTEM, SITEID))) {
-//
-//            $this->content = new stdClass;
-//            $this->content->text   = '<a href="' . $CFG->wwwroot . '/curriculum/index.php">' .
-//                                     get_string('accesscurriculumadmin', 'block_curr_admin') . '</a>';
-//            $this->content->footer = '';
-//        }
-
     /// Determine the users CM access level.
         $access = cm_determine_access($USER->id);
-        $this->title = get_string("blocktitle{$access}", 'block_curr_admin');
 
         if (empty($access) || $this->content !== NULL) {
             return $this->content;
         }
 
-        //if we are not on a CM "newpage", disable the expansion of
+        //if we are not on a PM page, disable the expansion of
         //entities in the curr admin tree (logic in curriculum/index.php)
-        if (!isset($CURMAN->page)) {
+        if (!is_a($PAGE, 'pm_page')) {
             unset($USER->currentitypath);
         }
 
@@ -147,11 +124,6 @@ class block_curr_admin extends block_base {
         $PAGE->requires->yui2_lib('connection');
 
         //include our custom code that handles the YUI Treeview menu
-        if (!empty($HTTPSPAGEREQUIRED)) {
-            $wwwroot = $CFG->httpswwwroot;
-        } else {
-            $wwwroot = $CFG->wwwroot;
-        }
         $PAGE->requires->js('/elis/program/js/menuitem.js');
 
         //CM entities for placement at the top of the menu
@@ -298,15 +270,6 @@ class block_curr_admin extends block_base {
                 new menuitem('rept', null, 'root', get_string('reports', 'block_curr_admin'), block_curr_admin_get_item_css_class('rept', true))
 
         ));
-
-        if (has_capability('moodle/course:managegroups', get_context_instance(CONTEXT_COURSE, $SITE->id))) {
-            //if ($CURMAN->config->site_course_cluster_groups) {
-                //$pages[] = new menuitem('frontpagegroups', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/index.php?id={$SITE->id}"), 'admn', get_string('frontpagegroups', 'crlm_cluster_groups'), block_curr_admin_get_item_css_class('manageclusters'));
-            //}
-            //if ($CURMAN->config->cluster_groupings) {
-                //$pages[] = new menuitem('frontpagegroupings', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/groupings.php?id={$SITE->id}"), 'admn', get_string('frontpagegroupings', 'crlm_cluster_groups'), block_curr_admin_get_item_css_class('manageclusters'));
-            //}
-        }
 
         /**
          * This section adds all the necessary PHP reports to the menu
