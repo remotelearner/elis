@@ -57,9 +57,14 @@ class trackpage extends managementpage {
 
     public function _get_page_context() {
         $id = $this->optional_param('id', 0, PARAM_INT);
+        $action = $this->optional_param('action', 'default', PARAM_ACTION);
 
         if ($id) {
-            return get_context_instance(context_level_base::get_custom_context_level('track', 'elis_program'), $id);
+            if ($action == 'default') {
+                return get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $id);
+            } else {
+                return get_context_instance(context_level_base::get_custom_context_level('track', 'elis_program'), $id);
+            }
         } else {
             return parent::_get_page_context();
         }
