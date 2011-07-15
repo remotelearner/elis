@@ -93,6 +93,12 @@ abstract class rolepage extends associationpage2 {
     protected function _get_page_params() {
         $params = parent::_get_page_params();
 
+        $page = $this->optional_param('page', 0, PARAM_INT);
+        if ($page != 0) {
+            $params['page'] = $page;
+        }
+        $id = $this->required_param('id', PARAM_INT);
+        $params['id'] = $id;
         $role = $this->optional_param('role', 0, PARAM_INT);
         if ($role != 0) {
             $params['role'] = $role;
