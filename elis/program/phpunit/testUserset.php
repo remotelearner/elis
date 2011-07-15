@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage program
+ * @subpackage programmanager
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
@@ -95,7 +95,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
     /**
      * Test that data class has correct DB fields
      */
-    public function testDBfields() {
+    public function testDataClassHasCorrectDBFields() {
         $testobj = new userset(false, null, array(), false, array(), $this->origdb);
         $this->assertTrue($testobj->_test_dbfields(), 'Error(s) with class $_dbfield_ properties.');
     }
@@ -103,7 +103,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
     /**
      * Test that data class has correct associations
      */
-    public function testAssociations() {
+    public function testDataClassHasCorrectAssociations() {
         $testobj = new userset(false, null, array(), false, array(), $this->origdb);
         $this->assertTrue($testobj->_test_associations(), 'Error(s) with class associations.');
     }
@@ -111,7 +111,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
     /**
      * Test that a record can be created in the database.
      */
-    public function testCreateRecord() {
+    public function testCanCreateRecord() {
 
         // create a record
         $src = new userset(false, null, array(), false, array(), $this->overlaydb);
@@ -128,7 +128,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
     /**
      * Test that a record can be modified.
      */
-    public function testUpdate() {
+    public function testCanUpdateRecord() {
         $this->load_csv_data();
 
         // read a record
@@ -150,7 +150,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
     /**
      * Test that you can delete and promote sub user sets
      */
-    public function testDeletePromote() {
+    public function testDeletingRecordCanPromoteSubUserSets() {
         $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
@@ -176,7 +176,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
     /**
      * Test that you can delete a user set and all its sub user sets
      */
-    public function testDeleteSubs() {
+    public function testDeleteRecordCanDeleteSubUserSets() {
         $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
