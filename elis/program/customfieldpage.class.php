@@ -85,27 +85,35 @@ class customfieldpage extends pm_page {
             $deletelink = $tmppage->url;
             $tmppage->params['action'] = 'editcategory';
             $editlink = $tmppage->url;
-            echo "<h2>{$categories[$categoryid]->name} <a href=\"$editlink\">";
-            echo "<img src=\"{$CFG->wwwroot}/elis/program/pix/edit.gif\" alt=\"$edittxt\" title=\"$edittxt\" /></a>";
-            echo "<a href=\"$deletelink\"><img src=\"{$CFG->wwwroot}/elis/program/pix/delete.gif\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
+
+            $category_name = '';
+            if (is_object($categories)) {
+                foreach ($categories as $catobj) {
+                    // TO-DO: not working
+                    //print_object($catobj);
+                    $category_name = $catobj->name;
+                }
+            }
+            echo "<h2>{$category_name} <a href=\"$editlink\">";
+            echo "<img src=\"".$OUTPUT->pix_url('edit','elis_program')."\" alt=\"$edittxt\" title=\"$edittxt\" /></a>";
+            echo "<a href=\"$deletelink\"><img src=\"".$OUTPUT->pix_url('delete','elis_program')."\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
             echo "</h2>\n";
 
             if (empty($fields)) {
                 print_string('field_no_fields_defined', 'elis_program');
             } else {
                 if ($level == 'user') {
-//                    require_once $CFG->dirroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
                     require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
-                    $table = new customuserfieldtable($fields, array('name' => get_string('name'),
-                                                                     'datatype' => get_string('field_datatype', 'elis_program'),
-                                                                     'syncwithmoodle' => get_string('field_syncwithmoodle', 'elis_program'),
-                                                                     'buttons' => ''), $this->get_moodle_url(array('level' => $level)));
+                    $table = new customuserfieldtable($fields, array('name' => array('header' => get_string('name')),
+                                                                     'datatype' => array('header' => get_string('field_datatype', 'elis_program')),
+                                                                     'syncwithmoodle' => array('header' => get_string('field_syncwithmoodle', 'elis_program')),
+                                                                     'buttons' => array('header' => '')), $this->url);
                 } else {
-                    $table = new customfieldtable($fields, array('name' => get_string('name'),
-                                                                 'datatype' => 'Data type',
-                                                                 'buttons' => ''), $this->get_moodle_url(array('level' => $level)));
+                    $table = new customfieldtable($fields, array('name' => array('header' => get_string('name')),
+                                                                 'datatype' => array('header' => 'Data type'),
+                                                                 'buttons' => array('header' => '')), $this->url);
                 }
-                $table->print_table();
+                echo $table->get_html();
                 $syncerr = $syncerr || !empty($table->syncerr);
             }
         }
@@ -117,7 +125,6 @@ class customfieldpage extends pm_page {
         $options = array('s' => 'field',
                          'action'=>'editcategory',
                          'level' => $level);
-        //print_single_button('index.php', $options, get_string('field_create_category', 'elis_program'));
         $button = new single_button(new moodle_url('index.php', $options), get_string('field_create_category', 'elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('field_create_category', 'elis_program'), 'id'=>''));
         echo $OUTPUT->render($button);
 
@@ -131,14 +138,16 @@ class customfieldpage extends pm_page {
                 $tmppage->params['from'] = 'moodle';
                 $tmppage->params['level'] = 'user';
                 echo '<div>';
-                popup_form("{$tmppage->url}&amp;id=",
-                           array_map(create_function('$x', 'return $x->name;'), $moodlefields),
-                           'frommoodleform', '', 'choose', '', '', false, 'self', get_string('field_from_moodle', 'elis_program'));
+                //popup_form("{$tmppage->url}&amp;id=",
+                //           array_map(create_function('$x', 'return $x->name;'), $moodlefields),
+                //           'frommoodleform', '', 'choose', '', '', false, 'self', get_string('field_from_moodle', 'elis_program'));
+                $actionurl = new moodle_url($tmppage->url, array('id'=>''));
+                $single_select = new single_select($actionurl, 'frommoodleform', array_map(create_function('$x', 'return $x->name;'), $moodlefields), null, array(''=>get_string('field_from_moodle', 'elis_program')));
+                echo $OUTPUT->render($single_select);
                 echo '</div>';
 
                 $options = array('s' => 'field',
                                  'action' => 'forceresync');
-                //print_single_button('index.php', $options, get_string('field_force_resync', 'elis_program'));
                 $button = new single_button(new moodle_url('index.php', $options), get_string('field_force_resync', 'elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('field_force_resync', 'elis_program'), 'id'=>''));
                 echo $OUTPUT->render($button);
             } else {
@@ -146,7 +155,6 @@ class customfieldpage extends pm_page {
                 $options = array('s' => 'field',
                                  'action'=>'editfield',
                                  'level' => $level);
-                //print_single_button('index.php', $options, get_string('field_create_new', 'elis_program'));
                 $button = new single_button(new moodle_url('index.php', $options), get_string('field_create_new', 'elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('field_create_new', 'elis_program'), 'id'=>''));
                 echo $OUTPUT->render($button);
             }
@@ -167,7 +175,6 @@ class customfieldpage extends pm_page {
             }
             $fields = field::get_for_context_level($ctxlvl);
             $fields = $fields ? $fields : array();
-//            require_once $CFG->dirroot.'/elis/program/plugins/moodle_profile/custom_fields.php';
             require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
             foreach ($fields as $field) {
                 $fieldobj = new field($field);
@@ -179,9 +186,8 @@ class customfieldpage extends pm_page {
     }
 
     function display_editcategory() {
-        global $CFG;
+        require_once elispm::file('form/fieldcategoryform.class.php');
 
-        require_once $CFG->dirroot.'/elis/program/form/fieldcategoryform.class.php';
         $level = $this->required_param('level', PARAM_ACTION);
         $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
         if (!$ctxlvl) {
@@ -265,7 +271,7 @@ class customfieldpage extends pm_page {
         }
         $id = $this->optional_param('id', NULL, PARAM_INT);
 
-        require_once $CFG->dirroot.'/elis/program/form/customfieldform.class.php';
+        require_once elispm::file('form/customfieldform.class.php');
         $tmppage = new customfieldpage(array('level' => $level, 'action' => 'editfield'), $this);
         $form = new customfieldform($tmppage->url, $this);
         if ($form->is_cancelled()) {
@@ -309,7 +315,6 @@ class customfieldpage extends pm_page {
             $plugins = get_list_of_plugins('elis/core/fields');
             foreach ($plugins as $plugin) {
                 if (is_readable($CFG->dirroot . '/elis/core/fields/' . $plugin . '/custom_fields.php')) {
-//                    include_once($CFG->dirroot . '/elis/core/fields/' . $plugin . '/custom_fields.php');
                     require_once(elis::plugin_file('elisfields_'.$plugin, 'custom_fields.php'));
                     if (function_exists("{$plugin}_field_save_form_data")) {
                         call_user_func("{$plugin}_field_save_form_data", $form, $field, $data);
@@ -440,17 +445,18 @@ class customfieldtable extends display_table {
     }
 
     function get_item_display_buttons($column, $item) {
-        global $CFG;
+        global $CFG, $OUTPUT;
         $tmppage = new customfieldpage();
         $tmppage->params = array('action' => 'deletefield',
-                                 'level' => $this->pageurl->params['level'],
+                                 'level' => optional_param('level','',PARAM_CLEAN),
                                  'id' => $item->id);
         $deletelink = $tmppage->url;
         $tmppage->params['action'] = 'editfield';
         $editlink = $tmppage->url;
         $deletetxt = get_string('delete');
         $edittxt = get_string('edit');
-        return "<a href=\"$editlink\"><img src=\"{$CFG->wwwroot}/elis/program/pix/edit.gif\" alt=\"$edittxt\" title=\"$edittxt\" /></a> <a href=\"$deletelink\"><img src=\"{$CFG->wwwroot}/elis/program/pix/delete.gif\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
+        return "<a href=\"{$editlink}\"><img src=\"".$OUTPUT->pix_url('edit','elis_program')."\" alt=\"{$edittxt}\" title=\"{$edittxt}\" /></a> " .
+               "<a href=\"{$deletelink}\"><img src=\"".$OUTPUT->pix_url('delete','elis_program')."\" alt=\"{$deletetxt}\" title=\"{$deletetxt}\" /></a>";
     }
 }
 
