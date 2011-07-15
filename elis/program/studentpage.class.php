@@ -657,7 +657,7 @@ class student_table extends association_page_table {
                    'locked'           => 'get_item_display_locked',
                    'idnumber'         => 'get_item_display_idnumber',
                    'name'             => 'get_item_display_name',
-                   'buttons'          => 'get_items_display_buttons');
+                   'buttons'          => 'get_item_display_buttons');
 
         foreach ($display_functions as $key => $val) {
             //if (!isset($columns[$key]) || !is_array($columns[$key])) {
