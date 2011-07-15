@@ -516,6 +516,7 @@ class curriculumstudentpage extends associationpage2 {
         $pagenum = optional_param('page', 0, PARAM_INT);
         $perpage = 30;
 
+        $params = array();
         $sort = optional_param('sort', 'name', PARAM_ACTION);
         $order = optional_param('dir', 'ASC', PARAM_ACTION);
         if ($order != 'DESC') {
@@ -535,11 +536,15 @@ class curriculumstudentpage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
-        $where = 'id NOT IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid='.$id.')';
+        $where = 'id NOT IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid=:id)';
+        $params['id'] = $id;
 
         $extrasql = $filter->get_sql_filter();
         if ($extrasql[0]) {
             $where .= ' AND '.$extrasql[0];
+        }
+        if ($extrasql[1]) {
+            $params = array_merge($params,$extrasql[1]);
         }
 
         if(!curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $id)) {
@@ -568,8 +573,8 @@ class curriculumstudentpage extends associationpage2 {
             }
         }
 
-        $count = $DB->count_records_select(user::TABLE, $where);
-        $users = $DB->get_records_select(user::TABLE, $where, null, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $count = count($users);
 
         return array($users, $count);
     }
@@ -583,6 +588,7 @@ class curriculumstudentpage extends associationpage2 {
         $pagenum = optional_param('page', 0, PARAM_INT);
         $perpage = 30;
 
+        $params = array();
         $sort = optional_param('sort', 'name', PARAM_ACTION);
         $order = optional_param('dir', 'ASC', PARAM_ACTION);
         if ($order != 'DESC') {
@@ -608,19 +614,24 @@ class curriculumstudentpage extends associationpage2 {
         $sql = 'SELECT curass.id, usr.id AS userid, usr.firstname, usr.lastname, usr.idnumber, usr.country, usr.language, curass.timecreated
                 FROM {'.curriculumstudent::TABLE.'} curass
                 JOIN {'.user::TABLE.'} usr on curass.userid = usr.id
-                WHERE curass.curriculumid='.$id;
-        $where = 'id IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid='.$id.')';
+                WHERE curass.curriculumid=:id';
+        $where = 'id IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid=:id)';
+        $params['id'] = $id;
 
         $extrasql = $filter->get_sql_filter();
         if ($extrasql[0]) {
             $where .= ' AND '.$extrasql[0];
             $sql .= ' AND '.$extrasql[0];
         }
+        if ($extrasql[1]) {
+            $params = array_merge($params, $extrasql[1]);
+        }
 
         $sql .= ' ORDER BY '.$sortclause;
 
-        $count = $DB->count_records_select(user::TABLE, $where);
-        $users = $DB->get_records_sql($sql, array($sort=>$order), $pagenum*$perpage, $perpage);
+        //$users = $DB->get_records_sql($sql, array($sort=>$order), $pagenum*$perpage, $perpage);
+        $users = $DB->get_records_sql($sql, $params, $pagenum*$perpage, $perpage);
+        $count = count($users);
 
         return array($users, $count);
     }

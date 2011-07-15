@@ -554,13 +554,14 @@ class course extends data_object_with_custom_fields {
 
         /// Make sure this is a valid user.
         $enroluser = new user($user->id);
+        // Due to lazy loading, we need to pre-load this object
+        $enroluser->load();
         if (empty($enroluser->id)) {
             print_error('nouser', 'elis_program');
             return true;
         }
 
         /// Set up the text of the message
-        /* TO-DO: re-enable when notifications have been ported
         $message = new notification();
 
         $text = empty(elis::$config->elis_program->notify_courserecurrence_message) ?
@@ -596,7 +597,6 @@ class course extends data_object_with_custom_fields {
         foreach ($users as $u) {
             $message->send_notification($text, $u, $enroluser);
         }
-        */
 
         return true;
     }

@@ -515,13 +515,13 @@ class user extends data_object_with_custom_fields {
      * @todo move out of this class
      */
     function get_dashboard() {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
-        require_once elispm::lib('curriculumstudent.class.php');
+        require_once elispm::lib('data/curriculumstudent.class.php');
 
         $content = '';
 
-        $table = new stdClass;
+        $table = new html_table();
         $table->head = array(
             get_string('learningplan', 'elis_program'),
             get_string('class', 'elis_program'),
@@ -566,7 +566,7 @@ class user extends data_object_with_custom_fields {
                             }
 
                             $data[] = array(
-                                empty(elispm::$config->disablecoursecatalog) ? ('<a href="index.php?s=crscat&section=curr&showcurid=' . $usercur->curid . '">' . $usercur->name . '</a>') : $usercur->name,
+                                empty(elis::$config->elis_program->disablecoursecatalog) ? ('<a href="index.php?s=crscat&section=curr&showcurid=' . $usercur->curid . '">' . $usercur->name . '</a>') : $usercur->name,
                                 $coursename,
                                 $classdata->grade,
                                 $classdata->completestatusid == student::STATUS_PASSED && !empty($classdata->completetime) ?
@@ -574,7 +574,7 @@ class user extends data_object_with_custom_fields {
                             );
                         } else {
                             $data[] = array(
-                                empty(elispm::$config->disablecoursecatalog) ? ('<a href="index.php?s=crscat&section=curr&showcurid=' . $usercur->curid . '">' . $usercur->name . '</a>') : $usercur->name,
+                                empty(elis::$config->elis_program->disablecoursecatalog) ? ('<a href="index.php?s=crscat&section=curr&showcurid=' . $usercur->curid . '">' . $usercur->name . '</a>') : $usercur->name,
                                 $course->coursename,
                                 0,
                                 'NA'
@@ -601,7 +601,9 @@ class user extends data_object_with_custom_fields {
             }
         }
 
-        $content .= print_heading_block(get_string('learningplanwelcome', 'elis_user', cm_fullname($this)), '', true);
+//        $content .= print_heading_block(get_string('learningplanwelcome', 'elis_program', fullname($this)), '', true);
+        $content .= $OUTPUT->heading(get_string('learningplanwelcome', 'elis_program', fullname($this)));
+
 
         if ($totalcourses === 0) {
             $content .= '<br /><center>' . get_string('nolearningplan', 'elis_program') . '</center>';
@@ -613,9 +615,11 @@ class user extends data_object_with_custom_fields {
         $a->coursescomplete = $completecourses;
         $a->coursestotal    = $totalcourses;
 
-        $content .= print_heading(get_string('learningplanintro', 'elis_program', $a), 'left', 2, 'main', true);
+//        $content .= print_heading(get_string('learningplanintro', 'elis_program', $a), 'left', 2, 'main', true);
+        $content .= html_writer::tag('p', get_string('learningplanintro', 'elis_program', $a), array('left'=> 2, 'main'=> true));
 
-        $content .= print_table($table, true);
+
+        $content .= html_writer::table($table);
 
     /// Get old completed course data for this user.
         if (!empty($classids)) {

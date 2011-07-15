@@ -133,14 +133,14 @@ class trackpage extends managementpage {
     public function __construct(array $params=null) {
         $this->tabs = array(
         array('tab_id' => 'view', 'page' => 'trackpage', 'params' => array('action' => 'view'), 'name' => get_string('detail','elis_program'), 'showtab' => true),
-        array('tab_id' => 'edit', 'page' => 'trackpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
+        array('tab_id' => 'edit', 'page' => 'trackpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
 
-        //array('tab_id' => 'trackclusterpage', 'page' => 'trackclusterpage', 'name' => get_string('clusters','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster.gif'),
-        array('tab_id' => 'trackuserpage', 'page' => 'trackuserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user.gif'),
-        array('tab_id' => 'trackassignmentpage', 'page' => 'trackassignmentpage', 'name' => get_string('track_classes','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class.gif'),
-        array('tab_id' => 'track_rolepage', 'page' => 'track_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag.gif'),
+        //array('tab_id' => 'trackclusterpage', 'page' => 'trackclusterpage', 'name' => get_string('clusters','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'clusterif'),
+        array('tab_id' => 'trackuserpage', 'page' => 'trackuserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
+        array('tab_id' => 'trackassignmentpage', 'page' => 'trackassignmentpage', 'name' => get_string('track_classes','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class'),
+        array('tab_id' => 'track_rolepage', 'page' => 'track_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
-        array('tab_id' => 'delete', 'page' => 'trackpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete','elis_program'), 'showbutton' => true, 'image' => 'delete.gif'),
+        array('tab_id' => 'delete', 'page' => 'trackpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete','elis_program'), 'showbutton' => true, 'image' => 'delete'),
         );
 
         parent::__construct($params);

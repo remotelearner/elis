@@ -274,6 +274,7 @@ To disable this functionality, select "N/A" from the list.';
 $string['curriculum_role_setting'] = 'Default Curriculum Role';
 $string['curriculum_shortdescription'] = 'Short description';
 
+$string['datecompleted'] = 'Completion Date';
 $string['date_completed'] = 'Date Completed';
 $string['default_role_settings'] = 'Default Role Assignments Settings';
 $string['delete'] = 'Delete';
@@ -449,6 +450,10 @@ $string['items_found'] = '{$a->num} items found.';
 
 $string['lastname'] = 'Last Name';
 $string['learningplan'] = 'Learning Plan';
+$string['learningplanname'] = 'Learning Plan: $a';
+$string['learningplanintro'] = 'Learning Plan: You have completed {$a->percent} ({$a->coursescomplete} of {$a->coursestotal}) of your current learning plan.';
+$string['learningplanwelcome'] = 'Welcome {$a}';
+
 $string['learning_plan_setting'] = 'Turn off learning plan';
 $string['length_description'] = 'Length Description';
 
@@ -621,6 +626,7 @@ $string['required_field'] = 'Error: {$a} is a required field';
 
 $string['save_enrolment_changes'] = 'Save Changes';
 $string['saved'] = 'saved';
+$string['score'] = 'Score';
 $string['search'] = 'Search';
 $string['selectedonly'] = 'Show selected items only';
 $string['showallitems'] = 'Show all items';

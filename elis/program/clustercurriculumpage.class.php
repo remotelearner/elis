@@ -77,15 +77,16 @@ class clustercurriculumbasepage extends associationpage {
         return clustercurriculumpage::$contexts[$capability];
     }
 
-    public function _get_page_context() {
+    /*public function _get_page_context() {
         $id = $this->optional_param('id', 0, PARAM_INT);
+        $action = $this->optional_param('action', 'default', PARAM_ACTION);
 
         if ($id) {
             return get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $id);
         } else {
             return parent::_get_page_context();
         }
-    }
+    }*/
     function can_do_add() {
         // the user must have 'block/curr_admin:associate' permissions on both ends
         $clusterid = $this->required_param('clusterid', PARAM_INT);
@@ -262,6 +263,17 @@ class clustercurriculumpage extends clustercurriculumbasepage {
     const CPY_CURR_CRS_PREFIX     = 'add_crs_curr_';
     const CPY_CURR_CLS_PREFIX     = 'add_cls_curr_';
     const CPY_CURR_MDLCRS_PREFIX  = 'add_mdlcrs_curr_';
+
+    public function _get_page_context() {
+        $id = $this->optional_param('id', 0, PARAM_INT);
+        $action = $this->optional_param('action', 'default', PARAM_ACTION);
+
+        if ($id) {
+            return get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $id);
+        } else {
+            return parent::_get_page_context();
+        }
+    }
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
@@ -661,6 +673,16 @@ class curriculumclusterpage extends clustercurriculumbasepage {
 
     var $section = 'curr';
 
+    public function _get_page_context() {
+        $id = $this->optional_param('id', 0, PARAM_INT);
+        $action = $this->optional_param('action', 'default', PARAM_ACTION);
+
+        if ($id) {
+            return get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $id);
+        } else {
+            return parent::_get_page_context();
+        }
+    }
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
         return curriculumpage::_has_capability('block/curr_admin:associate', $id);

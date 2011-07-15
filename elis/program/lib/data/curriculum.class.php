@@ -74,8 +74,7 @@ class curriculum extends data_object_with_custom_fields {
     }
 
     public function set_from_data($data) {
-        // TO-DO: re-enable when custom field stuff is done
-        /*
+
         $fields = field::get_for_context_level('curriculum', 'elis_program');
         $fields = $fields ? $fields : array();
         foreach ($fields as $field) {
@@ -84,7 +83,6 @@ class curriculum extends data_object_with_custom_fields {
                 $this->$fieldname = $data->$fieldname;
             }
         }
-        */
 
         $this->_load_data_from_record($data, true);
     }
@@ -368,7 +366,6 @@ class curriculum extends data_object_with_custom_fields {
 
         $context = get_system_context();
 
-        /* TO-DO: re-enable once notifications is done
         $message = new notification();
 
         /// Set up the text of the message
@@ -405,7 +402,6 @@ class curriculum extends data_object_with_custom_fields {
         foreach ($users as $u) {
             $message->send_notification($text, $u, $user, $eventlog);
         }
-        */
 
         return true;
     }

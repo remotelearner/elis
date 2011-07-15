@@ -122,8 +122,7 @@ class student extends elis_data_object {
      */
     function complete($status = false, $time = false, $grade = false, $credits = false, $locked = false) {
         global $CFG;
-        // *** TBD ***
-        //require_once($CFG->dirroot .'/curriculum/lib/notifications.php');
+        require_once elispm::lib('notifications.php');
 
         /// Set any data passed in...
         if ($status !== false) {
@@ -162,7 +161,9 @@ class student extends elis_data_object {
             $sendtosupervisor = elis::$config->elis_program->notify_classcompleted_supervisor;
 
             /// Make sure this is a valid user.
-            $enroluser = new user($this->userid); // TBD
+            $enroluser = new user($this->userid);
+            // Due to lazy loading, we need to pre-load this object
+            $enroluser->load();
             if (empty($enroluser->id)) {
                 print_error('nouser', self::LANG_FILE);
                 return true;
@@ -586,7 +587,7 @@ class student extends elis_data_object {
             pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE)); // TBD: moved from below
 
         } else {
-            $user       = $this->_db->get_record(user::TABLE, array('id' => $this->userid)); 
+            $user       = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
             $user->name = fullname($user);
             $users[]    = $user;
             $usercount  = 0;
@@ -1853,8 +1854,7 @@ class student extends elis_data_object {
 
     public static function class_notstarted_handler($student) {
         global $CFG, $DB;
-        // *** TBD ***
-        //require_once($CFG->dirroot .'/curriculum/lib/notifications.php');
+        require_once elispm::file('notifications.php');
 
         /// Does the user receive a notification?
         $sendtouser       = elis::$config->elis_program->notify_classnotstarted_user;
@@ -1927,8 +1927,7 @@ class student extends elis_data_object {
 
     public static function class_notcompleted_handler($student) {
         global $CFG, $DB;
-        // *** TBD ***
-        //require_once($CFG->dirroot .'/curriculum/lib/notifications.php');
+        require_once elispm::file('notifications.php');
 
         /// Does the user receive a notification?
         $sendtouser = elis::$config->elis_program->notify_classnotcompleted_user;

@@ -120,7 +120,7 @@ class curriculumstudent extends elis_data_object {
             $this->locked = $locked ? 1 : 0;
         }
 
-        /* TO-DO: re-enable when notifications are done
+        // Send notifications
         if ($this->update()) {
             /// Does the user receive a notification?
             $sendtouser       = elis::$config->elis_program->notify_curriculumcompleted_user;
@@ -136,6 +136,8 @@ class curriculumstudent extends elis_data_object {
 
             /// Make sure this is a valid user.
             $enroluser = new user($this->userid);
+            // Due to lazy loading, we need to pre-load this object
+            $enroluser->load();
             if (empty($enroluser->id)) {
                 print_error('nouser', 'elis_program');
                 return true;
@@ -179,7 +181,6 @@ class curriculumstudent extends elis_data_object {
             }
 
         }
-        */
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -237,7 +238,7 @@ class curriculumstudent extends elis_data_object {
 
         $context = get_system_context();
 
-        /* TO-DO: re-enable when notifications are done
+        // Send notifications
         $message = new notification();
 
         /// Set up the text of the message
@@ -274,7 +275,6 @@ class curriculumstudent extends elis_data_object {
         foreach ($users as $user) {
             $message->send_notification($text, $user, $enroluser);
         }
-        */
 
         return true;
     }
