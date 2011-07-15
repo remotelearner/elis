@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage programmanagement
+ * @subpackage core
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
@@ -179,10 +179,9 @@ function manual_field_save_form_data($form, $field, $data) {
         foreach ($parameters as $param) {
             $dataname = "manual_field_$param";
             if (isset($data->$dataname)) {
-                $manual->{"param_$param"} = stripslashes($data->$dataname);
+                $manual->{"param_$param"} = $data->$dataname;
             }
         }
-        $manual->params = addslashes($manual->params);
         $manual->save();
     } else {
         global $DB;

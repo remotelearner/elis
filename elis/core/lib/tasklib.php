@@ -29,15 +29,13 @@
 /**
  * Loads the task definitions for the component (from file). If no
  * tasks are defined for the component, we simply return an empty array.
- * @param $component - examples: 'moodle', 'mod/forum', 'block/quiz_results'
+ * @param $component - examples: 'moodle', 'mod_forum', 'block_quiz_results'
  * @return array of tasks or empty array if not exists
  *
  * INTERNAL - to be used from cronlib only
  */
 function elis_tasks_load_def($component) {
     global $CFG;
-
-    require_once ($CFG->libdir.'/moodlelib2.0.php');
 
     if ($component == 'moodle') {
         $defpath = $CFG->libdir.'/db/tasks.php';
@@ -46,7 +44,7 @@ function elis_tasks_load_def($component) {
     //    $defpath = $CFG->libdir.'/simpletest/fixtures/tasks.php';
 
     } else {
-        $compparts = explode('/', $component);
+        $compparts = explode('_', $component);
 
         $defpath = get_plugin_directory($compparts[0], $compparts[1]).'/db/tasks.php';
     }
@@ -69,10 +67,10 @@ function elis_tasks_load_def($component) {
  * INTERNAL - to be used from cronlib only
  */
 function elis_tasks_get_cached($component) {
+    global $DB;
     $cachedtasks = array();
 
-    $component = addslashes($component);
-    if ($storedtasks = get_records_select('elis_scheduled_tasks', "plugin = '{$component}' AND taskname IS NULL")) {
+    if ($storedtasks = $DB->get_records_select('elis_scheduled_tasks', "plugin = ? AND taskname IS NULL", array($component))) {
         foreach ($storedtasks as $task) {
             $cachedtasks[$task->callfunction] = (array)$task;
         }
@@ -89,10 +87,11 @@ function elis_tasks_get_cached($component) {
  * will cause any queued events for the component to be removed from
  * the database.
  *
- * @param $component - examples: 'moodle', 'mod/forum', 'block/quiz_results'
+ * @param $component - examples: 'moodle', 'mod_forum', 'block_quiz_results'
  * @return boolean
  */
 function elis_tasks_update_definition($component='moodle') {
+    global $DB;
 
     // load event definition from events.php
     $filetasks = elis_tasks_load_def($component);
@@ -143,9 +142,8 @@ function elis_tasks_update_definition($component='moodle') {
                 $task->day          = $filetask['day'];
                 $task->month        = $filetask['month'];
                 $task->dayofweek    = $filetask['dayofweek'];
-                $task = addslashes_recursive($task);
 
-                update_record('elis_scheduled_tasks', $task);
+                $DB->update_record('elis_scheduled_tasks', $task);
 
                 unset($cachedtasks[$callfunction]);
                 continue;
@@ -166,9 +164,8 @@ function elis_tasks_update_definition($component='moodle') {
             $task->dayofweek    = $filetask['dayofweek'];
             $task->timezone     = 99;
             $task->nextruntime  = cron_next_run_time(time(), (array)$task);
-            $task = addslashes_recursive($task);
 
-            insert_record('elis_scheduled_tasks', $task);
+            $DB->insert_record('elis_scheduled_tasks', $task);
         }
     }
 
@@ -197,9 +194,10 @@ function elis_tasks_uninstall($component) {
  * INTERNAL - to be used from tasklib only
  */
 function elis_tasks_cleanup($component, $cachedtasks) {
+    global $DB;
     $deletecount = 0;
     foreach ($cachedtasks as $cachedtask) {
-        if (delete_records('elis_scheduled_tasks', 'id', $cachedtask['id'])) {
+        if ($DB->delete_records('elis_scheduled_tasks', array('id', $cachedtask['id']))) {
             $deletecount++;
         }
     }
