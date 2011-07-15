@@ -170,6 +170,7 @@ $string['confirm_delete_userset'] = 'Are you sure you want to delete the user se
 $string['confirm_delete_with_usersubsets'] = 'Are you sure you want to delete the user set named {$a->name}?  This user set has {$a->subclusters} subset(s).';
 $string['confirm_delete_with_usersubsets_and_descendants'] = 'Are you sure you want to delete the user set named {$a->name}?  This user set has $a->subclusters subset(s) and $a->descendants other descendant user sets.';
 $string['confirm_waitlist'] = 'Are you sure to {$a->action} {$a->num} entries in the waiting list?';
+$string['context_level_user'] = 'Program Management User';
 $string['corequisites'] = 'Corequisite';
 $string['cost'] = 'Cost';
 $string['country'] = 'Country';
