@@ -75,13 +75,30 @@ abstract class rolepage extends associationpage2 {
     }
 
     function print_tabs() {
-        $roleid = $this->optional_param('role', '0', PARAM_INT);
+        $roleid = $this->optional_param('role', 0, PARAM_INT);
         if ($roleid) {
             parent::print_tabs();
         } else {
             $id = $this->required_param('id', PARAM_INT);
             $this->get_parent_page()->print_tabs(get_class($this), array('id' => $id));
         }
+    }
+
+    /**
+     * Return the page parameters for the page.  Used by the constructor for
+     * calling $this->set_url().
+     *
+     * @return array
+     */
+    protected function _get_page_params() {
+        $params = parent::_get_page_params();
+
+        $role = $this->optional_param('role', 0, PARAM_INT);
+        if ($role != 0) {
+            $params['role'] = $role;
+        }
+
+        return $params;
     }
 
     function can_do_default() {
