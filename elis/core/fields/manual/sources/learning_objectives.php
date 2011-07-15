@@ -24,24 +24,30 @@
  *
  */
 
-class manual_options_userset_classifications extends manual_options_base_class {
-    function get_options($dataobject) {
-        global $DB;
-
-        require_once elispm::file('plugins/userset_classification/usersetclassification.class.php');
-        $recs = $DB->get_records(usersetclassification::TABLE, null, 'name ASC', 'shortname, name');
-        if (!$recs) {
-            return array();
-        }
-        $result = array();
-        foreach ($recs as $rec) {
-            $result[$rec->shortname] = $rec->name;
-        }
-        return $result;
+class manual_options_learning_objectives extends manual_options_base_class {
+    function is_applicable($contextlevel) {
+        return $contextlevel === 'course' || $contextlevel === 'class';
     }
 
-    function is_applicable($contextlevel) {
-        //TODO: port to ELIS2 when required
-        return $contextlevel === 'cluster' && is_readable($CFG->dirroot . '/elis/plugins/userset_classification/usersetclassification.class.php');
+    function get_options($data) {
+        if (is_array($data) && isset($data['obj']) && !empty($data['obj']->id)) {
+            $dataobject = $data['obj'];
+            if (is_a($dataobject, 'course')) {
+                $course = $dataobject;
+            } else if (is_a($dataobject, 'cmclass')) {
+                $course = $dataobject->course;
+            } else {
+                return array();
+            }
+            $compelems = $course->get_completion_elements();
+            $compelems = $compelems ? $compelems : array();
+            $result = array('' => '');
+            foreach ($compelems as $compelem) {
+                $result[$compelem->idnumber] = "{$compelem->name} ({$compelem->idnumber})";
+            }
+            return $result;
+        } else {
+            return array();
+        }
     }
 }
