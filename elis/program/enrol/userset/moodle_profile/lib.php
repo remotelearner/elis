@@ -284,7 +284,7 @@ function userset_moodle_profile_update($cluster) {
 }
 
 function cluster_profile_update_handler($userdata) {
-    global $DB;
+    global $DB, $CFG;
 
     // make sure a CM user exists
     pm_moodle_user_to_pm($userdata);

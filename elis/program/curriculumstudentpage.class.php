@@ -96,10 +96,11 @@ class studentcurriculumpage extends associationpage2 {
                            ON clst.id = clstcurr.clusterid
                       JOIN {'.curriculum::TABLE.'} curr
                            ON clstcurr.curriculumid = curr.id
-                      JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.
+                      JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = :id'.
                     $cluster_filter;
+            $params = array('id'=>$id);
 
-            return $DB->count_records_select($sql) > 0;
+            return $DB->count_records_select($sql, $params) > 0;
         } else {
             return userpage::_has_capability('block/curr_admin:user:view', $id);
         }
@@ -237,11 +238,12 @@ class studentcurriculumpage extends associationpage2 {
                          ON clst.id = clstcurr.clusterid
                     JOIN {'.curriculum::TABLE.'} curr
                          ON clstcurr.curriculumid = curr.id
-                    JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id.
+                    JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = :userid'.
                   $cluster_filter.'))';
+        $params = array('userid'=>$id);
 
-        $count = $DB->count_records_select(curriculum::TABLE, $where);
-        $users = $DB->get_records_select(curriculum::TABLE, $where, null, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $count = $DB->count_records_select(curriculum::TABLE, $where, $params);
+        $users = $DB->get_records_select(curriculum::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
@@ -281,12 +283,14 @@ class studentcurriculumpage extends associationpage2 {
                   JOIN (SELECT curriculumid, COUNT(courseid) AS count
                           FROM {'.curriculumcourse::TABLE.'}
                       GROUP BY curriculumid) curcrscnt ON cur.id = curcrscnt.curriculumid
-                 WHERE curass.userid = '.$id.'
+                 WHERE curass.userid = :userid
               ORDER BY '.$sortclause;
-        $where = 'id IN (SELECT curriculumid FROM {'.curriculumstudent::TABLE.'} WHERE userid='.$id.')';
+        $where = 'id IN (SELECT curriculumid FROM {'.curriculumstudent::TABLE.'} WHERE userid=:userid)';
 
-        $count = $DB->count_records_select(curriculum::TABLE, $where);
-        $curricula = $DB->get_records_sql($sql, array($sort=>$order), $pagenum*$perpage, $perpage);
+        $params = array('userid'=>$id);
+
+        $count = $DB->count_records_select(curriculum::TABLE, $where, $params);
+        $curricula = $DB->get_records_sql($sql, $params, $where, $pagenum*$perpage, $perpage);
 
         return array($curricula, $count);
     }
@@ -342,10 +346,11 @@ class user_curriculum_selection_table extends selection_table {
                        ON clst.id = clstcurr.clusterid
                   JOIN {'.curriculum::TABLE.'} curr
                        ON clstcurr.curriculumid = curr.id
-                  JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = '.$id
+                  JOIN {'.clusterassignment::TABLE.'} usrclst ON usrclst.clusterid = clst.id AND usrclst.userid = :userid'
                   .$cluster_filter;
+        $params = array('userid'=>$id);
 
-        $this->cluster_curricula = $DB->get_records_sql($sql);
+        $this->cluster_curricula = $DB->get_records_sql($sql, $params);
     }
 
     function is_sortable_numcourses() {
@@ -573,8 +578,8 @@ class curriculumstudentpage extends associationpage2 {
             }
         }
 
+        $count = $DB->count_records_select(user::TABLE, $where, $params);
         $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
-        $count = count($users);
 
         return array($users, $count);
     }
@@ -616,6 +621,7 @@ class curriculumstudentpage extends associationpage2 {
                 JOIN {'.user::TABLE.'} usr on curass.userid = usr.id
                 WHERE curass.curriculumid=:id';
         $where = 'id IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid=:id)';
+
         $params['id'] = $id;
 
         $extrasql = $filter->get_sql_filter();
@@ -627,11 +633,13 @@ class curriculumstudentpage extends associationpage2 {
             $params = array_merge($params, $extrasql[1]);
         }
 
-        $sql .= ' ORDER BY '.$sortclause;
+        //$sql .= ' ORDER BY '.$sortclause;
 
-        //$users = $DB->get_records_sql($sql, array($sort=>$order), $pagenum*$perpage, $perpage);
-        $users = $DB->get_records_sql($sql, $params, $pagenum*$perpage, $perpage);
-        $count = count($users);
+        $fields = 'curass.id, usr.id AS userid, usr.firstname, usr.lastname, usr.idnumber, usr.country, usr.language, curass.timecreated';
+
+        $count = $DB->count_records_select(user::TABLE, $where, $params);
+        $users = $DB->get_records_sql($sql, $params, $where, $pagenum*$perpage, $perpage);
+        //$users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, $fields, $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }

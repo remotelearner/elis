@@ -186,6 +186,10 @@ class user extends data_object_with_custom_fields {
             $this->change_password($data->newpassword);
         }
 
+        if (empty($data->password)) {
+            $data->password = '';
+        }
+
         if(!empty($data->id_same_user)) {
             $data->username = $data->idnumber;
         }

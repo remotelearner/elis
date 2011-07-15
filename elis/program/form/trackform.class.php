@@ -97,7 +97,7 @@ class trackform extends cmform {
         }
 
         // Only show auto-create checkbox if the track does not have any classes assigned
-        if (!isset($trackassignobj) or 0 == $trackassignobj->count_assigned_classes_from_track()) {
+        if (!isset($trackassignobj) || 0 == $trackassignobj->count_assigned_classes_from_track()) {
             $mform->addElement('checkbox', 'autocreate', get_string('track_autocreate', 'elis_program') . ':');
             $mform->addHelpButton('autocreate', 'trackform:track_autocreate', 'elis_program');
         }
@@ -127,6 +127,11 @@ class trackform extends cmform {
         $this->add_action_buttons();
     }
 
+    function check_unique($table, $field, $value, $id) {
+        global $DB;
+        return !$DB->record_exists_select($table, "$field = ? AND id <> ?", array($value, $id));
+    }
+
     /**
      *  make sure the start time is before the end time and the start date is before the end date for the class
      * @param array $data
@@ -135,6 +140,13 @@ class trackform extends cmform {
      */
     function validation($data, $files) {
         $errors = parent::validation($data, $files);
+
+
+        if (!empty($data['idnumber'])) {
+            if (!$this->check_unique(track::TABLE, 'idnumber', $data['idnumber'], $data['id'])) {
+                $errors['idnumber'] = get_string('badidnumber', 'elis_program');
+            }
+        }
 
         if(!empty($data['startdate']) && !empty($data['enddate']) && !empty($data['disablestart']) && !empty($data['disableend'])) {
             if($data['startdate'] > $data['enddate']) {
