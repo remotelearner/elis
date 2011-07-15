@@ -580,7 +580,7 @@ class student extends elis_data_object {
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                     "index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;&amp;action=add&amp;" .
                     "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;stype=$type" .
-                    "&amp;search=" . urlencode(stripslashes($namesearch))); // TBD: .'&amp;'
+                    "&amp;search=" . urlencode($namesearch)); // TBD: .'&amp;'
             echo $OUTPUT->render($pagingbar);
             flush();
 
@@ -909,7 +909,7 @@ class student extends elis_data_object {
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                     "index.php?s=stu&amp;section=curr&amp;id=$classid&amp;class=$classid&amp;&amp;action=bulkedit&amp;" .
                     "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;stype=$type" .
-                    "&amp;search=" . urlencode(stripslashes($namesearch))); // TBD: .'&amp;'
+                    "&amp;search=" . urlencode($namesearch)); // TBD: .'&amp;'
             echo $OUTPUT->render($pagingbar);
             flush();
 
@@ -1127,7 +1127,7 @@ class student extends elis_data_object {
         }
 
         echo "<input type=\"button\" onclick=\"document.location='index.php?s=stu&amp;section=curr&amp;" .
-                     "action=default&amp;id=$classid&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search=" . urlencode(stripslashes($namesearch)) . "';\" value=\"Cancel\" />";
+                     "action=default&amp;id=$classid&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search=" . urlencode($namesearch) . "';\" value=\"Cancel\" />";
 
         echo '</form>'."\n";
 

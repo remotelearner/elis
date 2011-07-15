@@ -303,8 +303,8 @@ function pm_synchronize_moodle_class_grades() {
                 && ($elements = $pmclass->course->get_completion_elements())) {
 
                 foreach ($elements as $element) {
-                    // It looks like Moodle actually stores the "slashes" on the idnumber field in the grade_items
-                    // table so we need to addslashes twice to this value if it needs them. =(  - ELIS-1830
+                    // In Moodle 1.9, Moodle actually stores the "slashes" on the idnumber field in the grade_items
+                    // table so we to check both with and without addslashes. =(  - ELIS-1830
                     $idnumber = $element->idnumber;
                     if ($gi = $DB->get_record('grade_items', array('courseid' => $class->moodlecourseid,
                                                                    'idnumber' => $idnumber))) {

@@ -802,8 +802,8 @@ class pmclass extends data_object_with_custom_fields {
                 $moodlecourseid   = course_rollover($cmc->moodlecourseid, $clone->startdate);
                 // Rename the fullname, shortname and idnumber of the restored course
                 $restore->id = $moodlecourseid;
-                $restore->fullname = addslashes($clone->course->name . '_' . $clone->idnumber);
-                $restore->shortname = addslashes($clone->idnumber);
+                $restore->fullname = $clone->course->name . '_' . $clone->idnumber;
+                $restore->shortname = $clone->idnumber;
                 $this->_db->update_record('course', $restore);
                 moodle_attach_class($clone->id, $moodlecourseid);
             } elseif ($options['moodlecourses'] == 'link' ||

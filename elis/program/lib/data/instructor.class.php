@@ -212,7 +212,7 @@ class instructor extends elis_data_object {
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                              "index.php?s=ins&amp;section=curr&amp;id=$classid&amp;action=add&amp;" .
                              "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;" .
-                             "search=".urlencode(stripslashes($namesearch))); // TBD: .'&amp;'
+                             "search=".urlencode($namesearch)); // TBD: .'&amp;'
             echo $OUTPUT->render($pagingbar);
             flush();
         } else {
@@ -303,7 +303,7 @@ class instructor extends elis_data_object {
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                              "index.php?s=ins&amp;section=curr&amp;id=$classid&amp;action=add&amp;" .
                              "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;" .
-                             "search=".urlencode(stripslashes($namesearch))); // TBD: .'&amp;'
+                             "search=".urlencode($namesearch)); // TBD: .'&amp;'
             echo $OUTPUT->render($pagingbar);
         }
 

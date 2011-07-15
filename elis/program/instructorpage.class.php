@@ -238,7 +238,7 @@ class instructorpage extends associationpage {
             'alpha', get_string('instructor_name', self::LANG_FILE) .':');
 
         $full_url = "/elis/program/index.php?s=ins&amp;section=curr&amp;id=$clsid&amp;action=$action&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search="
-                    . urlencode(stripslashes($namesearch)) .'&amp;'; // TBD
+                    . urlencode($namesearch) .'&amp;'; // TBD
         $pagingbar = new paging_bar($numinss, $page, $perpage, $full_url);
         echo $OUTPUT->render($pagingbar);
         flush();

@@ -376,7 +376,7 @@ class user extends data_object_with_custom_fields {
                     }
                 }
             }
-            profile_save_data(addslashes_recursive($record));
+            profile_save_data($record);
 
             if ($muserid) {
                 if ($changed) {

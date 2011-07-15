@@ -169,7 +169,7 @@ function make_link($psort=null, $pdir=null, $palpha=null, $ppage=null, $pnamesea
         $link .= '&amp;alpha='.$alpha;
     }
     if ($pnamesearch===null && $namesearch) {
-        $link .= '&amp;namesearch='.rawurlencode(stripslashes($namesearch));
+        $link .= '&amp;namesearch='.rawurlencode($namesearch);
     }
     if ($pdir!==null) {
         $link .= '&amp;dir='.$pdir;

@@ -536,14 +536,14 @@ class studentpage extends associationpage {
         $pagingbar = new paging_bar($numstus, $page, $perpage,
                          "index.php?s=stu&amp;section=curr&amp;id=$clsid&amp;sort=$sort&amp;" .
                          "dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search="
-                         . urlencode(stripslashes($namesearch))); // .'&amp;'
+                         . urlencode($namesearch)); // .'&amp;'
         echo $OUTPUT->render($pagingbar);
 
         echo "<form>";
         // TODO: pass in query parameters
         if ($this->can_do('bulkedit')) {
             echo "<input type=\"button\" onclick=\"document.location='index.php?s=stu&amp;section=curr&amp;" .
-                "action=bulkedit&amp;id=$clsid&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search=" . urlencode(stripslashes($namesearch)) . "';\" value=\"Bulk Edit\" />";
+                "action=bulkedit&amp;id=$clsid&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search=" . urlencode($namesearch) . "';\" value=\"Bulk Edit\" />";
         }
         if ($this->can_do('add')) {
             echo "<input type=\"button\" onclick=\"document.location='index.php?s=stu&amp;section=curr&amp;" .

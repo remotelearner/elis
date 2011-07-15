@@ -297,7 +297,7 @@ function cm_notify_send_handler($eventdata){
     /// For 1.9, just user the messaging system until we have recreated the 2.0
     /// functionality.
     require_once($CFG->dirroot.'/message/lib.php');
-    message_post_message($eventdata->userfrom, $eventdata->userto, $eventdata->fullmessage, addslashes($eventdata->fullmessageformat)); //, 'direct'
+    message_post_message($eventdata->userfrom, $eventdata->userto, $eventdata->fullmessage, $eventdata->fullmessageformat); //, 'direct'
     return true;
 
 //        global $CFG, $DB;

@@ -46,7 +46,7 @@ class usersetclassification extends elis_data_object {
     function __get($name) {
         if (strncmp($name,'param_',6) == 0) {
             $paramname = substr($name,6);
-            $params = unserialize(stripslashes($this->params));
+            $params = unserialize($this->params);
             return isset($params[$paramname]) ? $params[$paramname] : NULL;
         } else {
             return parent::__get($name);
@@ -57,9 +57,9 @@ class usersetclassification extends elis_data_object {
         $this->$name = $value;
         if (strncmp($name,'param_',6) == 0) {
             $paramname = substr($name,6);
-            $params = unserialize(stripslashes($this->params));
+            $params = unserialize($this->params);
             $params[$paramname] = $value;
-            $this->params = addslashes(serialize($params));
+            $this->params = serialize($params);
         } else {
             parent::__set($name, $value);
         }
@@ -68,7 +68,7 @@ class usersetclassification extends elis_data_object {
     function __isset($name) {
         if (strncmp($name,'param_',6) == 0) {
             $paramname = substr($name,6);
-            $params = unserialize(stripslashes($this->params));
+            $params = unserialize($this->params);
             return isset($params[$paramname]);
         } else {
             return parent::__isset($name);
@@ -127,7 +127,7 @@ class usersetclassification extends elis_data_object {
         $value = field_data::get_for_context_and_field($context, USERSET_CLASSIFICATION_FIELD);
         if (!empty($value)) {
             $value = array_shift($value);
-            $name = addslashes($value->data);
+            $name = $value->data;
             return new usersetclassification("shortname = '$name'");
         }
     }

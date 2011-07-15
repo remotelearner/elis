@@ -93,7 +93,6 @@ class classmoodlecourse extends data_object_with_custom_fields {
 
             /// This has to be put here in case we have a site config reload.
             $CFG    = $GLOBALS['CFG'];
-            $db     = $GLOBALS['db'];
 
             if (!$context = get_context_instance(CONTEXT_COURSE, $this->moodlecourseid)) {
                 return false;
@@ -103,8 +102,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
                 /// Make sure that a Moodle account exists for this user already.
                 $user = new user($instructor->id);
 
-                if (!$muser = $this->_db->get_record('user', array('idnumber'=>addslashes($user->idnumber)))) {
-                    $muser = addslashes_recursive($muser);
+                if (!$muser = $this->_db->get_record('user', array('idnumber'=>$user->idnumber))) {
                     /// Create a new record.
                     $muser = new stdClass;
                     $muser->idnumber     = $user->idnumber;
@@ -170,8 +168,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
                 /// Make sure that a Moodle account exists for this user already.
                 $user = new user($student->id);
 
-                if (!$muser = $this->_db->get_record('user', array('idnumber'=>addslashes($user->idnumber)))) {
-                    $muser = addslashes_recursive($muser);
+                if (!$muser = $this->_db->get_record('user', array('idnumber'=>$user->idnumber))) {
                     /// Create a new record.
                     $muser = new stdClass;
                     $muser->idnumber     = $user->idnumber;
