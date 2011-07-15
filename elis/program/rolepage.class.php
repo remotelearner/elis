@@ -89,7 +89,7 @@ abstract class rolepage extends associationpage2 {
     }
 
     function display_default() {
-        global $CURMAN, $DB;
+        global $CURMAN, $DB, $OUTPUT;
 
         //the specific role we are asigning users to
         $roleid = $this->optional_param('role', '', PARAM_INT);
@@ -111,23 +111,38 @@ abstract class rolepage extends associationpage2 {
 
             //determine all apprlicable roles we can assign users as the current context
             $assignableroles = get_assignable_roles($context, ROLENAME_BOTH);
-            $roles = array();
 
-            foreach ($assignableroles as $roleid => $rolename) {
-                $rec = new stdClass;
-                $rec->id = $roleid;
-                $rec->name = $rolename;
-                $rec->description = format_string($DB->get_field('role', 'description', array('id' => $roleid)));
-                $rec->count = count_role_users($roleid, $context);
-                $roles[$roleid] = $rec;
+            if (count($assignableroles) > 0) {
+                $roles = array();
+
+                foreach ($assignableroles as $roleid => $rolename) {
+                    $rec = new stdClass;
+                    $rec->id = $roleid;
+                    $rec->name = $rolename;
+                    $rec->description = format_string($DB->get_field('role', 'description', array('id' => $roleid)));
+                    $rec->count = count_role_users($roleid, $context);
+                    $roles[$roleid] = $rec;
+                }
+
+                $columns = array('name'        => array('header' => get_string('name'),
+                                                        'decorator' => $decorators),
+                                 'description' => array('header' => get_string('description')),
+                                 'count'       => array('header' =>  get_string('users')));
+                $table = new nosort_table($roles, $columns, $this->url);
+                echo $table->get_html();
+            } else {
+                //determine if there are any roles whose assignments are not permitted for the current user
+                //by the "Allow role assignments" tab
+                $admin_assignable_roles = get_assignable_roles($context, ROLENAME_BOTH, false, get_admin());
+
+                if (count($admin_assignable_roles) > 0) {
+                    //denied based on configuration
+                    echo $OUTPUT->box(get_string('norolespermitted', 'elis_program'));
+                } else {
+                    //no roles are assignable at this context
+                    echo $OUTPUT->box(get_string('norolesexist', 'elis_program'));
+                }
             }
-
-            $columns = array('name'        => array('header' => get_string('name'),
-                                                    'decorator' => $decorators),
-                             'description' => array('header' => get_string('description')),
-                             'count'       => array('header' =>  get_string('users')));
-            $table = new nosort_table($roles, $columns, $this->url);
-            echo $table->get_html();
         }
     }
 
