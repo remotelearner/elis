@@ -123,6 +123,11 @@ class cmCurriculaForm extends cmform {
         $this->add_action_buttons();
     }
 
+    function check_unique($table, $field, $value, $id) {
+        global $DB;
+        return !$DB->record_exists_select($table, "$field = ? AND id <> ?", array($value, $id));
+    }
+
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
@@ -139,6 +144,12 @@ class cmCurriculaForm extends cmform {
 
             if(!$datedelta->getDateString()) {
                 $errors['frequency'] = get_string('error_not_durrationformat', 'elis_program');
+            }
+        }
+
+        if (!empty($data['idnumber'])) {
+            if (!$this->check_unique(curriculum::TABLE, 'idnumber', $data['idnumber'], $data['id'])) {
+                $errors['idnumber'] = get_string('badidnumber', 'elis_program');
             }
         }
 
