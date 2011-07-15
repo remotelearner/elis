@@ -34,6 +34,11 @@ class customfieldpage extends pm_page {
 
     var $params = array();
 
+    function __construct(array $params=null) {
+        $this->params = $this->_get_page_params();
+        parent::__construct($params);
+    }
+
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
         return has_capability('block/curr_admin:managecurricula', $context);
@@ -47,12 +52,12 @@ class customfieldpage extends pm_page {
             print_error('invalid_context_level', 'elis_program');
         }
 
-        $tmppage = new customfieldpage();
+        $tmppage = new moodle_url($this->url);
         $tabs = array();
         require $CFG->dirroot.'/elis/program/db/access.php';
         foreach($contextlevels as $contextlevel => $val) {
-            $tmppage->params['level'] = $contextlevel;
-            $tabs[] = new tabobject($contextlevel, $tmppage->url, get_string($contextlevel, 'elis_program'));
+            $tmppage->param('level', $contextlevel);
+            $tabs[] = new tabobject($contextlevel, $tmppage->out(), get_string($contextlevel, 'elis_program'));
         }
         print_tabs(array($tabs), $level);
 
@@ -78,13 +83,15 @@ class customfieldpage extends pm_page {
             print_heading(get_string('field_no_categories_defined', 'elis_program'));
         }
         foreach ($fieldsbycategory as $categoryid => $fields) {
-            $tmppage = new customfieldpage();
-            $tmppage->params = array('action' => 'deletecategory',
-                                     'id' => $categoryid,
-                                     'level' => $level);
-            $deletelink = $tmppage->url;
-            $tmppage->params['action'] = 'editcategory';
-            $editlink = $tmppage->url;
+            $tmppage = new moodle_url($this->url);
+            $tmppage->params(array('action' => 'deletecategory',
+                                   'id' => $categoryid,
+                                   'level' => $level)
+                            );
+            $deletelink = $tmppage->out();
+
+            $tmppage->param('action', 'editcategory');
+            $editlink = $tmppage->out();
 
             $category_name = '';
             if (is_object($categories)) {
@@ -446,13 +453,16 @@ class customfieldtable extends display_table {
 
     function get_item_display_buttons($column, $item) {
         global $CFG, $OUTPUT;
-        $tmppage = new customfieldpage();
-        $tmppage->params = array('action' => 'deletefield',
-                                 'level' => optional_param('level','',PARAM_CLEAN),
-                                 'id' => $item->id);
-        $deletelink = $tmppage->url;
-        $tmppage->params['action'] = 'editfield';
-        $editlink = $tmppage->url;
+
+        $cfpage = new customfieldpage();
+        $tmppage = new moodle_url($cfpage->url);
+        $tmppage->params(array('action' => 'deletefield',
+                               'level' => optional_param('level','',PARAM_CLEAN),
+                               'id' => $item->id)
+                        );
+        $deletelink = $tmppage->out();
+        $tmppage->param('action', 'editfield');
+        $editlink = $tmppage->out();
         $deletetxt = get_string('delete');
         $edittxt = get_string('edit');
         return "<a href=\"{$editlink}\"><img src=\"".$OUTPUT->pix_url('edit','elis_program')."\" alt=\"{$edittxt}\" title=\"{$edittxt}\" /></a> " .
