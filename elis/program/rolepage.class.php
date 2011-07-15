@@ -325,9 +325,15 @@ abstract class rolepage extends associationpage2 {
     }
 
     function get_records_from_selection($record_ids) {
-        global $CURMAN;
-        $usersstring = implode(',', $record_ids);
-        $records = $CURMAN->db->get_records_select(user::TABLE, "id in ($usersstring)");
+        global $DB;
+
+        //figure out the body if the equals or in clause
+        list($idtest, $params) = $DB->get_in_or_equal($record_ids);
+
+        //apply the condition to the user id
+        $where = "id {$idtest}";
+
+        $records = $DB->get_records_select(user::TABLE, $where, $params);
         return $records;
     }
 
