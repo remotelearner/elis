@@ -107,9 +107,7 @@ abstract class rolepage extends associationpage2 {
             return parent::display_default();
         } else {
             //use the standard link decorator to link role names to their specific sub-pages
-            $decorator_params = array('id' => $this->required_param('id', PARAM_INT));
-            $decorator = new record_link_decorator(get_class($this), $decorator_params, 'id', 'role');
-            $decorators = array($decorator, 'decorate');
+            $decorators = array(new role_name_decorator($this), 'decorate');
 
             //determine all apprlicable roles we can assign users as the current context
             $assignableroles = get_assignable_roles($context, ROLENAME_BOTH);
@@ -683,3 +681,45 @@ class user_selection_table extends selection_table {
     }
 }
 
+/**
+ * Make the role name into a link to view the assignments for that role,
+ * starting on the list of assigned users if there are any, or the list of
+ * available users if not
+ */
+class role_name_decorator {
+    /**
+     * Class constructor
+     *
+     * @param rolepage $page The page being used to display the list of roles
+     */
+    function __construct(&$page) {
+        //copy the page instance for safety reasons
+        $this->page = $page->get_new_page();
+    }
+
+    /**
+     * Main decoration method
+     *
+     * @param string $text The column text being displayed
+     * @param string $column The field corresponding to the display text
+     * @param object $item The record representing the current row
+     * @return string The final display string
+     */
+    function decorate($text, $column, $item) {
+        //obtain the page url, including parameters
+        $url = $this->page->url;
+
+        //set the role id based on the current item
+        $url->params(array('role' => $item->id));
+
+        if ($item->count == 0) {
+            //no users, so start on "assign" page
+            $url->params(array('_assign' => 'assign'));
+        } else {
+            //users, so start on "unassign" page
+            $url->remove_params(array('_assign'));
+        }
+
+        return html_writer::link($url, $text);
+    }
+}
