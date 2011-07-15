@@ -799,6 +799,12 @@ class elis_data_object {
         return isset(static::$associations[$name]);
     }
 
+    /**
+     * Method to test data_objects' _dbfield_ properties are in-sync with DB
+     * no extras and no missing fields.
+     *
+     * @return boolean true if tests pass, false otherwise
+     */
     public function _test_dbfields() {
         $dbfields = array();
         // find all the fields from the current object
@@ -832,11 +838,28 @@ class elis_data_object {
                 }
             }
         } else {
-            error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): WARNING '". $this::TABLE ."' table empty, could not test dbfields complete.");
+            if ($this->_db->get_dbfamily() == 'mysql') {
+                $sql = 'SHOW COLUMNS FROM {'. $this::TABLE .'}';
+                $recs = $this->_db->get_records_sql($sql);
+                foreach ($recs as $rec) {
+                    if (!in_array($rec->field, $dbfields)) {
+                        error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): Error class: {$objclass}  missing dbfield: {$rec->field} (\$_dbfield_{$rec->field})");
+                        $ret = false;
+                    }
+                }
+            } else {
+                error_log("/elis/core/lib/data/data_object.class.php::_test_dbfields(): WARNING '". $this::TABLE ."' table empty, could not test dbfields complete.");
+            }
         }
         return $ret;
     }
 
+    /**
+     * Method to test data_objects' associations are in-sync with related
+     * classes foreignidfield and data_objects idfield.
+     *
+     * @return boolean true if tests pass, false otherwise
+     */
     public function _test_associations() {
         $ret = true;
         foreach ($this::$associations as $key => $val) {
