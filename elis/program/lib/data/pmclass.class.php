@@ -968,7 +968,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
         $filter_sql = $filter_object->get_sql(false, 'cls');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
-            $params += $filter_sql['where_params'];
+            $params += $filter_sql['where_parameters'];
         }
     }
 
@@ -1052,7 +1052,7 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
         $filter_sql = $filter_object->get_sql(false, 'cls');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
-            $params += $filter_sql['where_params'];
+            $params += $filter_sql['where_parameters'];
         }
     }
 

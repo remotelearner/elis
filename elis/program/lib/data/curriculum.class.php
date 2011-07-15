@@ -633,7 +633,7 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
-            $params += $filter_sql['where_params'];
+            $params += $filter_sql['where_parameters'];
         }
     }
 
@@ -649,7 +649,7 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $curriculum_filter = $filter_sql['where'];
-            $curriculum_params = $filter_sql['where_params'];
+            $curriculum_params = $filter_sql['where_parameters'];
         }
 
         if(empty($allowed_clusters)) {
@@ -722,7 +722,7 @@ function curriculum_count_records($namesearch = '', $alpha = '', $contexts = nul
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
-            $params[] = $filter_sql['where_params'];
+            $params[] = $filter_sql['where_parameters'];
         }
     }
 

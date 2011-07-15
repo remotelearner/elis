@@ -392,7 +392,7 @@ class userset extends data_object_with_custom_fields {
         }
         if (isset($filtersql['where'])) {
             $cluster_permissions_sql .= ' WHERE ' . $filtersql['where'];
-            $params += $filtersql['where_params'];
+            $params += $filtersql['where_parameters'];
         }
 
         $allowed_clusters = $DB->get_records_sql($cluster_permissions_sql, $params);

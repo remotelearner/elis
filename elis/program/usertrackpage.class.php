@@ -105,7 +105,7 @@ class usertrackpage extends usertrackbasepage {
         $params = array();
         if (isset($filter_sql['where'])) {
             $cluster_filter = " WHERE ".$filter_sql['where'];
-            $params += $filter_sql['where_params'];
+            $params += $filter_sql['where_parameters'];
         }
 
         //query for getting tracks based on clusters

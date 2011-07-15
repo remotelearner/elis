@@ -606,7 +606,7 @@ class curriculumcourse extends elis_data_object {
             $filter_sql = $filter_object->get_sql(false, 'cur');
             if (isset($filter_sql['where'])) {
                 $sql = $sql.' AND '.$filter_sql['where'].' ';
-                $params += $filter_sql['where_params'];
+                $params += $filter_sql['where_parameters'];
             }
         }
         $sql .= 'ORDER BY crs.name ASC';
@@ -626,7 +626,7 @@ class curriculumcourse extends elis_data_object {
             $filter_sql = $filter_object->get_sql(false, 'cur');
             if (isset($filter_sql['where'])) {
                 $sql = $sql.' AND '.$filter_sql['where'].' ';
-                $params += $filter_sql['where_params'];
+                $params += $filter_sql['where_parameters'];
             }
         }
         $sql = $sql . 'ORDER BY cur.name ASC';
@@ -801,7 +801,7 @@ function curriculumcourse_get_curriculum_listing($crsid, $sort='position', $dir=
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where .= ' AND ' . $filter_sql['where'];
-            $params += $filter_sql['where_params'];
+            $params += $filter_sql['where_parameters'];
         }
     }
 
@@ -848,7 +848,7 @@ function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $al
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where .= ' AND ' . $filter_sql['where'];
-            $params += $filter_sql['where_params'];
+            $params += $filter_sql['where_parameters'];
         }
     }
 

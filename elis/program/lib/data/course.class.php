@@ -811,7 +811,7 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
         $filter_sql = $filter_object->get_sql(false, 'crs');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
-            $params += $filter_sql['where_params'];
+            $params += $filter_sql['where_parameters'];
         }
     }
 
@@ -856,7 +856,7 @@ function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
         $filter_sql = $filter_object->get_sql(false, 'crs');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
-            $params += $filter_sql['where_params'];
+            $params += $filter_sql['where_parameters'];
         }
     }
 

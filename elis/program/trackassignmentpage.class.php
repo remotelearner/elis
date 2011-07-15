@@ -189,7 +189,7 @@ class trackassignmentpage extends associationpage {
         $params = array($id);
         if (isset($filter_sql['where'])) {
             $sql .= " AND ".$filter_sql['where'];
-            $params += $filter_sql['where_params'];
+            $params += $filter_sql['where_parameters'];
         }
 
         $classes = $DB->get_records_sql($sql, $params);
