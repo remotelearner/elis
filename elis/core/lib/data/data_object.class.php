@@ -862,30 +862,31 @@ class elis_data_object {
      */
     public function _test_associations() {
         $ret = true;
+        $objclass = get_class($this);
         foreach ($this::$associations as $key => $val) {
             if (!is_array($val)) {
                 $ret = false;
-                error_log("/elis/core/lib/data/data_object.class.php::_test_associations(): Error for association '{$key}' - array expected, scalar found!.");
+                error_log("/elis/core/lib/data/data_object.class.php::_test_associations(): Error for class: {$objclass}  association '{$key}' - array expected, scalar found!.");
                 continue;
             }
             if (!array_key_exists('class', $val)) {
                 $ret = false;
-                error_log("/elis/core/lib/data/data_object.class.php::_test_associations(): Error for association '{$key}' - missing 'class' index!.");
+                error_log("/elis/core/lib/data/data_object.class.php::_test_associations(): Error for class: {$objclass}  association '{$key}' - missing 'class' index!.");
             }
             if (array_key_exists('idfield', $val)) {
                 if (!property_exists(get_class($this), self::FIELD_PREFIX . $val['idfield'])) {
                     $ret = false;
-                    error_log("/elis/core/lib/data/data_object.class.php::_test_associations(): Error for association '{$key}' - 'idfield' => '{$val['idfield']}' not property of class: ". get_class($this));
+                    error_log("/elis/core/lib/data/data_object.class.php::_test_associations(): Error for class: {$objclass}  association '{$key}' - 'idfield' => '{$val['idfield']}' not property of class: ". get_class($this));
                 }
             }
             if (array_key_exists('foreignidfield', $val)) {
                 if (array_key_exists('idfield', $val)) {
                     $ret = false;
-                    error_log("/elis/core/lib/data/data_object.class.php::_test_associations(): Error for association '{$key}' - cannot have both 'idfield' and 'foreignidfield' defined!.");
+                    error_log("/elis/core/lib/data/data_object.class.php::_test_associations(): Error for class: {$objclass}  association '{$key}' - cannot have both 'idfield' and 'foreignidfield' defined!.");
                 }
                 if (!property_exists($val['class'], self::FIELD_PREFIX . $val['foreignidfield'])) {
                     $ret = false;
-                    error_log("/elis/core/lib/data/data_object.class.php::_test_associations(): Error for association '{$key}' - 'foreignidfield' => '{$val['foreignidfield']}' not property of class: {$val['class']}");
+                    error_log("/elis/core/lib/data/data_object.class.php::_test_associations(): Error for class: {$objclass}  association '{$key}' - 'foreignidfield' => '{$val['foreignidfield']}' not property of class: {$val['class']}");
                 }
             }
         }
