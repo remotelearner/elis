@@ -24,12 +24,11 @@
  *
  */
 
-
 global $CFG;
 require_once elispm::file('form/cmform.class.php');
 require_once elis::lib('data/customfield.class.php');
 
-class fieldcategoryform extends moodleform {
+class fieldcategoryform extends cmform {
 
     // Define the form
     function definition () {
@@ -46,22 +45,4 @@ class fieldcategoryform extends moodleform {
         $this->add_action_buttons(true);
     }
 
-    /// perform some moodle validation
-    /*
-    function validation($data, $files) {
-        global $CFG;
-        $errors = parent::validation($data, $files);
-
-        $data  = (object)$data;
-
-        $category = get_record(FIELDCATEGORYTABLE, 'id', $data->id);
-
-        /// Check the name is unique
-        if ($category and ($category->name !== $data->name) and (record_exists(FIELDCATEGORYTABLE, 'name', $data->name))) {
-            $errors['name'] = get_string('profilecategorynamenotunique', 'admin');
-        }
-
-        return $errors;
-    }
-    */
 }

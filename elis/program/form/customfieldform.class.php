@@ -27,7 +27,7 @@
 global $CFG;
 require_once elispm::file('form/cmform.class.php');
 
-class customfieldform extends moodleform {
+class customfieldform extends cmform {
     function definition() {
         global $CFG;
 
@@ -58,7 +58,8 @@ class customfieldform extends moodleform {
         $form->addElement('select', 'categoryid', get_string('profilecategory', 'admin'), $choices);
 
         $form->addElement('htmleditor', 'description', get_string('profiledescription', 'admin'));
-        $form->addHelpButton('description', array('text', get_string('helptext')));
+        // TO-DO: is there a generic moodle2 textarea help text? commented out for now
+        //$form->addHelpButton('description', 'helptext');
 
         $choices = array(
             'text' => get_string('field_datatype_text', 'elis_program'),

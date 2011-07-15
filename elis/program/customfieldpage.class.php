@@ -141,14 +141,14 @@ class customfieldpage extends pm_page {
                 $select = 'shortname NOT IN (SELECT shortname FROM {'.field::TABLE.'})';
                 $moodlefields = $DB->get_records_select('user_info_field', $select, array('sortorder'=>'id,name'));
                 $moodlefields = $moodlefields ? $moodlefields : array();
-                $tmppage->params['action'] = 'editfield';
-                $tmppage->params['from'] = 'moodle';
-                $tmppage->params['level'] = 'user';
+                $tmppage->param('action', 'editfield');
+                $tmppage->param('from', 'moodle');
+                $tmppage->param('level', 'user');
                 echo '<div>';
                 //popup_form("{$tmppage->url}&amp;id=",
                 //           array_map(create_function('$x', 'return $x->name;'), $moodlefields),
                 //           'frommoodleform', '', 'choose', '', '', false, 'self', get_string('field_from_moodle', 'elis_program'));
-                $actionurl = new moodle_url($tmppage->url, array('id'=>''));
+                $actionurl = new moodle_url($tmppage->out(), array('id'=>''));
                 $single_select = new single_select($actionurl, 'frommoodleform', array_map(create_function('$x', 'return $x->name;'), $moodlefields), null, array(''=>get_string('field_from_moodle', 'elis_program')));
                 echo $OUTPUT->render($single_select);
                 echo '</div>';
@@ -381,7 +381,8 @@ class customfieldpage extends pm_page {
                             fclose($fh);
                         } else {
                             $defaultdata = current($defaultdata);
-                            $defaultdata = $defaultdata->data;
+                            // TO-DO: not sure what should happen on the following line, commented out for now
+                            //$defaultdata = $defaultdata->data;
                         }
                     }
                     $data_array['defaultdata'] = $defaultdata;
