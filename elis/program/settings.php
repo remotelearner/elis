@@ -198,26 +198,29 @@ if ($ADMIN->fulltree) {
                            get_string('track_role_help', 'elis_program'),
                            0, $allroles)); // TBD
 
-    // ***Enrolment Role Sync Settings
-    $settings->add(new admin_setting_heading('enrole_sync_settings', get_string('enrole_sync_settings', 'elis_program'), '' /* get_string('enrole_sync_settings_info', 'elis_program') */));
-
-    // Student Role
-    $settings->add(new admin_setting_configselect('elis_program/enrolment_role_sync_student_role',
-                           get_string('sync_student_role_setting', 'elis_program'),
-                           get_string('sync_student_role_help', 'elis_program'),
-                           0, $allroles)); // TBD
-    // Instructor Role
-    $settings->add(new admin_setting_configselect('elis_program/enrolment_role_sync_instructor_role',
-                           get_string('sync_instructor_role_setting', 'elis_program'),
-                           get_string('sync_instructor_role_help', 'elis_program'),
-                           0, $allroles)); // TBD
-
     // ***Auto-create  Settings
     $settings->add(new admin_setting_heading('auto_create_settings', get_string('auto_create_settings', 'elis_program'), '' /* get_string('auto_create_settings_info', 'elis_program') */));
     // Moodle courses with unknown status treated as auto-created
     $settings->add(new admin_setting_configcheckbox('elis_program/autocreated_unknown_is_yes',
                            get_string('auto_create_setting', 'elis_program'),
                            get_string('auto_create_help', 'elis_program'), 1));
+
+    //include settings for all subplugins
+    include(elispm::file('db/subplugins.php'));
+
+    foreach ($subplugins as $subplugintype => $subplugintyperootdir) {
+        //get the list of instances of the current subplugin type
+        $directories = get_plugin_list($subplugintype);
+
+        //iterate thorugh each instance of this subplugin type
+        foreach ($directories as $directory) {
+            $settings_path = $directory.'/settings.php';
+            if (file_exists($settings_path)) {
+                //include the settings file
+                include($settings_path);
+            }
+        }
+    }
 
     $ADMIN->add('elis_program', $settings);
 }
