@@ -32,13 +32,20 @@ class fieldcategoryform extends cmform {
 
     // Define the form
     function definition () {
-        global $USER, $CFG;
+        global $USER, $CFG, $DB;
 
         $mform =& $this->_form;
 
         $strrequired = get_string('required');
 
-        $mform->addElement('text', 'name', get_string('profilecategoryname', 'admin'), 'maxlength="255" size="30"');
+        // TO-DO: probably a better way to get the name?
+        $category_name = '';
+        $field_category = $DB->get_record(field_category::TABLE, array('id'=>optional_param('id', 0, PARAM_INT)));
+        if (!empty($field_category)) {
+            $category_name = $field_category->name;
+        }
+
+        $mform->addElement('text', 'name', get_string('profilecategoryname', 'admin'), array('maxlength'=>'255', 'size'=>'30', 'value'=>$category_name));
         $mform->setType('name', PARAM_MULTILANG);
         $mform->addRule('name', $strrequired, 'required', null, 'client');
 

@@ -463,6 +463,7 @@ $string['management'] = 'Management';
 $string['manage_class'] = 'Manage Class Instances';
 $string['manage_course'] = 'Manage Course Descriptions';
 $string['manage_curriculum'] = 'Manage Programs';
+$string['manage_custom_fields'] = 'Manage Custom Fields';
 $string['manage_pmclass'] = 'Manage Class Instances';
 $string['manage_student'] = 'Manage Students';
 $string['manage_track'] = 'Manage Tracks';

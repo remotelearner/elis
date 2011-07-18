@@ -68,8 +68,10 @@ class customfieldpage extends pm_page {
         $categories = $categories ? $categories : array();
 
         // divide the fields into categories
+        $category_names = array();
         $fieldsbycategory = array();
         foreach ($categories as $category) {
+            $category_names[$category->id] = $category->name;
             $fieldsbycategory[$category->id] = array();
         }
         foreach ($fields as $field) {
@@ -93,15 +95,7 @@ class customfieldpage extends pm_page {
             $tmppage->param('action', 'editcategory');
             $editlink = $tmppage->out();
 
-            $category_name = '';
-            if (is_object($categories)) {
-                foreach ($categories as $catobj) {
-                    // TO-DO: not working
-                    //print_object($catobj);
-                    $category_name = $catobj->name;
-                }
-            }
-            echo "<h2>{$category_name} <a href=\"$editlink\">";
+            echo "<h2>{$category_names[$categoryid]} <a href=\"$editlink\">";
             echo "<img src=\"".$OUTPUT->pix_url('edit','elis_program')."\" alt=\"$edittxt\" title=\"$edittxt\" /></a>";
             echo "<a href=\"$deletelink\"><img src=\"".$OUTPUT->pix_url('delete','elis_program')."\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
             echo "</h2>\n";
@@ -440,6 +434,13 @@ class customfieldpage extends pm_page {
 
     function action_movefield() {
         // FIXME:
+    }
+
+    public function build_navbar_default() {
+        parent::build_navbar_default();
+
+        $url = $this->get_new_page(array('level'=>'user'), true)->url;
+        $this->navbar->add(get_string("manage_custom_fields", 'elis_program'), $url);
     }
 }
 
