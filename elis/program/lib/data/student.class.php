@@ -335,7 +335,8 @@ class student extends elis_data_object {
         /// Enrol them into the Moodle class.
         if ($moodlecourseid = moodle_get_course($this->classid)) {
             if ($mcourse = $this->_db->get_record('course', array('id' => $moodlecourseid))) {
-                $enrol = $mcourse->enrol; // ***TBD***
+              /* ****TBD****
+                $enrol = $mcourse->enrol;
                 if (!$enrol) {
                     $enrol = $CFG->enrol;
                 }
@@ -344,6 +345,7 @@ class student extends elis_data_object {
                     $status->message = get_string('error_not_using_elis_enrolment', self::LANG_FILE);
                     return $status;
                 }
+              ******** */
 
                 $timestart = $this->enrolmenttime;
                 $timeend = $this->endtime;
@@ -1911,7 +1913,7 @@ class student extends elis_data_object {
         }
 
         foreach ($users as $user) {
-            $message->send_notification($text, $user, $enroluser);
+            $message->send_notification($text, $user, $enroluser); // TBD: where is $enroluser defined!?!
         }
 
         return true;
@@ -1983,7 +1985,7 @@ class student extends elis_data_object {
         }
 
         foreach ($users as $user) {
-            $message->send_notification($text, $user, $enroluser);
+            $message->send_notification($text, $user, $enroluser); // TBD: where is $enroluser defined!?!
         }
 
         return true;
