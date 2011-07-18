@@ -85,8 +85,9 @@ class coursecurriculumform extends coursecurriculumbaseform {
         $coursecurriculum->courseid = $parent_obj->id;
 
         if(isset($this->_customdata['obj'])) {
-            $course = $this->_customdata['obj']->course;
-            $curriculum = $this->_customdata['obj']->curriculum;
+            $coursecurriculum = new curriculumcourse($this->_customdata['obj']);
+            $course = $coursecurriculum->course;
+            $curriculum = $coursecurriculum->curriculum;
             $curriculas[$curriculum->id] = $curriculum->name;
         } else {
             $contexts = curriculumpage::get_contexts('block/curr_admin:associate');
@@ -143,8 +144,9 @@ class curriculumcourseform extends coursecurriculumbaseform {
         $courses = array();
 
         if(isset($this->_customdata['obj'])) {
-            $course = $this->_customdata['obj']->course;
-            $curriculum = $this->_customdata['obj']->curriculum;
+            $coursecurriculum = new curriculumcourse($this->_customdata['obj']);
+            $course = $coursecurriculum->course;
+            $curriculum = $coursecurriculum->curriculum;
             $courses[$course->id] = $course->name;
         }
         else if(is_array($courses_avail)) {

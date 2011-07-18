@@ -237,10 +237,14 @@ class associationpage extends pm_page {
 
         $obj->load();
 
-        $form = new $this->form_class($target->url, array('obj' => $obj->to_object()));
+        $parent_obj = new $this->parent_data_class($id);
+        $parent_obj->load();
+
+        $form = new $this->form_class($target->url, array('obj' => $obj->to_object(),
+                                                          'parent_obj' => $parent_obj->to_object()));
 
         if ($form->is_cancelled()) {
-            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
             return;
         }
@@ -252,7 +256,7 @@ class associationpage extends pm_page {
 
             $obj->set_from_data($data);
             $obj->save();
-            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
         } else {
             $this->_form = $form;
