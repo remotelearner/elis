@@ -127,7 +127,8 @@ function sync_profile_field_from_moodle($field) {
 // Form functions
 
 function moodle_profile_field_edit_form_definition($form) {
-    $level = $form->_customdata->required_param('level', PARAM_ACTION);
+    //$level = $form->_customdata->required_param('level', PARAM_ACTION);
+    $level = required_param('level', PARAM_ACTION);
     if ($level != 'user') {
         return;
     }
@@ -145,7 +146,8 @@ function moodle_profile_field_edit_form_definition($form) {
 }
 
 function moodle_profile_field_get_form_data($form, $field) {
-    $level = $form->_customdata->required_param('level', PARAM_ACTION);
+    //$level = $form->_customdata->required_param('level', PARAM_ACTION);
+    $level = required_param('level', PARAM_ACTION);
     if ($level != 'user') {
         return array();
     }
@@ -158,7 +160,8 @@ function moodle_profile_field_get_form_data($form, $field) {
 }
 
 function moodle_profile_field_save_form_data($form, $field, $data) {
-    $level = $form->_customdata->required_param('level', PARAM_ACTION);
+    //$level = $form->_customdata->required_param('level', PARAM_ACTION);
+    $level = required_param('level', PARAM_ACTION);
     if ($level != 'user') {
         return;
     }
@@ -169,19 +172,18 @@ function moodle_profile_field_save_form_data($form, $field, $data) {
         if (isset($field->owners['moodle_profile'])) {
             $owner = new field_owner($field->owners['moodle_profile']);
             $owner->exclude = $data->moodle_profile_exclusive;
-            $owner->update();
         } else {
             $owner = new field_owner();
             $owner->fieldid = $field->id;
             $owner->plugin = 'moodle_profile';
             $owner->exclude = $data->moodle_profile_exclusive;
-            $owner->add();
         }
+        $owner->save();
 
         unset($field->owners); // force reload of owners field
         sync_profile_field_with_moodle($field);
     } else {
-        $CURMAN->db->delete_records(FIELDOWNERTABLE, 'fieldid', $field->id, 'plugin', 'moodle_profile');
+        $CURMAN->db->delete_records(field_owner::TABLE, array('fieldid'=>$field->id, 'plugin'=>'moodle_profile'));
     }
 }
 

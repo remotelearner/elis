@@ -61,7 +61,7 @@ function manual_field_edit_form_definition($fform) {
         $file = substr($file, 0, -4);
         $classname = "manual_options_$file";
         $plugin = new $classname();
-        if ($plugin->is_applicable($fform->_customdata->required_param('level', PARAM_ACTION))) {
+        if ($plugin->is_applicable(required_param('level', PARAM_ACTION))) {
             $choices[$file] = get_string("options_source_$file", 'crlm_manual');;
         }
     }
@@ -162,14 +162,10 @@ function manual_field_save_form_data($form, $field, $data) {
             }
         }
         $manual->params = addslashes($manual->params);
-        if (empty($manual->id)) {
-            $manual->add();
-        } else {
-            $manual->update();
-        }
+        $manual->save();
     } else {
         global $DB;
-        $DB->delete_records(FIELDOWNERTABLE, 'fieldid', $field->id, 'plugin', 'manual');
+        $DB->delete_records(field_owner::TABLE, array('fieldid'=>$field->id, 'plugin'=>'manual'));
     }
 }
 
