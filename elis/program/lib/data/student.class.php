@@ -335,7 +335,7 @@ class student extends elis_data_object {
         /// Enrol them into the Moodle class.
         if ($moodlecourseid = moodle_get_course($this->classid)) {
             if ($mcourse = $this->_db->get_record('course', array('id' => $moodlecourseid))) {
-                $enrol = $mcourse->enrol;
+                $enrol = $mcourse->enrol; // ***TBD***
                 if (!$enrol) {
                     $enrol = $CFG->enrol;
                 }
@@ -348,7 +348,7 @@ class student extends elis_data_object {
                 $timestart = $this->enrolmenttime;
                 $timeend = $this->endtime;
 
-                if ($role = get_default_course_role($mcourse)) {
+                if ($role = get_default_course_role($mcourse)) { // ***TBD***
                     $context = get_context_instance(CONTEXT_COURSE, $mcourse->id);
 
                     /// Get the Moodle user ID or create a new account for this user.
@@ -363,7 +363,7 @@ class student extends elis_data_object {
                     }
 
                     if (!empty($muserid)) {
-                        if (!role_assign($role->id, $muserid, 0, $context->id, $timestart, $timeend, 0, 'manual')) {
+                        if (!role_assign($role->id, $muserid, $context->id)) { // TBD: removed $groupid, $timestart, $timeend and $enrol => 'manual'
                             $status = new Object();
                             $status->message = get_string('errorroleassign', self::LANG_FILE);
                         }
@@ -389,7 +389,8 @@ class student extends elis_data_object {
 
             $context = get_context_instance(CONTEXT_COURSE, $moodlecourseid);
             if ($context && $context->id) {
-                role_unassign(0, $muserid, 0, $context->id);
+                role_unassign_all(array('userid' => $muserid,
+                                        'contextid' => $context->id));
             }
         }
 

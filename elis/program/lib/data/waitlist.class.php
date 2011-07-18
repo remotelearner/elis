@@ -231,7 +231,7 @@ class waitlist extends elis_data_object {
         if ($courseid) {
             $course = $this->_db->get_record('course', array('id' => $this->id));
             // the elis plugin is treated specially
-            if ($course->enrol != 'elis') {
+            if ($course->enrol != 'elis') { // ***TBD***
                 // send the user to the Moodle enrolment page
                 $a = new stdClass;
                 $a->crs = $course;
