@@ -234,8 +234,8 @@ class waitlist extends elis_data_object {
             if ($course->enrol != 'elis') { // ***TBD***
                 // send the user to the Moodle enrolment page
                 $a = new stdClass;
-                $a->crs = $course;
-                $a->class = $class;
+                $a->id = $course->id;
+                $a->idnumber = $class->idnumber;
                 $a->wwwroot = $CFG->wwwroot;
                 $subject = get_string('moodleenrol_subj', self::LANG_FILE, $a);
                 $message = get_string('moodleenrol', self::LANG_FILE, $a);

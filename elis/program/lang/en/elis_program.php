@@ -471,9 +471,9 @@ $string['manage_userset'] = 'Manage user sets';
 $string['moodle_field_sync_warning'] = '* <strong>Warning:</strong> this field is set to synchronize with Moodle user profile fields, but there is no Moodle profile field with the same short name.';
 $string['moodlecourse'] = 'Moodle course';
 $string['moodlecourseurl'] = 'Mooodle Course URL';
-$string['moodleenrol'] = 'You have been removed from the waiting list for class instance {$a->class->idnumber}.
-Please visit {$a->wwwroot}/course/enrol.php?id={$a->crs->id} to complete your enrolment.';
-$string['moodleenrol_subj'] = 'Ready to enrol in {$a->class->idnumber}.';
+$string['moodleenrol'] = 'You have been removed from the waiting list for class instance {$a->idnumber}.
+Please visit {$a->wwwroot}/course/enrol.php?id={$a->id} to complete your enrolment.';
+$string['moodleenrol_subj'] = 'Ready to enrol in {$a->idnumber}.';
 
 $string['name'] = 'Name';
 $string['n_completed'] = 'Not Completed';
