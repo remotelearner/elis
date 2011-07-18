@@ -402,7 +402,7 @@ function cm_get_users_by_capability($contextlevel, $instance_id, $capability) {
 function _cmctx_get_curriculum_containing_course($instance_id) {
     global $DB;
     require_once elispm::lib('data/curriculumcourse.class.php');
-    $result =$DB->get_records(curriculumcourse::TABLE, 'courseid', $instance_id, '', 'curriculumid');
+    $result =$DB->get_records(curriculumcourse::TABLE, array('courseid' => $instance_id), '', 'curriculumid');
     if ($result) {
         return $result;
     } else {
@@ -413,7 +413,7 @@ function _cmctx_get_curriculum_containing_course($instance_id) {
 function _cmctx_get_track_containing_class($instance_id) {
     global $DB;
     require_once elispm::lib('data/track.class.php');
-    $result = $DB->get_records(trackassignment::TABLE, 'classid', $instance_id, '', 'trackid');
+    $result = $DB->get_records(trackassignment::TABLE, array('classid' => $instance_id), '', 'trackid');
     if ($result) {
         return $result;
     } else {
@@ -423,8 +423,8 @@ function _cmctx_get_track_containing_class($instance_id) {
 
 function _cmctx_get_cluster_containing_user($instance_id) {
     global $DB;
-    require_once elispm::lib('data/usercluster.class.php');
-    $result = $DB->get_records(clusteruser::TABLE, 'userid', $instance_id, '', 'clusterid');
+    require_once elispm::lib('data/clusterassignment.class.php');
+    $result = $DB->get_records(clusterassignment::TABLE, array('userid' => $instance_id), '', 'clusterid');
     if ($result) {
         return $result;
     } else {
