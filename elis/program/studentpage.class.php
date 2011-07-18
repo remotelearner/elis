@@ -658,7 +658,7 @@ class student_table extends association_page_table {
                    'idnumber'         => 'get_item_display_idnumber',
                    'name'             => 'get_item_display_name',
                    'buttons'          => 'get_item_display_buttons');
-
+        // note: get_item_display_buttons() in parent::association_page_table
         foreach ($display_functions as $key => $val) {
             //if (!isset($columns[$key]) || !is_array($columns[$key])) {
             //    $columns[$key] = array('header' => '', 'sortable' => false);
@@ -732,10 +732,6 @@ class student_table extends association_page_table {
         }
 
         return $moodle_link_begin.$item->name.$moodle_link_end;
-    }
-
-    function get_item_display_buttons($column, $item) {
-        return htmltab_display_function($column, $item);
     }
 
 }
