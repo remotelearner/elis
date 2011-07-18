@@ -1,12 +1,7 @@
 <?php
 /**
- * Synchronizes user profile data to/from Moodle.  If this module is set to
- * have exclusive ownership of the data, then that indicates that data will by
- * copied from Moodle to ELIS.  Otherwise, the data will be copied from ELIS to
- * Moodle (and this module will not actually write data).
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -186,5 +181,3 @@ function moodle_profile_field_save_form_data($form, $field, $data) {
         $CURMAN->db->delete_records(field_owner::TABLE, array('fieldid'=>$field->id, 'plugin'=>'moodle_profile'));
     }
 }
-
-?>
