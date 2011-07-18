@@ -32,8 +32,7 @@ require_once elispm::file('form/curriculumform.class.php');
 require_once elispm::file('curriculumcoursepage.class.php');
 require_once elispm::file('curriculumstudentpage.class.php');
 require_once elispm::file('clustercurriculumpage.class.php');
-
-require_once (elispm::file('rolepage.class.php'));
+require_once elispm::file('rolepage.class.php');
 
 /// The main management page.
 class curriculumpage extends managementpage {
@@ -216,7 +215,6 @@ class curriculumpage extends managementpage {
         global $USER;
 
         //make sure a valid role is set
-        /* TO-DO: re-enable after rolepage is done
         if(!empty(elis::$config->elis_program->default_curriculum_role_id) && record_exists('role', 'id', elis::$config->elis_program->default_curriculum_role_id)) {
 
             //get the context instance for capability checking
@@ -228,7 +226,6 @@ class curriculumpage extends managementpage {
                 role_assign(elis::$config->elis_program->default_curriculum_role_id, $USER->id, 0, $context_instance->id);
             }
         }
-        */
     }
 
     /**
