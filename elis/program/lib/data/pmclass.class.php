@@ -37,11 +37,6 @@ require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('form/pmclassform.class.php');
 
-//define ('CLSTABLE', 'crlm_class');
-//define ('CLSMOODLETABLE', 'crlm_class_moodle');
-//define ('CLSGRTABLE', 'crlm_class_graded');  // TODO: this is a dup, remove it.
-//define ('CLSTRACKCLS', 'crlm_track_class');
-
 class pmclass extends data_object_with_custom_fields {
     const TABLE = 'crlm_class';
 
