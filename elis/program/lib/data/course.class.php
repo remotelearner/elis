@@ -537,8 +537,7 @@ class course extends data_object_with_custom_fields {
      */
 
     public static function course_recurrence_handler($user) {
-        // TO-DO: re-enable when notifications has been ported
-        //require_once elispm::lib('notifications.php');
+        require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
         $sendtouser       = elis::$config->elis_program->notify_courserecurrence_user;

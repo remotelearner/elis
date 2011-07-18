@@ -31,8 +31,7 @@ require_once elispm::lib('contexts.php');
 require_once elispm::file('curriculumcoursepage.class.php');
 require_once elispm::file('form/courseform.class.php');
 require_once elispm::file('pmclasspage.class.php');
-
-//require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');  // missing
+require_once elispm::file('rolepage.class.php');
 
 class coursepage extends managementpage {
     var $data_class = 'course';
@@ -370,7 +369,6 @@ class coursepage extends managementpage {
         global $USER;
 
         //make sure a valid role is set
-        /* TO-DO: re-enable after rolepage is ported
         if(!empty(elis::$config->elis_program->default_course_role_id) && record_exists('role', 'id', elis::$config->elis_program->default_course_role_id)) {
 
             //get the context instance for capability checking
@@ -382,7 +380,6 @@ class coursepage extends managementpage {
                 role_assign(elis::$config->elis_program->default_course_role_id, $USER->id, 0, $context_instance->id);
             }
         }
-        */
     }
 
     /**
