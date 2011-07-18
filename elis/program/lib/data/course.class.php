@@ -28,6 +28,7 @@ require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/curriculum.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
+require_once elispm::lib('data/pmclass.class.php');
 
 class course extends data_object_with_custom_fields {
     const TABLE = 'crlm_course';
@@ -603,6 +604,10 @@ class course extends data_object_with_custom_fields {
 	public function delete() {
         $level = context_level_base::get_custom_context_level('course', 'elis_program');
         delete_context($level,$this->id);
+
+        //delete associated classes
+        $filter = new field_filter('courseid', $this->id);
+        pmclass::delete_records($filter, $this->_db);
 
         parent::delete();
     }
