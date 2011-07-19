@@ -1314,9 +1314,9 @@ class student extends elis_data_object {
         }
 
         $params = array();
-        $CRSNAME_LIKE = $this->_db->sql_like('crs.name', ':crs_like');
-        $CRSNAME_STARTSWITH = $this->_db->sql_like('crs.name', ':crs_startswith');
-        $CLSID_LIKE = $this->_db->sql_like('cls.idnumber', ':clsid');
+        $CRSNAME_LIKE = $this->_db->sql_like('crs.name', ':crs_like', FALSE);
+        $CRSNAME_STARTSWITH = $this->_db->sql_like('crs.name', ':crs_startswith', FALSE);
+        $CLSID_LIKE = $this->_db->sql_like('cls.idnumber', ':clsid', FALSE);
 
         $select  = 'SELECT wat.id wlid, wat.position, cls.idnumber clsid, crs.name, cls.*';
         $tables  = 'FROM {'. waitlist::TABLE .'} wat ';
@@ -1377,9 +1377,9 @@ class student extends elis_data_object {
 
         $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
-        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like', FALSE);
+        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like', FALSE);
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
         $select  = 'SELECT stu.* ';
         $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
@@ -1438,8 +1438,8 @@ class student extends elis_data_object {
 
         $params = array();
         $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like');
-        $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
+        $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like', FALSE);
+        $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
         $select  = 'SELECT COUNT(stu.id) ';
         $tables  = 'FROM {'. student::TABLE .'} stu ';
@@ -1485,8 +1485,8 @@ class student extends elis_data_object {
 
         $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like', FALSE);
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
         $select  = 'SELECT COUNT(stu.id) ';
         $tables  = 'FROM {'. student::TABLE .'} stu ';
@@ -1530,9 +1530,9 @@ class student extends elis_data_object {
 
         $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
-        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like', FALSE);
+        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like', FALSE);
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
 //        $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, usr.type as description, ' .
         $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, ' .
@@ -1623,9 +1623,9 @@ class student extends elis_data_object {
     function count_users_avail($namesearch = '', $alpha = '') {
         $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
-        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like', FALSE);
+        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like', FALSE);
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
         $select  = 'SELECT COUNT(usr.id) ';
         $tables  = 'FROM {'. user::TABLE .'} usr ';
@@ -1715,9 +1715,9 @@ class student extends elis_data_object {
 
         $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
-        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like', FALSE);
+        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like', FALSE);
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
 //        $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, usr.type as description, ' .
         $select  = 'SELECT usr.id, usr.idnumber, ' . $FULLNAME . ' as name, ' .
@@ -1774,9 +1774,9 @@ class student extends elis_data_object {
 
         $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like');
-        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like', FALSE);
+        $IDNUMBER_LIKE = $this->_db->sql_like('usr.idnumber', ':id_like', FALSE);
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
         $select  = 'SELECT COUNT(usr.id) ';
         $tables  = 'FROM {'. user::TABLE .'} usr ';
@@ -2255,9 +2255,9 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
     global $DB;
     $params = array();
     $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like'); // 'name' breaks
-    $IDNUMBER_LIKE = $DB->sql_like('usr.idnumber', ':id_like');
-    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
+    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like', FALSE); // 'name' breaks
+    $IDNUMBER_LIKE = $DB->sql_like('usr.idnumber', ':id_like', FALSE);
+    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
     $select  = 'SELECT stu.* ';
     $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
@@ -2305,8 +2305,8 @@ function student_count_records($classid, $namesearch = '', $alpha = '') {
     global $DB;
     $params = array();
     $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like');
-    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
+    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like', FALSE);
+    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
     $select  = 'SELECT COUNT(stu.id) ';
     $tables  = 'FROM {'. student::TABLE .'} stu ';

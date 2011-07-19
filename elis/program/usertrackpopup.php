@@ -91,8 +91,8 @@ window.opener.location = "<?php echo htmlspecialchars_decode($target->url); ?>";
 
 // find all users not enrolled in the track
 $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-$NAMELIKE = $DB->sql_like($FULLNAME, ':namesearch');
-$ALPHA_LIKE = $DB->sql_like($FULLNAME, ':lastname');
+$NAMELIKE = $DB->sql_like($FULLNAME, ':namesearch', FALSE);
+$ALPHA_LIKE = $DB->sql_like($FULLNAME, ':lastname', FALSE);
 
 $select = 'SELECT usr.*, ' . $FULLNAME . ' AS name ';
 $sql = 'FROM {' . user::TABLE . '} usr '

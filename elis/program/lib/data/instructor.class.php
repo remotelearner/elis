@@ -380,8 +380,8 @@ class instructor extends elis_data_object {
 
         $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like', FALSE);
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
         $select  = 'SELECT usr.id, ' . $FULLNAME . ' as name, usr.idnumber, ' .
                    'ins.classid, ins.userid, ins.assigntime, ins.completetime ';
@@ -461,8 +461,8 @@ class instructor extends elis_data_object {
         global $CFG;
         $params = array();
         $FULLNAME = $this->_db->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like');
-        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith');
+        $FULLNAME_LIKE = $this->_db->sql_like($FULLNAME, ':name_like', FALSE);
+        $LASTNAME_STARTSWITH = $this->_db->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
         $select  = 'SELECT COUNT(usr.id) ';
         $tables  = 'FROM {'. user::TABLE .'} usr ';
@@ -561,9 +561,9 @@ function instructor_get_listing($classid, $sort = 'name', $dir = 'ASC', $startre
     global $DB;
     $params = array();
     $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like');
-    $IDNUMBER_LIKE = $DB->sql_like('usr.idnumber', ':id_like');
-    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
+    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like', FALSE);
+    $IDNUMBER_LIKE = $DB->sql_like('usr.idnumber', ':id_like', FALSE);
+    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
     $select  = 'SELECT ins.* ';
     $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
@@ -613,16 +613,16 @@ function instructor_count_records($classid, $namesearch = '', $alpha='') {
     global $DB;
     $params = array();
     $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like');
-    $IDNUMBER_LIKE = $DB->sql_like('usr.idnumber', ':id_like');
-    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith');
+    $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like', FALSE);
+    $IDNUMBER_LIKE = $DB->sql_like('usr.idnumber', ':id_like', FALSE);
+    $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith', FALSE);
 
     $select  = 'SELECT COUNT(ins.id) ';
     $tables  = 'FROM {'. instructor::TABLE .'} ins ';
     $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
     $on      = 'ON ins.userid = usr.id ';
     $where   = 'ins.classid = :clsid ';
-    $params['clsid'] = $classid; 
+    $params['clsid'] = $classid;
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);

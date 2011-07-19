@@ -893,8 +893,8 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
     global $USER, $DB;
 
     $params = array();
-    $NAMESEARCH_LIKE = $DB->sql_like('trk.name', ':search_namesearch');
-    $ALPHA_LIKE = $DB->sql_like('trk.name', ':search_alpha');
+    $NAMESEARCH_LIKE = $DB->sql_like('trk.name', ':search_namesearch', FALSE);
+    $ALPHA_LIKE = $DB->sql_like('trk.name', ':search_alpha', FALSE);
 
     $select = 'SELECT trk.*, cur.name AS parcur, (SELECT COUNT(*) ' .
               'FROM {' . trackassignment::TABLE . '} '.
@@ -1003,8 +1003,8 @@ function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $
 
     //$LIKE = $this->_db->sql_compare();
     $params = array();
-    $NAMESEARCH_LIKE = $DB->sql_like('name', ':search_namesearch');
-    $ALPHA_LIKE = $DB->sql_like('name', ':search_alpha');
+    $NAMESEARCH_LIKE = $DB->sql_like('name', ':search_namesearch', FALSE);
+    $ALPHA_LIKE = $DB->sql_like('name', ':search_alpha', FALSE);
 
     $where = array('defaulttrack = 0');
 
@@ -1091,8 +1091,8 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
     global $DB;
 
     $params = array();
-    $NAMESEARCH_LIKE = $DB->sql_like('cls.idnumber', ':search_namesearch');
-    $ALPHA_LIKE = $DB->sql_like('cls.idnumber', ':search_alpha');
+    $NAMESEARCH_LIKE = $DB->sql_like('cls.idnumber', ':search_namesearch', FALSE);
+    $ALPHA_LIKE = $DB->sql_like('cls.idnumber', ':search_alpha', FALSE);
 
     $select = 'SELECT trkassign.*, cls.idnumber as clsname, cls.id as clsid, enr.enrolments, curcrs.required ';
     $tables = ' FROM {' . trackassignment::TABLE . '} trkassign ';
@@ -1151,8 +1151,8 @@ function track_assignment_count_records($trackid, $namesearch = '', $alpha = '')
 
     //$LIKE = $this->_db->sql_compare();
     $params = array();
-    $NAMESEARCH_LIKE = $DB->sql_like('cls.idnumber', ':search_namesearch');
-    $ALPHA_LIKE = $DB->sql_like('cls.idnumber', ':search_alpha');
+    $NAMESEARCH_LIKE = $DB->sql_like('cls.idnumber', ':search_namesearch', FALSE);
+    $ALPHA_LIKE = $DB->sql_like('cls.idnumber', ':search_alpha', FALSE);
 
     $select = 'SELECT COUNT(*) ';
     $tables = ' FROM {' . trackassignment::TABLE . '} trkassign ';

@@ -113,8 +113,8 @@ class waitlist extends elis_data_object {
 
         $params = array();
         $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':search_fullname');
-        $LASTNAME_LIKE = $DB->sql_like('usr.lastname', ':search_lastname');
+        $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':search_fullname', FALSE);
+        $LASTNAME_LIKE = $DB->sql_like('usr.lastname', ':search_lastname', FALSE);
 
         $select   = 'SELECT watlst.id, usr.id as uid, '. $FULLNAME .' as name, usr.idnumber, usr.country, usr.language, watlst.timecreated ';
 
@@ -180,8 +180,8 @@ class waitlist extends elis_data_object {
         $select = '';
         $params = array();
         $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':search_fullname');
-        $LASTNAME_LIKE = $DB->sql_like('usr.lastname', ':search_lastname');
+        $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':search_fullname', FALSE);
+        $LASTNAME_LIKE = $DB->sql_like('usr.lastname', ':search_lastname', FALSE);
 
         $select = 'SELECT COUNT(watlist.id) ';
         $tables = 'FROM {'. waitlist::TABLE .'} watlist ';
@@ -268,7 +268,7 @@ class waitlist extends elis_data_object {
         if(empty($this->position)) {
             //SELECT MIN(userid) FROM eli_crlm_wait_list WHERE 1
             // TBD: MAX(postion) or MAX(wl.position) ???
-            $sql = 'SELECT MAX(position) as max 
+            $sql = 'SELECT MAX(position) as max
                     FROM {'. waitlist::TABLE .'}  wl
                     WHERE wl.classid = ? ';
             $max_record = $this->_db->get_record_sql($sql, array($this->classid));

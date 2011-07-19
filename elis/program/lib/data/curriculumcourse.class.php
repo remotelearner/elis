@@ -696,14 +696,14 @@ function curriculumcourse_get_listing($curid, $sort='position', $dir='ASC', $sta
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $name_like = $DB->sql_like('crs.name', '?');
+        $name_like = $DB->sql_like('crs.name', '?', FALSE);
 
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
         $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $name_like = $DB->sql_like('crs.name', '?');
+        $name_like = $DB->sql_like('crs.name', '?', FALSE);
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
         $params[] = "$alpha%";
     }
@@ -736,14 +736,14 @@ function curriculumcourse_count_records($curid, $namesearch = '', $alpha = '') {
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $name_like = $DB->sql_like('crs.name', '?');
+        $name_like = $DB->sql_like('crs.name', '?', FALSE);
 
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
         $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $name_like = $DB->sql_like('crs.name', '?');
+        $name_like = $DB->sql_like('crs.name', '?', FALSE);
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
         $params[] = "$alpha%";
     }
@@ -784,14 +784,14 @@ function curriculumcourse_get_curriculum_listing($crsid, $sort='position', $dir=
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $name_like = $DB->sql_like('cur.name', '?');
+        $name_like = $DB->sql_like('cur.name', '?', FALSE);
 
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
         $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $name_like = $DB->sql_like('cur.name', '?');
+        $name_like = $DB->sql_like('cur.name', '?', FALSE);
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
         $params[] = "$alpha%";
     }
@@ -831,14 +831,14 @@ function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $al
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $name_like = $DB->sql_like('cur.name', '?');
+        $name_like = $DB->sql_like('cur.name', '?', FALSE);
 
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
         $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $name_like = $DB->sql_like('cur.name', '?');
+        $name_like = $DB->sql_like('cur.name', '?', FALSE);
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
         $params[] = "$alpha%";
     }

@@ -797,15 +797,15 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
 
-        $name_like = $DB->sql_like('crs.name', '?');
-        $idnumber_like = $DB->sql_like('crs.idnumber', '?');
+        $name_like = $DB->sql_like('crs.name', '?', FALSE);
+        $idnumber_like = $DB->sql_like('crs.idnumber', '?', FALSE);
 
         $where[] = "(($name_like) OR ($idnumber_like))";
         $params += array("%$namesearch%", "%$namesearch%");
     }
 
     if ($alpha) {
-        $name_like = $DB->sql_like('crs.name', '?');
+        $name_like = $DB->sql_like('crs.name', '?', FALSE);
         $where[] = (!empty($where) ? ' AND ' : '') . "($name_like)";
         $params[] = "$alpha%";
     }
@@ -834,7 +834,6 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
     return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
-
 function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
     global $DB;
 
@@ -842,15 +841,15 @@ function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
     $params = array();
 
     if (!empty($namesearch)) {
-        $name_like     = $DB->sql_like('name', '?');
-        $idnumber_like = $DB->sql_like('idnumber', '?');
+        $name_like     = $DB->sql_like('name', '?', FALSE);
+        $idnumber_like = $DB->sql_like('idnumber', '?', FALSE);
 
         $where[] = "(($name_like) OR ($idnumber_like))";
         $params += array("%$namesearch%", "%$namesearch%");
     }
 
     if ($alpha) {
-        $name_like = $DB->sql_like('name', '?');
+        $name_like = $DB->sql_like('name', '?', FALSE);
         $where[] = "($name_like)";
         $params[] = "$alpha%";
     }

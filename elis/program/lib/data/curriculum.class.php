@@ -616,14 +616,14 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
     if ($contexts !== null && !empty($namesearch)) {
         $namesearch = trim($namesearch);
 
-        $name_like = $DB->sql_like('name', '?');
+        $name_like = $DB->sql_like('name', '?', FALSE);
 
         $where[] = "($name_like)";
         $params += array("%$namesearch%");
     }
 
     if ($alpha) {
-        $name_like = $DB->sql_like('name', '?');
+        $name_like = $DB->sql_like('name', '?', FALSE);
         $where[] = "($name_like)";
         $params[] = "$alpha%";
     }
@@ -705,14 +705,14 @@ function curriculum_count_records($namesearch = '', $alpha = '', $contexts = nul
     $params = array();
 
     if (!empty($namesearch)) {
-        $name_like = $DB->sql_like('name', '?');
+        $name_like = $DB->sql_like('name', '?', FALSE);
 
         $where[] = "($name_like)";
         $params[] = "%$namesearch%";
     }
 
     if ($alpha) {
-        $name_like = $DB->sql_like('name', '?');
+        $name_like = $DB->sql_like('name', '?', FALSE);
         $where[] = "($name_like)";
         $params[] = "$alpha%";
     }
