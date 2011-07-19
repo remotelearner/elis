@@ -74,7 +74,7 @@ class pmclass extends data_object_with_custom_fields {
             'foreignidfield' => 'classid'
         ),
         'trackclass' => array(
-            'class' => 'track',
+            'class' => 'trackassignment',
             'foreignidfield' => 'classid'
         ),
     );
