@@ -225,9 +225,9 @@ class block_curr_admin extends block_base {
         $pages = array_merge($pages, array(
                 new menuitem('customfields', new menuitempage('customfieldpage', '', array('level' => 'user')), null, '',
                              block_curr_admin_get_item_css_class('customfields')),
-                //new menuitem('clusterclassification',
-                //             new menuitempage('clusterclassificationpage', 'plugins/cluster_classification/clusterclassificationpage.class.php'),
-                //             null, get_string('cluster_classification', 'crlm_cluster_classification'), block_curr_admin_get_item_css_class('clusterclassification')),
+                new menuitem('clusterclassification',
+                             new menuitempage('usersetclassificationpage', 'plugins/userset_classification/usersetclassificationpage.class.php'),
+                             null, get_string('userset_classification', 'pmplugins_userset_classification'), block_curr_admin_get_item_css_class('clusterclassification')),
 
                 //Information Elements
                 //new menuitem('info', null, 'root', get_string('informationalelements', 'block_curr_admin'),

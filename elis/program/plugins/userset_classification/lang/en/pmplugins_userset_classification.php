@@ -16,4 +16,12 @@ $string['manageclusterclassifications'] = 'Userset classifications';
 $string['name'] = 'Name';
 $string['same_classification'] = 'Same classification';
 $string['shortname'] = 'Short name';
+$string['usersetclassificationform:autoenrol_groups'] = 'Help with autoenrolling users in groups';
+$string['usersetclassificationform:autoenrol_groups_help'] = '<p>Enabling this setting allows groups to be automatically created for user population based on cluster enrolment
+  by default.</p><p>For this functionality to work, cluster group auto-assignment must be enabled globally for either the site or course level.</p>';
+$string['usersetclassificationform:autoenrol_groupings'] = 'Help with autoenrolling users in groupings';
+$string['usersetclassificationform:autoenrol_groupings_help'] = '<p>Enabling this setting allows groupings to be automatically created for groups that are created automatically based on clusters
+   by default.</p><p>For this functionality to work, cluster grouping auto-assignment must be enabled globally for the site level and groupings must also be
+   enabled on this site. This functionality does not currently extend to groups in courses.</p>';
+$string['userset_classification'] = 'Userset Classifications';
 

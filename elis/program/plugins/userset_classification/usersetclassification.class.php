@@ -36,8 +36,7 @@ class usersetclassification extends elis_data_object {
 
     static $associations = array();
 
-    var $verbose_name = 'cluster classification';
-    var $params = NULL;
+    var $verbose_name = 'userset_classification';
 
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('cluster', 'elis_program');
@@ -54,10 +53,9 @@ class usersetclassification extends elis_data_object {
     }
 
     function __set($name, $value) {
-        $this->$name = $value;
         if (strncmp($name,'param_',6) == 0) {
             $paramname = substr($name,6);
-            $params = unserialize($this->params);
+            $params = empty($this->params) ? array(): unserialize($this->params);
             $params[$paramname] = $value;
             $this->params = serialize($params);
         } else {
@@ -75,24 +73,8 @@ class usersetclassification extends elis_data_object {
         }
     }
 
-    /* not used anymore
-    function data_load_array($data) {
-        if (!parent::data_load_array($data)) {
-            return false;
-        }
-
-        foreach ($data as $key => $value) {
-            if (strncmp($key,'param_',6) === 0) {
-                $this->$key = $value;
-            }
-        }
-
-        return true;
-    }
-    */
-
     public function set_from_data($data) {
-        $fields = array('autoenrol_curricula', 'autoenrol_tracks', 'child_classification');
+        $fields = array('autoenrol_curricula', 'autoenrol_tracks', 'child_classification', 'autoenrol_groups', 'autoenrol_groupings');
         foreach ($fields as $field) {
             $fieldname = "param_{$field}";
             if (isset($data->$fieldname)) {
@@ -100,7 +82,7 @@ class usersetclassification extends elis_data_object {
             }
         }
 
-        return parent::set_from_data($data);
+        $this->_load_data_from_record($data, true);
     }
 
     public function __toString() {
@@ -113,6 +95,26 @@ class usersetclassification extends elis_data_object {
             $arr["param_$key"] = $value;
         }
         return $arr;
+    }
+
+    /**
+     * Add params fields to the form object
+     */
+    public function to_object() {
+        $obj = parent::to_object();
+
+        $fields = array('autoenrol_curricula', 'autoenrol_tracks', 'child_classification', 'autoenrol_groups', 'autoenrol_groupings');
+        foreach ($fields as $field) {
+            $field_name = "param_{$field}";
+            if (isset($this->$field_name)) {
+                $obj->$field_name = $this->$field_name;
+            }
+        }
+        return $obj;
+    }
+
+    function get_verbose_name() {
+        return $this->verbose_name;
     }
 
     static function get_for_cluster($cluster) {

@@ -616,9 +616,9 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
     }
 
     if (isset($extrafilters['classification'])) {
-        require_once(elis::plugin_file('elisfields_cluster_classification', 'lib.php'));
+        require_once(elis::plugin_file('elisfields_userset_classification', 'lib.php'));
         $contextlevel = context_level_base::get_custom_context_level('cluster', 'elis_program');
-        $field = new field(field::get_for_context_level_with_name($contextlevel, CLUSTER_CLASSIFICATION_FIELD));
+        $field = new field(field::get_for_context_level_with_name($contextlevel, USERSET_CLASSIFICATION_FIELD));
 
         $filters[] = new elis_field_filter($field, 'id', $contextlevel, $extrafilters['classification']);
     }
@@ -771,9 +771,9 @@ function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = ar
     }
 
     if (isset($extrafilters['classification'])) {
-        require_once(elis::plugin_file('elisfields_cluster_classification', 'lib.php'));
+        require_once(elis::plugin_file('elisfields_userset_classification', 'lib.php'));
         $contextlevel = context_level_base::get_custom_context_level('cluster', 'elis_program');
-        $field = new field(field::get_for_context_level_with_name($contextlevel, CLUSTER_CLASSIFICATION_FIELD));
+        $field = new field(field::get_for_context_level_with_name($contextlevel, USERSET_CLASSIFICATION_FIELD));
 
         $filters[] = new elis_field_filter($field, 'id', $contextlevel, $extrafilters['classification']);
     }
