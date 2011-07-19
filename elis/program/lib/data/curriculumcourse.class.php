@@ -63,7 +63,7 @@ class curriculumcourse extends elis_data_object {
     protected $_dbfield_timeperiod;
     protected $_dbfield_position;
     protected $_dbfield_timecreated;
-    protected $_dbfield_timemodifieid;
+    protected $_dbfield_timemodified;
 
     static $delete_is_complex = true;
 
