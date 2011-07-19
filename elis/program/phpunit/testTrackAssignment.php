@@ -98,7 +98,7 @@ class trackassignmentTest extends PHPUnit_Framework_TestCase {
     /**
      * Test that data class has correct DB fields
      */
-    public function testDBfields() {
+    public function testTrackAssignmentHasCorrectDBFields() {
         $testobj = new trackassignment(false, null, array(), false, array(), $this->origdb);
         $this->assertTrue($testobj->_test_dbfields(), 'Error(s) with class $_dbfield_ properties.');
     }
@@ -106,7 +106,7 @@ class trackassignmentTest extends PHPUnit_Framework_TestCase {
     /**
      * Test that data class has correct associations
      */
-    public function testAssociations() {
+    public function testTrackAssignmentHasCorrectAssociations() {
         $testobj = new trackassignment(false, null, array(), false, array(), $this->origdb);
         $this->assertTrue($testobj->_test_associations(), 'Error(s) with class associations.');
     }
@@ -114,7 +114,7 @@ class trackassignmentTest extends PHPUnit_Framework_TestCase {
     /**
      * Test that a record can be created in the database.
      */
-    public function testCreateRecord() {
+    public function testTrackAssignmentCanCreateRecord() {
         $this->markTestIncomplete('In development.');
         // create a record
         $src = new trackassignment(false, null, array(), false, array(), $this->overlaydb);
@@ -134,7 +134,7 @@ class trackassignmentTest extends PHPUnit_Framework_TestCase {
     /**
      * Test that a record can be modified.
      */
-    public function testUpdate() {
+    public function testTrackAssignmentCanUpdateRecord() {
         $this->markTestIncomplete('In development.');
         $this->load_csv_data();
 

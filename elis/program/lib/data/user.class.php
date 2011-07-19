@@ -67,7 +67,7 @@ class user extends data_object_with_custom_fields {
             'foreignidfield' => 'userid'
         ),
         'clusterassignments' => array(
-            'class' => 'usercluster',
+            'class' => 'clusterassignment',
             'foreignidfield' => 'userid'
         ),
         'programassignments' => array(
