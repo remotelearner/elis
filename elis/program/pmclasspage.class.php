@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/classmoodlecourse.class.php');
@@ -319,13 +321,13 @@ class pmclasspage extends managementpage {
 
         $id = required_param('id', PARAM_INT);
         $force = optional_param('force', 0, PARAM_INT);
+        $confirm = optional_param('confirm', 0, PARAM_INT);
 
-        if($DB->count_records(student::TABLE, array('classid'=>$id)) && $force != 1) {
+        if($DB->count_records(student::TABLE, array('classid'=>$id)) && $force != 1 && $confirm != 1) {
             $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1));
             notify(get_string('pmclass_delete_warning', 'elis_program'), 'errorbox');
-            echo '<center><a href="' . $target->url . '">'. get_string('pmclass_delete_warning_continue', 'elis_program') . '</a></center>';
-        }
-        else {
+            echo '<center><a href="'.$target->url.'">'.get_string('pmclass_delete_warning_continue', 'elis_program').'</a></center>';
+        } else {
             parent::do_delete();
         }
     }

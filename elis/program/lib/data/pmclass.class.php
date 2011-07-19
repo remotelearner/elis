@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/course.class.php');
@@ -936,15 +938,15 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
 
-        $crslike = $DB->sql_like('crs.name', '?');
-        $clslike = $DB->sql_like('cls.idnumber', '?');
+        $crslike = $DB->sql_like('crs.name', '?', FALSE);
+        $clslike = $DB->sql_like('cls.idnumber', '?', FALSE);
 
         $where[] = "(($crslike) OR ($clslike))";
         $params += array("%$namesearch%", "%$namesearch%");
     }
 
     if ($alpha) {
-        $crslike = $DB->sql_like('crs.name', '?');
+        $crslike = $DB->sql_like('crs.name', '?', FALSE);
         $where[] = "($crslike)";
         $params[] = "$alpha%";
     }
@@ -1020,15 +1022,15 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
     $params = array();
 
     if (!empty($namesearch)) {
-        $crslike = $DB->sql_like('crs.name', '?');
-        $clslike = $DB->sql_like('cls.idnumber', '?');
+        $crslike = $DB->sql_like('crs.name', '?', FALSE);
+        $clslike = $DB->sql_like('cls.idnumber', '?', FALSE);
 
         $where[] = "(($crslike) OR ($clslike))";
         $params += array("%$namesearch%", "%$namesearch%");
     }
 
     if ($alpha) {
-        $crslike = $DB->sql_like('crs.name', '?');
+        $crslike = $DB->sql_like('crs.name', '?', FALSE);
         $where[] = "($crslike)";
         $params[] = "$alpha%";
     }

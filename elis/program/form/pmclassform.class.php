@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::file('form/cmform.class.php');
 
 MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/elis/program/form/timeselector.php", 'cm_time_selector');
