@@ -44,12 +44,12 @@ $string['all_items_assigned'] = 'All available items assigned.';
 $string['breadcrumb_trackassignmentpage'] = 'Assign Classes';
 $string['breadcrumb_usertrackpage'] = 'Assign Tracks';
 $string['breadcrumb_trackuserpage'] = 'Assign Users';
-$string['breadcrumb_userclusterpage'] = 'Assign Clusters';
+$string['breadcrumb_userclusterpage'] = 'Assign User Sets';
 $string['breadcrumb_clusteruserpage'] = 'Assign Users';
 $string['breadcrumb_clustertrackpage'] = 'Assign Tracks';
-$string['breadcrumb_trackclusterpage'] = 'Assign Clusters';
+$string['breadcrumb_trackclusterpage'] = 'Assign User Sets';
 $string['breadcrumb_clustercurriculumpage'] = 'Assign Curricula';
-$string['breadcrumb_curriculumclusterpage'] = 'Assign Clusters';
+$string['breadcrumb_curriculumclusterpage'] = 'Assign User Sets';
 $string['breadcrumb_coursecurriculumpage'] = 'Assign Curricula';
 $string['breadcrumb_curriculumcoursepage'] = 'Assign Courses';
 $string['breadcrumb_studentpage'] = 'Assign Students';
@@ -126,7 +126,7 @@ $string['learningplanname'] = 'Learning Plan: $a';
 $string['learningplanintro'] = 'Learning Plan: You have completed $a->percent ($a->coursescomplete of $a->coursestotal) of your current learning plan.';
 $string['learningplanwelcome'] = 'Welcome $a';
 $string['manageclasses'] = 'Manage Classes';
-$string['manageclusters'] = 'Manage Clusters';
+$string['manageclusters'] = 'Manage User Sets';
 $string['managecourses'] = 'Manage Courses';
 $string['managecurricula'] = 'Manage Curricula';
 $string['managecurriculums'] = 'Manage Curricula'; // For naively language string convention
@@ -178,7 +178,7 @@ $string['curr_admin:manageusers'] = 'Manage Curriculum Users';
 $string['curr_admin:managetags'] = 'Manage Curriculum Tags';
 $string['curr_admin:manageenvironments'] = 'Manage Curriculum Environments';
 $string['curr_admin:managetracks'] = 'Manage Curriculum Tracks';
-$string['curr_admin:manageclusters'] = 'Manage Curriculum Clusters';
+$string['curr_admin:manageclusters'] = 'Manage Curriculum User Sets';
 
 $string['curr_admin:notify_classcomplete'] = "Receive class completion notifications";
 $string['curr_admin:notify_classenrol'] = "Receive class enrollment notifications";
@@ -211,19 +211,19 @@ $string['curr_admin:curriculum:create'] = 'Create curricula';
 $string['curr_admin:curriculum:edit'] = 'Edit curricula';
 $string['curr_admin:curriculum:delete'] = 'Delete curricula';
 $string['curr_admin:curriculum:enrol'] = 'Manage curriculum enrolments';
-$string['curr_admin:curriculum:enrol_cluster_user'] = 'Manage cluster users\' curriculum enrolments';
+$string['curr_admin:curriculum:enrol_cluster_user'] = 'Manage User Set users\' curriculum enrolments';
 $string['curr_admin:track:view'] = 'View tracks';
 $string['curr_admin:track:create'] = 'Create tracks';
 $string['curr_admin:track:edit'] = 'Edit tracks';
 $string['curr_admin:track:delete'] = 'Delete tracks';
 $string['curr_admin:track:enrol'] = 'Manage track enrolments';
-$string['curr_admin:track:enrol_cluster_user'] = 'Manage cluster users\' track enrolments';
-$string['curr_admin:cluster:view'] = 'View clusters';
-$string['curr_admin:cluster:create'] = 'Create clusters';
-$string['curr_admin:cluster:edit'] = 'Edit clusters';
-$string['curr_admin:cluster:delete'] = 'Delete clusters';
-$string['curr_admin:cluster:enrol'] = 'Manage cluster membership';
-$string['curr_admin:cluster:enrol_cluster_user'] = 'Manage cluster users\' sub-cluster membership';
+$string['curr_admin:track:enrol_cluster_user'] = 'Manage User Set users\' track enrolments';
+$string['curr_admin:cluster:view'] = 'View User Sets';
+$string['curr_admin:cluster:create'] = 'Create User Sets';
+$string['curr_admin:cluster:edit'] = 'Edit User Sets';
+$string['curr_admin:cluster:delete'] = 'Delete User Sets';
+$string['curr_admin:cluster:enrol'] = 'Manage User Set membership';
+$string['curr_admin:cluster:enrol_cluster_user'] = 'Manage User Set users\' user subset membership';
 $string['curr_admin:course:view'] = 'View courses';
 $string['curr_admin:course:create'] = 'Create courses';
 $string['curr_admin:course:edit'] = 'Edit courses';
@@ -233,12 +233,12 @@ $string['curr_admin:class:create'] = 'Create classes';
 $string['curr_admin:class:edit'] = 'Edit classes';
 $string['curr_admin:class:delete'] = 'Delete classes';
 $string['curr_admin:class:enrol'] = 'Manage class enrolments';
-$string['curr_admin:class:enrol_cluster_user'] = 'Manage cluster users\' class enrolments';
+$string['curr_admin:class:enrol_cluster_user'] = 'Manage User Set users\' class enrolments';
 $string['curr_admin:user:view'] = 'View users';
 $string['curr_admin:user:create'] = 'Create users';
 $string['curr_admin:user:edit'] = 'Edit users';
 $string['curr_admin:user:delete'] = 'Delete users';
-$string['curr_admin:cluster:role_assign_cluster_users'] = 'Only assign roles in a cluster to to cluster members';
+$string['curr_admin:cluster:role_assign_cluster_users'] = 'Only assign roles in a user set to to user set members';
 $string['curr_admin:associate'] = 'Associate curriculum management items';
 
 // Error Messages for print_error.
@@ -349,7 +349,7 @@ $string['curriculum_remcourse'] = 'Remove course';
 $string['curriculum_reqcredits'] = ' Required Credits';
 $string['curriculum_shortdescription'] = 'Short description';
 $string['unassociated'] = 'Unassociated';
-$string['clustcpyclustname'] = 'Cluster';
+$string['clustcpyclustname'] = 'User Set';
 $string['clustcpycurname'] = 'Curriculum';
 $string['clustcpyadd'] = 'Add';
 $string['clustcpytrkcpy'] = 'Copy Tracks';
@@ -362,8 +362,8 @@ $string['currcopy_mdlcrs_autocreatenew'] = 'Auto-create from template';
 $string['currcopy_mdlcrs_link'] = 'Link to existing course';
 $string['saveexit'] = 'Save and Exit';
 $string['clscpycurr'] = 'Copy Curriculum';
-$string['clscpycurr_instruction'] = 'Use the copy button to make a copy of a curriculum and link it to this cluster.';
-$string['clsaddcurr_instruction'] = 'Use the add drop down to LINK this cluster to a curriculum.';
+$string['clscpycurr_instruction'] = 'Use the copy button to make a copy of a curriculum and link it to this user set.';
+$string['clsaddcurr_instruction'] = 'Use the add drop down to LINK this user set to a curriculum.';
 $string['clustcpycurr'] = 'Curriculum $a->name copied to $a->newname';
 $string['failcurrcpycrs'] = 'Courses from curriculum $a->name could not be copied because the curriculum failed to copy';
 $string['clustcpycurrcrs'] = 'Copied curriculum $a->name courses';
@@ -469,7 +469,7 @@ $string['usercurricula'] = 'Curriculum';
 $string['usereducation'] = 'Highest education obtained';
 $string['userreligion'] = 'Religion or Church Affiliation';
 $string['userlanguage'] = 'Language preferred for courses. (Courses in languages other than English are limited)';
-$string['usercluster'] = 'Group/Cluster Name';
+$string['usercluster'] = 'Group/User-Set Name';
 $string['usercomments'] = 'Any comments?';
 $string['useremail2'] = '*To assure accuracy re-enter your e-mail address';
 $string['submittext'] = 'Within a few minutes, you will receive by e-mail confirmation of your registration.';
@@ -535,7 +535,7 @@ $string['enrol_all_users_now'] = 'Enrol all users from this track now';
 $string['induser'] = 'My User Report';
 $string['Class_Activity_by_Course_Group'] = 'Class Activity by Course Group';
 $string['Class_Activity_Report_with_Role_Parameter'] = 'Class Activity Report with Role Parameter';
-$string['Course_Completion_By_Cluster_New'] = 'Course Completion by Cluster';
+$string['Course_Completion_By_Cluster_New'] = 'Course Completion by User Set';
 $string['Course_Completion_Gas_Gauge'] = 'Course Completion Gas Gauge';
 $string['Forum_Participation'] = 'Forum Participation';
 $string['New_Registrants_by_Student'] = 'New Registrants grouped by Student';
@@ -555,34 +555,34 @@ $string['unassign'] = 'unassign';
 
 //assignpage
     //deassign page
-$string['deassign_confirmation'] = 'Are you sure you want to deassign $a->username from cluster \"$a->clustername\"?  Note that the user may still be assigned to the cluster due to automatic cluster assignment plugins.';
+$string['deassign_confirmation'] = 'Are you sure you want to deassign {$a->username} from user set "{$a->clustername}"?  Note that the user may still be assigned to the user set due to automatic user set assignment plugins.';
 
 $string['autoenrolcrumb'] = 'Autoenrol user in tracks?';
-$string['deassigncrumb'] = 'Confirm deassigning user from cluster';
+$string['deassigncrumb'] = 'Confirm deassigning user from user set';
 
 $string['unknown_action'] = 'Error: unknown action \'$a\'';
 
-$string['autoassign_cluster_header'] = 'Automatically assigned clusters';
-$string['manualassign_cluster_header'] = 'Manually assigned clusters';
+$string['autoassign_cluster_header'] = 'Automatically assigned user sets';
+$string['manualassign_cluster_header'] = 'Manually assigned user sets';
 $string['autoassign_user_header'] = 'Automatically assigned users';
 $string['manualassign_user_header'] = 'Manually assigned users';
 
 $string['none'] = 'None';
-$string['manual_clusters_message'] = 'All available clusters manually assigned.';
+$string['manual_clusters_message'] = 'All available user sets manually assigned.';
 
 //assignpopup
-$string['assign_user_cluster'] = '$a->site: Assign users to cluster \"$a->name\"';
-$string['cluster_manual_options'] =  'Please select the options for assigning user \"$a->fullname\" to cluster \"$a->name\".';
+$string['assign_user_cluster'] = '{$a->site}: Assign users to user set "{$a->name}"';
+$string['cluster_manual_options'] =  'Please select the options for assigning user "{$a->fullname}" to user set "{$a->name}".';
 $string['cluster_manual_autoenrol_label'] = 'Autoenrol in tracks';
-$string['cluster_manual_autoenrol_help'] = 'Should the user be automatically enrolled in tracks associated with the cluster.';
-$string['cluster_manual_leader_label'] = 'Cluster leader';
-$string['cluster_manual_leader_help'] = 'Is the user a leader of the cluster.';
-$string['cluster_user_assigned'] = 'Assigned $a user(s) to the cluster.';
+$string['cluster_manual_autoenrol_help'] = 'Should the user be automatically enrolled in tracks associated with the user set.';
+$string['cluster_manual_leader_label'] = 'User Set leader';
+$string['cluster_manual_leader_help'] = 'Is the user a leader of the user set.';
+$string['cluster_user_assigned'] = 'Assigned {$a} user(s) to the user set.';
 
 $string['empty'] = 'empty';
 $string['no_matching_users'] = 'No matching users.';
 
-$string['click_user'] = 'Click on a user to add him/her to the cluster.';
+$string['click_user'] = 'Click on a user to add him/her to the user set.';
 $string['click_user_enrol_track'] = 'Click on a user to enrol him/her in the track.';
 
 $string['close_window'] = 'Close window';
@@ -610,39 +610,39 @@ $string['current'] = 'Current';
 $string['overdue_zero'] = 'Overdue: 0 days';
 $string['overdue'] = 'Overdue: ';
 
-$string['subclusters'] = 'Sub-clusters';
-$string['associate_cluster'] = 'Associate clusters with ';
+$string['subclusters'] = 'User Subsets';
+$string['associate_cluster'] = 'Associate user sets with ';
 $string['associate_curricula'] = 'Associate curricula with ';
 $string['associate_tracks'] = 'Associate tracks with ';
 
 $string['all_curricula_associated'] = 'All available curricula associated.';
-$string['all_clusters_associated'] = 'All available clusters associated.';
+$string['all_clusters_associated'] = 'All available user sets associated.';
 $string['all_tracks_associated'] = 'All available tracks associated.';
 
-$string['no_tracks_cluster'] = 'No tracks associated with this cluster.';
-$string['no_cluster_curriculum'] = 'No clusters associated with this curriculum.';
-$string['no_cluster_track'] = 'No clusters associated with this track.';
+$string['no_tracks_cluster'] = 'No tracks associated with this user set.';
+$string['no_cluster_curriculum'] = 'No user sets associated with this curriculum.';
+$string['no_cluster_track'] = 'No user sets associated with this track.';
 
 $string['no_associate_caps_class'] = 'You cannot associate any classes because do not have the block:curr_admin/associate capability on any classes.';
-$string['no_associate_caps_cluster'] = 'You cannot associate any clusters because do not have the block:curr_admin/associate capability on any clusters.';
+$string['no_associate_caps_cluster'] = 'You cannot associate any user sets because do not have the block:curr_admin/associate capability on any user sets.';
 $string['no_associate_caps_course'] = 'You cannot associate any courses because do not have the block:curr_admin/associate capability on any courses.';
 $string['no_associate_caps_curriculum'] = 'You cannot associate any curricula because do not have the block:curr_admin/associate capability on any curricula.';
 $string['no_associate_caps_track'] = 'You cannot associate any tracks because do not have the block:curr_admin/associate capability on any tracks.';
 
-$string['disassociate_cluster_curriculum'] = 'Are you sure you want to disassociate cluster \"$a->name\" from curriculum \"$a->curriculum\"?';
-$string['disassociate_cluster_track'] = 'Are you sure you want to disassociate cluster \"$a->cluster\" from track \"$a->track\"?';
+$string['disassociate_cluster_curriculum'] = 'Are you sure you want to disassociate user set "{$a->name}" from curriculum "{$a->curriculum}"?';
+$string['disassociate_cluster_track'] = 'Are you sure you want to disassociate user set "{$a->cluster}" from track "{$a->track}"?';
 
-$string['confirm_cluster_curriculum'] = 'Confirm disassociating cluster from curriculum';
-$string['confirm_cluster_track'] = 'Confirm disassociating cluster from track';
+$string['confirm_cluster_curriculum'] = 'Confirm disassociating user set from curriculum';
+$string['confirm_cluster_track'] = 'Confirm disassociating user set from track';
 $string['confirm_user_track'] = 'Confirm unenrolling user from track';
 
 $string['confirm_unenrol_student_track'] = 'Are you sure you want to unenrol \"$a->name\" from track \"$a->track\"?';
 
-$string['confirm_delete_cluster'] = 'Are you sure you want to delete the cluster \"name: $a\"?';
-$string['confirm_delete_with_subclusters'] = 'Are you sure you want to delete the cluster \"name: $a->name\"?  This cluster has $a->subclusters sub-cluster(s).';
-$string['confirm_delete_with_subclusters_and_descendants'] = 'Are you sure you want to delete the cluster \"name: $a->name\"?  This cluster has $a->subclusters sub-cluster(s) and $a->descendants other descendant clusters.';
-$string['deletesubs'] = 'Delete sub-clusters';
-$string['promotesubs'] = 'Promote sub-clusters to top-level clusters';
+$string['confirm_delete_cluster'] = 'Are you sure you want to delete the user set "name: {$a}"?';
+$string['confirm_delete_with_subclusters'] = 'Are you sure you want to delete the user set "name: {$a->name}"?  This user set has {$a->subclusters} user subset(s).';
+$string['confirm_delete_with_subclusters_and_descendants'] = 'Are you sure you want to delete the user set "name: {$a->name}"?  This user set has {$a->subclusters} user subset(s) and {$a->descendants} other descendant user sets.';
+$string['deletesubs'] = 'Delete user subsets';
+$string['promotesubs'] = 'Promote user subsets to top-level user sets';
 
 $string['confirm_delete_class'] = 'Are you sure you want to delete the class \"name: $a->name id: $a->idnumber\"?';
 $string['confirm_delete_course'] = 'Are you sure you want to delete the course \"name: $a->name / id: $a->idnumber\"?';
@@ -668,7 +668,7 @@ $string['delete_student_note'] = 'NOTE: This will delete all records for this st
 
 $string['curric_assigned_for_user'] = 'A curriculum is already assigned for this user.';
 
-$string['add_cluster'] = 'Add Cluster';
+$string['add_cluster'] = 'Add User Set';
 $string['add_classes'] = 'Add Class';
 
 $string['filter'] = 'Filter';
@@ -732,14 +732,14 @@ $string['course_addcourse_crumb'] = 'Adding a new course';
 $string['moodlecourse'] = 'Moodle course';
 $string['class_attached_course'] = 'This class is already attached to the Moodle course';
 
-$string['edit_cluster'] = 'Edit cluster';
+$string['edit_cluster'] = 'Edit User Set';
 
-$string['cluster_name'] = 'Cluster Name';
-$string['cluster_description'] = 'Cluster Description';
-$string['cluster_parent'] = 'Parent Cluster';
+$string['cluster_name'] = 'User Set Name';
+$string['cluster_description'] = 'User Set Description';
+$string['cluster_parent'] = 'Parent User Set';
 $string['cluster_top_level'] = 'Top Level';
-$string['cluster_subcluster_prompt'] = 'Assign existing cluster as a sub-cluster';
-$string['cluster_assigned'] = 'Sub-cluster assigned to cluster';
+$string['cluster_subcluster_prompt'] = 'Assign existing user set as a user subset';
+$string['cluster_assigned'] = 'User Subset assigned to user set';
 
 $string['display'] = 'Display:';
 $string['userassociation'] = 'User association';
@@ -898,14 +898,14 @@ $string['no_student_matching'] = 'No students matching ';
 $string['no_course_matching'] = 'No courses matching ';
 $string['no_curricula_matching'] = 'No curricula matching ';
 $string['no_environment_matching'] = 'No environments matching ';
-$string['no_matching_clusters'] = 'No clusters matching $a';
+$string['no_matching_clusters'] = 'No user sets matching {$a}';
 $string['no_matching_track_assign'] = 'No track assignment match ';
 
 $string['complete'] = 'Complete';
 $string['incomplete'] = 'Incomplete';
 $string['last_activity'] = 'Last Activity';
-$string['cluster'] = 'Cluster';
-$string['clusters'] = 'Clusters';
+$string['cluster'] = 'User Set';
+$string['clusters'] = 'User Sets';
 $string['waiting'] = 'Waiting';
 
 $string['waitlist'] = 'waitlist';
@@ -999,8 +999,8 @@ $string['create_custom_student_curric'] = 'Create custom student curriculum';
 
 $string['class_id_number'] = 'Class Id Number';
 $string['auto_enrol'] = 'Auto-enrol';
-$string['auto_enrol_cluster_curriculum'] = 'Auto-enrol users into this curriculum when they are added to this cluster';
-$string['auto_enrol_cluster_track'] = 'Auto-enrol users into this track when they are added to this cluster';
+$string['auto_enrol_cluster_curriculum'] = 'Auto-enrol users into this curriculum when they are added to this user set';
+$string['auto_enrol_cluster_track'] = 'Auto-enrol users into this track when they are added to this user set';
 $string['auto_enrol_long'] = 'Auto-enrol users into this class when they are added to this track';
 $string['auto_enrol_warning'] = 'NOTE: this class is set to auto-enrol users, but is not from a required course in the curriculum.  The auto-enrol function only applies to required courses, so users will not be auto-enrolled in this class.';
 $string['no_auto_enrol'] = 'NOTE: The auto-enrol flag cannot be set for this class in this track, because the associated courses is not a required course in the curriculum.';
@@ -1071,7 +1071,7 @@ $string['restrict_to_elis_enrolment_plugin'] = 'Only allow enrolments to Moodle 
 $string['block_curr_admin_settings'] = 'Curriculum Administration Block Settings';
 $string['num_block_icons'] = 'Number of entity icons to display before collapsing';
 $string['error_num_block_icons'] = 'Please enter an integer value of one or more';
-$string['display_clusters_at_top_level'] = 'Display Clusters as the Top Level';
+$string['display_clusters_at_top_level'] = 'Display User Sets as the Top Level';
 $string['display_curricula_at_top_level'] = 'Display Curricula at the Top Level';
 
 $string['curr_admin'] = 'Curriculum Administration';
@@ -1193,35 +1193,35 @@ $string['health_check_link'] = 'The <a href=\"$a/curriculum/index.php?s=health\"
 
 // Auto-association editing page
 $string['info_group_association'] = 'Association Information';
-$string['info_group_cluster'] = 'Cluster Information';
+$string['info_group_cluster'] = 'User Set Information';
 $string['info_group_curriculum'] = 'Curriculum Information';
 $string['info_group_track'] = 'Track Information';
 
 // "More" links in curr admin menu
-$string['menu_summary_item_userset'] = '{$a} more clusters...';
+$string['menu_summary_item_userset'] = '{$a} more user sets...';
 $string['menu_summary_item_curriculum'] = '{$a} more curricula...';
 $string['menu_summary_item_clustercurriculum'] = '{$a} more curricula...';
-$string['menu_summary_item_curriculumcluster'] = '{$a} more clusters...';
+$string['menu_summary_item_curriculumcluster'] = '{$a} more user sets...';
 $string['menu_summary_item_curriculumcourse'] = '{$a} more courses...';
 $string['menu_summary_item_track'] = '{$a} more tracks...';
-$string['menu_summary_item_trackcluster'] = '{$a} more clusters...';
+$string['menu_summary_item_trackcluster'] = '{$a} more user sets...';
 $string['menu_summary_item_trackassignment'] = '{$a} more classes...';
 $string['menu_summary_item_pmclass'] = '{$a} more classes...';
 
-$string['menu_summary_item_userset_singular'] = '{$a} more cluster...';
+$string['menu_summary_item_userset_singular'] = '{$a} more user set...';
 $string['menu_summary_item_curriculum_singular'] = '{$a} more curriculum...';
 $string['menu_summary_item_clustercurriculum_singular'] = '{$a} more curriculum...';
-$string['menu_summary_item_curriculumcluster_singular'] = '{$a} more cluster...';
+$string['menu_summary_item_curriculumcluster_singular'] = '{$a} more user set...';
 $string['menu_summary_item_curriculumcourse_singular'] = '{$a} more course...';
 $string['menu_summary_item_track_singular'] = '{$a} more track...';
-$string['menu_summary_item_trackcluster_singular'] = '{$a} more cluster...';
+$string['menu_summary_item_trackcluster_singular'] = '{$a} more user set...';
 $string['menu_summary_item_trackassignment_singular'] = '{$a} more class...';
 $string['menu_summary_item_pmclass_singular'] = '{$a} more class...';
 
 // Default CM entity roles
 $string['default_role_assignment_settings'] = 'Default Role Assignment Settings';
 $string['no_default_role'] = 'N/A';
-$string['default_cluster_role_id'] = 'Default Cluster Role';
+$string['default_cluster_role_id'] = 'Default User Set Role';
 $string['default_curriculum_role_id'] = 'Default Curriculum Role';
 $string['default_course_role_id'] = 'Default Course Role';
 $string['default_class_role_id'] = 'Default Class Role';

@@ -53,8 +53,8 @@ $string['assign'] = 'Assign';
 $string['assign_selected'] = 'Assign Selected';
 $string['assigned'] = 'Assigned';
 $string['assigntime'] = 'Assigned Time';
-$string['association_clustercurriculum'] = 'Associate Userset';
-$string['association_clustertrack'] = 'Associate Userset';
+$string['association_clustercurriculum'] = 'Associate User Set';
+$string['association_clustertrack'] = 'Associate User Set';
 $string['association_curriculumcourse'] = 'Associate Program';
 $string['association_info_group'] = 'Association Information';
 $string['association_instructor'] = 'Associate Instructor';
@@ -65,7 +65,7 @@ $string['autocreate'] = 'Auto Create Moodle course from template';
 $string['auto_collapse_setting'] = 'Number of curricula to display before automatically collapsing';
 $string['auto_create_help'] = 'Moodle courses that are linked to ELIS classes are marked as having been auto-created or created manually since ELIS 1.8.7. For courses created prior to 1.8.7, the auto-created status is unknown. This setting indicates whether these courses should be treated as having been auto-created or not.
 
-Currently, this only affects the functionality for copying curricula to a cluster.';
+Currently, this only affects the functionality for copying curricula to a user set.';
 $string['auto_create_setting'] = 'Moodle courses with unknown status treated as auto-created';
 $string['auto_create_settings'] = 'Auto-create Settings';
 $string['auto_idnumber_help'] = 'Automatically set a Moodle user\'s ID number to be the same as his/her username if he/she does not have one already set.
@@ -134,11 +134,11 @@ $string['clear'] = 'Clear';
 $string['clustcpycurr'] = 'Curriculum {$a->name} copied to {$a->newname}';
 $string['cluster'] = 'User Set';
 $string['clusters'] = 'User Sets';
-$string['cluster_grp_settings'] = 'Cluster Group Settings';
-$string['cluster_role_help'] = 'This is the default role to assign to a Curriculum Management user in any clusters they create.
-This type of role assignment will not take place for a particular cluster if that user is already permitted to edit that cluster.
+$string['cluster_grp_settings'] = 'User Set Group Settings';
+$string['cluster_role_help'] = 'This is the default role to assign to a Curriculum Management user in any user sets they create.
+This type of role assignment will not take place for a particular user set if that user is already permitted to edit that user set.
 To disable this functionality, select "N/A" from the list.';
-$string['cluster_role_setting'] = 'Default Cluster Role';
+$string['cluster_role_setting'] = 'Default User Set Role';
 $string['completionform:completion_grade'] = 'Completion grade';
 $string['completionform:completion_grade_help'] = '<p>Minimum grade the learner must received to identify the element as &ldquo;completed&rdquo;.</p>';
 $string['completionform:course_idnumber'] = 'ID Number';
@@ -376,24 +376,24 @@ $string['field_sync_from_moodle'] = 'Use values from Moodle';
 $string['field_sync_to_moodle'] = 'Copy values to Moodle';
 $string['field_syncwithmoodle'] = 'Sync with Moodle';
 $string['form_error'] = 'Selection page form error - expecting array!';
-$string['fp_grp_cluster_help'] = 'Enabling these setting allows the Curriculum Management system to automatically add users to groups in Moodle courses based on cluster membership. Groups will be created as needed.
+$string['fp_grp_cluster_help'] = 'Enabling these setting allows the Curriculum Management system to automatically add users to groups in Moodle courses based on user set membership. Groups will be created as needed.
 
-For this to work, the associated cluster setting must be turned on for each appropriate cluster as well.
+For this to work, the associated user set setting must be turned on for each appropriate user set as well.
 
-Also, be cautious when enabling these setting, as it will cause the Curriculum Management system to immediately search for all appropriate users across all necessary clusters, which may take a long time.';
-$string['fp_grp_cluster_setting'] = 'Allow front page grouping creation from cluster-based groups';
-$string['fp_pop_clusters_setting'] = 'Allow front page group population from clusters';
+Also, be cautious when enabling these setting, as it will cause the Curriculum Management system to immediately search for all appropriate users across all necessary user sets, which may take a long time.';
+$string['fp_grp_cluster_setting'] = 'Allow front page grouping creation from user-set-based groups';
+$string['fp_pop_clusters_setting'] = 'Allow front page group population from user sets';
 $string['frequency'] = 'Frequency';
 
-$string['grp_pop_cluster_setting'] = 'Allow course-level group population from clusters';
+$string['grp_pop_cluster_setting'] = 'Allow course-level group population from user sets';
 
 $string['health_checking'] = "Checking...\n<ul>\n";
 $string['health_check_link'] = 'The <a href="{$a->wwwroot}/elis/program/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
-$string['health_cluster_orphans'] = 'Orphaned clusters found!';
-$string['health_cluster_orphansdesc'] = 'There are {$a->count} sub-clusters which have had their parent clusters deleted.<br/><ul>';
-$string['health_cluster_orphansdescnone'] = 'There were no orphaned clusters found.';
+$string['health_cluster_orphans'] = 'Orphaned user sets found!';
+$string['health_cluster_orphansdesc'] = 'There are {$a->count} user subsets which have had their parent user sets deleted.<br/><ul>';
+$string['health_cluster_orphansdescnone'] = 'There were no orphaned user sets found.';
 $string['health_cluster_orphanssoln'] = 'From the command line change to the directory {$a->dirroot}/elis/program/scripts<br/>
-                Run the script fix_cluster_orphans.php to convert all clusters with missing parent clusters to top-level.';
+                Run the script fix_cluster_orphans.php to convert all user sets with missing parent user sets to top-level.';
 $string['health_completion'] = 'Completion export';
 $string['health_completiondesc'] = 'The Completion Export block, which conflicts with Integration Point, is present.';
 $string['health_completionsoln'] = 'The completion export block should be automatically removed when the site is properly upgraded via CVS or git.
@@ -471,7 +471,7 @@ $string['manage_pmclass'] = 'Manage Class Instances';
 $string['manage_student'] = 'Manage Students';
 $string['manage_track'] = 'Manage Tracks';
 $string['manage_user'] = 'Manage users';
-$string['manage_userset'] = 'Manage user sets';
+$string['manage_userset'] = 'Manage User Sets';
 $string['manage_usersetclassification'] = 'Manage user set classifications';
 $string['moodle_field_sync_warning'] = '* <strong>Warning:</strong> this field is set to synchronize with Moodle user profile fields, but there is no Moodle profile field with the same short name.';
 $string['moodlecourse'] = 'Moodle course';
@@ -501,8 +501,8 @@ $string['norolesexist'] = 'There are currently no roles that users can be assign
 $string['norolespermitted'] = 'There are currently no roles you have sufficient permissions to assign users on this entity. For further details, contact a site administrator.';
 $string['notemplate'] = 'Could not auto-create Moodle course: no template defined in course.  Created class without an associated Moodle course.';
 $string['notice_class_deleted'] = 'Deleted the class instance {$a->idnumber}';
-$string['notice_clustercurriculum_deleted'] = 'Deleted the cluster/track association {$a->id}';
-$string['notice_clustertrack_deleted'] = 'Deleted the cluster/track association {$a->id}';
+$string['notice_clustercurriculum_deleted'] = 'Deleted the user-set/track association {$a->id}';
+$string['notice_clustertrack_deleted'] = 'Deleted the user-set/track association {$a->id}';
 $string['notice_course_deleted'] = 'Deleted the course description named {$a->name} (ID number: {$a->idnumber})';
 $string['notice_curriculum_deleted'] = 'Deleted the program named {$a->name} (ID number: {$a->idnumber})';
 $string['notice_curriculumcourse_deleted'] = 'Deleted the program/course description association {$a->id}';
@@ -671,9 +671,9 @@ $string['time_period'] = 'Timeperiod';
 $string['time_settings'] = 'Time Settings';
 $string['tips_time_format'] = "The format of this is ' *h, *d, *w, *m, *y ' (representing hours, days, weeks, months and years - where * can be any number) Each format must be separated by a comma";
 $string['time_to_complete'] = 'Time to complete';
-$string['top_clusters_help'] = 'This setting controls whether existing clusters are listed at the top level of the Curriculum Administration block.
+$string['top_clusters_help'] = 'This setting controls whether existing user sets are listed at the top level of the Curriculum Administration block.
 When changing the value of this setting, please navigate to another page to determine whether this functionality is working as expected.';
-$string['top_clusters_setting'] = 'Display Clusters as the Top Level';
+$string['top_clusters_setting'] = 'Display User Sets as the Top Level';
 $string['top_curricula_help'] = 'This setting controls whether existing curricula are listed at the top level of the Curriculum Administration block.
 When changing the value of this setting, please navigate to another page to determine whether this functionality is working as expected.';
 $string['top_curricula_setting'] = 'Display Curricula at the Top Level';
@@ -789,11 +789,11 @@ $string['userset_top_level'] = 'Top level';
 $string['userset_user_assigned'] = 'Assigned {$a} user(s) to the user set.';
 $string['userset_userassociation'] = 'User association';
 $string['usersettrack_autoenrol'] = 'Auto-enrol';
-$string['usersettrack_auto_enrol'] = 'Auto-enrol users into this track when they are added to this cluster';
+$string['usersettrack_auto_enrol'] = 'Auto-enrol users into this track when they are added to this user set';
 $string['usersettrackform:autoenrol'] = 'Auto-enrol';
-$string['usersettrackform:autoenrol_help'] = '<p>If this box is checked then new users will be enrolled in this track when they are added to this cluster.</p>';
+$string['usersettrackform:autoenrol_help'] = '<p>If this box is checked then new users will be enrolled in this track when they are added to this user set.</p>';
 $string['usersfound'] = '{$a} users found';
-$string['usersubsets'] = 'User subsets';
+$string['usersubsets'] = 'User Subsets';
 
 $string['waiting'] = 'Waiting';
 $string['waitinglistform_title'] = 'Class is full';
