@@ -100,7 +100,7 @@ $string['duration_months'] = 'Months';
 $string['elisversion'] = 'ELIS Version';
 $string['add'] = 'Add';
 $string['elis_doc_class_link'] = '<strong>Documentation for ELIS</strong> &mdash; we have over 200
-pages of documentation for ELIS in our <a href=\"http://training.remote-learner.net/course/view.php?id=1090\">ELIS Support Course</a>.
+pages of documentation for ELIS in our <a href="http://training.remote-learner.net/course/view.php?id=1090">ELIS Support Course</a>.
 You can access this course by logging in as a guest.  If you have problems
 accessing this course, please contact your sales representative.';
 $string['enddate'] = 'End Date';
@@ -338,7 +338,7 @@ $string['classcompletionreport'] = 'Class Completion Report';
 // Student form string.
 $string['student_deleteconfirm'] = 'Are you sure you want to unenrol the student name: $a ?<br />'.
                                    'NOTE: This will delete all records for this student in this class and will unenrol them from any connected Moodle class!';
-$string['grade_update_warning'] = '<div><strong>Note:</strong> updating grades for individual completion elements on this screen will not automatically update the class grade or completion status.</div>';
+$string['grade_update_warning'] = '<div><strong>Note:</strong> updating grades for individual learning objectives on this screen will not automatically update the class grade or completion status.</div>';
 
 // Curriculum form strings.
 $string['curriculum_edit'] = 'Edit User';
@@ -647,7 +647,7 @@ $string['promotesubs'] = 'Promote sub-clusters to top-level clusters';
 $string['confirm_delete_class'] = 'Are you sure you want to delete the class \"name: $a->name id: $a->idnumber\"?';
 $string['confirm_delete_course'] = 'Are you sure you want to delete the course \"name: $a->name / id: $a->idnumber\"?';
 $string['confirm_delete_student'] = 'Are you sure you want to delete the student \"name: $a\"?<br />';
-$string['confirm_delete_completion'] = 'Are you sure you want to delete the completion element \"name: $a\"?';
+$string['confirm_delete_completion'] = 'Are you sure you want to delete the learning objective "name: {$a}"?';
 $string['confirm_delete_curric_course'] = 'Are you sure you want to delete the curriculum course \"name: $a->name / id: $a->id.\"?';
 $string['confirm_delete_curriculum'] = 'Are you sure you want to delete the curriculum \"name: $a\"?';
 $string['confirm_delete_environment'] = 'Are you sure you want to delete the environment \"name: $a\"?';
@@ -795,7 +795,7 @@ $string['completion_grade'] = 'Completion grade';
 $string['required'] = 'Required';
 $string['id_exists'] = 'Specified ID number already exists; ID number must be unique.';
 
-$string['edit_course_completion_element'] = 'Edit Course Completion Element';
+$string['edit_course_completion_element'] = 'Edit Course Learning Objective';
 $string['edit_course_corequisites'] = 'Edit Course Corequisites';
 $string['edit_course_prerequisites'] = 'Edit Course Prerequisites';
 
@@ -969,7 +969,7 @@ $string['adding_new_environment'] = 'Adding a new environment';
 $string['no_available_curric_for_course'] = 'There are no available curricula to add to this course';
 $string['no_available_course_for_curric'] = 'There are no available courses to add to this curriculum';
 $string['choose_report_from_menu'] = 'Please choose a report from the menu.';
-$string['completion_elements'] = 'Completion Elements';
+$string['completion_elements'] = 'Learning Objectives';
 
 $string['completion_idnumber'] = 'ID Number';
 $string['completion_name'] = 'Name';
@@ -977,10 +977,10 @@ $string['completion_description'] = 'Description';
 
 $string['assign_tracks'] = 'Assign tracks for ';
 
-$string['no_completion_elements'] = 'There are no completion elements defined.';
-$string['editing_completion_element'] = 'Editing Completion Element';
-$string['deleting_completion_element'] = 'Deleting Completion Element';
-$string['adding_completion_element'] = 'Adding Completion Element';
+$string['no_completion_elements'] = 'There are no learning objectives defined.';
+$string['editing_completion_element'] = 'Editing Learning Objective';
+$string['deleting_completion_element'] = 'Deleting Learning Objective';
+$string['adding_completion_element'] = 'Adding Learning Objective';
 
 $string['invalid_curriculum_id'] = 'Invalid curriculum ID specified';
 $string['invalid_course_id'] = 'Invalid course ID specified ($a)';
