@@ -703,12 +703,12 @@ function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $
     $current_path = '';
     if (in_array($type, array('userset', 'curriculum', 'course', 'track', 'pmclass'))) {
         $current_path = $type . '-' . $instance->id;
-        
+
         if (!empty($parent_path)) {
             $current_path = $parent_path . '/' . $current_path;
         }
     }
-    
+
     //put key info into this id for later use
     $result->contentElId = "{$type}_{$instance->id}_{$parent_cluster_id}_{$parent_curriculum_id}_{$current_path}";
 
@@ -909,7 +909,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
             $item->id = $item->courseid;
             $params = array('id'     => $item->id,
                             'action' => 'view');
-                            
+
             $class_count = pmclass_count_records('', '', $item->id, false, null, $parent_cluster_id);
 
             $isLeaf = empty($class_count);
@@ -940,7 +940,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
 
             $isLeaf = empty($class_count) &&
                       empty($cluster_count);
-                                            
+
             $result_items[] = block_curr_admin_get_menu_item('track', $track_record, 'root', $track_css_class, $parent_cluster_id, $parent_curriculum_id, $params, $isLeaf, $parent_path);
         }
     }
@@ -1260,7 +1260,7 @@ function block_curr_admin_get_report_tree_items() {
             //convert to a menu item
             $css_class = block_curr_admin_get_item_css_class('schedulereports');
             $schedule_reports_item = new menuitem('schedule_reports', $schedule_reports_page, 'rept', get_string('schedule_reports', 'block_php_report'), $css_class, '', FALSE, 'rept');
-            //merge in with the current result 
+            //merge in with the current result
             $items = array_merge(array($schedule_reports_item), $items);
         }
     }
@@ -1269,7 +1269,8 @@ function block_curr_admin_get_report_tree_items() {
     $buckets = array();
 
     //look for all report instances
-    if ($handle = opendir($CFG->dirroot . '/blocks/php_report/instances')) {
+    if (file_exists($CFG->dirroot . '/blocks/php_report/instances') &&
+        $handle = opendir($CFG->dirroot . '/blocks/php_report/instances')) {
         while (FALSE !== ($report_shortname = readdir($handle))) {
 
             //grab a test instance of the report in question
