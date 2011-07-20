@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elis::lib('data/data_object.class.php'); // TBD: was datarecord
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/student.class.php');

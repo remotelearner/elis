@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 
 /* Add these back in as they are migrated

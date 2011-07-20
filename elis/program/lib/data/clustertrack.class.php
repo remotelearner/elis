@@ -23,6 +23,9 @@
  * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
+
+defined('MOODLE_INTERNAL') || die();
+
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 
 //require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
