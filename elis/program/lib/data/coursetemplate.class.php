@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elis::lib('data/data_object.class.php');
 
 class coursetemplate extends elis_data_object {

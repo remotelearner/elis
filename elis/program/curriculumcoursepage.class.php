@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('associationpage.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/curriculumstudent.class.php');

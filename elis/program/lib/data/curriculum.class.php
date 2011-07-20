@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/course.class.php');

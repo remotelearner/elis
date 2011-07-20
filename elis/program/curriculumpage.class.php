@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('data/curriculum.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
