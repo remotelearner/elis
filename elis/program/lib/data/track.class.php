@@ -69,6 +69,8 @@ class track extends data_object_with_custom_fields {
     protected $_dbfield_startdate;
     protected $_dbfield_enddate;
     protected $_dbfield_defaulttrack;
+    protected $_dbfield_timecreated;
+    protected $_dbfield_timemodified;
 
     private $location;
     private $templateclass;
@@ -581,6 +583,8 @@ class trackassignment extends elis_data_object {
     protected $_dbfield_classid;
     protected $_dbfield_courseid;
     protected $_dbfield_autoenrol;
+    protected $_dbfield_timecreated;
+    protected $_dbfield_timemodified;
 
     private $location;
     private $templateclass;

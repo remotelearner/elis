@@ -51,10 +51,13 @@ class classmoodlecourse extends data_object_with_custom_fields {
 
     protected $_dbfield_classid;
     protected $_dbfield_moodlecourseid;
-    protected $_dbfield_siteconfig;
+    //protected $_dbfield_siteconfig;
     protected $_dbfield_enroltype;
     protected $_dbfield_enrolplugin;
     protected $_dbfield_timemodified;
+    protected $_dbfield_autocreated;
+
+    var $siteconfig = ''; // TBD: not a _dbfield, leave empty?
 
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('course', 'elis_program');
