@@ -97,7 +97,7 @@ $handlers = array (
 
     'user_created' => array (
         'handlerfile'       => '/elis/program/lib/lib.php',
-        'handlerfunction'   => 'cm_moodle_user_to_cm',
+        'handlerfunction'   => 'pm_moodle_user_to_pm',
         'schedule'          => 'instant'
      ),
 
