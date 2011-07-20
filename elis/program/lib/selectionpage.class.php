@@ -159,6 +159,14 @@ abstract class selectionpage extends pm_page { // TBD
         $this->print_js_selection_table($table, $filter, $count, $form, $baseurl);
     }
 
+    /**
+     * Method to be implemented by child classes to display filter settings
+     *
+     * @param  int   $count  number of items matching filter
+     * @param  array $filter the filter array
+     */
+    protected function showfilter($count, $filter) {
+    }
 
     protected function print_js_selection_table($table, $filter, $count, $form, $baseurl) {
         global $CFG, $OUTPUT, $PAGE;
@@ -195,20 +203,7 @@ abstract class selectionpage extends pm_page { // TBD
         $pagingbar = new paging_bar($count, $pagenum, $perpage, $this->get_basepage()->url . ($action ? "&amp;action=$action" : '' )); // TBD: '&amp;'
         echo $OUTPUT->render($pagingbar);
 
-        /* TODO: move to subclasses
-        if (!$count &&
-            (!empty($filter['alpha']) || !empty($filter['namesearch']))) {
-            $nomatchlabel = null;
-            if (!empty($this->data_class)) {
-                $nomatchlabel = 'no_'. $this->data_class .'_matching';
-                if (!get_string_manager()->string_exists($nomatchlabel, self::LANG_FILE)) {
-                    error_log("/elis/program/lib/selectionpage.class.php:: string '{$nomatchlabel}' not found.");
-                    $nomatchlabel = null;
-                }
-            }
-            pmshowmatches($filter['alpha'], $filter['namesearch'], null, $nomatchlabel);
-        }
-        */
+        $this->showfilter($count, $filter);
 
         echo '<div style="float: right">';
         $label = null;

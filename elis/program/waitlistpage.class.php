@@ -72,6 +72,21 @@ class waitlistpage extends selectionpage {
                     get_string('show_all_users', self::LANG_FILE));
     }
 
+    protected function showfilter($count, $filter) {
+        if (!$count &&
+            (!empty($filter['alpha']) || !empty($filter['namesearch']))) {
+            $nomatchlabel = null;
+            if (!empty($this->data_class)) {
+                $nomatchlabel = 'no_'. $this->data_class .'_matching';
+                if (!get_string_manager()->string_exists($nomatchlabel, self::LANG_FILE)) {
+                    error_log("/elis/program/lib/selectionpage.class.php:: string '{$nomatchlabel}' not found.");
+                    $nomatchlabel = null;
+                }
+            }
+            pmshowmatches($filter['alpha'], $filter['namesearch'], null, $nomatchlabel);
+        }
+    }
+
     function get_records($filter) {
         $sort    = $this->optional_param('sort', 'timecreated', PARAM_CLEAN);
         $dir     = $this->optional_param('dir', 'ASC', PARAM_CLEAN);

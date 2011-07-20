@@ -126,6 +126,7 @@ function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get
                                       : get_pm_url($page_or_url, $params);
     if (method_exists($target, 'remove_params')) {
         $target->remove_params($searchname); // TBD: others too???
+        $target->remove_params('mode');
     }
     $query_pos = strpos($target, '?');
     $action_url = ($query_pos !== false) ? substr($target, 0, $query_pos)
