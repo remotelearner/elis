@@ -89,6 +89,8 @@ function xmldb_elis_core_upgrade($oldversion=0) {
             $dbman->create_table($table);
         }
 
+        // core savepoint reached
+        upgrade_plugin_savepoint(true, 2011063000, 'elis', 'core');
     }
     if ($result && $oldversion < 2011071200) {
 
@@ -121,7 +123,6 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         // core savepoint reached
         upgrade_plugin_savepoint(true, 2011071201, 'elis', 'core');
     }
-
 
     return $result;
 }
