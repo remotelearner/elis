@@ -62,10 +62,10 @@ $string['association_student'] = 'Associate Student'; // TBD
 $string['association_trackassignment'] = 'Associate Track';
 $string['association_usertrack'] = 'Associate User';
 $string['autocreate'] = 'Auto Create Moodle course from template';
-$string['auto_collapse_setting'] = 'Number of curricula to display before automatically collapsing';
+$string['auto_collapse_setting'] = 'Number of programs to display before automatically collapsing';
 $string['auto_create_help'] = 'Moodle courses that are linked to ELIS class instances are marked as having been auto-created or created manually since ELIS 1.8.7. For courses created prior to 1.8.7, the auto-created status is unknown. This setting indicates whether these courses should be treated as having been auto-created or not.
 
-Currently, this only affects the functionality for copying curricula to a user set.';
+Currently, this only affects the functionality for copying programs to a user set.';
 $string['auto_create_setting'] = 'Moodle courses with unknown status treated as auto-created';
 $string['auto_create_settings'] = 'Auto-create Settings';
 $string['auto_idnumber_help'] = 'Automatically set a Moodle user\'s ID number to be the same as his/her username if he/she does not have one already set.
@@ -270,7 +270,7 @@ $string['curriculum_idnumber'] = 'ID Number';
 $string['curriculum_description'] = 'Long description';
 $string['curriculum_name'] = 'Name';
 $string['curriculum_reqcredits'] = ' Required Credits';
-$string['curriculum_role_help'] = 'This is the default role to assign to a Program Management user in any curricula they create.
+$string['curriculum_role_help'] = 'This is the default role to assign to a Program Management user in any programs they create.
 This type of role assignment will not take place for a particular program if that user is already permitted to edit that program.
 To disable this functionality, select "N/A" from the list.';
 $string['curriculum_role_setting'] = 'Default Program Role';
@@ -674,9 +674,9 @@ $string['time_to_complete'] = 'Time to complete';
 $string['top_clusters_help'] = 'This setting controls whether existing user sets are listed at the top level of the Program Administration block.
 When changing the value of this setting, please navigate to another page to determine whether this functionality is working as expected.';
 $string['top_clusters_setting'] = 'Display User Sets as the Top Level';
-$string['top_curricula_help'] = 'This setting controls whether existing curricula are listed at the top level of the Program Administration block.
+$string['top_curricula_help'] = 'This setting controls whether existing programs are listed at the top level of the Program Administration block.
 When changing the value of this setting, please navigate to another page to determine whether this functionality is working as expected.';
-$string['top_curricula_setting'] = 'Display Curricula at the Top Level';
+$string['top_curricula_setting'] = 'Display Programs at the Top Level';
 $string['track'] = 'Track';
 $string['trackform:curriculum_curid'] = 'Program';
 $string['trackform:curriculum_curid_help'] = '<p>The program this track is an instance or replica of.</p>';;
