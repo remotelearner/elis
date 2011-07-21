@@ -93,8 +93,6 @@ function manual_field_edit_form_definition($fform) {
     $form->disabledIf('manual_field_options_source', 'manual_field_control', 'eq', 'text');
     $form->disabledIf('manual_field_options_source', 'manual_field_control', 'eq', 'textarea');
     $form->disabledIf('manual_field_options_source', 'manual_field_control', 'eq', 'password');
-    $form->disabledIf('manual_field_options_source', 'datatype', 'eq', 'int');
-    $form->disabledIf('manual_field_options_source', 'datatype', 'eq', 'num');
     $form->disabledIf('manual_field_options_source', 'datatype', 'eq', 'bool');
     $form->setAdvanced('manual_field_options_source');
 
@@ -104,8 +102,6 @@ function manual_field_edit_form_definition($fform) {
     $form->disabledIf('manual_field_options', 'manual_field_control', 'eq', 'text');
     $form->disabledIf('manual_field_options', 'manual_field_control', 'eq', 'textarea');
     $form->disabledIf('manual_field_options', 'manual_field_control', 'eq', 'password');
-    $form->disabledIf('manual_field_options', 'datatype', 'eq', 'int');
-    $form->disabledIf('manual_field_options', 'datatype', 'eq', 'num');
     $form->disabledIf('manual_field_options', 'datatype', 'eq', 'bool');
     $form->disabledIf('manual_field_options', 'manual_field_options_source', 'neq', '');
 
