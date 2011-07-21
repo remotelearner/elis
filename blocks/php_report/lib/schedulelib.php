@@ -624,7 +624,8 @@ class scheduling_page extends workflowpage {
         $export_available = false;
 
         //go through the directories
-        if ($handle = opendir($CFG->dirroot . '/blocks/php_report/instances')) {
+        if (file_exists($CFG->dirroot . '/blocks/php_report/instances') &&
+            $handle = opendir($CFG->dirroot . '/blocks/php_report/instances')) {
 
             while (false !== ($report_shortname = readdir($handle))) {
                 //get the report instance (this inherently checks permissions and report availability)

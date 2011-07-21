@@ -39,7 +39,8 @@ function php_report_filtering_require_dependencies() {
     global $CFG;
 
     //go through the files in the filtering directory
-    if($handle = opendir($CFG->dirroot.'/blocks/php_report/filter')) {
+    if (file_exists($CFG->dirroot . '/blocks/php_report/filter') &&
+        $handle = opendir($CFG->dirroot.'/blocks/php_report/filter')) {
         while (false !== ($file = readdir($handle))) {
             //load filter definition if it's a PHP file
             if(strrpos($file, '.php') == strlen($file) - strlen('.php')) {

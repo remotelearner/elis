@@ -156,7 +156,7 @@ function block_php_report_get_copy_label($parent_label) {
         if ($records = $DB->get_recordset_select('php_report_schedule', $like, array('label' => "%$label%"))) {
             //track whether an exact match was found
             $found = false;
-            
+
             //go through all possible matches
             foreach ($records as $record) {
                 //perform an exact comparison
@@ -278,7 +278,8 @@ function block_php_report_get_names_by_category($require_exportable = false, $us
     }
 
     //go through the directories
-    if ($handle = opendir($CFG->dirroot . '/blocks/php_report/instances')) {
+    if (file_exists($CFG->dirroot . '/blocks/php_report/instances') &&
+        $handle = opendir($CFG->dirroot . '/blocks/php_report/instances')) {
 
         while (false !== ($report_shortname = readdir($handle))) {
             //get the report instance (this inherently checks permissions and report availability)
@@ -302,7 +303,7 @@ function block_php_report_get_names_by_category($require_exportable = false, $us
                     $category_shortname = $instance->get_category();
                     $report_shortname = $instance->get_report_shortname();
                     $category_members[$category_shortname][$report_shortname] = $instance->get_display_name();
-                } 
+                }
             }
         }
 
@@ -351,7 +352,7 @@ function block_php_report_field_capability($owners, $default_view_capability = '
 }
 
 /**
- * Specifies whether a course-level custom field is accessible to the 
+ * Specifies whether a course-level custom field is accessible to the
  * current user in at least once course context
  *
  * @param   array    $owners  shortname-indexed collection of all field owners

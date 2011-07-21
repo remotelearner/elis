@@ -226,7 +226,8 @@ class php_report_block {
         global $CFG, $SESSION;
 
         //This prevents deserialization from breaking
-        if($handle = opendir($CFG->dirroot . '/blocks/php_report/type')) {
+        if (file_exists($CFG->dirroot . '/blocks/php_report/type') &&
+            $handle = opendir($CFG->dirroot . '/blocks/php_report/type')) {
             while (false !== ($file = readdir($handle))) {
                 if(strrpos($file, '.class.php') == strlen($file) - strlen('.class.php')) {
                     require_once($CFG->dirroot . '/blocks/php_report/type/' . $file);
@@ -329,19 +330,19 @@ class php_report_block {
      */
     static function get_report_content_css_classes($base_classname) {
         $css_classes = array();
-        
+
         $current = $base_classname;
-        
+
         //keep grabbing the parent class until you run out of classes
         while ($current !== FALSE) {
             $css_classes[] = $current;
             $current = get_parent_class($current);
         }
-        
+
         //combine all classnames into a string
         return implode(' ', $css_classes);
     }
-    
+
      /**
      * Method that handles executing the report unit, taking
      * caching into account
