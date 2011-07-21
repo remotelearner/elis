@@ -15,24 +15,24 @@ $string['curriculum_expire_enrol_complete'] = 'completed a curriculum';
 $string['curriculum_expiration_start'] = 'Calculate curriculum expiration based on the time a student';
 $string['error_catalog_collapse_count'] = 'Please enter an integer value of one or more';
 
-$string['currentcourses'] = 'Current Classes';
+$string['currentcourses'] = 'Current Class Instances';
 $string['availablecourses'] = 'Curriculum Overview';
 $string['waitlistcourses'] = 'Waitlist Course Descriptions';
-$string['instructedcourses'] = 'Instructed Classes';
-$string['othercourses'] = 'Other Classes';
+$string['instructedcourses'] = 'Instructed Class Instances';
+$string['othercourses'] = 'Other Class Instances';
 $string['waitlist_size'] = 'Waitlist Size';
-$string['class_size'] = 'Class Size';
+$string['class_size'] = 'Class Instance Size';
 $string['position'] = 'Position';
 
-$string['cmclass_delete_warning'] = 'Warning!  Deleting this class will also delete all stored enrollment information for the class.';
-$string['cmclass_delete_warning_continue'] = 'I understand all enrollments for the class will be deleted, continue ...';
+$string['cmclass_delete_warning'] = 'Warning!  Deleting this class instance will also delete all stored enrollment information for the class instance.';
+$string['cmclass_delete_warning_continue'] = 'I understand all enrollments for the class instance will be deleted, continue ...';
 
 $string['viewing_item'] = 'Viewing Item';
 $string['editing_item'] = 'Editing Item';
 $string['adding_item'] = 'Adding Item';
 $string['deleting_item'] = 'Deleting Item';
 
-$string['class_limit'] = 'Class Limit';
+$string['class_limit'] = 'Class Instance Limit';
 $string['enroled'] = 'Enrolled';
 
 $string['num_waitlist'] = 'number of students in the waiting list';
@@ -41,7 +41,7 @@ $string['enrol_confirmation'] = 'you will be placed on a waiting list for this c
 $string['items_found'] = '$a items found.';
 $string['all_items_assigned'] = 'All available items assigned.';
 
-$string['breadcrumb_trackassignmentpage'] = 'Assign Classes';
+$string['breadcrumb_trackassignmentpage'] = 'Assign Class Instances';
 $string['breadcrumb_usertrackpage'] = 'Assign Tracks';
 $string['breadcrumb_trackuserpage'] = 'Assign Users';
 $string['breadcrumb_userclusterpage'] = 'Assign User Sets';
@@ -67,9 +67,9 @@ $string['autocreate'] = 'Auto Create Moodle course from template';
 $string['autocreate_settings'] = 'Auto-create settings';
 $string['autocreated_unknown_is_yes'] = 'Moodle courses with unknown status treated as auto-created';
 $string['blockname'] = 'Program Management';
-$string['chooseclass'] = 'Choose class';
-$string['class'] = 'Class';
-$string['classroster'] = 'Class Roster';
+$string['chooseclass'] = 'Choose class instance';
+$string['class'] = 'Class Instance';
+$string['classroster'] = 'Class Instance Roster';
 $string['completed'] = 'Curriculum Completed';
 $string['completed_label'] = 'Completed';
 $string['completiondate'] = 'Last Completion';
@@ -86,7 +86,7 @@ $string['datecompleted'] = 'Completion Date';
 $string['duplicateuserheader'] = 'Duplicate User Report for site $a->sitename with URL $a->url';
 $string['duplicateuseridnumber'] = 'User idnumber: ';
 $string['duplicateusernumclassenrol'] = 'Number of enrolled Curriculum users: ';
-$string['duplicateusernumcompleted'] = 'Number of enrolled Curriculum users with classes completed: ';
+$string['duplicateusernumcompleted'] = 'Number of enrolled Curriculum users with class instances completed: ';
 $string['duplicateusernumgrades'] = 'Number of enrolled Curriculum users with grade data: ';
 $string['duplicateusernumgradeslocked'] = 'Number of Curriculum users with finalized grade data: ';
 $string['duplicateusernumnogrades'] = 'Number of enrolled Curriculum users without grade data: ';
@@ -107,12 +107,12 @@ $string['enddate'] = 'End Date';
 $string['endtime'] = 'End Time';
 $string['enrolreport'] = 'Enrollment report';
 $string['environment'] = 'Environment';
-$string['help_class'] = 'Class Editing Help';
+$string['help_class'] = 'Class Instance Editing Help';
 $string['help_course'] = 'Course Description Editing Help';
 $string['help_curriculum'] = 'Curriculum Editing Help';
 $string['help_curriculumcourse'] = 'Curriculum Course Description Editing Help';
 $string['help_track'] = 'Track Editing Help';
-$string['help_trackclass'] = 'Track Class Editing Help';
+$string['help_trackclass'] = 'Track Class Instance Editing Help';
 $string['idnumber_already_used'] = 'ID Number is already in use';
 $string['importstudentperformancedata'] = 'Import Student Performance Data';
 $string['informationalelements'] = 'Information Elements';
@@ -125,7 +125,7 @@ $string['learningplan'] = 'Learning Plan';
 $string['learningplanname'] = 'Learning Plan: $a';
 $string['learningplanintro'] = 'Learning Plan: You have completed $a->percent ($a->coursescomplete of $a->coursestotal) of your current learning plan.';
 $string['learningplanwelcome'] = 'Welcome $a';
-$string['manageclasses'] = 'Manage Classes';
+$string['manageclasses'] = 'Manage Class Instances';
 $string['manageclusters'] = 'Manage User Sets';
 $string['managecourses'] = 'Manage Course Descriptions';
 $string['managecurricula'] = 'Manage Curricula';
@@ -139,7 +139,7 @@ $string['managecurriculumcourses'] = 'Manage Curriculum Course Descriptions';
 $string['managetags'] = 'Manage Tags';
 $string['managetracks'] = 'Manage Tracks';
 $string['manageusers'] = 'Manage Users';
-$string['noclassyet'] = 'No Class Yet';
+$string['noclassyet'] = 'No Class Instance Yet';
 $string['nolearningplan'] = 'You do not currently have a learning plan assigned';
 $string['noarchivedplan'] = 'You do not currently have any archived learning plans';
 $string['noncomplete'] = 'Non-Complete';
@@ -169,7 +169,7 @@ $string['viewstationusers'] = 'View Station Users';
 
 // Capability strings.
 $string['curr_admin:config'] = 'Configure curriculum management settings';
-$string['curr_admin:manageclasses'] = 'Manage Curriculum Classes';
+$string['curr_admin:manageclasses'] = 'Manage Curriculum Classe Instances';
 $string['curr_admin:managecourses'] = 'Manage Curriculum Course Descriptions';
 $string['curr_admin:managecurricula'] = 'Manage Curriculum Curricula';
 $string['curr_admin:manageelements'] = 'Manage Curriculum Elements';
@@ -180,10 +180,10 @@ $string['curr_admin:manageenvironments'] = 'Manage Curriculum Environments';
 $string['curr_admin:managetracks'] = 'Manage Curriculum Tracks';
 $string['curr_admin:manageclusters'] = 'Manage Curriculum User Sets';
 
-$string['curr_admin:notify_classcomplete'] = "Receive class completion notifications";
-$string['curr_admin:notify_classenrol'] = "Receive class enrollment notifications";
-$string['curr_admin:notify_classnotstart'] = "Receive class not started notifications";
-$string['curr_admin:notify_classnotcomplete'] = "Receive class not completed notifications";
+$string['curr_admin:notify_classcomplete'] = "Receive class instance completion notifications";
+$string['curr_admin:notify_classenrol'] = "Receive class instance enrollment notifications";
+$string['curr_admin:notify_classnotstart'] = "Receive class instance not started notifications";
+$string['curr_admin:notify_classnotcomplete'] = "Receive class instance not completed notifications";
 $string['curr_admin:notify_coursedue'] = "Receive course description due to begin notifications";
 $string['curr_admin:notify_courserecurrence'] = "Receive course description expiration notifications";
 $string['curr_admin:notify_curriculumcomplete'] = "Receive curriculum completed notifications";
@@ -197,7 +197,7 @@ $string['curr_admin:viewownreports'] = 'Can view own reports';
 $string['curr_admin:viewreports'] = 'Can view reports for all users';
 $string['curr_admin:viewusers'] = 'Can view user profiles';
 $string['curr_admin:viewcoursecatalog'] = 'Can view learning plan';
-$string['curr_admin:overrideclasslimit'] = 'Can over enrol a class';
+$string['curr_admin:overrideclasslimit'] = 'Can over enrol a class instance';
 $string['curr_admin:tag:view'] = 'View tags';
 $string['curr_admin:tag:create'] = 'Create tags';
 $string['curr_admin:tag:edit'] = 'Edit tags';
@@ -228,12 +228,12 @@ $string['curr_admin:course:view'] = 'View course descriptions';
 $string['curr_admin:course:create'] = 'Create course descriptions';
 $string['curr_admin:course:edit'] = 'Edit course descriptions';
 $string['curr_admin:course:delete'] = 'Delete course descriptions';
-$string['curr_admin:class:view'] = 'View classes';
-$string['curr_admin:class:create'] = 'Create classes';
-$string['curr_admin:class:edit'] = 'Edit classes';
-$string['curr_admin:class:delete'] = 'Delete classes';
-$string['curr_admin:class:enrol'] = 'Manage class enrolments';
-$string['curr_admin:class:enrol_cluster_user'] = 'Manage User Set users\' class enrolments';
+$string['curr_admin:class:view'] = 'View class instances';
+$string['curr_admin:class:create'] = 'Create class instances';
+$string['curr_admin:class:edit'] = 'Edit class instances';
+$string['curr_admin:class:delete'] = 'Delete class instances';
+$string['curr_admin:class:enrol'] = 'Manage class instance enrolments';
+$string['curr_admin:class:enrol_cluster_user'] = 'Manage User Set users\' class instance enrolments';
 $string['curr_admin:user:view'] = 'View users';
 $string['curr_admin:user:create'] = 'Create users';
 $string['curr_admin:user:edit'] = 'Edit users';
@@ -247,23 +247,23 @@ $string['nomoodleuser'] = 'No moodle user found for specified user id.';
 $string['notrack'] = 'No track found for specified track id.';
 $string['nouser'] = 'No user found for specified user id.';
 $string['need_curriculum'] = 'At least one Curriculum is required to add a new track';
-$string['need_course'] = 'At least one Course Description is required to add a new class';
+$string['need_course'] = 'At least one Course Description is required to add a new class instance';
 
 // Notification strings.
 $string['notificationssettings'] = 'Notifications Settings';
 $string['notifyuser'] = 'User';
 $string['notifyrole'] = 'User with $a capability at system context';
 $string['notifysupervisor'] = 'User with $a capability at target user\'s context';
-$string['notifyclasscompletedmessage'] = 'Message template for class completion';
-$string['notifyclasscompletedmessagedef'] = "%%%%userenrolname%%%% has completed the class %%%%classname%%%%.";
-$string['notifyclassenrolmessage'] = 'Message template for class enrollment';
-$string['notifyclassenrolmessagedef'] = "%%%%userenrolname%%%% has been enrolled in the class %%%%classname%%%%.";
+$string['notifyclasscompletedmessage'] = 'Message template for class instance completion';
+$string['notifyclasscompletedmessagedef'] = "%%%%userenrolname%%%% has completed the class instance %%%%classname%%%%.";
+$string['notifyclassenrolmessage'] = 'Message template for class instance enrollment';
+$string['notifyclassenrolmessagedef'] = "%%%%userenrolname%%%% has been enrolled in the class instance %%%%classname%%%%.";
 $string['notifyclassnotstarteddays'] = 'Number of days after enrollment to send message';
-$string['notifyclassnotstartedmessage'] = 'Message template for class not started';
-$string['notifyclassnotstartedmessagedef'] = "%%%%userenrolname%%%% has not started the class %%%%classname%%%%.";
-$string['notifyclassnotcompleteddays'] = 'Number of days before class ends to send message';
-$string['notifyclassnotcompletedmessage'] = 'Message template for class not completed';
-$string['notifyclassnotcompletedmessagedef'] = "%%%%userenrolname%%%% has not completed the class %%%%classname%%%%.";
+$string['notifyclassnotstartedmessage'] = 'Message template for class instance not started';
+$string['notifyclassnotstartedmessagedef'] = "%%%%userenrolname%%%% has not started the class instance %%%%classname%%%%.";
+$string['notifyclassnotcompleteddays'] = 'Number of days before class instance ends to send message';
+$string['notifyclassnotcompletedmessage'] = 'Message template for class instance not completed';
+$string['notifyclassnotcompletedmessagedef'] = "%%%%userenrolname%%%% has not completed the class instance %%%%classname%%%%.";
 $string['notifycourserecurrencedays'] = 'Number of days before course description expires to send message';
 $string['notifycourserecurrencemessage'] = 'Message template for course description expiration';
 $string['notifycourserecurrencemessagedef'] = "%%%%userenrolname%%%% is due to re-take the course description %%%%coursename%%%%.";
@@ -295,7 +295,7 @@ $string['environment_description'] = 'Description';
 $string['course_assigncurriculum'] = 'Assign Curriculum';
 $string['course_edit'] = 'Edit Course Description';
 $string['course_name'] = 'Name';
-$string['course_classes'] = 'Classes';
+$string['course_classes'] = 'Class Instances';
 $string['course_code'] = 'Code';
 $string['course_curricula'] = 'Curricula';
 $string['course_idnumber'] = 'ID Number';
@@ -307,7 +307,7 @@ $string['course_id'] = 'Course Description ID';
 $string['course_documents'] = 'Documents';
 
 // Class form strings.
-$string['class_edit'] = 'Edit Class';
+$string['class_edit'] = 'Edit Class Instance';
 $string['class_course'] = 'Course Description';
 $string['class_idnumber'] = 'ID Number';
 $string['class_id'] = 'ID';
@@ -324,21 +324,21 @@ $string['num_students_passed'] = 'number of students passed';
 $string['num_students_failed'] = 'number of students failed';
 
 $string['class_maxstudents'] = 'Max # of Students';
-$string['class_name'] = 'Class Name';
+$string['class_name'] = 'Class Instance Name';
 $string['class_assigntrackhead'] = 'Assigned Tracks';
 $string['class_unassigntrackhead'] = 'Unassigned Tracks';
 
 $string['classreportlinks'] = 'Reports';
-$string['rosterreport'] = 'Class roster';
-$string['printableclassrosterreport'] = 'Printable Class Roster Report';
+$string['rosterreport'] = 'Class instance roster';
+$string['printableclassrosterreport'] = 'Printable Class Instance Roster Report';
 $string['studentgradereport'] = 'Student Grade Report';
-$string['classrosterreport'] = 'Class Roster Report';
-$string['classcompletionreport'] = 'Class Completion Report';
+$string['classrosterreport'] = 'Class Instance Roster Report';
+$string['classcompletionreport'] = 'Class Instance Completion Report';
 
 // Student form string.
 $string['student_deleteconfirm'] = 'Are you sure you want to unenrol the student name: $a ?<br />'.
-                                   'NOTE: This will delete all records for this student in this class and will unenrol them from any connected Moodle class!';
-$string['grade_update_warning'] = '<div><strong>Note:</strong> updating grades for individual learning objectives on this screen will not automatically update the class grade or completion status.</div>';
+                                   'NOTE: This will delete all records for this student in this class instance and will unenrol them from any connected Moodle class!';
+$string['grade_update_warning'] = '<div><strong>Note:</strong> updating grades for individual learning objectives on this screen will not automatically update the class instance grade or completion status.</div>';
 
 // Curriculum form strings.
 $string['curriculum_edit'] = 'Edit User';
@@ -354,7 +354,7 @@ $string['clustcpycurname'] = 'Curriculum';
 $string['clustcpyadd'] = 'Add';
 $string['clustcpytrkcpy'] = 'Copy Tracks';
 $string['clustcpycrscpy'] = 'Copy Course descriptions';
-$string['clustcpyclscpy'] = 'Copy Classes';
+$string['clustcpyclscpy'] = 'Copy Class Instances';
 $string['clustcpymdlclscpy'] = 'Copy Moodle Courses';
 $string['currcopy_mdlcrs_copyalways'] = 'Always copy';
 $string['currcopy_mdlcrs_copyautocreated'] = 'Copy auto-created course descriptions';
@@ -380,8 +380,8 @@ $string['curriculumcourse_assigncourse'] = 'Assign course description';
 // Track form strings.
 $string['track'] = 'Track';
 $string['tracks'] = 'Tracks';
-$string['track_autocreate'] = 'Create all classes';
-$string['track_classes'] = 'Classes';
+$string['track_autocreate'] = 'Create all class instances';
+$string['track_classes'] = 'Class instances';
 $string['track_curriculumid'] = 'Curriculum';
 $string['track_description'] = 'Description';
 $string['track_edit'] = 'Edit Track';
@@ -391,17 +391,17 @@ $string['track_enddate'] = 'End Date';
 $string['track_maxstudents'] = 'Max Students';
 $string['track_name'] = 'Name';
 $string['track_parcur'] = 'Parent curriculum';
-$string['num_classes'] = 'Number of classes';
+$string['num_classes'] = 'Number of class instances';
 
 // Track class form strings.
-$string['trackclass_edit'] = 'Edit Track Class';
-$string['trackclass_classid'] = 'Class';
+$string['trackclass_edit'] = 'Edit Track Class Instance';
+$string['trackclass_classid'] = 'Class Instance';
 $string['trackclass_length'] = 'Length';
 $string['trackclass_usedates'] = 'Use a start and end date?';
 $string['trackclass_manualdates'] = 'Manually set end date?';
 $string['trackclass_startdate'] = 'Start Date';
 $string['trackclass_enddate'] = 'End Date';
-$string['trackclass_classbreak'] = 'Time Period Between Classes (Break)';
+$string['trackclass_classbreak'] = 'Time Period Between Class Instances (Break)';
 $string['trackclass_position'] = 'Position';
 
 //instructor class strings
@@ -499,7 +499,7 @@ $string['date'] = 'Date';
 $string['coursetemplate'] = 'Course Template in Moodle';
 $string['moodlecourseurl'] = 'Mooodle Course URL';
 $string['moodlecourseurlclassname'] = 'moodlecourseurl';
-$string['notemplate'] = 'Could not auto-create Moodle course: no template defined in course description.  Created class without an associated Moodle course.';
+$string['notemplate'] = 'Could not auto-create Moodle course: no template defined in course description.  Created class instance without an associated Moodle course.';
 
 // User defined track string(s)
 $string['userdefinedtrackyesno'] = 'Turn off user defined tracks';
@@ -514,11 +514,11 @@ $string['track_description'] = 'Description';
 $string['track_edit'] = 'Edit Track';
 $string['track_managetrack_crumb'] = 'Manage Track';
 $string['track_name'] = 'Track Name';
-$string['track_autocreate_button'] = 'Auto-create classes';
-$string['success_autocreate'] = 'Auto-created classes for this track';
+$string['track_autocreate_button'] = 'Auto-create class instances';
+$string['success_autocreate'] = 'Auto-created class instances for this track';
 
 // Manage track association page string(s)
-$string['trackasso_add_asso'] = 'Add class to $a';
+$string['trackasso_add_asso'] = 'Add class instance to $a';
 $string['trackasso_autoenrol'] = 'Auto enrol';
 $string['trackasso_delete'] = 'Deleting $a';
 $string['trackasso_edit_asso'] = 'Edit track association';
@@ -533,8 +533,8 @@ $string['enrol_all_users_now'] = 'Enrol all users from this track now';
 
 // Reports
 $string['induser'] = 'My User Report';
-$string['Class_Activity_by_Course_Group'] = 'Class Activity by Course Description Group';
-$string['Class_Activity_Report_with_Role_Parameter'] = 'Class Activity Report with Role Parameter';
+$string['Class_Activity_by_Course_Group'] = 'Class Instance Activity by Course Description Group';
+$string['Class_Activity_Report_with_Role_Parameter'] = 'Class Instance Activity Report with Role Parameter';
 $string['Course_Completion_By_Cluster_New'] = 'Course Description Completion by User Set';
 $string['Course_Completion_Gas_Gauge'] = 'Course Description Completion Gas Gauge';
 $string['Forum_Participation'] = 'Forum Participation';
@@ -592,7 +592,7 @@ $string['dont_auto'] = '(don\'t auto-associate)';
 $string['set_to'] = 'set to';
 $string['option_profile_field'] = '(please select a profile field first)';
 
-$string['edit_class'] = '<a href=\"$a\">Click here to edit this class\' properties in it\'s track</a>';
+$string['edit_class'] = '<a href=\"$a\">Click here to edit this class instance\' properties in it\'s track</a>';
 $string['edit_trac_assignment'] = 'Edit Track Assignment';
 $string['assigned_courses'] = 'Assigned Course Descriptions';
 
@@ -623,7 +623,7 @@ $string['no_tracks_cluster'] = 'No tracks associated with this user set.';
 $string['no_cluster_curriculum'] = 'No user sets associated with this curriculum.';
 $string['no_cluster_track'] = 'No user sets associated with this track.';
 
-$string['no_associate_caps_class'] = 'You cannot associate any classes because do not have the block:curr_admin/associate capability on any classes.';
+$string['no_associate_caps_class'] = 'You cannot associate any class instances because do not have the block:curr_admin/associate capability on any class instances.';
 $string['no_associate_caps_cluster'] = 'You cannot associate any user sets because do not have the block:curr_admin/associate capability on any user sets.';
 $string['no_associate_caps_course'] = 'You cannot associate any course descriptions because do not have the block:curr_admin/associate capability on any course descriptions.';
 $string['no_associate_caps_curriculum'] = 'You cannot associate any curricula because do not have the block:curr_admin/associate capability on any curricula.';
@@ -644,7 +644,7 @@ $string['confirm_delete_with_subclusters_and_descendants'] = 'Are you sure you w
 $string['deletesubs'] = 'Delete user subsets';
 $string['promotesubs'] = 'Promote user subsets to top-level user sets';
 
-$string['confirm_delete_class'] = 'Are you sure you want to delete the class \"name: $a->name id: $a->idnumber\"?';
+$string['confirm_delete_class'] = 'Are you sure you want to delete the class instance \"name: $a->name id: $a->idnumber\"?';
 $string['confirm_delete_course'] = 'Are you sure you want to delete the course description \"name: $a->name / id: $a->idnumber\"?';
 $string['confirm_delete_student'] = 'Are you sure you want to delete the student \"name: $a\"?<br />';
 $string['confirm_delete_completion'] = 'Are you sure you want to delete the learning objective "name: {$a}"?';
@@ -664,18 +664,18 @@ $string['removing_user_curriculum'] = 'Removing user from curriculum';
 
 $string['confirm_remove_course_curric'] = 'Are you sure you want to remove course description \"name: $a->cls\" from the curriculum \"name: $a->curriculum\"?';
 
-$string['delete_student_note'] = 'NOTE: This will delete all records for this student in this class and will unenrol them from any connected Moodle class!';
+$string['delete_student_note'] = 'NOTE: This will delete all records for this student in this class instance and will unenrol them from any connected Moodle course!';
 
 $string['curric_assigned_for_user'] = 'A curriculum is already assigned for this user.';
 
 $string['add_cluster'] = 'Add User Set';
-$string['add_classes'] = 'Add Class';
+$string['add_classes'] = 'Add Class Instance';
 
 $string['filter'] = 'Filter';
 $string['save'] = 'Save';
 $string['search'] = 'Search';
 $string['tags'] = 'Tags';
-$string['show_all_classes'] = 'Show all classes';
+$string['show_all_classes'] = 'Show all class instances';
 $string['show_all_users'] = 'Show All Users';
 $string['show_all_curric_courses'] = 'Show all curriculum course descriptions';
 $string['show_all_environments'] = 'Show all environments';
@@ -725,12 +725,12 @@ $string['successful_attached_template'] = 'Successfully attached the Moodle cour
 $string['failed_attach_course'] = 'Could not attach the Moodle course ($a->courseid) to $a->clsname ($a->clsid).';
 
 
-$string['classes_found'] = '$a classes found.';
+$string['classes_found'] = '$a class instances found.';
 
-$string['class_addclass_crumb'] = 'Adding a new class';
+$string['class_addclass_crumb'] = 'Adding a new class instance';
 $string['course_addcourse_crumb'] = 'Adding a new course description';
 $string['moodlecourse'] = 'Moodle course';
-$string['class_attached_course'] = 'This class is already attached to the Moodle course';
+$string['class_attached_course'] = 'This class instance is already attached to the Moodle course';
 
 $string['edit_cluster'] = 'Edit User Set';
 
@@ -761,19 +761,19 @@ $string['missing_required_field'] = 'Required field <b>$a</b> is missing from th
 $string['updated_curriculum_course_info'] = 'Updated the curriculum course description information for ($a->courseid) $a->coursename in the curriculum $a->curid<br /><br />' . "\n";
 $string['added_curriculum_course_info'] = 'Added the curriculum course description information for ($a->courseid) $a->coursename in the curriculum $a->curid<br /><br />' . "\n";
 
-$string['updated_class_info'] = 'Updated the information for class ';
-$string['added_class_info'] = 'Added information for class ';
+$string['updated_class_info'] = 'Updated the information for class instance ';
+$string['added_class_info'] = 'Added information for class instance ';
 
-$string['error_class_not_created'] = 'ERROR: Class not created ID: ';
+$string['error_class_not_created'] = 'ERROR: Class instance not created ID: ';
 $string['error_course_not_found'] = 'ERROR: Could not find course description ID: ';
 $string['error_creating_custom_curric'] = 'Error: could not create new custom curriculum -- ';
 $string['error_update_student_curric_assign'] = 'Could not update student curriculum assignment';
 
-$string['added_instructor_class'] = 'Added instructor $a to class ';
+$string['added_instructor_class'] = 'Added instructor $a to class instance ';
 
-$string['update_enrolment_info'] = 'Updated enrollment information for $a->name in class $a->id';
-$string['add_enrolment_info'] = 'Added enrollment information for $a->name in class $a->id';
-$string['existing_enrolment_info'] = 'Enrollment for $a->name in class $a->id already exists: not updating';
+$string['update_enrolment_info'] = 'Updated enrollment information for $a->name in class instance $a->id';
+$string['add_enrolment_info'] = 'Added enrollment information for $a->name in class instance $a->id';
+$string['existing_enrolment_info'] = 'Enrollment for $a->name in class instance $a->id already exists: not updating';
 
 $string['error_studentid_not_found'] = 'ERROR: Could not find student ID: ';
 $string['nothing_done'] = 'Nothing done';
@@ -824,7 +824,7 @@ $string['student'] = 'Student';
 
 $string['course'] = 'Course Description';
 $string['completion_status'] = 'Completion Status';
-$string['class_end'] = 'Class End';
+$string['class_end'] = 'Class Instance End';
 $string['recruitment_training_info'] = 'Recurrant Training Info';
 
 $string['search_users_for'] = 'Search Users For';
@@ -877,10 +877,10 @@ $string['expiration'] = 'Expiration';
 $string['tips_time_format'] = "The format of this is ' *h, *d, *w, *m, *y ' (representing hours, days, weeks, months and years - where * can be any number) Each format must be separated by a comma";
 
 $string['location'] = 'Location';
-$string['enrolled_classes'] = 'Enrolled Classes';
+$string['enrolled_classes'] = 'Enrolled Class Instances';
 $string['country'] = 'Country';
 $string['download_report'] = 'Download report';
-$string['no_classes_completed'] = 'No classes completed';
+$string['no_classes_completed'] = 'No class instances completed';
 $string['courses_not_in'] = 'Course descriptions not enrolled in';
 $string['due_by'] = 'Due By';
 $string['current_status'] = 'Current Status';
@@ -909,10 +909,10 @@ $string['clusters'] = 'User Sets';
 $string['waiting'] = 'Waiting';
 
 $string['waitlist'] = 'waitlist';
-$string['added_to_waitlist_message'] = 'you have been added to the waitlist for class $a';
+$string['added_to_waitlist_message'] = 'you have been added to the waitlist for class instance $a';
 $string['waitlistenrol'] = 'Auto enrol from waitlist';
 $string['add_to_waitinglist'] = 'add $a->name($a->username) to wait list?';
-$string['waitinglistform_title'] = 'Class is full';
+$string['waitinglistform_title'] = 'Class instance is full';
 $string['over_enrol'] = 'Over Enrol';
 
 /// Error strings:
@@ -924,7 +924,7 @@ $string['choose'] = 'Choose...';
 $string['choose_label'] = 'Choose';
 $string['no_courses'] = 'no course descriptions';
 
-$string['no_users_not_completed_classes'] = 'No users have not completed their classes';
+$string['no_users_not_completed_classes'] = 'No users have not completed their class instances';
 $string['no_users_with_upcoming_renew'] = 'No users with upcoming course description renewals';
 $string['station_location_info'] = 'Station Location Information';
 $string['total_users_at_location'] = 'Total users at this location';
@@ -932,7 +932,7 @@ $string['total_users_at_location'] = 'Total users at this location';
 $string['duplicate_student'] = 'Specified student already exists.';
 
 $string['duplicate_tag'] = 'Specified tag instance already exists.';
-$string['available_classes'] = 'Available Classes';
+$string['available_classes'] = 'Available Class Instances';
 $string['user_transcript'] = 'User Transcript';
 $string['grad_courses'] = 'Graduate course descriptions';
 $string['undergrad_courses'] = 'Undergraduate course descriptions';
@@ -944,8 +944,8 @@ $string['exam'] = 'Exam ';
 $string['new_registration'] = 'New Registration';
 
 
-$string['choose_class_course'] = 'Choose class for course description $a';
-$string['no_classes_available'] = 'No classes currently available.  Please check again later.';
+$string['choose_class_course'] = 'Choose class instance for course description $a';
+$string['no_classes_available'] = 'No class instances currently available.  Please check again later.';
 
 $string['new_record_created'] = 'New record created.';
 $string['record_updated'] = 'Record updated';
@@ -997,13 +997,13 @@ $string['based_on'] = 'Based on ';
 
 $string['create_custom_student_curric'] = 'Create custom student curriculum';
 
-$string['class_id_number'] = 'Class Id Number';
+$string['class_id_number'] = 'Class Instance Id Number';
 $string['auto_enrol'] = 'Auto-enrol';
 $string['auto_enrol_cluster_curriculum'] = 'Auto-enrol users into this curriculum when they are added to this user set';
 $string['auto_enrol_cluster_track'] = 'Auto-enrol users into this track when they are added to this user set';
-$string['auto_enrol_long'] = 'Auto-enrol users into this class when they are added to this track';
-$string['auto_enrol_warning'] = 'NOTE: this class is set to auto-enrol users, but is not from a required course description in the curriculum.  The auto-enrol function only applies to required course descriptions, so users will not be auto-enrolled in this class.';
-$string['no_auto_enrol'] = 'NOTE: The auto-enrol flag cannot be set for this class in this track, because the associated course description is not a required course description in the curriculum.';
+$string['auto_enrol_long'] = 'Auto-enrol users into this class instance when they are added to this track';
+$string['auto_enrol_warning'] = 'NOTE: this class instance is set to auto-enrol users, but is not from a required course description in the curriculum.  The auto-enrol function only applies to required course descriptions, so users will not be auto-enrolled in this class instance.';
+$string['no_auto_enrol'] = 'NOTE: The auto-enrol flag cannot be set for this class instance in this track, because the associated course description is not a required course description in the curriculum.';
 
 $string['user'] = 'User';
 $string['users'] = 'Users';
@@ -1045,20 +1045,20 @@ $string['error_duration'] = 'Start time must be before the end time.';
 $string['error_date_range'] = 'Start date must be before the end date.';
 $string['error_n_overenrol'] = 'The over enrol capability is required for this';
 
-$string['managecmclasss'] = 'Manage Class';
+$string['managecmclasss'] = 'Manage Class Instance';
 $string['track_curr_dne'] = 'Track Curriculum no longer exists!';
 
 $string['id_same_as_user'] = 'Same as idnumber';
 
 $string['disablecoursecatalog'] = 'Turn off learning plan';
 $string['unsatisfiedprereqs'] = 'One or more prerequisites are not completed yet.';
-$string['noclassavail'] = 'No classes available yet';
+$string['noclassavail'] = 'No class instances available yet';
 $string['onwaitlist'] = 'You are on the waiting list';
 $string['onenroledlist'] = 'You are currently enrolled';
 $string['onpassed'] = 'You passed this course description';
 $string['onfailed'] = 'You failed this course description';
 
-$string['incomplete_course_message'] = 'You have not completed the class {$a} before the end date';
+$string['incomplete_course_message'] = 'You have not completed the class instance {$a} before the end date';
 
 $string['interfacesettings'] = 'Interface Settings';
 $string['time_format_12h'] = 'Display time selection in a 12 hour format';
@@ -1079,9 +1079,9 @@ $string['curr_admin'] = 'Curriculum Administration';
 $string['o_inactive'] = 'Only Inactive';
 $string['o_active'] = 'Only Active';
 
-$string['nowenroled'] = 'You have been removed from the waiting list and placed in class $a.';
+$string['nowenroled'] = 'You have been removed from the waiting list and placed in class instance {$a}.';
 $string['moodleenrol_subj'] = 'Ready to enrol in {$a->class->idnumber}.';
-$string['moodleenrol'] = 'You have been removed from the waiting list for class {$a->class->idnumber}.
+$string['moodleenrol'] = 'You have been removed from the waiting list for class instance {$a->class->idnumber}.
 Please visit {$a->wwwroot}/course/enrol.php?id={$a->crs->id} to complete your enrolment.';
 
 $string['management'] = 'Management';
@@ -1152,7 +1152,7 @@ $string['field_manual_admin_view'] = 'Only users with moodle/user:viewhiddendeta
 $string['manual_field_control'] = 'Input control type';
 $string['manual_field_control_password'] = 'Password input';
 
-$string['if_class_full'] = 'note: if the class you wish to join is full you may still be placed on the waiting list';
+$string['if_class_full'] = 'note: if the class instance you wish to join is full you may still be placed on the waiting list';
 
 // Role assignment
 $string['assigned'] = 'Assigned';
@@ -1164,30 +1164,30 @@ $string['users_removed_from_role'] = '$a users removed from role';
 
 //Waitlist
 $string['user_waitlisted'] = 'user added to waitlist';
-$string['user_waitlisted_msg'] = 'user with idnumber $a->user has been added to the waitlist for class $a->cmclass';
+$string['user_waitlisted_msg'] = 'user with idnumber $a->user has been added to the waitlist for class instance $a->cmclass';
 $string['confirm_waitlist_remove'] = 'Remove $a users from the waitlist';
-$string['confirm_waitlist_overenrol'] = 'Over enrol $a users into the class';
+$string['confirm_waitlist_overenrol'] = 'Over enrol $a users into the class instance';
 $string['success_waitlist_remove'] = 'Successfully removed from waitlist.';
 $string['success_waitlist_overenrol'] = 'Successfully over enrolled.';
 $string['error_waitlist_remove'] = 'Error removing users from waitlist.';
 $string['error_waitlist_overenrol'] = 'Error over enrolling.';
 
 //Learning Plan Instructions
-$string['lp_class_instructions'] = 'This listing indicates all curricula you have been assigned to, as well as all classes within those curricula that you are currently enrolled in (automatically or manually).<br/><br/>
-                                    This listing also includes classes you are currently enrolled in that are not included in curricula, if applicable.';
-$string['lp_curriculum_instructions'] = 'This listing indicates all curricula you have been assigned to, as well as all course descriptions within those curricula, whether or not you are enrolled in them through classes.<br/><br/>
-                                         This listing also includes the classes that you are enrolled in for the applicable course descriptions.';
-$string['lp_waitlist_instructions'] = 'This listing indicates all curricula you have been assigned to, as well as all classes tied to course descriptions in those curricula that you are on the waiting list for.';
+$string['lp_class_instructions'] = 'This listing indicates all curricula you have been assigned to, as well as all class instances within those curricula that you are currently enrolled in (automatically or manually).<br/><br/>
+                                    This listing also includes class instances you are currently enrolled in that are not included in curricula, if applicable.';
+$string['lp_curriculum_instructions'] = 'This listing indicates all curricula you have been assigned to, as well as all course descriptions within those curricula, whether or not you are enrolled in them through class instances.<br/><br/>
+                                         This listing also includes the class instances that you are enrolled in for the applicable course descriptions.';
+$string['lp_waitlist_instructions'] = 'This listing indicates all curricula you have been assigned to, as well as all class instances tied to course descriptions in those curricula that you are on the waiting list for.';
 
 // Class/course defaults
-$string['defaultcls'] = 'Default Class settings';
+$string['defaultcls'] = 'Default Class Instance settings';
 $string['defaultcrs'] = 'Default Course Description settings';
 
 $string['incorrectinstructorassignmentheader'] = 'Potentially incorrect instructor assignments report for site {$a->sitename} with URL {$a->url}';
 $string['incorrectinstructorrecord'] = 'Record ID: {$a->id}
 Instructor name: {$a->lastname}, {$a->firstname}
 Course Description: {$a->name} (ID: {$a->idnumber})
-Class ID: {$a->classidnumber}';
+Class Instance ID: {$a->classidnumber}';
 
 $string['health_check_link'] = 'The <a href=\"$a/curriculum/index.php?s=health\">ELIS health page</a> may help diagnose potential problems with the site.';
 
@@ -1205,8 +1205,8 @@ $string['menu_summary_item_curriculumcluster'] = '{$a} more user sets...';
 $string['menu_summary_item_curriculumcourse'] = '{$a} more course descriptions...';
 $string['menu_summary_item_track'] = '{$a} more tracks...';
 $string['menu_summary_item_trackcluster'] = '{$a} more user sets...';
-$string['menu_summary_item_trackassignment'] = '{$a} more classes...';
-$string['menu_summary_item_pmclass'] = '{$a} more classes...';
+$string['menu_summary_item_trackassignment'] = '{$a} more class instances...';
+$string['menu_summary_item_pmclass'] = '{$a} more class instances...';
 
 $string['menu_summary_item_userset_singular'] = '{$a} more user set...';
 $string['menu_summary_item_curriculum_singular'] = '{$a} more curriculum...';
@@ -1215,8 +1215,8 @@ $string['menu_summary_item_curriculumcluster_singular'] = '{$a} more user set...
 $string['menu_summary_item_curriculumcourse_singular'] = '{$a} more course description...';
 $string['menu_summary_item_track_singular'] = '{$a} more track...';
 $string['menu_summary_item_trackcluster_singular'] = '{$a} more user set...';
-$string['menu_summary_item_trackassignment_singular'] = '{$a} more class...';
-$string['menu_summary_item_pmclass_singular'] = '{$a} more class...';
+$string['menu_summary_item_trackassignment_singular'] = '{$a} more class instance...';
+$string['menu_summary_item_pmclass_singular'] = '{$a} more class instance...';
 
 // Default CM entity roles
 $string['default_role_assignment_settings'] = 'Default Role Assignment Settings';
@@ -1224,7 +1224,7 @@ $string['no_default_role'] = 'N/A';
 $string['default_cluster_role_id'] = 'Default User Set Role';
 $string['default_curriculum_role_id'] = 'Default Curriculum Role';
 $string['default_course_role_id'] = 'Default Course Description Role';
-$string['default_class_role_id'] = 'Default Class Role';
+$string['default_class_role_id'] = 'Default Class Instance Role';
 $string['default_track_role_id'] = 'Default Track Role';
 
 // Curriculum completion certificate

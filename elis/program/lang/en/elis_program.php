@@ -33,7 +33,7 @@ $string['add_curriculum'] = 'Add Program';
 $string['add_grade'] = 'Add Grade';
 $string['add_pmclass'] = 'Add Class Instance';
 $string['add_prereq'] = 'Add prerequisites';
-$string['add_prereq_to_curriculum'] = 'Add prerequisites to curriculum';
+$string['add_prereq_to_curriculum'] = 'Add prerequisites to program';
 $string['add_to_waitinglist'] = 'Add {$a->name}({$a->username}) to wait list?';
 $string['add_track'] = 'Add Track';
 $string['add_user'] = 'Add user';
@@ -63,16 +63,16 @@ $string['association_trackassignment'] = 'Associate Track';
 $string['association_usertrack'] = 'Associate User';
 $string['autocreate'] = 'Auto Create Moodle course from template';
 $string['auto_collapse_setting'] = 'Number of curricula to display before automatically collapsing';
-$string['auto_create_help'] = 'Moodle courses that are linked to ELIS classes are marked as having been auto-created or created manually since ELIS 1.8.7. For courses created prior to 1.8.7, the auto-created status is unknown. This setting indicates whether these courses should be treated as having been auto-created or not.
+$string['auto_create_help'] = 'Moodle courses that are linked to ELIS class instances are marked as having been auto-created or created manually since ELIS 1.8.7. For courses created prior to 1.8.7, the auto-created status is unknown. This setting indicates whether these courses should be treated as having been auto-created or not.
 
 Currently, this only affects the functionality for copying curricula to a user set.';
 $string['auto_create_setting'] = 'Moodle courses with unknown status treated as auto-created';
 $string['auto_create_settings'] = 'Auto-create Settings';
 $string['auto_idnumber_help'] = 'Automatically set a Moodle user\'s ID number to be the same as his/her username if he/she does not have one already set.
 
-If a Moodle user does not have an ID number, then no corresponding user will be created in the Curriculum Management system.
+If a Moodle user does not have an ID number, then no corresponding user will be created in the Program Management system.
 
-However, changing a user\'s ID number may result in duplicate users within the Curriculum Management system, so this option should be turned off if users will be created in Moodle before they are assigned a permanent ID number.
+However, changing a user\'s ID number may result in duplicate users within the Program Management system, so this option should be turned off if users will be created in Moodle before they are assigned a permanent ID number.
 
 In general, this option should be set to off unless a user\'s ID number will always be the same as his/her username. However, the default is on for backwards compatibility.';
 $string['auto_idnumber_setting'] = 'Automatically assign an ID number to Moodle users without one';
@@ -106,10 +106,10 @@ $string['breadcrumb_waitlistpage'] = 'Waiting List';
 $string['browse'] = 'Browse';
 $string['bulkedit_select_all'] = 'Select All';
 
-$string['cert_border_help'] = 'The certificate border image is what gets displayed as the background for certificates in the curriculum.
+$string['cert_border_help'] = 'The certificate border image is what gets displayed as the background for certificates in the program.
 You can add more border images by uploading them to your moodledata directory under the directory: TBD/pix/certificate/borders/';
 $string['cert_border_setting'] = 'Certificate border image';
-$string['cert_seal_help'] = 'The certificate seal image is what gets displayed as the logo on certificates in the curriculum.
+$string['cert_seal_help'] = 'The certificate seal image is what gets displayed as the logo on certificates in the program.
 You can add more seal images by uploading them to your moodledata directory under the directory: TBD/pix/certificate/seals/';
 $string['cert_seal_setting'] = 'Certificate seal image';
 $string['certificates'] = 'Certificates';
@@ -123,19 +123,19 @@ $string['class_endtime'] = 'End Time';
 $string['class_idnumber'] = 'ID Number';
 $string['class_maxstudents'] = 'Max # of Students';
 $string['class_moodle_course'] = 'Moodle Course';
-$string['class_role_help'] = 'This is the default role to assign to a Curriculum Management user in any classes they create.
-This type of role assignment will not take place for a particular class if that user is already permitted to edit that class.
+$string['class_role_help'] = 'This is the default role to assign to a Program Management user in any class instances they create.
+This type of role assignment will not take place for a particular class instance if that user is already permitted to edit that class instance.
 To disable this functionality, select "N/A" from the list.';
-$string['class_role_setting'] = 'Default Class Role';
+$string['class_role_setting'] = 'Default Class Instance Role';
 $string['class_startdate'] = 'Start Date';
 $string['class_starttime'] = 'Start Time';
 $string['class_unassigntrackhead'] = 'Unassigned Tracks';
 $string['clear'] = 'Clear';
-$string['clustcpycurr'] = 'Curriculum {$a->name} copied to {$a->newname}';
+$string['clustcpycurr'] = 'Program {$a->name} copied to {$a->newname}';
 $string['cluster'] = 'User Set';
 $string['clusters'] = 'User Sets';
 $string['cluster_grp_settings'] = 'User Set Group Settings';
-$string['cluster_role_help'] = 'This is the default role to assign to a Curriculum Management user in any user sets they create.
+$string['cluster_role_help'] = 'This is the default role to assign to a Program Management user in any user sets they create.
 This type of role assignment will not take place for a particular user set if that user is already permitted to edit that user set.
 To disable this functionality, select "N/A" from the list.';
 $string['cluster_role_setting'] = 'Default User Set Role';
@@ -211,7 +211,7 @@ $string['course_code'] = 'Code';
 $string['course_curricula'] = 'Programs';
 $string['course_idnumber'] = 'ID Number';
 $string['course_name'] = 'Name';
-$string['course_role_help'] = 'This is the default role to assign to a Curriculum Management user in any course descriptions they create.
+$string['course_role_help'] = 'This is the default role to assign to a Program Management user in any course descriptions they create.
 This type of role assignment will not take place for a particular course description if that user is already permitted to edit that course description.
 To disable this functionality, select "N/A" from the list.';
 $string['course_role_setting'] = 'Default Course Description Role';
@@ -220,8 +220,8 @@ $string['course_version'] = 'Version';
 $string['coursetemplate'] = 'Course Template in Moodle';
 $string['credits'] = 'Credits';
 $string['credits_rec'] = 'Credits Rec\'vd.';
-$string['crlm_admin_blk_settings'] = 'Curriculum Administration Block Settings';
-$string['crlm_expire_setting'] = 'Enable curriculum expiration';
+$string['crlm_admin_blk_settings'] = 'Program Administration Block Settings';
+$string['crlm_expire_setting'] = 'Enable program expiration';
 $string['curricula'] = 'Programs';
 $string['curriculaform:curriculum_description'] = 'Long description';
 $string['curriculaform:curriculum_description_help'] = '<p>Description information about the program. A complete and thorough
@@ -263,17 +263,17 @@ $string['curriculumcourseform:required'] = 'Required';
 $string['curriculumcourseform:required_help'] = '<p>If enabled, completion of the associated course description is required in order for students to complete the selected program.</p>';
 $string['curriculumcourseform:time_period'] = 'Timepreriod';
 $string['curriculumcourseform:time_period_help'] = '<p>The units used in specifying the course description frequency.</p>';
-$string['curriculum_expire_enrol_start'] = 'enrolled into a curriculum';
-$string['curriculum_expire_enrol_complete'] = 'completed a curriculum';
+$string['curriculum_expire_enrol_start'] = 'enrolled into a program';
+$string['curriculum_expire_enrol_complete'] = 'completed a program';
 
 $string['curriculum_idnumber'] = 'ID Number';
 $string['curriculum_description'] = 'Long description';
 $string['curriculum_name'] = 'Name';
 $string['curriculum_reqcredits'] = ' Required Credits';
-$string['curriculum_role_help'] = 'This is the default role to assign to a Curriculum Management user in any curricula they create.
-This type of role assignment will not take place for a particular curriculum if that user is already permitted to edit that curriculum.
+$string['curriculum_role_help'] = 'This is the default role to assign to a Program Management user in any curricula they create.
+This type of role assignment will not take place for a particular program if that user is already permitted to edit that program.
 To disable this functionality, select "N/A" from the list.';
-$string['curriculum_role_setting'] = 'Default Curriculum Role';
+$string['curriculum_role_setting'] = 'Default Program Role';
 $string['curriculum_shortdescription'] = 'Short description';
 
 $string['datecompleted'] = 'Completion Date';
@@ -315,9 +315,9 @@ $string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a}'
 $string['email'] = 'Email address';
 $string['email2'] = 'Email address 2';
 $string['enrol'] = 'Enrol'; // TBD: Enroll ?
-$string['enrol_elis_help'] = 'If this setting is set, then ELIS will not enrol a user in an ELIS class that is linked with a Moodle class that uses an enrolment plugin other than the ELIS enrolment plugin.
+$string['enrol_elis_help'] = 'If this setting is set, then ELIS will not enrol a user in an ELIS class instance that is linked with a Moodle class that uses an enrolment plugin other than the ELIS enrolment plugin.
 
-In brief, if an ELIS class is:
+In brief, if an ELIS class instance is:
 
 * Not linked to a Moodle class: it is enrollable.
 * Linked to a Moodle class that uses the ELIS enrolment plugin: it is enrollable.
@@ -347,7 +347,7 @@ $string['existing_course_corequisites'] = 'Existing Course Description Corequisi
 $string['existing_course_prerequisites'] = 'Existing Course Description Prerequisites';
 $string['exit'] = 'Exit';
 $string['expiration'] = 'Expiration';
-$string['expire_basis_setting'] = 'Calculate curriculum expiration based on the time a student';
+$string['expire_basis_setting'] = 'Calculate program expiration based on the time a student';
 
 $string['failed'] = 'Failed';
 $string['fax'] = 'Fax';
@@ -376,11 +376,11 @@ $string['field_sync_from_moodle'] = 'Use values from Moodle';
 $string['field_sync_to_moodle'] = 'Copy values to Moodle';
 $string['field_syncwithmoodle'] = 'Sync with Moodle';
 $string['form_error'] = 'Selection page form error - expecting array!';
-$string['fp_grp_cluster_help'] = 'Enabling these setting allows the Curriculum Management system to automatically add users to groups in Moodle courses based on user set membership. Groups will be created as needed.
+$string['fp_grp_cluster_help'] = 'Enabling these setting allows the Program Management system to automatically add users to groups in Moodle courses based on user set membership. Groups will be created as needed.
 
 For this to work, the associated user set setting must be turned on for each appropriate user set as well.
 
-Also, be cautious when enabling these setting, as it will cause the Curriculum Management system to immediately search for all appropriate users across all necessary user sets, which may take a long time.';
+Also, be cautious when enabling these setting, as it will cause the Program Management system to immediately search for all appropriate users across all necessary user sets, which may take a long time.';
 $string['fp_grp_cluster_setting'] = 'Allow front page grouping creation from user-set-based groups';
 $string['fp_pop_clusters_setting'] = 'Allow front page group population from user sets';
 $string['frequency'] = 'Frequency';
@@ -406,13 +406,13 @@ $string['health_duplicate'] = 'Duplicate enrolment records';
 $string['health_duplicatedesc'] = 'There were {$a->count} duplicate enrolments records in the ELIS enrolments table.';
 $string['health_duplicatesoln'] = 'The duplicate enrolments need to be removed directly from the database.  <b>DO NOT</b> try to remove them via the UI.<br/><br/>
 Recommended to escalate to development for solution.';
-$string['health_stale'] = 'Stale CM Class - Moodle course description record';
-$string['health_staledesc'] = 'There were {$a->count} records in the crlm_class_moodle table referencing nonexistent ELIS classes.';
+$string['health_stale'] = 'Stale PM Class Instance - Moodle course description record';
+$string['health_staledesc'] = 'There were {$a->count} records in the crlm_class_moodle table referencing nonexistent ELIS class instances.';
 $string['health_stalesoln'] = 'These records need to be removed from the database.<br/>Suggested SQL:';
-$string['health_trackcheck'] = 'Unassociated classes found in tracks';
-$string['health_trackcheckdesc'] = 'Found {a->count} classes that are attached to tracks when associated course descriptions are not attached to the curriculum.';
+$string['health_trackcheck'] = 'Unassociated class instances found in tracks';
+$string['health_trackcheckdesc'] = 'Found {a->count} class instances that are attached to tracks when associated course descriptions are not attached to the program.';
 $string['health_trackcheckdescnone'] = 'There were no issues found.';
-$string['health_trackchecksoln'] = 'Need to remove all classes in tracks that do not have an associated course descriptions in its associated curriculum by running the script linked below.<br/><br/>' .
+$string['health_trackchecksoln'] = 'Need to remove all class instances in tracks that do not have an associated course descriptions in its associated program by running the script linked below.<br/><br/>' .
                '<a href="{$a->wwwroot}/elis/program/scripts/fix_track_classes.php">Fix this now</a>';
 $string['health_user_sync'] = 'User Records Mismatch - Synchronize Users';
 $string['health_user_syncdesc'] = 'There are {$a->count} extra user records for Moodle which don\'t exist for ELIS.';
@@ -421,7 +421,7 @@ $string['health_user_syncsoln'] = 'Users need to be synchronized by running the 
                 If the script times out (stops loading before indicating success), please open a support ticket to have this run for you.<br/><br/>
                 <a href="{$a->wwwroot}/elis/program/scripts/migrate_moodle_users.php">Fix this now</a>';
 
-$string['icon_collapse_help'] = 'This setting determines the number of icons of each type to display in the Curriculum Administration block.
+$string['icon_collapse_help'] = 'This setting determines the number of icons of each type to display in the Program Administration block.
 This setting applies at the top level and also for nest entities.
 Please set this value to a number greater than zero.';
 $string['icon_collapse_setting'] = 'Number of entity icons to display before collapsing';
@@ -430,7 +430,7 @@ $string['idnumber'] = 'ID Number';
 $string['idnumber_already_used'] = 'ID Number is already in use';
 $string['id_same_as_user'] = 'Same as username';
 $string['inactive'] = 'Inactive';
-$string['incomplete_course_message'] = 'You have not completed the class {$a} before the end date';
+$string['incomplete_course_message'] = 'You have not completed the class instance {$a} before the end date';
 $string['instructor_add'] = 'Add Instructor';
 $string['instructor_assignment'] = 'Assignment Time';
 $string['instructor_completion'] = 'Completion Time';
@@ -439,7 +439,7 @@ $string['instructor_idnumber'] = 'ID Number';
 $string['instructor_name'] = 'Name';
 $string['instructor_notdeleted'] = 'Instructor: {$a->name} not deleted.';
 $string['instructor_role_help'] = 'The default role assigned to instructors when they are synchronized into Moodle.
-This synchronization typically takes place when user is assigned as an instructor of a class or when a class becomes associated with a Moodle course.
+This synchronization typically takes place when user is assigned as an instructor of a class instance or when a class instance becomes associated with a Moodle course.
 If this setting not associated with a valid Moodle role, instructors will not be assigned roles when this synchonization takes place.';
 $string['instructor_role_setting'] = 'Default Instructor Role';
 $string['instructors'] = 'Instructors';
@@ -499,7 +499,7 @@ $string['none'] = 'None';
 $string['noroleselected'] = 'N/A';
 $string['norolesexist'] = 'There are currently no roles that users can be assigned on this entity.';
 $string['norolespermitted'] = 'There are currently no roles you have sufficient permissions to assign users on this entity. For further details, contact a site administrator.';
-$string['notemplate'] = 'Could not auto-create Moodle course: no template defined in course description.  Created class without an associated Moodle course.';
+$string['notemplate'] = 'Could not auto-create Moodle course: no template defined in course description.  Created class instance without an associated Moodle course.';
 $string['notice_class_deleted'] = 'Deleted the class instance {$a->idnumber}';
 $string['notice_clustercurriculum_deleted'] = 'Deleted the user-set/track association {$a->id}';
 $string['notice_clustertrack_deleted'] = 'Deleted the user-set/track association {$a->id}';
@@ -519,39 +519,39 @@ $string['notificationssettings'] = 'Notifications Settings';
 $string['notifications_notifyuser'] = 'User';
 $string['notifications_notifyrole'] = 'User with {$a} capability at system context';
 $string['notifications_notifysupervisor'] = 'User with {$a} capability at target user\'s context';
-$string['notifyclasscompletedmessage'] = 'Message template for class completion';
-$string['notifyclasscompletedmessagedef'] = "%%userenrolname%% has completed the class %%classname%%.";
-$string['notifyclassenrolmessage'] = 'Message template for class enrollment';
-$string['notifyclassenrolmessagedef'] = "%%userenrolname%% has been enrolled in the class %%classname%%.";
+$string['notifyclasscompletedmessage'] = 'Message template for class instance completion';
+$string['notifyclasscompletedmessagedef'] = "%%userenrolname%% has completed the class instance %%classname%%.";
+$string['notifyclassenrolmessage'] = 'Message template for class instance enrollment';
+$string['notifyclassenrolmessagedef'] = "%%userenrolname%% has been enrolled in the class instance %%classname%%.";
 $string['notifyclassnotstarteddays'] = 'Number of days after enrollment to send message';
-$string['notifyclassnotstartedmessage'] = 'Message template for class not started';
-$string['notifyclassnotstartedmessagedef'] = "%%userenrolname%% has not started the class %%classname%%.";
-$string['notifyclassnotcompleteddays'] = 'Number of days before class ends to send message';
-$string['notifyclassnotcompletedmessage'] = 'Message template for class not completed';
-$string['notifyclassnotcompletedmessagedef'] = "%%userenrolname%% has not completed the class %%classname%%.";
+$string['notifyclassnotstartedmessage'] = 'Message template for class instance not started';
+$string['notifyclassnotstartedmessagedef'] = "%%userenrolname%% has not started the class instance %%classname%%.";
+$string['notifyclassnotcompleteddays'] = 'Number of days before class instance ends to send message';
+$string['notifyclassnotcompletedmessage'] = 'Message template for class instance not completed';
+$string['notifyclassnotcompletedmessagedef'] = "%%userenrolname%% has not completed the class instance %%classname%%.";
 $string['notifycourserecurrencedays'] = 'Number of days before course description expires to send message';
 $string['notifycourserecurrencemessage'] = 'Message template for course description expiration';
 $string['notifycourserecurrencemessagedef'] = "%%userenrolname%% is due to re-take the course description %%coursename%%.";
-$string['notifycurriculumcompletedmessage'] = 'Message template for curriculum completion';
-$string['notifycurriculumcompletedmessagedef'] = "%%userenrolname%% has completed the curriculum %%curriculumname%%.";
-$string['notifycurriculumnotcompleteddays'] = 'Number of days before curriculum ends to send message';
-$string['notifycurriculumnotcompletedmessage'] = 'Message template for curriculum not completed';
-$string['notifycurriculumnotcompletedmessagedef'] = "%%userenrolname%% has not completed the curriculum %%curriculumname%%.";
-$string['notifycurriculumrecurrencedays'] = 'Number of days before curriculum expires to send message';
-$string['notifycurriculumrecurrencemessage'] = 'Message template for curriculum expiration';
-$string['notifycurriculumrecurrencemessagedef'] = "%%userenrolname%% is due to re-take the curriculum %%curriculumname%%.";
+$string['notifycurriculumcompletedmessage'] = 'Message template for program completion';
+$string['notifycurriculumcompletedmessagedef'] = "%%userenrolname%% has completed the program %%curriculumname%%.";
+$string['notifycurriculumnotcompleteddays'] = 'Number of days before program ends to send message';
+$string['notifycurriculumnotcompletedmessage'] = 'Message template for program not completed';
+$string['notifycurriculumnotcompletedmessagedef'] = "%%userenrolname%% has not completed the program %%curriculumname%%.";
+$string['notifycurriculumrecurrencedays'] = 'Number of days before program expires to send message';
+$string['notifycurriculumrecurrencemessage'] = 'Message template for program expiration';
+$string['notifycurriculumrecurrencemessagedef'] = "%%userenrolname%% is due to re-take the program %%curriculumname%%.";
 $string['notifytrackenrolmessage'] = 'Message template for track enrollment';
 $string['notifytrackenrolmessagedef'] = "%%userenrolname%% has been enrolled in the track %%trackname%%.";
-$string['notify_classcomplete'] = "Receive class completion notifications";
-$string['notify_classenrol'] = "Receive class enrollment notifications";
-$string['notify_classnotstart'] = "Receive class not started notifications";
-$string['notify_classnotcomplete'] = "Receive class not completed notifications";
+$string['notify_classcomplete'] = "Receive class instance completion notifications";
+$string['notify_classenrol'] = "Receive class instance enrollment notifications";
+$string['notify_classnotstart'] = "Receive class instance not started notifications";
+$string['notify_classnotcomplete'] = "Receive class instance not completed notifications";
 $string['notify_coursedue'] = "Receive course description due to begin notifications";
 $string['notify_courserecurrence'] = "Receive course description expiration notifications";
-$string['notify_curriculumcomplete'] = "Receive curriculum completed notifications";
-$string['notify_curriculumdue'] = "Receive curriculum due to begin notifications";
-$string['notify_curriculumnotcomplete'] = "Receive curriculum not completed notifications";
-$string['notify_curriculumrecurrence'] = "Receive curriculum expiration notifications";
+$string['notify_curriculumcomplete'] = "Receive program completed notifications";
+$string['notify_curriculumdue'] = "Receive program due to begin notifications";
+$string['notify_curriculumnotcomplete'] = "Receive program not completed notifications";
+$string['notify_curriculumrecurrence'] = "Receive program expiration notifications";
 $string['notify_trackenrol'] = "Receive track enrollment notifications";
 $string['nouser'] = 'No user found for specified user id.';
 $string['nowenroled'] = 'You have been removed from the waiting list and placed in class instance {$a->idnum}.';
@@ -564,7 +564,7 @@ $string['num_curriculum_found'] = '{$a->num} programs found';
 $string['num_curriculumstudent_found'] = '{$a->num} item(s) found';
 $string['num_max_students'] = 'Max # of Students';
 $string['num_not_shown'] = '{$a->num} not shown';
-$string['num_pmclass_found'] = '{$a->num} class(es) found';
+$string['num_pmclass_found'] = '{$a->num} class instance(s) found';
 $string['num_student_found'] = '{$a->num} student(s) found';
 $string['num_students_failed'] = 'number of students failed';
 $string['num_students_not_complete'] = 'number of students not complete';
@@ -644,7 +644,7 @@ $string['showinactive'] = 'Show inactive';
 $string['site_not_defined'] = 'Site is not defined';
 $string['student_credits'] = 'Credits';
 $string['student_deleteconfirm'] = 'Are you sure you want to unenrol the student name: {$a->name} ?<br />'.
-                                   'NOTE: This will delete all records for this student in this class instance and will unenrol them from any connected Moodle class!';
+                                   'NOTE: This will delete all records for this student in this class instance and will unenrol them from any connected Moodle course!';
 $string['student_email'] = 'Email'; // TBD
 $string['student_grade'] = 'Grade';
 $string['student_id'] = 'ID'; // TBD
@@ -658,9 +658,9 @@ $string['students'] = 'Students';
 $string['studentunenrolled'] = 'Student: {$a->name} unenrolled.';
 $string['success_waitlist_remove'] = 'Successfully removed from waitlist.';
 $string['success_waitlist_overenrol'] = 'Successfully over enrolled.';
-$string['sync_instructor_role_help'] = 'If you select a role here, then any user with this role in an ELIS class will be assigned as an instructor in the class.';
+$string['sync_instructor_role_help'] = 'If you select a role here, then any user with this role in an ELIS class instance will be assigned as an instructor in the class instance.';
 $string['sync_instructor_role_setting'] = 'Instructor Role';
-$string['sync_student_role_help'] = 'If you select a role here, then any user with this role in an ELIS class will be enrolled as a student in the class.';
+$string['sync_student_role_help'] = 'If you select a role here, then any user with this role in an ELIS class instance will be enrolled as a student in the class instance.';
 $string['sync_student_role_setting'] = 'Student Role';
 
 $string['tag_name'] = 'Name';
@@ -671,10 +671,10 @@ $string['time_period'] = 'Timeperiod';
 $string['time_settings'] = 'Time Settings';
 $string['tips_time_format'] = "The format of this is ' *h, *d, *w, *m, *y ' (representing hours, days, weeks, months and years - where * can be any number) Each format must be separated by a comma";
 $string['time_to_complete'] = 'Time to complete';
-$string['top_clusters_help'] = 'This setting controls whether existing user sets are listed at the top level of the Curriculum Administration block.
+$string['top_clusters_help'] = 'This setting controls whether existing user sets are listed at the top level of the Program Administration block.
 When changing the value of this setting, please navigate to another page to determine whether this functionality is working as expected.';
 $string['top_clusters_setting'] = 'Display User Sets as the Top Level';
-$string['top_curricula_help'] = 'This setting controls whether existing curricula are listed at the top level of the Curriculum Administration block.
+$string['top_curricula_help'] = 'This setting controls whether existing curricula are listed at the top level of the Program Administration block.
 When changing the value of this setting, please navigate to another page to determine whether this functionality is working as expected.';
 $string['top_curricula_setting'] = 'Display Curricula at the Top Level';
 $string['track'] = 'Track';
@@ -686,12 +686,12 @@ $string['trackform:track_autocreate'] = 'Create all class instances';
 $string['trackform:track_autocreate_help'] = '<p>Enter the course description start and end date, if applicable.</p>';
 $string['trackassignmentform:track_autoenrol'] = 'Auto-enrol';
 $string['trackassignmentform:track_autoenrol_help'] = '<p>Auto enrol into this track.</p>';
-$string['trackassignmentform:track_autoenrol_long'] = 'Auto-enrol users into this class when they are added to this track';
-$string['trackform:curriculum_curid'] = 'Curriculum';
-$string['trackform:curriculum_curid_help'] = '<p>The curriculum this track is an instance or replica of.</p>';
-$string['trackform:curriculum_curidstatic'] = 'Curriculum';
-$string['trackform:curriculum_curidstatic_help'] = '<p>The curriculum this track is an instance or replica of.</p>';
-$string['trackform:track_autocreate'] = 'Create all classes';
+$string['trackassignmentform:track_autoenrol_long'] = 'Auto-enrol users into this class instance when they are added to this track';
+$string['trackform:curriculum_curid'] = 'Program';
+$string['trackform:curriculum_curid_help'] = '<p>The program this track is an instance or replica of.</p>';
+$string['trackform:curriculum_curidstatic'] = 'Program';
+$string['trackform:curriculum_curidstatic_help'] = '<p>The program this track is an instance or replica of.</p>';
+$string['trackform:track_autocreate'] = 'Create all class instances';
 $string['trackform:track_autocreate_help'] = '<p>Enter the course description start and end date, if applicable.</p>';
 $string['trackform:track_description'] = 'Description';
 $string['trackform:track_description_help'] = '<p>Description of the track.</p>';
@@ -720,7 +720,7 @@ $string['track_name'] = 'Name';
 $string['track_no_matching_users'] = 'No matching users.';
 $string['track_num_classes'] = 'Number of class instances';
 $string['track_parcur'] = 'Parent program';
-$string['track_role_help'] = 'This is the default role to assign to a Curriculum Management user in any tracks they create.
+$string['track_role_help'] = 'This is the default role to assign to a Program Management user in any tracks they create.
 This type of role assignment will not take place for a particular track if that user is already permitted to edit that track.
 To disable this functionality, select "N/A" from the list.';
 $string['track_role_setting'] = 'Default Track Role';
@@ -774,7 +774,7 @@ $string['userset_cpycurr_instruction'] = 'Use the copy button to make a copy of 
 $string['userset_cpyadd'] = 'Add';
 $string['userset_cpytrkcpy'] = 'Copy Tracks';
 $string['userset_cpycrscpy'] = 'Copy Course Descriptions';
-$string['userset_cpyclscpy'] = 'Copy Classes';
+$string['userset_cpyclscpy'] = 'Copy Class Instances';
 $string['userset_cpymdlclscpy'] = 'Copy Moodle Courses';
 $string['userset_idnumber'] = 'ID Number';
 $string['userset_info_group'] = 'User set Information';
@@ -796,7 +796,7 @@ $string['usersfound'] = '{$a} users found';
 $string['usersubsets'] = 'User Subsets';
 
 $string['waiting'] = 'Waiting';
-$string['waitinglistform_title'] = 'Class is full';
+$string['waitinglistform_title'] = 'Class Instance is full';
 $string['waitlist'] = 'waitlist';
 $string['waitlistenrol'] = 'Auto enrol from waitlist';
 
