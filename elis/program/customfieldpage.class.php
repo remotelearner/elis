@@ -165,11 +165,23 @@ class customfieldpage extends pm_page {
     }
 
     function do_forceresync() {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         $confirm = $this->optional_param('confirm', 0, PARAM_INT);
         if (!$confirm) {
-            notice_yesno(get_string('field_confirm_force_resync', 'elis_program'), 'index.php', 'index.php', array('s' => 'field', 'action' => 'forceresync', 'confirm' => 1), array('s' => 'field', 'level' => 'user'), 'post', 'get');
+            $optionsyes = array('s' => 'field',
+                                'action' => 'forcesync',
+                                'confirm' => 1
+                               );
+            $optionsno = array('s' => 'field',
+                               'level' => 'user',
+                              );
+
+            $buttoncontinue = new single_button(new moodle_url('index.php', $optionsyes), get_string('yes'), 'POST');
+            $buttoncancel   = new single_button(new moodle_url('index.php', $optionsno), get_string('no'), 'GET');
+
+            echo $OUTPUT->confirm(get_string('field_confirm_force_resync', 'elis_program'),
+                                  $buttoncontinue, $buttoncancel);
         } else {
             print_string('field_resyncing', 'elis_program');
             $ctxlvl = context_level_base::get_custom_context_level('user', 'elis_program');
@@ -216,7 +228,7 @@ class customfieldpage extends pm_page {
                 $categorycontext->save();
             }
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->url, get_string('field_category_saved', 'elis_program', $category));
+            redirect($tmppage->url, get_string('field_category_saved', 'elis_program', $category->name));
         } else {
             if ($id) {
                 $category = new field_category($id);
@@ -227,6 +239,8 @@ class customfieldpage extends pm_page {
     }
 
     function display_deletecategory() {
+        global $OUTPUT;
+
         $id = $this->required_param('id', PARAM_INT);
         $level = $this->required_param('level', PARAM_ACTION);
 
@@ -240,23 +254,23 @@ class customfieldpage extends pm_page {
         if ($confirm) {
             $category->delete();
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->url, get_string('field_category_deleted', 'elis_program', $category));
+            redirect($tmppage->url, get_string('field_category_deleted', 'elis_program', $category->name));
         } else {
-            notice_yesno(get_string('confirm_delete_category', 'elis_program', $category),
-                         'index.php', 'index.php',
-                         array(
-                             's' => $this->pagename,
-                             'action' => 'deletecategory',
-                             'id' => $id,
-                             'confirm' => 1,
-                             'level' => $level,
-                             ),
-                         array(
-                             's' => $this->pagename,
-                             'level' => $level,
-                             ),
-                         'POST', 'GET'
-                );
+            $optionsyes = array('s' => $this->pagename,
+                                'action' => 'deletecategory',
+                                'id' => $id,
+                                'confirm' => 1,
+                                'level' => $level
+                               );
+            $optionsno = array('s' => $this->pagename,
+                               'level' => $level,
+                              );
+
+            $buttoncontinue = new single_button(new moodle_url('index.php', $optionsyes), get_string('yes'), 'POST');
+            $buttoncancel   = new single_button(new moodle_url('index.php', $optionsno), get_string('no'), 'GET');
+
+            echo $OUTPUT->confirm(get_string('confirm_delete_category', 'elis_program', $category->name),
+                                  $buttoncontinue, $buttoncancel);
         }
     }
 
@@ -410,6 +424,8 @@ class customfieldpage extends pm_page {
     }
 
     function display_deletefield() {
+        global $OUTPUT;
+
         $level = $this->required_param('level', PARAM_ACTION);
         $id = $this->required_param('id', PARAM_INT);
 
@@ -425,21 +441,23 @@ class customfieldpage extends pm_page {
             $tmppage = new customfieldpage(array('level' => $level));
             redirect($tmppage->url, get_string('field_deleted', 'elis_program', $field));
         } else {
-            notice_yesno(get_string('confirm_delete_field', 'elis_program', $field),
-                         'index.php', 'index.php',
-                         array(
-                             's' => $this->pagename,
-                             'action' => 'deletefield',
-                             'id' => $id,
-                             'confirm' => 1,
-                             'level' => $level,
-                             ),
-                         array(
-                             's' => $this->pagename,
-                             'level' => $level,
-                             ),
-                         'POST', 'GET'
-                );
+            $optionsyes = array('s' => $this->pagename,
+                                'action' => 'deletefield',
+                                'id' => $id,
+                                'confirm' => 1,
+                                'level' => $level
+                               );
+            $optionsno = array('s' => $this->pagename,
+                               'level' => $level,
+                              );
+
+            $buttoncontinue = new single_button(new moodle_url('index.php', $optionsyes), get_string('yes'), 'POST');
+            $buttoncancel   = new single_button(new moodle_url('index.php', $optionsno), get_string('no'), 'GET');
+
+            echo $OUTPUT->confirm(get_string('confirm_delete_field', 'elis_program',
+                                             array('datatype'=>$field->datatype, 'name'=>$field->name)
+                                            ),
+                                  $buttoncontinue, $buttoncancel);
         }
     }
 
