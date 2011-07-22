@@ -37,7 +37,7 @@ function xmldb_pmplugins_userset_display_priority_install() {
     require_once elispm::lib('setup.php');
 
     //context level at which we are creating the new field(s)
-    $cluster_ctx_lvl = context_level_base::get_custom_context_level('cluster', 'block_curr_admin');
+    $cluster_ctx_lvl = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
     $field = new field();
     $field->shortname = USERSET_DISPLAY_PRIORITY_FIELD;

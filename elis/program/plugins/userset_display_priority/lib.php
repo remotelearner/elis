@@ -37,7 +37,7 @@ function userset_display_priority_append_sort_data($userset_id_field, &$select, 
 
     //make sure we can get the field we need for ordering
     if($theme_priority_field = new field(field::get_for_context_level_with_name('cluster', USERSET_DISPLAY_PRIORITY_FIELD)) and
-       $contextlevel = context_level_base::get_custom_context_level('cluster', 'block_curr_admin')) {
+       $contextlevel = context_level_base::get_custom_context_level('cluster', 'elis_program')) {
 
         $field_data_table = $theme_priority_field->data_table();
 
