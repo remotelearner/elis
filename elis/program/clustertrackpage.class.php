@@ -42,6 +42,7 @@ class clustertrackbasepage extends associationpage {
     var $form_class = 'clustertrackform';
     var $edit_form_class = 'clustertrackeditform';
 //    var $tabs;
+    var $default_tab = '*track*';
 
     function __construct(array $params=null) {
         $this->tabs = array(
@@ -441,4 +442,3 @@ class clustertrack_page_table extends association_page_table {
     }
 }
 
-?>

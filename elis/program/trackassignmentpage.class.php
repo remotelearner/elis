@@ -36,10 +36,11 @@ class trackassignmentpage extends associationpage {
     var $data_class = 'trackassignment';
     var $form_class = 'trackassignmentform';
     var $parent_data_class = 'track';
+    var $default_tab = '*track[!_]*';
 
     var $pagename = 'trkcls';
     var $tab_page = 'trackpage';
-    var $tabs;
+    //var $tabs;
 
     var $section = 'curr';
 

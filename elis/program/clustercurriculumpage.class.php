@@ -43,6 +43,7 @@ class clustercurriculumbasepage extends associationpage {
     var $data_class = 'clustercurriculum';
     var $form_class = 'clustercurriculumform';
     var $edit_form_class = 'clustercurriculumeditform';
+    var $default_tab = '*cluster[!_]*';
 
     //var $tabs;
 
@@ -786,4 +787,3 @@ class clustercurriculum_page_table extends association_page_table {
 
 }
 
-?>

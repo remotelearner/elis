@@ -74,7 +74,14 @@ class associationpage extends pm_page {
 
     function print_header() {
         $id = $this->required_param('id', PARAM_INT);
-        $default_tab = empty($this->default_tab) ? 'view' : $this->default_tab; // TBD
+        $default_tab = 'view'; // TBD
+        if (!empty($this->default_tab)) {
+            foreach ($this->get_tab_page()->tabs as $tab) {
+                if (fnmatch($this->default_tab, $tab['tab_id'])) {
+                    $default_tab = $tab['tab_id'];
+                }
+            }
+        }
         $action = $this->optional_param('action', $default_tab, PARAM_CLEAN);
         $association_id = $this->optional_param('association_id', 0, PARAM_INT);
 
@@ -355,8 +362,10 @@ class associationpage extends pm_page {
         $tabpage = $this->get_tab_page(array('action' => 'view', 'id' => $id));
         $tabpage->build_navbar_view();
         $this->_navbar = $tabpage->navbar;
+      /*
         $this->navbar->add(get_string("association_{$this->data_class}",
                                       self::LANG_FILE), $this->url);
+      */
     }
 
     /**

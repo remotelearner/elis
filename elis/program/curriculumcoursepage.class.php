@@ -36,8 +36,9 @@ require_once elispm::file('form/curriculumcourseform.class.php');
 
 class curriculumcoursebasepage extends associationpage {
     var $data_class = 'curriculumcourse';
+    var $default_tab = '*course[!_]*';
 
-    var $tabs;
+    //var $tabs;
 
     function __construct(array $params=null) {
         parent::__construct($params);
