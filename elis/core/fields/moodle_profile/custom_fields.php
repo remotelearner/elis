@@ -24,7 +24,7 @@
  *
  */
 
-class cm_moodle_profile {
+class pm_moodle_profile {
     const sync_from_moodle = 1;
     const sync_to_moodle = 0;
 }
@@ -40,7 +40,7 @@ function sync_profile_field_with_moodle($field) {
 function sync_profile_field_to_moodle($field) {
     global $CURMAN;
     if (!isset($field->owners['moodle_profile'])
-        || $field->owners['moodle_profile']->exclude == cm_moodle_profile::sync_from_moodle) {
+        || $field->owners['moodle_profile']->exclude == pm_moodle_profile::sync_from_moodle) {
         // not owned by the Moodle plugin, or set to sync from Moodle
         return true;
     }
@@ -81,7 +81,7 @@ function sync_profile_field_from_moodle($field) {
     global $CURMAN;
     $level = context_level_base::get_custom_context_level('user', 'block_curr_admin');
     if (!isset($field->owners['moodle_profile'])
-        || $field->owners['moodle_profile']->exclude == cm_moodle_profile::sync_to_moodle) {
+        || $field->owners['moodle_profile']->exclude == pm_moodle_profile::sync_to_moodle) {
         // not owned by the Moodle plugin, or set to sync to Moodle
         return true;
     }
@@ -133,8 +133,8 @@ function moodle_profile_field_edit_form_definition($form) {
 
     $choices = array(
         -1 => get_string('field_no_sync', 'block_curr_admin'),
-        cm_moodle_profile::sync_to_moodle => get_string('field_sync_to_moodle', 'block_curr_admin'),
-        cm_moodle_profile::sync_from_moodle => get_string('field_sync_from_moodle', 'block_curr_admin'),
+        pm_moodle_profile::sync_to_moodle => get_string('field_sync_to_moodle', 'block_curr_admin'),
+        pm_moodle_profile::sync_from_moodle => get_string('field_sync_from_moodle', 'block_curr_admin'),
         );
     $form->addElement('select', 'moodle_profile_exclusive', get_string('field_syncwithmoodle', 'block_curr_admin'), $choices);
     $form->setType('moodle_profile_exclusive', PARAM_INT);
@@ -162,8 +162,8 @@ function moodle_profile_field_save_form_data($form, $field, $data) {
     }
 
     global $CURMAN;
-    if ($data->moodle_profile_exclusive == cm_moodle_profile::sync_to_moodle
-        || $data->moodle_profile_exclusive == cm_moodle_profile::sync_from_moodle) {
+    if ($data->moodle_profile_exclusive == pm_moodle_profile::sync_to_moodle
+        || $data->moodle_profile_exclusive == pm_moodle_profile::sync_from_moodle) {
         if (isset($field->owners['moodle_profile'])) {
             $owner = new field_owner($field->owners['moodle_profile']);
             $owner->exclude = $data->moodle_profile_exclusive;
