@@ -122,6 +122,15 @@ class overlay_database extends moodle_database {
     }
 
     /**
+     * Empty out all the overlay tables.
+     */
+    public function reset_overlay_tables() {
+        foreach ($this->overlaytables as $tablename => $component) {
+            $this->delete_records($tablename);
+        }
+    }
+
+    /**
      * Clean up the temporary tables.  You'd think that if this method was
      * called dispose, then the cleanup would happen automatically, but it
      * doesn't.

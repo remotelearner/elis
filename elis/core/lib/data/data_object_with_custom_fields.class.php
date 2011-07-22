@@ -262,6 +262,14 @@ abstract class data_object_with_custom_fields extends elis_data_object {
     }
 
     /**
+     * Reset the cached list of custom fields (mainly for testing purposes)
+     */
+    public function reset_custom_field_list() {
+        $contextlevel = $this->get_field_context_level();
+        unset(self::$_fields[$contextlevel]);
+    }
+
+    /**
      * Load the custom field values from the database.
      */
     private function _load_field_data() {

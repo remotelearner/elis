@@ -982,7 +982,7 @@ function validate_is_unique(elis_data_object $record, array $fields) {
         $filters[] = new field_filter('id', $record->id, field_filter::NEQ);
     }
     if ($classname::exists($filters, $record->get_db())) {
-        throw new ErrorException('Not unique');
+        throw new ErrorException("{$tablename} record must have unique " . implode(',', $fields) . ' fields');
         // FIXME: new exception
     }
 }
@@ -995,7 +995,9 @@ function validate_not_empty(elis_data_object $record, $field) {
     // new record and the field is empty, then we have an error
     if ((isset($record->id) && isset($record->$field) && empty($record->$field))
         || (!isset($record->id) && empty($record->$field))) {
-        throw new ErrorException('Empty');
+        $classname = get_class($record);
+        $tablename = $classname::TABLE;
+        throw new ErrorException("{$tablename} record cannot have empty {$field} field");
         // FIXME: new exception
     }
 }
