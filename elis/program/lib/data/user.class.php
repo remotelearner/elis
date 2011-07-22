@@ -320,35 +320,39 @@ class user extends data_object_with_custom_fields {
         $muserid = $muser ? $muser->id : false;
 
         if ($tomoodle) {
+            // map PM user fields to Moodle user fields
+            $mdlfieldmap = array(
+                'idnumber' => 'idnumber',
+                'username' => 'username',
+                'firstname' => 'firstname',
+                'lastname' => 'lastname',
+                'email' => 'email',
+                'address' => 'address',
+                'city' => 'address',
+                'country' => 'country',
+            );
             if ($createnew && !$muserid) {
                 /// Add a new user
                 $record                 = new stdClass();
-                $record->idnumber       = $this->idnumber;
-                $record->username       = $this->username;
-                $record->password       = $this->password;
-                $record->firstname      = $this->firstname;
-                $record->lastname       = $this->lastname;
-                $record->email          = $this->email;
+                foreach ($mdlfieldmap as $pmfield => $mdlfield) {
+                    if (isset($this->$pmfield)) {
+                        $record->$mdlfield = $this->$pmfield;
+                    }
+                }
+                $record->password       = $this->password === null ? '' : $this->password;
                 $record->confirmed      = 1;
                 $record->mnethostid     = $CFG->mnet_localhost_id;
-                $record->address        = $this->address;
-                $record->city           = $this->city;
-                $record->country        = $this->country;
                 $record->timemodified   = time();
                 $record->id = $this->_db->insert_record('user', $record);
             } else if ($muserid) {
                 /// Update an existing user
                 $record                 = new stdClass();
                 $record->id             = $muserid;
-                $record->idnumber       = $this->idnumber;
-                $record->username       = $this->username;
-                $record->password       = $this->password;
-                $record->firstname      = $this->firstname;
-                $record->lastname       = $this->lastname;
-                $record->email          = $this->email;
-                $record->address        = $this->address;
-                $record->city           = $this->city;
-                $record->country        = $this->country;
+                foreach ($mdlfieldmap as $pmfield => $mdlfield) {
+                    if (isset($this->$pmfield)) {
+                        $record->$mdlfield = $this->$pmfield;
+                    }
+                }
                 $record->timemodified   = time();
                 $this->_db->update_record('user', $record);
             } else {
@@ -364,7 +368,7 @@ class user extends data_object_with_custom_fields {
             // synchronize profile fields
             $origrec = clone($record);
             profile_load_data($origrec);
-            $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'elis_user'));
+            $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'elis_program'));
             $mfields = $this->_db->get_records('user_info_field', array(), '', 'shortname');
             $fields = $fields ? $fields : array();
             $changed = false;
