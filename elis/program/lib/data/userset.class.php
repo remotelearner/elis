@@ -385,7 +385,7 @@ class userset extends data_object_with_custom_fields {
         $params = array($cluster_context_level, $cluster_context_instance->path);
 
         // filter out the records that the user can't see
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
         $filtersql = $context->get_filter('id')->get_sql(true, 'clst');
 
         if (isset($filtersql['join'])) {
@@ -627,12 +627,12 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol', $USER->id);
         $curriculum_filter = $curriculum_context->get_filter('id');
 
         if(empty($allowed_clusters)) {
@@ -782,12 +782,12 @@ function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = ar
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol', $USER->id);
         $curriculum_filter = $curriculum_context->get_filter('id');
 
         if(empty($allowed_clusters)) {

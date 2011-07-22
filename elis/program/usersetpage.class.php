@@ -91,7 +91,7 @@ class usersetpage extends managementpage {
         $cluster = new userset($clusterid);
         if(!empty($cluster->parent)) {
             //check to see if the current user has the secondary capability anywhere up the cluster tree
-            $contexts = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
+            $contexts = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
             return $contexts->context_allowed($clusterid, 'cluster');
         }
 

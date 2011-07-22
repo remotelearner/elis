@@ -305,12 +305,13 @@ class curriculum extends data_object_with_custom_fields {
                   JOIN {user} mu ON cu.idnumber = mu.idnumber
              LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = cca.id AND cnl.event = \'curriculum_recurrence\'
                  WHERE cnl.id IS NULL and cca.timeexpired > 0
-                  AND cca.timeexpired < $timenow + '.elis::$config->elis_program->notify_curriculumrecurrence_days.'
+                  AND cca.timeexpired < ? + '.elis::$config->elis_program->notify_curriculumrecurrence_days.'
                ';
 
+        $params = array($timenow);
         $usertempl = new user(); // used just for its properties.
 
-        $rs = $DB->get_recordset_sql($sql);
+        $rs = $DB->get_recordset_sql($sql, $params);
         if ($rs) {
             foreach ($rs as $rec) {
                 /// Load the student...
@@ -396,7 +397,7 @@ class curriculum extends data_object_with_custom_fields {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = cm_get_users_by_capability('user', $user->id, 'block/curr_admin:notify_curriculumrecurrence')) {
+            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'block/curr_admin:notify_curriculumrecurrence')) {
                 $users = $users + $supervisors;
             }
         }
@@ -641,12 +642,12 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = cm_context_set::for_user_with_capability('curriculum', 'block/curr_admin:curriculum:enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('curriculum', 'block/curr_admin:curriculum:enrol', $USER->id);
         $filter_object = $curriculum_context->get_filter('cur.id', 'curriculum');
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {

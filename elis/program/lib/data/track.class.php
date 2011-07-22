@@ -889,7 +889,7 @@ class trackassignment extends elis_data_object {
  * @param   string          $alpha         Start initial of curriculum name filter
  * @param   int             $curriculumid  Necessary associated curriculum
  * @param   int             $clusterid     Necessary associated cluster
- * @param   cm_context_set  $contexts      Contexts to provide permissions filtering, of null if none
+ * @param   pm_context_set  $contexts      Contexts to provide permissions filtering, of null if none
  * @param   int             $userid        The id of the user we are assigning to tracks
  *
  * @return  object array                   Returned records
@@ -946,14 +946,14 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
 
         $allowed_clusters = array();
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol', $USER->id);
         $curriculum_filter_object = $curriculum_context->get_filter('trk.id', 'track');
         $curriculum_filter = $curriculum_filter_object->get_sql();
 
@@ -1001,7 +1001,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
  * @param   string          $alpha         Start initial of curriculum name filter
  * @param   int             $curriculumid  Necessary associated curriculum
  * @param   int             $clusterid     Necessary associated cluster
- * @param   cm_context_set  $contexts      Contexts to provide permissions filtering, of null if none
+ * @param   pm_context_set  $contexts      Contexts to provide permissions filtering, of null if none
  * @return  int                            The number of records
  */
 function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $parentclusterid = 0, $contexts = null) {

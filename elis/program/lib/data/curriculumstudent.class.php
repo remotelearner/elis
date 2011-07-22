@@ -173,7 +173,7 @@ class curriculumstudent extends elis_data_object {
 
             if ($sendtosupervisor) {
                 /// Get parent-context users.
-                if ($supervisors = cm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_curriculumcomplete')) {
+                if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_curriculumcomplete')) {
                     $users = $users + $supervisors;
                 }
             }
@@ -269,7 +269,7 @@ class curriculumstudent extends elis_data_object {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = cm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_curriculumnotcomplete')) {
+            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_curriculumnotcomplete')) {
                 $users = $users + $supervisors;
             }
         }
@@ -395,7 +395,7 @@ class curriculumstudent extends elis_data_object {
         }
 
         //get the context for the "indirect" capability
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
 
         $allowed_clusters = array();
 

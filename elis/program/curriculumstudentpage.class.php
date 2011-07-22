@@ -504,7 +504,7 @@ class curriculumstudentpage extends associationpage2 {
 
     protected function get_selection_filter() {
         $post = $_POST;
-        $filter = new cm_user_filtering(null, 'index.php', array('s' => $this->pagename) + $this->get_base_params());
+        $filter = new pm_user_filtering(null, 'index.php', array('s' => $this->pagename) + $this->get_base_params());
         $_POST = $post;
         return $filter;
     }
@@ -556,7 +556,7 @@ class curriculumstudentpage extends associationpage2 {
 
         if(!curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $id)) {
             //perform SQL filtering for the more "conditional" capability
-            $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
+            $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
 
             $allowed_clusters = array();
 
@@ -676,7 +676,7 @@ class curriculum_user_selection_table extends selection_table {
         parent::__construct($items, $columns, $pageurl);
         $id = required_param('id', PARAM_INT);
         if (!curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $id)) {
-            $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
+            $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
 
             $allowed_clusters = array();
 

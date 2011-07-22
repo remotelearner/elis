@@ -45,7 +45,7 @@ class clusteruserselectpage extends selectionpage {
         // filter
         // cache POST data, because user_filtering messes with it
         $post = $_POST;
-        $filter = new cm_user_filtering(null, 'index.php', array('s' => $this->pagename) + $this->get_base_params());
+        $filter = new pm_user_filtering(null, 'index.php', array('s' => $this->pagename) + $this->get_base_params());
         $_POST = $post;
         return $filter;
     }
@@ -76,7 +76,7 @@ class clusteruserselectpage extends selectionpage {
             //perform SQL filtering for the more "conditional" capability
 
             //get the context for the "indirect" capability
-            $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
+            $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
 
             $allowed_clusters = cluster::get_allowed_clusters($id);
 

@@ -29,27 +29,27 @@
 $handlers = array (
     'message_send' => array (
          'handlerfile'      => '/elis/program/lib/notifications.php',
-         'handlerfunction'  => 'cm_notify_send_handler',
+         'handlerfunction'  => 'pm_notify_send_handler',
          'schedule'         => 'instant'
      ),
     'role_assigned' => array (
          'handlerfile'      => '/elis/program/lib/notifications.php',
-         'handlerfunction'  => 'cm_notify_role_assign_handler',
+         'handlerfunction'  => 'pm_notify_role_assign_handler',
          'schedule'         => 'instant'
      ),
     'role_unassigned' => array (
          'handlerfile'      => '/elis/program/lib/notifications.php',
-         'handlerfunction'  => 'cm_notify_role_unassign_handler',
+         'handlerfunction'  => 'pm_notify_role_unassign_handler',
          'schedule'         => 'instant'
      ),
     'track_assigned' => array (
          'handlerfile'      => '/elis/program/lib/notifications.php',
-         'handlerfunction'  => 'cm_notify_track_assign_handler',
+         'handlerfunction'  => 'pm_notify_track_assign_handler',
          'schedule'         => 'instant'
      ),
     'class_completed' => array (
          'handlerfile'      => '/elis/program/lib/notifications.php',
-         'handlerfunction'  => 'cm_notify_class_completed_handler',
+         'handlerfunction'  => 'pm_notify_class_completed_handler',
          'schedule'         => 'instant'
      ),
     'class_notcompleted' => array (
@@ -103,19 +103,19 @@ $handlers = array (
 
     'crlm_class_completed' => array (
         'handlerfile'       => '/elis/program/lib/lib.php',
-        'handlerfunction'   => 'cm_course_complete',
+        'handlerfunction'   => 'pm_course_complete',
         'schedule'          => 'instant'
      ),
 
      'crlm_instructor_assigned' => array (
         'handlerfile'       => '/elis/program/lib/notifications.php',
-        'handlerfunction'   => 'cm_notify_instructor_assigned_handler',
+        'handlerfunction'   => 'pm_notify_instructor_assigned_handler',
         'schedule'          => 'instant'
      ),
 
      'crlm_instructor_unassigned' => array (
         'handlerfile'       => '/elis/program/lib/notifications.php',
-        'handlerfunction'   => 'cm_notify_instructor_unassigned_handler',
+        'handlerfunction'   => 'pm_notify_instructor_unassigned_handler',
         'schedule'          => 'instant'
      ),
 );

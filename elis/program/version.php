@@ -1,3 +1,3 @@
 <?php
-$plugin->version = 2011070800;
+$plugin->version = 2011072100;
 $plugin->release = '2.0.0-PRERELEASE (Build: 20110325)';

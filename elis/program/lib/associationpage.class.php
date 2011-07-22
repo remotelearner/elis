@@ -172,7 +172,7 @@ class associationpage extends pm_page {
             $obj = $this->get_new_data_object();
             $obj->set_from_data($data);
             $obj->save();
-            $this->after_cm_entity_add($obj);
+            $this->after_pm_entity_add($obj);
             $target = $this->get_new_page(array('id' => $id), true); // TBD: 's' => ... && 'action' => 'default' || 'view' && 2nd param true???
             redirect($target->url, ucwords(get_class($obj)) .' '. $obj->id .
                                    ' '.  get_string('saved','elis_program') .'.');
@@ -215,12 +215,12 @@ class associationpage extends pm_page {
     }
 
     /**
-     * Hook that gets called after a CM entity is added through this page
+     * Hook that gets called after a PM entity is added through this page
      * Override in subclasses as needed
      *
-     * @param  object  $obj  The CM entity added
+     * @param  object  $obj  The PM entity added
      */
-    function after_cm_entity_add($obj) {
+    function after_pm_entity_add($obj) {
         //do nothing here, but allow subclass to override
     }
 

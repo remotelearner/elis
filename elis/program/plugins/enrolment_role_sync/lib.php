@@ -47,7 +47,7 @@ class enrolment_role_sync {
             //assignment is on a PM class instance
 
             //need the PM userid to create an association
-            $cmuserid = cm_get_crlmuserid($data->userid);
+            $cmuserid = pm_get_crlmuserid($data->userid);
 
             if (!empty($student_roleid) && $data->roleid == $student_roleid) {
                 // add enrolment record
@@ -180,7 +180,7 @@ class enrolment_role_sync {
 /**
  * Callback that performs the appropriate sync when the configured student
  * or instructor role changes
- * 
+ *
  * @param string $name The full name of the setting that's changed
  */
 function enrolment_role_sync_updatedcallback($name) {

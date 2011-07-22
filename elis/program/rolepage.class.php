@@ -245,7 +245,7 @@ abstract class rolepage extends associationpage2 {
 
     protected function get_selection_filter() {
         $post = $_POST;
-        $filter = new cm_user_filtering(null, 'index.php', array('s' => $this->pagename) + $this->get_base_params());
+        $filter = new pm_user_filtering(null, 'index.php', array('s' => $this->pagename) + $this->get_base_params());
         $_POST = $post;
         return $filter;
     }

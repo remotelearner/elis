@@ -596,6 +596,7 @@ function pm_update_student_enrolment() {
 function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
     global $CFG, $DB;
 
+    require_once ($CFG->dirroot.'/elis/program/lib/setup.php');
     require_once(elispm::lib('data/user.class.php'));
 
     $timenow = time();
@@ -814,4 +815,34 @@ function pm_get_crlmuserid($userid) {
     $where  = 'WHERE mu.id = :userid';
     $params  = array('userid'=>$userid);
     return $DB->get_field_sql($select.$from.$join.$where, $params);
+}
+
+/**
+ * Call all cron jobs needed for the ELIS system.
+ *
+ */
+function pm_cron() {
+    $status = true;
+
+    $status = pm_migrate_moodle_users(false, time() - (7*24*60*60)) && $status;
+    $status = pm_update_student_progress() && $status;
+    $status = pm_check_for_nags() && $status;
+    $status = pm_update_student_enrolment() && $status;
+
+    return $status;
+}
+/**
+ * Check for nags...
+ *
+ */
+function pm_check_for_nags() {
+    $status = true;
+
+    mtrace("Checking notifications<br />\n");
+    $status = pmclass::check_for_nags() && $status;
+    $status = pmclass::check_for_moodle_courses() && $status;
+    $status = course::check_for_nags() && $status;
+    $status = curriculum::check_for_nags() && $status;
+
+    return $status;
 }

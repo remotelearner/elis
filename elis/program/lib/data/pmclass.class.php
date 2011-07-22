@@ -297,8 +297,10 @@ class pmclass extends data_object_with_custom_fields {
      * records where applicable based on class grade and required completion elements
      */
     function update_enrolment_status() {
-        if (isset($this->course) && (get_class($this->course) == 'course')) {
-            $elements = $this->course->get_completion_elements();
+//        if (isset($this->course) && (get_class($this->course) == 'course')) {
+        if (isset($this->courseid)) {
+            $course = new course($this->courseid);
+            $elements = $course->get_completion_elements();
         } else {
             $elements = false;
         }
@@ -382,7 +384,7 @@ class pmclass extends data_object_with_custom_fields {
 
         //crlm_class_moodle moodlecourseid
         $sql = 'SELECT cm.id
-                FROM '.classmoodlecourse::TABLE.' AS cm
+                FROM {'.classmoodlecourse::TABLE.'} AS cm
                 LEFT JOIN '.$CFG->prefix.'course AS c ON cm.moodlecourseid = c.id
                 WHERE c.id IS NULL';
 
@@ -445,6 +447,8 @@ class pmclass extends data_object_with_custom_fields {
     public static function check_for_nags_notstarted() {
         global $DB;
 
+        require_once elispm::lib ('notifications.php');
+
         /// Unstarted classes:
         /// A class is unstarted if
         ///     - it's connected to a Moodle course and it has not been accessed by the user...
@@ -478,44 +482,50 @@ class pmclass extends data_object_with_custom_fields {
         $where  = 'WHERE cce.completestatusid = '.STUSTATUS_NOTCOMPLETE.'
                      AND cnl.id IS NULL
                      AND ul.id IS NULL
-                     AND cce.enrolmenttime < '.$startdate.' ';
+                     AND cce.enrolmenttime < :startdate ';
         $order  = 'ORDER BY ccl.id ASC ';
         $sql    = $select . $from . $join . $where . $order;
+        $params = array('startdate'=> $startdate);
 
         $classid = 0;
-        $classtempl = new pmclass(); // used just for its properties.
-        $studenttempl = new student(); // used just for its properties.
+//        $classtempl = new pmclass(); // used just for its properties.
+//        $studenttempl = new student(); // used just for its properties.
 
-        $rs = $DB->get_recordset_sql($sql);
+        $rs = $DB->get_recordset_sql($sql, $params);
+
         foreach ($rs as $rec) {
             if ($classid != $rec->id) {
                 /// Load a new class
                 $classid = $rec->id;
-                $classdata = array();
-                foreach ($classtempl->properties as $prop => $type) {
-                    $classdata[$prop] = $rec->$prop;
-                }
-                $pmclass = new pmclass($classdata);
+//                $classdata = array();
+//                foreach ($classtempl->properties as $prop => $type) {
+//                    $classdata[$prop] = $rec->$prop;
+//                }
+//                $pmclass = new pmclass($rec);
 
-                $elements = $pmclass->course->get_completion_elements();
+                // Move to event handlers
+//                $elements = $pmclass->course->get_completion_elements();
 
                 /// Is there a Moodle class?
                 $moodlecourseid = (empty($rec->mcourseid)) ? false : $rec->mcourseid;
             }
 
             /// Load the student...
-            $studentdata = array();
-            foreach ($studenttempl->properties as $prop => $type) {
-                $studentdata[$prop] = $rec->$prop;
-            }
-            $student = new student($studentdata, $pmclass, $elements);
+//            $studentdata = array();
+//            foreach ($studenttempl->properties as $prop => $type) {
+//                $studentdata[$prop] = $rec->$prop;
+//            }
+//            $student = new student($studentdata, $pmclass, $elements);
+//            $student = new student($rec);
             /// Add the moodlecourseid to the student record so we can use it in the event handler.
-            $student->moodlecourseid = $moodlecourseid;
+//            $student->moodlecourseid = $moodlecourseid;
+            $rec->moodlecourseid = $moodlecourseid;
 
             $moodleuserid = (empty($rec->muserid)) ? false : $rec->muserid;
 
             mtrace("Triggering class_notstarted event.\n");
-            events_trigger('class_notstarted', $student);
+//            events_trigger('class_notstarted', $student);
+            events_trigger('class_notstarted', $rec);
         }
         $rs->close();
         return true;
@@ -551,50 +561,51 @@ class pmclass extends data_object_with_custom_fields {
                     LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = ccl.id AND cnl.event = \'class_notcompleted\' ';
         $where  = 'WHERE cce.completestatusid = '.STUSTATUS_NOTCOMPLETE.'
                      AND cnl.id IS NULL
-                     AND ccl.enddate <= '.$enddate.' ';
+                     AND ccl.enddate <= :enddate ';
         $order  = 'ORDER BY ccl.id ASC ';
         $sql    = $select . $from . $join . $where . $order;
+        $params = array('enddate'=>$enddate);
 
         $classid = 0;
-        $classtempl = new pmclass(); // used just for its properties.
-        $studenttempl = new student(); // used just for its properties.
+//        $classtempl = new pmclass(); // used just for its properties.
+//        $studenttempl = new student(); // used just for its properties.
 
-        $rs = $DB->get_recordset_sql($sql);
+        $rs = $DB->get_recordset_sql($sql, $params);
         foreach ($rs as $rec) {
             if ($classid != $rec->id) {
                 /// Load a new class
                 $classid = $rec->id;
-                $classdata = array();
-                foreach ($classtempl->properties as $prop => $type) {
-                    $classdata[$prop] = $rec->$prop;
-                }
-                $pmclass = new pmclass($classdata);
+//                $classdata = array();
+//                foreach ($classtempl->properties as $prop => $type) {
+//                    $classdata[$prop] = $rec->$prop;
+//                }
+//                $pmclass = new pmclass($classdata);
 
 
-                $elements = $pmclass->course->get_completion_elements();
+//                $elements = $pmclass->course->get_completion_elements();
 
                 /// Is there a Moodle class?
                 $moodlecourseid = (empty($rec->mcourseid)) ? false : $rec->mcourseid;
             }
 
             /// If the class doesn't have an end date, skip it.
-            if (empty($pmclass->enddate)) {
+            if (empty($rec->enddate)) {
                 continue;
             }
 
             /// Load the student...
-            $studentdata = array();
-            foreach ($studenttempl->properties as $prop => $type) {
-                $studentdata[$prop] = $rec->$prop;
-            }
-            $student = new student($studentdata, $pmclass, $elements);
+//            $studentdata = array();
+//            foreach ($studenttempl->properties as $prop => $type) {
+//                $studentdata[$prop] = $rec->$prop;
+//            }
+//            $student = new student($studentdata, $pmclass, $elements);
             /// Add the moodlecourseid to the student record so we can use it in the event handler.
-            $student->moodlecourseid = $moodlecourseid;
+            $rec->moodlecourseid = $moodlecourseid;
 
             $moodleuserid = (empty($rec->muserid)) ? false : $rec->muserid;
 
             mtrace("Triggering class_notcompleted event.\n");
-            events_trigger('class_notcompleted', $student);
+            events_trigger('class_notcompleted', $rec);
         }
         $rs->close();
         return true;
@@ -706,13 +717,13 @@ class pmclass extends data_object_with_custom_fields {
     public static function get_allowed_clusters($clsid) {
         global $USER;
 
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
 
         $allowed_clusters = array();
 
         if (pmclasspage::_has_capability('block/curr_admin:class:enrol_cluster_user', $clsid)) {
             require_once elispm::lib('data/usercluster.class.php');
-            $cmuserid = cm_get_crlmuserid($USER->id);
+            $cmuserid = pm_get_crlmuserid($USER->id);
             $userclusters = clusterassignment::find(new field_filter('userid', $cmuserid));
             foreach ($userclusters as $usercluster) {
                 $allowed_clusters[] = $usercluster->clusterid;
@@ -851,7 +862,7 @@ class pmclass extends data_object_with_custom_fields {
                 }
                 $param['trackid'] = $t;
                 $trackassignobj = new trackassignment($param);
-                $trackassignobj->add();
+                $trackassignobj->save();
             }
         }
 
@@ -892,7 +903,7 @@ class pmclass extends data_object_with_custom_fields {
  * @param   string          $alpha       Start initial of course name filter
  * @param   int             $id          Corresponding courseid, or zero for any
  * @param   boolean         $onlyopen    If true, only consider classes whose end date has not been passed
- * @param   cm_context_set  $contexts    Contexts to provide permissions filtering, of null if none
+ * @param   pm_context_set  $contexts    Contexts to provide permissions filtering, of null if none
  * @param   int             $clusterid   Id of a cluster that the class must be assigned to via a track
  * @return  object array                 Returned records
  */
@@ -997,7 +1008,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
  * @param   string          $alpha       Start initial of course name filter
  * @param   int             $id          Corresponding courseid, or zero for any
  * @param   boolean         $onlyopen    If true, only consider classes whose end date has not been passed
- * @param   cm_context_set  $contexts    Contexts to provide permissions filtering, of null if none
+ * @param   pm_context_set  $contexts    Contexts to provide permissions filtering, of null if none
  * @param   int             $clusterid   Id of a cluster that the class must be assigned to via a track
  * @return  int                          The number of records
  */

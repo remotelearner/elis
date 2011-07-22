@@ -92,7 +92,7 @@ class pmclasspage extends managementpage {
         }
 
         //get the context for the "indirect" capability
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
 
         //we first need to go through tracks to get to clusters
         $track_listing = new trackassignment(array('classid' => $classid));
@@ -178,14 +178,14 @@ class pmclasspage extends managementpage {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
         return $this->_has_capability('block/curr_admin:class:view')
-            || instructor::user_is_instructor_of_class(cm_get_crlmuserid($USER->id), $id);
+            || instructor::user_is_instructor_of_class(pm_get_crlmuserid($USER->id), $id);
     }
 
     function can_do_edit() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
         return $this->_has_capability('block/curr_admin:class:edit')
-            || instructor::user_is_instructor_of_class(cm_get_crlmuserid($USER->id), $id);
+            || instructor::user_is_instructor_of_class(pm_get_crlmuserid($USER->id), $id);
     }
 
     function can_do_delete() {

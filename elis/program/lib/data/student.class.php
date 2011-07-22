@@ -171,7 +171,8 @@ class student extends elis_data_object {
                 return true;
             }
 
-            $message = new stdClass; // TBD: new notification();
+//            $message = new stdClass; // TBD: new notification();
+            $message = new notification();
 
             /// Set up the text of the message
             $text = empty(elis::$config->elis_program->notify_classcompleted_message) ?
@@ -180,6 +181,7 @@ class student extends elis_data_object {
             $search = array('%%userenrolname%%', '%%classname%%');
 
             $pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
+            $user = new user($pmuser);
             if (($clsmdl = $this->_db->get_record(classmoodlecourse::TABLE,
                                    array('classid' => $this->classid))) &&
                 ($course = $this->_db->get_record('course', array('id' => $clsmdl->moodlecourseid)))) {
@@ -201,7 +203,7 @@ class student extends elis_data_object {
             $text = str_replace($search, $replace, $text);
 
             if ($sendtouser) {
-                $message->send_notification($text, $pmuser);
+                $message->send_notification($text, $user);
             }
 
             $users = array();
@@ -215,7 +217,7 @@ class student extends elis_data_object {
 
             if ($sendtosupervisor) {
                 /// Get parent-context users.
-                if ($supervisors = cm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_classcomplete')) {
+                if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_classcomplete')) {
                     $users = $users + $supervisors;
                 }
             }
@@ -356,8 +358,9 @@ class student extends elis_data_object {
                     $context = get_context_instance(CONTEXT_COURSE, $mcourse->id);
 
                     /// Get the Moodle user ID or create a new account for this user.
-                    if (!($muserid = cm_get_moodleuserid($this->userid))) {
-                        $user = new user($this->userid); // TBD
+                    $user = new user($this->userid);
+                    //if (!($muserid = cm_get_moodleuserid($this->userid))) {
+                    if (!($muserid = $user->get_moodleuser())) {
 
                         if (!$muserid = $user->synchronize_moodle_user(true, true)) {
                             $status = new Object();
@@ -387,9 +390,13 @@ class student extends elis_data_object {
         $result = student_grade::delete_for_user_and_class($this->userid, $this->classid);
 
         /// Unenrol them from the Moodle class.
+//        if (!empty($this->classid) && !empty($this->userid) &&
+//            ($moodlecourseid = $this->_db->get_field('crlm_class_moodle', 'moodlecourseid', array('classid' => $this->classid))) &&
+//            ($muserid = cm_get_moodleuserid($this->userid))) {
+        $user = new user($this->userid);
         if (!empty($this->classid) && !empty($this->userid) &&
             ($moodlecourseid = $this->_db->get_field('crlm_class_moodle', 'moodlecourseid', array('classid' => $this->classid))) &&
-            ($muserid = cm_get_moodleuserid($this->userid))) {
+            ($muserid = $user->get_moodleuserid())) {
 
             $context = get_context_instance(CONTEXT_COURSE, $moodlecourseid);
             if ($context && $context->id) {
@@ -1149,7 +1156,7 @@ class student extends elis_data_object {
 
         $output = '';
 
-//        if (!$atn = cm_get_attendance($this->classid, $this->userid)) {
+//        if (!$atn = pm_get_attendance($this->classid, $this->userid)) {
         if (!$atn = get_attendance($this->classid, $this->userid)) {
             $atn = new attendance();
         }
@@ -1859,7 +1866,8 @@ class student extends elis_data_object {
 
     public static function class_notstarted_handler($student) {
         global $CFG, $DB;
-        require_once elispm::file('notifications.php');
+
+        require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
         $sendtouser       = elis::$config->elis_program->notify_classnotstarted_user;
@@ -1888,14 +1896,20 @@ class student extends elis_data_object {
                     elis::$config->elis_program->notify_classnotstarted_message;
         $search = array('%%userenrolname%%', '%%classname%%');
         $pmuser = $DB->get_record(user::TABLE, array('id' => $student->userid));
-        $replace = array(fullname($pmuser), $student->pmclass->course->name);
+        $user = new user($pmuser);
+        // Get course info
+        $pmcourse = $DB->get_record(course::TABLE, array('id' => $student->courseid));
+
+//        $replace = array(fullname($pmuser), $student->pmclass->course->name);
+        $replace = array(fullname($pmuser), $pmcourse->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
         $eventlog->event = 'class_notstarted';
         $eventlog->instance = $student->classid;
+        echo '<br>send to user? '.$sendtouser;
         if ($sendtouser) {
-            $message->send_notification($text, $student->user, null, $eventlog);
+            $message->send_notification($text, $user, null, $eventlog);
         }
 
         $users = array();
@@ -1909,7 +1923,7 @@ class student extends elis_data_object {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = cm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_classnotstart')) {
+            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_classnotstart')) {
                 $users = $users + $supervisors;
             }
         }
@@ -1932,11 +1946,12 @@ class student extends elis_data_object {
 
     public static function class_notcompleted_handler($student) {
         global $CFG, $DB;
-        require_once elispm::file('notifications.php');
+        require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
         $sendtouser = elis::$config->elis_program->notify_classnotcompleted_user;
         $sendtorole = elis::$config->elis_program->notify_classnotcompleted_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_classnotstarted_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole) {
@@ -1960,14 +1975,18 @@ class student extends elis_data_object {
                     elis::$config->elis_program->notify_classnotcompleted_message;
         $search = array('%%userenrolname%%', '%%classname%%');
         $pmuser = $DB->get_record(user::TABLE, array('id' => $student->userid));
-        $replace = array(fullname($pmuser), $student->pmclass->course->name);
+        $user = new user($pmuser);
+        // Get course info
+        $pmcourse = $DB->get_record(course::TABLE, array('id' => $student->courseid));
+
+        $replace = array(fullname($pmuser), $pmcourse->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
         $eventlog->event = 'class_notcompleted';
         $eventlog->instance = $student->classid;
         if ($sendtouser) {
-            $message->send_notification($text, $pmuser, null, $eventlog);
+            $message->send_notification($text, $user, null, $eventlog);
         }
 
         $users = array();
@@ -1981,7 +2000,7 @@ class student extends elis_data_object {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = cm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_classnotcomplete')) {
+            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_classnotcomplete')) {
                 $users = $users + $supervisors;
             }
         }
@@ -2015,7 +2034,7 @@ class student extends elis_data_object {
         }
 
         //get the context for the "indirect" capability
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
 
         $allowed_clusters = array();
         $allowed_clusters = pmclass::get_allowed_clusters($classid);

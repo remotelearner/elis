@@ -308,7 +308,7 @@ class usertrack extends elis_data_object {
         global $USER;
 
         //get the context for the "indirect" capability
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
 
         $allowed_clusters = array();
 

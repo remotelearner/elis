@@ -188,7 +188,7 @@ class userpage extends managementpage {
         }
 
         // Generate SQL filter
-        $filter = new cm_user_filtering(null, 'index.php', array('s' => 'usr'));
+        $filter = new pm_user_filtering(null, 'index.php', array('s' => 'usr'));
         $extrasql = $filter->get_sql_filter();
 
         // Get list of users

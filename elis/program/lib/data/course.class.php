@@ -482,7 +482,7 @@ class course extends data_object_with_custom_fields {
                   'INNER JOIN {'.pmclass::TABLE.'} ccl ON ccl.courseid = cc.id ' .
                   'INNER JOIN {'.student::TABLE.'} cce ON cce.classid = ccl.id ' .
                   'LEFT JOIN {user} u ON u.idnumber = cu.idnumber ' .
-                  'LEFT JOIN {'.notificationlog::TABLE.' cnl ON cnl.userid = cu.id AND cnl.instance = cce.id AND cnl.event = \'course_recurrence\' ';
+                  'LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = cce.id AND cnl.event = \'course_recurrence\' ';
         $where  = 'WHERE (cce.completestatusid != '.STUSTATUS_NOTCOMPLETE.') AND (ccc.frequency > 0) '.
                   'AND ((cce.completetime + ' .
             /// This construct is to select the number of seconds to add to determine the delta frequency based on the timeperiod
@@ -591,7 +591,7 @@ class course extends data_object_with_custom_fields {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = cm_get_users_by_capability('user', $user->id, 'block/curr_admin:notify_courserecurrence')) {
+            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'block/curr_admin:notify_courserecurrence')) {
                 $users = $users + $supervisors;
             }
         }

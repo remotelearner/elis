@@ -105,6 +105,39 @@ class message {
  */
 }
 
+class notificationlog extends elis_data_object {
+    const TABLE = 'crlm_notification_log';
+
+    var $verbose_name = 'notificationlog';
+
+    /**
+     * Notification log ID-number
+     * @var    int
+     * @length 10
+     */
+    protected $_dbfield_id;
+    /**
+     * Notification log event string
+     * @var    char
+     * @length 166
+     */
+    protected $_dbfield_event;
+    protected $_dbfield_instance;
+    protected $_dbfield_userid;
+    protected $_dbfield_data;
+    protected $_dbfield_timecreated;
+
+    private $location;
+    private $templateclass;
+
+    static $associations = array(
+        'userid' => array(
+            'class' => 'user',
+            'idfield' => 'userid'
+        )
+    );
+}
+
 class notification extends message {
     /// In 2.0, the message_send_handler in /lib/messagelib takes a structure with defined variables below.
     /// These are loaded into a generic object. They are defined here for better documentation, and should
@@ -141,8 +174,8 @@ class notification extends message {
      * preset.
      *
      * @param char $message The text of the message.
-     * @param object $userto A Moodle generic user object, or a CM user class object that the message is to.
-     * @param object $userfrom A Moodle generic user object, or a CM user class object that the message is from.
+     * @param object $userto A Moodle generic user object, or a PM user class object that the message is to.
+     * @param object $userfrom A Moodle generic user object, or a PM user class object that the message is from.
      * @param object $logevent Information to log to 'crlm_notification_log'.
      *
      */
@@ -167,16 +200,18 @@ class notification extends message {
             $this->fullmessage = $message;
         }
 
-        /// Check for the user object type. If a CM User was sent in, need to get the Moodle object.
-        $tocmuserid = false;
+        /// Check for the user object type. If a PM User was sent in, need to get the Moodle object.
+        $topmuserid = false;
         if (get_class($this->userto) == 'user') {
-            $tocmuserid = $this->userto->id;
-            if (!($this->userto = cm_get_moodleuser($this->userto->id))) {
+            $topmuserid = $this->userto->id;
+//            if (!($this->userto = cm_get_moodleuser($this->userto->id))) {
+            if (!($this->userto = $this->userto->get_moodleuser())) {
                 debugging(get_string('nomoodleuser', 'elis_program'));
             }
         }
         if (get_class($this->userfrom) == 'user') {
-            if (!($this->userfrom = cm_get_moodleuser($this->userfrom->id))) {
+//            if (!($this->userfrom = cm_get_moodleuser($this->userfrom->id))) {
+            if (!($this->userfrom = $this->userfrom->get_moodleuser())) {
                 debugging(get_string('nomoodleuser', 'elis_program'));
             }
         }
@@ -194,10 +229,10 @@ class notification extends message {
                 $newlog->event = $logevent->event;
                 if (isset($logevent->userid)) {
                     $newlog->userid = $logevent->userid;
-                } else if ($tocmuserid === false){
-                    $newlog->userid = cm_get_crlmuserid($this->userto->id);
+                } else if ($topmuserid === false){
+                    $newlog->userid = pm_get_crlmuserid($this->userto->id);
                 } else {
-                    $newlog->userid = $tocmuserid;
+                    $newlog->userid = $topmuserid;
                 }
                 if (isset($logevent->instance)) {
                     $newlog->instance = $logevent->instance;
@@ -249,11 +284,11 @@ class notification extends message {
      */
 
     public static function send_handler($eventdata){
-        return cm_notify_send_handler($eventdata);
+        return pm_notify_send_handler($eventdata);
     }
 
     public static function role_assign_handler($eventdata){
-        return cm_notify_role_assign_handler($eventdata);
+        return pm_notify_role_assign_handler($eventdata);
     }
 /*
  * ---------------------------------------------------------------------------------------
@@ -291,7 +326,7 @@ class notification extends message {
  * COPIED FROM 2.0 '/lib/messagelib.php' - This can be removed after upgrade to 2.0
  *
  */
-function cm_notify_send_handler($eventdata){
+function pm_notify_send_handler($eventdata){
     global $CFG;
 
     /// For 1.9, just user the messaging system until we have recreated the 2.0
@@ -389,7 +424,7 @@ function cm_notify_send_handler($eventdata){
  * @param  stdClass  $eventdata  The appropriate role_assignments record
  *
  */
-function cm_assign_instructor_from_mdl($eventdata) {
+function pm_assign_instructor_from_mdl($eventdata) {
 
     global $CFG, $DB;
 
@@ -407,7 +442,7 @@ function cm_assign_instructor_from_mdl($eventdata) {
     }
 
     //get the id of the appropriate curriculum user
-    if(!$instructorid = cm_get_crlmuserid($eventdata->userid)) {
+    if(!$instructorid = pm_get_crlmuserid($eventdata->userid)) {
         return;
     }
 
@@ -455,7 +490,7 @@ function cm_assign_instructor_from_mdl($eventdata) {
  * @param  stdClass  $eventdata  The appropriate role_assignments record
  *
  */
-function cm_assign_student_from_mdl($eventdata) {
+function pm_assign_student_from_mdl($eventdata) {
     global $CFG, $DB;
 
     /// We get all context assigns, so check that this is a class. If not, we're done.
@@ -466,8 +501,8 @@ function cm_assign_student_from_mdl($eventdata) {
         return true;
     }
 
-    $cmuserid = cm_get_crlmuserid($eventdata->userid);
-    if (!$cmuserid) {
+    $pmuserid = pm_get_crlmuserid($eventdata->userid);
+    if (!$pmuserid) {
         return;
     }
 
@@ -483,10 +518,10 @@ function cm_assign_student_from_mdl($eventdata) {
     if (count($classes) == 1) { // only if course is associated with one class
         $class = current($classes);
         if (!$DB->get_record(student::TABLE, array('classid'=> $class->classid,
-                                                   'userid'=> $cmuserid))) {
+                                                   'userid'=> $pmuserid))) {
             $sturec = new Object();
             $sturec->classid = $class->classid;
-            $sturec->userid = $cmuserid;
+            $sturec->userid = $pmuserid;
             /// Enrolment time will be the earliest found role assignment for this user.
             $enroltime = $DB->get_field('role_assignments', 'MIN(timestart) as enroltime',
                                         array('contextid'=> $context->id,
@@ -512,11 +547,11 @@ function cm_assign_student_from_mdl($eventdata) {
  * @return boolean success
  *
  */
-function cm_notify_role_assign_handler($eventdata){
+function pm_notify_role_assign_handler($eventdata){
     global $CFG, $DB, $USER;
 
-    cm_assign_instructor_from_mdl($eventdata);
-    cm_assign_student_from_mdl($eventdata);
+    pm_assign_instructor_from_mdl($eventdata);
+    pm_assign_student_from_mdl($eventdata);
 
     /// Does the user receive a notification?
     $sendtouser = !empty(elis::$config->elis_program->notify_classenrol_user) ?
@@ -575,9 +610,9 @@ function cm_notify_role_assign_handler($eventdata){
     }
 
     if ($sendtosupervisor) {
-        $cmuserid = cm_get_crlmuserid($eventdata->userid);
+        $pmuserid = pm_get_crlmuserid($eventdata->userid);
         // Get all users with the notify_classenrol capability.
-        if ($supervisors = cm_get_users_by_capability('user', $cmuserid, 'block/curr_admin:notify_classenrol')) {
+        if ($supervisors = pm_get_users_by_capability('user', $pmuserid, 'block/curr_admin:notify_classenrol')) {
             $users = $users + $supervisors;
         }
     }
@@ -596,7 +631,7 @@ function cm_notify_role_assign_handler($eventdata){
  * @param $eventdata
  * @return unknown_type
  */
-function cm_notify_role_unassign_handler($eventdata){
+function pm_notify_role_unassign_handler($eventdata){
     global $CFG, $DB;
 
     //make sure we have course manager roles defined
@@ -632,7 +667,7 @@ function cm_notify_role_unassign_handler($eventdata){
     }
 
     //retrieve the curriculum admin user's id
-    if(!$crlm_userid = cm_get_crlmuserid($eventdata->userid)) {
+    if(!$crlm_userid = pm_get_crlmuserid($eventdata->userid)) {
         return true;
     }
 
@@ -658,7 +693,7 @@ function cm_notify_role_unassign_handler($eventdata){
  * @return boolean success
  *
  */
-function cm_notify_track_assign_handler($eventdata){
+function pm_notify_track_assign_handler($eventdata){
     global $CFG, $DB, $USER;
 
     /// Does the user receive a notification?
@@ -714,7 +749,7 @@ function cm_notify_track_assign_handler($eventdata){
 
     if ($sendtosupervisor) {
         /// Get parent-context users.
-        if ($supervisors = cm_get_users_by_capability('user', $eventdata->userid, 'block/curr_admin:notify_trackenrol')) {
+        if ($supervisors = pm_get_users_by_capability('user', $eventdata->userid, 'block/curr_admin:notify_trackenrol')) {
             $users = $users + $supervisors;
         }
     }
@@ -734,7 +769,7 @@ function cm_notify_track_assign_handler($eventdata){
  * @param  stdClass  $eventdata  The appropriate crlm_class_instructor record
  *
  */
-function cm_notify_instructor_assigned_handler($eventdata) {
+function pm_notify_instructor_assigned_handler($eventdata) {
     global $CFG, $CURMAN;
 
     //make sure we actually have a default instructor role specified
@@ -782,7 +817,7 @@ function cm_notify_instructor_assigned_handler($eventdata) {
  *
  * @param  stdClass  $eventdata  The appropriate crlm_class_instructor record
  */
-function cm_notify_instructor_unassigned_handler($eventdata) {
+function pm_notify_instructor_unassigned_handler($eventdata) {
 
     global $CFG, $DB;
 

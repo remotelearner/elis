@@ -86,7 +86,7 @@ class curriculumpage extends managementpage {
         }
 
         //get the context for the "indirect" capability
-        $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
 
         //get the clusters and check the context against them
         $clusters = clustercurriculum::get_clusters($curriculumid);

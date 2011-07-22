@@ -95,7 +95,7 @@ class usertrackpage extends usertrackbasepage {
         $contexts = clone(trackpage::get_contexts('block/curr_admin:track:enrol'));
 
         //look up student's cluster assignments with necessary capability
-        $cluster_contexts = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
+        $cluster_contexts = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
 
         //calculate our filter condition based on cluster accessibility
         //$cluster_filter = $cluster_contexts->sql_filter_for_context_level('clst.id', 'cluster');

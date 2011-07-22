@@ -67,8 +67,8 @@ require_once elispm::file('/form/cmform.class.php');
             $mform->addElement('select', 'curriculum_expiration_start', get_string('curriculum_expiration_start', 'block_curr_admin'), $opts);
 
             // Generate certificate border & seal image options
-            $border_images = cm_certificate_get_borders();
-            $seal_images = cm_certificate_get_seals();
+            $border_images = pm_certificate_get_borders();
+            $seal_images = pm_certificate_get_seals();
 
             // Certificate settings
             $mform->addElement('header', 'certificates', get_string('certificates', 'block_curr_admin'));

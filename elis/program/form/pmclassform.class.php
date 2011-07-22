@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once elispm::file('form/cmform.class.php');
 
-MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/elis/program/form/timeselector.php", 'cm_time_selector');
+MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/elis/program/form/timeselector.php", 'pm_time_selector');
 
 class pmclassform extends cmform {
     function definition() {

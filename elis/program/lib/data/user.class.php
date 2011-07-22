@@ -371,7 +371,7 @@ class user extends data_object_with_custom_fields {
             require_once elis::plugin_file('elisfields_moodle_profile','custom_fields.php');
             foreach ($fields as $field) {
                 $field = new field($field);
-                if (isset($field->owners['moodle_profile']) && $field->owners['moodle_profile']->exclude == cm_moodle_profile::sync_to_moodle && isset($mfields[$field->shortname])) {
+                if (isset($field->owners['moodle_profile']) && $field->owners['moodle_profile']->exclude == pm_moodle_profile::sync_to_moodle && isset($mfields[$field->shortname])) {
                     $shortname = $field->shortname;
                     $fieldname = "field_$shortname";
                     $mfieldname = "profile_$fieldname";
@@ -477,7 +477,7 @@ class user extends data_object_with_custom_fields {
                      LEFT JOIN (SELECT cls.courseid
                                   FROM {'.pmclass::TABLE.'} cls
                                   JOIN {'.student::TABLE.'} enrol ON enrol.classid = cls.id
-                                 WHERE enrol.completestatusid = '.student::STATUS_PASSED.' AND enrol.userid=$userid
+                                 WHERE enrol.completestatusid = '.student::STUSTATUS_PASSED.' AND enrol.userid=$userid
                                    AND (cls.enddate > :currtime OR NOT cls.enddate)) cls
                                ON cls.courseid = crs.id
                          WHERE cls.courseid IS NULL
@@ -556,7 +556,7 @@ class user extends data_object_with_custom_fields {
                                 $classids[] = $classdata->id;
                             }
 
-                            if ($classdata->completestatusid == student::STATUS_PASSED) {
+                            if ($classdata->completestatusid == student::STUSTATUS_PASSED) {
                                 $completecourses++;
                             }
 
@@ -567,7 +567,7 @@ class user extends data_object_with_custom_fields {
                                 $coursename = $course->coursename;
                             }
 
-                            if ($classdata->completestatusid == student::STATUS_PASSED && !empty($classdata->completetime)) {
+                            if ($classdata->completestatusid == student::STUSTATUS_PASSED && !empty($classdata->completetime)) {
 
                             }
 
@@ -575,7 +575,7 @@ class user extends data_object_with_custom_fields {
                                 empty(elis::$config->elis_program->disablecoursecatalog) ? ('<a href="index.php?s=crscat&section=curr&showcurid=' . $usercur->curid . '">' . $usercur->name . '</a>') : $usercur->name,
                                 $coursename,
                                 $classdata->grade,
-                                $classdata->completestatusid == student::STATUS_PASSED && !empty($classdata->completetime) ?
+                                $classdata->completestatusid == student::STUSTATUS_PASSED && !empty($classdata->completetime) ?
                                     date('M j, Y', $classdata->completetime) : 'NA'
                             );
                         } else {
@@ -675,7 +675,7 @@ class user extends data_object_with_custom_fields {
 /**
  * "Show inactive users" filter type.
  */
-class cm_show_inactive_filter extends user_filter_type {
+class pm_show_inactive_filter extends user_filter_type {
     /**
      * options for the list values
      */
@@ -772,13 +772,13 @@ class cm_show_inactive_filter extends user_filter_type {
     }
 }
 
-class cm_custom_field_filter extends user_filter_type {
+class pm_custom_field_filter extends user_filter_type {
     /**
      * options for the list values
      */
     var $_field;
 
-    function cm_custom_field_filter($name, $label, $advanced, $field) {
+    function pm_custom_field_filter($name, $label, $advanced, $field) {
         parent::user_filter_type($name, $label, $advanced);
         $this->_field   = $field;
     }
@@ -848,14 +848,14 @@ class cm_custom_field_filter extends user_filter_type {
 /**
  * User filtering wrapper class.
  */
-class cm_user_filtering extends user_filtering {
+class pm_user_filtering extends user_filtering {
     /**
      * Contructor
      * @param array array of visible user fields
      * @param string base url used for submission/return, null if the same of current page
      * @param array extra page parameters
      */
-    function cm_user_filtering($fieldnames=null, $baseurl=null, $extraparams=null) {
+    function pm_user_filtering($fieldnames=null, $baseurl=null, $extraparams=null) {
         if (empty($fieldnames)) {
             $fieldnames = array(
                 'realname' => 0,
@@ -925,7 +925,7 @@ class cm_user_filtering extends user_filtering {
             return new user_filter_select('language', get_string('preferredlanguage'), $advanced, 'language', get_string_manager()->get_list_of_languages());
 
             //case 'clusterid':
-            //$clusters = cm_get_list_of_clusters();
+            //$clusters = pm_get_list_of_clusters();
             //return new user_filter_select('clusterid', get_string('usercluster', 'elis_program'), $advanced, 'clusterid', $clusters);
 
             //case 'curriculumid':
@@ -934,14 +934,14 @@ class cm_user_filtering extends user_filtering {
 
         case 'inactive':
             $inactive_options = array(get_string('o_active', 'elis_program'), get_string('all'), get_string('o_inactive', 'elis_program'));
-            return new cm_show_inactive_filter('inactive', get_string('showinactive', 'elis_program'), $advanced, 'inactive', $inactive_options);
+            return new pm_show_inactive_filter('inactive', get_string('showinactive', 'elis_program'), $advanced, 'inactive', $inactive_options);
 
 
         default:
             if (strncmp($fieldname, 'field_', 6) === 0) {
                 $f = substr($fieldname, 6);
                 $rec = new field($DB->get_record(FIELDTABLE, 'shortname', $f));
-                return new cm_custom_field_filter($fieldname, $rec->shortname, $advanced, $rec);
+                return new pm_custom_field_filter($fieldname, $rec->shortname, $advanced, $rec);
             }
             return null;
         }

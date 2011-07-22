@@ -113,7 +113,7 @@ if ($alpha) {
 if(!trackpage::_has_capability('block/curr_admin:track:enrol', $trackid)) {
     //perform SQL filtering for the more "conditional" capability
     //get the context for the "indirect" capability
-    $context = cm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
+    $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
 
     //get the clusters and check the context against them
     $clusters = clustertrack::get_clusters($trackid);
@@ -129,8 +129,7 @@ if(!trackpage::_has_capability('block/curr_admin:track:enrol', $trackid)) {
         $params['clusterfilter'] = $cluster_filter;
     }
 }
-//print_object($sql);
-//print_object($params);
+
 // get the total number of matching users
 $count = $DB->count_records_sql('SELECT COUNT(usr.id) '.$sql, $params);
 if ($sort) {
@@ -185,30 +184,11 @@ function make_link($psort=null, $pdir=null, $palpha=null, $ppage=null, $pnamesea
 }
 
 /// Bar of first initials
-/*$alphabet = explode(',', get_string('alphabet', 'elis_program'));
-$strall   = get_string('all');
-echo '<p style="text-align:center">';
-echo 'Name : ';
-if ($alpha) {
-    echo ' <a href="'.make_link(null,null,'').'">'.$strall.'</a> ';
-} else {
-    echo ' <b>'.$strall.'</b> ';
-}
-foreach ($alphabet as $letter) {
-    if ($letter == $alpha) {
-        echo ' <b>'.$letter.'</b> ';
-    } else {
-        echo ' <a href="'.make_link(null,null,$letter).'">'.$letter.'</a> ';
-    }
-}
-echo "</p>";
-*/
 pmalphabox($url);
 // note: use moodle_url so that it will replace the current page parameter,
 // if present
 
 echo $OUTPUT->paging_bar($count, $page, $perpage, $url);
-//print_paging_bar($count, $page, $perpage, new moodle_url(make_link()));
 
 ?>
 <center><form action="usertrackpopup.php" method="get">

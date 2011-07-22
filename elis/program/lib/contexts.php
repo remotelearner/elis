@@ -42,10 +42,10 @@
 require_once elis::lib('data/data_filter.class.php');
 
 function get_contexts_by_capability_for_user($contextlevel, $capability, $userid, $doanything=true) {
-    return cm_context_set::for_user_with_capability($contextlevel, $capability, $userid, $doanything);
+    return pm_context_set::for_user_with_capability($contextlevel, $capability, $userid, $doanything);
 }
 
-class cm_context_set {
+class pm_context_set {
     /**
      * An array of the contexts (both at the requested context level, and in
      * parent context levels) where the user is assigned the given
@@ -71,7 +71,7 @@ class cm_context_set {
     static function for_user_with_capability($contextlevel, $capability, $userid=null, $doanything=true) {
         global $USER, $DB;
 
-        static $cm_context_parents = array('track' => array('curriculum'),
+        static $pm_context_parents = array('track' => array('curriculum'),
                                            'course' => array('curriculum'),
                                            'class' => array('course','track'),
                                            'user' => array('cluster'));
@@ -80,7 +80,7 @@ class cm_context_set {
             $userid = $USER->id;
         }
 
-        $obj = new cm_context_set();
+        $obj = new pm_context_set();
 
         $obj->contextlevel = $contextlevel;
 
@@ -114,9 +114,9 @@ class cm_context_set {
         }
 
         // look in the parent contexts
-        if (isset($cm_context_parents[$contextlevel])) {
-            foreach ($cm_context_parents[$contextlevel] as $parentlevel) {
-                $parent = cm_context_set::for_user_with_capability($parentlevel, $capability, $userid, $doanything);
+        if (isset($pm_context_parents[$contextlevel])) {
+            foreach ($pm_context_parents[$contextlevel] as $parentlevel) {
+                $parent = pm_context_set::for_user_with_capability($parentlevel, $capability, $userid, $doanything);
                 $contexts = array_merge($contexts, $parent->contexts);
             }
         }
@@ -375,8 +375,8 @@ class cm_context_set {
  * get_users_by_capability, but augments the result with the CM system's fake
  * hierarchy.
  */
-function cm_get_users_by_capability($contextlevel, $instance_id, $capability) {
-    static $cm_context_extra_parents = array('course' => array('curriculum'),
+function pm_get_users_by_capability($contextlevel, $instance_id, $capability) {
+    static $pm_context_extra_parents = array('course' => array('curriculum'),
                                              'class' => array('track'),
                                              'user' => array('cluster'));
     $contextlevelnum = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
@@ -385,11 +385,11 @@ function cm_get_users_by_capability($contextlevel, $instance_id, $capability) {
     $users = $users ? $users : array();
 
     // look in the parent contexts
-    if (isset($cm_context_extra_parents[$contextlevel])) {
-        foreach ($cm_context_extra_parents[$contextlevel] as $parentlevel) {
+    if (isset($pm_context_extra_parents[$contextlevel])) {
+        foreach ($pm_context_extra_parents[$contextlevel] as $parentlevel) {
             $parents = call_user_func("_cmctx_get_{$parentlevel}_containing_{$contextlevel}", $instance_id);
             foreach ($parents as $parentid => $parent) {
-                $newusers = cm_get_users_by_capability($parentlevel, $parentid, $capability);
+                $newusers = pm_get_users_by_capability($parentlevel, $parentid, $capability);
                 if ($newusers) {
                     $users = $users + $newusers;
                 }

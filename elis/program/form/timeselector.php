@@ -36,7 +36,7 @@ require_once elispm::file('form/cmform.class.php');
  * @author Jamie Pratt <me@jamiep.org>
  * @access public
  */
-class cm_time_selector extends MoodleQuickForm_group {
+class pm_time_selector extends MoodleQuickForm_group {
     /**
     * Options for the element
     *
@@ -72,7 +72,7 @@ class cm_time_selector extends MoodleQuickForm_group {
     * @param    array   Options to control the element's display
     * @param    mixed   Either a typical HTML attribute string or an associative array
     */
-    function cm_time_selector($elementName = null, $elementLabel = null, $options = array(), $attributes = null)
+    function pm_time_selector($elementName = null, $elementLabel = null, $options = array(), $attributes = null)
     {
         $this->HTML_QuickForm_element($elementName, $elementLabel, $attributes);
         $this->_persistantFreeze = true;

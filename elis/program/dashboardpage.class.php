@@ -70,7 +70,7 @@ class dashboardpage extends pm_page {
             echo html_writer::tag('p', get_string('elisversion', 'elis_core', elis::$release));
         }
 
-        if ($cmuid = cm_get_crlmuserid($USER->id)) {
+        if ($cmuid = pm_get_crlmuserid($USER->id)) {
             $user = new user($cmuid);
             echo $user->get_dashboard();
         }
