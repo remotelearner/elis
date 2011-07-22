@@ -40,11 +40,11 @@ class customfieldform extends cmform {
         $form->addElement('header', '_commonsettings', get_string('profilecommonsettings', 'admin'));
         $strrequired = get_string('required');
 
-        $form->addElement('text', 'shortname', get_string('profileshortname', 'admin'), 'maxlength="100" size="25"');
+        $form->addElement('text', 'shortname', get_string('profileshortname', 'admin'), array('maxlength'=>'100', 'size'=>'25'));
         $form->addRule('shortname', $strrequired, 'required', null, 'client');
         $form->setType('shortname', PARAM_SAFEDIR);
 
-        $form->addElement('text', 'name', get_string('profilename', 'admin'), 'size="50"');
+        $form->addElement('text', 'name', get_string('profilename', 'admin'), array('size'=>'50'));
         $form->addRule('name', $strrequired, 'required', null, 'client');
         $form->setType('name', PARAM_MULTILANG);
 
@@ -76,9 +76,8 @@ class customfieldform extends cmform {
         $form->addElement('advcheckbox', 'multivalued', get_string('field_multivalued', 'elis_program'));
         $form->setAdvanced('multivalued');
 
-        $form->addElement('text', 'defaultdata', get_string('profiledefaultdata', 'admin'), 'size="50"');
+        $form->addElement('text', 'defaultdata', get_string('profiledefaultdata', 'admin'), array('size'=>'50'));
         $form->setType('defaultdata', PARAM_MULTILANG);
-
 
         $plugins = get_list_of_plugins('elis/program/plugins');
 

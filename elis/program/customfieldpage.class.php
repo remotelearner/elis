@@ -361,6 +361,15 @@ class customfieldpage extends pm_page {
                 } else {
                     $data = new field($id);
                     $data_array = $data->to_array();
+
+                    // TO-DO: not sure why to_array() does not get all the data, so lets load the data manually for now
+                    $field_record = $DB->get_record(field::TABLE, array('id'=>$id));
+                    if (!empty($field_record)) {
+                        foreach ($field_record as $field_item=>$field_value) {
+                            $data_array[$field_item] = $field_value;
+                        }
+                    }
+
                     $defaultdata = field_data::get_for_context_and_field(NULL, $data);
                     if (!empty($defaultdata)) {
                         if ($data->multivalued) {
