@@ -285,15 +285,21 @@ class instructorpage extends associationpage {
             }
         }
 
-        $add_instructor_link = '<a href="index.php?s=ins&amp;section=curr&amp;action=add&amp;id='. $clsid .'">'. get_string('instructor_add', self::LANG_FILE) .'</a>';
+        $options = array('s' => 'ins', 'section' => 'curr', 'action' => 'add',
+                         'id' => $clsid);
+        $add_instructor = new single_button(new moodle_url('index.php', $options), get_string('instructor_add','elis_program'), 'get');
+            //'<a href="index.php?s=ins&amp;section=curr&amp;action=add&amp;id='. $clsid .'">'. get_string('instructor_add', self::LANG_FILE) .'</a>';
         if (!empty($table)) {
-            echo $OUTPUT->heading($add_instructor_link);
+            echo '<div align="center">';
+            echo $OUTPUT->render($add_instructor); // ->heading
+            echo '</div><br/>';
             echo $table->get_html();
             $pagingbar = new paging_bar($numinss, $page, $perpage, $full_url);
             echo $OUTPUT->render($pagingbar);
         }
-        echo $OUTPUT->heading($add_instructor_link);
-
+        echo '<div align="center">';
+        echo $OUTPUT->render($add_instructor); // ->heading
+        echo '</div>';
     }
 
     function get_add_form($clsid, $sort, $dir, $page, $perpage, $namesearch, $alpha) {

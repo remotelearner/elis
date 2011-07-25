@@ -41,7 +41,6 @@ require_once elispm::file('usertrackpage.class.php');
 class usertrackbasepage extends associationpage {
 
     var $data_class = 'usertrack';
-    var $default_tab = '*track[!_]*';
 
     /**
      * @todo Refactor this once we have a common save() method for datarecord subclasses.
@@ -59,6 +58,7 @@ class usertrackbasepage extends associationpage {
 class usertrackpage extends usertrackbasepage {
     var $pagename = 'usrtrk';
     var $tab_page = 'userpage';
+    //var $default_tab = 'usertrackpage';
 
     var $section = 'users';
 
@@ -194,7 +194,7 @@ class usertrackpage extends usertrackbasepage {
 class trackuserpage extends usertrackbasepage {
     var $pagename = 'trkusr';
     var $tab_page = 'trackpage';
-    var $default_tab = '*user*';
+    //var $default_tab = 'trackuserpage';
 
     var $section = 'curr';
 

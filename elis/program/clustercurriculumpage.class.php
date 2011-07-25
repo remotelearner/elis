@@ -43,7 +43,6 @@ class clustercurriculumbasepage extends associationpage {
     var $data_class = 'clustercurriculum';
     var $form_class = 'clustercurriculumform';
     var $edit_form_class = 'clustercurriculumeditform';
-    var $default_tab = '*cluster[!_]*';
 
     //var $tabs;
 
@@ -255,6 +254,7 @@ class clustercurriculumbasepage extends associationpage {
 class clustercurriculumpage extends clustercurriculumbasepage {
     var $pagename = 'clstcur';
     var $tab_page = 'usersetpage';
+    //var $default_tab = 'clustercurriculumpage';
 
     var $parent_data_class = 'userset';
     var $section = 'users';
@@ -670,7 +670,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
     var $pagename = 'curclst';
     var $tab_page = 'curriculumpage';
     var $parent_data_class = 'curriculum';
-    //var $tabs;
+    //var $default_tab = 'curriculumclusterpage';
 
     var $section = 'curr';
 

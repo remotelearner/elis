@@ -42,7 +42,6 @@ class clustertrackbasepage extends associationpage {
     var $form_class = 'clustertrackform';
     var $edit_form_class = 'clustertrackeditform';
 //    var $tabs;
-    var $default_tab = '*track*';
 
     function __construct(array $params=null) {
         $this->tabs = array(
@@ -257,6 +256,7 @@ echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid:
 class clustertrackpage extends clustertrackbasepage {
     var $pagename = 'clsttrk';
     var $tab_page = 'usersetpage';
+    //var $default_tab = 'clustertrackpage';
 
     var $section = 'users';
 
@@ -335,6 +335,7 @@ class clustertrackpage extends clustertrackbasepage {
 class trackclusterpage extends clustertrackbasepage {
     var $pagename = 'trkclst';
     var $tab_page = 'trackpage';
+    var $default_tab = 'trackassignmentpage';
 
     var $section = 'curr';
     var $parent_data_class = 'track';

@@ -39,7 +39,6 @@ class userclusterbasepage extends associationpage {
 
     var $data_class = 'clusterassignment';
     var $form_class = 'assignpage_form';
-    var $default_tab = '*user*';
 
     var $section = 'users';
 
@@ -87,7 +86,7 @@ class userclusterbasepage extends associationpage {
 class userclusterpage extends userclusterbasepage {
     var $pagename = 'usrclst';
     var $tab_page = 'userpage';
-    var $default_tab = '*cluster*';
+    //var $default_tab = 'userclusterpage';
 
     var $parent_data_class = 'user';
 
@@ -227,6 +226,7 @@ class userclusterpage extends userclusterbasepage {
 class clusteruserpage extends userclusterbasepage {
     var $pagename = 'clstusr';
     var $tab_page = 'usersetpage';
+    //var $default_tab = 'clusteruserpage';
 
     var $parent_data_class = 'userset';
 

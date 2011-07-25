@@ -74,14 +74,7 @@ class associationpage extends pm_page {
 
     function print_header() {
         $id = $this->required_param('id', PARAM_INT);
-        $default_tab = 'view'; // TBD
-        if (!empty($this->default_tab)) {
-            foreach ($this->get_tab_page()->tabs as $tab) {
-                if (fnmatch($this->default_tab, $tab['tab_id'])) {
-                    $default_tab = $tab['tab_id'];
-                }
-            }
-        }
+        $default_tab = !empty($this->default_tab) ? $this->default_tab : get_class($this);
         $action = $this->optional_param('action', $default_tab, PARAM_CLEAN);
         $association_id = $this->optional_param('association_id', 0, PARAM_INT);
 
