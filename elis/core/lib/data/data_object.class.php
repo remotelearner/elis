@@ -225,8 +225,9 @@ class elis_data_object {
      */
     public function load($overwrite=true) {
         if (!$this->_is_loaded && $this->_dbfield_id !== self::$_unset) {
+            //this will throw an exception if fetching the record fails
             $record = $this->_db->get_record(static::TABLE,
-                                             array('id' => $this->_dbfield_id));
+                                             array('id' => $this->_dbfield_id), '*', MUST_EXIST);
             $this->_load_data_from_record($record, $overwrite, null, true);
         }
     }
@@ -1000,6 +1001,19 @@ function validate_not_empty(elis_data_object $record, $field) {
         throw new ErrorException("{$tablename} record cannot have empty {$field} field");
         // FIXME: new exception
     }
+}
+
+/**
+ * Helper function for validating that an associated databasse record exists
+ *
+ * @param object $record The data object whose associations we are checking
+ * @param string $association The specific entry's key from the assocations array
+ */
+function validate_associated_record_exists(elis_data_object $record, $association) {
+    //this will throw an appropriate exception if the association can't be fetched
+    //using magic
+    $object = $record->$association;
+    $object->load();
 }
 
 /**
