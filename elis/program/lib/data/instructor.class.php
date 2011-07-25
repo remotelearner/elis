@@ -48,6 +48,25 @@ class instructor extends elis_data_object {
                            'idfield' => 'classid')
     );
 
+    static $validation_rules = array(array('validation_helper', 'not_empty_userid'),
+                                     array('validation_helper', 'not_empty_classid'),
+                                     'validate_associated_user_exists',
+                                     'validate_associated_class_exists',
+                                     array('validation_helper', 'is_unique_userid_classid'));
+
+    /**
+     * Validates that the associated user record exists
+     */
+    public function validate_associated_user_exists() {
+        validate_associated_record_exists($this, 'users');
+    }
+
+    /**
+     * Validates that the associated pmclass record exists
+     */
+    public function validate_associated_class_exists() {
+        validate_associated_record_exists($this, 'pmclass');
+    }
 /*
     var $id;           // INT - The data id if in the database.
     var $classid;      // INT - The class ID.
