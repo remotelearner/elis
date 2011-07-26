@@ -567,6 +567,9 @@ class curriculum extends data_object_with_custom_fields {
         field_data::set_for_context_from_datarecord('curriculum', $this);
     }
 
+    function get_verbose_name() {
+        return $this->verbose_name;
+    }
 }
 
 
