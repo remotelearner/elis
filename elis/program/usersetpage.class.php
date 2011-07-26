@@ -394,7 +394,7 @@ class usersetpage extends managementpage {
 
         $cluster = new userset($sub_cluster_id);
         $cluster->parent = $id;
-        $cluster->update();
+        $cluster->save();
 
         redirect($target_page->url, get_string('cluster_assigned','elis_program'));
     }
