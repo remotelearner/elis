@@ -72,12 +72,6 @@ class curriculumstudent extends elis_data_object {
 }
 ';
 
-    var $completed;
-    var $timecompleted;
-    var $timeexpired;
-    var $credits;
-    var $locked;
-
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('curriculum', 'elis_program');
     }
@@ -109,8 +103,17 @@ class curriculumstudent extends elis_data_object {
             $this->timecompleted = time();
         }
 
+        // Check for $this->curriculum and create it if it is not included
+        if (!isset($this->curriculum) && isset($this->curriculumid)) {
+            $this->curriculum = new curriculum($this->curriculumid);
+            $this->curriculum->load();
+        } else {
+            $this->curriculum->load();
+        }
+
         // Handle a curriculum with an expiry date defined (ELIS-1172):
         if (!empty(elis::$config->elis_program->enable_curriculum_expiration) && !empty($this->curriculum->frequency)) {
+
             $this->timeexpired = calculate_curriculum_expiry($this);
         }
 
@@ -122,66 +125,72 @@ class curriculumstudent extends elis_data_object {
             $this->locked = $locked ? 1 : 0;
         }
 
+        // Doesn't return true/false, so just assume it worked
+        $this->save();
+
         // Send notifications
-        if ($this->update()) {
-            /// Does the user receive a notification?
-            $sendtouser       = elis::$config->elis_program->notify_curriculumcompleted_user;
-            $sendtorole       = elis::$config->elis_program->notify_curriculumcompleted_role;
-            $sendtosupervisor = elis::$config->elis_program->notify_curriculumcompleted_supervisor;
 
-            /// If nobody receives a notification, we're done.
-            if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
-                return true;
+        /// Does the user receive a notification?
+        $sendtouser       = elis::$config->elis_program->notify_curriculumcompleted_user;
+        $sendtorole       = elis::$config->elis_program->notify_curriculumcompleted_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_curriculumcompleted_supervisor;
+
+        /// If nobody receives a notification, we're done.
+        if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
+            return true;
+        }
+
+        $context = get_system_context();
+
+        /// Make sure this is a valid user.
+        $enroluser = new user($this->userid);
+        // Due to lazy loading, we need to pre-load this object
+        $enroluser->load();
+        if (empty($enroluser->id)) {
+            print_error('nouser', 'elis_program');
+            return true;
+        }
+
+        $message = new notification();
+
+        /// Set up the text of the message
+        $text = empty(elis::$config->elis_program->notify_curriculumcompleted_message) ?
+                    get_string('notifycurriculumcompletedmessagedef', 'elis_program') :
+                    elis::$config->elis_program->notify_curriculumcompleted_message;
+        $search = array('%%userenrolname%%', '%%curriculumname%%');
+        $pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
+        $user = new user($pmuser);
+        // Get course info
+        $program = $this->_db->get_record(curriculum::TABLE, array('id' => $this->curriculumid));
+
+        $replace = array(fullname($user), $program->name);
+        $text = str_replace($search, $replace, $text);
+
+        $eventlog = new Object();
+        $eventlog->event = 'curriculum_completed';
+        $eventlog->instance = $this->id;    /// Store the assignment id.
+        if ($sendtouser) {
+            $message->send_notification($text, $user, null, $eventlog);
+        }
+
+        $users = array();
+
+        if ($sendtorole) {
+            /// Get all users with the notify_classenrol capability.
+            if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_curriculumcomplete')) {
+                $users = $users + $roleusers;
             }
+        }
 
-            $context = get_system_context();
-
-            /// Make sure this is a valid user.
-            $enroluser = new user($this->userid);
-            // Due to lazy loading, we need to pre-load this object
-            $enroluser->load();
-            if (empty($enroluser->id)) {
-                print_error('nouser', 'elis_program');
-                return true;
+        if ($sendtosupervisor) {
+            /// Get parent-context users.
+            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_curriculumcomplete')) {
+                $users = $users + $supervisors;
             }
+        }
 
-            $message = new notification();
-
-            /// Set up the text of the message
-            $text = empty(elis::$config->elis_program->notify_curriculumcompleted_message) ?
-                        get_string('notifycurriculumcompletedmessagedef', 'elis_program') :
-                        elis::$config->elis_program->notify_curriculumcompleted_message;
-            $search = array('%%userenrolname%%', '%%curriculumname%%');
-            $replace = array(fullname($this->user), $this->curriculum->name);
-            $text = str_replace($search, $replace, $text);
-
-            $eventlog = new Object();
-            $eventlog->event = 'curriculum_completed';
-            $eventlog->instance = $this->id;    /// Store the assignment id.
-            if ($sendtouser) {
-                $message->send_notification($text, $this->user, null, $eventlog);
-            }
-
-            $users = array();
-
-            if ($sendtorole) {
-                /// Get all users with the notify_classenrol capability.
-                if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_curriculumcomplete')) {
-                    $users = $users + $roleusers;
-                }
-            }
-
-            if ($sendtosupervisor) {
-                /// Get parent-context users.
-                if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_curriculumcomplete')) {
-                    $users = $users + $supervisors;
-                }
-            }
-
-            foreach ($users as $user) {
-                $message->send_notification($text, $user, $enroluser);
-            }
-
+        foreach ($users as $user) {
+            $message->send_notification($text, $user, $enroluser);
         }
     }
 
@@ -247,15 +256,20 @@ class curriculumstudent extends elis_data_object {
         $text = empty(elis::$config->elis_program->notify_curriculumnotcompleted_message) ?
                 get_string('notifycurriculumnotcompletedmessagedef', 'elis_program') :
                 elis::$config->elis_program->notify_curriculumnotcompleted_message;
+        $pmuser = $DB->get_record(user::TABLE, array('id' => $curstudent->userid));
+        $user = new user($pmuser);
+        // Get course info
+        $program = $DB->get_record(curriculum::TABLE, array('id' => $curstudent->curriculumid));
+
         $search = array('%%userenrolname%%', '%%curriculumname%%');
-        $replace = array(fullname($curstudent->user), $curstudent->curriculum->name);
+        $replace = array(fullname($pmuser), $program->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
         $eventlog->event = 'curriculum_notcompleted';
         $eventlog->instance = $curstudent->id;    /// Store the assignment id.
         if ($sendtouser) {
-            $message->send_notification($text, $curstudent->user, null, $eventlog);
+            $message->send_notification($text, $user, null, $eventlog);
         }
 
         $users = array();
@@ -425,22 +439,23 @@ class curriculumstudent extends elis_data_object {
     public function save() {
         $isnew = empty($this->id);
 
-        parent::save();
-
         if ($isnew) {
             if (!empty(elis::$config->elis_program->enable_curriculum_expiration) &&
                 elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_START &&
-                get_field(curriculum::TABLE, 'frequency', array('id'=>$this->curriculumid))) {
+                $this->_db->get_field(curriculum::TABLE, 'frequency', array('id'=>$this->curriculumid))) {
 
                 // We need to load this record from the DB fresh so we don't accidentally overwrite legitimate
                 // values with something empty when we update the record.
                 $this->timecreated = time();
+
                 $timeexpired = calculate_curriculum_expiry($this);
                 if ($timeexpired > 0) {
                     $this->timeexpired = $timeexpired;
                 }
             }
         }
+
+        parent::save();
     }
 
    function get_verbose_name() {
@@ -528,6 +543,9 @@ function calculate_curriculum_expiry($curass, $curid = 0, $userid = 0) {
         }
 
         $curass->curriculum = clone($curriculum);
+    } else {
+        // Make sure curriculum is loaded
+        $curass->curriculum->load();
     }
 
     if (empty($curass->curriculum->frequency)) {
@@ -601,6 +619,7 @@ function calculate_curriculum_expiry($curass, $curid = 0, $userid = 0) {
         if ($curass->timecompleted == 0) {
             return 0;
         }
+
         $timenow = $curass->timecompleted;
     } else if (elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_START) {
         // Base the expiry date off the curriculum enrolment date.

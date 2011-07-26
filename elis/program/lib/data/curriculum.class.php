@@ -170,8 +170,8 @@ class curriculum extends data_object_with_custom_fields {
         $requiredcourseids = array();
         $checkcourses = $requiredcourseids;
         $context = false;
-        $curasstempl = new curriculumstudent(); // used just for its properties.
-        $studenttempl = new student(); // used just for its properties.
+//        $curasstempl = new curriculumstudent(); // used just for its properties.
+//        $studenttempl = new student(); // used just for its properties.
         $timenow = time();
         $secondsinaday = 60 * 60 * 24;
 
@@ -188,13 +188,8 @@ class curriculum extends data_object_with_custom_fields {
                     }
 
                     $curassid = $rec->curassid;
-                    $curassdata = array();
-
-                    foreach ($curasstempl->properties as $prop => $type) {
-                        $curassdata[$prop] = $rec->$prop;
-                    }
-                    $curassdata['id'] = $rec->curassid;
-                    $currstudent = new curriculumstudent($curassdata);
+                    $currstudent = new curriculumstudent($rec->curassid);
+                    $currstudent->load();
 
                     $numcredits = 0;
                     $checkcourses = $requiredcourseids;
@@ -249,8 +244,8 @@ class curriculum extends data_object_with_custom_fields {
         $sql     = $select . $from . $join . $where . $groupby . $order;
 
         $context = false;
-        $curasstempl = new curriculumstudent(); // used just for its properties.
-        $studenttempl = new student(); // used just for its properties.
+//        $curasstempl = new curriculumstudent(); // used just for its properties.
+//        $studenttempl = new student(); // used just for its properties.
         $timenow = time();
         $secondsinaday = 60 * 60 * 24;
 
@@ -270,9 +265,10 @@ class curriculum extends data_object_with_custom_fields {
 
                 $daysfrom = ($reqcompletetime - $timenow) / $secondsinaday;
                 if ($daysfrom <= elis::$config->elis_program->notify_curriculumnotcompleted_days) {
-                    $curstudent = new curriculumstudent($rec);
+//                    $curstudent = new curriculumstudent($rec);
                     mtrace("Triggering curriculum_notcompleted event.\n");
-                    events_trigger('curriculum_notcompleted', $curstudent);
+//                    events_trigger('curriculum_notcompleted', $curstudent);
+                    events_trigger('curriculum_notcompleted', $rec);
                 }
             }
         }
@@ -296,7 +292,7 @@ class curriculum extends data_object_with_custom_fields {
 
         $timenow = time();
 
-        $sql = 'SELECT cca.id AS enrolmentid, cc.name AS curriculumname,
+        $sql = 'SELECT cca.id AS enrolmentid, cc.name AS curriculumname, cc.id as curriculumid,
                        cu.id AS userid, cu.idnumber AS useridnumber, cu.firstname AS firstname, cu.lastname AS lastname,
                        mu.id AS muserid
                   FROM {'.curriculumstudent::TABLE.'} cca
@@ -309,27 +305,12 @@ class curriculum extends data_object_with_custom_fields {
                ';
 
         $params = array($timenow);
-        $usertempl = new user(); // used just for its properties.
 
         $rs = $DB->get_recordset_sql($sql, $params);
         if ($rs) {
             foreach ($rs as $rec) {
-                /// Load the student...
-                $userdata = array();
-                $userdata['id'] = $rec->userid;
-                foreach ($usertempl->properties as $prop => $type) {
-                    if (isset($rec->$prop)) {
-                        $userdata[$prop] = $rec->$prop;
-                    }
-                }
-                $user = new user($userdata);
-                /// Add the moodleuserid to the user record so we can use it in the event handler.
-                $user->moodleuserid = $rec->muserid;
-                $user->curriculumname = $rec->curriculumname;
-                $user->enrolmentid = $rec->enrolmentid;
-
                 mtrace("Triggering curriculum_recurrence event.\n");
-                events_trigger('curriculum_recurrence', $user);
+                events_trigger('curriculum_recurrence', $rec);
             }
         }
 
@@ -347,13 +328,13 @@ class curriculum extends data_object_with_custom_fields {
     /**
      * Function to handle curriculum recurrence events.
      *
-     * @param   user     $user  The CM user the curriculum is recurring for
+     * @param   user     $user  The PM user the curriculum is recurring for
      *
      * @return  boolean         TRUE is successful, otherwise FALSE
      */
 
     public static function curriculum_recurrence_handler($user) {
-        global $CFG;
+        global $CFG, $DB;
 
         require_once elispm::lib('notifications.php');
 
@@ -376,6 +357,9 @@ class curriculum extends data_object_with_custom_fields {
                     get_string('notifycurriculumrecurrencemessagedef', 'elis_program') :
                     elis::$config->elis_program->notify_curriculumrecurrence_message;
         $search = array('%%userenrolname%%', '%%curriculumname%%');
+        $pmuser = $DB->get_record(user::TABLE, array('id' => $user->userid));
+        $student = new user($pmuser);
+
         $replace = array(fullname($user), $user->curriculumname);
         $text = str_replace($search, $replace, $text);
 
@@ -383,7 +367,7 @@ class curriculum extends data_object_with_custom_fields {
         $eventlog->event = 'curriculum_recurrence';
         $eventlog->instance = $user->enrolmentid;
         if ($sendtouser) {
-            $message->send_notification($text, $user, null, $eventlog);
+            $message->send_notification($text, $student, null, $eventlog);
         }
 
         $users = array();
@@ -403,7 +387,7 @@ class curriculum extends data_object_with_custom_fields {
         }
 
         foreach ($users as $u) {
-            $message->send_notification($text, $u, $user, $eventlog);
+            $message->send_notification($text, $u, $student, $eventlog);
         }
 
         return true;

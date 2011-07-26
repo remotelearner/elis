@@ -429,12 +429,12 @@ function pm_assign_instructor_from_mdl($eventdata) {
     global $CFG, $DB;
 
     //make sure we have course manager roles defined
-    if(empty($CFG->coursemanager)) {
+    if(empty($CFG->coursecontact)) {
         return;
     }
 
     //retrieve the appropriate roles
-    $valid_instructor_roles = explode(',', $CFG->coursemanager);
+    $valid_instructor_roles = explode(',', $CFG->coursecontact);
 
     //make sure the assigned role is one of the ones we care about
     if(!in_array($eventdata->roleid, $valid_instructor_roles)) {
@@ -539,7 +539,7 @@ function pm_assign_student_from_mdl($eventdata) {
 
 /**
  * Triggered when a role assignment takes place.
- * This function should use the CM configured values to send messages to appropriate users when a role assignment
+ * This function should use the PM configured values to send messages to appropriate users when a role assignment
  * takes place. Users will be ones configured for the context, which can include the user that is assigned and users
  * assigned to configured roles for that context. The message template used should be the one configured as well.
  *
@@ -635,12 +635,12 @@ function pm_notify_role_unassign_handler($eventdata){
     global $CFG, $DB;
 
     //make sure we have course manager roles defined
-    if(empty($CFG->coursemanager)) {
+    if(empty($CFG->coursecontact)) {
         return true;
     }
 
     //retrieve the list of role ids we want to sync to curriculum admin
-    $valid_instructor_roles = explode(',', $CFG->coursemanager);
+    $valid_instructor_roles = explode(',', $CFG->coursecontact);
 
     //make sure we actually care about the current role
     if(!in_array($eventdata->roleid, $valid_instructor_roles)) {
@@ -822,7 +822,7 @@ function pm_notify_instructor_unassigned_handler($eventdata) {
     global $CFG, $DB;
 
     //make sure users in some roles are identified as course managers
-    if(empty($CFG->coursemanager)) {
+    if(empty($CFG->coursecontact)) {
         return true;
     }
 
@@ -852,7 +852,7 @@ function pm_notify_instructor_unassigned_handler($eventdata) {
     }
 
     //go through all applicable roles to see if we can remove them from the Moodle side of things
-    $roleids = explode(',', $CFG->coursemanager);
+    $roleids = explode(',', $CFG->coursecontact);
 
     foreach($roleids as $roleid) {
 

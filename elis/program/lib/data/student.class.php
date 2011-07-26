@@ -416,7 +416,7 @@ class student extends elis_data_object {
         $user = new user($this->userid);
         if (!empty($this->classid) && !empty($this->userid) &&
             ($moodlecourseid = $this->_db->get_field('crlm_class_moodle', 'moodlecourseid', array('classid' => $this->classid))) &&
-            ($muserid = $user->get_moodleuserid())) {
+            ($muserid = $user->get_moodleuser()->id)) {
 
             $context = get_context_instance(CONTEXT_COURSE, $moodlecourseid);
             if ($context && $context->id) {
@@ -1927,7 +1927,7 @@ class student extends elis_data_object {
         $eventlog = new Object();
         $eventlog->event = 'class_notstarted';
         $eventlog->instance = $student->classid;
-        echo '<br>send to user? '.$sendtouser;
+
         if ($sendtouser) {
             $message->send_notification($text, $user, null, $eventlog);
         }

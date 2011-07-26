@@ -32,7 +32,7 @@ if ($ADMIN->fulltree) {
                            '' /* get_string('auto_collapse_help', 'elis_program') */, 4, PARAM_INT)); // TBD
 
     // Enable curriculum expiration
-    $settings->add(new admin_setting_configcheckbox('elis_program/crlm_expire',
+    $settings->add(new admin_setting_configcheckbox('elis_program/enable_curriculum_expiration',
                            get_string('crlm_expire_setting', 'elis_program'),
                            '' /* get_string('crlm_expire_help', 'elis_program') */, 0));
 

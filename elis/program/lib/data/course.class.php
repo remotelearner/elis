@@ -501,23 +501,8 @@ class course extends data_object_with_custom_fields {
         $rs = $DB->get_recordset_sql($sql, array($year,$month,$week,$day,$timenow));
         if ($rs) {
             foreach ($rs as $rec) {
-                /// Load the student...
-                $userdata = array();
-                foreach ($usertempl->properties as $prop => $type) {
-                    if (isset($rec->$prop)) {
-                        $userdata[$prop] = $rec->$prop;
-                    }
-                }
-                /// Do this AFTER copying properties to prevent accidentially stomping on the user id
-                $userdata['id'] = $rec->userid;
-                $user = new user($userdata);
-                /// Add the moodleuserid to the user record so we can use it in the event handler.
-                $user->moodleuserid = $rec->muserid;
-                $user->coursename = $rec->coursename;
-                $user->enrolmentid = $rec->enrolmentid;
-
                 mtrace("Triggering course_recurrence event.\n");
-                events_trigger('course_recurrence', $user);
+                events_trigger('course_recurrence', $rec);
             }
         }
         return true;
@@ -540,6 +525,8 @@ class course extends data_object_with_custom_fields {
      */
 
     public static function course_recurrence_handler($user) {
+        global $DB;
+
         require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
@@ -569,6 +556,9 @@ class course extends data_object_with_custom_fields {
         $text = empty(elis::$config->elis_program->notify_courserecurrence_message) ?
                     get_string('notifycourserecurrencemessagedef', 'elis_program') :
                     elis::$config->elis_program->notify_courserecurrence_message;
+        $pmuser = $DB->get_record(user::TABLE, array('id' => $user->userid));
+        $student = new user($pmuser);
+
         $search = array('%%userenrolname%%', '%%coursename%%');
         $replace = array(fullname($user), $user->coursename);
         $text = str_replace($search, $replace, $text);
@@ -577,7 +567,7 @@ class course extends data_object_with_custom_fields {
         $eventlog->event = 'course_recurrence';
         $eventlog->instance = $user->enrolmentid;
         if ($sendtouser) {
-            $message->send_notification($text, $user, null, $eventlog);
+            $message->send_notification($text, $student, null, $eventlog);
         }
 
         $users = array();
