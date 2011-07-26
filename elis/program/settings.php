@@ -114,29 +114,6 @@ if ($ADMIN->fulltree) {
                            get_string('enrol_elis_setting', 'elis_program'),
                            get_string('enrol_elis_help', 'elis_program'), 0));
 
-    // ***Cluster Group Settings
-    $settings->add(new admin_setting_heading('cluster_grp_settings', get_string('cluster_grp_settings', 'elis_program'), '' /* get_string('cluster_grp_settings_info', 'elis_program') */));
-
-    // Allow course-level group population from clusters
-    $cluster_groups = new admin_setting_configcheckbox('elis_program/cluster_groups',
-                           get_string('grp_pop_cluster_setting', 'elis_program'),
-                           '' /*get_string('grp_pop_cluster_help', 'elis_program') */, 0);
-    $cluster_groups->set_updatedcallback('cluster_groups_changed');
-    $settings->add($cluster_groups);
-
-    $sc_cluster_groups = new admin_setting_configcheckbox('elis_program/site_course_cluster_groups',
-                           get_string('fp_pop_clusters_setting', 'elis_program'),
-                           '' /* get_string('fp_pop_clusters_help', 'elis_program') */, 0);
-    $sc_cluster_groups->set_updatedcallback('cluster_groups_changed');
-    $settings->add($sc_cluster_groups);
-
-    // Allow front page grouping creation from cluster-based groups
-    $cluster_groupings = new admin_setting_configcheckbox('elis_program/cluster_groupings',
-                           get_string('fp_grp_cluster_setting', 'elis_program'),
-                           get_string('fp_grp_cluster_help', 'elis_program'), 0);
-    $cluster_groupings->set_updatedcallback('cluster_groups_changed');
-    $settings->add($cluster_groupings);
-
     // ***Curriculum Administration Block Settings
     $settings->add(new admin_setting_heading('crlm_admin_blk_settings', get_string('crlm_admin_blk_settings', 'elis_program'), '' /* get_string('crlm_admin_blk_settings_info', 'elis_program') */));
 

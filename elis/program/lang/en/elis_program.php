@@ -134,7 +134,6 @@ $string['clear'] = 'Clear';
 $string['clustcpycurr'] = 'Program {$a->name} copied to {$a->newname}';
 $string['cluster'] = 'User Set';
 $string['clusters'] = 'User Sets';
-$string['cluster_grp_settings'] = 'User Set Group Settings';
 $string['cluster_role_help'] = 'This is the default role to assign to a Program Management user in any user sets they create.
 This type of role assignment will not take place for a particular user set if that user is already permitted to edit that user set.
 To disable this functionality, select "N/A" from the list.';
@@ -376,16 +375,7 @@ $string['field_sync_from_moodle'] = 'Use values from Moodle';
 $string['field_sync_to_moodle'] = 'Copy values to Moodle';
 $string['field_syncwithmoodle'] = 'Sync with Moodle';
 $string['form_error'] = 'Selection page form error - expecting array!';
-$string['fp_grp_cluster_help'] = 'Enabling these setting allows the Program Management system to automatically add users to groups in Moodle courses based on user set membership. Groups will be created as needed.
-
-For this to work, the associated user set setting must be turned on for each appropriate user set as well.
-
-Also, be cautious when enabling these setting, as it will cause the Program Management system to immediately search for all appropriate users across all necessary user sets, which may take a long time.';
-$string['fp_grp_cluster_setting'] = 'Allow front page grouping creation from user-set-based groups';
-$string['fp_pop_clusters_setting'] = 'Allow front page group population from user sets';
 $string['frequency'] = 'Frequency';
-
-$string['grp_pop_cluster_setting'] = 'Allow course-description-level group population from user sets';
 
 $string['health_checking'] = "Checking...\n<ul>\n";
 $string['health_check_link'] = 'The <a href="{$a->wwwroot}/elis/program/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';

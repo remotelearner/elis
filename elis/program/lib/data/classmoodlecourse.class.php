@@ -443,7 +443,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
         $result = $result && $clsmdl->data_enrol_students();
     }
 
-    events_trigger('crlm_class_associated', $clsmdl);
+    events_trigger('pm_classinstance_associated', $clsmdl);
 
     return $result;
 }
