@@ -134,11 +134,13 @@ $string['clear'] = 'Clear';
 $string['clustcpycurr'] = 'Program {$a->name} copied to {$a->newname}';
 $string['cluster'] = 'User Set';
 $string['clusters'] = 'User Sets';
+$string['cluster_assigned'] = 'User subset assigned to user set';
 $string['cluster_grp_settings'] = 'User Set Group Settings';
 $string['cluster_role_help'] = 'This is the default role to assign to a Program Management user in any user sets they create.
 This type of role assignment will not take place for a particular user set if that user is already permitted to edit that user set.
 To disable this functionality, select "N/A" from the list.';
 $string['cluster_role_setting'] = 'Default User Set Role';
+$string['cluster_subcluster_prompt'] = 'Assign existing user set as a user subset';
 $string['completionform:completion_grade'] = 'Completion grade';
 $string['completionform:completion_grade_help'] = '<p>Minimum grade the learner must received to identify the element as &ldquo;completed&rdquo;.</p>';
 $string['completionform:course_idnumber'] = 'ID Number';
