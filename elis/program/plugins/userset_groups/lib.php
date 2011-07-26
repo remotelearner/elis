@@ -338,13 +338,13 @@ function userset_groups_grouping_helper($clusterid, $name) {
 function userset_groups_update_user_site_course($userid, $clusterid) {
     global $CURMAN, $DB;
 
-    $enabled = get_config('pmplugins_cluster_groups', 'site_course_cluster_groups');
+    $enabled = get_config('pmplugins_userset_groups', 'site_course_userset_groups');
 
     //make sure this site-course group functionality is even enabled
     if(!empty($enabled)) {
 
         //make sure group functionality is enabled for this cluster
-        if(cluster_groups_cluster_allows_groups($clusterid)) {
+        if(userset_groups_userset_allows_groups($clusterid)) {
 
             //obtain the cluster
             if($cluster_record = $DB->get_record(userset::TABLE, array('id' => $clusterid))) {
@@ -567,14 +567,14 @@ function userset_groups_update_grouping_closure($clusterid, $include_children = 
  * @param   int      $clusterid  The id of the cluster in question
  * @return  boolean              Whether the cluster allows groups or not
  */
-function userset_groups_cluster_allows_groups($clusterid) {
+function userset_groups_userset_allows_groups($clusterid) {
     global $CURMAN, $DB;
 
     //retrieve the config field
-    if($fieldid = $DB->get_field(field::TABLE, 'id', array('shortname' => 'cluster_group'))) {
+    if($fieldid = $DB->get_field(field::TABLE, 'id', array('shortname' => 'userset_group'))) {
 
         //get the cluster context level
-        $context = context_level_base::get_custom_context_level('cluster', 'block_curr_admin');
+        $context = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
         //retrieve the cluster context instance
         $context_instance = get_context_instance($context, $clusterid);
