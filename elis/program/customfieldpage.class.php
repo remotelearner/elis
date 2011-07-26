@@ -164,13 +164,13 @@ class customfieldpage extends pm_page {
         }
     }
 
-    function do_forceresync() {
+    function display_forceresync() {
         global $CFG, $OUTPUT;
 
         $confirm = $this->optional_param('confirm', 0, PARAM_INT);
         if (!$confirm) {
             $optionsyes = array('s' => 'field',
-                                'action' => 'forcesync',
+                                'action' => 'forceresync',
                                 'confirm' => 1
                                );
             $optionsno = array('s' => 'field',
@@ -274,7 +274,7 @@ class customfieldpage extends pm_page {
         }
     }
 
-    function do_movecategory() {
+    function display_movecategory() {
         // FIXME:
     }
 
@@ -461,7 +461,7 @@ class customfieldpage extends pm_page {
         }
     }
 
-    function action_movefield() {
+    function display_movefield() {
         // FIXME:
     }
 
