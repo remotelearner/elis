@@ -69,7 +69,7 @@ class clusteruserselectpage extends selectionpage {
         // user-defined filter
         list($extrasql, $params) = $filter->get_sql_filter();
         if ($extrasql) {
-            $filters = new select_filter($extrasql, $params);
+            $filters[] = new select_filter($extrasql, $params);
         }
 
         if(!usersetpage::_has_capability('block/curr_admin:cluster:enrol')) {
@@ -139,7 +139,8 @@ class clusteruserselectpage extends selectionpage {
             cluster_manual_assign_user($data->id, $userid, !empty($data->autoenrol), !empty($data->leader));
         }
         $tmppage = new clusteruserpage(array('id' => $data->id));
-        redirect($tmppage->url, get_string('userset_user_assigned', 'elis_program', count($data->_selection)));
+//        redirect($tmppage->url, get_string('userset_user_assigned', 'elis_program', count($data->_selection)));
+        redirect($tmppage->url, '', 2);
     }
 }
 

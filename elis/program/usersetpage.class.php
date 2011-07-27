@@ -414,8 +414,8 @@ class usersetpage extends managementpage {
             $context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $obj->id);
             $like = $DB->sql_like('path', '?');
             $a->descendants = $DB->count_records_select('context',$DB->sql_like('path', '?'), array("{$context->path}/%")) - $a->subclusters;
-            print_string($a->descendants ? 'confirm_delete_with_subclusters_and_descendants' : 'confirm_delete_with_subclusters', 'elis_program', $a);
-            $target = $this->get_new_page(array('action' => 'confirm'));
+            print_string($a->descendants ? 'confirm_delete_with_usersubsets_and_descendants' : 'confirm_delete_with_usersubsets', 'elis_program', array('name'=>$obj->name, 'subclusters'=>$count));
+            $target = $this->get_new_page(array('action' => 'delete', 'confirm'=>'1'));
             $form = new usersetdeleteform($target->url, array('obj' => $obj, 'a' => $a));
             $form->display();
         } else {

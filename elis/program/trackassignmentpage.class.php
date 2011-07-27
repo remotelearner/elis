@@ -47,8 +47,8 @@ class trackassignmentpage extends associationpage {
         parent::__construct($params);
 
         $this->tabs = array(
-            array('tab_id' => 'view', 'page' => 'trackassignmentpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
-            array('tab_id' => 'edit', 'page' => 'trackassignmentpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'delete.gif'),
+            array('tab_id' => 'view', 'page' => 'trackassignmentpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
+            array('tab_id' => 'edit', 'page' => 'trackassignmentpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'delete'),
 
         );
     }

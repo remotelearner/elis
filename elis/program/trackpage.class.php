@@ -135,7 +135,7 @@ class trackpage extends managementpage {
         array('tab_id' => 'view', 'page' => 'trackpage', 'params' => array('action' => 'view'), 'name' => get_string('detail','elis_program'), 'showtab' => true),
         array('tab_id' => 'edit', 'page' => 'trackpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
 
-        //array('tab_id' => 'trackclusterpage', 'page' => 'trackclusterpage', 'name' => get_string('clusters','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'clusterif'),
+        array('tab_id' => 'trackclusterpage', 'page' => 'trackassignmentpage', 'name' => get_string('clusters','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
         array('tab_id' => 'trackuserpage', 'page' => 'trackuserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
         array('tab_id' => 'trackassignmentpage', 'page' => 'trackassignmentpage', 'name' => get_string('track_classes','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class'),
         array('tab_id' => 'track_rolepage', 'page' => 'track_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
