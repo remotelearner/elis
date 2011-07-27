@@ -293,9 +293,9 @@ function userset_groups_update_site_course($clusterid = 0, $add_members = false,
 function userset_groups_grouping_helper($clusterid, $name) {
     global $CFG, $CURMAN, $DB;
 
-    if(!empty($CFG->enablegroupings) &&
-       !empty($CURMAN->config->cluster_groupings) &&
-       cluster_groups_grouping_allowed($clusterid)) {
+    $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
+
+    if(!empty($enabled) && userset_groups_grouping_allowed($clusterid)) {
 
         //determine if flagged as grouping
         $contextlevel = context_level_base::get_custom_context_level('cluster', 'elis_program');
@@ -309,14 +309,14 @@ function userset_groups_grouping_helper($clusterid, $name) {
         if(empty($grouping)) {
             $grouping = new stdClass;
             $grouping->courseid = SITEID;
-            $grouping->name = addslashes($name);
+            $grouping->name = $name;
             $grouping->id = groups_create_grouping($grouping);
         } else {
             $grouping = groups_get_grouping($grouping);
         }
 
         //obtain the child cluster ids
-        $child_clusters = userset_groups_get_child_clusters($clusterid);
+        $child_clusters = userset_groups_get_child_usersets($clusterid);
 
         //add appropriate cluster-groups to the grouping
         foreach($child_clusters as $child_cluster) {
@@ -532,7 +532,7 @@ function userset_groups_update_grouping_closure($clusterid, $include_children = 
                 if($include_children) {
                 
                     //get all child clusters
-                    $child_cluster_ids = userset_groups_get_child_clusters($cluster->id);
+                    $child_cluster_ids = userset_groups_get_child_usersets($cluster->id);
                     
                     foreach($child_cluster_ids as $child_cluster_id) {
                     
@@ -610,15 +610,17 @@ function userset_groups_userset_allows_groups($clusterid) {
 function userset_groups_grouping_allowed($clusterid) {
     global $CFG, $CURMAN, $DB;
 
-    if(empty($CFG->enablegroupings) || empty($CURMAN->config->cluster_groupings)) {
+    $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
+
+    if(empty($enabled)) {
         return false;
     }
 
     //retrieve the config field
-    if($fieldid = $DB->get_field(field::TABLE, 'id', array('shortname' => 'cluster_groupings'))) {
+    if($fieldid = $DB->get_field(field::TABLE, 'id', array('shortname' => 'userset_groupings'))) {
 
         //get the cluster context level
-        $context = context_level_base::get_custom_context_level('cluster', 'block_curr_admin');
+        $context = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
         //retrieve the cluster context instance
         $context_instance = get_context_instance($context, $clusterid);
@@ -676,14 +678,14 @@ function userset_groups_add_member($groupid, $userid) {
  * @param   int        $clusterid  The cluster id to start at
  * @return  int array              The list of cluster id
  */
-function userset_groups_get_child_clusters($clusterid) {
+function userset_groups_get_child_usersets($clusterid) {
     global $DB;
 
     $result = array($clusterid);
 
     if($child_clusters = $DB->get_records(userset::TABLE, array('parent' => $clusterid))) {
         foreach($child_clusters as $child_cluster) {
-            $child_result = cluster_groups_get_child_clusters($child_cluster->id);
+            $child_result = userset_groups_get_child_usersets($child_cluster->id);
             $result = array_merge($result, $child_result);
         }
     }
