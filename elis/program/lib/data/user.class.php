@@ -328,7 +328,7 @@ class user extends data_object_with_custom_fields {
                 'lastname' => 'lastname',
                 'email' => 'email',
                 'address' => 'address',
-                'city' => 'address',
+                'city' => 'city',
                 'country' => 'country',
             );
             if ($createnew && !$muserid) {
