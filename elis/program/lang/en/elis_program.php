@@ -316,6 +316,7 @@ $string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a}'
 $string['email'] = 'Email address';
 $string['email2'] = 'Email address 2';
 $string['enrol'] = 'Enrol'; // TBD: Enroll ?
+$string['enrol_all_users_now'] = 'Enrol all users from this track now';
 $string['enrol_elis_help'] = 'If this setting is set, then ELIS will not enrol a user in an ELIS class instance that is linked with a Moodle class that uses an enrolment plugin other than the ELIS enrolment plugin.
 
 In brief, if an ELIS class instance is:
