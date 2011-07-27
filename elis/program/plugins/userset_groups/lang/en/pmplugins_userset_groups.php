@@ -27,5 +27,3 @@ Also, be cautious when enabling this setting, as it will cause the Curriculum Ma
 $string['grp_pop_userset_setting'] = 'Allow course-description-level group population from user sets';
 $string['pluginname'] = 'Userset Groups';
 $string['site_course_userset_groups'] = 'Allow front page group population from clusters';
-
-?>
