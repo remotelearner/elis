@@ -184,20 +184,24 @@ function userset_groups_pm_userset_groupings_enabled() {
  * @param  int  $clusterid  The particular cluster's id, or zero for all
  */
 function userset_groups_update_site_course($clusterid = 0, $add_members = false, $userid = 0) {
-    global $CFG, $CURMAN;
+    global $CFG, $CURMAN, $DB;
+
+    $enabled = get_config('pmplugins_userset_groups', 'site_course_userset_groups');
 
     //make sure this functionality is even enabled
-    if(!empty($CURMAN->config->site_course_cluster_groups)) {
+    if(!empty($enabled)) {
 
         $select_parts = array();
+        $params = array();
 
-        $cluster_select = '';
         if(!empty($clusterid)) {
-            $select_parts[] = "(clst.id = $clusterid)";
+            $select_parts[] = "(clst.id = :clusterid)";
+            $params['clusterid'] = $clusterid;
         }
 
         if(!empty($userid)) {
-            $select_parts[] = "(mdluser.id = {$userid})";
+            $select_parts[] = "(mdluser.id = :userid)";
+            $params['userid'] = $userid;
         }
 
         $select = empty($select_parts) ? '' : 'WHERE ' . implode('AND', $select_parts);
@@ -205,40 +209,40 @@ function userset_groups_update_site_course($clusterid = 0, $add_members = false,
         $siteid = SITEID;
 
         //query to get clusters, groups, and possibly users
-        $sql = "SELECT grp.id AS groupid, clst.id AS clusterid, clst.name AS clustername, mdluser.id AS userid FROM
-                {$CURMAN->db->prefix_table(CLSTTABLE)} clst
-                LEFT JOIN {$CURMAN->db->prefix_table('groups')} grp
+        $sql = "SELECT DISTINCT grp.id AS groupid, clst.id AS clusterid, clst.name AS clustername, mdluser.id AS userid FROM
+                {".userset::TABLE."} clst
+                LEFT JOIN {groups} grp
                 ON clst.name = grp.name
                 AND grp.courseid = {$siteid}
                 LEFT JOIN
-                    ({$CURMAN->db->prefix_table(CLSTUSERTABLE)} usrclst
-                     JOIN {$CURMAN->db->prefix_table(USRTABLE)} crlmuser
+                    ({".clusterassignment::TABLE."} usrclst
+                     JOIN {".user::TABLE."} crlmuser
                      ON usrclst.userid = crlmuser.id
-                     JOIN {$CURMAN->db->prefix_table('user')} mdluser
+                     JOIN {user} mdluser
                      ON crlmuser.idnumber = mdluser.idnumber)
                 ON clst.id = usrclst.clusterid
                 $select
                 ORDER BY clst.id";
 
-        if($recordset = get_recordset_sql($sql)) {
+        if($recordset = $DB->get_recordset_sql($sql, $params)) {
 
             $last_clusterid = 0;
             $last_group_id = 0;
 
-            while($record = rs_fetch_next_record($recordset)) {
+            foreach ($recordset as $record) {
 
                 if($last_clusterid != $record->clusterid) {
                     $last_group_id = $record->groupid;
                 }
 
-                if(cluster_groups_cluster_allows_groups($record->clusterid)) {
+                if(userset_groups_userset_allows_groups($record->clusterid)) {
 
                     //handle group record
                     if(empty($record->groupid) && (empty($last_clusterid) || $last_clusterid !== $record->clusterid)) {
                         //create group
                         $group = new stdClass;
                         $group->courseid = SITEID;
-                        $group->name = addslashes($record->clustername);
+                        $group->name = $record->clustername;
                         $group->id = groups_create_group($group);
                         $last_group_id = $group->id;
                     }
