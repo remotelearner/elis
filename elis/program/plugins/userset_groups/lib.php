@@ -395,10 +395,12 @@ function userset_groups_update_user_site_course($userid, $clusterid) {
  *
  */
 function userset_groups_update_groups($attributes = array()) {
-    global $CURMAN;
+    global $CURMAN, $DB;
+
+    $enabled = get_config('pmplugins_userset_groups', 'userset_groups');
 
     //nothing to do if global setting is off
-    if(!empty($CURMAN->config->cluster_groups)) {
+    if(!empty($enabled)) {
 
         //whenever we're given a cluster id, see if we can eliminate
         //any processed in the case where the cluster does not allow
@@ -410,49 +412,52 @@ function userset_groups_update_groups($attributes = array()) {
 
         //proceed if no cluster is specified or one that allows group
         //synching is specified
-        if($clusterid === 0 || userset_groups_cluster_allows_groups($clusterid)) {
+        if($clusterid === 0 || userset_groups_userset_allows_groups($clusterid)) {
 
             $condition = '';
+            $params = array();
             if(!empty($attributes)) {
                 foreach($attributes as $key => $value) {
                     if(empty($condition)) {
-                        $condition = "WHERE $key = $value";
+                        $condition = "WHERE $key = ?";
+                        $params[] = $value;
                     } else {
-                        $condition .= " AND $key = $value";
+                        $condition .= " AND $key = ?";
+                        $params[] = $value;
                     }
                 }
             }
 
             //this query handles the bulk of the work
-            $sql = "SELECT crs.id AS courseid,
-                           clst.name AS clustername,
-                           mdlusr.id AS userid,
-                           clst.id AS clusterid
-                    FROM {$CURMAN->db->prefix_table(CLSTABLE)} cls
-                    JOIN {$CURMAN->db->prefix_table(CLSMOODLETABLE)} clsmdl
+            $sql = "SELECT DISTINCT crs.id AS courseid,
+                                    clst.name AS clustername,
+                                    mdlusr.id AS userid,
+                                    clst.id AS clusterid
+                    FROM {".pmclass::TABLE."} cls
+                    JOIN {".classmoodlecourse::TABLE."} clsmdl
                     ON cls.id = clsmdl.classid
-                    JOIN {$CURMAN->db->prefix_table('course')} crs
+                    JOIN {course} crs
                     ON clsmdl.moodlecourseid = crs.id
-                    JOIN {$CURMAN->db->prefix_table(CRSTABLE)} cmcrs
+                    JOIN {".course::TABLE."} cmcrs
                     ON cmcrs.id = cls.courseid
-                    JOIN {$CURMAN->db->prefix_table(CURCRSTABLE)} curcrs
+                    JOIN {".curriculumcourse::TABLE."} curcrs
                     ON curcrs.courseid = cmcrs.id
-                    JOIN {$CURMAN->db->prefix_table(CURTABLE)} cur
+                    JOIN {".curriculum::TABLE."} cur
                     ON curcrs.curriculumid = cur.id
-                    JOIN {$CURMAN->db->prefix_table(CLSTCURTABLE)} clstcur
+                    JOIN {".clustercurriculum::TABLE."} clstcur
                     ON clstcur.curriculumid = curcrs.curriculumid
-                    JOIN {$CURMAN->db->prefix_table(CLSTTABLE)} clst
+                    JOIN {".userset::TABLE."} clst
                     ON clstcur.clusterid = clst.id
-                    JOIN {$CURMAN->db->prefix_table(CLSTUSERTABLE)} usrclst
+                    JOIN {".clusterassignment::TABLE."} usrclst
                     ON clst.id = usrclst.clusterid
-                    JOIN {$CURMAN->db->prefix_table(USRTABLE)} usr
+                    JOIN {".user::TABLE."} usr
                     ON usrclst.userid = usr.id
-                    JOIN {$CURMAN->db->prefix_table('user')} mdlusr
+                    JOIN {user} mdlusr
                     ON usr.idnumber = mdlusr.idnumber
                     {$condition}
                     ORDER BY clst.id";
 
-            $records = get_recordset_sql($sql);
+            $records = $DB->get_recordset_sql($sql, $params);
 
             if($records) {
 
@@ -460,21 +465,23 @@ function userset_groups_update_groups($attributes = array()) {
                 $last_cluster_id = 0;
                 $last_group_id = 0;
 
-                while($record = rs_fetch_next_record($records)) {
+                foreach ($records as $record) {
 
                     //make sure the cluster allows synching to groups
-                    if(cluster_groups_cluster_allows_groups($record->clusterid)) {
+                    if(userset_groups_userset_allows_groups($record->clusterid)) {
 
                         //if first record cluster is different from last, create / retrieve group
                         if($last_cluster_id === 0 || $last_cluster_id !== $record->clusterid) {
 
                             //determine if group already exists
-                            if(record_exists('groups', 'name', addslashes($record->clustername), 'courseid', $record->courseid)) {
+                            if($DB->record_exists('groups', array('name' => $record->clustername, 'courseid' => $record->courseid))) {
                                 $sql = "SELECT *
-                                        FROM {$CURMAN->db->prefix_table('groups')} grp
-                                        WHERE name = '" . addslashes($record->clustername) . "'
-                                        AND courseid = {$record->courseid}";
-                                $group = get_record_sql($sql, true);
+                                        FROM {groups} grp
+                                        WHERE name = :name
+                                        AND courseid = :courseid";
+                                $params = array('name' => $record->clustername,
+                                                'courseid' => $record->courseid);
+                                $group = $DB->get_record_sql($sql, $params, IGNORE_MULTIPLE);
                             } else {
                                 $group = new stdClass;
                                 $group->courseid = $record->courseid;
