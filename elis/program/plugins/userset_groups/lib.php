@@ -184,7 +184,7 @@ function userset_groups_pm_userset_groupings_enabled() {
  * @param  int  $clusterid  The particular cluster's id, or zero for all
  */
 function userset_groups_update_site_course($clusterid = 0, $add_members = false, $userid = 0) {
-    global $CFG, $CURMAN, $DB;
+    global $CFG, $DB;
 
     $enabled = get_config('pmplugins_userset_groups', 'site_course_userset_groups');
 
@@ -265,7 +265,9 @@ function userset_groups_update_site_course($clusterid = 0, $add_members = false,
 
     }
 
-    if(!empty($CFG->enablegroupings) && !empty($CURMAN->config->cluster_groupings)) {
+    $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
+
+    if(!empty($enabled)) {
         //query condition
         $select = '1 = 1';
         if(!empty($clusterid)) {
@@ -291,7 +293,7 @@ function userset_groups_update_site_course($clusterid = 0, $add_members = false,
  * @param  string  $name       The name of the cluster
  */
 function userset_groups_grouping_helper($clusterid, $name) {
-    global $CFG, $CURMAN, $DB;
+    global $CFG, $DB;
 
     $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
 
@@ -340,7 +342,7 @@ function userset_groups_grouping_helper($clusterid, $name) {
  * @return  boolean              Returns true to satisfy event handling
  */
 function userset_groups_update_user_site_course($userid, $clusterid) {
-    global $CURMAN, $DB;
+    global $DB;
 
     $enabled = get_config('pmplugins_userset_groups', 'site_course_userset_groups');
 
@@ -395,7 +397,7 @@ function userset_groups_update_user_site_course($userid, $clusterid) {
  *
  */
 function userset_groups_update_groups($attributes = array()) {
-    global $CURMAN, $DB;
+    global $DB;
 
     $enabled = get_config('pmplugins_userset_groups', 'userset_groups');
 
@@ -515,7 +517,7 @@ function userset_groups_update_groups($attributes = array()) {
  * @return   boolean                     Returns true to satisfy event handlers
  */
 function userset_groups_update_grouping_closure($clusterid, $include_children = false) {
-    global $CFG, $CURMAN;
+    global $CFG;
 
     $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
 
@@ -581,7 +583,7 @@ function userset_groups_update_grouping_closure($clusterid, $include_children = 
  * @return  boolean              Whether the cluster allows groups or not
  */
 function userset_groups_userset_allows_groups($clusterid) {
-    global $CURMAN, $DB;
+    global $DB;
 
     //retrieve the config field
     if($fieldid = $DB->get_field(field::TABLE, 'id', array('shortname' => 'userset_group'))) {
@@ -617,7 +619,7 @@ function userset_groups_userset_allows_groups($clusterid) {
  * @return  boolean              True if this grouping is allowed, otherwise false
  */
 function userset_groups_grouping_allowed($clusterid) {
-    global $CFG, $CURMAN, $DB;
+    global $CFG, $DB;
 
     $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
 
