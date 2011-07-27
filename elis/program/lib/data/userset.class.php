@@ -293,9 +293,9 @@ class userset extends data_object_with_custom_fields {
 
         if (isset($old))  {
             //signal that the cluster was created
-            events_trigger('crlm_cluster_created', $this);
+            events_trigger('pm_userset_updated', $this);
         } else {
-            events_trigger('crlm_cluster_updated', $this);
+            events_trigger('pm_userset_created', $this);
         }
 
         return $result;

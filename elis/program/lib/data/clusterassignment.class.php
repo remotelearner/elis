@@ -120,4 +120,26 @@ class clusterassignment extends elis_data_object {
         //userset::cluster_update_assignments($id, null);
     	return $status;
     }
+
+    /**
+     * Save the record to the database.  This method is used to both create a
+     * new record, and to update an existing record.
+     */
+    public function save() {
+        $trigger = false;
+
+        if (!isset($this->id)) {
+            $trigger = true;
+        }
+
+        parent::save();
+
+        if ($trigger) {
+            $usass = new stdClass;
+            $usass->userid = $this->userid;
+            $usass->clusterid = $this->clusterid;
+
+            events_trigger('cluster_assigned', $usass);
+        }
+    }
 }

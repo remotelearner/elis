@@ -173,7 +173,7 @@ class clustercurriculum extends elis_data_object {
             $DB->execute_sql($sql,$params);
         }*/
 
-        events_trigger('crlm_cluster_curriculum_associated', $record);
+        events_trigger('pm_userset_program_associated', $record);
     }
 
     /// collection fetching functions. (These may be able to replaced by a generic container/listing class)
