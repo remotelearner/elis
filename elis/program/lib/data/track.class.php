@@ -99,8 +99,6 @@ class track extends data_object_with_custom_fields {
     /**
      * Contructor.
      */
-    /*
-      FIXME: add support for custom fields
     function __construct($src=false, $field_map=null, array $associations=array(), moodle_database $database=null) {
         parent::datarecord($src, $field_map, $associations, $database);
 
@@ -117,7 +115,6 @@ class track extends data_object_with_custom_fields {
             }
         }
     }
-    */
     /*function track($track = false) {
         parent::datarecord();
         $this->set_table(TABLE);

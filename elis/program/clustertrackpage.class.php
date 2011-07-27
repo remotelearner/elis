@@ -256,7 +256,7 @@ echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid:
 class clustertrackpage extends clustertrackbasepage {
     var $pagename = 'clsttrk';
     var $tab_page = 'usersetpage';
-    //var $default_tab = 'clustertrackpage';
+    var $default_tab = 'clustertrackpage';
 
     var $section = 'users';
 
@@ -335,7 +335,7 @@ class clustertrackpage extends clustertrackbasepage {
 class trackclusterpage extends clustertrackbasepage {
     var $pagename = 'trkclst';
     var $tab_page = 'trackpage';
-    var $default_tab = 'trackassignmentpage';
+    var $default_tab = 'trackclusterpage';
 
     var $section = 'curr';
     var $parent_data_class = 'track';
