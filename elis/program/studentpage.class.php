@@ -169,14 +169,14 @@ class studentpage extends associationpage {
     }
 
     function display_bulkedit() { // action_bulkedit
-        $clsid        = cm_get_param('id', 0);
-        $type         = cm_get_param('stype', '');
-        $sort         = cm_get_param('sort', 'name');
-        $dir          = cm_get_param('dir', 'ASC');
-        $page         = cm_get_param('page', 0);
-        $perpage      = cm_get_param('perpage', 30);        // how many per page
-        $namesearch   = trim(cm_get_param('search', ''));
-        $alpha        = cm_get_param('alpha', '');
+        $clsid        = $this->required_param('id', PARAM_INT);
+        $type         = $this->optional_param('stype', '', PARAM_ALPHANUM);
+        $sort         = $this->optional_param('sort', 'name', PARAM_ALPHANUM);
+        $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHANUM);
+        $page         = $this->optional_param('page', 0, PARAM_INT);
+        $perpage      = $this->optional_param('perpage', 30, PARAM_INT); // how many per page
+        $namesearch   = trim($this->optional_param('search', '', PARAM_CLEAN));
+        $alpha        = $this->optional_param('alpha', '', PARAM_ALPHA);
 
         // TBD: 'edit' or 'bulkedit' or ???; and array(params ???)
         // print_tabs now in parent::print_header()
@@ -222,21 +222,20 @@ class studentpage extends associationpage {
             if (!empty($user['enrol'])) {
                 $newstu = $this->build_student($uid, $classid, $user);
                 $pmclass = new pmclass($classid);
-                $pmclass->load(); // TBD
                 //error_log("studentpage::attempt_enrol({$classid}, users): max_students = {$pmclass->maxstudents}  tot_enrolled = ". $newstu->count_enroled());
-                if($newstu->completestatusid != STUSTATUS_NOTCOMPLETE || empty($pmclass->maxstudents) || $pmclass->maxstudents > $newstu->count_enroled()) {
-                    $status = $newstu->add();
-                } else {
+                $newstu->validation_overrides[] = 'prerequisites';
+                if ($newstu->completestatusid != STUSTATUS_NOTCOMPLETE) {
+                    // user is set to completed, so don't worry about enrolment limit
+                    $newstu->validation_overrides[] = 'enrolment_limit';
+                }
+                try {
+                    $status = $newstu->save();
+                } catch (pmclass_enrolment_limit_validation_exception $e) {
                     $waitlist[] = $newstu;
                     $status = true;
-                }
-                if ($status !== true) {
-                    if (!empty($status->message)) {
-                        echo cm_error(get_string('record_not_created_reason',
-                                         self::LANG_FILE, $status));
-                    } else {
-                        echo cm_error(get_string('record_not_created', self::LANG_FILE));
-                    }
+                } catch (Exception $e) {
+                    echo cm_error(get_string('record_not_created_reason',
+                                             self::LANG_FILE, $e));
                 }
             }
         }
@@ -393,33 +392,6 @@ class studentpage extends associationpage {
         $this->display('default');
     }
 
-    function do_updateattendance() { // action_updateattendance
-        $atnrecord                  = array();
-        $atnrecord['id']            = cm_get_param('atnid', 0);
-        $atnrecord['classid']       = $clsid;
-        $atnrecord['userid']        = cm_get_param('userid', 0);
-
-        $startyear  = cm_get_param('startyear');
-        $startmonth = cm_get_param('startmonth');
-        $startday   = cm_get_param('startday');
-        $atnrecord['timestart'] = mktime(0, 0, 0, $startmonth, $startday, $startyear);
-
-        $endyear  = cm_get_param('endyear');
-        $endmonth = cm_get_param('endmonth');
-        $endday   = cm_get_param('endday');
-        $atnrecord['timeend'] = mktime(0, 0, 0, $endmonth, $endday, $endyear);
-
-        $atnrecord['note'] = cm_get_param('note', '');
-        $atn = new attendance($atnrecord);
-
-        $status = $atn->update(); // TBD
-        if ($status !== true) {
-            echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
-        }
-
-        $this->display('default'); // TBD ???
-    }
-
     /**
      *
      */
@@ -447,7 +419,7 @@ class studentpage extends associationpage {
                         $wait_record->position = 0;
 
                         $wait_list = new waitlist($wait_record);
-                        $wait_list->add();
+                        $wait_list->save();
                     } else if($data->enrol[$uid] == 2) {
                         $user = new user($uid);
                         $student_data= array();
@@ -458,14 +430,14 @@ class studentpage extends associationpage {
                         $student_data['completestatusid'] = STUSTATUS_NOTCOMPLETE;
 
                         $newstu = new student($student_data);
-                        $status = $newstu->add();
-                        if ($status !== true) {
-                            if (!empty($status->message)) {
-                                echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $status));
-                            } else {
-                                echo cm_error(get_string('record_not_created',
-                                                  self::LANG_FILE));
-                            }
+                        $newstu->validation_overrides[] = 'prerequisites';
+                        $newstu->validation_overrides[] = 'enrolment_limit';
+                        try {
+                            $status = $newstu->save();
+                            echo cm_error(get_string('record_not_created',
+                                                     self::LANG_FILE));
+                        } catch (Exception $e) {
+                            echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $e));
                         }
                     }
                 }
@@ -557,12 +529,10 @@ class studentpage extends associationpage {
     }
 
     public function get_waitlistform($students) {
-        $form_url = new moodle_url(null, array('s'       => $this->pagename,
-                                               'section' => $this->section,
-                                               'action'  => 'waitlistconfirm'));
+        $target = $this->get_new_page(array('action' => 'waitlistconfirm'), true);
         $student = current($students);
-        $data = new pmclass($student->classid); // TBD - was: $student->pmclass;
-        $waitlistform = new waitlistaddform($form_url,
+        $data = $student->pmclass;
+        $waitlistform = new waitlistaddform($target->url,
                                 array('obj' => $data, 'students' => $students));
         $waitlistform->display();
     }

@@ -30,7 +30,6 @@ require_once elis::lib('data/data_object.class.php');
 require_once elis::lib('table.class.php');
 
 //require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-//require_once CURMAN_DIRLOCATION . '/lib/attendance.class.php';
 
 require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php');
@@ -61,11 +60,15 @@ class student extends elis_data_object {
                            'idfield' => 'classid')
     );
 
-    static $validation_rules = array(array('validation_helper', 'not_empty_userid'),
-                                     array('validation_helper', 'not_empty_classid'),
-                                     'validate_associated_user_exists',
-                                     'validate_associated_class_exists',
-                                     array('validation_helper', 'is_unique_userid_classid'));
+    static $validation_rules = array(
+        array('validation_helper', 'not_empty_userid'),
+        array('validation_helper', 'not_empty_classid'),
+        'validate_associated_user_exists',
+        'validate_associated_class_exists',
+        array('validation_helper', 'is_unique_userid_classid'),
+        'prerequisites' => 'validate_class_prerequisites',
+        'enrolment_limit' => 'validate_class_enrolment_limit',
+    );
 
     /**
      * Validates that the associated user record exists
@@ -79,6 +82,49 @@ class student extends elis_data_object {
      */
     public function validate_associated_class_exists() {
         validate_associated_record_exists($this, 'pmclass');
+    }
+
+    public function validate_class_prerequisites() {
+        // check prerequisites
+
+        $pmclass = $this->pmclass;
+        // get all the curricula that the user is in
+        $curricula = $this->users->get_programassignments();
+        foreach ($curricula as $curriculum) {
+            $curcrs = new curriculumcourse();
+            $curcrs->courseid = $pmclass->courseid;
+            $curcrs->curriculumid = $curriculum->curid;
+            if (!$curcrs->prerequisites_satisfied($this->userid)) {
+                // prerequisites not satisfied
+                throw new unsatisfied_prerequisites_exception($this);
+
+                /*
+                $status = new Object();
+                $status->message = get_string('unsatisfiedprereqs', self::LANG_FILE);
+                $status->code = 'unsatisfiedprereqs';
+                //error_log('student.class::add() - student missing prereqs!');
+                return $status;
+                */
+            }
+        }
+    }
+
+    /**
+     * Check that the class enrolment limit is not reached.
+     */
+    public function validate_class_enrolment_limit() {
+        // check class enrolment limit
+        if (isset($this->id)) {
+            // editing an existing enrolment -- don't need to check enrolment
+            // limit
+            return true;
+        }
+
+        $limit = $this->pmclass->maxstudents;
+        if (!empty($limit) && $limit <= $this->count_enroled()) {
+            // class is full
+            throw new pmclass_enrolment_limit_validation_exception($this->pmclass);
+        }
     }
 
 /*
@@ -114,18 +160,7 @@ class student extends elis_data_object {
     protected $_dbfield_credits;
     protected $_dbfield_locked;
 
-    static $delete_is_complex = true; // TBD
-
-    //var $pmclass;           // OBJECT - The class object
-
-    // STRING - Styles to use for edit form.
-    var $_editstyle = '
-.attendanceeditform input,
-.attendanceeditform textarea {
-    margin: 0;
-    display: block;
-}
-';
+    static $delete_is_complex = true;
 
     function is_available() { // TBD: Move to parent class or library with class as param?
         return $this->_db->get_manager()->table_exists(self::TABLE);
@@ -256,95 +291,22 @@ class student extends elis_data_object {
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-    /**
-     * Perform all necessary tasks to add a student enrolment to the system.
-     *
-     * @param array $checks what checks to perform before adding enrolling the
-     * user.  e.g. array('prereq' => 1, 'waitlist' => 1) will check that
-     * prerequisites are satisfied, and that the class is not full
-     * @param boolean $notify whether or not notifications should be sent if a
-     * check fails
-     */
-    function add($checks = array(), $notify = false) {
+    function save() {
         global $CFG;
 
         $status = true;
-        if ($this->_db->record_exists(student::TABLE,
-                             array('userid' => $this->userid,
-                                   'classid' => $this->classid))) {
+        try {
+            validation_helper::is_unique_userid_classid($this);
+        } catch (Exception $e) {
             // already enrolled -- pretend we succeeded
             //error_log('student.class::add() - student already enrolled!');
             return true;
         }
 
-        // check that the student can be enrolled first
-        if (!empty($checks['prereq'])) {
-            // check prerequisites
-
-            $pmclass = new pmclass($this->classid);
-            // get all the curricula that the user is in
-            $curricula = curriculumstudent::get_curricula($this->userid);
-            foreach ($curricula as $curriculum) {
-                $curcrs = new curriculumcourse();
-                $curcrs->courseid = $pmclass->courseid;
-                $curcrs->curriculumid = $curriculum->curid;
-                if (!$curcrs->prerequisites_satisfied($this->userid)) {
-                    // prerequisites not satisfied
-                    if ($notify) {
-                        $data = new stdClass;
-                        $data->userid = $this->userid;
-                        $data->classid = $this->classid;
-                        $data->trackid = $trackid;
-                        events_trigger('crlm_prereq_unsatisfied', $data);
-                    }
-
-                    $status = new Object();
-                    $status->message = get_string('unsatisfiedprereqs', self::LANG_FILE);
-                    $status->code = 'unsatisfiedprereqs';
-                    //error_log('student.class::add() - student missing prereqs!');
-                    return $status;
-                }
-            }
-        }
-
-        if (!empty($checks['waitlist'])) {
-            // check class enrolment limit
-            $pmclass = new pmclass($this->classid);
-            $pmclass->load(); // TBD
-            $limit = $pmclass->maxstudents;
-            if (!empty($limit) && $limit <= $this->count_enroled($this->classid)) {
-                // class is full
-                // put student on wait list
-                $wait_list = new waitlist($this);
-                $wait_list->timecreated = time();
-                $wait_list->position = 0;
-                $wait_list->add();
-
-                if ($notify) {
-                    $subject = get_string('user_waitlisted', self::LANG_FILE);
-
-                    $a = new object();
-                    $a->user = $this->user->idnumber;
-                    $a->pmclass = $pmclass->idnumber;
-                    $message = get_string('user_waitlisted_msg', self::LANG_FILE, $a);
-
-                    $from = $user = get_admin();
-
-                    notification::notify($message, $user, $from);
-                    email_to_user($user, $from, $subject, $message);
-                }
-
-                $status = new Object();
-                $status->message = get_string('user_waitlisted', self::LANG_FILE);
-                $status->code = 'user_waitlisted';
-                //error_log('student.class::add() - class full! wait-listed?');
-                return $status;
-            }
-        }
         //set end time based on class duration
-        $studentclass = new pmclass($this->classid);
-        if (empty($this->endtime)) {
-            if (isset($studentclass->duration) && $studentclass->duration) {
+        $studentclass = $this->pmclass;
+        if (empty($this->id) && empty($this->endtime)) {
+            if (!empty($this->pmclass->duration)) {
                 $this->endtime = $this->enrolmenttime + $studentclass->duration;
             } else {
                 // no class duration -> no end time
@@ -352,54 +314,31 @@ class student extends elis_data_object {
             }
         }
 
-        /* $status = */ parent::save(); // WAS: $this->data_insert_record()
-        // no return status from save()
-        //error_log("student.class::add() - called parent::save() => {$status}");
+        parent::save();
 
         /// Enrol them into the Moodle class.
         if ($moodlecourseid = moodle_get_course($this->classid)) {
             if ($mcourse = $this->_db->get_record('course', array('id' => $moodlecourseid))) {
-              /* ****TBD****
-                $enrol = $mcourse->enrol;
+                $enrol = $this->_db->get_record('enrol', array('courseid' => $moodlecourseid, 'enrol' => 'elis'));
                 if (!$enrol) {
-                    $enrol = $CFG->enrol;
+                    throw new Exception(get_string('error_not_using_elis_enrolment', self::LANG_FILE));
                 }
-                if (elis::$config->elis_program->restrict_to_elis_enrolment_plugin && $enrol != 'elis') {
-                    $status = new Object();
-                    $status->message = get_string('error_not_using_elis_enrolment', self::LANG_FILE);
-                    return $status;
-                }
-              ******** */
 
-                $timestart = $this->enrolmenttime;
-                $timeend = $this->endtime;
-
-                if ($role = get_default_course_role($mcourse)) { // ***TBD***
-                    $context = get_context_instance(CONTEXT_COURSE, $mcourse->id);
-
-                    /// Get the Moodle user ID or create a new account for this user.
-                    $user = new user($this->userid);
-                    //if (!($muserid = cm_get_moodleuserid($this->userid))) {
-                    if (!($muserid = $user->get_moodleuser())) {
-
-                        if (!$muserid = $user->synchronize_moodle_user(true, true)) {
-                            $status = new Object();
-                            $status->message = get_string('errorsynchronizeuser', self::LANG_FILE);
-                            $muserid = false;
-                        }
+                $plugin = enrol_get_plugin('elis');
+                $user = $this->users;
+                if (!($muser = $user->get_moodleuser())) {
+                    if (!$muserid = $user->synchronize_moodle_user(true, true)) {
+                        throw new Exception(get_string('errorsynchronizeuser', self::LANG_FILE));
                     }
-
-                    if (!empty($muserid)) {
-                        if (!role_assign($role->id, $muserid, $context->id)) { // TBD: removed $groupid, $timestart, $timeend and $enrol => 'manual'
-                            $status = new Object();
-                            $status->message = get_string('errorroleassign', self::LANG_FILE);
-                        }
-                    }
+                } else {
+                    $muserid = $muser->id;
                 }
+
+                $plugin->enrol_user($enrol, $muserid, $enrol->roleid, $this->enrolmenttime, $this->endtime);
             }
         }
 
-        return $status;
+        return;
     }
 
     /**
@@ -410,26 +349,31 @@ class student extends elis_data_object {
         $result = student_grade::delete_for_user_and_class($this->userid, $this->classid);
 
         /// Unenrol them from the Moodle class.
-//        if (!empty($this->classid) && !empty($this->userid) &&
-//            ($moodlecourseid = $this->_db->get_field('crlm_class_moodle', 'moodlecourseid', array('classid' => $this->classid))) &&
-//            ($muserid = cm_get_moodleuserid($this->userid))) {
-        $user = new user($this->userid);
-        if (!empty($this->classid) && !empty($this->userid) &&
-            ($moodlecourseid = $this->_db->get_field('crlm_class_moodle', 'moodlecourseid', array('classid' => $this->classid))) &&
-            ($muserid = $user->get_moodleuser()->id)) {
+        if ($moodlecourseid = moodle_get_course($this->classid)) {
+            if ($mcourse = $this->_db->get_record('course', array('id' => $moodlecourseid))) {
+                $enrol = $this->_db->get_record('enrol', array('courseid' => $moodlecourseid, 'enrol' => 'elis'));
+                if (!$enrol) {
+                    $status = new Object();
+                    $status->message = get_string('error_not_using_elis_enrolment', self::LANG_FILE);
+                    return $status;
+                }
 
-            $context = get_context_instance(CONTEXT_COURSE, $moodlecourseid);
-            if ($context && $context->id) {
-                role_unassign_all(array('userid' => $muserid,
-                                        'contextid' => $context->id));
+                $plugin = enrol_get_plugin('elis');
+
+                if (!($muser = $this->users->get_moodleuser())) {
+                    $muserid = $user->synchronize_moodle_user(true, true);
+                } else {
+                    $muserid = $muser->id;
+                }
+
+                $plugin->unenrol_user($enrol, $muserid);
             }
         }
 
-        /* $result = $result && */ parent::delete(); // WAS: $this->data_delete_record() - no return code from data_object::delete()
+        parent::delete();
 
         if ($this->completestatusid == STUSTATUS_NOTCOMPLETE) {
-            //error_log("student::delete() - classid = {$this->classid}");
-            $pmclass = new pmclass($this->classid);
+            $pmclass = $this->pmclass;
             if (empty($pmclass->maxstudents) || $pmclass->maxstudents > $this->count_enroled($pmclass->id)) {
                 $wlst = waitlist::get_next($this->classid);
 
@@ -1165,45 +1109,6 @@ class student extends elis_data_object {
 
         $output = ob_get_contents();
         ob_end_clean();
-
-        return $output;
-    }
-
-
-    function attendance_form_html($formid='', $extraclass='', $rows='2', $cols='40') {
-        $index = !empty($formid) ? '['.$formid.']' : '';
-        $formid_suffix = !empty($formid) ? '_'.$formid : '';
-
-        $output = '';
-
-//        if (!$atn = pm_get_attendance($this->classid, $this->userid)) {
-        if (!$atn = get_attendance($this->classid, $this->userid)) {
-            $atn = new attendance();
-        }
-
-        $output .= '<style>'.$this->_editstyle.'</style>';
-        $output .= '<fieldset id="cmclasseditform'.$formid.'" class="cmclasseditform '.$extraclass.'">'."\n";
-        $output .= '<legend>' . get_string('edit_student_attendance', self::LANG_FILE) . '</legend>'."\n";
-
-        $output .= '<label for="timestart'.$formid.'" id="ltimestart'.$formid.'">Start Date:<br />';
-        $output .= cm_print_date_selector('startday', 'startmonth', 'startyear', $atn->timestart, true);
-        $output .= '</label><br /><br />';
-
-        $output .= '<label for="timeend'.$formid.'" id="ltimeend'.$formid.'">End Date:<br />';
-        $output .= cm_print_date_selector('endday', 'endmonth', 'endyear', $atn->timeend, true);
-        $output .= '</label><br /><br />';
-
-        $output .= '<label for="note'.$formid.'" id="lnote'.$formid.'">Note:<br />';
-        $output .= '<textarea name="note'.$index.'" cols="'.$cols.'" rows="'.$rows.'" '.
-                   'id="note'.$formid.'" class="attendanceeditform '.$extraclass.'">'.$atn->note.
-                   '</textarea>'."\n";
-        $output .= '</label>';
-
-        $output .= '<input type="hidden" name="id' . $index . '" value="' . $this->id . '" />'."\n";
-        $output .= '<input type="hidden" name="class" value="' . $this->classid . '" />';
-        $output .= '<input type="hidden" name="userid" value="' . $this->userid . '" />';
-        $output .= '<input type="hidden" name="atnid' . $index . '" value="' . $atn->id . '" />' . "\n";
-        $output .= '</fieldset>';
 
         return $output;
     }
@@ -2077,6 +1982,17 @@ class student extends elis_data_object {
     }
 }
 
+class unsatisfied_prerequisites_exception extends Exception {
+    public function __construct(student $stu) {
+        parent::__construct("{$stu->users->fullname()} ({$stu->users->idnumber}) has one or more unsatisfied prerequisites for course description {$stu->pmclass->course->idnumber}");
+    }
+}
+
+class pmclass_enrolment_limit_validation_exception extends Exception {
+    public function __construct(pmclass $pmclass) {
+        parent::__construct("Enrolment limit of {$pmclass->maxstudents} exceeded for class instance {$pmclass->course->idnumber}:{$pmclass->idnumber}");
+    }
+}
 
 class student_grade extends elis_data_object {
     const TABLE = GRDTABLE;

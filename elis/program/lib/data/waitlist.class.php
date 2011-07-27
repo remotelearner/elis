@@ -26,13 +26,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once elis::lib('data/data_object.class.php'); // TBD: was datarecord
+require_once elis::lib('data/data_object.class.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/student.class.php');
 require_once elispm::lib('data/user.class.php');
-
-// TBD:
-//require_once CURMAN_DIRLOCATION . '/lib/notifications.php';
+require_once elispm::lib('notifications.php');
 
 define ('WAITLISTTABLE', 'crlm_wait_list');
 
@@ -228,7 +226,7 @@ class waitlist extends elis_data_object {
         $student->userid        = $this->userid;
         $student->classid       = $this->classid;
         $student->enrolmenttime = max(time(), $class->startdate);
-        $student->add();
+        $student->save();
 
         if ($courseid) {
             $course = $this->_db->get_record('course', array('id' => $this->id));
@@ -265,34 +263,32 @@ class waitlist extends elis_data_object {
     /**
      *
      */
-    public function add() {
-
-        if(empty($this->position)) {
-            //SELECT MIN(userid) FROM eli_crlm_wait_list WHERE 1
-            // TBD: MAX(postion) or MAX(wl.position) ???
-            $sql = 'SELECT MAX(position) as max
-                    FROM {'. waitlist::TABLE .'}  wl
-                    WHERE wl.classid = ? ';
-            $max_record = $this->_db->get_record_sql($sql, array($this->classid));
-            $max = $max_record->max;
-            $this->position = $max + 1;
+    public function save() {
+        $new = false;
+        if (!isset($this->id)) {
+            $new = true;
+            if(empty($this->position)) {
+                $max = $this->_db->get_field(waitlist::TABLE, 'MAX(position)', array('classid' => $this->classid));
+                $this->position = $max + 1;
+            }
         }
 
-        $subject = get_string('waitlist', self::LANG_FILE);
-        $pmclass = new pmclass($this->classid);
-        $sparam = new stdClass;
-        $sparam->idnumber = $pmclass->idnumber;
-        $message = get_string('added_to_waitlist_message', self::LANG_FILE, $sparam);
+        parent::save();
 
-        // TBD: $user = cm_get_moodleuser($this->userid);
-        $cuser = new user($this->userid);
-        $user = $cuser->get_moodleuser();
-        $from = get_admin();
+        if ($new) {
+            $subject = get_string('waitlist', self::LANG_FILE);
+            $pmclass = new pmclass($this->classid);
+            $sparam = new stdClass;
+            $sparam->idnumber = $pmclass->idnumber;
+            $message = get_string('added_to_waitlist_message', self::LANG_FILE, $sparam);
 
-        // TBD: notification::notify($message, $user, $from);
-        email_to_user($user, $from, $subject, $message);
+            $cuser = new user($this->userid);
+            $user = $cuser->get_moodleuser();
+            $from = get_admin();
 
-        parent::save(); // was parent::add()
+            notification::notify($message, $user, $from);
+            //email_to_user($user, $from, $subject, $message);
+        }
     }
 
     public static function get_next($clsid) {
@@ -327,6 +323,5 @@ class waitlist extends elis_data_object {
     public function set_from_data($data) {
         $this->_load_data_from_record($data, true);
     }
-
 }
 

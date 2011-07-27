@@ -87,9 +87,8 @@ class classmoodlecourse extends data_object_with_custom_fields {
             return false;
         }
 
-        $ins = new instructor();
-
-        if (elis::$config->elis_program->default_instructor_role && $instructors = $ins->get_instructors($this->classid)) {
+        $instructors = instructor::find(new field_filter('classid', $this->classid));
+        if (elis::$config->elis_program->default_instructor_role && $instructors->valid()) {
             /// At this point we must switch over the other Moodle site's DB config, if needed
             if (!empty($this->siteconfig)) {
                 // TBD: implement this in the future if needed in v2
@@ -103,27 +102,21 @@ class classmoodlecourse extends data_object_with_custom_fields {
                 return false;
             }
 
+            $enrol = $this->_db->get_record('enrol', array('courseid' => $this->moodlecourseid, 'enrol' => 'elis'));
+            $plugin = enrol_get_plugin('elis');
+
             foreach ($instructors as $instructor) {
                 /// Make sure that a Moodle account exists for this user already.
-                $user = new user($instructor->id);
-
-                if (!$muser = $this->_db->get_record('user', array('idnumber'=>$user->idnumber))) {
-                    /// Create a new record.
-                    $muser = new stdClass;
-                    $muser->idnumber     = $user->idnumber;
-                    $muser->username     = $user->uname;
-                    $muser->passwword    = $user->passwd;
-                    $muser->firstname    = $user->firstname;
-                    $muser->lastname     = $user->lastname;
-                    $muser->auth         = 'manual';
-                    $muser->timemodified = time();
-                    $muser->id = $this->_db->insert_record('user', $muser);
+                $user = $instructor->users;
+                if (!($muser = $user->get_moodleuser())) {
+                    if (!$muserid = $user->synchronize_moodle_user(true, true)) {
+                        throw new Exception(get_string('errorsynchronizeuser', self::LANG_FILE));
+                    }
+                } else {
+                    $muserid = $muser->id;
                 }
 
-                /// If we have a vald Moodle user account, apply the role.
-                if (!empty($muser->id)) {
-                    role_assign(elis::$config->elis_program->default_instructor_role, $muser->id, 0, $context->id, 0, 0, 0, 'manual');
-                }
+                $plugin->enrol_user($enrol, $muserid, elis::$config->elis_program->default_instructor_role, 0, 0);
             }
 
             /// Reset $CFG object.
@@ -132,6 +125,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
                 //moodle_load_config($cfgbak->dirroot . '/config.php');
             }
         }
+        $instructors->close();
 
         return true;
     }
@@ -150,9 +144,8 @@ class classmoodlecourse extends data_object_with_custom_fields {
             return false;
         }
 
-        $stu = new student();
-
-        if ($students = $stu->get_students($this->classid)) {
+        $students = student::find(new field_filter('classid', $this->classid));
+        if ($students->valid()) {
             /// At this point we must switch over the other Moodle site's DB config, if needed
             if (!empty($this->siteconfig)) {
                 // TBD: implement this in the future if needed in v2
@@ -161,35 +154,22 @@ class classmoodlecourse extends data_object_with_custom_fields {
 
             /// This has to be put here in case we have a site config reload.
             $CFG    = $GLOBALS['CFG'];
-            $db     = $GLOBALS['db'];
 
-            $role = get_default_course_role($this->moodlecourseid);
-
-            if (!$context = get_context_instance(CONTEXT_COURSE, $this->moodlecourseid)) {
-                return false;
-            }
+            $enrol = $this->_db->get_record('enrol', array('courseid' => $this->moodlecourseid, 'enrol' => 'elis'));
+            $plugin = enrol_get_plugin('elis');
 
             foreach ($students as $student) {
                 /// Make sure that a Moodle account exists for this user already.
-                $user = new user($student->id);
-
-                if (!$muser = $this->_db->get_record('user', array('idnumber'=>$user->idnumber))) {
-                    /// Create a new record.
-                    $muser = new stdClass;
-                    $muser->idnumber     = $user->idnumber;
-                    $muser->username     = $user->uname;
-                    $muser->passwword    = $user->passwd;
-                    $muser->firstname    = $user->firstname;
-                    $muser->lastname     = $user->lastname;
-                    $muser->auth         = 'manual';
-                    $muser->timemodified = time();
-                    $muser->id = $this->_db->insert_record('user', $muser);
+                $user = $student->users;
+                if (!($muser = $user->get_moodleuser())) {
+                    if (!$muserid = $user->synchronize_moodle_user(true, true)) {
+                        throw new Exception(get_string('errorsynchronizeuser', self::LANG_FILE));
+                    }
+                } else {
+                    $muserid = $muser->id;
                 }
 
-                /// If we have a vald Moodle user account, apply the role.
-                if (!empty($muser->id)) {
-                    role_assign($role->id, $muser->id, 0, $context->id, 0, 0, 0, 'manual');
-                }
+                $plugin->enrol_user($enrol, $muserid, $enrol->roleid, $student->enrolmenttime, $student->endtime);
             }
 
             /// Reset $CFG object.
@@ -198,6 +178,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
                 //moodle_load_config($cfgbak->dirroot . '/config.php');
             }
         }
+        $students->close();
 
         return true;
     }
@@ -429,23 +410,23 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
         );
 
         $clsmdl = new classmoodlecourse($newrec);
-        $result = ($clsmdl->save() === true);
+        $clsmdl->save();
 
     } else {
         $clsmdl = new classmoodlecourse($clsmdl->id);
     }
 
     if ($enrolinstructor) {
-        $result = $result && $clsmdl->data_enrol_instructors();
+        $clsmdl->data_enrol_instructors();
     }
 
     if ($enrolstudent) {
-        $result = $result && $clsmdl->data_enrol_students();
+        $clsmdl->data_enrol_students();
     }
 
     events_trigger('pm_classinstance_associated', $clsmdl);
 
-    return $result;
+    return true;
 }
 
 function moodle_get_classes() {
