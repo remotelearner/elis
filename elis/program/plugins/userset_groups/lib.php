@@ -510,18 +510,20 @@ function userset_groups_update_groups($attributes = array()) {
 function userset_groups_update_grouping_closure($clusterid, $include_children = false) {
     global $CFG, $CURMAN;
 
-    if(empty($CFG->enablegroupings) || empty($CURMAN->config->cluster_groupings) || !cluster_groups_grouping_allowed($clusterid)) {
+    $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
+
+    if(empty($enabled) || !userset_groups_grouping_allowed($clusterid)) {
         return true;
     }
 
-    $cluster = new cluster($clusterid);
+    $cluster = new userset($clusterid);
 
     //get the group id for this cluster
     if($groupid = groups_get_group_by_name(SITEID, $cluster->name)) {
 
         //go through the chain of parent clusters
         while(!empty($cluster->parent)) {
-            $cluster = new cluster($cluster->parent);
+            $cluster = new userset($cluster->parent);
 
             //add this to grouping if applicable
             $grouping = groups_get_grouping_by_name(SITEID, $cluster->name);
@@ -539,7 +541,7 @@ function userset_groups_update_grouping_closure($clusterid, $include_children = 
                         //children only
                         if($child_cluster_id != $cluster->id) {
                         
-                            $child_cluster = new cluster($child_cluster_id);
+                            $child_cluster = new userset($child_cluster_id);
                             
                             //make sure the group exists
                             if($child_groupid = groups_get_group_by_name(SITEID, $child_cluster->name) and
