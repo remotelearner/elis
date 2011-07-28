@@ -26,11 +26,10 @@
 
 // Form functions
 
-function manual_field_edit_form_definition($fform) {
+function manual_field_edit_form_definition($form) {
     global $CFG;
     require_once($CFG->dirroot . '/elis/core/lib/setup.php');
 
-    $form = $fform->_form;
     $form->addElement('header', '', get_string('field_manual_header', 'block_curr_admin'));
 
     $form->addElement('checkbox', 'manual_field_enabled', get_string('field_manual_allow_editing', 'block_curr_admin'));
@@ -57,11 +56,11 @@ function manual_field_edit_form_definition($fform) {
     $form->setAdvanced('manual_field_view_capability');
 
     $choices = array(
-        'checkbox' => get_string('profilefieldtypecheckbox', 'admin'),
-        'menu' => get_string('profilefieldtypemenu', 'admin'),
-        'text' => get_string('profilefieldtypetext', 'admin'),
-        'textarea' => get_string('profilefieldtypetextarea', 'admin'),
-        'password' => get_string('manual_field_control_password', 'block_curr_admin'),
+        'checkbox' => get_string('pluginname', 'profilefield_checkbox'),
+        'menu' => get_string('pluginname', 'profilefield_menu'),
+        'text' => get_string('pluginname', 'profilefield_text'),
+        'textarea' => get_string('pluginname', 'profilefield_textarea'),
+        'password' => get_string('password_control', 'elisfields_manual'),
         );
     $form->addElement('select', 'manual_field_control', get_string('manual_field_control', 'block_curr_admin'), $choices);
     $form->setType('manual_field_control', PARAM_ACTION);
@@ -69,7 +68,7 @@ function manual_field_edit_form_definition($fform) {
 
     $choices = array();
     require_once elis::plugin_file('elisfields_manual','sources.php');
-    $basedir = elis::plugin_file('elisfields_manual'.'sources');
+    $basedir = elis::plugin_file('elisfields_manual','sources');
     $dirhandle = opendir($basedir);
     while (false !== ($file = readdir($dirhandle))) {
         if (filetype($basedir .'/'. $file) === 'dir') {
@@ -83,12 +82,12 @@ function manual_field_edit_form_definition($fform) {
         $classname = "manual_options_$file";
         $plugin = new $classname();
         if ($plugin->is_applicable(required_param('level', PARAM_ACTION))) {
-            $choices[$file] = get_string("options_source_$file", 'crlm_manual');;
+            $choices[$file] = get_string("options_source_$file", 'elisfields_manual');;
         }
     }
     asort($choices);
-    $choices = array('' => get_string('options_source_text', 'crlm_manual')) + $choices;
-    $form->addElement('select', 'manual_field_options_source', get_string('options_source', 'crlm_manual'), $choices);
+    $choices = array('' => get_string('options_source_text', 'elisfields_manual')) + $choices;
+    $form->addElement('select', 'manual_field_options_source', get_string('options_source', 'elisfields_manual'), $choices);
     $form->disabledIf('manual_field_options_source', 'manual_field_enabled', 'notchecked');
     $form->disabledIf('manual_field_options_source', 'manual_field_control', 'eq', 'text');
     $form->disabledIf('manual_field_options_source', 'manual_field_control', 'eq', 'textarea');
@@ -132,7 +131,7 @@ function manual_field_edit_form_definition($fform) {
     $form->disabledIf('manual_field_maxlength', 'manual_field_control', 'eq', 'textarea');
     $form->disabledIf('manual_field_maxlength', 'datatype', 'eq', 'bool');
 
-    $form->addElement('text', 'manual_field_help_file', get_string('help_file', 'crlm_manual'));
+    $form->addElement('text', 'manual_field_help_file', get_string('help_file', 'elisfields_manual'));
     $form->setType('manual_field_help_file', PARAM_PATH);
     $form->setAdvanced('manual_field_help_file');
 }

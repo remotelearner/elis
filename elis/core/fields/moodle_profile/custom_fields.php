@@ -128,7 +128,6 @@ function moodle_profile_field_edit_form_definition($form) {
         return;
     }
 
-    $form =& $form->_form;
     $form->addElement('header', '', get_string('field_moodlesync', 'block_curr_admin'));
 
     $choices = array(

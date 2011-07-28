@@ -41,7 +41,6 @@ class manual_options_userset_classifications extends manual_options_base_class {
     }
 
     function is_applicable($contextlevel) {
-        //TODO: port to ELIS2 when required
-        return $contextlevel === 'cluster' && is_readable($CFG->dirroot . '/elis/plugins/userset_classification/usersetclassification.class.php');
+        return $contextlevel === 'cluster' && is_readable(elis::plugin_file('pmplugins_userset_classification','usersetclassification.class.php'));
     }
 }
