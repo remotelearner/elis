@@ -594,7 +594,7 @@ class management_page_table extends display_table {
         if (($item->starttimehour == '0') && ($item->starttimeminute == '0')) {
             return '-';
         } else {
-            if(empty(elispm::$config->time_format_12h)) {
+            if(empty(elis::$config->time_format_12h)) {
                 return sprintf('%02d:%02d', $item->starttimehour, $item->starttimeminute);
             } else {
                 if($item->starttimehour / 12 > 1) {
@@ -614,7 +614,7 @@ class management_page_table extends display_table {
         if (($item->endtimehour == '0') && ($item->endtimeminute == '0')) {
             return '-';
         } else {
-            if(empty(elispm::$config->time_format_12h)) {
+            if(empty(elis::$config->time_format_12h)) {
                 return sprintf('%02d:%02d', $item->endtimehour, $item->endtimeminute);
             } else {
                 if($item->endtimehour / 12 > 1) {
