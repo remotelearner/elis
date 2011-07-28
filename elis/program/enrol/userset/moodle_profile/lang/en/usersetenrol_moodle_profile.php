@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['autoenrol'] = 'Auto-enrol';
 $string['auto_associate'] = 'Auto-associate users with Moodle profile field';
 $string['auto_associate_help'] = 'If this cluster will be populated from custom profile fields, select the

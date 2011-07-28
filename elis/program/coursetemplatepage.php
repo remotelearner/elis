@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once('lib/setup.php');
 require_once elispm::lib('moodlecourseurl.class.php');
 

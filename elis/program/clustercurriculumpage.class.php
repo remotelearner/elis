@@ -24,19 +24,14 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('associationpage.class.php');
 require_once elispm::lib('data/clustercurriculum.class.php');
 require_once elispm::file('curriculumpage.class.php');
 require_once elispm::file('usersetpage.class.php');
 require_once elispm::file('form/clustercurriculumform.class.php');
 require_once elispm::file('form/clustercurriculumeditform.class.php');
-/*
-require_once (CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/associationpage.class.php');
-
-require_once (CURMAN_DIRLOCATION . '/clusterpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/curriculumpage.class.php');
-*/
 
 class clustercurriculumbasepage extends associationpage {
 

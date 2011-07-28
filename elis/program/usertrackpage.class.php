@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 // Waiting on conversion?
 //require_once (CURMAN_DIRLOCATION . '/lib/lib.php');
 

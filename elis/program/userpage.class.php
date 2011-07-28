@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('data/user.class.php');
 require_once elispm::file('usertrackpage.class.php');
 require_once elispm::lib('managementpage.class.php');

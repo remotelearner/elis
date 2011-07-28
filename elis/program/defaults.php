@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $defaults = array(
     'userdefinedtrack' => 0,
     'time_format_12h' => 0,

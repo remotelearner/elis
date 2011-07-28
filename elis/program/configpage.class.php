@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('page.class.php');
 require_once elispm::lib('lib.php');
 require_once elispm::file('/form/configform.class.php');

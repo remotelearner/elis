@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Sets up the fields necessary for enabling cluster groups
  *

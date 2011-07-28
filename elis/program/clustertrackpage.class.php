@@ -24,10 +24,8 @@
  *
  */
 
-//require_once (CURMAN_DIRLOCATION . '/lib/associationpage.class.php');
-//require_once (CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php'); // contains clustertrack as well
-//require_once (CURMAN_DIRLOCATION . '/clusterpage.class.php');
-//require_once (CURMAN_DIRLOCATION . '/trackpage.class.php');
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('associationpage.class.php');
 require_once elispm::lib('data/clustercurriculum.class.php');
 require_once elispm::lib('data/clustertrack.class.php');

@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['add'] = 'Add';
 $string['add_class'] = 'Add Class Instance';
 $string['add_coreq'] = 'Add co-requisites';

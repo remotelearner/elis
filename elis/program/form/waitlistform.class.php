@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::file('form/cmform.class.php'); // TBD
 require_once elispm::file('form/selectionform.class.php');
 

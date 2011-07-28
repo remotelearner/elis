@@ -24,5 +24,7 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 define('USERSET_CLASSIFICATION_FIELD', '_elis_userset_classification');
 

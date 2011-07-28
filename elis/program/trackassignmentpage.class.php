@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/track.class.php');
 require_once elispm::lib('page.class.php');

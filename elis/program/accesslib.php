@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 class context_level_elis_curriculum extends context_level_base {
     protected $table = 'crlm_curriculum';
 

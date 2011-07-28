@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php'); // cm_get_param(), cm_error() ...
 require_once elispm::lib('associationpage.class.php');

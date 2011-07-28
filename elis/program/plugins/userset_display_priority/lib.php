@@ -23,6 +23,9 @@
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
+
+defined('MOODLE_INTERNAL') || die();
+
 define('USERSET_DISPLAY_PRIORITY_FIELD', '_elis_userset_display_priority');
 
 /**

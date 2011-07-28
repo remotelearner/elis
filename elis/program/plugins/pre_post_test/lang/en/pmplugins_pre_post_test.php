@@ -1,5 +1,7 @@
 <?php
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['pluginname'] = 'Pre- and Post-tests';
 $string['pre_post_test_category_name'] = 'Pre- and Post-tests';
 $string['post_test_field_name'] = 'Post-test';

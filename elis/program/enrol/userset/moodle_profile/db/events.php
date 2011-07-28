@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $handlers = array (
     'user_updated' => array (
          'handlerfile'      => '/elis/program/enrol/userset/moodle_profile/lib.php',

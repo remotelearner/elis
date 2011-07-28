@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 //require_once CURMAN_DIRLOCATION.'/lib/lib.php';
 
 /**

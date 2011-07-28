@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('deprecatedlib.php'); // cm_get_crlmuserid()
 require_once elispm::lib('page.class.php');
 

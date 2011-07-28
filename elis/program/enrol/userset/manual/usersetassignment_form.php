@@ -26,8 +26,9 @@
  *
  */
 
-require_once(elispm::file('/form/cmform.class.php'));
+defined('MOODLE_INTERNAL') || die();
 
+require_once(elispm::file('/form/cmform.class.php'));
 
 class assignpage_form extends cmform {
     function definition() {

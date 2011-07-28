@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * ---------------------------------------------------------------
  * This section consists of the event handlers used by this plugin
@@ -543,17 +545,17 @@ function userset_groups_update_grouping_closure($clusterid, $include_children = 
 
                 //recurse into children if possible
                 if($include_children) {
-                
+
                     //get all child clusters
                     $child_cluster_ids = userset_groups_get_child_usersets($cluster->id);
-                    
+
                     foreach($child_cluster_ids as $child_cluster_id) {
-                    
+
                         //children only
                         if($child_cluster_id != $cluster->id) {
-                        
+
                             $child_cluster = new userset($child_cluster_id);
-                            
+
                             //make sure the group exists
                             if($child_groupid = groups_get_group_by_name(SITEID, $child_cluster->name) and
                                userset_groups_userset_allows_groups($child_cluster->id)) {

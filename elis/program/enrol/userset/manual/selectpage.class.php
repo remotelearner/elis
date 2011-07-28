@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once(elispm::lib('selectionpage.class.php'));
 require_once(elispm::file('usersetpage.class.php'));
 require_once(elis::plugin_file('usersetenrol_manual', 'select_form.class.php'));

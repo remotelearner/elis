@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::file('form/cmform.class.php');
 //require_once elis::lib('customfield.class.php');
 

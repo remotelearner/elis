@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $handlers = array(
     'cluster_assigned' => array (
         'handlerfile'     => '/elis/program/plugins/userset_groups/lib.php',

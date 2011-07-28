@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once(elispm::file('clustertrackpage.class.php'));
 require_once(elispm::lib('managementpage.class.php'));
 require_once(elispm::lib('data/clustercurriculum.class.php'));
@@ -31,14 +33,6 @@ require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('contexts.php'));
 require_once(elispm::file('form/usersetform.class.php'));
 require_once(elis::plugin_file('usersetenrol_manual', 'usersetassignmentpage.class.php'));
-/*
-require_once (CURMAN_DIRLOCATION . '/lib/cluster.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/managementpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/clustertrackpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/clustercurriculumpage.class.php');
-require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');
-require_once (CURMAN_DIRLOCATION . '/lib/contexts.php');
-*/
 
 class usersetpage extends managementpage {
     var $data_class = 'userset';

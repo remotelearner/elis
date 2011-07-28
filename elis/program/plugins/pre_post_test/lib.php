@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 define('PRE_TEST_FIELD', '_elis_course_pretest');
 define('POST_TEST_FIELD', '_elis_course_posttest');
 

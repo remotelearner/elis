@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $handlers = array (
     'message_send' => array (
          'handlerfile'      => '/elis/program/lib/notifications.php',

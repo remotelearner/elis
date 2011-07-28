@@ -23,6 +23,9 @@
 *  @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
 *  @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
 */
+
+defined('MOODLE_INTERNAL') || die();
+
     require_once($CFG->dirroot . '/lib/formslib.php');
 
     class pmnotificationform extends moodleform {

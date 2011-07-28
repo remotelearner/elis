@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once(elispm::lib('data/userset.class.php'));
 
 function cluster_manual_delete_for_cluster($id) {

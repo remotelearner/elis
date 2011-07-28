@@ -1,5 +1,7 @@
 <?php
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['userset_group'] = 'Enable Corresponding Group';
 $string['userset_group_category'] = 'Associated Group';
 $string['userset_groupings'] = 'Allow front page grouping creation from user set-based groups';

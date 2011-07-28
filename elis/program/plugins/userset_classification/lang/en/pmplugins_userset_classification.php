@@ -1,5 +1,7 @@
 <?php
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['pluginname'] = 'Userset Classification';
 $string['add_cluster_classification'] = 'Add userset classification';
 $string['alfresco_shared_folder'] = 'Automatically create an Alfresco shared organization folder';

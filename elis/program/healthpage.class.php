@@ -26,7 +26,8 @@
  *
  */
 
-//require_once CURMAN_DIRLOCATION . '/lib/newpage.class.php';
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('page.class.php');
 
 /// The health check page

@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once(elispm::lib('lib.php'));
 require_once(elispm::lib('associationpage.class.php'));
 require_once(elispm::lib('data/user.class.php'));

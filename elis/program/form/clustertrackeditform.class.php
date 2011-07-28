@@ -24,6 +24,8 @@
 *  @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
 */
 
+defined('MOODLE_INTERNAL') || die();
+
 class clustertrackeditform extends moodleform {
 
     var $cluster_fields = array();

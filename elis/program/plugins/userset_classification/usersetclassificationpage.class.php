@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::file('form/cmform.class.php');
 require_once elispm::file('plugins/userset_classification/usersetclassification.class.php');

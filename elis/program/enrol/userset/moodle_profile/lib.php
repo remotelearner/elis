@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 // this is needed if we get called in the event handler
 global $CFG;
 require_once($CFG->dirroot . '/elis/program/lib/setup.php');

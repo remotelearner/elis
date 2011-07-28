@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 if(!defined('NO_ROLE_ID')) {
     define('NO_ROLE_ID', 0);
 }

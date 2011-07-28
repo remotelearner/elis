@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 function xmldb_elis_program_upgrade($oldversion=0) {
     global $DB;
 

@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $tasks = array(
     array(
         'callfile'     => '/elis/program/lib/lib.php',

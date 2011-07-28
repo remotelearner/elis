@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $handlers = array(
     'role_assigned' => array(
         'handlerfile' => '/elis/program/plugins/enrolment_role_sync/lib.php',

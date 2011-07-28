@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 // Waiting on conversion
 //require_once (CURMAN_DIRLOCATION . '/clustertrackpage.class.php');
 //require_once (CURMAN_DIRLOCATION . '/rolepage.class.php');

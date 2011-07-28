@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::file('plugins/userset_classification/lib.php');
 
 /**

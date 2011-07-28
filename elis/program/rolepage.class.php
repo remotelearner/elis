@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('associationpage2.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::file('form/addroleform.class.php');

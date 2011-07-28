@@ -24,6 +24,8 @@
 *  @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
 */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::file('form/cmform.class.php');
 
 class trackassignmentform extends cmform {

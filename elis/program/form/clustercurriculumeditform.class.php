@@ -24,6 +24,8 @@
 *  @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
 */
 
+defined('MOODLE_INTERNAL') || die();
+
 class clustercurriculumeditform extends moodleform {
 
     function clustercurriculumeditform($action=null, $customdata=null, $method='post', $target='', $attributes=null, $editable=true) {

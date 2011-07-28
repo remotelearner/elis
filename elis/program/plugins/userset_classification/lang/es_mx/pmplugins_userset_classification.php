@@ -1,5 +1,7 @@
 <?php
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['add_cluster_classification'] = 'Añadir clasificación clúster';
 $string['alfresco_shared_folder'] = 'Crear automáticamente una carpeta compartida de la organización de Alfresco';
 $string['autoenrol_curricula'] = 'Auto inscribirse usuarios en el currículo';

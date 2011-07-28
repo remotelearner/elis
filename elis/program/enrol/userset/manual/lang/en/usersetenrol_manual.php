@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['auto_assigned_users'] = 'Automatically-assigned users';
 $string['auto_assigned_usersets'] = 'Automatically-assigned user sets';
 $string['assign_users'] = 'Assign users';

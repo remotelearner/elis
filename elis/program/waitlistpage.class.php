@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('lib.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/student.class.php');
@@ -107,7 +109,7 @@ class waitlistpage extends selectionpage {
         $sql = "SELECT watlst.id, usr.id as uid, $FULLNAME as name, usr.idnumber, usr.country, usr.language, watlst.timecreated
                   FROM {". waitlist::TABLE .'} watlst
                   JOIN {'. user::TABLE .'} usr ON watlst.userid = usr.id
-                 WHERE watlst.classid = ? 
+                 WHERE watlst.classid = ?
                    AND watlst.id IN ('. implode(',',$selection) .')';
         return $DB->get_records_sql($sql, array($id));
     }
