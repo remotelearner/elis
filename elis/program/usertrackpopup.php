@@ -24,8 +24,6 @@
  *
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 require_once (dirname(__FILE__) . '/lib/setup.php');
 require_once elispm::lib('lib.php');
 require_once elispm::lib('data/user.class.php');
