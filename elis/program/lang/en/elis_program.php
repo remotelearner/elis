@@ -279,6 +279,7 @@ $string['curriculum_shortdescription'] = 'Short description';
 
 $string['datecompleted'] = 'Completion Date';
 $string['date_completed'] = 'Date Completed';
+$string['date_graded'] = 'Date Graded';
 $string['default_role_settings'] = 'Default Role Assignments Settings';
 $string['delete'] = 'Delete';
 $string['deleted_corequisite'] = 'Deleted <b>{$a}</b> corequisite';
@@ -380,6 +381,9 @@ $string['field_sync_to_moodle'] = 'Copy values to Moodle';
 $string['field_syncwithmoodle'] = 'Sync with Moodle';
 $string['form_error'] = 'Selection page form error - expecting array!';
 $string['frequency'] = 'Frequency';
+
+$string['grade_element'] = 'Grade Element';
+$string['grade_update_warning'] = '<div><strong>Note:</strong> updating grades for individual learning objectives on this screen will not automatically update the class instance grade or completion status.</div>';
 
 $string['health_checking'] = "Checking...\n<ul>\n";
 $string['health_check_link'] = 'The <a href="{$a->wwwroot}/elis/program/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
