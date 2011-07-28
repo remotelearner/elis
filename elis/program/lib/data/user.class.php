@@ -80,6 +80,10 @@ class user extends data_object_with_custom_fields {
             'class' => 'usertrack',
             'foreignidfield' => 'userid'
         ),
+        'classgraded' => array(
+            'class' => 'student_grade',
+            'foreignidfield' => 'userid'
+        )
     );
 
     /**

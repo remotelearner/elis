@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -53,6 +53,18 @@ class userset extends data_object_with_custom_fields {
             'class' => 'userset',
             'idfield' => 'parent'
         ),
+        'clusterassignments' => array(
+            'class' => 'clusterassignment',
+            'foreignidfield' => 'clusterid'
+        ),
+        'clustertrack' => array(
+            'class' => 'clustertrack',
+            'foreignidfield' => 'clusterid'
+        ),
+        'clustercurriculum' => array(
+            'class' => 'clustercurriculum',
+            'foreignidfield' => 'clusterid'
+        )
     );
 
     const ENROL_PLUGIN_TYPE = 'usersetenrol';
