@@ -185,15 +185,18 @@ class studentTest extends PHPUnit_Framework_TestCase {
     /**
      * Test validation of duplicates
      *
-     * @expectedException ErrorException
+     * Note: no exception thrown from student.class.php for dup.
      */
     public function testStudentValidationPreventsDuplicates() {
+        global $DB;
         $this->load_csv_data();
 
         $student = new student(array('userid' => 103,
                                      'classid' => 100));
 
         $student->save();
+        $stus = $DB->get_records(student::TABLE, array('userid' => 103, 'classid' => 100));
+        $this->assertEquals(count($stus), 1);
     }
 
     /**
