@@ -53,11 +53,11 @@ class menuitemlisting {
      */
     private function filter_permissions() {
         global $CFG;
-/*
-        require_once(elispm::file('jasperreportpage.class.php'));
+
+        //require_once(elispm::file('jasperreportpage.class.php'));
 
         //determine the shortnames of all jasper reports
-        $jasper_reports = array_keys(jasperreportpage::$reports);
+        //$jasper_reports = array_keys(jasperreportpage::$reports);
 
         //iterate through the list of pages
         foreach($this->listing as $id => $value) {
@@ -74,7 +74,7 @@ class menuitemlisting {
             }
 
         }
-*/
+
     }
 
     /**

@@ -286,25 +286,21 @@ class block_curr_admin extends block_base {
             $pages[] = new menuitem('managetracks', new menuitempage('trackpage'), null, '', block_curr_admin_get_item_css_class('managetracks'));
         }
 
-        $access = cm_determine_access($USER->id);
-        switch($access) {
-            case 'admin':
-            case 'developer':
-                $pages[] = new menuitem('configmanager',
-                                   new menuitempage('url_page',
-                                           'lib/menuitem.class.php',
-                                           "{$CFG->wwwroot}/admin/settings.php?section=elis_program_settings"),
-                                   'admn', get_string('configuration'),
-                            block_curr_admin_get_item_css_class('configuration')
-                           );
-                $pages[] = new menuitem('notifications', new menuitempage('notifications', 'notificationspage.class.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('notifications'));
-                //$pages[] = new menuitem('dataimport', new menuitempage('dataimportpage', 'elis_ip/elis_ip_page.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('integrationpoint'));
-                //$pages[] = new menuitem('defaultcls', new menuitempage('configclsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcls'));
-                //$pages[] = new menuitem('defaultcrs', new menuitempage('configcrsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcrs'));
-                break;
-            default:
-                break;
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        if (has_capability('moodle/site:config', $syscontext)) {
+            $pages[] = new menuitem('configmanager',
+                                    new menuitempage('url_page',
+                                                     'lib/menuitem.class.php',
+                                                     "{$CFG->wwwroot}/admin/settings.php?section=elis_program_settings"),
+                                    'admn', get_string('configuration'),
+                                    block_curr_admin_get_item_css_class('configuration')
+                );
         }
+
+        $pages[] = new menuitem('notifications', new menuitempage('notifications', 'notificationspage.class.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('notifications'));
+        //$pages[] = new menuitem('dataimport', new menuitempage('dataimportpage', 'elis_ip/elis_ip_page.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('integrationpoint'));
+        //$pages[] = new menuitem('defaultcls', new menuitempage('configclsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcls'));
+        //$pages[] = new menuitem('defaultcrs', new menuitempage('configcrsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcrs'));
 
         //turn all pages that have no children into leaf nodes
         menuitemlisting::flag_leaf_nodes($pages);
