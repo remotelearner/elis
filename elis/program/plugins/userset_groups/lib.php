@@ -270,13 +270,15 @@ function userset_groups_update_site_course($clusterid = 0, $add_members = false,
     if(!empty($enabled)) {
         //query condition
         $select = '1 = 1';
+        $params = array();
         if(!empty($clusterid)) {
-            $select = "id = $clusterid";
+            $select = "id = :clusterid";
+            $params['clusterid'] = $clusterid;
         }
 
         //go through all appropriate clusters
-        if($recordset = get_recordset_select(CLSTTABLE, $select)) {
-            while($record = rs_fetch_next_record($recordset)) {
+        if($recordset = $DB->get_recordset_select(userset::TABLE, $select, $params)) {
+            foreach ($recordset as $record) {
                 //set up groupings
                 userset_groups_grouping_helper($record->id, $record->name);
             }
