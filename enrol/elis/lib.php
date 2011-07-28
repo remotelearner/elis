@@ -30,6 +30,10 @@ class enrol_elis_plugin extends enrol_plugin {
     const ENROL_FROM_COURSE_CATALOG_CONFIG = 'enrol_from_course_catalog';
     const ENROL_FROM_COURSE_CATALOG_DB = 'customint1';
 
+    public function allow_unenrol(stdClass $instance) {
+        return true;
+    }
+
     public function allow_manage(stdClass $instance) {
         return true;
     }
@@ -114,6 +118,33 @@ class enrol_elis_plugin extends enrol_plugin {
                                       self::ENROL_FROM_COURSE_CATALOG_DB => $this->get_config(self::ENROL_FROM_COURSE_CATALOG_CONFIG, 1)
                                     ));
         }
+    }
+
+    public function get_user_enrolment_actions(course_enrolment_manager $manager, $ue) {
+        $actions = array();
+        $context = $manager->get_context();
+        $instance = $ue->enrolmentinstance;
+        $params = $manager->get_moodlepage()->url->params();
+        $params['ue'] = $ue->id;
+        if ($this->allow_unenrol($instance) && has_capability("enrol/elis:unenrol", $context)) {
+            $url = new moodle_url('/enrol/elis/unenroluser.php', $params);
+            $actions[] = new user_enrolment_action(new pix_icon('t/delete', ''), get_string('unenrol', 'enrol'), $url, array('class'=>'unenrollink', 'rel'=>$ue->id));
+        }
+        return $actions;
+    }
+
+    /**
+     * Get the instance for a course.  Creates a new instance if one does not exist.
+     */
+    public function get_or_create_instance($course) {
+        global $DB;
+        $enrol = $DB->get_record('enrol', array('courseid'=>$course->id, 'enrol'=>'elis'));
+        if ($enrol) {
+            return $enrol;
+        }
+        $this->add_default_instance($course);
+        $enrol = $DB->get_record('enrol', array('courseid'=>$course->id, 'enrol'=>'elis'));
+        return $enrol;
     }
 }
 

@@ -30,3 +30,4 @@ $string['enrol_from_course_catalog_desc'] = 'If this is enabled, users will be a
 $string['pluginname'] = 'ELIS Program Manager enrolments';
 
 $string['elis:config'] = 'Configure ELIS PM enrolment instances';
+$string['elis:unenrol'] = 'Unenrol users who were enrolled via the ELIS PM class instance';

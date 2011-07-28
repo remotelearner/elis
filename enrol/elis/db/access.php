@@ -36,4 +36,12 @@ $capabilities = array(
         )
     ),
 
+    'enrol/elis:unenrol' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW,
+        )
+    ),
+
 );

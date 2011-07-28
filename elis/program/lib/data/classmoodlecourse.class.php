@@ -102,8 +102,8 @@ class classmoodlecourse extends data_object_with_custom_fields {
                 return false;
             }
 
-            $enrol = $this->_db->get_record('enrol', array('courseid' => $this->moodlecourseid, 'enrol' => 'elis'));
             $plugin = enrol_get_plugin('elis');
+            $enrol = $plugin->get_or_create_instance($this->_db->get_record('course', array('id'=>$this->moodlecourseid)));
 
             foreach ($instructors as $instructor) {
                 /// Make sure that a Moodle account exists for this user already.
@@ -116,7 +116,9 @@ class classmoodlecourse extends data_object_with_custom_fields {
                     $muserid = $muser->id;
                 }
 
-                $plugin->enrol_user($enrol, $muserid, elis::$config->elis_program->default_instructor_role, 0, 0);
+                if (!is_enrolled($context, $muserid)) {
+                    $plugin->enrol_user($enrol, $muserid, elis::$config->elis_program->default_instructor_role, 0, 0);
+                }
             }
 
             /// Reset $CFG object.
@@ -155,8 +157,12 @@ class classmoodlecourse extends data_object_with_custom_fields {
             /// This has to be put here in case we have a site config reload.
             $CFG    = $GLOBALS['CFG'];
 
-            $enrol = $this->_db->get_record('enrol', array('courseid' => $this->moodlecourseid, 'enrol' => 'elis'));
+            if (!$context = get_context_instance(CONTEXT_COURSE, $this->moodlecourseid)) {
+                return false;
+            }
+
             $plugin = enrol_get_plugin('elis');
+            $enrol = $plugin->get_or_create_instance($this->_db->get_record('course', array('id'=>$this->moodlecourseid)));
 
             foreach ($students as $student) {
                 /// Make sure that a Moodle account exists for this user already.
@@ -169,7 +175,9 @@ class classmoodlecourse extends data_object_with_custom_fields {
                     $muserid = $muser->id;
                 }
 
-                $plugin->enrol_user($enrol, $muserid, $enrol->roleid, $student->enrolmenttime, $student->endtime);
+                if (!is_enrolled($context, $muserid)) {
+                    $plugin->enrol_user($enrol, $muserid, $enrol->roleid, $student->enrolmenttime, $student->endtime);
+                }
             }
 
             /// Reset $CFG object.

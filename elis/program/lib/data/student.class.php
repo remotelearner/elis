@@ -316,15 +316,12 @@ class student extends elis_data_object {
 
         parent::save();
 
-        /// Enrol them into the Moodle class.
+        /// Enrol them into the Moodle class, if not already enrolled.
         if ($moodlecourseid = moodle_get_course($this->classid)) {
             if ($mcourse = $this->_db->get_record('course', array('id' => $moodlecourseid))) {
-                $enrol = $this->_db->get_record('enrol', array('courseid' => $moodlecourseid, 'enrol' => 'elis'));
-                if (!$enrol) {
-                    throw new Exception(get_string('error_not_using_elis_enrolment', self::LANG_FILE));
-                }
-
                 $plugin = enrol_get_plugin('elis');
+                $enrol = $plugin->get_or_create_instance($mcourse);
+
                 $user = $this->users;
                 if (!($muser = $user->get_moodleuser())) {
                     if (!$muserid = $user->synchronize_moodle_user(true, true)) {
@@ -334,7 +331,10 @@ class student extends elis_data_object {
                     $muserid = $muser->id;
                 }
 
-                $plugin->enrol_user($enrol, $muserid, $enrol->roleid, $this->enrolmenttime, $this->endtime);
+                $context = get_context_instance(CONTEXT_COURSE, $moodlecourseid);
+                if (!is_enrolled($context, $muserid)) {
+                    $plugin->enrol_user($enrol, $muserid, $enrol->roleid, $this->enrolmenttime, $this->endtime);
+                }
             }
         }
 
