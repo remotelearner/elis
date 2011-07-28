@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 define ('DATEDELTA_DELIMITER', ',');
 define ('DATEDELTA_HOUR' , 0);
 define ('DATEDELTA_DAY'  , 1);

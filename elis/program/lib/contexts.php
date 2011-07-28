@@ -39,6 +39,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elis::lib('data/data_filter.class.php');
 
 function get_contexts_by_capability_for_user($contextlevel, $capability, $userid, $doanything=true) {

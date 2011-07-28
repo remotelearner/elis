@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * This class represents a list of menu items
  */
@@ -778,4 +780,3 @@ class treerepresentationnode {
 
 }
 
-?>

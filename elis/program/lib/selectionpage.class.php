@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once $CFG->libdir . '/weblib.php';
 require_once elis::lib('table.class.php');
 require_once elispm::lib('lib.php');

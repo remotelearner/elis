@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elispm::lib('selectionpage.class.php');
 
 abstract class associationpage2 extends selectionpage {

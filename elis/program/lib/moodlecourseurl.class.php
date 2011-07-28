@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once ($CFG->dirroot.'/course/lib.php');
 require_once elis::lib('data/data_object.class.php');

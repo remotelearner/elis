@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elis::lib('page.class.php');
 
 abstract class pm_page extends elis_page {

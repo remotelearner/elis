@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 define('USE_OLD_CHECKBOX', 1);
 
 /** Display an standard html checkbox with an optional label

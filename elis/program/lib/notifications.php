@@ -44,6 +44,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once ($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elispm::lib('data/pmclass.class.php');
@@ -866,4 +868,3 @@ function pm_notify_instructor_unassigned_handler($eventdata) {
     return true;
 }
 
-?>
