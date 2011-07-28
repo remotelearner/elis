@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Class representing the step responsible for cleaning up temporary data
  * during the backup section of the rollover

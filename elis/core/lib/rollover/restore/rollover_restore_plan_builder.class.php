@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once(elis::lib('rollover/restore/rollover_restore_final_task.class.php'));
 
 /**

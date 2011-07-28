@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $tasks = array(
     array(
         'callfile'     => '/elis/core/plugins/user_activity/etl.php',

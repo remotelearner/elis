@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once(elis::lib('rollover/backup/stepslib.php'));
 
 /**

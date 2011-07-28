@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $subplugins = array(
     'elisfields' => 'elis/core/fields',
 );

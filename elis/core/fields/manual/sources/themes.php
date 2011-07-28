@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 class manual_options_themes extends manual_options_base_class {
     function get_options($dataobject) {
         $result = array();

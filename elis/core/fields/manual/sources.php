@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 abstract class manual_options_base_class {
     function is_applicable($contextlevel) {
         return true;

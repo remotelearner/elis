@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Load a PHPUnit data set into the Moodle database.
  *

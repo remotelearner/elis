@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once $CFG->dirroot . '/elis/core/lib/page.class.php';
 require_once $CFG->dirroot . '/elis/core/lib/workflow.class.php';
 

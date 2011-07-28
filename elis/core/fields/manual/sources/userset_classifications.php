@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 class manual_options_userset_classifications extends manual_options_base_class {
     function get_options($dataobject) {
         global $DB;

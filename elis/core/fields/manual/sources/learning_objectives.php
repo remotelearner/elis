@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 class manual_options_learning_objectives extends manual_options_base_class {
     function is_applicable($contextlevel) {
         return $contextlevel === 'course' || $contextlevel === 'class';

@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once(dirname(__FILE__) .'/../../lib/setup.php');
 
 define('CONFIG_TABLE',  'config_plugins');
@@ -404,7 +406,7 @@ if (!function_exists('elis_get_config')) { // ***TBD***
     function elis_get_config($name) {
         global $DB;
         return $DB->get_field(CONFIG_TABLE, 'value',
-                       array('name' => $name, 'plugin' => CONFIG_PLUGIN)); 
+                       array('name' => $name, 'plugin' => CONFIG_PLUGIN));
         //$plugin = CONFIG_PLUGIN;
         //return elis::$config->{$plugin}->{$name};
     }

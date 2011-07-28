@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 // Form functions
 
 function manual_field_edit_form_definition($form) {

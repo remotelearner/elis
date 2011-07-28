@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/backup/util/includes/backup_includes.php');
 require_once(elis::lib('rollover/backup/rollover_backup_factory.class.php'));
 

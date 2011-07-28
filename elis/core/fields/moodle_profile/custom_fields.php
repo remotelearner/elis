@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 class pm_moodle_profile {
     const sync_from_moodle = 1;
     const sync_to_moodle = 0;

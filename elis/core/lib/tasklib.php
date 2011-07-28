@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Loads the task definitions for the component (from file). If no
  * tasks are defined for the component, we simply return an empty array.
@@ -293,7 +295,7 @@ function datearray_to_timestamp($date_array) {
   *
   * This function is designed to parse a cron field specification and then
   * given a current value of the field, determine the next value of that field.
-  * 
+  *
   * @param $fieldspec Cron field specification (e.g. "3,7,20-30,40-50/2")
   * @param $currentvalue Current value of this field
   * @param $ceiling Maximum value this field can take (e.g. for minutes this would be set to 60)

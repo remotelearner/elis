@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['elis'] = 'ELIS';
 $string['elisversion'] = '<strong>ELIS Version:</strong> {$a}';
 $string['finish'] = 'Finish';

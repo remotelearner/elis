@@ -1,4 +1,7 @@
 <?php
+
+defined('MOODLE_INTERNAL') || die();
+
 $string['help_file'] = 'Help file';
 $string['options_source'] = 'Source for menu options';
 $string['options_source_userset_classifications'] = 'Cluster Classifications';

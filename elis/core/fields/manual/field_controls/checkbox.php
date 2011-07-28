@@ -1,5 +1,7 @@
 <?php
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once elis::plugin_file('elisfields_manual', 'custom_fields.php');
 
 /**

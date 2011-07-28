@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once("HTML/QuickForm/xbutton.php");
 
 /**

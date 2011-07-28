@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 class display_table {
     private $table = null;
     private $attributes;

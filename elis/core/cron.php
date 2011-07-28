@@ -27,6 +27,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Run scheduled tasks according to a cron spec.
  *

@@ -26,6 +26,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
 require_once(elis::lib('rollover/backup/rollover_backup_controller.class.php'));
 require_once(elis::lib('rollover/restore/rollover_restore_controller.class.php'));
@@ -60,7 +62,7 @@ function course_rollover($courseid, $categoryid = null) {
 
         //get directory name for use in restore
         $backupid = $controller->get_backupid();
-    
+
         //start a database transaction to make sure restore is atomic, etc
         $transaction = $DB->start_delegated_transaction();
 
