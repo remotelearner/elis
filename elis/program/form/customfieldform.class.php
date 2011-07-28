@@ -79,13 +79,13 @@ class customfieldform extends cmform {
         $form->addElement('text', 'defaultdata', get_string('profiledefaultdata', 'admin'), array('size'=>'50'));
         $form->setType('defaultdata', PARAM_MULTILANG);
 
-        $plugins = get_list_of_plugins('elis/program/plugins');
+        $plugins = get_list_of_plugins('elis/core/fields');
 
         foreach ($plugins as $plugin) {
-            if (is_readable($CFG->dirroot.'/elis/program/plugins/'.$plugin.'/custom_fields.php')) {
-                include_once($CFG->dirroot.'/elis/program/plugins/'.$plugin.'/custom_fields.php');
+            if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {
+                include_once(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'));
                 if (function_exists("{$plugin}_field_edit_form_definition")) {
-                    call_user_func("{$plugin}_field_edit_form_definition", $this);
+                    call_user_func("{$plugin}_field_edit_form_definition", $form);
                 }
             }
         }
@@ -113,11 +113,11 @@ class customfieldform extends cmform {
             */
         }
 
-        $plugins = get_list_of_plugins('elis/program/plugins');
+        $plugins = get_list_of_plugins('elis/core/fields');
 
         foreach ($plugins as $plugin) {
-            if (is_readable($CFG->dirroot.'elis/program/plugins/'.$plugin.'/custom_fields.php')) {
-                include_once($CFG->dirroot.'elis/program/plugins/'.$plugin.'/custom_fields.php');
+            if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {
+                include_once(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'));
                 if (function_exists("{$plugin}_field_edit_form_validation")) {
                     $err += call_user_func("{$plugin}_field_edit_form_validation", $this, $data, $files);
                 }
