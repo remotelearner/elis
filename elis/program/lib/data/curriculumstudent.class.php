@@ -40,6 +40,7 @@ class curriculumstudent extends elis_data_object {
     const TABLE = 'crlm_curriculum_assignment';
 
     var $verbose_name = 'curriculumstudent';
+    var $curid;
 
     static $associations = array(
         'user' => array(
