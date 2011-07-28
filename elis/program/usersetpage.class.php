@@ -278,6 +278,14 @@ class usersetpage extends managementpage {
         }
     }
 
+    public function get_page_title_default() {
+        if (($id = $this->optional_param('id', '', PARAM_INT))) {
+            return parent::get_page_title_view();
+        } else {
+            return parent::get_page_title_default();
+        }
+    }
+
     public function get_navigation_view() {
         return $this->get_navigation_default();
     }

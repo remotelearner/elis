@@ -344,7 +344,9 @@ class associationpage extends pm_page {
     }
 
     public function get_page_title_default() {
-        return get_string('breadcrumb_' . get_class($this), self::LANG_FILE);
+        $id = $this->required_param('id', PARAM_INT);
+        $tabpage = $this->get_tab_page(array('action' => 'view', 'id' => $id));
+        return $tabpage->get_page_title() . ': ' . get_string('breadcrumb_' . get_class($this), self::LANG_FILE);
     }
 
     public function get_title_default() {
