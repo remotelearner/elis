@@ -32,28 +32,28 @@ function manual_field_edit_form_definition($form) {
     global $CFG;
     require_once($CFG->dirroot . '/elis/core/lib/setup.php');
 
-    $form->addElement('header', '', get_string('field_manual_header', 'block_curr_admin'));
+    $form->addElement('header', '', get_string('field_manual_header', 'elisfields_manual'));
 
-    $form->addElement('checkbox', 'manual_field_enabled', get_string('field_manual_allow_editing', 'block_curr_admin'));
+    $form->addElement('checkbox', 'manual_field_enabled', get_string('field_manual_allow_editing', 'elisfields_manual'));
     $form->setDefault('manual_field_enabled', 'checked');
 
     $form->addElement('checkbox', 'manual_field_required', get_string('profilerequired', 'admin'));
     $form->disabledIf('manual_field_required', 'manual_field_enabled', 'notchecked');
 
     $choices = array(
-        '' => get_string('field_manual_anyone_edit', 'block_curr_admin'),
-        'moodle/user:update' => get_string('field_manual_admin_edit', 'block_curr_admin'),
-        'disabled' => get_string('field_manual_nobody', 'block_curr_admin'),
+        '' => get_string('field_manual_anyone_edit', 'elisfields_manual'),
+        'moodle/user:update' => get_string('field_manual_admin_edit', 'elisfields_manual'),
+        'disabled' => get_string('field_manual_nobody', 'elisfields_manual'),
         );
-    $form->addElement('select', 'manual_field_edit_capability', get_string('manual_field_edit_capability', 'block_curr_admin'), $choices);
+    $form->addElement('select', 'manual_field_edit_capability', get_string('manual_field_edit_capability', 'elisfields_manual'), $choices);
     $form->disabledIf('manual_field_edit_capability', 'manual_field_enabled', 'notchecked');
     $form->setAdvanced('manual_field_edit_capability');
 
     $choices = array(
-        '' => get_string('field_manual_anyone_view', 'block_curr_admin'),
-        'moodle/user:viewhiddendetails' => get_string('field_manual_admin_view', 'block_curr_admin'),
+        '' => get_string('field_manual_anyone_view', 'elisfields_manual'),
+        'moodle/user:viewhiddendetails' => get_string('field_manual_admin_view', 'elisfields_manual'),
         );
-    $form->addElement('select', 'manual_field_view_capability', get_string('manual_field_view_capability', 'block_curr_admin'), $choices);
+    $form->addElement('select', 'manual_field_view_capability', get_string('manual_field_view_capability', 'elisfields_manual'), $choices);
     $form->disabledIf('manual_field_view_capability', 'manual_field_enabled', 'notchecked');
     $form->setAdvanced('manual_field_view_capability');
 
@@ -64,7 +64,7 @@ function manual_field_edit_form_definition($form) {
         'textarea' => get_string('pluginname', 'profilefield_textarea'),
         'password' => get_string('password_control', 'elisfields_manual'),
         );
-    $form->addElement('select', 'manual_field_control', get_string('manual_field_control', 'block_curr_admin'), $choices);
+    $form->addElement('select', 'manual_field_control', get_string('manual_field_control', 'elisfields_manual'), $choices);
     $form->setType('manual_field_control', PARAM_ACTION);
     $form->disabledIf('manual_field_control', 'manual_field_enabled', 'notchecked');
 

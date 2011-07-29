@@ -130,14 +130,14 @@ function moodle_profile_field_edit_form_definition($form) {
         return;
     }
 
-    $form->addElement('header', '', get_string('field_moodlesync', 'block_curr_admin'));
+    $form->addElement('header', '', get_string('field_moodlesync', 'elisfields_moodle_profile'));
 
     $choices = array(
-        -1 => get_string('field_no_sync', 'block_curr_admin'),
-        pm_moodle_profile::sync_to_moodle => get_string('field_sync_to_moodle', 'block_curr_admin'),
-        pm_moodle_profile::sync_from_moodle => get_string('field_sync_from_moodle', 'block_curr_admin'),
+        -1 => get_string('field_no_sync', 'elisfields_moodle_profile'),
+        pm_moodle_profile::sync_to_moodle => get_string('field_sync_to_moodle', 'elisfields_moodle_profile'),
+        pm_moodle_profile::sync_from_moodle => get_string('field_sync_from_moodle', 'elisfields_moodle_profile'),
         );
-    $form->addElement('select', 'moodle_profile_exclusive', get_string('field_syncwithmoodle', 'block_curr_admin'), $choices);
+    $form->addElement('select', 'moodle_profile_exclusive', get_string('field_syncwithmoodle', 'elisfields_moodle_profile'), $choices);
     $form->setType('moodle_profile_exclusive', PARAM_INT);
 }
 
