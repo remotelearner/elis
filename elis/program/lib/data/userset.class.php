@@ -512,7 +512,8 @@ class usersubset_filter extends data_filter {
                     ON {$LIKE}
                    AND {$childtable}.contextlevel = {$cluster_context_level} ";
 
-        $filtersql = $this->filter(true, $clsttable, $db);
+        $contextset = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:view');
+        $filtersql = $contextset->get_filter->get_sql(true, $clsttable, $db);
         $params = array();
         if (isset($filtersql['join'])) {
             $sql .= $filtersql['join'];
