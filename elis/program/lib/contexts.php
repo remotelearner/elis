@@ -236,7 +236,7 @@ class pm_context_set {
             $where[] = new in_list_filter($idfieldname, $this->contexts['user']);
         }
         if (isset($this->contexts['cluster'])) {
-            $where[] = new join_filter($idfieldname, usercluster::TABLE, 'userid',
+            $where[] = new join_filter($idfieldname, clusterassignment::TABLE, 'userid',
                                        $this->get_filter('clusterid', 'cluster'),
                                        false, false);
         }
@@ -330,18 +330,14 @@ class pm_context_set {
     function _user_allowed($id) {
         global $DB;
         if (isset($this->contexts['cluster'])
-            && $DB->record_exists_select('crlm_usercluster',
-                                                 "userid = $id AND clusterid IN (".implode(',',$this->contexts['cluster']).')')) {
+            && clusterassignment::exists(array(new field_filter('userid', $id),
+                                               new in_list_filter('clusterid', $this->contexts['cluster'])))) {
             return true;
         }
         if (isset($this->contexts['cluster'])) {
             $filter = $this->get_filter('clusterid', 'cluster');
-            $sql = $filter->get_sql();
-            $where = $sql['where'];
-            $params = $sql['where_parameters'];
-            $select = "userid = {$id}
-                   AND ({$where})";
-            return $DB->count_records_select('crlm_usercluster', $select, $params);
+            return clusterassignment::count(array(new field_filter('userid', $id),
+                                                  $filter));
         }
         return false;
     }
