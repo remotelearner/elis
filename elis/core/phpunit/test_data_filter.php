@@ -211,7 +211,7 @@ class filterTest extends filter_TestCase {
                 'join' => 'JOIN {foreign} _table_1
                              ON _table_1.foreignid = id
                            JOIN {ff} _table_2
-                             ON _table_2.ffid = id',
+                             ON _table_2.ffid = _table_1.id',
                 'join_parameters' => array()
             ),
             array(
@@ -226,7 +226,7 @@ class filterTest extends filter_TestCase {
                 'join' => 'JOIN {foreign} _table_1
                              ON _table_1.foreignid = x.id
                            JOIN {ff} _table_2
-                             ON _table_2.ffid = x.id',
+                             ON _table_2.ffid = _table_1.id',
                 'join_parameters' => array()
             )
         );
