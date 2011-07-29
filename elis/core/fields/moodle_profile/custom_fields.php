@@ -50,7 +50,7 @@ function sync_profile_field_to_moodle($field) {
         // no Moodle field to sync with
         return true;
     }
-    $level = context_level_base::get_custom_context_level('user', 'block_curr_admin');
+    $level = context_level_base::get_custom_context_level('user', 'elis_program');
 
     $dest = 'user_info_data';
     $src = $field->data_table();
@@ -81,7 +81,7 @@ function sync_profile_field_to_moodle($field) {
 
 function sync_profile_field_from_moodle($field) {
     global $CURMAN;
-    $level = context_level_base::get_custom_context_level('user', 'block_curr_admin');
+    $level = context_level_base::get_custom_context_level('user', 'elis_program');
     if (!isset($field->owners['moodle_profile'])
         || $field->owners['moodle_profile']->exclude == pm_moodle_profile::sync_to_moodle) {
         // not owned by the Moodle plugin, or set to sync to Moodle
