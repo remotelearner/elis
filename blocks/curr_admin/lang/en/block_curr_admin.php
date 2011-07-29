@@ -1,6 +1,7 @@
 <?php
 
 $string['blockname'] = 'Program Management';
+$string['pluginname'] = 'Program Management';
 
 // "More" links in curr admin menu
 $string['menu_summary_item_userset'] = '{$a} more user sets...';
