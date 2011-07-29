@@ -113,6 +113,20 @@ abstract class rolepage extends associationpage2 {
         return has_capability('moodle/role:assign', $this->get_context());
     }
 
+    /**
+     * Counts all the users assigned this role in this context or higher
+     * (can be used by child classes to override the counting with other criteria)
+     *
+     * @param mixed $roleid either int or an array of ints
+     * @param object $context
+     * @param bool $parent if true, get list of users assigned in higher context too
+     * @return int Returns the result count
+     */
+    function count_role_users($roleid, $context, $parent = false) {
+        //default behaviour of counting role assignments
+        return count_role_users($roleid, $context, $parent);
+    }
+
     function display_default() {
         global $CURMAN, $DB, $OUTPUT;
 
@@ -145,7 +159,7 @@ abstract class rolepage extends associationpage2 {
                     $rec->id = $roleid;
                     $rec->name = $rolename;
                     $rec->description = format_string($DB->get_field('role', 'description', array('id' => $roleid)));
-                    $rec->count = count_role_users($roleid, $context);
+                    $rec->count = $this->count_role_users($roleid, $context);
                     $roles[$roleid] = $rec;
                 }
 
@@ -708,6 +722,64 @@ class cluster_rolepage extends rolepage {
         } else {
             return parent::get_available_records($filter);
         }
+    }
+
+    /**
+     * Counts all the users assigned this role in this context or higher
+     * (includes enforcing that counted users are assigned to cluster if the current
+     *  user is limited in that regard)
+     *
+     * @param mixed $roleid either int or an array of ints
+     * @param object $context
+     * @param bool $parent if true, get list of users assigned in higher context too
+     * @return int Returns the result count
+     */
+    function count_role_users($roleid, $context, $parent = false) {
+        global $DB;
+
+        if ($parent) {
+            if ($contexts = get_parent_contexts($context)) {
+                $parentcontexts = ' OR r.contextid IN ('.implode(',', $contexts).')';
+            } else {
+                $parentcontexts = '';
+            }
+        } else {
+            $parentcontexts = '';
+        }
+
+        if ($roleid) {
+            list($rids, $params) = $DB->get_in_or_equal($roleid, SQL_PARAMS_QM);
+            $roleselect = "AND r.roleid $rids";
+        } else {
+            $params = array();
+            $roleselect = '';
+        }
+
+        array_unshift($params, $context->id);
+
+        $sql = "SELECT count(u.id)
+                  FROM {role_assignments} r
+                  JOIN {user} u ON u.id = r.userid
+                 WHERE (r.contextid = ? $parentcontexts)
+                       $roleselect
+                       AND u.deleted = 0";
+
+        //start of RL addition
+        if (has_capability('block/curr_admin:cluster:role_assign_cluster_users', $this->get_context(), NULL, false)) {
+            //users explicitly assigned this capability are limited to seeing users who are also
+            //directly assigned to this cluster
+            require_once(elispm::lib('data/clusterassignment.class.php'));
+
+            $sql .= " AND EXISTS (SELECT *
+                                  FROM {".clusterassignment::TABLE."} clstass
+                                  WHERE u.id = clstass.userid
+                                  AND clstass.clusterid = ?
+                      )";
+            $params[] = $context->instanceid;
+        }
+        //end of RL addition
+
+        return $DB->count_records_sql($sql, $params);;
     }
 }
 
