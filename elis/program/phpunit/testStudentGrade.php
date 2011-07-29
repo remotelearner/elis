@@ -40,66 +40,77 @@ class student_gradeTest extends PHPUnit_Framework_TestCase {
     /**
      * The overlay database object set up by a test.
      */
-    private $overlaydb;
+    private static $overlaydb;
     /**
      * The original global $DB object.
      */
-    private $origdb;
+    private static $origdb;
 
     /**
-     * Clean up the temporary database tables, and reset the $DB global, if
-     * needed.
+     * Clean up the temporary database tables.
+     */
+    public static function tearDownAfterClass() {
+        if (!empty(self::$overlaydb)) {
+            self::$overlaydb->cleanup();
+            self::$overlaydb = null;
+        }
+        if (!empty(self::$origdb)) {
+            self::$origdb = null;
+        }
+    }
+
+    public static function setUpBeforeClass() {
+        // called before each test function
+        global $DB;
+        self::$origdb = $DB;
+        self::$overlaydb = new overlay_database($DB,
+                                      array('context'      => 'moodle',
+                                            'course'       => 'moodle',
+                                    trackassignment::TABLE => 'elis_program'));
+    }
+
+    /**
+     * reset the $DB global
      */
     protected function tearDown() {
-        if (isset($this->overlaydb)) {
-            $this->overlaydb->cleanup();
-            unset($this->overlaydb);
-        }
-        if (isset($this->origdb)) {
-            global $DB;
-            $DB = $this->origdb;
-            unset($this->origdb);
-        }
+        global $DB;
+        $DB = self::$origdb;
+    }
+
+    protected function setUp() {
+        // called before each test method
+        global $DB;
+        self::$overlaydb->reset_overlay_tables();
+        $this->setUpContextsTable();
+        $DB = self::$overlaydb;
     }
 
     /**
      * Set up the contexts table with the minimum that we need.
      */
     private function setUpContextsTable() {
-        $syscontext = $this->origdb->get_record('context', array('contextlevel' => CONTEXT_SYSTEM));
-        $this->overlaydb->import_record('context', $syscontext);
+        $syscontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_SYSTEM));
+        self::$overlaydb->import_record('context', $syscontext);
 
-        $site = $this->origdb->get_record('course', array('id' => SITEID));
-        $this->overlaydb->import_record('course', $site);
-        $sitecontext = $this->origdb->get_record('context', array('contextlevel' => CONTEXT_COURSE,
+        $site = self::$origdb->get_record('course', array('id' => SITEID));
+        self::$overlaydb->import_record('course', $site);
+        $sitecontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_COURSE,
                                                                   'instanceid' => SITEID));
-        $this->overlaydb->import_record('context', $sitecontext);
+        self::$overlaydb->import_record('context', $sitecontext);
     }
 
     protected function load_csv_data() {
         // load initial data from a CSV file
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable(student_grade::TABLE, elis::component_file('program', 'phpunit/studentgrade.csv')); // TBD: more generic 'phpunit/' . get_class($this) ???
-        load_phpunit_data_set($dataset, true, $this->overlaydb);
-    }
-
-    protected function setUp()
-    {
-        // called before each test function
-        global $DB;
-        $this->origdb = $DB;
-        $DB = $this->overlaydb = new overlay_database($DB,
-                                      array('context'      => 'moodle',
-                                            'course'       => 'moodle',
-                                      student_grade::TABLE => 'elis_program'));
-        $this->setUpContextsTable();
+        load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
     /**
      * Test that data class has correct DB fields
      */
     public function testStudentGradeHasCorrectDBFields() {
-        $testobj = new student_grade(false, null, array(), false, array(), $this->origdb);
+        $testobj = new student_grade(false, null, array(), false, array(), self::$origdb);
         $this->assertTrue($testobj->_test_dbfields(), 'Error(s) with class $_dbfield_ properties.');
     }
 
@@ -107,7 +118,7 @@ class student_gradeTest extends PHPUnit_Framework_TestCase {
      * Test that data class has correct associations
      */
     public function testStudentGradeHasCorrectAssociations() {
-        $testobj = new student_grade(false, null, array(), false, array(), $this->origdb);
+        $testobj = new student_grade(false, null, array(), false, array(), self::$origdb);
         $this->assertTrue($testobj->_test_associations(), 'Error(s) with class associations.');
     }
 
@@ -117,12 +128,12 @@ class student_gradeTest extends PHPUnit_Framework_TestCase {
     public function testStudentGradeCanCreateRecord() {
         $this->markTestIncomplete('In development.');
         // create a record
-        $src = new student_grade(false, null, array(), false, array(), $this->overlaydb);
+        $src = new student_grade(false, null, array(), false, array(), self::$overlaydb);
         // TBD: setup data
         $src->save();
 
         // read it back
-        $retr = new student_grade($src->id, null, array(), false, array(), $this->overlaydb);
+        $retr = new student_grade($src->id, null, array(), false, array(), self::$overlaydb);
         foreach ($src as $key => $value) {
             if (strpos($key, elis_data_object::FIELD_PREFIX) !== false) {
                 $key = substr($key, strlen(elis_data_object::FIELD_PREFIX));
@@ -139,12 +150,12 @@ class student_gradeTest extends PHPUnit_Framework_TestCase {
         $this->load_csv_data();
 
         // read a record
-        $src = new student_grade(3, null, array(), false, array(), $this->overlaydb);
+        $src = new student_grade(3, null, array(), false, array(), self::$overlaydb);
         // TBD: setup data
         $src->save();
 
         // read it back
-        $retr = new studet_grade(3, null, array(), false, array(), $this->overlaydb);
+        $retr = new studet_grade(3, null, array(), false, array(), self::$overlaydb);
         foreach ($src as $key => $value) {
             if (strpos($key, elis_data_object::FIELD_PREFIX) !== false) {
                 $key = substr($key, strlen(elis_data_object::FIELD_PREFIX));

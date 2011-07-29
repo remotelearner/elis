@@ -37,66 +37,77 @@ class usersetTest extends PHPUnit_Framework_TestCase {
     /**
      * The overlay database object set up by a test.
      */
-    private $overlaydb;
+    private static $overlaydb;
     /**
      * The original global $DB object.
      */
-    private $origdb;
+    private static $origdb;
 
     /**
-     * Clean up the temporary database tables, and reset the $DB global, if
-     * needed.
+     * Clean up the temporary database tables.
+     */
+    public static function tearDownAfterClass() {
+        if (!empty(self::$overlaydb)) {
+            self::$overlaydb->cleanup();
+            self::$overlaydb = null;
+        }
+        if (!empty(self::$origdb)) {
+            self::$origdb = null;
+        }
+    }
+
+    public static function setUpBeforeClass() {
+        // called before each test function
+        global $DB;
+        self::$origdb = $DB;
+        self::$overlaydb = new overlay_database($DB,
+                                      array('context'      => 'moodle',
+                                            'course'       => 'moodle',
+                                    trackassignment::TABLE => 'elis_program'));
+    }
+
+    /**
+     * reset the $DB global
      */
     protected function tearDown() {
-        if (isset($this->overlaydb)) {
-            $this->overlaydb->cleanup();
-            unset($this->overlaydb);
-        }
-        if (isset($this->origdb)) {
-            global $DB;
-            $DB = $this->origdb;
-            unset($this->origdb);
-        }
+        global $DB;
+        $DB = self::$origdb;
+    }
+
+    protected function setUp() {
+        // called before each test method
+        global $DB;
+        self::$overlaydb->reset_overlay_tables();
+        $this->setUpContextsTable();
+        $DB = self::$overlaydb;
     }
 
     /**
      * Set up the contexts table with the minimum that we need.
      */
     private function setUpContextsTable() {
-        $syscontext = $this->origdb->get_record('context', array('contextlevel' => CONTEXT_SYSTEM));
-        $this->overlaydb->import_record('context', $syscontext);
+        $syscontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_SYSTEM));
+        self::$overlaydb->import_record('context', $syscontext);
 
-        $site = $this->origdb->get_record('course', array('id' => SITEID));
-        $this->overlaydb->import_record('course', $site);
-        $sitecontext = $this->origdb->get_record('context', array('contextlevel' => CONTEXT_COURSE,
+        $site = self::$origdb->get_record('course', array('id' => SITEID));
+        self::$overlaydb->import_record('course', $site);
+        $sitecontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_COURSE,
                                                                   'instanceid' => SITEID));
-        $this->overlaydb->import_record('context', $sitecontext);
+        self::$overlaydb->import_record('context', $sitecontext);
     }
 
     protected function load_csv_data() {
         // load initial data from a CSV file
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv')); // TBD: more generic 'phpunit/' . get_class($this) ???
-        load_phpunit_data_set($dataset, true, $this->overlaydb);
-    }
-
-    protected function setUp()
-    {
-        // called before each test function
-        global $DB;
-        $this->origdb = $DB;
-        $DB = $this->overlaydb = new overlay_database($DB,
-                                         array('context'      => 'moodle',
-                                               'course'       => 'moodle',
-                                               userset::TABLE => 'elis_program'));
-        $this->setUpContextsTable();
+        load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
     /**
      * Test that data class has correct DB fields
      */
     public function testDataClassHasCorrectDBFields() {
-        $testobj = new userset(false, null, array(), false, array(), $this->origdb);
+        $testobj = new userset(false, null, array(), false, array(), self::$origdb);
         $this->assertTrue($testobj->_test_dbfields(), 'Error(s) with class $_dbfield_ properties.');
     }
 
@@ -104,7 +115,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
      * Test that data class has correct associations
      */
     public function testDataClassHasCorrectAssociations() {
-        $testobj = new userset(false, null, array(), false, array(), $this->origdb);
+        $testobj = new userset(false, null, array(), false, array(), self::$origdb);
         $this->assertTrue($testobj->_test_associations(), 'Error(s) with class associations.');
     }
 
@@ -114,13 +125,13 @@ class usersetTest extends PHPUnit_Framework_TestCase {
     public function testCanCreateRecord() {
 
         // create a record
-        $src = new userset(false, null, array(), false, array(), $this->overlaydb);
+        $src = new userset(false, null, array(), false, array(), self::$overlaydb);
         $src->name = 'User set';
         $src->display = 'Some description';
         $src->save();
 
         // read it back
-        $retr = new userset($src->id, null, array(), false, array(), $this->overlaydb);
+        $retr = new userset($src->id, null, array(), false, array(), self::$overlaydb);
         $this->assertEquals($src->name, $retr->name);
         $this->assertEquals($src->display, $retr->display);
     }
@@ -132,7 +143,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         $this->load_csv_data();
 
         // read a record
-        $src = new userset(3, null, array(), false, array(), $this->overlaydb);
+        $src = new userset(3, null, array(), false, array(), self::$overlaydb);
         // modify the data
         $src->name = 'Sub-sub set 2';
         $src->display = 'Sub sub user set';
@@ -140,7 +151,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         $src->save();
 
         // read it back
-        $retr = new userset(3, null, array(), false, array(), $this->overlaydb);
+        $retr = new userset(3, null, array(), false, array(), self::$overlaydb);
         $this->assertEquals($src->name, $retr->name);
         $this->assertEquals($src->display, $retr->display);
         $this->assertEquals($src->parent, $retr->parent);
@@ -160,15 +171,15 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         }
 
         // delete a record
-        $src = new userset(2, null, array(), false, array(), $this->overlaydb);
+        $src = new userset(2, null, array(), false, array(), self::$overlaydb);
         $src->deletesubs = false;
         $src->delete();
 
         // test that the record is deleted
-        $this->assertFalse(userset::exists(new field_filter('id', 2), $this->overlaydb));
+        $this->assertFalse(userset::exists(new field_filter('id', 2), self::$overlaydb));
 
         // test that the child cluster is promoted
-        $retr = new userset(4, null, array(), false, array(), $this->overlaydb);
+        $retr = new userset(4, null, array(), false, array(), self::$overlaydb);
         $this->assertEquals(0, $retr->parent);
         $this->assertEquals(1, $retr->depth);
     }
@@ -186,13 +197,13 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         }
 
         // delete a record
-        $src = new userset(2, null, array(), false, array(), $this->overlaydb);
+        $src = new userset(2, null, array(), false, array(), self::$overlaydb);
         $src->deletesubs = true;
         $src->delete();
 
         // test that the record is deleted
-        $this->assertFalse(userset::exists(new field_filter('id', 2), $this->overlaydb));
+        $this->assertFalse(userset::exists(new field_filter('id', 2), self::$overlaydb));
         // test that the child userset is deleted
-        $this->assertFalse(userset::exists(new field_filter('id', 4), $this->overlaydb));
+        $this->assertFalse(userset::exists(new field_filter('id', 4), self::$overlaydb));
     }
 }
