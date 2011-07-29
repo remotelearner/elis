@@ -299,6 +299,10 @@ class in_list_filter extends data_filter {
         if ($db === null) {
             $db = $DB;
         }
+        if (empty($this->list)) {
+            return array('where' => 'FALSE',
+                         'where_parameters' => array());
+        }
         list($sql, $params) = $db->get_in_or_equal($this->list, SQL_PARAMS_QM, '', !$this->not_in);
         return array('where' => "{$this->local_field} {$sql}",
                      'where_parameters' => $params);
