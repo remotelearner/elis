@@ -785,12 +785,13 @@ function pm_notify_instructor_assigned_handler($eventdata) {
     }
 
     //make sure our class is tied to a Moodle course
-    if(empty($pmclass->moodlecourseid)) {
+    $moodlecourseid = $pmclass->get_moodle_course_id();
+    if(empty($moodlecourseid)) {
         return true;
     }
 
     //retrieve the Moodle course's context
-    if(!$course_context = get_context_instance(CONTEXT_COURSE, $pmclass->moodlecourseid)) {
+    if(!$course_context = get_context_instance(CONTEXT_COURSE, $moodlecourseid)) {
         return true;
     }
 
@@ -804,11 +805,8 @@ function pm_notify_instructor_assigned_handler($eventdata) {
         return true;
     }
 
-    /* TODO: roles must be ported to ELIS2
     //assign the Moodle user to the default instructor role
-    role_assign(elis::$config->elis_program->default_instructor_role, $instructor->id, 0, $course_context->id,
-                $eventdata->assigntime, $eventdata->completetime);
-*/
+    role_assign(elis::$config->elis_program->default_instructor_role, $instructor->id, $course_context->id);
     return true;
 }
 
@@ -834,17 +832,19 @@ function pm_notify_instructor_unassigned_handler($eventdata) {
     }
 
     //ensure that the class is tied to a Moodle course
-    if(empty($pmclass->moodlecourseid)) {
+    $moodlecourseid = $pmclass->get_moodle_course_id();
+
+    if(empty($moodlecourseid)) {
         return true;
     }
 
     //retrieve the context for the Moodle course
-    if(!$course_context = get_context_instance(CONTEXT_COURSE, $pmclass->moodlecourseid)) {
+    if(!$course_context = get_context_instance(CONTEXT_COURSE, $moodlecourseid)) {
         return true;
     }
 
-    //make sure the Moodle course is not tied to other curriculum administartion classes
-    if($DB->count_records(classmoodlecourse::TABLE, array('moodlecourseid'=> $pmclass->moodlecourseid)) != 1) {
+    //make sure the Moodle course is not tied to other curriculum administration classes
+    if($DB->count_records(classmoodlecourse::TABLE, array('moodlecourseid'=> $moodlecourseid)) != 1) {
         return true;
     }
 
@@ -857,14 +857,11 @@ function pm_notify_instructor_unassigned_handler($eventdata) {
     $roleids = explode(',', $CFG->coursecontact);
 
     foreach($roleids as $roleid) {
-
-         /* TODO: roles must be ported to ELIS2
         //unassign the role if found
         if(user_has_role_assignment($instructor->id, $roleid, $course_context->id)) {
-            role_unassign($roleid, $instructor->id, 0, $course_context->id);
-        }*/
+            role_unassign($roleid, $instructor->id, $course_context->id);
+        }
     }
-
     return true;
 }
 

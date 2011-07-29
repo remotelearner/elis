@@ -71,6 +71,7 @@ class instructorpage extends associationpage {
 
         $ins = new instructor($insid);
         $ins->load(); // TBD
+        $classid = $ins->classid;
         //$event_object = $DB->get_record(instructor::TABLE, array('id' => $insid));
         if (md5($insid) != $confirm) {
             echo cm_error(get_string('invalidconfirm', self::LANG_FILE));
@@ -78,17 +79,11 @@ class instructorpage extends associationpage {
             $user = $DB->get_record(user::TABLE, array('id' => $ins->userid));
             $user->name = fullname($user);
             $status = $ins->delete();
-          /* **** no return code from delete()
-            if (!$status) {
-                echo cm_error(get_string('instructor_notdeleted', self::LANG_FILE, $user));
-            } else
-          **** */
-            { //instructor_successfully_deleted
-                echo cm_error(get_string('instructor_deleted', self::LANG_FILE, $user));
-            }
         }
-        $this->display('default'); // TBD: redirect??? Missing blocks on page
-            // ... but then we'd lose the instructor_deleted message!
+
+        $instructorpage = new instructorpage();
+        $target = $instructorpage->get_new_page(array('action' => 'default', 'id' => $classid));
+        redirect($target->url, get_string('instructor_deleted', self::LANG_FILE, $user));
     }
 
     function do_add() {

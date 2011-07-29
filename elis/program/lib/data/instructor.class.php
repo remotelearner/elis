@@ -133,6 +133,22 @@ class instructor extends elis_data_object {
     }
 **** */
 
+    /**
+     * Perform parent add and trigger assigned event.
+     */
+    public function save() {
+        parent::save();
+        events_trigger('crlm_instructor_assigned', $this);
+    }
+
+    /**
+     * Perform parent delete and trigger unassigned event.
+    */
+    public function delete() {
+        parent::delete();
+        events_trigger('crlm_instructor_unassigned', $this);
+    }
+
     public static function delete_for_class($id) {
         global $DB;
         return $DB->delete_records(instructor::TABLE, array('classid' => $id));
