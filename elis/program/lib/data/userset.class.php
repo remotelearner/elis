@@ -503,7 +503,7 @@ class usersubset_filter extends data_filter {
         $parent_path = $db->sql_concat("{$parenttable}.path", "'/%'");
         $LIKE = $db->sql_like("{$childtable}.path", $parent_path);
 
-        $sql = "SELECT cluster.id
+        $sql = "SELECT {$clsttable}.id
                   FROM {" . userset::TABLE . "} {$clsttable}
                   JOIN {context} {$parenttable}
                     ON {$parenttable}.instanceid = {$clsttable}.id
@@ -513,7 +513,7 @@ class usersubset_filter extends data_filter {
                    AND {$childtable}.contextlevel = {$cluster_context_level} ";
 
         $contextset = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:view');
-        $filtersql = $contextset->get_filter()->get_sql(true, $clsttable, $db);
+        $filtersql = $contextset->get_filter('id')->get_sql(true, $clsttable, $db);
         $params = array();
         if (isset($filtersql['join'])) {
             $sql .= $filtersql['join'];
@@ -529,7 +529,7 @@ class usersubset_filter extends data_filter {
             return array(
                 'where' => "{$NOT}EXISTS (" . $sql
                     . (isset($filtersql['where']) ? " AND " : " WHERE " )
-                    . "{$clsttable}.id = {$table}.{$this->name})",
+                    . "{$clsttable}.id = {$tablename}.{$this->name})",
                 'where_parameters' => $params
             );
         } else {
