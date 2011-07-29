@@ -230,7 +230,7 @@ class block_curr_admin extends block_base {
                              null, get_string('userset_classification', 'pmplugins_userset_classification'), block_curr_admin_get_item_css_class('clusterclassification')),
 
                 //Information Elements
-                //new menuitem('info', null, 'root', get_string('informationalelements', 'block_curr_admin'),
+                //new menuitem('info', null, 'root', get_string('informationalelements', 'elis_program'),
                 //             block_curr_admin_get_item_css_class('info', true)),
                 //new menuitem('managetags', new menuitempage('tagpage'), null, '',
                 //             block_curr_admin_get_item_css_class('managetags')),
@@ -245,7 +245,7 @@ class block_curr_admin extends block_base {
                              block_curr_admin_get_item_css_class('manageclusters')),
 
                 //Curriculum
-                new menuitem('curr', null, 'root', get_string('curriculum', 'block_curr_admin'),
+                new menuitem('curr', null, 'root', get_string('curriculum', 'elis_program'),
                              block_curr_admin_get_item_css_class('curr', true)),
                 //new menuitem('certificatelist', new menuitempage('certificatelistpage'), null, '',
                 //             block_curr_admin_get_item_css_class('certificatelist')),
@@ -257,17 +257,17 @@ class block_curr_admin extends block_base {
                              block_curr_admin_get_item_css_class('manageclasses')),
 
                 //Learning Plan
-                new menuitem('crscat', null, 'root', get_string('learningplan', 'block_curr_admin'),
+                new menuitem('crscat', null, 'root', get_string('learningplan', 'elis_program'),
                              block_curr_admin_get_item_css_class('crscat', true)),
                 //new menuitem('currentcourses', new menuitempage('coursecatalogpage', '', array('action' => 'current')), null, '',
                 //             block_curr_admin_get_item_css_class('currentcourses')),
                 //new menuitem('availablecourses', new menuitempage('coursecatalogpage', '', array('action' => 'available')), null, '',
                 //             block_curr_admin_get_item_css_class('availablecourses')),
                 //new menuitem('waitlist', new menuitempage('coursecatalogpage', '', array('action' => 'waitlist')), null,
-                //             get_string('waitlistcourses', 'block_curr_admin'), block_curr_admin_get_item_css_class('waitlist')),
+                //             get_string('waitlistcourses', 'elis_program'), block_curr_admin_get_item_css_class('waitlist')),
 
                 //Reports
-                new menuitem('rept', null, 'root', get_string('reports', 'block_curr_admin'), block_curr_admin_get_item_css_class('rept', true))
+                new menuitem('rept', null, 'root', get_string('reports', 'elis_program'), block_curr_admin_get_item_css_class('rept', true))
 
         ));
 

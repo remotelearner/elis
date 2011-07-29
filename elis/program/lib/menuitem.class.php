@@ -234,7 +234,7 @@ class menuitem {
             $this->title = $title;
         } else if($name != 'root') {
             //the language string will usually correspond with the name
-            $this->title = get_string($name, 'block_curr_admin');
+            $this->title = get_string($name, 'elis_program');
         } else {
             //not a visible node
             $this->title = '';

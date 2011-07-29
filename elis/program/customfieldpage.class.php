@@ -510,11 +510,11 @@ class customuserfieldtable extends customfieldtable {
 
     function get_item_display_syncwithmoodle($column, $item) {
         if ($item->syncwithmoodle === NULL) {
-            return get_string('field_no_sync', 'elis_program');
-        } elseif ($item->syncwithmoodle == cm_moodle_profile::sync_from_moodle) {
-            $result = get_string('field_sync_from_moodle', 'elis_program');
+            return get_string('field_no_sync', 'elisfields_moodle_profile');
+        } elseif ($item->syncwithmoodle == pm_moodle_profile::sync_from_moodle) {
+            $result = get_string('field_sync_from_moodle', 'elisfields_moodle_profile');
         } else {
-            $result = get_string('field_sync_to_moodle', 'elis_program');
+            $result = get_string('field_sync_to_moodle', 'elisfields_moodle_profile');
         }
         if (empty($item->mfieldid)) {
             $this->syncerr = true;
