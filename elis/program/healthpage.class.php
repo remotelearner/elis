@@ -348,7 +348,7 @@ class cluster_orphans_check extends crlm_health_check_base {
         foreach ($clusters as $clusid => $clusdata) {
             if ($clusdata->parent > 0) {
                 $select = "id='{$clusdata->parent}'";
-                $parentCnt = $DB->count_records_select(cluster::TABLE, $select);
+                $parentCnt = $DB->count_records_select(userset::TABLE, $select);
                 if ($parentCnt < 1) {
                     $this->parentBad[] = $clusdata->name;
                 }

@@ -80,7 +80,7 @@ class clusteruserselectpage extends selectionpage {
             //get the context for the "indirect" capability
             $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
 
-            $allowed_clusters = cluster::get_allowed_clusters($id);
+            $allowed_clusters = userset::get_allowed_clusters($id);
 
             if(empty($allowed_clusters)) {
                 $filters[] = 'FALSE';

@@ -141,7 +141,7 @@ class usersetpage extends managementpage {
          * Start of cluster hierarchy extension
          */
 
-        $viewable_clusters = cluster::get_viewable_clusters();
+        $viewable_clusters = userset::get_viewable_clusters();
         return userset::exists(array(new usersubset_filter('id', new field_filter('id', $id)),
                                      new in_list_filter('id', $viewable_clusters)));
 
@@ -205,7 +205,7 @@ class usersetpage extends managementpage {
         /*
          * Start of cluster hierarchy extension
          */
-        $viewable_clusters = cluster::get_viewable_clusters($capability);
+        $viewable_clusters = userset::get_viewable_clusters($capability);
 
         $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
