@@ -229,14 +229,6 @@ class block_curr_admin extends block_base {
                              new menuitempage('usersetclassificationpage', 'plugins/userset_classification/usersetclassificationpage.class.php'),
                              null, get_string('userset_classification', 'pmplugins_userset_classification'), block_curr_admin_get_item_css_class('clusterclassification')),
 
-                //Information Elements
-                //new menuitem('info', null, 'root', get_string('informationalelements', 'elis_program'),
-                //             block_curr_admin_get_item_css_class('info', true)),
-                //new menuitem('managetags', new menuitempage('tagpage'), null, '',
-                //             block_curr_admin_get_item_css_class('managetags')),
-                //new menuitem('manageenvironments', new menuitempage('envpage'), null, '',
-                //             block_curr_admin_get_item_css_class('manageenvironments')),
-
                 //Users
                 new menuitem('users', null, 'root', '', block_curr_admin_get_item_css_class('users', true)),
                 new menuitem('manageusers', new menuitempage('userpage'), null, '',
