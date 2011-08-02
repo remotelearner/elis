@@ -513,6 +513,8 @@ function pm_assign_student_from_mdl($eventdata) {
         return;
     }
 
+    $timenow = time();
+
     /// synchronize enrolment to ELIS class (if applicable)
     require_once elispm::lib('data/classmoodlecourse.class.php');
     require_once elispm::lib('data/student.class.php');
@@ -524,17 +526,14 @@ function pm_assign_student_from_mdl($eventdata) {
             $sturec = new Object();
             $sturec->classid = $class->classid;
             $sturec->userid = $pmuserid;
-            /// Enrolment time will be the earliest found role assignment for this user.
-            $enroltime = $DB->get_field('role_assignments', 'MIN(timestart) as enroltime',
-                                        array('contextid'=> $context->id,
-                                              'userid'=> $eventdata->userid));
-            $sturec->enrolmenttime = (!empty($enroltime) ? $enroltime : $timenow);
+            /// todo: determine if there's a smarter way to determine enrolment time (ELIS-2972)
+            $sturec->enrolmenttime = $timenow;
             $sturec->completetime = 0;
             $sturec->completestatusid = STUSTATUS_NOTCOMPLETE;
             $sturec->grade = 0;
             $sturec->credits = 0;
             $sturec->locked = 0;
-            $sturec->id = $DB->insert_record(STUTABLE, $sturec);
+            $sturec->id = $DB->insert_record(student::TABLE, $sturec);
         }
     }
 }
