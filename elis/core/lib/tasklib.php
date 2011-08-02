@@ -72,9 +72,14 @@ function elis_tasks_get_cached($component) {
     global $DB;
     $cachedtasks = array();
 
-    if ($storedtasks = $DB->get_records_select('elis_scheduled_tasks', "plugin = ? AND taskname IS NULL", array($component))) {
-        foreach ($storedtasks as $task) {
-            $cachedtasks[$task->callfunction] = (array)$task;
+    $dbman = $DB->get_manager();
+
+    //check needed during install
+    if ($dbman->table_exists('elis_scheduled_tasks')) {
+        if ($storedtasks = $DB->get_records_select('elis_scheduled_tasks', "plugin = ? AND taskname IS NULL", array($component))) {
+            foreach ($storedtasks as $task) {
+                $cachedtasks[$task->callfunction] = (array)$task;
+            }
         }
     }
 
