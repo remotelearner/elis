@@ -169,7 +169,7 @@ class coursepage extends managementpage {
         }
 
         // Get list of courses
-        $items    = course::find(null, array($sort => $dir), $page*$perpage, $page);
+        $items    = course::find(null, array($sort => $dir), $page*$perpage, $perpage);
         $numitems = course::count(null);
 
         // Cache the context capabilities
