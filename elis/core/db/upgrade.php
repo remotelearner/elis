@@ -94,7 +94,7 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         // core savepoint reached
         upgrade_plugin_savepoint(true, 2011063000, 'elis', 'core');
     }
-    if ($result && $oldversion < 2011071200) {
+    if ($result && $oldversion < 2011080200) {
 
         // Changing the default of field sortorder on table elis_field to 0
         $table = new xmldb_table('elis_field');
@@ -110,11 +110,6 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         // Launch change of default for field sortorder
         $dbman->change_field_default($table, $field);
 
-        // core savepoint reached
-        upgrade_plugin_savepoint(true, 2011071200, 'elis', 'core');
-    }
-    if ($result && $oldversion < 2011071201) {
-
         // Changing the default of field forceunique on table elis_field to 0
         $table = new xmldb_table('elis_field');
         $field = new xmldb_field('forceunique', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'multivalued');
@@ -123,7 +118,7 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         $dbman->change_field_default($table, $field);
 
         // core savepoint reached
-        upgrade_plugin_savepoint(true, 2011071201, 'elis', 'core');
+        upgrade_plugin_savepoint(true, 2011080200, 'elis', 'core');
     }
 
     return $result;
