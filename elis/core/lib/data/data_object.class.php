@@ -552,7 +552,8 @@ class elis_data_object {
                 if ($name === 'id') {
                     return null;
                 }
-                $this->load();
+                //load data while keeping existing fields
+                $this->load(false);
             }
             if ($this->$field_name === self::$_unset) {
                 return null;
