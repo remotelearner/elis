@@ -63,7 +63,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         self::$overlaydb = new overlay_database($DB,
                                       array('context'      => 'moodle',
                                             'course'       => 'moodle',
-                                    trackassignment::TABLE => 'elis_program'));
+                                            userset::TABLE => 'elis_program'));
     }
 
     /**

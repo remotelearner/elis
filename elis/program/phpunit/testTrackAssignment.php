@@ -66,7 +66,15 @@ class trackassignmentTest extends PHPUnit_Framework_TestCase {
         self::$overlaydb = new overlay_database($DB,
                                       array('context'      => 'moodle',
                                             'course'       => 'moodle',
-                                    trackassignment::TABLE => 'elis_program'));
+                                               user::TABLE => 'elis_program',
+                                            student::TABLE => 'elis_program',
+                                            pmclass::TABLE => 'elis_program',
+                                             course::TABLE => 'elis_program',
+                                              track::TABLE => 'elis_program',
+                                    trackassignment::TABLE => 'elis_program',
+                                   curriculumcourse::TABLE => 'elis_program'
+                                      )
+                               );
     }
 
     /**
@@ -103,6 +111,8 @@ class trackassignmentTest extends PHPUnit_Framework_TestCase {
         // load initial data from a CSV file
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable(trackassignment::TABLE, elis::component_file('program', 'phpunit/trackassignment.csv')); // TBD: more generic 'phpunit/' . get_class($this) ???
+        $dataset->addTable(track::TABLE, elis::component_file('program', 'phpunit/track.csv'));
+        $dataset->addTable(curriculumcourse::TABLE, elis::component_file('program', 'phpunit/curriculum_course.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
@@ -126,10 +136,33 @@ class trackassignmentTest extends PHPUnit_Framework_TestCase {
      * Test that a record can be created in the database.
      */
     public function testTrackAssignmentCanCreateRecord() {
-        $this->markTestIncomplete('In development.');
+        $this->load_csv_data();
+        $time_now = time();
+
+      /* ***
+        ob_start();
+        var_dump(self::$overlaydb);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("testTrackAssignmentCanCreateRecord(): overlaydb = {$tmp}");
+      *** */
         // create a record
         $src = new trackassignment(false, null, array(), false, array(), self::$overlaydb);
-        // TBD: setup data
+        $src->trackid = 1;
+        $src->classid = 1;
+        $src->courseid = 1;
+        $src->autoenrol = true;
+        $src->timecreated = $time_now;
+        $src->timemodified = $time_now;
+
+      /* ***
+        $trk = new track(1,  null, array(), false, array(), self::$overlaydb);
+        ob_start();
+        var_dump($trk);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("testTrackAssignmentCanCreateRecord(): track({$trk->id}, curid = {$trk->curid}) = {$tmp}");
+      *** */
         $src->save();
 
         // read it back
@@ -146,12 +179,16 @@ class trackassignmentTest extends PHPUnit_Framework_TestCase {
      * Test that a record can be modified.
      */
     public function testTrackAssignmentCanUpdateRecord() {
-        $this->markTestIncomplete('In development.');
         $this->load_csv_data();
+        $time_now = time();
 
         // read a record
         $src = new trackassignment(3, null, array(), false, array(), self::$overlaydb);
-        // TBD: setup data
+        $src->trackid = 1;
+        $src->classid = 103;
+        $src->courseid = 1;
+        $src->autoenrol = true;
+        $src->timemodified = $time_now;
         $src->save();
 
         // read it back
