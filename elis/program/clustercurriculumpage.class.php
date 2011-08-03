@@ -146,7 +146,7 @@ class clustercurriculumbasepage extends associationpage {
         $form->set_data(array('id' => $id,
                               'clusterid' => $clusterid,
                               'curriculumid' => $curriculumid));
-        $cluster_classification = clusterclassification::get_for_cluster($clusterid);
+        $cluster_classification = usersetclassification::get_for_cluster($clusterid);
         if (!empty($cluster_classification->param_autoenrol_tracks)) {
             $form->set_data(array('autoenrol' => 1));
         } else {

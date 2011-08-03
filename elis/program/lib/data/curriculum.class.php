@@ -90,6 +90,20 @@ class curriculum extends data_object_with_custom_fields {
     }
 
 	function delete() {
+        // delete associated data
+        require_once elis::lib('data/data_filter.class.php');
+
+        //filter specific for tracks, due to different field name
+        $filter = new field_filter('curid', $this->id);
+        track::delete_records($filter, $this->_db);
+
+        //filter for all other associations
+        $filter = new field_filter('curriculumid', $this->id);
+        clustercurriculum::delete_records($filter, $this->_db);
+        curriculumcourse::delete_records($filter, $this->_db);
+        curriculumstudent::delete_records($filter, $this->_db);
+
+        //clean up the curriculum context instance
         $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
         delete_context($level,$this->id);
 
