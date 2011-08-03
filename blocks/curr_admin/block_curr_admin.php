@@ -93,7 +93,7 @@ class block_curr_admin extends block_base {
 
 
     function get_content() {
-        global $CFG, $ADMIN, $USER, $CURMAN, $HTTPSPAGEREQUIRED, $PAGE, $DB;
+        global $CFG, $ADMIN, $USER, $HTTPSPAGEREQUIRED, $PAGE, $DB;
 
         require_once($CFG->libdir . '/adminlib.php');
         //require_once($CFG->dirroot . '/my/pagelib.php');
@@ -206,7 +206,8 @@ class block_curr_admin extends block_base {
                 new menuitem('dashboard', new menuitempage('dashboardpage'), 'root', '', block_curr_admin_get_item_css_class('dashboard')),
 
                 //Admin
-                new menuitem('admn', null, 'root', get_string('admin'), block_curr_admin_get_item_css_class('admn', true)),
+                new menuitem('admn', null, 'root', get_string('admin'), block_curr_admin_get_item_css_class('admn', true))
+                //,
                 //new menuitem('bulkuser', new menuitempage('bulkuserpage'), null, get_string('userbulk', 'admin'), block_curr_admin_get_item_css_class('bulkuser'))
                 );
 
@@ -219,7 +220,7 @@ class block_curr_admin extends block_base {
             //styling for the link
             $jasper_link_css = block_curr_admin_get_item_css_class('reportslist');
 
-            //$pages[] = new menuitem('reportslist', $jasper_link_page, null, '', $jasper_link_css);
+            $pages[] = new menuitem('reportslist', $jasper_link_page, null, '', $jasper_link_css);
         }
 
         $pages = array_merge($pages, array(
@@ -251,12 +252,12 @@ class block_curr_admin extends block_base {
                 //Learning Plan
                 new menuitem('crscat', null, 'root', get_string('learningplan', 'elis_program'),
                              block_curr_admin_get_item_css_class('crscat', true)),
-                //new menuitem('currentcourses', new menuitempage('coursecatalogpage', '', array('action' => 'current')), null, '',
-                //             block_curr_admin_get_item_css_class('currentcourses')),
-                //new menuitem('availablecourses', new menuitempage('coursecatalogpage', '', array('action' => 'available')), null, '',
-                //             block_curr_admin_get_item_css_class('availablecourses')),
-                //new menuitem('waitlist', new menuitempage('coursecatalogpage', '', array('action' => 'waitlist')), null,
-                //             get_string('waitlistcourses', 'elis_program'), block_curr_admin_get_item_css_class('waitlist')),
+                new menuitem('currentcourses', new menuitempage('coursecatalogpage', '', array('action' => 'current')), null, '',
+                             block_curr_admin_get_item_css_class('currentcourses')),
+                new menuitem('availablecourses', new menuitempage('coursecatalogpage', '', array('action' => 'available')), null, '',
+                             block_curr_admin_get_item_css_class('availablecourses')),
+                new menuitem('waitlist', new menuitempage('coursecatalogpage', '', array('action' => 'waitlist')), null,
+                             get_string('waitlistcourses', 'elis_program'), block_curr_admin_get_item_css_class('waitlist')),
 
                 //Reports
                 new menuitem('rept', null, 'root', get_string('reports', 'elis_program'), block_curr_admin_get_item_css_class('rept', true))
@@ -274,7 +275,7 @@ class block_curr_admin extends block_base {
         //merge in the reporting page links
         $pages = array_merge($pages, $report_pages);
 
-        if (empty($CURMAN->config->userdefinedtrack)) {
+        if (empty(elis::$config->elis_program->userdefinedtrack)) {
             $pages[] = new menuitem('managetracks', new menuitempage('trackpage'), null, '', block_curr_admin_get_item_css_class('managetracks'));
         }
 

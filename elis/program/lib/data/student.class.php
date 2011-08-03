@@ -29,12 +29,11 @@ defined('MOODLE_INTERNAL') || die();
 require_once elis::lib('data/data_object.class.php');
 require_once elis::lib('table.class.php');
 
-//require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-
 require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php');
 require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('data/course.class.php');
+require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/instructor.class.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
@@ -48,8 +47,12 @@ define ('STUSTATUS_FAILED',      1);
 define ('STUSTATUS_PASSED',      2);
 
 class student extends elis_data_object {
-    const TABLE = STUTABLE; // TBD
-    const LANG_FILE = 'elis_program'; // TBD
+    const TABLE = STUTABLE;
+    const LANG_FILE = 'elis_program';
+
+    const STUSTATUS_NOTCOMPLETE = 0;
+    const STUSTATUS_FAILED = 1;
+    const STUSTATUS_PASSED = 2;
 
     var $verbose_name = 'student';
 
@@ -226,7 +229,6 @@ class student extends elis_data_object {
                 return true;
             }
 
-//            $message = new stdClass; // TBD: new notification();
             $message = new notification();
 
             /// Set up the text of the message
@@ -1213,7 +1215,7 @@ class student extends elis_data_object {
     static public function get_waitlist_in_curriculum($userid, $curid) {
         global $DB;
         $select  = 'SELECT wat.id wlid, wat.position, cls.idnumber clsid, crs.name, cls.* ';
-        $tables = 'FROM {'. CURCRSTABLE .'} curcrs '; // ***TBD***
+        $tables = 'FROM {'. curriculumcourse::TABLE .'} curcrs ';
         $join   = 'JOIN {'. course::TABLE .'} crs ON curcrs.courseid = crs.id ';
         $join  .= 'JOIN {'. pmclass::TABLE .'} cls ON cls.courseid = crs.id ';
         $join  .= 'JOIN {'. waitlist::TABLE .'} wat ON wat.classid = cls.id ';
@@ -1778,8 +1780,6 @@ class student extends elis_data_object {
      *
      */
 
-    /* **** TBD: Notifications **** */
-
     /**
      * Function to handle class not started events.
      *
@@ -1996,7 +1996,7 @@ class pmclass_enrolment_limit_validation_exception extends Exception {
 
 class student_grade extends elis_data_object {
     const TABLE = GRDTABLE;
-    const LANG_FILE = 'elis_program'; // TBD
+    const LANG_FILE = 'elis_program';
 
     var $verbose_name = 'student_grade'; // TBD
 
@@ -2333,14 +2333,12 @@ function student_get_student_classes($userid, $curid = 0) {
  */
 function student_get_class_from_course($crsid, $userid) {
     global $DB;
-    $params = array();
     $sql = 'SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid, stu.grade
             FROM {'. student::TABLE .'} stu
             INNER JOIN {'. pmclass::TABLE .'} cls ON stu.classid = cls.id
             WHERE stu.userid = ?
             AND cls.courseid = ? ';
-    $params[] = $userid;
-    $params[] = $crsid;
-    return $DB->get_record_sql($sql, $params);
+    error_log("student_get_class_from_course({$crsid}, {$userid}); sql = {$sql}");
+    return $DB->get_record_sql($sql, array($userid, $crsid));
 }
 

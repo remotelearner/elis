@@ -1,0 +1,880 @@
+<?php
+/**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    elis
+ * @subpackage programmanagement
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once(elispm::lib('lib.php'));
+require_once(elispm::lib('deprecatedlib.php')); // cm_get_param(), cm_error()
+require_once(elispm::lib('page.class.php'));
+require_once elis::lib('table.class.php');
+require_once elispm::lib('data/curriculumcourse.class.php');
+require_once elispm::lib('data/curriculumstudent.class.php');
+require_once elispm::lib('data/student.class.php');
+require_once elispm::file('form/enrolconfirmform.class.php');
+
+/* *** TBD
+require_once CURMAN_DIRLOCATION . '/lib/recordlinkformatter.class.php';
+*** */
+
+/// The main management page.
+class coursecatalogpage extends pm_page {
+    var $pagename   = 'crscat';
+    var $section    = 'crscat';
+    var $form_class = 'enrolconfirmform'; // TBD
+
+    function can_do_default() {
+        if (!empty(elis::$config->elis_program->disablecoursecatalog)) {
+            return false;
+        }
+
+        $context = get_context_instance(CONTEXT_SYSTEM);
+        return has_capability('block/curr_admin:viewcoursecatalog', $context);
+    }
+
+    function get_title_default() {
+        return get_string('coursecatalog', 'elis_program');
+    }
+
+    function build_navbar_default() { // get_navigation_default()
+        $this->build_navbar_current();
+    }
+
+    function build_navbar_confirmwaitlist() { // get_navigation_confirmwaitlist()
+        $this->build_navbar_waitlist();
+    }
+
+    function build_navbar_savewaitlist() { // get_navigation_savewaitlist()
+        $this->build_navbar_waitlist();
+    }
+
+    function build_navbar_delwaitlist() { // get_navigation_delwaitlist()
+        $this->build_navbar_waitlist();
+    }
+
+    function build_navbar_waitlist() { // get_navigation_waitlist()
+        //$action = optional_param('action', 'default', PARAM_CLEAN);
+        //$page = $this->get_new_page(array('action' => $action), true); //new coursecatalogpage(array());
+        $page = $this->get_new_page(); //new coursecatalogpage(array());
+        $this->navbar->add(get_string('waitlistcourses', 'elis_program'),
+                           $page->url);
+    }
+
+    function build_navbar_current() { // get_navigation_current()
+        //$action = optional_param('action', 'default', PARAM_CLEAN);
+        //$page = $this->get_new_page(array('action' => $action), true); //new coursecatalogpage(array());
+        $page = $this->get_new_page(); //new coursecatalogpage(array());
+        $this->navbar->add(get_string('currentcourses', 'elis_program'),
+                           $page->url);
+    }
+
+    function build_navbar_available() { // get_navigation_available()
+        //$action = optional_param('action', 'default', PARAM_CLEAN);
+        //$page = $this->get_new_page(array('action' => $action), true); //new coursecatalogpage(array()); 
+        $page = $this->get_new_page(); //new coursecatalogpage(array()); 
+        $this->navbar->add(get_string('availablecourses', 'elis_program'),
+                           $page->url);
+    }
+
+    public function build_navbar_add() { // get_navigation_add()
+        $crsid = cm_get_param('crsid', 0);
+        $crs   = new course($crsid);
+
+        //$action = optional_param('action', 'default', PARAM_CLEAN);
+        $page = $this->get_new_page(); //new coursecatalogpage(array());
+        $fullurl = $page->url;
+        $page->url->remove_params('crsid');
+        $this->navbar->add(get_string('currentcourses', 'elis_program'),
+                           $page->url);
+        //$page = $this->get_new_page(array('action' => $action, 'crsid' => $crsid), true); //new coursecatalogpage(array());
+        $this->navbar->add(get_string('choose_class_course', 'elis_program', $crs->name),
+                           $fullurl);
+
+    }
+
+    function display_add() { // action_add
+        global $OUTPUT;
+        $crsid        = cm_get_param('crsid', 0);
+
+        if ($classes = cmclass_get_listing('startdate', 'ASC', 0, 0, '', '', $crsid, true)) {
+            $table = new addclasstable($classes);
+            $table->print_table();
+        } else {
+            echo $OUTPUT->heading(get_string('no_classes_available', 'elis_program'));
+        }
+    }
+
+    public function display_waitlist() { // action_waitlist
+        global $OUTPUT, $PAGE, $USER;
+
+        $cuserid = cm_get_crlmuserid($USER->id);
+
+        $usercurs = curriculumstudent::get_curricula($cuserid);
+
+        if(count($usercurs) > elis::$config->elis_program->catalog_collapse_count) {
+            $buttonLabel = get_string('show');
+            $extraclass = ' hide';
+        }
+        else {
+            $buttonLabel = get_string('hide');
+            $extraclass = '';
+        }
+
+        $PAGE->requires->js('/elis/program/js/util.js');
+        $this->include_yui();
+
+        if(!empty($usercurs)) {
+            foreach($usercurs as $usercur) {
+                echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
+
+                echo '<div id="curriculum' . $usercur->curid . '" class="yui-skin-sam">';
+
+                if($courses = student::get_waitlist_in_curriculum($cuserid, $usercur->curid)) {
+                    echo "<div id=\"$usercur->curid\"></div>";
+
+                    $table = new waitlisttable($courses);
+                    $table->print_yui_table($usercur->curid);
+                } else {
+                    echo '<p>' . get_string('nocoursesinthiscurriculum', 'elis_program') . '</p>';
+                }
+
+
+                echo '</div>';
+            }
+        } else {
+            echo $OUTPUT->heading(get_string('nocoursesinthiscurriculum', 'elis_program'));
+        }
+
+        echo '<br/>';
+        echo $OUTPUT->box(get_string('lp_waitlist_instructions', 'elis_program'),
+                          'generalbox lp_instructions');
+
+    }
+
+    function do_savewaitlist() { // action_savewaitlist
+        global $USER, $DB;
+
+        $classid = cm_get_param('id', 0, PARAM_INT);
+
+        $form = $this->create_waitlistform($classid);
+
+        if($form->is_cancelled()) {
+            $this->display('available');
+        } else if($data = $form->get_data()) {
+            $class = new cmclass($classid);
+
+            $userid = cm_get_crlmuserid($USER->id);
+
+            $position = $DB->get_field(WATLSTTABLE, sql_max('position'), 'classid', $classid) + 1;
+
+            $wait_record = new object();
+            $wait_record->userid = $userid;
+            $wait_record->classid = $classid;
+            $wait_record->enrolmenttime = $class->startdate;
+            $wait_record->timecraeted = time();
+            $wait_record->position = $position;
+
+            $wait_list = new waitlist($wait_record);
+            $wait_list->save(); // TBD: was ->add()
+
+            $this->display('waitlist');
+        }
+    }
+
+    function do_delwaitlist() {
+        $waitlistid = required_param('id', PARAM_INT);
+
+        $wait_list = new waitlist($waitlistid);
+        $wait_list->delete();
+
+        $this->display('waitlist'); // $this->action_waitlist();
+    }
+
+    function display_confirmwaitlist() {
+        $classid = cm_get_param('clsid', 0, PARAM_INT);
+
+        $form = $this->create_waitlistform($classid);
+
+        $form->display();
+    }
+
+    private function create_waitlistform($clsid) {
+        $class = new cmclass($clsid);
+
+//        $cuserid = cm_get_crlmuserid($USER->id);
+
+        //form url to go submit and custom data
+        $customdata = new object();
+        $customdata->a = new object();
+        $customdata->a->classid = $class->idnumber;
+        $customdata->a->coursename = $class->course->name;
+        $customdata->limit = $class->maxstudents;
+        $customdata->enroled = student::count_enroled($class->id);
+        $customdata->waitlisted = waitlist::count_records($class->id);
+
+        $data = new object();
+        $data->id = $class->id;
+
+//s=crscat&amp;section=curr&amp;clsid=
+        $url = new moodle_url(null, array('s'=>'crscat', 'action'=>'savewaitlist'));
+        return new enrolconfirmform($url, array($customdata, 'obj'=>$data));
+    }
+
+
+    function display_savenew() { // action_savenew()
+        global $USER, $CFG, $DB;
+
+        $clsid = cm_get_param('clsid', 0);
+        $class = new cmclass($clsid);
+
+        if (!$class->is_enrollable()) {
+            print_error('notenrollable', 'enrol'); // TBD
+        }
+
+        // check if class is full
+        if (!empty($class->maxstudents) && student::count_enroled($class->id) >= $class->maxstudents) {
+            $form = $this->create_waitlistform($classid);
+
+            $form->display();
+            return;
+        }
+
+        // call the Moodle enrolment plugin if attached to a Moodle course, and
+        // it's not the elis plugin
+        $courseid = $class->get_moodle_course_id();
+        if ($courseid) {
+            $course = $DB->get_record('course', 'id', $courseid);
+            // the elis plugin is treated specially
+            if ($course->enrol != 'elis') {
+                // FIXME: add message
+                redirect("{$CFG->wwwroot}/course/enrol.php?id={$courseid}");
+            }
+        }
+
+        $cuserid = cm_get_crlmuserid($USER->id);
+
+        $sturecord                  = array();
+        $sturecord['classid']       = $class->id;
+        $sturecord['userid']        = $cuserid;
+        $sturecord['enrolmenttime'] = max(time(), $class->startdate);
+        $sturecord['completetime']  = 0;
+        $newstu                     = new student($sturecord);
+        $newstu->save(); // TBD: was ->add()
+
+        $this->display_default();
+    }
+
+    /**
+     *
+     */
+    function display_default() {
+        // Drop through to the current classes action by default
+        $this->display_current();
+    }
+
+    /**
+     * Includes the YUI files required for DataTable and the show/hide buttons.
+     * @uses $CFG
+     * @uses $PAGE
+     * @return none
+     */
+    function include_yui() {
+        global $CFG, $PAGE;
+
+        echo '<style>@import url("' . $CFG->wwwroot . '/lib/yui/datatable/assets/skins/sam/datatable.css");</style>';
+
+        $PAGE->requires->yui2_lib(array('dom', 'event', 'dragdrop', 'element', 'datasource', 'datatable')); // TBD
+
+        // Monkey patch - not required with YUI 2.6.0 apparently
+        // require_js('js/yui_2527707_patch.js');
+    }
+
+    /**
+     * List the classes the user is enrolled in or instructs.
+     * @todo Use language strings.
+     * @uses $OUTPUT
+     * @uses $PAGE
+     * @uses $USER
+     * @return unknown_type
+     */
+    function display_current() { // action_current()
+        global $OUTPUT, $PAGE, $USER;
+
+        $clsid        = cm_get_param('clsid', 0);
+
+        // This is for a Moodle user, so get the Curriculum user id.
+        $cuserid = cm_get_crlmuserid($USER->id);
+
+        // Needed for the hide buttons
+        //require_js('yui_yahoo');
+        //require_js('yui_event');
+        $PAGE->requires->js('/elis/program/js/util.js');
+        $this->include_yui();
+
+        $usercurs = curriculumstudent::get_curricula($cuserid);
+        $instrclasses = user::get_instructed_classes($cuserid);
+        $noncurclasses = user::get_non_curriculum_classes($cuserid);
+
+        $numtables = 0;
+        if($usercurs) $numtables += count($usercurs);
+        if($instrclasses) $numtables += count($instrclasses);
+        if($noncurclasses) $numtables += count($noncurclasses);
+
+        if($numtables > elis::$config->elis_program->catalog_collapse_count) {
+            $buttonLabel = get_string('show');
+            $extraclass = ' hide';
+        } else {
+            $buttonLabel = get_string('hide');
+            $extraclass = '';
+        }
+        // Process our curricula in turn, outputting the courses within each.
+        if ($usercurs) {
+            $showcurid = optional_param('showcurid',0,PARAM_INT);
+            foreach ($usercurs as $usercur) {
+                if ($classes = user::get_current_classes_in_curriculum($cuserid, $usercur->curid)) {
+                    if ($showcurid > 0) {
+                        // If we are passed the showcurid parameter then override the default show/hide settings
+                        $buttonLabel = ($usercur->curid == $showcurid) ? get_string('hide') : get_string('show');
+                        $extraclass = ($usercur->curid == $showcurid) ? '' : ' hide';
+                    }
+                    echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
+                    echo '<div id="curriculum' . $usercur->curid.'" class="yui-skin-sam ' . $extraclass . '">';
+                    $table = new currentclasstable($classes, $this->get_moodle_url());
+                    echo "<div id=\"$usercur->id\"></div>";
+                    $table->print_yui_table($usercur->id);
+                } else {
+                    $buttonLabel2 = ($usercur->curid == $showcurid) ? get_string('hide') : get_string('show');
+                    $extraclass2 = ($usercur->curid == $showcurid) ? '' : ' hide';
+                    echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel2 . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
+                    echo '<div id="curriculum' . $usercur->curid.'" class="yui-skin-sam ' . $extraclass2 . '">';
+                    echo '<p>' . get_string('nocoursesinthiscurriculum', 'elis_program') . '</p>';
+                }
+                echo '</div>';
+
+            }
+        } else {
+            echo $OUTPUT->heading(get_string('notassignedtocurricula', 'elis_program'));
+        }
+
+        // Print out a table for classes not belonging to any curriculum
+        if ($noncurclasses) {
+            $labelshow = get_string('show');
+            $labelhide = get_string('hide');
+            echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="noncurrscript" type="text/javascript">toggleVisibleInit("noncurrscript", "noncurrbutton", "' . $buttonLabel . '", "'.$labelhide.'", "'.$labelshow.'", "noncurr");</script></div>'. get_string('othercourses', 'elis_program'));
+
+            echo '<div id="noncurr" class="yui-skin-sam ' . $extraclass . '">';
+
+            echo '<div id="noncurrtable"></div>';
+
+            $table = new currentclasstable($noncurclasses, $this->get_moodle_url());
+            $table->print_yui_table("noncurrtable");
+
+            echo '</div>';
+        } else {
+            // Display nothing if we don't have any non-curriculum classes
+        }
+
+        // Print out a table for classes we instruct
+        if ($instrclasses) {
+            echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="instrscript" type="text/javascript">toggleVisibleInit("instrscript", "instrbutton", "' . $buttonLabel . '", "Hide", "Show", "instr");</script></div>'. get_string('instructedcourses', 'elis_program'));
+
+            echo '<div id="instr" class="yui-skin-sam ' . $extraclass . '">';
+
+            echo '<div id="instrtable"></div>';
+
+            $table = new instructortable($instrclasses, $this->get_moodle_url());
+            $classpage = new cmclasspage();
+            $table->decorators['classname'] = new recordlinkformatter($classpage,'id'); // ***TBD***
+            $table->print_yui_table("instrtable");
+
+            echo '</div>';
+        } else {
+            // Display nothing if we don't instruct any classes
+        }
+
+        echo '<br/>';
+        echo $OUTPUT->box(get_string('lp_class_instructions', 'elis_program'),
+                          'generalbox lp_instructions');
+
+    }
+
+    /**
+     * curriculum overview menu
+     *
+     * @uses $OUTPUT
+     * @uses $PAGE
+     * @uses $USER
+     */
+    function display_available() { // action_available()
+        global $OUTPUT, $PAGE, $USER;
+
+    /// This is for a Moodle user, so get the Curriculum user id.
+        $cuserid = cm_get_crlmuserid($USER->id);
+
+        $usercurs = curriculumstudent::get_curricula($cuserid);
+
+        if(count($usercurs) > elis::$config->elis_program->catalog_collapse_count) {
+            $buttonLabel = get_string('show');
+            $extraclass = ' hide';
+        }
+        else {
+            $buttonLabel = get_string('hide');
+            $extraclass = '';
+        }
+
+        $PAGE->requires->js('/elis/program/js/util.js');
+        $this->include_yui();
+
+        // Process this user's curricula in turn, outputting the courses within each.
+        if ($usercurs) {
+            foreach ($usercurs as $usercur) {
+                echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
+
+                echo '<div id="curriculum'.$usercur->curid.'" class="yui-skin-sam ' . $extraclass . '">';
+                if ($courses = user::get_user_course_curriculum($cuserid, $usercur->curid)) {
+
+                    echo "<div id=\"$usercur->id\"></div>";
+
+                    $table = new availablecoursetable($courses);
+                    $table->print_yui_table($usercur->id);
+                } else {
+                    echo '<p>' . get_string('nocoursesinthiscurriculum', 'elis_program') . '</p>';
+                }
+
+                echo '</div>';
+            }
+        } else {
+            echo $OUTPUT->heading(get_string('nocoursesinthiscurriculum', 'elis_program'));
+        }
+
+        echo '<br/>';
+        echo $OUTPUT->box(get_string('lp_curriculum_instructions', 'elis_program'),
+                          'generalbox lp_instructions');
+
+    }
+
+    /**
+     * Group a collection of rows by a particular column.  Output is an array where the keys are the
+     * names of the groups.
+     * @param $collection collection of rows
+     * @param $column name of the column to group by
+     * @return unknown_type
+     */
+    function group_by_column($collection, $column) {
+        $r = array();
+        foreach($collection as $row) {
+            $val = $row->$column;
+            if(!isset($r[$val])) {
+                $r[$val] = array();
+            }
+            $r[$val][] = $row;
+        }
+
+        return $r;
+    }
+}
+
+class waitlisttable extends display_table {
+    public function __construct(&$items) {
+        global $USER, $CFG;
+        $this->cuserid = cm_get_crlmuserid($USER->id);
+
+        $columns = array(
+            'idnumber'    => get_string('course_idnumber', 'elis_program'), // 'Course ID',
+            'name'        => get_string('course',          'elis_program'),
+            'clsid'       => get_string('class',           'elis_program'),
+            'startdate'   => get_string('class_startdate', 'elis_program'),
+            'enddate'     => get_string('class_enddate',   'elis_program'),
+//            'timeofday'   => get_string('timeofday',     'elis_program'),
+            'instructor'  => get_string('instructor',      'elis_program'),
+            'environment' => get_string('environment',     'elis_program'),
+            'position'    => get_string('position',        'elis_program'),
+            'maxstudents' => get_string('class_limit',     'elis_program'),
+            'management'  => ''
+            );
+
+        $this->yui_formatters = array(
+//            'timeofday' => 'cmFormatTimeRange',
+            'startdate' => 'cmFormatDate',
+            'enddate' => 'cmFormatDate',
+        );
+
+        $this->yui_parsers = array(
+            'startdate' => 'date',
+            'enddate' => 'date',
+        );
+
+//        $this->yui_sorters = array(
+//            'timeofday' => 'cmSortTimeRange',
+//        );
+
+        $pageurl = new moodle_url($CFG->wwwroot .'/curriculum/index.php', array('s' => 'crscat'));
+        parent::__construct($items, $columns, $pageurl);
+
+        $this->table->width = '80%';
+    }
+
+    function is_sortable_default() {
+        return false;
+    }
+
+    public function get_item_display_management($column, $item) {
+        global $CFG, $OUTPUT;
+
+        $retval = '';
+        $retval .= '<div align="center">';
+        $retval .= '<form action=' . $this->pageurl->out(false, array('action'=>'waitlist')) . ' method="post">';
+        $hidden = new moodle_url(null, array('action'=>'delwaitlist', 'id'=>$item->wlid));
+        $retval .= $hidden->hidden_params_out();
+        $retval .= '<input type="image" alt="delete" src="'.
+                   $OUTPUT->pix_url('delete', 'elis_program') .'" /> ';
+        $retval .= '</form>';
+        $retval .= '</div>';
+
+        return $retval;
+    }
+
+    function get_item_display_timeofday($column, $item) {
+        if ((!empty($item->starttimehour) || !empty($item->starttimeminute)) &&
+            (!empty($item->endtimehour) || !empty($item->endtimeminute))) {
+                return array($item->starttimehour, $item->starttimeminute,
+                            $item->endtimehour, $item->endtimeminute);
+        } else {
+            return array(0,0,0,0);
+        }
+    }
+
+    function get_item_display_instructor($column, $item) {
+        if ($instructors = instructor::get_instructors($item->id)) {
+            $ins = array();
+
+            foreach ($instructors as $instructor) {
+                $ins[] = cm_fullname($instructor);
+            }
+
+            if (!empty($ins)) {
+                return implode('<br />', $ins);
+            }
+        } else {
+            return 'n/a';
+        }
+    }
+
+    function get_item_display_environment($column, $item) {
+        global $DB;
+
+        if (!empty($item->environmentid)) {
+            return $DB->get_field(ENVTABLE, 'name', 'id', $item->environmentid);
+        } else {
+            return 'n/a';
+        }
+    }
+}
+
+class currentclasstable extends display_table {
+    function __construct(&$items, $pageurl) {
+        global $USER;
+        $this->cuserid = cm_get_crlmuserid($USER->id);
+
+        $columns = array(
+            'courseid'    => get_string('course_idnumber', 'elis_program'), // 'Course ID',
+            'coursename'  => get_string('course',          'elis_program'),
+            'classname'   => get_string('class',           'elis_program'),
+            'startdate'   => get_string('class_startdate', 'elis_program'),
+            'enddate'     => get_string('class_enddate',   'elis_program'),
+            'timeofday'   => get_string('timeofday',       'elis_program'),
+            'instructor'  => get_string('instructor',      'elis_program'),
+            'environment' => get_string('environment',     'elis_program')
+            );
+
+        $this->yui_formatters = array(
+            'timeofday' => 'cmFormatTimeRange',
+            'startdate' => 'cmFormatDate',
+            'enddate' => 'cmFormatDate',
+        );
+
+        $this->yui_parsers = array(
+            'startdate' => 'date',
+            'enddate' => 'date',
+        );
+
+        $this->yui_sorters = array(
+            'timeofday' => 'cmSortTimeRange',
+        );
+
+        parent::__construct($items, $columns, $pageurl);
+
+        $this->table->width = '80%';
+    }
+
+    function is_sortable_default() {
+        return true;
+    }
+
+    function get_class($item) {
+        if (!isset($this->current_class) || !isset($this->current_class->courseid) || $this->current_class->courseid != $item->courseid) {
+            $this->current_class = student_get_class_from_course($item->courseid, $this->cuserid);
+        }
+        return $this->current_class;
+    }
+
+    function get_item_display_courseid($column, $item) {
+        return get_field(CRSTABLE, 'idnumber', 'id', $item->courseid);
+    }
+
+    function get_item_display_coursename($column, $item) {
+        return $item->coursename;
+    }
+
+    function get_item_display_classname($column, $item) {
+        global $CFG;
+
+        $this->get_class($item);
+        $classid = $this->current_class->idnumber;
+        if ($mdlcrs = moodle_get_course($this->current_class->id)) {
+            $classid .= ' - <a href="' . $CFG->wwwroot . '/course/view.php?id=' .
+                $mdlcrs . '">' . get_string('moodlecourse', 'elis_program') . '</a>';
+        }
+        return $classid;
+    }
+
+    function get_item_display_startdate($column, $item) {
+        return $this->get_date_item_display('startdate',$this->current_class);
+    }
+
+    function get_item_display_enddate($column, $item) {
+        return $this->get_date_item_display('enddate',$this->current_class);
+    }
+
+    function get_item_display_timeofday($column, $item) {
+        if (($classdata = $this->get_class($item))) {
+            if ((!empty($classdata->starttimehour) || !empty($classdata->starttimeminute)) &&
+                (!empty($classdata->endtimehour) || !empty($classdata->endtimeminute))) {
+                    return array($classdata->starttimehour, $classdata->starttimeminute,
+                                $classdata->endtimehour, $classdata->endtimeminute);
+            } else {
+                return array(0,0,0,0);
+            }
+        } else {
+            return array(0,0,0,0);
+        }
+    }
+
+    function get_item_display_instructor($column, $item) {
+        if ($this->get_class($item)) {
+            if ($instructors = instructor::get_instructors($this->current_class->id)) {
+                $ins = array();
+
+                foreach ($instructors as $instructor) {
+                    $ins[] = cm_fullname($instructor);
+                }
+
+                if (!empty($ins)) {
+                    return implode('<br />', $ins);
+                }
+            } else {
+                return 'n/a';
+            }
+        } else {
+            return 'n/a';
+        }
+    }
+
+    function get_item_display_environment($column, $item) {
+        global $DB;
+        if ($this->get_class($item)) {
+            if (!empty($this->current_class->environmentid)) {
+                return $DB->get_field(ENVTABLE, 'name', 'id', $this->current_class->environmentid);
+            } else {
+                return 'n/a';
+            }
+        } else {
+            return 'n/a';
+        }
+    }
+}
+
+class instructortable extends currentclasstable {
+    function get_class($item) {
+        if (!isset($this->current_class) || !isset($this->current_class->id) || $this->current_class->id != $item->id) {
+            $this->current_class = new cmclass($item->id);
+        }
+        return $this->current_class;
+    }
+}
+
+class availablecoursetable extends display_table {
+    function __construct(&$items) {
+        global $USER;
+        $this->cuserid = cm_get_crlmuserid($USER->id);
+
+        $columns = array(
+            'coursename'  => get_string('course_name', 'elis_program'),
+            'courseid'    => get_string('course_idnumber', 'elis_program'),
+            'classname'   => '',        //action and status information
+            );
+        parent::__construct($items, $columns, '');
+
+        $this->table->width = '80%';
+    }
+
+    function is_sortable_default() {
+        return false;
+    }
+
+    function get_item_display_courseid($column, $item) {
+        return get_field(CRSTABLE, 'idnumber', 'id', $item->courseid);
+    }
+
+    function get_item_display_coursename($column, $item) {
+        return $item->coursename;
+    }
+
+    function get_item_display_classname($column, $item) {
+        if(isset($item->completionid)) {
+            if($item->completionid == STUSTATUS_NOTCOMPLETE) {
+                return get_string('onenroledlist', 'elis_program');
+            } elseif($item->completionid == STUSTATUS_PASSED) {
+                return get_string('onpassed', 'elis_program');
+            } elseif($item->completionid == STUSTATUS_FAILED) {
+                return get_string('onfailed', 'elis_program');
+            }
+        } elseif (!empty($item->prereqcount)) {
+            return get_string('unsatisfiedprereqs', 'elis_program');
+        } elseif (empty($item->classcount)) {
+            return get_string('noclassavail', 'elis_program');
+        } elseif(!empty($item->waiting)) {
+            return get_string('onwaitlist', 'elis_program');
+        } else {
+            return get_string('noclassyet', 'elis_program') .' - <a href="'.
+                "index.php?s=crscat&amp;section=curr&amp;crsid={$item->courseid}" .
+                '&amp;action=add">'. get_string('chooseclass', 'elis_program') .
+                '</a>';
+        }
+    }
+}
+
+class addclasstable extends display_table {
+    function __construct(&$items) {
+        $columns = array(
+            'options'      => '',
+            'idnumber'     => get_string('class_idnumber',  'elis_program'),
+            'startdate'    => get_string('class_startdate', 'elis_program'),
+            'enddate'      => get_string('class_enddate',   'elis_program'),
+            'timeofday'    => get_string('timeofday',       'elis_program'),
+            'instructor'   => get_string('instructor',      'elis_program'),
+            'environment'  => get_string('environment',     'elis_program'),
+            'waitlistsize' => get_string('waitlist_size',   'elis_program'),
+            'classsize'    => get_string('class_size',      'elis_program')
+            );
+
+        parent::__construct($items, $columns, '');
+
+        //unset($this->table->width);
+    }
+
+    function print_table() {
+        parent::print_table();
+        print('<div class="note">'. get_string('if_class_full', 'elis_program')
+              .'</div>');
+    }
+
+    function is_sortable_default() {
+        return false;
+    }
+
+    function get_item_display_waitlistsize($column, $class) {
+        require_once(elispm::lib('data/waitlist.class.php'));
+        return waitlist::count_records($class->id);
+    }
+
+    function get_item_display_classsize($column, $class) {
+        $retval = 'n/a';
+
+        if(!empty($class->maxstudents)) {
+            $students = student::count_enroled($class->id);
+            $retval = $students . '/' . $class->maxstudents;
+        }
+
+        return $retval;
+    }
+
+    function get_item_display_options($column, $class) {
+        $classobj = new cmclass($class);
+        if(!$classobj->is_enrollable()) {
+            return get_string('notenrollable');
+        }
+
+        if(student::count_enroled($class->id) < $class->maxstudents || empty($class->maxstudents)) {
+            $action = 'savenew';
+        } else {
+            $action = 'confirmwaitlist';
+        }
+
+
+        return '<a href="index.php?s=crscat&amp;section=curr&amp;clsid='.
+           "{$class->id}&amp;action={$action}\">". get_string('choose') .'</a>';
+    }
+
+    function get_item_display_startdate($column, $class) {
+        return $this->get_date_item_display($column, $class);
+    }
+
+    function get_item_display_enddate($column, $class) {
+        return $this->get_date_item_display($column, $class);
+    }
+
+    // TODO: fix time-of-day display
+    function get_item_display_timeofday($column, $class) {
+        if ((!empty($class->starttimehour) || !empty($class->starttimeminute)) &&
+            (!empty($class->endtimehour) || !empty($class->endtimeminute))) {
+
+            return sprintf("%d:%02d - %d:%02d", $class->starttimehour,
+                           $class->starttimeminute, $class->endtimehour,
+                           $class->endtimeminute);
+        } else {
+            return 'n/a';
+        }
+    }
+
+    function get_item_display_instructor($column, $class) {
+        if ($instructors = instructor::get_instructors($class->id)) {
+            $ins = array();
+
+            foreach ($instructors as $instructor) {
+                $ins[] = cm_fullname($instructor);
+            }
+
+            return implode('<br />', $ins);
+        } else {
+            return 'n/a';
+        }
+    }
+
+    function get_item_display_environment($column, $class) {
+        return !empty($class->envname) ? $class->envname : 'n/a';
+    }
+}
+

@@ -64,7 +64,7 @@ class dashboardpage extends pm_page {
         global $CFG, $USER, $OUTPUT;
 
         $context = get_context_instance(CONTEXT_SYSTEM);
-        if (true/*(has_capability('block/curr_admin:managecurricula', $context)*/) {
+        if (has_capability('block/curr_admin:managecurricula', $context)) {
             echo $OUTPUT->heading(get_string('admin_dashboard', 'elis_program'));
             echo $OUTPUT->box(html_writer::tag('p', get_string('elis_doc_class_link', 'elis_program')));
             echo $OUTPUT->box(html_writer::tag('p', get_string('health_check_link', 'elis_program', $CFG)));
@@ -72,7 +72,7 @@ class dashboardpage extends pm_page {
             echo html_writer::tag('p', get_string('elisversion', 'elis_core', elis::$release));
         }
 
-        if ($cmuid = pm_get_crlmuserid($USER->id)) {
+        if ($cmuid = cm_get_crlmuserid($USER->id)) {
             $user = new user($cmuid);
             echo $user->get_dashboard();
         }

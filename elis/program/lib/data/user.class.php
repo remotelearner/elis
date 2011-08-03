@@ -424,7 +424,7 @@ class user extends data_object_with_custom_fields {
                    AND clsenrol.completestatusid = ?
               ORDER BY curcrs.position';
 
-        $params = array($curid, $userid, student::STATUS_NOTCOMPLETE);
+        $params = array($curid, $userid, student::STUSTATUS_NOTCOMPLETE);
 
         return $this->_db->get_records_sql($sql, $params);
     }
@@ -525,6 +525,7 @@ class user extends data_object_with_custom_fields {
      * Get the user dashboard report view.
      *
      * @uses $CFG
+     * @uses $OUTPUT
      * @param none
      * @return string The HTML for the dashboard report.
      * @todo move out of this class
@@ -641,16 +642,16 @@ class user extends data_object_with_custom_fields {
             list($in_sql, $in_params) = $this->_db->get_in_or_equal($classids, SQL_PARAMS_QM, '', false);
             $sql = 'SELECT stu.id, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
                       FROM {'.student::TABLE.'} stu
-                      JOIN {'.pmclass::TABLE.' cls ON cls.id = stu.classid
-                      JOIN {'.course::TABLE.' crs ON crs.id = cls.courseid
+                      JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
+                      JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
                      WHERE userid = ?
-                       AND stu.completestatusid != '.student::STATUS_NOTCOMPLETE.'
-                       AND classid $is_sql
-                  ORDER BY crs.name ASC, stu.completetime ASC';
+                       AND stu.completestatusid != '.student::STUSTATUS_NOTCOMPLETE . "
+                       AND classid $in_sql
+                  ORDER BY crs.name ASC, stu.completetime ASC";
 
             $params = array_merge(array($this->id), $in_params);
 
-            if ($classes = get_records_sql($sql)) {
+            if ($classes = $this->_db->get_records_sql($sql, $params)) {
                 $table = new stdClass;
                 $table->head = array(
                     'Class',

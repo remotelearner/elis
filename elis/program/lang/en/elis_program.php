@@ -80,6 +80,7 @@ In general, this option should be set to off unless a user\'s ID number will alw
 $string['auto_idnumber_setting'] = 'Automatically assign an ID number to Moodle users without one';
 $string['available_course_corequisites'] = 'Available Course Description Corequisites';
 $string['available_course_prerequisites'] = 'Available Course Description Prerequisites';
+$string['availablecourses'] = 'Program Overview';
 
 $string['badusername'] = 'Specified username already exists, or must be specified or generated.';
 $string['badidnumber'] = 'Specified ID number already exists.';
@@ -115,6 +116,8 @@ $string['cert_seal_help'] = 'The certificate seal image is what gets displayed a
 You can add more seal images by uploading them to your moodledata directory under the directory: TBD/pix/certificate/seals/';
 $string['cert_seal_setting'] = 'Certificate seal image';
 $string['certificates'] = 'Certificates';
+$string['choose_class_course'] = 'Choose class for course {$a}';
+$string['chooseclass'] = 'Choose class';
 $string['class'] = 'Class Instance';
 $string['classreportlinks'] = 'Reports';
 $string['class_assigntrackhead'] = 'Assigned Tracks';
@@ -123,12 +126,14 @@ $string['class_course'] = 'Course Description';
 $string['class_enddate'] = 'End Date';
 $string['class_endtime'] = 'End Time';
 $string['class_idnumber'] = 'ID Number';
+$string['class_limit'] = 'Class Limit';
 $string['class_maxstudents'] = 'Max # of Students';
 $string['class_moodle_course'] = 'Moodle Course';
 $string['class_role_help'] = 'This is the default role to assign to a Program Management user in any class instances they create.
 This type of role assignment will not take place for a particular class instance if that user is already permitted to edit that class instance.
 To disable this functionality, select "N/A" from the list.';
 $string['class_role_setting'] = 'Default Class Instance Role';
+$string['class_size'] = 'Class Size';
 $string['class_startdate'] = 'Start Date';
 $string['class_starttime'] = 'Start Time';
 $string['class_unassigntrackhead'] = 'Unassigned Tracks';
@@ -180,7 +185,7 @@ $string['corequisites'] = 'Corequisite';
 $string['cost'] = 'Cost';
 $string['country'] = 'Country';
 $string['course'] = 'Course Description';
-$string['courses'] = 'Course Descriptions';
+$string['coursecatalog'] = 'Learning Plan';
 $string['courseform:completion_grade'] = 'Completion grade';
 $string['courseform:completion_grade_help'] = '<p>Minimum grade to complete/pass the course description.</p>';
 $string['courseform:cost'] = 'Cost';
@@ -220,11 +225,13 @@ To disable this functionality, select "N/A" from the list.';
 $string['course_role_setting'] = 'Default Course Description Role';
 $string['course_syllabus'] = 'Description';
 $string['course_version'] = 'Version';
+$string['courses'] = 'Course Descriptions';
 $string['coursetemplate'] = 'Course Template in Moodle';
 $string['credits'] = 'Credits';
 $string['credits_rec'] = 'Credits Rec\'vd.';
 $string['crlm_admin_blk_settings'] = 'Program Administration Block Settings';
 $string['crlm_expire_setting'] = 'Enable program expiration';
+$string['currentcourses'] = 'Current Classes';
 $string['curricula'] = 'Programs';
 $string['curriculaform:curriculum_description'] = 'Long description';
 $string['curriculaform:curriculum_description_help'] = '<p>Description information about the program. A complete and thorough
@@ -326,6 +333,7 @@ $string['email'] = 'Email address';
 $string['email2'] = 'Email address 2';
 $string['enrol'] = 'Enrol'; // TBD: Enroll ?
 $string['enrol_all_users_now'] = 'Enrol all users from this track now';
+$string['enrol_confirmation'] = 'you will be placed on a waiting list for this course. Are you sure  you would like to enrol in ({$a->coursename}){$a->classid}?';
 $string['enrol_elis_help'] = 'If this setting is set, then ELIS will not enrol a user in an ELIS class instance that is linked with a Moodle class that uses an enrolment plugin other than the ELIS enrolment plugin.
 
 In brief, if an ELIS class instance is:
@@ -339,6 +347,7 @@ $string['enrol_elis_setting'] = 'Only allow enrolments to Moodle courses that us
 $string['enrol_select_all'] = 'Select All';
 $string['enrol_selected'] = 'Enrol Selected';
 $string['enrole_sync_settings'] = 'Enrolment Role Sync Settings';
+$string['enroled'] = 'Enrolled';
 $string['enrolment'] = 'Enrollment';
 $string['enrolment_time'] = 'Enrollment Time';
 $string['enrolments'] = 'Enrollments';
@@ -431,9 +440,12 @@ $string['id'] = 'ID';
 $string['idnumber'] = 'ID Number';
 $string['idnumber_already_used'] = 'ID Number is already in use';
 $string['id_same_as_user'] = 'Same as username';
+$string['if_class_full'] = 'note: if the class you wish to join is full you may still be placed on the waiting list';
 $string['inactive'] = 'Inactive';
 $string['incomplete_course_message'] = 'You have not completed the class instance {$a} before the end date';
 $string['informationalelements'] = 'Information Elements';
+$string['instructedcourses'] = 'Instructed Class Instances';
+$string['instructor'] = 'Instructor';
 $string['instructor_add'] = 'Add Instructor';
 $string['instructor_assignment'] = 'Assignment Time';
 $string['instructor_completion'] = 'Completion Time';
@@ -459,9 +471,11 @@ $string['learningplan'] = 'Learning Plan';
 $string['learningplanname'] = 'Learning Plan: {$a}';
 $string['learningplanintro'] = 'Learning Plan: You have completed {$a->percent} ({$a->coursescomplete} of {$a->coursestotal}) of your current learning plan.';
 $string['learningplanwelcome'] = 'Welcome {$a}';
-
 $string['learning_plan_setting'] = 'Turn off learning plan';
 $string['length_description'] = 'Length Description';
+$string['lp_class_instructions'] = 'This listing indicates all programs you have been assigned to, as well as all class instances within those programs that you are currently enrolled in (automatically or manually).<br/><br/>
+                                    This listing also includes class instances you are currently enrolled in that are not included in any programs, if applicable.';
+$string['lp_waitlist_instructions'] = 'This listing indicates all programs you have been assigned to, as well as all class instances tied to course descriptions in those programs that you are on the waiting list for.';
 
 $string['makecurcourse'] = 'Make a program for this course description';
 $string['male'] = 'Male';
@@ -492,8 +506,10 @@ $string['moodleenrol_subj'] = 'Ready to enrol in {$a->idnumber}.';
 
 $string['name'] = 'Name';
 $string['n_completed'] = 'Not Completed';
+$string['no_classes_available'] = 'No classes currently available.  Please check again later.';
 $string['no_completion_elements'] = 'There are no learning objectives defined.';
 $string['no_courses'] = 'No course descriptions found';
+$string['nocoursesinthiscurriculum'] = 'No Course Descriptions in this Program.';
 $string['no_default_role'] = 'N/A';
 $string['no_instructor_matching'] = 'No instructors matching {$a->match}';
 $string['no_item_matching'] = 'No items matching {$a->match}';
@@ -504,12 +520,15 @@ $string['no_student_matching'] = 'No students matching {$a->match}';
 $string['no_user_matching'] = 'No users matching {$a->match}';
 $string['no_users_matching'] = 'No users matching {$a->match}';
 $string['noarchivedplan'] = 'You do not currently have any archived learning plans';
+$string['noclassavail'] = 'No classes available yet';
+$string['noclassyet'] = 'No Class Instance Yet';
 $string['nolearningplan'] = 'You do not currently have a learning plan assigned';
 $string['nomoodleuser'] = 'No moodle user found for specified user id.';
 $string['none'] = 'None';
 $string['noroleselected'] = 'N/A';
 $string['norolesexist'] = 'There are currently no roles that users can be assigned on this entity.';
 $string['norolespermitted'] = 'There are currently no roles you have sufficient permissions to assign users on this entity. For further details, contact a site administrator.';
+$string['notassignedtocurricula'] = 'You are not assigned to any program yet.';
 $string['notemplate'] = 'Could not auto-create Moodle course: no template defined in course description.  Created class instance without an associated Moodle course.';
 $string['notice_class_deleted'] = 'Deleted the class instance {$a->idnumber}';
 $string['notice_clusterassignment_deleted'] = 'Deleted the user-set/user association {$a->id}';
@@ -587,10 +606,16 @@ $string['num_users_assigned'] = '{$a->num} users assigned';
 $string['num_users_unassigned'] = '{$a->num} users unassigned';
 $string['num_usersetclassification_found'] = '{$a->num} user set classification(s) found';
 $string['num_userset_found'] = '{$a->num} user set(s) found';
+$string['num_waitlist'] = 'number of students in the waiting list';
 $string['numselected'] = '{$a->num} currently selected';
 
 $string['o_active'] = 'Only active';
 $string['o_inactive'] = 'Only inactive';
+$string['onenroledlist'] = 'You are currently enrolled';
+$string['onfailed'] = 'You failed this course';
+$string['onpassed'] = 'You passed this course';
+$string['onwaitlist'] = 'You are on the waiting list';
+$string['othercourses'] = 'Other Class Instances';
 $string['over_enrol'] = 'Over Enrol'; // TBD: Enroll
 
 $string['passed'] = 'Passed';
@@ -680,6 +705,7 @@ $string['sync_student_role_setting'] = 'Student Role';
 $string['tag_name'] = 'Name';
 $string['tags'] = 'Tags';
 $string['timecreated'] = 'Creation time';
+$string['timeofday'] = 'Time of Day';
 $string['time_12h_setting'] = 'Display time selection in a 12 hour format';
 $string['time_period'] = 'Timeperiod';
 $string['time_settings'] = 'Time Settings';
@@ -812,6 +838,7 @@ $string['usersubsets'] = 'User Subsets';
 $string['waiting'] = 'Waiting';
 $string['waitinglistform_title'] = 'Class Instance is full';
 $string['waitlist'] = 'waitlist';
+$string['waitlist_size'] = 'Waitlist Size';
 $string['waitlistcourses'] = 'Waitlist Course Descriptions';
 $string['waitlistenrol'] = 'Auto enrol from waitlist';
 
