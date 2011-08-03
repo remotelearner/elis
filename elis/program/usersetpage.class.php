@@ -402,7 +402,7 @@ class usersetpage extends managementpage {
         global $CFG;
 
         $id = $this->required_param('id',PARAM_INT);
-        $target_page = $this->get_new_page(array('id'=>$id));
+        $target_page = $this->get_new_page(array('id'=>$id), true);
         $sub_cluster_id = $this->required_param('subclusterid',PARAM_INT);
 
         $cluster = new userset($sub_cluster_id);

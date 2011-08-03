@@ -270,7 +270,7 @@ class userset extends data_object_with_custom_fields {
             }
         }
 
-        $result = parent::save();
+        parent::save();
 
         if (isset($old) && $this->parent != $old->parent) {
             $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
@@ -309,8 +309,6 @@ class userset extends data_object_with_custom_fields {
         } else {
             events_trigger('pm_userset_created', $this);
         }
-
-        return $result;
     }
 
     public function __toString() {
