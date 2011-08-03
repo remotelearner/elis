@@ -380,12 +380,12 @@ class pmclass extends data_object_with_custom_fields {
 
 
     public static function check_for_moodle_courses() {
-        global $CFG, $DB;
+        global $DB;
 
         //crlm_class_moodle moodlecourseid
         $sql = 'SELECT cm.id
-                FROM {'.classmoodlecourse::TABLE.'} AS cm
-                LEFT JOIN '.$CFG->prefix.'course AS c ON cm.moodlecourseid = c.id
+                FROM {'.classmoodlecourse::TABLE.'} cm
+                LEFT JOIN {course} c ON cm.moodlecourseid = c.id
                 WHERE c.id IS NULL';
 
         $broken_classes = $DB->get_records_sql($sql);

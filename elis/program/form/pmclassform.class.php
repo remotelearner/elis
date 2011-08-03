@@ -34,7 +34,7 @@ MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/elis/prog
 
 class pmclassform extends cmform {
     function definition() {
-        global $USER, $CFG;
+        global $USER, $CFG, $DB;
 
         parent::definition();
 
@@ -158,7 +158,7 @@ class pmclassform extends cmform {
         if (empty($this->_customdata['obj']->moodlecourseid)) {
             $this->add_moodle_course_select();
         } else {
-            $coursename = $this->_db->get_field('course', 'fullname', 'id', $this->_customdata['obj']->moodlecourseid);
+            $coursename = $DB->get_field('course', 'fullname', array('id'=>$this->_customdata['obj']->moodlecourseid));
             $mform->addElement('static', 'class_attached_course', get_string('class_attached_course', 'elis_program') . ':',  "<a href=\"$CFG->wwwroot/course/view.php?id={$this->_customdata['obj']->moodlecourseid}\">$coursename</a>");
             $mform->addHelpButton('class_attached_course', 'pmclassform:moodlecourse', 'elis_program');
             $mform->addElement('hidden', 'moodlecourseid');
