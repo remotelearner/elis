@@ -67,7 +67,29 @@ class studentcurriculumpage extends associationpage2 {
     }
 
     public function _get_page_params() {
-        return array('id' => $this->optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
+        $params = parent::_get_page_params();
+
+        $id = $this->optional_param('id', 0, PARAM_INT);
+        if ($id != 0) {
+            $params['id'] = $id;
+        }
+
+        $page = $this->optional_param('page', 0, PARAM_INT);
+        if ($page != 0) {
+            $params['page'] = $page;
+        }
+
+        $role = $this->optional_param('role', 0, PARAM_INT);
+        if ($role != 0) {
+            $params['role'] = $role;
+        }
+
+        $assign = $this->optional_param('_assign', 0, PARAM_CLEAN);
+        if ($assign != 0) {
+            $params['_assign'] = $assign;
+        }
+
+        return $params;
     }
 
     function can_do_default() {
@@ -171,6 +193,7 @@ class studentcurriculumpage extends associationpage2 {
         }
 
         $tmppage = $this->get_basepage();
+        $tmppage->params['_assign'] = 'unassign';
         $sparam = new stdClass;
         $sparam->num = count($data->_selection);
         redirect($tmppage->url, get_string('num_curricula_unassigned', 'elis_program', $sparam));
@@ -640,7 +663,7 @@ class curriculumstudentpage extends associationpage2 {
         $fields = 'curass.id, usr.id AS userid, usr.firstname, usr.lastname, usr.idnumber, usr.country, usr.language, curass.timecreated';
 
         $count = $DB->count_records_select(user::TABLE, $where, $params);
-        $users = $DB->get_records_sql($sql, $params, $where, $pagenum*$perpage, $perpage);
+        $users = $DB->get_records_sql($sql, $params, $pagenum*$perpage, $perpage);
         //$users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, $fields, $pagenum*$perpage, $perpage);
 
         return array($users, $count);

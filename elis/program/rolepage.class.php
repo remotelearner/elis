@@ -95,15 +95,22 @@ abstract class rolepage extends associationpage2 {
     protected function _get_page_params() {
         $params = parent::_get_page_params();
 
+        $id = $this->required_param('id', PARAM_INT);
+        $params['id'] = $id;
+
         $page = $this->optional_param('page', 0, PARAM_INT);
         if ($page != 0) {
             $params['page'] = $page;
         }
-        $id = $this->required_param('id', PARAM_INT);
-        $params['id'] = $id;
+
         $role = $this->optional_param('role', 0, PARAM_INT);
         if ($role != 0) {
             $params['role'] = $role;
+        }
+
+        $assign = $this->optional_param('_assign', 0, PARAM_CLEAN);
+        if ($assign != 0) {
+            $params['_assign'] = $assign;
         }
 
         return $params;
@@ -254,8 +261,9 @@ abstract class rolepage extends associationpage2 {
         //set up the redirect to the appropriate page
         $id = $this->required_param('id', PARAM_INT);
         $role = $this->required_param('role', PARAM_INT);
-        $tmppage = $this->get_new_page(array('id'   => $id,
-                                             'role' => $role));
+        $tmppage = $this->get_new_page(array('_assign' => 'unassign',
+                                             'id'      => $id,
+                                             'role'    => $role));
         redirect($tmppage->url, get_string('users_removed_from_role','elis_program',count($data->_selection)));
     }
 
@@ -835,7 +843,7 @@ class role_name_decorator {
             $url->params(array('_assign' => 'assign'));
         } else {
             //users, so start on "unassign" page
-            $url->remove_params(array('_assign'));
+            $url->params(array('_assign' => 'unassign'));
         }
 
         return html_writer::link($url, $text);

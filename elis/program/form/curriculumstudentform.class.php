@@ -53,6 +53,7 @@ class unassigncurriculumform extends selectionform {
         $mform =& $this->_form;
 
         $mform->addElement('hidden', 'id');
+        $mform->addElement('hidden', '_assign', 'unassign');
         $mform->addElement('hidden', 's', 'stucur');
         $mform->addElement('hidden', '_selection');
         $this->add_action_buttons(false, $this->get_submit_button_name());
@@ -91,6 +92,7 @@ class unassignstudentform extends selectionform {
 
         if (curriculumpage::can_enrol_into_curriculum($id)) {
             $mform->addElement('hidden', 'id');
+            $mform->addElement('hidden', '_assign', 'unassign');
             $mform->addElement('hidden', 's', 'curstu');
             $mform->addElement('hidden', '_selection');
             $this->add_action_buttons(false, $this->get_submit_button_name());

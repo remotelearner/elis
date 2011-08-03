@@ -96,6 +96,8 @@ abstract class associationpage2 extends selectionpage {
         $data['id'] = $this->required_param('id', PARAM_INT);
         if ($this->is_assigning()) {
             $data['_assign'] = 'assign';
+        } else {
+            $data['_assign'] = 'unassign';
         }
         return $data;
     }
