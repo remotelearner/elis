@@ -288,6 +288,7 @@ $string['defaultcls'] = 'Default Class Instance Settings';
 $string['defaultcrs'] = 'Default Course Description Settings';
 $string['default_role_settings'] = 'Default Role Assignments Settings';
 $string['delete'] = 'Delete';
+$string['delete_cancelled'] = 'Delete cancelled';
 $string['deleted_corequisite'] = 'Deleted <b>{$a}</b> corequisite';
 $string['deleted_corequisites'] = 'Deleted <b>{$a}</b> corequisites';
 $string['deleted_prerequisite'] = 'Deleted <b>{$a}</b> prerequisite';

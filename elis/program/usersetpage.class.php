@@ -368,6 +368,17 @@ class usersetpage extends managementpage {
 
         $id = required_param('id', PARAM_INT);
 
+        //handling of cancel case
+        $view_params = array('id'     => $id,
+                             'action' => 'view');
+        $target_page = $this->get_new_page($view_params);
+        $form = new usersetdeleteform();
+
+        if ($form->is_cancelled()) {
+            //cancelled, so redirect back to view page
+            redirect($target_page->url, get_string('delete_cancelled', 'elis_program'));
+        }
+
         $obj = $this->get_new_data_object($id);
         $obj->load(); // force load, so that the confirmation notice has something to display
         $obj->deletesubs = $deletesubs;
