@@ -152,18 +152,16 @@ class studentpage extends associationpage {
         $user = $DB->get_record(user::TABLE, array('id' => $stu->userid));
         $sparam = new stdClass;
         $sparam->name = fullname($user);
+        $classid = $stu->classid;
         if (md5($stuid) != $confirm) {
             echo cm_error(get_string('invalidconfirm', self::LANG_FILE));
         } else {
-            $status = $stu->delete();
-            if (!$status) {
-                echo cm_error(get_string('studentnotunenrolled', self::LANG_FILE, $sparam));
-            } else {
-                echo cm_error(get_string('studentunenrolled', self::LANG_FILE, $sparam));
-            }
+            $stu->delete();
         }
-        $this->display('default'); // TBD: redirect??? Missing blocks on page
-            // ... but then we'd lose the student[not]unenrolled message!
+
+        $studentpage = new studentpage();
+        $target = $studentpage->get_new_page(array('action' => 'default', 'id' => $classid));
+        redirect($target->url, get_string('studentunenrolled', self::LANG_FILE, $sparam));
     }
 
     function do_currcourse_edit() {
