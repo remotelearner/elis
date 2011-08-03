@@ -138,25 +138,20 @@ class clustercurriculumbasepage extends associationpage {
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $curriculumid = $this->required_param('curriculumid', PARAM_INT);
 
-        //require_once(CURMAN_DIRLOCATION . '/form/' . $this->form_class . '.class.php');
-        // TODO: port cluster classification
-        //require_once elispm::file('plugins/cluster_classification/clusterclassification.class.php');
+        require_once elispm::file('plugins/userset_classification/usersetclassification.class.php');
 
-        //$target = $this->get_new_page(array('action' => 'add', 'id' => $id));
         $target = $this->get_new_page(array('action'       => 'add',
                                             'id'           => $id));
-        //$form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
         $form = new $this->form_class($target->url, array('id'        => $id));
         $form->set_data(array('id' => $id,
                               'clusterid' => $clusterid,
                               'curriculumid' => $curriculumid));
-        // TODO: port cluster classification
-//            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
-//            if (!empty($cluster_classification->param_autoenrol_tracks)) {
-                $form->set_data(array('autoenrol' => 1));
-//            } else {
-//                $form->set_data(array('autoenrol' => 0));
-//            }
+        $cluster_classification = clusterclassification::get_for_cluster($clusterid);
+        if (!empty($cluster_classification->param_autoenrol_tracks)) {
+            $form->set_data(array('autoenrol' => 1));
+        } else {
+            $form->set_data(array('autoenrol' => 0));
+        }
 
         $form->display();
     }

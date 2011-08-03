@@ -152,13 +152,11 @@ class clustertrack extends elis_data_object {
                 FROM {' . clusterassignment::TABLE . '} as uc
                 JOIN {' . user::TABLE . '} as u
                 ON uc.userid = u.id
-                WHERE uc.clusterid = ? AND uc.autoenrol = 1
+                WHERE uc.clusterid = ?
                 ORDER BY u.lastname';
 
         $params = array($cluster);
         $users = $DB->get_records_sql($sql, $params);
-
-//        $users = $db->get_records(CLSTUSERTABLE, 'clusterid', $cluster);
         if ($users && !empty($autoenrol)) {
             foreach ($users as $user) {
                 usertrack::enrol($user->userid, $track);
@@ -386,7 +384,7 @@ class clustertrack extends elis_data_object {
                     FROM {' . clusterassignment::TABLE . '} as uc
                     JOIN {' . user::TABLE . '} as u
                     ON uc.userid = u.id
-                    WHERE uc.clusterid = ? AND uc.autoenrol = 1
+                    WHERE uc.clusterid = ?
                     ORDER BY u.lastname';
             $params = array($cluster);
 

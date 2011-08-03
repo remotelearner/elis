@@ -132,9 +132,7 @@ class usertrack extends elis_data_object {
 
         $user = new user($userid);
         $track = new track($trackid);
-/* TODO:  Needs to be ported to ELIS2
-        // add the student to the associated curriculum, if they're not already
-        // enrolled */
+
         if (!$DB->record_exists(curriculumstudent::TABLE, array('userid'=> $userid,
                                                                    'curriculumid'=> $track->curid))) {
             $curstu = new curriculumstudent();
@@ -166,16 +164,32 @@ class usertrack extends elis_data_object {
         $classes = $DB->get_records_sql($sql, $params);
         if (!empty($classes)) {
             foreach ($classes as $class) {
+                $now = time();
                 // enrol user in each autoenrolable class
                 $stu_record = new object();
                 $stu_record->userid = $userid;
                 $stu_record->classid = $class->classid;
-                $stu_record->enrolmenttime = time();
-
+                $stu_record->enrolmenttime = $now;
                 $enrolment = new student($stu_record);
-                // check prerequisites and enrolment limits
-                //$enrolment->save(array('prereq' => 1, 'waitlist' => 1), true);
-                $enrolment->save();
+
+                // catch enrolment limits
+                try {
+                    $status = $enrolment->save();
+                } catch (pmclass_enrolment_limit_validation_exception $e) {
+                    // autoenrol into waitlist
+                    $wait_record = new object();
+                    $wait_record->userid = $userid;
+                    $wait_record->classid = $class->classid;
+                    $wait_record->enrolmenttime = $now;
+                    $wait_record->timecreated = $now;
+                    $wait_record->position = 0;
+                    $wait_list = new waitlist($wait_record);
+                    $wait_list->save();
+                    $status = true;
+                } catch (Exception $e) {
+                    echo cm_error(get_string('record_not_created_reason',
+                                             self::LANG_FILE, $e));
+                }
             }
         }
 

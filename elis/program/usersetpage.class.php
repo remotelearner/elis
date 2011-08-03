@@ -463,9 +463,8 @@ class usersetpage extends managementpage {
             $obj = new stdClass;
             $obj->parent = $parent;
             if ($parent) {
-                //require_once(elis::plugin_file('elisfields_cluster_classification','clusterclassification.class.php'));
-                //require_once(elis::plugin_file('elisfields_cluster_classification','lib.php'));
-                /*
+                require_once(elis::plugin_file('elisfields_userset_classification','usersetclassification.class.php'));
+                require_once(elis::plugin_file('elisfields_userset_classification','lib.php'));
                 if ($classification = clusterclassification::get_for_cluster($parent)) {
                     $fieldname = 'field_'.CLUSTER_CLASSIFICATION_FIELD;
                     if ($classification->param_child_classification) {
@@ -482,7 +481,6 @@ class usersetpage extends managementpage {
                         $obj->field_cluster_groupings = $classification->param_autoenrol_groupings;
                     }
                 }
-                */
             }
             return $obj;
         } else {

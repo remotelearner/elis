@@ -834,3 +834,13 @@ function pm_check_for_nags() {
 
     return $status;
 }
+
+/*
+ * Check for autoenrol after course completion
+ */
+function pm_course_complete($enrolment) {
+    track::check_autoenrol_after_course_completion($enrolment);
+    waitlist::check_autoenrol_after_course_completion($enrolment);
+
+    return true;
+}

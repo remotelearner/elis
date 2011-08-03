@@ -150,10 +150,10 @@ class waitlist extends elis_data_object {
     public function check_autoenrol_after_course_completion($enrolment) {
         if($enrolment->completestatusid != STUSTATUS_NOTCOMPLETE) {
             $pmclass = new pmclass($enrolment->classid);
+            $pmclass->load();
 
             if((empty($pmclass->maxstudents) || $pmclass->maxstudents > student::count_enroled($pmclass->id)) && !empty($pmclass->enrol_from_waitlist)) {
                 $wlst = waitlist::get_next($enrolment->classid);
-
                 if(!empty($wlst)) {
                     $wlst->enrol();
                 }
@@ -226,6 +226,9 @@ class waitlist extends elis_data_object {
         $student->userid        = $this->userid;
         $student->classid       = $this->classid;
         $student->enrolmenttime = max(time(), $class->startdate);
+        // Disable validation rules for prerequisites and enrolment_limits
+        $student->validation_overrides[] = 'prerequisites';
+        $student->validation_overrides[] = 'enrolment_limit';
         $student->save();
 
         if ($courseid) {

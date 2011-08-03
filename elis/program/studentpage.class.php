@@ -286,7 +286,7 @@ class studentpage extends associationpage {
             $DB->get_field(student::TABLE, 'completestatusid', array('id' => $stuid)) != STUSTATUS_PASSED) {
             $stu->complete();
         } else {
-            $status = $stu->update();
+            $status = $stu->save();
             if ($status !== true) {
                 echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
             }

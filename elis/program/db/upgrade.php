@@ -69,6 +69,19 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2011070800, 'elis', 'program');
     }
 
+    if ($oldversion < 2011080200) {
+
+        // Changing the default of field autounenrol on table crlm_cluster_track to 0
+        $table = new xmldb_table('crlm_cluster_track');
+        $field = new xmldb_field('autounenrol', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'autoenrol');
+
+        // Launch change of default for field autounenrol
+        $dbman->change_field_default($table, $field);
+
+        // elis savepoint reached
+        upgrade_plugin_savepoint(true, 2011080200, '', 'elis');
+    }
+
     return $result;
 }
 

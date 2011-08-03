@@ -211,7 +211,7 @@ class student extends elis_data_object {
             $this->completetime = time();
         }
 
-        if ($this->update()) {
+        if ($this->save()) {
             /// Does the user receive a notification?
             $sendtouser       = elis::$config->elis_program->notify_classcompleted_user;
             $sendtorole       = elis::$config->elis_program->notify_classcompleted_role;
@@ -281,8 +281,6 @@ class student extends elis_data_object {
                 $message->send_notification($text, $user, $enroluser);
             }
         }
-
-//        events_trigger('crlm_class_completed', $this);
     }
 
 /////////////////////////////////////////////////////////////////////
@@ -313,7 +311,6 @@ class student extends elis_data_object {
                 $this->endtime = 0;
             }
         }
-
         parent::save();
 
         /// Enrol them into the Moodle class, if not already enrolled.
@@ -337,6 +334,9 @@ class student extends elis_data_object {
                 }
             }
         }
+
+        // Fire the course complete event
+        events_trigger('crlm_class_completed', $this);
 
         return;
     }

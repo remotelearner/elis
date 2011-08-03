@@ -490,7 +490,7 @@
         <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to cluster id" PREVIOUS="id" NEXT="trackid"/>
         <FIELD NAME="trackid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to track id" PREVIOUS="clusterid" NEXT="autoenrol"/>
         <FIELD NAME="autoenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" PREVIOUS="trackid" NEXT="autounenrol"/>
-        <FIELD NAME="autounenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Whether or not to remove a user from classes when removed from cluster" PREVIOUS="autoenrol" NEXT="enrolmenttime"/>
+        <FIELD NAME="autounenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not to remove a user from classes when removed from cluster" PREVIOUS="autoenrol" NEXT="enrolmenttime"/>
         <FIELD NAME="enrolmenttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="autounenrol"/>
       </FIELDS>
       <KEYS>

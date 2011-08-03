@@ -129,10 +129,12 @@ class usersetclassification extends elis_data_object {
 
         $context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $cluster);
         $value = field_data::get_for_context_and_field($context, USERSET_CLASSIFICATION_FIELD);
-        if (!empty($value)) {
-            $value = array_shift($value);
+        if ($value->valid()) {
+            $value = $value->current();
             $name = $value->data;
-            return new usersetclassification("shortname = '$name'");
+            $newusersetclassification = usersetclassification::find(new field_filter('shortname', $name));
+            return $newusersetclassification->current();
         }
+
     }
 }

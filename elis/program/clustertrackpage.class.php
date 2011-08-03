@@ -70,32 +70,6 @@ class clustertrackbasepage extends associationpage {
             && trackpage::_has_capability('block/curr_admin:associate', $trackid);
     }
 
-    /**
-     * Generic handler for the add action.  Prints the add form.
-     */
-   // function display_add() { // do_add()
-//        $id = required_param('id', PARAM_INT);
-//        $parent_obj = new $this->parent_data_class($id);
-        //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
-//        $target = $this->get_new_page(array('action' => 'add', 'id' => $parent_obj->id, 'association_id' => $id));
-
-//        $form = new $this->form_class($target->url, array('obj' => $obj, 'parent_obj' => $parent_obj));
-
-     //   $form->display();
-   // }
-
-    /**
-     * Generic handler for the add action.  Prints the add form.
-     */
-    /*function display_add() { // do_add()
-        $id = required_param('id', PARAM_INT);
-        $clusterid = $this->required_param('clusterid', PARAM_INT);
-        $trackid = $this->required_param('trackid', PARAM_INT);
-        $parent_obj = new $this->parent_data_class($id);
-        //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
-        $this->print_add_form($parent_obj);
-    }*/
-
     function do_add() {
         $id = $this->required_param('id', PARAM_INT);
         $autounenrol = $this->optional_param('autounenrol', 1, PARAM_INT);
@@ -119,7 +93,6 @@ class clustertrackbasepage extends associationpage {
             if(!isset($data->cancel)) {
                 clustertrack::associate($clusterid, $trackid, $autounenrol, $data->autoenrol);
             }
-            //$this->display('default');
             $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
         } else {
@@ -137,25 +110,20 @@ class clustertrackbasepage extends associationpage {
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $trackid = $this->required_param('trackid', PARAM_INT);
 
-        //require_once(CURMAN_DIRLOCATION . '/form/' . $this->form_class . '.class.php');
-        // TODO: port cluster classification
-        //require_once elispm::file('plugins/cluster_classification/clusterclassification.class.php');
+        require_once elispm::file('plugins/userset_classification/usersetclassification.class.php');
 
-        //$target = $this->get_new_page(array('action' => 'add', 'id' => $id));
         $target = $this->get_new_page(array('action'       => 'add',
                                             'id'           => $id));
-        //$form = new $this->form_class($target->url, array('parent_obj' => $parent_obj));
         $form = new $this->form_class($target->url, array('id'        => $id));
         $form->set_data(array('id' => $id,
                               'clusterid' => $clusterid,
                               'trackid' => $trackid));
-        // TODO: port cluster classification
-//            $cluster_classification = clusterclassification::get_for_cluster($clusterid);
-//            if (!empty($cluster_classification->param_autoenrol_tracks)) {
-                $form->set_data(array('autoenrol' => 1));
-//            } else {
-//                $form->set_data(array('autoenrol' => 0));
-//            }
+        $userset_classification = usersetclassification::get_for_cluster($clusterid);
+        if (!empty($userset_classification->param_autoenrol_tracks)) {
+            $form->set_data(array('autoenrol' => 1));
+        } else {
+            $form->set_data(array('autoenrol' => 0));
+        }
 
         $form->display();
     }
@@ -214,16 +182,10 @@ echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid:
             if(!isset($data->cancel)) {
                 clustertrack::update_autoenrol($association_id, $data->autoenrol);
             }
-//            echo '<br>got data';
-//            die();
-            //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
-            //$this->display('default');
             $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
             //redirect
         } else {
-            //$this->get_tab_page()->print_tabs('edit', array('id' => $id)); // TBD
-            //$form->display();
             $this->display('edit');
         }
     }
@@ -300,10 +262,7 @@ class clustertrackpage extends clustertrackbasepage {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        //$this->get_tab_page()->print_tabs('default', array('id' => $id)); // TBD
-
         $items = clustertrack::get_tracks($id);
-
 
         $this->print_list_view($items, $columns);
 
@@ -372,8 +331,6 @@ class trackclusterpage extends clustertrackbasepage {
             $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
-
-        //$this->get_tab_page()->print_tabs('default', array('id' => $id)); // TBD
 
         $items = clustertrack::get_clusters($id, $parent_clusterid, $sort, $dir);
 
