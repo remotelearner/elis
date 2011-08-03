@@ -252,6 +252,9 @@ class customfieldpage extends pm_page {
 
         $confirm = $this->optional_param('confirm', 0, PARAM_INT);
         if ($confirm) {
+            //load the fields into memory since the record is about to be deleted
+            $category->load();
+
             $category->delete();
             $tmppage = new customfieldpage(array('level' => $level));
             redirect($tmppage->url, get_string('field_category_deleted', 'elis_program', $category->name));
