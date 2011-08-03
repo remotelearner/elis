@@ -701,11 +701,11 @@ class trackassignment extends elis_data_object {
      * @return TODO: add meaningful return value
      */
     function save() { //add()
-echo '<br>save 1';
+
         if (empty($this->courseid)) {
             $this->courseid = $this->_db->get_field(pmclass::TABLE, 'courseid', array('id'=> $this->classid));
         }
-echo '<br>save 2';
+
         if ((empty($this->trackid) or
              empty($this->classid) or
              empty($this->courseid)) and
@@ -717,28 +717,24 @@ echo '<br>save 2';
                   elis::$config->elis_program->userdefinedtrack) {
             cm_error('courseid has not been properly initialized');
         }
-echo '<br>save 3';
+
         if (empty(elis::$config->elis_program->userdefinedtrack)) {
             if ($this->is_class_assigned_to_track()) {
                 return false;
             }
-echo '<br>save 4';
+
             // Determine whether class is required
             $curcrsobj = new curriculumcourse(
                 array('curriculumid'    => $this->track->curid,
                       'courseid'        => $this->classid));
-echo '<br>save 5';
+
             // insert assignment record
             parent::save(); //updated for ELIS2 from $this->data_insert_record()
 
             if ($this->autoenrol && $this->is_autoenrollable()) {
                 // autoenrol all users in the track
-echo '<br>save 5a';
                 $users = usertrack::get_users($this->trackid);
-                echo '<br>any users for track: '.$this->trackid;
-                print_object($users);
                 foreach ($users as $user) {
-                    echo '<br>save 5b';
                     $stu_record = new object();
                     $stu_record->userid = $user->userid;
                     $stu_record->user_idnumber = $user->idnumber;
@@ -755,14 +751,12 @@ echo '<br>save 5a';
             // then pull up the default system track for each curricula -
             // and add class to each default system track
             $currculums = curriculumcourse_get_list_by_course($this->courseid);
-echo '<br>save 6';
             $currculums = is_array($currculums) ? $currculums : array();
 
             foreach ($currculums as $recid => $record) {
                 // Create default track for curriculum
                 $trkojb = new track(array('curid'=>$record->curriculumid));
                 $trkid = $trkojb->create_default_track();
-echo '<br>save 7';
                 // Create track assignment object
                 $trkassign = new trackassignment(array('trackid' => $trkid,
                                                             'classid' => $this->classid,
