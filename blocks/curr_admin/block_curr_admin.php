@@ -291,8 +291,8 @@ class block_curr_admin extends block_base {
 
         $pages[] = new menuitem('notifications', new menuitempage('notifications', 'notificationspage.class.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('notifications'));
         //$pages[] = new menuitem('dataimport', new menuitempage('dataimportpage', 'elis_ip/elis_ip_page.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('integrationpoint'));
-        //$pages[] = new menuitem('defaultcls', new menuitempage('configclsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcls'));
-        //$pages[] = new menuitem('defaultcrs', new menuitempage('configcrsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcrs'));
+        $pages[] = new menuitem('defaultcls', new menuitempage('configclsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcls'));
+        $pages[] = new menuitem('defaultcrs', new menuitempage('configcrsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcrs'));
 
         //turn all pages that have no children into leaf nodes
         menuitemlisting::flag_leaf_nodes($pages);

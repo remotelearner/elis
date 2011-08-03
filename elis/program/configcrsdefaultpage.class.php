@@ -37,14 +37,9 @@ class configcrsdefaultpage extends pm_page {
         return has_capability('block/curr_admin:managecurricula', $context);
     }
 
-    function build_navigation_default() {
-        $navigation = parent::build_navigation_default();
-        $pagenav = array(
-            array('name' => get_string('defaultcrs', 'elis_program'),
-                  'link' => $this->url)
-            );
-        $combined_nav = array_merge($pagenav, $navigation);
-        $this->navbar->add($combined_nav);
+    function build_navbar_default() {
+        parent::build_navbar_default();
+        $this->navbar->add(get_string('defaultcrs', 'elis_program'), $this->url);
     }
 
     function get_title_default() {
@@ -58,7 +53,7 @@ class configcrsdefaultpage extends pm_page {
             $value = $default;
         }
         if ($value !== null) {
-            cm_set_config($key, $value);
+            pm_set_config($key, $value);
         }
     }
 

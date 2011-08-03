@@ -66,21 +66,6 @@ class configcrsdefaultform extends cmform {
         $grades = range(0,100,1);
         $mform->addElement('select', 'crsdftcompletion_grade', get_string('completion_grade', 'elis_program') . ':', $grades);
 
-        /* environments no longer supported
-        $environments = array('- ' . get_string('none', 'elis_program') . ' -');
-        $envs = environment_get_listing();
-
-        if(empty($envs)) {
-            $envs = array();
-        }
-
-        foreach($envs as $e){
-            $environments[$e->id] = $e->name;
-        }
-
-        $mform->addElement('select', 'crsdftenvironmentid', get_string('environment', 'elis_program'), $environments);
-        */
-
         $mform->addElement('text', 'crsdftcost', get_string('cost', 'elis_program') . ':');
         $mform->setType('crsdftcost', PARAM_TEXT);
         $mform->addRule('crsdftcost', null, 'maxlength', 10);

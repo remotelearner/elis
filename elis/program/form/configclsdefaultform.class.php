@@ -54,20 +54,6 @@ class configclsdefaultform extends cmform {
         $mform->addElement('text', 'clsdftmaxstudents', get_string('class_maxstudents', 'elis_program') . ':');
         $mform->setType('maxstudents', PARAM_INT);
 
-        /* environments no longer supported
-        $envs = environment_get_listing();
-        $envs = $envs ? $envs : array();
-
-        $o_envs = array(get_string('none', 'elis_program'));
-
-        foreach ($envs as $env) {
-            $o_envs[$env->id] = $env->name;
-        }
-
-        $mform->addElement('select', 'clsdftenvironmentid', get_string('environment', 'elis_program') . ':',
-                           $o_envs);
-        */
-
         $this->add_action_buttons();
     }
 
