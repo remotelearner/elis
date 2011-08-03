@@ -246,7 +246,7 @@ function userset_moodle_profile_update($cluster) {
         // create new cluster assignments
         $join  = '';
         $join_params = array();
-        $where = '';
+        $where_clauses = array();
         $where_params = array();
         $i = 1;
 
@@ -259,16 +259,20 @@ function userset_moodle_profile_update($cluster) {
 
             $join  .= ($isdefault ? ' LEFT' : ' INNER') . " JOIN {user_info_data} inf{$i} ON mu.id = inf{$i}.userid AND inf{$i}.fieldid = ?";
             $join_params[] = $fieldid;
-            $where .= "(inf{$i}.data = ?";
+            $where = "(inf{$i}.data = ?";
 
             // if desired field is the default
             if ($isdefault) {
                 $where .= " OR inf{$i}.userid IS NULL";
             }
             $where .= ')';
+            $where_clauses[] = $where;
             $where_params[] = $value;
             $i++;
         }
+
+        //use the clauses to construct a where condition
+        $where_clause = implode(' AND ', $where_clauses);
 
         if (!empty($join) && !empty($where)) {
             $sql = "INSERT INTO {" . clusterassignment::TABLE . "}
@@ -277,7 +281,7 @@ function userset_moodle_profile_update($cluster) {
                     FROM {" . user::TABLE . "} cu
                     INNER JOIN {user} mu ON mu.idnumber = cu.idnumber
                     $join
-                    WHERE $where";
+                    WHERE $where_clause";
             $params = array_merge(array($cluster->id), $join_params, $where_params);
 
             $DB->execute($sql, $params);
