@@ -240,6 +240,20 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     /**
+     * Add param fields to the form object
+     */
+    public function to_object() {
+        $obj = parent::to_object();
+
+        $mdlcrsid = $this->get_moodle_course_id();
+        if ($mdlcrsid != 0) {
+            $obj->moodlecourseid = $mdlcrsid;
+        }
+
+        return $obj;
+    }
+
+    /**
      * Determine whether a class is currently (manually) enrollable.
      * Checks if the class is associated with a Moodle course.
      * Checks whether the Moodle course is enrollable.
