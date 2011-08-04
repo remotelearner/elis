@@ -519,7 +519,7 @@ function pm_assign_student_from_mdl($eventdata) {
     require_once elispm::lib('data/classmoodlecourse.class.php');
     require_once elispm::lib('data/student.class.php');
     $classes = $DB->get_records(classmoodlecourse::TABLE, array('moodlecourseid'=> $context->instanceid));
-    if (count($classes) == 1) { // only if course is associated with one class
+    if (is_array($classes) && (count($classes) == 1)) { // only if course is associated with one class
         $class = current($classes);
         if (!$DB->get_record(student::TABLE, array('classid'=> $class->classid,
                                                    'userid'=> $pmuserid))) {
