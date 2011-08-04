@@ -195,7 +195,7 @@ class field extends elis_data_object {
             $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
         }
         $select = 'id IN (SELECT fctx.fieldid
-                            FROM {'.field_context::TABLE."} fctx
+                            FROM {'.field_contextlevel::TABLE."} fctx
                            WHERE fctx.contextlevel = {$contextlevel})
                AND shortname=?";
         return new field($DB->get_record_select(self::TABLE, $select, array($name)), null, array(), true);
