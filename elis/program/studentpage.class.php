@@ -287,9 +287,6 @@ class studentpage extends associationpage {
             $stu->complete();
         } else {
             $status = $stu->save();
-            if ($status !== true) {
-                echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
-            }
         }
 
         /// Check for grade records...
@@ -370,9 +367,9 @@ class studentpage extends associationpage {
                 $DB->get_field(student::TABLE, 'completestatusid', array('id' => $stu->id)) != STUSTATUS_PASSED) {
                 $stu->complete();
             } else {
-                $status = $stu->update(); // ->update() or ->save()
+                $status = $stu->update();
                 if ($status !== true) {
-                    echo cm_error(get_string('record_not_updated', self::LANG_FILE, $status));
+                    echo cm_error(get_string('record_not_updated', self::LANG_FILE, array('message'=>$status)));
                 }
             }
 
