@@ -40,13 +40,6 @@ class waitlist extends elis_data_object {
 
     var $verbose_name = 'waitlist';
 
-    static $associations = array( // TBD: class student ???
-        'users'   => array('class' => 'user',
-                           'idfield' => 'userid'),
-        'pmclass' => array('class' => 'pmclass',
-                           'idfield' => 'classid')
-    );
-
 /*
     var $id;            // INT - The data id if in the database.
     var $classid;       // INT - The id of the class this relationship belongs to.
@@ -69,6 +62,35 @@ class waitlist extends elis_data_object {
     protected $_dbfield_position;
     //protected $_dbfield_enrolmenttime;
     var $enrolmenttime; // TBD: not in table so not _dbfield_enrolmenttime???
+
+    static $associations = array(
+        'user'   => array('class' => 'user',
+                           'idfield' => 'userid'),
+        'pmclass' => array('class' => 'pmclass',
+                           'idfield' => 'classid')
+    );
+
+    static $validation_rules = array(
+        array('validation_helper', 'not_empty_userid'),
+        array('validation_helper', 'not_empty_classid'),
+        'validate_associated_user_exists',
+        'validate_associated_class_exists',
+        array('validation_helper', 'is_unique_userid_classid'),
+    );
+
+    /**
+     * Validates that the associated user record exists
+     */
+    public function validate_associated_user_exists() {
+        validate_associated_record_exists($this, 'user');
+    }
+
+    /**
+     * Validates that the associated pmclass record exists
+     */
+    public function validate_associated_class_exists() {
+        validate_associated_record_exists($this, 'pmclass');
+    }
 
 /* ***** disabled constructor *****
     public function __construct($waitlistdata) {
@@ -268,6 +290,13 @@ class waitlist extends elis_data_object {
      */
     public function save() {
         $new = false;
+        try {
+            validation_helper::is_unique_userid_classid($this);
+        } catch (Exception $e) {
+            // already on waitlist
+            return true;
+        }
+
         if (!isset($this->id)) {
             $new = true;
             if(empty($this->position)) {

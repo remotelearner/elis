@@ -441,7 +441,14 @@ class studentpage extends associationpage {
             }
         }
 
-        $this->display('default'); // TBD: redirect? missing blocks on page?
+        if (is_array($id)) {
+            $target_id = array_shift($id);
+        } else {
+            $target_id = $id;
+        }
+
+        $target = $this->get_new_page(array('action' => 'default', 'id' => $this->required_param('id', PARAM_INT)));
+        redirect($target->url);
     }
 
     /**
