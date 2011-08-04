@@ -410,9 +410,11 @@ class user extends data_object_with_custom_fields {
      * Retrieves a list of classes the specified user is currently enrolled in under the specified curriculum.
      * @param $userid ID of the user
      * @param $curid ID of the curriculum
+     * @uses $DB
      * @return unknown_type
      */
     static function get_current_classes_in_curriculum($userid, $curid) {
+        global $DB;
         $sql = 'SELECT curcrs.*, crs.name AS coursename
                   FROM {'.curriculumcourse::TABLE.'} curcrs
                   JOIN {'.course::TABLE.'} crs ON curcrs.courseid = crs.id
@@ -424,9 +426,8 @@ class user extends data_object_with_custom_fields {
                    AND clsenrol.completestatusid = ?
               ORDER BY curcrs.position';
 
-        $params = array($curid, $userid, student::STUSTATUS_NOTCOMPLETE);
-
-        return $this->_db->get_records_sql($sql, $params);
+        return $DB->get_records_sql($sql,
+                        array($curid, $userid, student::STUSTATUS_NOTCOMPLETE));
     }
 
     /**
@@ -434,9 +435,11 @@ class user extends data_object_with_custom_fields {
      * curriculum the user is assigned to.
      * @param $userid ID of the user
      * @param $curid ID of the curriculum
+     * @uses $DB
      * @return unknown_type
      */
     static function get_non_curriculum_classes($userid) {
+        global $DB;
         $sql = 'SELECT curcrs.*, crs.name AS coursename, crs.id AS courseid
                   FROM {'.student::TABLE.'} clsenrol
                   JOIN {'.pmclass::TABLE.'} cls ON cls.id = clsenrol.classid
@@ -446,9 +449,8 @@ class user extends data_object_with_custom_fields {
                           JOIN {'.curriculumstudent::TABLE.'} curass ON curass.curriculumid = curcrs.curriculumid AND curass.userid = ?) curcrs
                        ON curcrs.courseid = crs.id
                  WHERE clsenrol.userid = ? AND curcrs.courseid IS NULL';
-        $params = array($userid, $userid);
 
-        return $this->_db->get_records_sql($sql, $params);
+        return $DB->get_records_sql($sql, array($userid, $userid));
     }
 
     /**
@@ -457,26 +459,28 @@ class user extends data_object_with_custom_fields {
      * - The user is not currently enrolled in.
      * @param $userid ID of the user to retrieve the courses for.
      * @param $curid ID of the curriculum to retrieve the courses for.
+     * @uses $DB
      * @return unknown_type
      */
     static function get_user_course_curriculum($userid, $curid) {
+        global $DB;
         $sql = 'SELECT curcrs.*, crs.name AS coursename, cls.count as classcount, prereq.count as prereqcount, enrol.completestatusid as completionid, waitlist.courseid as waiting
                   FROM {'.curriculumcourse::TABLE.'} curcrs
                   JOIN {'.course::TABLE.'} crs ON curcrs.courseid = crs.id
                        -- limit to non-enrolled courses
                   JOIN (SELECT cls.courseid, clsenrol.completestatusid FROM {'.pmclass::TABLE.'} cls
-                          JOIN {'.student::TABLE.'} clsenrol ON cls.id = clsenrol.classid AND clsenrol.userid = :userid) enrol
+                          JOIN {'.student::TABLE.'} clsenrol ON cls.id = clsenrol.classid AND clsenrol.userid = :userida) enrol
                        ON enrol.courseid = crs.id
                        -- limit to courses where user is not on waitlist
              LEFT JOIN (SELECT cls.courseid
                           FROM {'.pmclass::TABLE.'} cls
-                          JOIN {'.waitlist::TABLE.'} watlst ON cls.id = watlst.classid AND watlst.userid = :userid) waitlist
+                          JOIN {'.waitlist::TABLE.'} watlst ON cls.id = watlst.classid AND watlst.userid = :useridb) waitlist
                        ON waitlist.courseid = crs.id
                        -- count the number of classes for each course
              LEFT JOIN (SELECT cls.courseid, COUNT(*) as count
                           FROM {'.pmclass::TABLE.'} cls
                                -- enddate is beginning of day
-                         WHERE (cls.enddate > (:currtime - 24*60*60)) OR NOT cls.enddate
+                         WHERE (cls.enddate > (:currtimea - 24*60*60)) OR NOT cls.enddate
                       GROUP BY cls.courseid) cls
                        ON cls.courseid = crs.id
                        -- count the number of unsatisfied prerequisities
@@ -487,7 +491,7 @@ class user extends data_object_with_custom_fields {
                                   FROM {'.pmclass::TABLE.'} cls
                                   JOIN {'.student::TABLE.'} enrol ON enrol.classid = cls.id
                                  WHERE enrol.completestatusid = '.student::STUSTATUS_PASSED.' AND enrol.userid=$userid
-                                   AND (cls.enddate > :currtime OR NOT cls.enddate)) cls
+                                   AND (cls.enddate > :currtimeb OR NOT cls.enddate)) cls
                                ON cls.courseid = crs.id
                          WHERE cls.courseid IS NULL
                       GROUP BY prereq.curriculumcourseid) prereq
@@ -495,30 +499,32 @@ class user extends data_object_with_custom_fields {
                  WHERE curcrs.curriculumid = :curid
               ORDER BY curcrs.position';
 
+        $time_now = time();
         $params = array(
-            'userid' => $userid,
-            'currtime' => time(),
-            'curid' => $curid,
+            'userida'   => $userid,
+            'useridb'   => $userid,
+            'currtimea' => $time_now,
+            'currtimeb' => $time_now,
+            'curid'     => $curid,
         );
-
-        return $this->_db->get_records_sql($sql, $params);
+        return $DB->get_records_sql($sql, $params);
     }
 
     /**
      * Retrieves a list of classes the user instructs.
      * @param $userid ID of the user
+     * @uses $DB
      * @return unknown_type
      */
     static function get_instructed_classes($userid) {
+        global $DB;
         $sql = 'SELECT cls.*, crs.name AS coursename
                   FROM {'.pmclass::TABLE.'} cls
                   JOIN {'.course::TABLE.'} crs ON cls.courseid = crs.id
                   JOIN {'.instructor::TABLE.'} clsinstr ON cls.id = clsinstr.classid
                  WHERE clsinstr.userid = ?
               GROUP BY cls.id ';
-        $params = array($userid);
-
-        return $this->_db->get_records_sql($sql, $params);
+        return $DB->get_records_sql($sql, array($userid));
     }
 
     /**

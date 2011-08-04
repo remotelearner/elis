@@ -475,6 +475,8 @@ $string['learning_plan_setting'] = 'Turn off learning plan';
 $string['length_description'] = 'Length Description';
 $string['lp_class_instructions'] = 'This listing indicates all programs you have been assigned to, as well as all class instances within those programs that you are currently enrolled in (automatically or manually).<br/><br/>
                                     This listing also includes class instances you are currently enrolled in that are not included in any programs, if applicable.';
+$string['lp_curriculum_instructions'] = 'This listing indicates all curricula you have been assigned to, as well as all courses within those curricula, whether or not you are enrolled in them through classes.<br/><br/>
+                                         This listing also includes the classes that you are enrolled in for the applicable courses.';
 $string['lp_waitlist_instructions'] = 'This listing indicates all programs you have been assigned to, as well as all class instances tied to course descriptions in those programs that you are on the waiting list for.';
 
 $string['makecurcourse'] = 'Make a program for this course description';
