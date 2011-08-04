@@ -718,71 +718,36 @@ class trackassignment extends elis_data_object {
             cm_error('courseid has not been properly initialized');
         }
 
-        if (empty(elis::$config->elis_program->userdefinedtrack)) {
-            if ($this->is_class_assigned_to_track()) {
-                return false;
-            }
+        if (!isset($this->id) && $this->is_class_assigned_to_track()) {
+            //trying to re-add an existing association
+            return;
+        }
 
-            // Determine whether class is required
-            $curcrsobj = new curriculumcourse(
-                array('curriculumid'    => $this->track->curid,
-                      'courseid'        => $this->classid));
+        // Determine whether class is required
+        $curcrsobj = new curriculumcourse(
+            array('curriculumid'    => $this->track->curid,
+                  'courseid'        => $this->classid));
 
-            // insert assignment record
-            parent::save(); //updated for ELIS2 from $this->data_insert_record()
+        // insert assignment record
+        parent::save(); //updated for ELIS2 from $this->data_insert_record()
 
-            if ($this->autoenrol && $this->is_autoenrollable()) {
-                // autoenrol all users in the track
-                $users = usertrack::get_users($this->trackid);
-                foreach ($users as $user) {
-                    $stu_record = new object();
-                    $stu_record->userid = $user->userid;
-                    $stu_record->user_idnumber = $user->idnumber;
-                    $stu_record->classid = $this->classid;
-                    $stu_record->enrolmenttime = time();
+        if ($this->autoenrol && $this->is_autoenrollable()) {
+            // autoenrol all users in the track
+            $users = usertrack::get_users($this->trackid);
+            foreach ($users as $user) {
+                $stu_record = new object();
+                $stu_record->userid = $user->userid;
+                $stu_record->user_idnumber = $user->idnumber;
+                $stu_record->classid = $this->classid;
+                $stu_record->enrolmenttime = time();
 
-                    $enrolment = new student($stu_record);
-                    // check prerequisites and enrolment limits
-                    $enrolment->save(array('prereq' => 1, 'waitlist' => 1));
-                }
-            }
-        } else {
-            // Look for all the curricula course is linked to -
-            // then pull up the default system track for each curricula -
-            // and add class to each default system track
-            $currculums = curriculumcourse_get_list_by_course($this->courseid);
-            $currculums = is_array($currculums) ? $currculums : array();
-
-            foreach ($currculums as $recid => $record) {
-                // Create default track for curriculum
-                $trkojb = new track(array('curid'=>$record->curriculumid));
-                $trkid = $trkojb->create_default_track();
-                // Create track assignment object
-                $trkassign = new trackassignment(array('trackid' => $trkid,
-                                                            'classid' => $this->classid,
-                                                            'courseid'=> $this->courseid));
-
-                // Check if class is already assigned to default track
-                if (!$trkassign->is_class_assigned_to_default_track()) {
-                    // Determine whether class is required
-                    $curcrsobj = new curriculumcourse(
-                        array('curriculumid'    => $trkassign->track->curid,
-                              'courseid'        => $trkassign->courseid));
-
-                    // Get required field and determine if class is autoenrol eligible
-                    $trkassign->autoenrol =
-                        (1 == $trkassign->cmclass->count_course_assignments($trkassign->cmclass->courseid) and
-                         true === $curcrsobj->is_course_required()) ? 1 : 0;
-
-                    // assign class to the curriculum's default track
-                    $trkassign->assign_class_to_default_track();
-                }
+                $enrolment = new student($stu_record);
+                // check prerequisites and enrolment limits
+                $enrolment->save(array('prereq' => 1, 'waitlist' => 1));
             }
         }
 
         events_trigger('crlm_track_class_associated', $this);
-
-        return true;
     }
 
     /**
