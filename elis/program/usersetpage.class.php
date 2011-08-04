@@ -466,7 +466,7 @@ class usersetpage extends managementpage {
                 require_once(elis::plugin_file('pmplugins_userset_classification','usersetclassification.class.php'));
                 require_once(elis::plugin_file('pmplugins_userset_classification','lib.php'));
                 if ($classification = usersetclassification::get_for_cluster($parent)) {
-                    $fieldname = 'field_'.CLUSTER_CLASSIFICATION_FIELD;
+                    $fieldname = 'field_'.USERSET_CLASSIFICATION_FIELD;
                     if ($classification->param_child_classification) {
                         $obj->$fieldname = $classification->param_child_classification;
                     } else {
