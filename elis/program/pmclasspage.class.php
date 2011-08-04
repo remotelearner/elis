@@ -377,12 +377,14 @@ class pmclasspage extends managementpage {
      *  as the rest of the data is not guaranteed to be there)
      *
      * @param  object  $cm_entity  The CM entity added
+     * @uses $DB
+     * @uses $USER
      */
     function after_cm_entity_add($cm_entity) {
-        global $USER;
+        global $DB, $USER;
 
         //make sure a valid role is set
-        if(!empty(elis::$config->elis_program->default_class_role_id) && record_exists('role', 'id', elis::$config->elis_program->default_class_role_id)) {
+        if(!empty(elis::$config->elis_program->default_class_role_id) && $DB->record_exists('role', array('id' => elis::$config->elis_program->default_class_role_id))) {
 
             //get the context instance for capability checking
             $context_level = context_level_base::get_custom_context_level('class', 'elis_program');
