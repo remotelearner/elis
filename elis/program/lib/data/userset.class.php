@@ -162,13 +162,32 @@ class userset extends data_object_with_custom_fields {
     function delete() {
         require_once elis::lib('data/data_filter.class.php');
 
-        $plugins = get_plugin_list(self::ENROL_PLUGIN_TYPE);
-        foreach ($plugins as $plugin => $plugindir) {
-            require_once(elis::plugin_file(self::ENROL_PLUGIN_TYPE.'_'.$plugin, 'lib.php'));
-        }
-
         if ($this->deletesimple) {
-            return parent::delete();
+            //core delete method, not including recursion (entered once for each
+            //individual userset being delete)
+
+            //clean make the delete cascade into association records
+            $filter = new field_filter('clusterid', $this->id);
+
+            clustercurriculum::delete_records($filter, $this->_db);
+            clustertrack::delete_records($filter, $this->_db);
+            clusterassignment::delete_records($filter, $this->_db);
+
+            //cluster plugin cleanup
+            $plugins = get_plugin_list(self::ENROL_PLUGIN_TYPE);
+            foreach ($plugins as $plugin => $plugindir) {
+                require_once(elis::plugin_file(self::ENROL_PLUGIN_TYPE.'_'.$plugin, 'lib.php'));
+                call_user_func('cluster_' . $plugin . '_delete_for_cluster', $this->id);
+            }
+
+            //delete the userset record
+            parent::delete();
+
+            //delete this cluster's context
+            $level = context_level_base::get_custom_context_level('cluster', 'elis_program');
+            delete_context($level, $this->id);
+
+            return;
         }
 
         $result = true;
@@ -195,18 +214,7 @@ class userset extends data_object_with_custom_fields {
         }
 
         foreach ($todelete as $userset) {
-            // Cascade to regular datarecords
-            $filter = new field_filter('clusterid', $userset->id);
-            //clustercurriculum::delete_records($filter, $this->_db);
-            //clustertrack::delete_records($filter, $this->_db);
-            //clusterassignment::delete_records($filter, $this->_db);
-            delete_context($cluster_context_level,$userset->id);
-
-            // Cascade to all plugins
-            foreach ($plugins as $plugin => $plugindir) {
-                $result = $result && call_user_func('cluster_' . $plugin . '_delete_for_cluster', $userset->id);
-            }
-
+            //delete without recursion
             $userset->deletesimple = true;
             $userset->delete();
         }
