@@ -833,7 +833,7 @@ class availablecoursetable extends yui_table {
             'courseid'    => array('header' => get_string('course_idnumber', 'elis_program')),
             'classname'   => array('header' => '') // action/status info
         );
-        parent::__construct($items, $columns, '');
+        parent::__construct($items, $columns);
 
         $this->table->width = '80%';
     }
@@ -888,7 +888,7 @@ class addclasstable extends yui_table {
             'classsize'    => array('header' => get_string('class_size',      'elis_program'))
         );
 
-        parent::__construct($items, $columns, '');
+        parent::__construct($items, $columns);
         //unset($this->table->width);
     }
 
