@@ -29,11 +29,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 class display_table {
-    private $table = null;
-    private $attributes;
-    private $items;
-    private $columns;
-    private $base_url;
+    protected $table = null;
+    protected $attributes;
+    protected $items;
+    protected $columns;
+    protected $base_url;
 
     const ASC = 'ASC';
     const DESC = 'DESC';
@@ -141,7 +141,7 @@ class display_table {
     /**
      * Creates the Moodle html_table object to display the table.
      */
-    private function build_table() {
+    protected function build_table() {
         if ($this->table !== null) {
             return;
         }
