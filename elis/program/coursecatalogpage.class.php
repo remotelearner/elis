@@ -34,6 +34,7 @@ require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/curriculumstudent.class.php');
 require_once elispm::lib('data/student.class.php');
 require_once elispm::file('form/enrolconfirmform.class.php');
+require_once elispm::file('pmclasspage.class.php');
 
 /* *** TBD
 require_once CURMAN_DIRLOCATION . '/lib/recordlinkformatter.class.php';
@@ -116,9 +117,9 @@ class coursecatalogpage extends pm_page {
 
     function display_add() { // action_add
         global $OUTPUT;
-        $crsid        = cm_get_param('crsid', 0);
+        $crsid = cm_get_param('crsid', 0);
 
-        if ($classes = cmclass_get_listing('startdate', 'ASC', 0, 0, '', '', $crsid, true)) {
+        if ($classes = pmclass_get_listing('startdate', 'ASC', 0, 0, '', '', $crsid, true)) {
             $table = new addclasstable($classes);
             $table->print_table();
         } else {
@@ -183,7 +184,7 @@ class coursecatalogpage extends pm_page {
         if($form->is_cancelled()) {
             $this->display('available');
         } else if($data = $form->get_data()) {
-            $class = new cmclass($classid);
+            $class = new pmclass($classid);
 
             $userid = cm_get_crlmuserid($USER->id);
 
@@ -221,7 +222,7 @@ class coursecatalogpage extends pm_page {
     }
 
     private function create_waitlistform($clsid) {
-        $class = new cmclass($clsid);
+        $class = new pmclass($clsid);
 
 //        $cuserid = cm_get_crlmuserid($USER->id);
 
@@ -247,7 +248,7 @@ class coursecatalogpage extends pm_page {
         global $USER, $CFG, $DB;
 
         $clsid = cm_get_param('clsid', 0);
-        $class = new cmclass($clsid);
+        $class = new pmclass($clsid);
 
         if (!$class->is_enrollable()) {
             print_error('notenrollable', 'enrol'); // TBD
@@ -322,7 +323,7 @@ class coursecatalogpage extends pm_page {
     function display_current() { // action_current()
         global $OUTPUT, $PAGE, $USER;
 
-        $clsid        = cm_get_param('clsid', 0);
+        $clsid = cm_get_param('clsid', 0);
 
         // This is for a Moodle user, so get the Curriculum user id.
         $cuserid = cm_get_crlmuserid($USER->id);
@@ -361,7 +362,7 @@ class coursecatalogpage extends pm_page {
                     }
                     echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
                     echo '<div id="curriculum' . $usercur->curid.'" class="yui-skin-sam ' . $extraclass . '">';
-                    $table = new currentclasstable($classes, $this->get_moodle_url());
+                    $table = new currentclasstable($classes, $this->url);
                     echo "<div id=\"$usercur->id\"></div>";
                     $table->print_yui_table($usercur->id);
                 } else {
@@ -388,7 +389,7 @@ class coursecatalogpage extends pm_page {
 
             echo '<div id="noncurrtable"></div>';
 
-            $table = new currentclasstable($noncurclasses, $this->get_moodle_url());
+            $table = new currentclasstable($noncurclasses, $this->url);
             $table->print_yui_table("noncurrtable");
 
             echo '</div>';
@@ -404,9 +405,9 @@ class coursecatalogpage extends pm_page {
 
             echo '<div id="instrtable"></div>';
 
-            $table = new instructortable($instrclasses, $this->get_moodle_url());
-            $classpage = new cmclasspage();
-            $table->decorators['classname'] = new recordlinkformatter($classpage,'id'); // ***TBD***
+            $table = new instructortable($instrclasses, $this->url);
+            $classpage = new pmclasspage();
+            //$table->decorators['classname'] = new recordlinkformatter($classpage,'id'); // ***TBD***
             $table->print_yui_table("instrtable");
 
             echo '</div>';
@@ -496,24 +497,122 @@ class coursecatalogpage extends pm_page {
     }
 }
 
-class waitlisttable extends display_table {
+class yui_table extends display_table {
+
+    /**
+     * Returns a JSON representation of the table data.
+     * @return string
+     */
+    function get_json() {
+        $arr = array();
+        foreach($this->table->data as $row) {
+            $arr_row = array();
+            $i = 0;
+            foreach(array_keys($this->columns) as $key) {
+                $arr_row[$key] = $row[$i++];
+            }
+            $arr[] = $arr_row;
+        }
+        return json_encode($arr);
+        // TBD: or just return json_encode($this->table->data); ???
+    }
+
+    /**
+     * Returns the columns that should be expected in the JSON data for the table.
+     * Basically exists to support YUI.
+     * @return string
+     */
+    function get_json_schema() {
+        $arr = array();
+
+        foreach(array_keys($this->columns) as $key) {
+            $field = array('key' => $key);
+            if(!empty($this->yui_parsers[$key])) {
+                $field['parser'] = $this->yui_parsers[$key];
+            }
+            if(!empty($this->yui_sorters[$key])) {
+                $field['sortOptions'] = array('sortFunction' => $this->yui_sorters[$key]);
+            }
+            $arr[] = $field;
+        }
+        return json_encode(array('fields' => $arr));
+    }
+
+    /**
+     * Returns the javascript for defining the columns of a YUI DataTable representation of the table data.
+     * @return string
+     */
+    function get_yui_columns() {
+        $s = '[';
+        foreach($this->columns as $column_id => $val) {
+            $column_label = $val['header'];
+            $s .= "{key:\"$column_id\", sortable:true, label:\"$column_label\", resizeable:true";
+            if(!empty($this->yui_formatters[$column_id])) {
+                $s .= ', formatter:' . $this->yui_formatters[$column_id];
+            }
+            $s .= "},\n";
+        }
+
+        //  remove the last comma, so that IE doesn't barf on us
+        $s = rtrim($s, ",\n");
+        $s .= ']';
+        return $s;
+    }
+
+    /**
+     * Prints the code for a YUI DataTable containing this table's data.
+     * @return unknown_type
+     */
+    function print_yui_table($tablename) {
+        $this->build_table();
+?>
+
+<script type="text/javascript">
+YAHOO.util.Event.addListener(window, "load", function() {
+    YAHOO.example.Basic = function() {
+        var myColumnDefs = <?php echo $this->get_yui_columns(); ?>;
+        var myData = <?php echo $this->get_json(); ?>;
+        var myDataSource = new YAHOO.util.DataSource(myData);
+        myDataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+        myDataSource.responseSchema = <?php echo $this->get_json_schema(); ?>;
+        var myDataTable = new YAHOO.widget.DataTable("<?php echo $tablename; ?>",
+                myColumnDefs, myDataSource);
+
+        return {
+            oDS: myDataSource,
+            oDT: myDataTable
+        };
+    }();
+});
+</script>
+
+<?php
+    }
+
+}
+
+if (!defined('ENVTABLE')) {
+    define('ENVTABLE', 'crlm_environment');
+}
+
+class waitlisttable extends yui_table {
     public function __construct(&$items) {
         global $USER, $CFG;
         $this->cuserid = cm_get_crlmuserid($USER->id);
 
         $columns = array(
-            'idnumber'    => get_string('course_idnumber', 'elis_program'), // 'Course ID',
-            'name'        => get_string('course',          'elis_program'),
-            'clsid'       => get_string('class',           'elis_program'),
-            'startdate'   => get_string('class_startdate', 'elis_program'),
-            'enddate'     => get_string('class_enddate',   'elis_program'),
-//            'timeofday'   => get_string('timeofday',     'elis_program'),
-            'instructor'  => get_string('instructor',      'elis_program'),
-            'environment' => get_string('environment',     'elis_program'),
-            'position'    => get_string('position',        'elis_program'),
-            'maxstudents' => get_string('class_limit',     'elis_program'),
-            'management'  => ''
-            );
+            'idnumber'    => array('header' => get_string('course_idnumber', 'elis_program')), // 'Course ID',
+            'name'        => array('header' => get_string('course',          'elis_program')),
+            'clsid'       => array('header' => get_string('class',           'elis_program')),
+            'startdate'   => array('header' => get_string('class_startdate', 'elis_program')),
+            'enddate'     => array('header' => get_string('class_enddate',   'elis_program')),
+//            'timeofday'   => array('header' => get_string('timeofday',     'elis_program')),
+            'instructor'  => array('header' => get_string('instructor',      'elis_program')),
+            // 'environment' => array('header' => get_string('environment',     'elis_program')),
+            'position'    => array('header' => get_string('position',        'elis_program')),
+            'maxstudents' => array('header' => get_string('class_limit',     'elis_program')),
+            'management'  => array('header' => '')
+        );
 
         $this->yui_formatters = array(
 //            'timeofday' => 'cmFormatTimeRange',
@@ -530,10 +629,9 @@ class waitlisttable extends display_table {
 //            'timeofday' => 'cmSortTimeRange',
 //        );
 
-        $pageurl = new moodle_url($CFG->wwwroot .'/curriculum/index.php', array('s' => 'crscat'));
+        $pageurl = new moodle_url($CFG->wwwroot .'/elis/program/index.php', array('s' => 'crscat'));
         parent::__construct($items, $columns, $pageurl);
-
-        $this->table->width = '80%';
+        $this->table->width = '80%'; // TBD
     }
 
     function is_sortable_default() {
@@ -593,21 +691,22 @@ class waitlisttable extends display_table {
     }
 }
 
-class currentclasstable extends display_table {
+class currentclasstable extends yui_table {
     function __construct(&$items, $pageurl) {
         global $USER;
         $this->cuserid = cm_get_crlmuserid($USER->id);
 
         $columns = array(
-            'courseid'    => get_string('course_idnumber', 'elis_program'), // 'Course ID',
-            'coursename'  => get_string('course',          'elis_program'),
-            'classname'   => get_string('class',           'elis_program'),
-            'startdate'   => get_string('class_startdate', 'elis_program'),
-            'enddate'     => get_string('class_enddate',   'elis_program'),
-            'timeofday'   => get_string('timeofday',       'elis_program'),
-            'instructor'  => get_string('instructor',      'elis_program'),
-            'environment' => get_string('environment',     'elis_program')
-            );
+            'courseid'    => array('header' => get_string('course_idnumber', 'elis_program')), // 'Course ID',
+            'coursename'  => array('header' => get_string('course',          'elis_program')),
+            'classname'   => array('header' => get_string('class',           'elis_program')),
+            'startdate'   => array('header' => get_string('class_startdate', 'elis_program')),
+            'enddate'     => array('header' => get_string('class_enddate',   'elis_program')),
+            'timeofday'   => array('header' => get_string('timeofday',       'elis_program')),
+            'instructor'  => array('header' => get_string('instructor',      'elis_program'))
+            // ,
+            // 'environment' => array('header' => get_string('environment',     'elis_program'))
+        );
 
         $this->yui_formatters = array(
             'timeofday' => 'cmFormatTimeRange',
@@ -625,8 +724,7 @@ class currentclasstable extends display_table {
         );
 
         parent::__construct($items, $columns, $pageurl);
-
-        $this->table->width = '80%';
+        $this->table->width = '80%'; // TBD
     }
 
     function is_sortable_default() {
@@ -719,22 +817,22 @@ class currentclasstable extends display_table {
 class instructortable extends currentclasstable {
     function get_class($item) {
         if (!isset($this->current_class) || !isset($this->current_class->id) || $this->current_class->id != $item->id) {
-            $this->current_class = new cmclass($item->id);
+            $this->current_class = new pmclass($item->id);
         }
         return $this->current_class;
     }
 }
 
-class availablecoursetable extends display_table {
+class availablecoursetable extends yui_table {
     function __construct(&$items) {
         global $USER;
         $this->cuserid = cm_get_crlmuserid($USER->id);
 
         $columns = array(
-            'coursename'  => get_string('course_name', 'elis_program'),
-            'courseid'    => get_string('course_idnumber', 'elis_program'),
-            'classname'   => '',        //action and status information
-            );
+            'coursename'  => array('header' => get_string('course_name', 'elis_program')),
+            'courseid'    => array('header' => get_string('course_idnumber', 'elis_program')),
+            'classname'   => array('header' => '') // action/status info
+        );
         parent::__construct($items, $columns, '');
 
         $this->table->width = '80%';
@@ -776,22 +874,21 @@ class availablecoursetable extends display_table {
     }
 }
 
-class addclasstable extends display_table {
+class addclasstable extends yui_table {
     function __construct(&$items) {
         $columns = array(
-            'options'      => '',
-            'idnumber'     => get_string('class_idnumber',  'elis_program'),
-            'startdate'    => get_string('class_startdate', 'elis_program'),
-            'enddate'      => get_string('class_enddate',   'elis_program'),
-            'timeofday'    => get_string('timeofday',       'elis_program'),
-            'instructor'   => get_string('instructor',      'elis_program'),
-            'environment'  => get_string('environment',     'elis_program'),
-            'waitlistsize' => get_string('waitlist_size',   'elis_program'),
-            'classsize'    => get_string('class_size',      'elis_program')
-            );
+            'options'      => array('header' => ''),
+            'idnumber'     => array('header' => get_string('class_idnumber',  'elis_program')),
+            'startdate'    => array('header' => get_string('class_startdate', 'elis_program')),
+            'enddate'      => array('header' => get_string('class_enddate',   'elis_program')),
+            'timeofday'    => array('header' => get_string('timeofday',       'elis_program')),
+            'instructor'   => array('header' => get_string('instructor',      'elis_program')),
+            // 'environment'  => array('header' => get_string('environment',     'elis_program')),
+            'waitlistsize' => array('header' => get_string('waitlist_size',   'elis_program')),
+            'classsize'    => array('header' => get_string('class_size',      'elis_program'))
+        );
 
         parent::__construct($items, $columns, '');
-
         //unset($this->table->width);
     }
 
@@ -822,7 +919,7 @@ class addclasstable extends display_table {
     }
 
     function get_item_display_options($column, $class) {
-        $classobj = new cmclass($class);
+        $classobj = new pmclass($class);
         if(!$classobj->is_enrollable()) {
             return get_string('notenrollable');
         }

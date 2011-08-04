@@ -900,7 +900,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
     if ($alpha) {
         //$where[] = "(trk.name $LIKE '$alpha%')";
         $where[] = $ALPHA_LIKE;
-        $params['search_lastname'] = "{$alpha}%";
+        $params['search_alpha'] = "{$alpha}%";
     }
 
     if ($curriculumid) {

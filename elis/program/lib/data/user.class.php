@@ -486,11 +486,11 @@ class user extends data_object_with_custom_fields {
                        -- count the number of unsatisfied prerequisities
              LEFT JOIN (SELECT prereq.curriculumcourseid, COUNT(*) as count
                           FROM {'.courseprerequisite::TABLE.'} prereq
-                          JOIN {'.course::TABLE.'} crs ON prereq.courseid=crs.id
+                          JOIN {'.course::TABLE.'} crs ON prereq.courseid = crs.id
                      LEFT JOIN (SELECT cls.courseid
                                   FROM {'.pmclass::TABLE.'} cls
                                   JOIN {'.student::TABLE.'} enrol ON enrol.classid = cls.id
-                                 WHERE enrol.completestatusid = '.student::STUSTATUS_PASSED.' AND enrol.userid=$userid
+                                 WHERE enrol.completestatusid = '.student::STUSTATUS_PASSED.' AND enrol.userid = :useridc
                                    AND (cls.enddate > :currtimeb OR NOT cls.enddate)) cls
                                ON cls.courseid = crs.id
                          WHERE cls.courseid IS NULL
@@ -503,6 +503,7 @@ class user extends data_object_with_custom_fields {
         $params = array(
             'userida'   => $userid,
             'useridb'   => $userid,
+            'useridc'   => $userid,
             'currtimea' => $time_now,
             'currtimeb' => $time_now,
             'curid'     => $curid,

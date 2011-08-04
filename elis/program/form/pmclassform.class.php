@@ -245,16 +245,19 @@ class pmclassform extends cmform {
                 }
             }
 
-            $temp = array('assignedtrack'=>array_keys($assigned));
+            $temp = array('assignedtrack' => array_keys($assigned));
             $this->set_data($temp);
 
-            $track_el =& $mform->getElement('assignedtrack');
-            $track_el->load($assigned);
-            $track_el =& $mform->getElement('track');
-            $track_el->load($unassigned);
+            if ($mform->elementExists('assignedtrack')) {
+                $track_el =& $mform->getElement('assignedtrack');
+                $track_el->load($assigned);
+            }
+            if ($mform->elementExists('track')) {
+                $track_el =& $mform->getElement('track');
+                $track_el->load($unassigned);
+            }
         }
     }
-
 
     /**
      * Adds the multi-select box for tracks.  This form element
