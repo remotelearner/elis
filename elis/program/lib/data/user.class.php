@@ -468,7 +468,7 @@ class user extends data_object_with_custom_fields {
                   FROM {'.curriculumcourse::TABLE.'} curcrs
                   JOIN {'.course::TABLE.'} crs ON curcrs.courseid = crs.id
                        -- limit to non-enrolled courses
-                  JOIN (SELECT cls.courseid, clsenrol.completestatusid FROM {'.pmclass::TABLE.'} cls
+                  LEFT JOIN (SELECT cls.courseid, clsenrol.completestatusid FROM {'.pmclass::TABLE.'} cls
                           JOIN {'.student::TABLE.'} clsenrol ON cls.id = clsenrol.classid AND clsenrol.userid = :userida) enrol
                        ON enrol.courseid = crs.id
                        -- limit to courses where user is not on waitlist
