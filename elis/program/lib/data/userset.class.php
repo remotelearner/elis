@@ -563,10 +563,10 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
     global $USER, $DB;
 
     //require plugin code if enabled
-    $plugins = get_plugin_list('elisfields');
-    $display_priority_enabled = isset($plugins['cluster_display_priority']);
+    $plugins = get_plugin_list('pmplugins');
+    $display_priority_enabled = isset($plugins['userset_display_priority']);
     if($display_priority_enabled) {
-        require_once(elis::plugin_file('elisfields_cluster_display_priority', 'lib.php'));
+        require_once(elis::plugin_file('pmplugins_userset_display_priority', 'lib.php'));
     }
 
     $select = 'SELECT clst.* ';

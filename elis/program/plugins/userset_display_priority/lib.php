@@ -47,12 +47,12 @@ function userset_display_priority_append_sort_data($userset_id_field, &$select, 
         //use this for easier naming in terms of sorting
         $select .= ', field_data.data AS priority ';
 
-        $join .= "LEFT JOIN {context} context
-                  JOIN {$field_data_table} field_data
-                    ON field_data.contextid = context.id
-                    AND field_data.fieldid = {$theme_priority_field->id})
-
-                    ON context.contextlevel = {$contextlevel}
-                    AND context.instanceid = {$userset_id_field} ";
+        $join .= ' LEFT JOIN {context} context
+                            ON context.contextlevel = '.$contextlevel.'
+                            AND context.instanceid = '.$userset_id_field.'
+                        JOIN {'.$field_data_table.'} field_data
+                            ON field_data.contextid = context.id
+                            AND field_data.fieldid = '.$theme_priority_field->id.'
+                 ';
     }
 }
