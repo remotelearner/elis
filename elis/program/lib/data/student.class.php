@@ -96,7 +96,7 @@ class student extends elis_data_object {
         foreach ($curricula as $curriculum) {
             $curcrs = new curriculumcourse();
             $curcrs->courseid = $pmclass->courseid;
-            $curcrs->curriculumid = $curriculum->curid;
+            $curcrs->curriculumid = $curriculum->curriculumid;
             if (!$curcrs->prerequisites_satisfied($this->userid)) {
                 // prerequisites not satisfied
                 throw new unsatisfied_prerequisites_exception($this);
@@ -108,6 +108,8 @@ class student extends elis_data_object {
                 //error_log('student.class::add() - student missing prereqs!');
                 return $status;
                 */
+            } else {
+                return true;
             }
         }
     }

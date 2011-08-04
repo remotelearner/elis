@@ -188,7 +188,7 @@ class usertrack extends elis_data_object {
                     $status = true;
                 } catch (Exception $e) {
                     echo cm_error(get_string('record_not_created_reason',
-                                             self::LANG_FILE, $e));
+                                             'elis_program', $e));
                 }
             }
         }

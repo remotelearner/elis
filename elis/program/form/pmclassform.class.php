@@ -170,7 +170,7 @@ class pmclassform extends cmform {
             $mform->addElement('hidden', 'moodlecourseid');
         }
 
-        $mform->addElement('checkbox', 'enrol_from_waitlist', get_string('waitlistenrol', 'elis_program') . ':');
+        $mform->addElement('advcheckbox', 'enrol_from_waitlist', get_string('waitlistenrol', 'elis_program') . ':');
         $mform->addHelpButton('enrol_from_waitlist', 'pmclassform:waitlistenrol', 'elis_program');
 
         // custom fields
