@@ -268,11 +268,6 @@ class pmclassform extends cmform {
     function add_track_multi_select($courseid) {
         global $CFG, $PAGE;
 
-        //require_js('yui_yahoo');
-        //require_js('yui_event');
-        //require_js('yui_connection');
-        //require_js($CFG->wwwroot.'/curriculum/js/trkmultiselect.js');
-
         $PAGE->requires->js('/elis/program/js/trkmultiselect.js');
 
         $mform =& $this->_form;
@@ -416,22 +411,20 @@ class pmclassform extends cmform {
                 $data->enddate = 0;
             }
 
-            $timezoneoffset = get_user_timezone_offset();
-            if ($timezoneoffset > 13) {
-                $timezoneoffset = (float)date('Z')/3600;
-            }
             if(!empty($data->starttime) and
                !isset($mform->_submitValues['starttime']['timeenable'])) {
-                $data->starttimehour = (int)($data->starttime / HOURSECS) + $timezoneoffset;
-                $data->starttimeminute = ($data->starttime % HOURSECS) / MINSECS;
+                $timearray = usergetdate($data->starttime);
+                $data->starttimehour = (int)$timearray['hours'];
+                $data->starttimeminute = (int)$timearray['minutes'];
             } else {
                 $data->starttimehour = $data->starttimeminute = 0;
             }
 
             if(!empty($data->endtime) and
                !isset($mform->_submitValues['endtime']['timeenable'])) {
-                $data->endtimehour = (int)($data->endtime / HOURSECS) + $timezoneoffset;
-                $data->endtimeminute = ($data->endtime % HOURSECS) / MINSECS;
+                $timearray = usergetdate($data->endtime);
+                $data->endtimehour = (int)$timearray['hours'];
+                $data->endtimeminute = (int)$timearray['minutes'];
             } else {
                 $data->endtimehour = $data->endtimeminute = 0;
             }
@@ -442,13 +435,12 @@ class pmclassform extends cmform {
 
     function freeze() {
         // Add completion status information
-        /* TO-DO: re-enable and make this work
-        $counts = $this->_customdata['obj']->get_completion_counts();
+        $obj = new course($this->_customdata['obj']);
+        $counts = $obj->get_completion_counts();
 
         $counttext = "Passed: {$counts[2]}, Failed: {$counts[1]}, In Progress: {$counts[0]}";
 
         $this->_form->addElement('static', 'test', get_string('completion_status', 'elis_program'), $counttext);
-        */
 
         parent::freeze();
     }
