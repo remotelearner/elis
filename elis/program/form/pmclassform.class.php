@@ -121,6 +121,12 @@ class pmclassform extends cmform {
         }
         // Done adding course select
 
+        // Set any associated Moodle course for this class instance
+        if (empty($this->_customdata['obj']->moodlecourseid) &&
+            !empty($this->_customdata['obj']->id)) {
+            $this->_customdata['obj']->moodlecourseid = moodle_get_course($this->_customdata['obj']->id);
+        }
+
         $mform->addElement('text', 'idnumber', get_string('class_idnumber', 'elis_program') . ':');
         $mform->addRule('idnumber', get_string('required'), 'required', NULL, 'client');
         $mform->setType('idnumber', PARAM_TEXT);
