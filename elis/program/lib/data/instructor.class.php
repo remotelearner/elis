@@ -369,12 +369,15 @@ class instructor extends elis_data_object {
     /**
      * Get a list of the existing instructors for the supplied (or current)
      * class.
+     * NOTE: called statically in /elis/program/coursecatalogpage.class.php
+     *       with argument $cid set!
      *
-     * @paam int $cid A class ID (optional).
+     * @param int $cid A class ID (optional).
+     * @uses $DB
      * @return array An array of user records.
      */
     function get_instructors($cid = 0) {
-
+        global $DB;
         if (!$cid) {
             if (empty($this->classid)) {
                 return array();
@@ -385,7 +388,7 @@ class instructor extends elis_data_object {
 
         $uids  = array();
 
-        if ($instructors = $this->_db->get_records(instructor::TABLE, array('classid' => $cid))) {
+        if ($instructors = $DB->get_records(instructor::TABLE, array('classid' => $cid))) {
             foreach ($instructors as $instructor) {
                 $uids[] = $instructor->userid;
             }
@@ -397,7 +400,7 @@ class instructor extends elis_data_object {
                     WHERE id IN ( ' . implode(', ', $uids) . ' )
                     ORDER BY lastname ASC, firstname ASC';
 
-            return $this->_db->get_records_sql($sql);
+            return $DB->get_records_sql($sql);
         }
         return array();
     }

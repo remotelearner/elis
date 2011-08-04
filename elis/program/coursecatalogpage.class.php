@@ -188,7 +188,7 @@ class coursecatalogpage extends pm_page {
 
             $userid = cm_get_crlmuserid($USER->id);
 
-            $position = $DB->get_field(WATLSTTABLE, sql_max('position'), 'classid', $classid) + 1;
+            $position = $DB->get_field(waitlist::TABLE, sql_max('position'), array('classid' => $classid)) + 1;
 
             $wait_record = new object();
             $wait_record->userid = $userid;
@@ -391,7 +391,6 @@ class coursecatalogpage extends pm_page {
 
             $table = new currentclasstable($noncurclasses, $this->url);
             $table->print_yui_table("noncurrtable");
-
             echo '</div>';
         } else {
             // Display nothing if we don't have any non-curriculum classes
@@ -409,7 +408,6 @@ class coursecatalogpage extends pm_page {
             $classpage = new pmclasspage();
             //$table->decorators['classname'] = new recordlinkformatter($classpage,'id'); // ***TBD***
             $table->print_yui_table("instrtable");
-
             echo '</div>';
         } else {
             // Display nothing if we don't instruct any classes
@@ -498,6 +496,16 @@ class coursecatalogpage extends pm_page {
 }
 
 class yui_table extends display_table {
+    private $display_date;
+
+    public function __construct($items, $columns, moodle_url $base_url=null) {
+        parent::__construct($items, $columns, $base_url);
+        $this->display_date = new display_date_item();
+    }
+
+    public function get_date_item_display($column, $item) {
+        return $this->display_date->display($column, $item);
+    }
 
     /**
      * Returns a JSON representation of the table data.
@@ -631,7 +639,7 @@ class waitlisttable extends yui_table {
 
         $pageurl = new moodle_url($CFG->wwwroot .'/elis/program/index.php', array('s' => 'crscat'));
         parent::__construct($items, $columns, $pageurl);
-        $this->table->width = '80%'; // TBD
+        //$this->table->width = '80%'; // TBD
     }
 
     function is_sortable_default() {
@@ -669,7 +677,7 @@ class waitlisttable extends yui_table {
             $ins = array();
 
             foreach ($instructors as $instructor) {
-                $ins[] = cm_fullname($instructor);
+                $ins[] = fullname($instructor);
             }
 
             if (!empty($ins)) {
@@ -724,7 +732,7 @@ class currentclasstable extends yui_table {
         );
 
         parent::__construct($items, $columns, $pageurl);
-        $this->table->width = '80%'; // TBD
+        //$this->table->width = '80%'; // TBD
     }
 
     function is_sortable_default() {
@@ -739,7 +747,8 @@ class currentclasstable extends yui_table {
     }
 
     function get_item_display_courseid($column, $item) {
-        return get_field(CRSTABLE, 'idnumber', 'id', $item->courseid);
+        global $DB;
+        return $DB->get_field(course::TABLE, 'idnumber', array('id' => $item->courseid));
     }
 
     function get_item_display_coursename($column, $item) {
@@ -786,7 +795,7 @@ class currentclasstable extends yui_table {
                 $ins = array();
 
                 foreach ($instructors as $instructor) {
-                    $ins[] = cm_fullname($instructor);
+                    $ins[] = fullname($instructor);
                 }
 
                 if (!empty($ins)) {
@@ -804,7 +813,7 @@ class currentclasstable extends yui_table {
         global $DB;
         if ($this->get_class($item)) {
             if (!empty($this->current_class->environmentid)) {
-                return $DB->get_field(ENVTABLE, 'name', 'id', $this->current_class->environmentid);
+                return $DB->get_field(ENVTABLE, 'name', array('id' => $this->current_class->environmentid));
             } else {
                 return 'n/a';
             }
@@ -834,8 +843,7 @@ class availablecoursetable extends yui_table {
             'classname'   => array('header' => '') // action/status info
         );
         parent::__construct($items, $columns);
-
-        $this->table->width = '80%';
+        //$this->table->width = '80%';
     }
 
     function is_sortable_default() {
@@ -843,7 +851,8 @@ class availablecoursetable extends yui_table {
     }
 
     function get_item_display_courseid($column, $item) {
-        return get_field(CRSTABLE, 'idnumber', 'id', $item->courseid);
+        global $DB;
+        return $DB->get_field(course::TABLE, 'idnumber', array('id' => $item->courseid));
     }
 
     function get_item_display_coursename($column, $item) {
@@ -893,7 +902,7 @@ class addclasstable extends yui_table {
     }
 
     function print_table() {
-        parent::print_table();
+        echo $this;
         print('<div class="note">'. get_string('if_class_full', 'elis_program')
               .'</div>');
     }
@@ -961,7 +970,7 @@ class addclasstable extends yui_table {
             $ins = array();
 
             foreach ($instructors as $instructor) {
-                $ins[] = cm_fullname($instructor);
+                $ins[] = fullname($instructor);
             }
 
             return implode('<br />', $ins);
