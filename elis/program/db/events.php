@@ -86,8 +86,8 @@ $handlers = array (
      ),
     // triggered when a user is assigned to a cluster
     'cluster_assigned' => array (
-         'handlerfile'      => '/elis/program/lib/cluster.class.php',
-         'handlerfunction'  => array('cluster', 'cluster_assigned_handler'),
+         'handlerfile'      => '/elis/program/lib/data/userset.class.php',
+         'handlerfunction'  => array('userset', 'cluster_assigned_handler'),
          'schedule'         => 'instant'
      ),
     // triggered when a user is deassigned from a cluster

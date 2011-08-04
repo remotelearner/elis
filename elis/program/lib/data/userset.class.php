@@ -324,14 +324,14 @@ class userset extends data_object_with_custom_fields {
     }
 
     static function cluster_assigned_handler($eventdata) {
-        require_once(elis::pm('data/clusterassignment.class.php'));
-        require_once(elis::pm('data/clustercurriculum.class.php'));
-        require_once(elis::pm('data/curriculumstudent.class.php'));
-        require_once(elis::pm('data/clustertrack.class.php'));
-        require_once(elis::pm('data/usertrack.class.php'));
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/clustercurriculum.class.php'));
+        require_once(elispm::lib('data/curriculumstudent.class.php'));
+        require_once(elispm::lib('data/clustertrack.class.php'));
+        require_once(elispm::lib('data/usertrack.class.php'));
 
         $assignment = new clusterassignment($eventdata);
-        $userset = $assignment->userset;
+        $userset = $assignment->cluster;
 
         // assign user to the curricula associated with the cluster
         /**
@@ -340,12 +340,12 @@ class userset extends data_object_with_custom_fields {
         */
 
         // enrol user in associated curricula
-        $prog_assocs = $userset->program_assocs;
+        $prog_assocs = $userset->clustercurriculum;
         foreach ($prog_assocs as $prog_assoc) {
             if ($prog_assoc->autoenrol
                 && !curriculumstudent::exists(array(new field_filter('userid', $eventdata->userid),
                                                     new field_filter('curriculumid', $prog_assoc->curriculumid)))) {
-                $progass = new programstudent();
+                $progass = new curriculumstudent();
                 $progass->userid = $eventdata->userid;
                 $progass->curriculumid = $prog_assoc->curriculumid;
                 $progass->timecreated = $progass->timemodified = time();
@@ -353,18 +353,13 @@ class userset extends data_object_with_custom_fields {
             }
         }
 
-        // enrol user in associated tracks if autoenrol flag is set
-        if ($eventdata->autoenrol) {
-            $track_assocs = $userset->track_assocs;
-            foreach ($track_assocs as $track_assoc) {
-                if ($track_assoc->autoenrol
-                    && !usertrack::exists(array(new field_filter('userid', $eventdata->userid),
-                                                new field_filter('trackid', $track_assoc->trackid)))) {
-                    $usertrack = new usertrack();
-                    $usertrack->userid = $eventdata->userid;
-                    $usertrack->trackid = $track->trackid;
-                    $usertrack->save();
-                }
+        // enrol user in associated tracks if autoenrol flag is set on the cluster-track associations
+        $track_assocs = $userset->clustertrack;
+        foreach ($track_assocs as $track_assoc) {
+            if ($track_assoc->autoenrol
+                && !usertrack::exists(array(new field_filter('userid', $eventdata->userid),
+                                            new field_filter('trackid', $track_assoc->trackid)))) {
+                usertrack::enrol($eventdata->userid, $track_assoc->trackid);
             }
         }
 

@@ -158,20 +158,20 @@ class clustercurriculum extends elis_data_object {
          * curriculum does anything more complicated
          */
 
-        //only insert users if we are auto-enrolling
-        // TODO: change clusteruser to clusterassignment when that is ported to ELIS2
-        /*if(!empty($autoenrol)) {
+        //assign cluster members as students in the newly-associated curriculum if the
+        //association has autoenrol set and the users are not already in the curriculum
+        if(!empty($autoenrol)) {
             $timenow = time();
             $sql = 'INSERT INTO {' . curriculumstudent::TABLE . '} '
                 . '(userid, curriculumid, timecreated, timemodified) '
                 . 'SELECT DISTINCT u.id, ' . $curriculum . ', ' . $timenow . ', ' . $timenow. ' '
-                . 'FROM {' . clusteruser::TABLE . '} clu '
+                . 'FROM {' . clusterassignment::TABLE . '} clu '
                 . 'INNER JOIN {' . user::TABLE . '} u ON u.id = clu.userid '
                 . 'LEFT OUTER JOIN {' . curriculumstudent::TABLE . '} ca ON ca.userid = u.id AND ca.curriculumid = \'' . $curriculum . '\' '
                 . 'WHERE clu.clusterid = ? AND ca.curriculumid IS NULL';
             $params = array($cluster);
-            $DB->execute_sql($sql,$params);
-        }*/
+            $DB->execute($sql,$params);
+        }
 
         events_trigger('pm_userset_program_associated', $record);
     }
@@ -366,22 +366,23 @@ class clustercurriculum extends elis_data_object {
 	    $update_record->autoenrol = $autoenrol;
 	    $result = $DB->update_record(self::TABLE, $update_record);
 
-	    // TODO: waiting for clusteruser port to ELIS2
-	    /*if(!empty($autoenrol) and
+	    //assign cluster members as students in the relevant curriculum if the
+        //association has autoenrol set and the users are not already in the curriculum
+	    if(!empty($autoenrol) and
 	       empty($old_autoenrol) and
 	        $curriculum = $DB->get_field(self::TABLE, 'curriculumid', array('id'=> $association_id)) and
 	        $cluster = $DB->get_field(self::TABLE, 'clusterid', array('id'=> $association_id))) {
             $timenow = time();
-            $sql = 'INSERT INTO {' . curriculum::TABLE . '} '
+            $sql = 'INSERT INTO {' . curriculumstudent::TABLE . '} '
                 . '(userid, curriculumid, timecreated, timemodified) '
                 . 'SELECT DISTINCT u.id, ' . $curriculum . ', ' . $timenow . ', ' . $timenow. ' '
-                . 'FROM {' . clusteruser::TABLE . '} clu '
+                . 'FROM {' . clusterassignment::TABLE . '} clu '
                 . 'INNER JOIN {' . user::TABLE . '} u ON u.id = clu.userid '
                 . 'LEFT OUTER JOIN {' . curriculumstudent::TABLE . '} ca ON ca.userid = u.id AND ca.curriculumid = \'' . $curriculum . '\' '
                 . 'WHERE clu.clusterid = ? AND ca.curriculumid IS NULL';
             $params = array($cluster);
             $DB->execute($sql,$params);
-	    }*/
+	    }
 
 	    return $result;
 	}
