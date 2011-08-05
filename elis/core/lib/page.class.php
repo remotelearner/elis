@@ -211,6 +211,7 @@ abstract class elis_page extends moodle_page {
         global $OUTPUT;
         $action = $this->optional_param('action', 'default', PARAM_ACTION);
         if ($this->can_do($action)) {
+            $this->_init_display();
             if (method_exists($this, "do_{$action}")) {
                 return call_user_func(array($this, "do_{$action}"));
             } else if (method_exists($this, 'display_' . $action)) {
@@ -257,7 +258,6 @@ abstract class elis_page extends moodle_page {
         if ($action === null) {
             $action = $this->optional_param('action', 'default', PARAM_ACTION);
         }
-        $this->_init_display();
         $this->print_header();
         call_user_func(array($this, 'display_' . $action));
         $this->print_footer();
