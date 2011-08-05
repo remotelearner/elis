@@ -65,6 +65,10 @@ abstract class associationpage2 extends selectionpage {
             $tab = $page->add_defaults_to_tab($tab);
             if($tab['showtab'] === true) {
                 $target = new $tab['page'](array_merge($tab['params'], $params));
+                if (!$target->can_do()) {
+                    //insufficient permissions according to tab's page, so don't add it
+                    continue;
+                }
                 $row[] = new tabobject($tab['tab_id'], $target->url, $tab['name']);
             }
         }
