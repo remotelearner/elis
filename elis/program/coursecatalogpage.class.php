@@ -44,7 +44,13 @@ require_once CURMAN_DIRLOCATION . '/lib/recordlinkformatter.class.php';
 class coursecatalogpage extends pm_page {
     var $pagename   = 'crscat';
     var $section    = 'crscat';
-    var $form_class = 'enrolconfirmform'; // TBD
+    var $form_class = 'enrolconfirmform';
+
+    /**
+     * Horizontal scrollbar needed for [waitlist] yui table in IE(8)
+     * set to empty string '' to disable
+     */
+    var $div_attrs  = 'style="float: center; overflow: auto;"';
 
     function can_do_default() {
         if (!empty(elis::$config->elis_program->disablecoursecatalog)) {
@@ -143,14 +149,14 @@ class coursecatalogpage extends pm_page {
             $extraclass = '';
         }
 
-        $PAGE->requires->js('/elis/program/js/util.js');
-        $this->include_yui();
+        // Needed for the hide buttons
+        $this->include_js();
 
         if(!empty($usercurs)) {
             foreach($usercurs as $usercur) {
                 echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
 
-                echo '<div id="curriculum' . $usercur->curid . '" class="yui-skin-sam">';
+                echo '<div id="curriculum'. $usercur->curid ."\" {$this->div_attrs} class=\"yui-skin-sam\">";
 
                 if($courses = student::get_waitlist_in_curriculum($cuserid, $usercur->curid)) {
                     echo "<div id=\"$usercur->curid\"></div>";
@@ -296,12 +302,12 @@ class coursecatalogpage extends pm_page {
     }
 
     /**
-     * Includes the YUI files required for DataTable and the show/hide buttons.
+     * Includes the required JavaScript/YUI files for DataTable and the show/hide buttons.
      * @uses $CFG
      * @uses $PAGE
      * @return none
      */
-    function include_yui() {
+    function include_js() {
         global $CFG, $PAGE;
 
         echo '<style>@import url("' . $CFG->wwwroot . '/lib/yui/datatable/assets/skins/sam/datatable.css");</style>';
@@ -310,6 +316,18 @@ class coursecatalogpage extends pm_page {
 
         // Monkey patch - not required with YUI 2.6.0 apparently
         // require_js('js/yui_2527707_patch.js');
+
+      /* *** TBD: this is the prefered way, but not working!?!
+        $PAGE->requires->js('/elis/program/js/util.js');
+        $PAGE->requires->js_init_call('toggleVisibleInit',
+                             array(), // will require args to be passed to fcn
+                             true,
+                             array('name'     => 'toggleHideShow',
+                                   'fullpath' => '/elis/program/js/util.js',
+                                   'requires' => array())
+                         ); // args?
+      *** */
+      echo "<script type=\"text/javascript\" src=\"{$CFG->wwwroot}/elis/program/js/util.js\"></script>";
     }
 
     /**
@@ -329,10 +347,7 @@ class coursecatalogpage extends pm_page {
         $cuserid = cm_get_crlmuserid($USER->id);
 
         // Needed for the hide buttons
-        //require_js('yui_yahoo');
-        //require_js('yui_event');
-        $PAGE->requires->js('/elis/program/js/util.js');
-        $this->include_yui();
+        $this->include_js();
 
         $usercurs = curriculumstudent::get_curricula($cuserid);
         $instrclasses = user::get_instructed_classes($cuserid);
@@ -361,7 +376,7 @@ class coursecatalogpage extends pm_page {
                         $extraclass = ($usercur->curid == $showcurid) ? '' : ' hide';
                     }
                     echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
-                    echo '<div id="curriculum' . $usercur->curid.'" class="yui-skin-sam ' . $extraclass . '">';
+                    echo '<div id="curriculum' . $usercur->curid ."\" {$this->div_attrs} class=\"yui-skin-sam" . $extraclass . '">';
                     $table = new currentclasstable($classes, $this->url);
                     echo "<div id=\"$usercur->id\"></div>";
                     $table->print_yui_table($usercur->id);
@@ -369,7 +384,7 @@ class coursecatalogpage extends pm_page {
                     $buttonLabel2 = ($usercur->curid == $showcurid) ? get_string('hide') : get_string('show');
                     $extraclass2 = ($usercur->curid == $showcurid) ? '' : ' hide';
                     echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel2 . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
-                    echo '<div id="curriculum' . $usercur->curid.'" class="yui-skin-sam ' . $extraclass2 . '">';
+                    echo '<div id="curriculum' . $usercur->curid ."\" {$this->div_attrs} class=\"yui-skin-sam" . $extraclass2 . '">';
                     echo '<p>' . get_string('nocoursesinthiscurriculum', 'elis_program') . '</p>';
                 }
                 echo '</div>';
@@ -385,7 +400,7 @@ class coursecatalogpage extends pm_page {
             $labelhide = get_string('hide');
             echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="noncurrscript" type="text/javascript">toggleVisibleInit("noncurrscript", "noncurrbutton", "' . $buttonLabel . '", "'.$labelhide.'", "'.$labelshow.'", "noncurr");</script></div>'. get_string('othercourses', 'elis_program'));
 
-            echo '<div id="noncurr" class="yui-skin-sam ' . $extraclass . '">';
+            echo "<div id=\"noncurr\" {$this->div_attrs} class=\"yui-skin-sam" . $extraclass . '">';
 
             echo '<div id="noncurrtable"></div>';
 
@@ -400,7 +415,7 @@ class coursecatalogpage extends pm_page {
         if ($instrclasses) {
             echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="instrscript" type="text/javascript">toggleVisibleInit("instrscript", "instrbutton", "' . $buttonLabel . '", "Hide", "Show", "instr");</script></div>'. get_string('instructedcourses', 'elis_program'));
 
-            echo '<div id="instr" class="yui-skin-sam ' . $extraclass . '">';
+            echo "<div id=\"instr\" {$this->div_attrs} class=\"yui-skin-sam" . $extraclass . '">';
 
             echo '<div id="instrtable"></div>';
 
@@ -443,15 +458,15 @@ class coursecatalogpage extends pm_page {
             $extraclass = '';
         }
 
-        $PAGE->requires->js('/elis/program/js/util.js');
-        $this->include_yui();
+        // Needed for the hide buttons
+        $this->include_js();
 
         // Process this user's curricula in turn, outputting the courses within each.
         if ($usercurs) {
             foreach ($usercurs as $usercur) {
                 echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
 
-                echo '<div id="curriculum'.$usercur->curid.'" class="yui-skin-sam ' . $extraclass . '">';
+                echo '<div id="curriculum'.$usercur->curid. " {$this->div_attrs} " .'" class="yui-skin-sam' . $extraclass . '">';
                 if ($courses = user::get_user_course_curriculum($cuserid, $usercur->curid)) {
 
                     echo "<div id=\"$usercur->id\"></div>";
@@ -500,7 +515,7 @@ class yui_table extends display_table {
 
     public function __construct($items, $columns, moodle_url $base_url=null) {
         parent::__construct($items, $columns, $base_url);
-        $this->display_date = new display_date_item();
+        $this->display_date = new display_date_item(get_string('pm_date_format', 'elis_program'));
     }
 
     public function get_date_item_display($column, $item) {
@@ -649,12 +664,17 @@ class waitlisttable extends yui_table {
     public function get_item_display_management($column, $item) {
         global $CFG, $OUTPUT;
 
-        $retval = '';
-        $retval .= '<div align="center">';
-        $retval .= '<form action=' . $this->pageurl->out(false, array('action'=>'waitlist')) . ' method="post">';
-        $hidden = new moodle_url(null, array('action'=>'delwaitlist', 'id'=>$item->wlid));
-        $retval .= $hidden->hidden_params_out();
-        $retval .= '<input type="image" alt="delete" src="'.
+        $retval = '<div align="center">';
+        $formaction = $CFG->wwwroot .'/elis/program/index.php?s=crscat';
+            // $formaction = new moodle_url(null, array('s' => 'crscat', 'action' => 'waitlist', 'id' => $item->wlid));
+        $retval .= "<form action=\"{$formaction}\" method=\"post\">";
+        $hidden = new moodle_url(null, array('s' => 'crscat', 'action' => 'delwaitlist', 'id' => $item->wlid));
+        foreach ($hidden->params() as $key => $val) {
+            $val = s($val);
+            $retval .= "<input type=\"hidden\" name=\"{$key}\" value=\"{$val}\" />\n";
+        }
+        $retval .= '<input type="image" alt="'. get_string('delete', 'elis_program') .
+                   '" title="'. get_string('delete', 'elis_program') .'" src="'.
                    $OUTPUT->pix_url('delete', 'elis_program') .'" /> ';
         $retval .= '</form>';
         $retval .= '</div>';
@@ -930,7 +950,7 @@ class addclasstable extends yui_table {
     function get_item_display_options($column, $class) {
         $classobj = new pmclass($class);
         if(!$classobj->is_enrollable()) {
-            return get_string('notenrollable');
+            return get_string('notenrollable', 'enrol');
         }
 
         if(student::count_enroled($class->id) < $class->maxstudents || empty($class->maxstudents)) {

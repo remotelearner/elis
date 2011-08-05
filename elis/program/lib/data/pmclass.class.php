@@ -266,7 +266,6 @@ class pmclass extends data_object_with_custom_fields {
      * Determine whether a class is currently (manually) enrollable.
      * Checks if the class is associated with a Moodle course.
      * Checks whether the Moodle course is enrollable.
-     * The logic is mostly copied/based on /course/enrol.php
      */
     public function is_enrollable() {
         global $CFG;
@@ -277,9 +276,12 @@ class pmclass extends data_object_with_custom_fields {
         }
         $course = $this->_db->get_record('course', array('id'=>$courseid));
         // check that this is a valid course to enrol into
-        if (!$course || $course->metacourse || $course->id == SITEID) {
+        if (!$course || $course->id == SITEID) {
             return false;
         }
+
+      /* *** TBD: we need to check the enrollment plugins for this! ***
+         *** see: /enrol/index.php ...
         // check that the course is enrollable, and that we are within the
         // enrolment dates
         if (!$course->enrollable ||
@@ -304,6 +306,7 @@ class pmclass extends data_object_with_custom_fields {
         if (!method_exists($enrol, 'print_entry')) {
             return false;
         }
+      *** */
 
         // if all the checks pass, then we're good
         return true;
