@@ -385,7 +385,6 @@ abstract class managementpage extends pm_page {
      */
     function do_edit() {
         global $PAGE;
-        $PAGE->blocks->add_regions(array('side-pre', 'side-post'));
         $id = $this->required_param('id', PARAM_INT);
 
         $target = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
