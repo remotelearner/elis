@@ -227,6 +227,15 @@ class pmclass extends data_object_with_custom_fields {
      */
     function delete() {
         if (!empty($this->id)) {
+            //clean make the delete cascade into association records
+            $filter = new field_filter('classid', $this->id);
+            instructor::delete_records($filter, $this->_db);
+            student::delete_records($filter, $this->_db);
+            trackassignment::delete_records($filter, $this->_db);
+            classmoodlecourse::delete_records($filter, $this->_db);
+            student_grade::delete_records($filter, $this->_db);
+            waitlist::delete_records($filter, $this->_db);
+
             $level = context_level_base::get_custom_context_level('class', 'elis_program');
             $result = delete_context($level,$this->id);
 

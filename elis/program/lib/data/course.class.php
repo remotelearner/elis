@@ -601,6 +601,10 @@ class course extends data_object_with_custom_fields {
         $filter = new field_filter('courseid', $this->id);
         pmclass::delete_records($filter, $this->_db);
 
+        //clean up associated records
+        curriculumcourse::delete_records($filter, $this->_db);
+        coursetemplate::delete_records($filter, $this->_db);
+
         parent::delete();
     }
 

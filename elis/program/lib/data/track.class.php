@@ -96,63 +96,6 @@ class track extends data_object_with_custom_fields {
         )
     );
 
-    /**
-     * Contructor.
-     */
-    /*
-    function __construct($src=false, $field_map=null, array $associations=array(), moodle_database $database=null) {
-        parent::datarecord($src, $field_map, $associations, $database);
-
-        if (!empty($this->id)) {
-            /// Load any other data we may want that is associated with the id number...
-            // custom fields
-            $level = context_level_base::get_custom_context_level('user', 'elis_program');
-            if ($level) {
-                $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
-                $fielddata = $fielddata ? $fielddata : array();
-                foreach ($fielddata as $name => $value) {
-                    $this->{"field_{$name}"} = $value;
-                }
-            }
-        }
-    }*/
-    /*function track($track = false) {
-        parent::datarecord();
-        $this->set_table(TABLE);
-        $this->add_property('id', 'int');
-        $this->add_property('curid', 'int', true);
-        $this->add_property('idnumber', 'string', true);
-        $this->add_property('name', 'string', true);
-        $this->add_property('description', 'string');
-        $this->add_property('startdate', 'int');
-        $this->add_property('enddate', 'int');
-        $this->add_property('defaulttrack', 'int');
-
-        if (is_numeric($track)) {
-            $this->data_load_record($track);
-        } else if (is_array($track)) {
-            $this->data_load_array($track);
-        } else if (is_object($track)) {
-            $this->data_load_array(get_object_vars($track));
-        }
-
-        if (!empty($this->curid)) {
-            $this->curriculum = new curriculum($this->curid);
-        }
-
-        if (!empty($this->id)) {
-            // custom fields
-            $level = context_level_base::get_custom_context_level('track', 'elis_program');
-            if ($level) {
-                $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
-                $fielddata = $fielddata ? $fielddata : array();
-                foreach ($fielddata as $name => $value) {
-                    $this->{"field_{$name}"} = $value;
-                }
-            }
-        }
-    }*/
-
     static $delete_is_complex = true;
 
     protected function get_field_context_level() {
@@ -160,17 +103,14 @@ class track extends data_object_with_custom_fields {
     }
 
     public static function delete_for_curriculum($id) {
-        $result = true;
 
         //look up and delete associated tracks
         if($tracks = track_get_listing('name', 'ASC', 0, 0, '', '', $id)) {
             foreach ($tracks as $track) {
                 $record = new track($track->id);
-                $result = $record->delete() && $result;
+                $record->delete();
             }
         }
-
-        return $result;
     }
 
     /**
@@ -335,13 +275,17 @@ class track extends data_object_with_custom_fields {
      */
     function delete() {
         // Cascade
-        $level = context_level_base::get_custom_context_level('track', 'elis_program');
-        $result = usertrack::delete_for_track($this->id);
-        $result = $result && clustertrack::delete_for_track($this->id);
-        $result = $result && trackassignment::delete_for_track($this->id);
-        $result = $result && delete_context($level,$this->id);
+        //clean make the delete cascade into association records
+        $filter = new field_filter('trackid', $this->id);
 
-        //return $result && $this->data_delete_record();
+        usertrack::delete_records($filter, $this->_db);
+        clustertrack::delete_records($filter, $this->_db);
+        trackassignment::delete_records($filter, $this->_db);
+
+        //Delete this leve's context
+        $level = context_level_base::get_custom_context_level('track', 'elis_program');
+        delete_context($level,$this->id);
+
         parent::delete();
     }
 
@@ -621,17 +565,7 @@ class trackassignment extends elis_data_object {
             'foreignkey' => 'courseid'
         ),
     );
-    /*function trackassignment($trackassign = false) {
-    //    parent::datarecord();
-    //    $this->set_table(trackassignment::TABLE);
-        if (is_numeric($trackassign)) {
-            $this->data_load_record($trackassign);
-        } else if (is_array($trackassign)) {
-            $this->data_load_array($trackassign);
-        } else if (is_object($trackassign)) {
-            $this->data_load_array(get_object_vars($trackassign));
-        }
-    }*/
+
     public static function delete_for_class($id) {
         global $DB;
 
@@ -640,9 +574,6 @@ class trackassignment extends elis_data_object {
 
     public static function delete_for_track($id) {
         global $DB;
-
-        //TODO: Remove users from crlm_user_track table that use -
-        // this track
 
         return $DB->delete_records(trackassignment::TABLE, array('trackid'=> $id));
     }

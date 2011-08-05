@@ -28,12 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once elis::lib('data/data_object.class.php');
 require_once elispm::lib('data/userset.class.php');
 
-//require_once(CURMAN_DIRLOCATION . '/lib/datarecord.class.php');
-//require_once(CURMAN_DIRLOCATION . '/lib/cluster.class.php');
-
-//define ('CLSTASSTABLE', 'crlm_cluster_assignments');
-
-// TODO: is this to be clusterstudent??
 class clusterassignment extends elis_data_object {
 	/*
 	 var $id;            // INT - The data id if in the database.
@@ -69,37 +63,9 @@ class clusterassignment extends elis_data_object {
         )
     );
 
-	/**
-	 * Constructor.
-	 *
-	 * @param $clusterdata int/object/array The data id of a data record or data elements to load manually.
-	 *
-	 */
-    /*
-	function clusterassignment($data=false) {
-		parent::datarecord();
-
-		$this->set_table(CLSTASSTABLE);
-		$this->add_property('id', 'int');
-		$this->add_property('clusterid', 'int');
-		$this->add_property('userid', 'int');
-		$this->add_property('plugin', 'string');
-		$this->add_property('autoenrol', 'int');
-                $this->add_property('leader', 'int');
-
-		if (is_numeric($data)) {
-			$this->data_load_record($data);
-		} else if (is_array($data)) {
-			$this->data_load_array($data);
-		} else if (is_object($data)) {
-			$this->data_load_array(get_object_vars($data));
-		}
-	}*/
-
 	public function delete() {
         $status = parent::delete();
-        // TODO: not sure what happened to cluster_update_assignments
-        //userset::cluster_update_assignments($this->clusterid, $this->userid);
+
         return $status;
 	}
 
@@ -107,8 +73,7 @@ class clusterassignment extends elis_data_object {
     	global $DB;
 
     	$status = $DB->delete_records(self::TABLE, array('userid'=> $id));
-    	// TODO: not sure what happened to cluster_update_assignments
-        //userset::cluster_update_assignments(null, $id);
+
     	return $status;
     }
 
@@ -116,8 +81,7 @@ class clusterassignment extends elis_data_object {
     	global $DB;
 
     	$status = $DB->delete_records(self::TABLE, array('clusterid'=> $id));
-    	// TODO: not sure what happened to cluster_update_assignments
-        //userset::cluster_update_assignments($id, null);
+
     	return $status;
     }
 

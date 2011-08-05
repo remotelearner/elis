@@ -120,9 +120,6 @@ class clustertrack extends elis_data_object {
      */
     public function delete() {
 
-        //FIXME: is it correct to call parent::delete() ?
-        //$return = $this->data_delete_record();
-
         if ($this->autounenrol) {
             // Unenrol all users in the cluster from the track (unless they are
             // in another cluster associated with the track and autoenrolled by
@@ -132,17 +129,16 @@ class clustertrack extends elis_data_object {
             // $filter selects all users enrolled in the track due to being in
             // a(nother) cluster associated with the track.  We will left-join
             // with it, and only select non-matching records.
-            /* TODO: work out how this works with clusterassignment table :)
             $params = array();
             $filter = 'SELECT u.userid '
-                . 'FROM {' . clusteruser::TABLE . '} u '
+                . 'FROM {' . clusterassignment::TABLE . '} u '
                 . 'INNER JOIN {' . usertrack::TABLE . '} ut ON u.userid = ut.userid '
                 . 'WHERE ut.trackid = :trackid AND u.autoenrol=\'1\'';
             $params['trackid'] = $this->trackid;
 
             $sql = 'SELECT usrtrk.id '
-                . 'FROM {' . clusteruser::TABLE . '} cu '
-                . 'INNER JOIN {' . ustertrack::TABLE . '} usrtrk ON cu.userid = usrtrk.userid AND usrtrk.trackid = \'' . $this->trackid . '\' '
+                . 'FROM {' . clusterassignment::TABLE . '} cu '
+                . 'INNER JOIN {' . usertrack::TABLE . '} usrtrk ON cu.userid = usrtrk.userid AND usrtrk.trackid = \'' . $this->trackid . '\' '
                 . 'LEFT OUTER JOIN (' . $filter . ') f ON f.userid = cu.userid '
                 . 'WHERE cu.clusterid = :clusterid AND cu.autoenrol=\'1\' AND f.userid IS NULL';
             $params['clusterid'] = $this->clusterid;
@@ -154,7 +150,7 @@ class clustertrack extends elis_data_object {
                     $ut = new usertrack($usertrack->id);
                     $ut->unenrol();
                 }
-            }*/
+            }
         }
 
         parent::delete();
