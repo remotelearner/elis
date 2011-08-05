@@ -194,7 +194,7 @@ class coursecatalogpage extends pm_page {
 
             $userid = cm_get_crlmuserid($USER->id);
 
-            $position = $DB->get_field(waitlist::TABLE, sql_max('position'), array('classid' => $classid)) + 1;
+            $position = $DB->get_field(waitlist::TABLE, 'MAX(position)', array('classid' => $classid)) + 1;
 
             $wait_record = new object();
             $wait_record->userid = $userid;
