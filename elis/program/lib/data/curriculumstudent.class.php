@@ -544,12 +544,12 @@ function calculate_curriculum_expiry($curass, $curid = 0, $userid = 0) {
         }
 
         $curass->curriculum = clone($curriculum);
-    } else {
-        // Make sure curriculum is loaded
-        $curass->curriculum->load();
     }
 
-    if (empty($curass->curriculum->frequency)) {
+    // Make sure curriculum is loaded
+    $curass->curriculum->load();
+
+    if (!isset($curass->curriculum->frequency)) {
         return 0;
     }
 
@@ -616,11 +616,12 @@ function calculate_curriculum_expiry($curass, $curid = 0, $userid = 0) {
     if (!isset(elis::$config->elis_program->curriculum_expiration_start) ||
         elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_COMPLETE) {
 
-        // Base the expiry date off the curriculum completion date.
         if ($curass->timecompleted == 0) {
-            return 0;
+            // Fall back to basing the expiry date off the curriculum enrolment date.
+            $timenow = $curass->timecreated;
         }
 
+        // Base the expiry date off the curriculum completion date.
         $timenow = $curass->timecompleted;
     } else if (elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_START) {
         // Base the expiry date off the curriculum enrolment date.
