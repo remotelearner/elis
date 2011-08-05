@@ -35,9 +35,11 @@ class userform extends cmform {
     public function definition() {
         global $USER, $CFG, $COURSE;
 
+        list($this->_customdata['obj']->birthyear, $this->_customdata['obj']->birthmonth, $this->_customdata['obj']->birthday) = sscanf($this->_customdata['obj']->birthdate, '%d/%d/%d');
+
         parent::definition();
 
-        if($this->_customdata['obj']) {
+        if ($this->_customdata['obj']) {
             $disabled = true;
         } else {
             $disabled = false;
@@ -164,12 +166,13 @@ class userform extends cmform {
         for ($i=1900; $i<=2020; $i++) {
             $years[$i] = $i;
         }
+
         $bdaygroup[] =& $mform->createElement('select', 'birthday', get_string('day', 'form'), $days, '', true);
         $bdaygroup[] =& $mform->createElement('select', 'birthmonth', get_string('month', 'form'), $months, '', true);
         $bdaygroup[] =& $mform->createElement('select', 'birthyear', get_string('year', 'form'), $years, '', true);
         $mform->addGroup($bdaygroup, 'birthdate', get_string('userbirthdate', 'elis_program'), ' ', false);
 
-//        $mform->addElement('date_selector', 'birthdate', get_string('userbirthdate', 'elis_program')); //TODO: the bdaygroup stuff with this but need to update the pages as well
+        //$mform->addElement('date_selector', 'birthdate', get_string('userbirthdate', 'elis_program')); // Note: date_selector limited to timestamp > 1970
 
         $radioarray = array();
         $radioarray[] = &$mform->createElement('radio', 'gender', '', get_string('male', 'elis_program'), 'M');

@@ -222,7 +222,7 @@ class userpage extends managementpage {
             $obj->username = html_writer::link(new moodle_url('/user/view.php', array('id' => $muser->id)), htmlspecialchars($obj->username));
         }
 
-        $form = new $this->form_class(null, array('obj' => $obj));
+        $form = new $this->form_class(null, array('obj' => $obj->to_object()));
         $form->freeze();
 
         $this->print_tabs('view', array('id' => $id));
