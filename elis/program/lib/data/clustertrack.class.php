@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,33 +17,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once elis::lib('data/data_object_with_custom_fields.class.php');
-
-//require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
-//require_once CURMAN_DIRLOCATION . '/lib/user.class.php';
-//require_once CURMAN_DIRLOCATION . '/lib/curriculum.class.php';
-//require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-//require_once CURMAN_DIRLOCATION . '/lib/cluster.class.php';
-//require_once CURMAN_DIRLOCATION . '/lib/curriculumstudent.class.php';
-//require_once CURMAN_DIRLOCATION . '/lib/usertrack.class.php';
-//require_once CURMAN_DIRLOCATION . '/lib/track.class.php';
-
-require_once elispm::lib('data/curriculum.class.php');
-require_once elispm::lib('data/curriculumcourse.class.php');
-require_once elispm::lib('data/curriculumstudent.class.php');
-require_once elispm::lib('data/userset.class.php');
-require_once elispm::lib('data/user.class.php');
-require_once elispm::lib('data/usertrack.class.php');
-require_once elispm::lib('data/track.class.php');
+require_once(elis::lib('data/data_object_with_custom_fields.class.php'));
+require_once(elispm::lib('data/curriculum.class.php'));
+require_once(elispm::lib('data/curriculumcourse.class.php'));
+require_once(elispm::lib('data/curriculumstudent.class.php'));
+require_once(elispm::lib('data/userset.class.php'));
+require_once(elispm::lib('data/user.class.php'));
+require_once(elispm::lib('data/usertrack.class.php'));
+require_once(elispm::lib('data/track.class.php'));
 
 class clustertrack extends elis_data_object {
     const TABLE = 'crlm_cluster_track';
@@ -75,48 +65,6 @@ class clustertrack extends elis_data_object {
             'idfield' => 'clusterid'
         )
     );
-
-    /**
-     * Constructor.
-     *
-     * @param int|object|array $data The data id of a data record or data
-     * elements to load manually.
-     *
-     */
-    /*
-    function clustertrack($data = false) {
-        parent::datarecord();
-
-        $this->set_table(CLSTTRKTABLE);
-        $this->add_property('id', 'int');
-        $this->add_property('clusterid', 'int');
-        $this->add_property('trackid', 'int');
-        $this->add_property('autoenrol', 'int');
-        $this->add_property('autounenrol', 'int');
-
-        if (is_numeric($data)) {
-            $this->data_load_record($data);
-        } else if (is_array($data)) {
-            $this->data_load_array($data);
-        } else if (is_object($data)) {
-            $this->data_load_array(get_object_vars($data));
-        }
-    }
-
-    // defer loading of sub-data elements until requested
-    function __get($name) {
-        if ($name == 'cluster' && !empty($this->clusterid)) {
-            $this->cluster = new cluster($this->clusterid);
-            return $this->cluster;
-        }
-        if ($name == 'track' && !empty($this->trackid)) {
-            $this->track = new track($this->trackid);
-            return $this->track;
-        }
-        return null;
-    }
-*/
-
 
     function get_verbose_name() {
         return $this->verbose_name;
@@ -209,7 +157,6 @@ class clustertrack extends elis_data_object {
             }*/
         }
 
-        //return $return;
         parent::delete();
     }
 
@@ -233,10 +180,10 @@ class clustertrack extends elis_data_object {
         }
 
         //require plugin code if enabled
-        // TODO: where will this be found?
-        $display_priority_enabled = in_array('cluster_display_priority', get_list_of_plugins('curriculum/plugins'));
+        $plugins = get_plugin_list('pmplugins');
+        $display_priority_enabled = isset($plugins['userset_display_priority']);
         if($display_priority_enabled) {
-            require_once elispm::file('/plugins/cluster_display_priority/lib.php');
+            require_once(elis::plugin_file('pmplugins_userset_display_priority', 'lib.php'));
         }
 
         $select  = 'SELECT clsttrk.id, clsttrk.clusterid, clst.name, clst.display, clsttrk.autoenrol ';
