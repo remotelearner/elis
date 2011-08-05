@@ -466,7 +466,7 @@ class coursecatalogpage extends pm_page {
             foreach ($usercurs as $usercur) {
                 echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
 
-                echo '<div id="curriculum'.$usercur->curid. " {$this->div_attrs} " .'" class="yui-skin-sam' . $extraclass . '">';
+                echo '<div id="curriculum'.$usercur->curid ."\" {$this->div_attrs} " .'" class="yui-skin-sam' . $extraclass . '">';
                 if ($courses = user::get_user_course_curriculum($cuserid, $usercur->curid)) {
 
                     echo "<div id=\"$usercur->id\"></div>";
