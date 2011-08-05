@@ -270,15 +270,7 @@ class coursecatalogpage extends pm_page {
 
         // call the Moodle enrolment plugin if attached to a Moodle course, and
         // it's not the elis plugin
-        $courseid = $class->get_moodle_course_id();
-        if ($courseid) {
-            $course = $DB->get_record('course', 'id', $courseid);
-            // the elis plugin is treated specially
-            if ($course->enrol != 'elis') {
-                // FIXME: add message
-                redirect("{$CFG->wwwroot}/course/enrol.php?id={$courseid}");
-            }
-        }
+        //todo: check Moodle enrolment plugins here
 
         $cuserid = cm_get_crlmuserid($USER->id);
 
