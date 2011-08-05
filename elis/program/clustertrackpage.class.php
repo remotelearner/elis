@@ -89,10 +89,11 @@ class clustertrackbasepage extends associationpage {
         $form->set_data(array('clusterid' => $clusterid,
                               'trackid' => $trackid));
 
-        if($data = $form->get_data()) {
-            if(!isset($data->cancel)) {
-                clustertrack::associate($clusterid, $trackid, $autounenrol, $data->autoenrol);
-            }
+        if ($form->is_cancelled()) {
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
+            redirect($target->url);
+        } else if($data = $form->get_data()) {
+            clustertrack::associate($clusterid, $trackid, $autounenrol, $data->autoenrol);
             $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
         } else {
@@ -131,15 +132,13 @@ class clustertrackbasepage extends associationpage {
     function can_do_edit() {
         // the user must have 'block/curr_admin:associate' permissions on both
         // ends
-        /* TODO: replaced by can_manage_assoc???
         $association_id = $this->required_param('association_id', PARAM_INT);
         $record = new clustertrack($association_id);
         $clusterid = $record->clusterid;
         $trackid = $record->trackid;
-echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid: '.$trackid.'*<br>';
+//echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid: '.$trackid.'*<br>';
         return usersetpage::_has_capability('block/curr_admin:associate', $clusterid)
-            && trackpage::_has_capability('block/curr_admin:associate', $trackid);*/
-        return true;
+            && trackpage::_has_capability('block/curr_admin:associate', $trackid);
     }
 
     function can_do_delete() {
@@ -178,13 +177,13 @@ echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid:
         $form->set_data(array('id' => $id,
                               'association_id' => $association_id));
 
-        if($data = $form->get_data()) {
-            if(!isset($data->cancel)) {
-                clustertrack::update_autoenrol($association_id, $data->autoenrol);
-            }
+        if ($form->is_cancelled()) {
             $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
-            //redirect
+        } else if($data = $form->get_data()) {
+            clustertrack::update_autoenrol($association_id, $data->autoenrol);
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
+            redirect($target->url);
         } else {
             $this->display('edit');
         }

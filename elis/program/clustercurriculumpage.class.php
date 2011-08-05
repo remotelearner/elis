@@ -115,13 +115,12 @@ class clustercurriculumbasepage extends associationpage {
 
         $form->set_data(array('clusterid' => $clusterid,
                               'curriculumid' => $curriculumid));
-//echo '<br>form in do_add';
-//print_object($form);
-        if($data = $form->get_data()) {
-            if(!isset($data->cancel)) {
-                clustercurriculum::associate($clusterid, $curriculumid, !empty($data->autoenrol));
-            }
-            //$this->display_default();
+
+        if ($form->is_cancelled()) {
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
+            redirect($target->url);
+        } else if($data = $form->get_data()) {
+            clustercurriculum::associate($clusterid, $curriculumid, !empty($data->autoenrol));
             $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
         } else {
@@ -205,15 +204,14 @@ class clustercurriculumbasepage extends associationpage {
         $form->set_data(array('id' => $id,
                               'association_id' => $association_id));
 
-        if($data = $form->get_data()) {
-            if(!isset($data->cancel)) {
-                clustercurriculum::update_autoenrol($association_id, $data->autoenrol);
-            }
-            //$this->display_default();
+        if ($form->is_cancelled()) {
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
+            redirect($target->url);
+        } else if($data = $form->get_data()) {
+            clustercurriculum::update_autoenrol($association_id, $data->autoenrol);
             $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
         } else {
-            //$form->display();
             $this->display('edit');
         }
     }
