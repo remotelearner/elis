@@ -60,7 +60,6 @@ class customfieldform extends cmform {
         $form->addElement('select', 'categoryid', get_string('profilecategory', 'admin'), $choices);
 
         $form->addElement('htmleditor', 'description', get_string('profiledescription', 'admin'));
-        // TO-DO: is there a generic moodle2 textarea help text? commented out for now
         //$form->addHelpButton('description', 'helptext');
 
         $choices = array(

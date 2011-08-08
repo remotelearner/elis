@@ -40,14 +40,12 @@ class fieldcategoryform extends cmform {
 
         $strrequired = get_string('required');
 
-        // TO-DO: shouldn't this already be set elsewhere and not need to be fetched here?
         $category_name = '';
         $field_category = $DB->get_record(field_category::TABLE, array('id'=>optional_param('id', 0, PARAM_INT)));
         if (!empty($field_category)) {
             $category_name = $field_category->name;
         }
 
-        //$mform->addElement('text', 'name', get_string('profilecategoryname', 'admin'), array('maxlength'=>'255', 'size'=>'30'));
         $mform->addElement('text', 'name', get_string('profilecategoryname', 'admin'), array('maxlength'=>'255', 'size'=>'30', 'value'=>$category_name));
         $mform->setType('name', PARAM_MULTILANG);
         $mform->addRule('name', $strrequired, 'required', null, 'client');

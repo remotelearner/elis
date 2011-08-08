@@ -381,7 +381,6 @@ class customfieldpage extends pm_page {
                     $data = new field($id);
                     $data_array = $data->to_array();
 
-                    // TO-DO: not sure why to_array() does not get all the data, so lets load the data manually for now
                     $field_record = $DB->get_record(field::TABLE, array('id'=>$id));
                     if (!empty($field_record)) {
                         foreach ($field_record as $field_item=>$field_value) {
@@ -405,8 +404,6 @@ class customfieldpage extends pm_page {
                             fclose($fh);
                         } else {
                             $defaultdata = current($defaultdata);
-                            // TO-DO: not sure what should happen on the following line, commented out for now
-                            //$defaultdata = $defaultdata->data;
                         }
                     }
                     $data_array['defaultdata'] = $defaultdata;
