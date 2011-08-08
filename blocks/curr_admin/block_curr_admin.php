@@ -93,7 +93,7 @@ class block_curr_admin extends block_base {
 
 
     function get_content() {
-        global $CFG, $ADMIN, $USER, $HTTPSPAGEREQUIRED, $PAGE, $DB;
+        global $CFG, $ADMIN, $USER, $HTTPSPAGEREQUIRED, $PAGE, $DB, $SITE;
 
         require_once($CFG->libdir . '/adminlib.php');
         //require_once($CFG->dirroot . '/my/pagelib.php');
@@ -196,8 +196,6 @@ class block_curr_admin extends block_base {
             }
         }
 
-        global $SITE;
-
         //general cm pages
         $pages = array(
 
@@ -262,6 +260,15 @@ class block_curr_admin extends block_base {
                 new menuitem('rept', null, 'root', get_string('reports', 'elis_program'), block_curr_admin_get_item_css_class('rept', true))
 
         ));
+
+        if (has_capability('moodle/course:managegroups', get_context_instance(CONTEXT_COURSE, $SITE->id))) {
+            if (elis::$config->pmplugins_userset_groups->site_course_userset_groups) {
+                $pages[] = new menuitem('frontpagegroups', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/index.php?id={$SITE->id}"), 'admn', get_string('frontpagegroups', 'pmplugins_userset_groups'), block_curr_admin_get_item_css_class('manageclusters'));
+            }
+            if (elis::$config->pmplugins_userset_groups->userset_groupings) {
+                $pages[] = new menuitem('frontpagegroupings', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/groupings.php?id={$SITE->id}"), 'admn', get_string('frontpagegroupings', 'pmplugins_userset_groups'), block_curr_admin_get_item_css_class('manageclusters'));
+            }
+        }
 
         /**
          * This section adds all the necessary PHP reports to the menu

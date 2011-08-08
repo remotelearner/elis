@@ -33,9 +33,9 @@ $defaults = array(
     'time_format_12h' => 0,
     'auto_assign_user_idnumber' => 1,
     'restrict_to_elis_enrolment_plugin' => 0,
-    'cluster_groups' => 0,
-    'site_course_cluster_groups' => 0,
-    'cluster_groupings' => 0,
+    'userset_groups' => 0,
+    'site_course_userset_groups' => 0,
+    'userset_groupings' => 0,
     'default_instructor_role' => 0,
 
     // Course catalog
