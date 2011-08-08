@@ -37,7 +37,9 @@ class userform extends cmform {
 
         if ($this->_customdata['obj']) {
             $disabled = true;
-            list($this->_customdata['obj']->birthyear, $this->_customdata['obj']->birthmonth, $this->_customdata['obj']->birthday) = sscanf($this->_customdata['obj']->birthdate, '%d/%d/%d');
+            if (!empty($this->_customdata['obj']->birthdate)) {
+                list($this->_customdata['obj']->birthyear, $this->_customdata['obj']->birthmonth, $this->_customdata['obj']->birthday) = sscanf($this->_customdata['obj']->birthdate, '%d/%d/%d');
+            }
         } else {
             $disabled = false;
         }
