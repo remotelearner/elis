@@ -35,15 +35,13 @@ class userform extends cmform {
     public function definition() {
         global $USER, $CFG, $COURSE;
 
-        list($this->_customdata['obj']->birthyear, $this->_customdata['obj']->birthmonth, $this->_customdata['obj']->birthday) = sscanf($this->_customdata['obj']->birthdate, '%d/%d/%d');
-
-        parent::definition();
-
         if ($this->_customdata['obj']) {
             $disabled = true;
+            list($this->_customdata['obj']->birthyear, $this->_customdata['obj']->birthmonth, $this->_customdata['obj']->birthday) = sscanf($this->_customdata['obj']->birthdate, '%d/%d/%d');
         } else {
             $disabled = false;
         }
+        parent::definition();
 
         $mform =& $this->_form;
 
