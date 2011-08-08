@@ -592,7 +592,7 @@ abstract class field_data extends elis_data_object {
             $filter = array();
             $filter[] = new field_filter('contextid', $context->id);
             $filter[] = new field_filter('fieldid', $field->id);
-            $count = $fielddatatype::count($fielddatatype, $filter);
+            $count = $fielddatatype::count($filter);
             if ($count) {
                 return $fielddatatype::find($filter);
             }
