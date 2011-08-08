@@ -263,7 +263,7 @@ class usersetpage extends managementpage {
         if ($id) {
             $level = context_level_base::get_custom_context_level('cluster', 'elis_program');
             $context = get_context_instance($level, $id);
-            $ancestorids = substr(str_replace('/',',',$context->path),1);
+            $ancestorids = substr(str_replace('/',',',$context->path),3);
             $sql = "SELECT cluster.*
                     FROM {context} ctx
                     JOIN {" . userset::TABLE . "} cluster ON ctx.instanceid = cluster.id
