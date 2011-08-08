@@ -270,7 +270,7 @@ class userset extends data_object_with_custom_fields {
         }
 
         // figure out the right depth for the cluster
-        if (empty($this->depth)) {
+        if (empty($this->depth) || !empty($this->id)) {
             if ($this->parent == 0) {
                 $this->depth = 1;
             } else {
