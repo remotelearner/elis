@@ -403,7 +403,7 @@ $string['health_check_link'] = 'The <a href="{$a->wwwroot}/elis/program/index.ph
 $string['health_cluster_orphans'] = 'Orphaned user sets found!';
 $string['health_cluster_orphansdesc'] = 'There are {$a->count} user subsets which have had their parent user sets deleted.<br/><ul>';
 $string['health_cluster_orphansdescnone'] = 'There were no orphaned user sets found.';
-$string['health_cluster_orphanssoln'] = 'From the command line change to the directory {$a->dirroot}/elis/program/scripts<br/>
+$string['health_cluster_orphanssoln'] = 'From the command line change to the directory {$a}/elis/program/scripts<br/>
                 Run the script fix_cluster_orphans.php to convert all user sets with missing parent user sets to top-level.';
 $string['health_completion'] = 'Completion export';
 $string['health_completiondesc'] = 'The Completion Export block, which conflicts with Integration Point, is present.';
@@ -414,19 +414,19 @@ $string['health_curriculum'] = 'Stale ELIS Course Description - Moodle Program r
 $string['health_curriculumdesc'] = 'There are {$a->count} records in the {$a->table} table referencing nonexistent ELIS course descriptions';
 $string['health_curriculumsoln'] = 'These records need to be removed from the database.<br/>Suggested SQL:';
 $string['health_duplicate'] = 'Duplicate enrolment records';
-$string['health_duplicatedesc'] = 'There were {$a->count} duplicate enrolments records in the ELIS enrolments table.';
+$string['health_duplicatedesc'] = 'There were {$a} duplicate enrolments records in the ELIS enrolments table.';
 $string['health_duplicatesoln'] = 'The duplicate enrolments need to be removed directly from the database.  <b>DO NOT</b> try to remove them via the UI.<br/><br/>
 Recommended to escalate to development for solution.';
 $string['health_stale'] = 'Stale PM Class Instance - Moodle course description record';
-$string['health_staledesc'] = 'There were {$a->count} records in the crlm_class_moodle table referencing nonexistent ELIS class instances.';
+$string['health_staledesc'] = 'There were {$a} records in the crlm_class_moodle table referencing nonexistent ELIS class instances.';
 $string['health_stalesoln'] = 'These records need to be removed from the database.<br/>Suggested SQL:';
 $string['health_trackcheck'] = 'Unassociated class instances found in tracks';
-$string['health_trackcheckdesc'] = 'Found {a->count} class instances that are attached to tracks when associated course descriptions are not attached to the program.';
+$string['health_trackcheckdesc'] = 'Found {$a} class instances that are attached to tracks when associated course descriptions are not attached to the program.';
 $string['health_trackcheckdescnone'] = 'There were no issues found.';
 $string['health_trackchecksoln'] = 'Need to remove all class instances in tracks that do not have an associated course descriptions in its associated program by running the script linked below.<br/><br/>' .
-               '<a href="{$a->wwwroot}/elis/program/scripts/fix_track_classes.php">Fix this now</a>';
+               '<a href="{$a}/elis/program/scripts/fix_track_classes.php">Fix this now</a>';
 $string['health_user_sync'] = 'User Records Mismatch - Synchronize Users';
-$string['health_user_syncdesc'] = 'There are {$a->count} extra user records for Moodle which don\'t exist for ELIS.';
+$string['health_user_syncdesc'] = 'There are {$a} extra user records for Moodle which don\'t exist for ELIS.';
 $string['health_user_syncsoln'] = 'Users need to be synchronized by running the script which is linked below.<br/><br/>
                 This process can take a long time, we recommend you run it during non-peak hours, and leave this window open until you see a success message.
                 If the script times out (stops loading before indicating success), please open a support ticket to have this run for you.<br/><br/>

@@ -45,14 +45,26 @@ class healthpage extends pm_page {
         return has_capability('moodle/site:config', $context);
     }
 
-    function get_navigation_default() {
-        return array(
-            array('name' => get_string('healthcenter'),
-                  'link' => $this->get_url()),
-            );
+    function build_navbar_default() {
+        global $CFG, $PAGE;
+
+        $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
+        $this->navbar->add(get_string('healthcenter'), $this->url);
     }
 
-    function get_title_default() {
+    /**
+     * Initialize the page variables needed for display.
+     */
+    protected function _init_display() {
+        global $PAGE;
+
+        //needed for item coloring and layout
+        $PAGE->requires->css('/elis/program/styles.css');
+
+        parent::_init_display();
+    }
+
+    function get_page_title_default() {
         return get_string('healthcenter');
     }
 
@@ -70,13 +82,19 @@ class healthpage extends pm_page {
 
         $healthclasses = $core_health_checks;
 
-        $plugins = get_list_of_plugins('elis/program/plugins');
-        foreach ($plugins as $plugin) {
-            if (is_readable(elispm::file('/plugins/' . $plugin . '/health.php'))) {
-                include_once elispm::file('/plugins/' . $plugin . '/health.php');
-                $varname = "${plugin}_health_checks";
-                if (isset($$varname)) {
-                    $healthclasses = array_merge($healthclasses, $$varname);
+        //include health classes from other files
+        $plugin_types = array('eliscoreplugins', 'pmplugins');
+
+        foreach ($plugin_types as $plugin_type) {
+            $plugins = get_plugin_list($plugin_type);
+            foreach ($plugins as $plugin_shortname => $plugin_path) {
+                $health_file_path = $plugin_path . '/health.php';
+                if (is_readable($health_file_path)) {
+                    include_once $health_file_path;
+                    $varname = "${plugin_shortname}_health_checks";
+                    if (isset($$varname)) {
+                        $healthclasses = array_merge($healthclasses, $$varname);
+                    }
                 }
             }
         }
@@ -115,7 +133,7 @@ class healthpage extends pm_page {
             echo get_string('healthnoproblemsfound');
             echo '</div>';
         } else {
-            $OUTPUT->heading(get_string('healthproblemsdetected'));
+            echo $OUTPUT->heading(get_string('healthproblemsdetected'));
             foreach($issues as $severity => $healthissues) {
                 if(!empty($issues[$severity])) {
                     echo '<dl class="healthissues '.$severity.'">';
@@ -134,14 +152,21 @@ class healthpage extends pm_page {
         }
     }
 
-    function action_solution() {
+    function display_solution() {
         global $OUTPUT;
 
         $classname = $this->required_param('problem', PARAM_SAFEDIR);
-        $plugins = get_list_of_plugins('elis/program/plugins');
-        foreach ($plugins as $plugin) {
-            if (is_readable(elispm::file('/plugins/' . $plugin . '/health.php'))) {
-                include_once elispm::file('/plugins/' . $plugin . '/health.php');
+
+        //import files needed for other health classes
+        $plugin_types = array('eliscoreplugins', 'pmplugins');
+
+        foreach ($plugin_types as $plugin_type) {
+            $plugins = get_plugin_list($plugin_type);
+            foreach ($plugins as $plugin_shortname => $plugin_path) {
+                $health_file_path = $plugin_path . '/health.php';
+                if (is_readable($health_file_path)) {
+                    include_once $health_file_path;
+                }
             }
         }
         $problem = new $classname;
@@ -257,9 +282,11 @@ class health_stale_cm_class_moodle extends crlm_health_check_base {
         return get_string('health_staledesc', 'elis_program', $this->count);
     }
     function solution() {
+        global $CFG;
+
         $msg = get_string('health_stalesoln', 'elis_program').
-                ' DELETE FROM {'.classmoodlecourse::TABLE.'} WHERE classid NOT IN (
-                SELECT id FROM {'.pmclass::TABLE.'} )';
+                " DELETE FROM {$CFG->prefix}".classmoodlecourse::TABLE." WHERE classid NOT IN (
+                SELECT id FROM {$CFG->prefix}".pmclass::TABLE." )";
         return $msg;
     }
 }
@@ -292,9 +319,11 @@ class health_curriculum_course extends crlm_health_check_base {
         return get_string('health_curriculumdesc', 'elis_program', array('count'=>$this->count, 'table'=>curriculumcourse::TABLE));
     }
     function solution() {
+        global $CFG;
+
         $msg = get_string('health_curriculumsoln', 'elis_program').
-                "DELETE FROM {".curriculumcourse::TABLE."} WHERE courseid NOT IN (
-                 SELECT id FROM {".course::TABLE."} )";
+                "DELETE FROM {$CFG->prefix}".curriculumcourse::TABLE." WHERE courseid NOT IN (
+                 SELECT id FROM {$CFG->prefix}".course::TABLE." )";
         return $msg;
 
     }
@@ -342,16 +371,25 @@ class health_user_sync extends crlm_health_check_base {
 class cluster_orphans_check extends crlm_health_check_base {
     function __construct() {
         global $DB;
+
+        //needed for db table constants
+        require_once(elispm::lib('data/userset.class.php'));
+
         $this->parentBad = array();
 
-        $clusters = cluster_get_listing('id', 'ASC', 0);
-        foreach ($clusters as $clusid => $clusdata) {
-            if ($clusdata->parent > 0) {
-                $select = "id='{$clusdata->parent}'";
-                $parentCnt = $DB->count_records_select(userset::TABLE, $select);
-                if ($parentCnt < 1) {
-                    $this->parentBad[] = $clusdata->name;
-                }
+        $sql = "SELECT child.name
+                FROM
+                {".userset::TABLE."} child
+                WHERE NOT EXISTS (
+                    SELECT *
+                    FROM {".userset::TABLE."} parent
+                    WHERE child.parent = parent.id
+                )
+                AND child.parent != 0";
+
+        if ($clusters = $DB->get_recordset_sql($sql)) {
+            foreach ($clusters as $cluster) {
+                $this->parentBad[] = $cluster->name;
             }
         }
     }
@@ -393,20 +431,26 @@ class cluster_orphans_check extends crlm_health_check_base {
 class track_classes_check extends crlm_health_check_base {
     function __construct() {
         global $DB;
+
+        //needed for db table constants
+        require_once(elispm::lib('data/track.class.php'));
+
         $this->unattachedClasses = array();
 
         $sql = "SELECT trkcls.id, trkcls.trackid, trkcls.courseid, trkcls.classid, trk.curid
                 FROM {".trackassignment::TABLE."} trkcls
-                JOIN {".track::TABLE."} trk ON trk.id = trkcls.trackid";
-        $classes = $DB->get_records_sql($sql);
+                JOIN {".track::TABLE."} trk ON trk.id = trkcls.trackid
+                JOIN {".pmclass::TABLE."} cls ON trkcls.classid = cls.id
+                WHERE NOT EXISTS (
+                    SELECT *
+                    FROM mdl_crlm_curriculum_course curcrs
+                    WHERE trk.curid = curcrs.curriculumid
+                    AND cls.courseid = curcrs.courseid
+                )";
 
-        if (is_array($classes)) {
-            foreach ($classes as $trackClassId=>$trackClassObj) {
-                $select = "curriculumid = {$trackClassObj->curid} AND courseid = {$trackClassObj->courseid}";
-                $cnt = $DB->count_records_select(curriculumcourse::TABLE, $select);
-                if ($cnt < 1) {
-                    $this->unattachedClasses[] = $trackClassObj->id;
-                }
+        if ($trackclasses = $DB->get_recordset_sql($sql)) {
+            foreach ($trackclasses as $trackclass) {
+                $this->unattachedClasses[] = $trackclass->id;
             }
         }
     }
@@ -425,11 +469,7 @@ class track_classes_check extends crlm_health_check_base {
     }
 
     function description() {
-        if (count($this->unattachedClasses) > 0) {
-            $msg = get_string('health_trackcheckdesc', 'elis_program', array('count'=>count($this->unattachedClasses)));
-        } else {
-            $msg = get_string('health_trackcheckdesc', 'elis_program'); // We should not reach here but put in just in case
-        }
+        $msg = get_string('health_trackcheckdesc', 'elis_program', count($this->unattachedClasses));
 
         return $msg;
     }
