@@ -14,6 +14,7 @@ $string['manual_field_control'] = 'Input control type';
 $string['manual_field_edit_capability'] = 'Who can edit this field?';
 $string['manual_field_view_capability'] = 'Who can view this field?';
 $string['options_source'] = 'Source for menu options';
+$string['options_source_learning_objectives'] = 'Learning Objectives';
 $string['options_source_userset_classifications'] = 'Cluster Classifications';
 $string['options_source_learning_objectives'] = 'Learning Objectives';
 $string['options_source_text'] = 'Manually entered list (below)';
