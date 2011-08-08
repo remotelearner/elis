@@ -594,8 +594,6 @@ class course extends data_object_with_custom_fields {
     }
 
 	public function delete() {
-        $level = context_level_base::get_custom_context_level('course', 'elis_program');
-        delete_context($level,$this->id);
 
         //delete associated classes
         $filter = new field_filter('courseid', $this->id);
@@ -606,6 +604,9 @@ class course extends data_object_with_custom_fields {
         coursetemplate::delete_records($filter, $this->_db);
 
         parent::delete();
+
+        $level = context_level_base::get_custom_context_level('course', 'elis_program');
+        delete_context($level,$this->id);
     }
 
     public static function find($filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {

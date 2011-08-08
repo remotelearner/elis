@@ -154,15 +154,15 @@ class user extends data_object_with_custom_fields {
             usertrack::delete_records($filter, $this->_db);
             clusterassignment::delete_records($filter, $this->_db);
 
-            $level = context_level_base::get_custom_context_level('user', 'elis_program');
-            delete_context($level,$this->id);
-
             // Delete Moodle user.
             if (!empty($muser)) {
                 delete_user($muser);
             }
 
             parent::delete();
+
+            $level = context_level_base::get_custom_context_level('user', 'elis_program');
+            delete_context($level,$this->id);
         }
     }
 

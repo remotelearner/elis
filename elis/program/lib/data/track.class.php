@@ -282,11 +282,11 @@ class track extends data_object_with_custom_fields {
         clustertrack::delete_records($filter, $this->_db);
         trackassignment::delete_records($filter, $this->_db);
 
+        parent::delete();
+
         //Delete this leve's context
         $level = context_level_base::get_custom_context_level('track', 'elis_program');
         delete_context($level,$this->id);
-
-        parent::delete();
     }
 
     function __toString() {

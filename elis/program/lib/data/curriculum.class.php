@@ -103,11 +103,11 @@ class curriculum extends data_object_with_custom_fields {
         curriculumcourse::delete_records($filter, $this->_db);
         curriculumstudent::delete_records($filter, $this->_db);
 
+        parent::delete();
+
         //clean up the curriculum context instance
         $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
         delete_context($level,$this->id);
-
-    	parent::delete();
     }
 
     function __toString() {

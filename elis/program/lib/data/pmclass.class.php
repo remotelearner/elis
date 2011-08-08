@@ -236,10 +236,10 @@ class pmclass extends data_object_with_custom_fields {
             student_grade::delete_records($filter, $this->_db);
             waitlist::delete_records($filter, $this->_db);
 
+            parent::delete();
+
             $level = context_level_base::get_custom_context_level('class', 'elis_program');
             $result = delete_context($level,$this->id);
-
-            parent::delete();
         }
     }
 
