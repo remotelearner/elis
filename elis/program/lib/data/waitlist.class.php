@@ -256,7 +256,7 @@ class waitlist extends elis_data_object {
         if ($courseid) {
             $course = $this->_db->get_record('course', array('id' => $this->id));
             // the elis plugin is treated specially
-            if ($course->enrol != 'elis') { // ***TBD***
+            /*if ($course->enrol != 'elis') { // ***TBD***
                 // send the user to the Moodle enrolment page
                 $a = new stdClass;
                 $a->id = $course->id;
@@ -264,7 +264,7 @@ class waitlist extends elis_data_object {
                 $a->wwwroot = $CFG->wwwroot;
                 $subject = get_string('moodleenrol_subj', self::LANG_FILE, $a);
                 $message = get_string('moodleenrol', self::LANG_FILE, $a);
-            }
+            }*/
         }
 
         if (!isset($message)) {
@@ -279,8 +279,8 @@ class waitlist extends elis_data_object {
         $user = $cuser->get_moodleuser();
         $from = get_admin();
 
-        // TBD: notification::notify($message, $user, $from);
-        email_to_user($user, $from, $subject, $message);
+        notification::notify($message, $user, $from);
+        //email_to_user($user, $from, $subject, $message);
 
         $this->delete(); // $this->data_delete_record() - moved below
     }
