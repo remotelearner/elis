@@ -83,8 +83,8 @@ class customfieldpage extends pm_page {
         $deletetxt = get_string('delete');
         $edittxt = get_string('edit');
         $syncerr = false;
-        if (empty($categories)) {
-            print_heading(get_string('field_no_categories_defined', 'elis_program'));
+        if (empty($category_names)) {
+            echo $OUTPUT->heading(get_string('field_no_categories_defined', 'elis_program'));
         }
         foreach ($fieldsbycategory as $categoryid => $fields) {
             $tmppage = new moodle_url($this->url);
@@ -97,10 +97,12 @@ class customfieldpage extends pm_page {
             $tmppage->param('action', 'editcategory');
             $editlink = $tmppage->out();
 
-            echo "<h2>{$category_names[$categoryid]} <a href=\"$editlink\">";
-            echo "<img src=\"".$OUTPUT->pix_url('edit','elis_program')."\" alt=\"$edittxt\" title=\"$edittxt\" /></a>";
-            echo "<a href=\"$deletelink\"><img src=\"".$OUTPUT->pix_url('delete','elis_program')."\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
-            echo "</h2>\n";
+            if (isset($category_names[$categoryid])) {
+                echo "<h2>{$category_names[$categoryid]} <a href=\"$editlink\">";
+                echo "<img src=\"".$OUTPUT->pix_url('edit','elis_program')."\" alt=\"$edittxt\" title=\"$edittxt\" /></a>";
+                echo "<a href=\"$deletelink\"><img src=\"".$OUTPUT->pix_url('delete','elis_program')."\" alt=\"$deletetxt\" title=\"$deletetxt\" /></a>";
+                echo "</h2>\n";
+            }
 
             if (empty($fields)) {
                 print_string('field_no_fields_defined', 'elis_program');
@@ -131,7 +133,7 @@ class customfieldpage extends pm_page {
         $button = new single_button(new moodle_url('index.php', $options), get_string('field_create_category', 'elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('field_create_category', 'elis_program'), 'id'=>''));
         echo $OUTPUT->render($button);
 
-        if (!empty($categories)) {
+        if (!empty($category_names)) {
             if ($level == 'user') {
                 // create new field from Moodle field
                 $select = 'shortname NOT IN (SELECT shortname FROM {'.field::TABLE.'})';
