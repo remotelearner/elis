@@ -47,6 +47,8 @@ class field extends elis_data_object {
 
     private $_owners = null;
 
+    static $delete_is_complex = true;
+
     const CHECKBOX = 'checkbox';
     const MENU = 'menu';
     const TEXT = 'text';
@@ -135,13 +137,21 @@ class field extends elis_data_object {
         }
     }
 
-    /*
     function delete() {
-        $result = parent::delete();
-        // FIXME: delete all field data associated with this field
-        return $result;
+        //clean up owners
+        foreach ($this->owners as $owner) {
+            $owner->delete();
+        }
+
+        //clean up field data
+        $filter = new field_filter('fieldid', $this->id);
+
+        $classname = "field_data_".$this->data_type();
+        call_user_func(array($classname, 'delete_records'), $filter, $this->_db);
+
+        //clean up field record
+        parent::delete();
     }
-    */
 
     /**
      * Gets the custom field types, along with their categories, for a given
