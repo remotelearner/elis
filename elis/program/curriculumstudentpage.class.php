@@ -217,6 +217,8 @@ class studentcurriculumpage extends associationpage2 {
         static $sortfields = array(
             'name' => 'name',
             'idnumber' => 'idnumber',
+            'description' => 'description',
+            'reqcredits' => 'reqcredits',
             );
         if (!array_key_exists($sort, $sortfields)) {
             $sort = key($sortfields);
@@ -291,6 +293,11 @@ class studentcurriculumpage extends associationpage2 {
         static $sortfields = array(
             'name' => 'name',
             'idnumber' => 'idnumber',
+            'description' => 'description',
+            'reqcredits' => 'reqcredits',
+            'numcourses' => 'numcourses',
+            'timecompleted' => 'timecompleted',
+            'credits' => 'credits',
             );
         if (!array_key_exists($sort, $sortfields)) {
             $sort = key($sortfields);
@@ -577,6 +584,8 @@ class curriculumstudentpage extends associationpage2 {
         static $sortfields = array(
             'name' => array('lastname', 'firstname'),
             'idnumber' => 'idnumber',
+            'country' => 'country',
+            'language' => 'language',
             );
         if (!array_key_exists($sort, $sortfields)) {
             $sort = key($sortfields);
