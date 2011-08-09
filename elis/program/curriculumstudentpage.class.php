@@ -340,6 +340,18 @@ class studentcurriculumpage extends associationpage2 {
             $columns['timecompleted'] = array('header' => get_string('date_completed','elis_program'));
             $columns['credits'] = array('header' => get_string('credits_rec','elis_program'));
         }
+
+        //determine sort order (default to lastname, firstname ascending)
+        $sort = optional_param('sort', 'name', PARAM_ALPHA);
+        $dir  = optional_param('dir', 'ASC', PARAM_ALPHA);
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        }
+
         return new user_curriculum_selection_table($records, $columns,
                                                    new moodle_url($baseurl));
     }
@@ -667,7 +679,8 @@ class curriculumstudentpage extends associationpage2 {
             $params = array_merge($params, $extrasql[1]);
         }
 
-        //$sql .= ' ORDER BY '.$sortclause;
+        //sort based on default / url params
+        $sql .= ' ORDER BY '.$sortclause;
 
         $fields = 'curass.id, usr.id AS userid, usr.firstname, usr.lastname, usr.idnumber, usr.country, usr.language, curass.timecreated';
 
@@ -695,6 +708,18 @@ class curriculumstudentpage extends associationpage2 {
         if (!$this->is_assigning()) {
             $columns['timecreated'] = array('header' => get_string('registered_date','elis_program'));
         }
+
+        //determine sort order (default to lastname, firstname ascending)
+        $sort = optional_param('sort', 'name', PARAM_ALPHA);
+        $dir  = optional_param('dir', 'ASC', PARAM_ALPHA);
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        }
+
         return new curriculum_user_selection_table($records, $columns,
                                                    new moodle_url($baseurl));
     }
