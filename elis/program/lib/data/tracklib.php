@@ -27,7 +27,7 @@
 require_once('../../../../config.php');
 require_once($CFG->dirroot . '/elis/program/lib/setup.php');
 
-require_once elis::lib('data/curriculumcourse.class.php');
+require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/track.class.php');
 
 $courseid = required_param('courseid', PARAM_INT);
