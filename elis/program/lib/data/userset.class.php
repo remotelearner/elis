@@ -30,13 +30,7 @@ require_once(elis::lib('data/data_object_with_custom_fields.class.php'));
 require_once(elispm::lib('contexts.php'));
 require_once(elispm::lib('data/clusterassignment.class.php'));
 require_once(elispm::lib('data/clustercurriculum.class.php'));
-/*
-require_once(CURMAN_DIRLOCATION . '/lib/usercluster.class.php');
-require_once(CURMAN_DIRLOCATION . '/lib/clusterassignment.class.php');
-require_once CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php';
-*/
-
-define ('CLSTPROFTABLE', 'crlm_cluster_profile');
+require_once(elis::plugin_file('usersetenrol_moodle_profile', 'userset_profile.class.php'));
 
 class userset extends data_object_with_custom_fields {
     const TABLE = 'crlm_cluster';
@@ -69,73 +63,6 @@ class userset extends data_object_with_custom_fields {
 
     const ENROL_PLUGIN_TYPE = 'usersetenrol';
 
-    /**
-     * Constructor.
-     *
-     * @param $clusterdata int/object/array The data id of a data record or data elements to load manually.
-     *
-     */
-    /*
-    function cluster($clusterdata=false) {
-        global $CURMAN;
-
-        parent::datarecord();
-
-        $this->set_table(CLSTTABLE);
-        $this->add_property('id', 'int');
-        $this->add_property('name', 'string');
-        $this->add_property('display', 'string');
-        $this->add_property('leader', 'int');
-        $this->add_property('parent', 'int');
-        $this->add_property('depth', 'int');
-
-        if (is_numeric($clusterdata)) {
-            $this->data_load_record($clusterdata);
-        } else if (is_array($clusterdata)) {
-            $this->data_load_array($clusterdata);
-        } else if (is_object($clusterdata)) {
-            $this->data_load_array(get_object_vars($clusterdata));
-        }
-
-        if (!empty($this->id)) {
-            // custom fields
-            $level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-            if ($level) {
-                $fielddata = field_data::get_for_context(get_context_instance($level,$this->id));
-                $fielddata = $fielddata ? $fielddata : array();
-                foreach ($fielddata as $name => $value) {
-                    $this->{"field_{$name}"} = $value;
-                }
-            }
-        }
-
-/*
- * profile_field1 -select box
- * profile_value1 -select box corresponding to profile_field1
- *
- * profile_field2 -select box
- * profile_value2 -select box corresponding to profile_field2
- * /
-        $prof_fields = $CURMAN->db->get_records(CLSTPROFTABLE, 'clusterid', $this->id, '', '*', 0, 2);
-
-        if(!empty($prof_fields)) {
-            foreach(range(1,2) as $i) {
-                $profile = pos($prof_fields);
-
-                if(!empty($profile)) {
-                    $field = 'profile_field' . $i;
-                    $value = 'profile_value' . $i;
-
-                    $this->$field = $profile->fieldid;
-                    $this->$value = $profile->value;
-                }
-
-                next($prof_fields);
-            }
-        }
-    }
-    */
-
     protected function get_field_context_level() {
         return context_level_base::get_custom_context_level('cluster', 'elis_program');
     }
@@ -146,7 +73,6 @@ class userset extends data_object_with_custom_fields {
     public function set_from_data($data) {
         $this->_load_data_from_record($data, true);
     }
-
 
     static $delete_is_complex = true;
 
@@ -321,6 +247,33 @@ class userset extends data_object_with_custom_fields {
 
     public function __toString() {
         return $this->name;
+    }
+
+    /**
+     * Add param fields to the form object
+     */
+    public function to_object() {
+        $obj = parent::to_object();
+
+        $prof_fields = $this->_db->get_records(userset_profile::TABLE, array('clusterid'=>$this->id), '', '*', 0, 2);
+
+        if(!empty($prof_fields)) {
+            foreach(range(1,2) as $i) {
+                $profile = pos($prof_fields);
+
+                if(!empty($profile)) {
+                    $field = 'profile_field' . $i;
+                    $value = 'profile_value' . $i;
+
+                    $obj->$field = $profile->fieldid;
+                    $obj->$value = $profile->value;
+                }
+
+                next($prof_fields);
+            }
+        }
+
+        return $obj;
     }
 
     static function cluster_assigned_handler($eventdata) {
@@ -720,7 +673,6 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
     $recordset = $DB->get_recordset_sql($sql, $params, $startrec, $perpage);
     return new data_collection($recordset, 'userset', null, array(), true);
 }
-
 
 function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = array()) {
 
