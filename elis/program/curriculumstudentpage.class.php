@@ -305,9 +305,9 @@ class studentcurriculumpage extends associationpage2 {
                 cur.idnumber, cur.name, cur.description, cur.reqcredits, curcrscnt.count as numcourses
                   FROM {'.curriculumstudent::TABLE.'} curass
                   JOIN {'.curriculum::TABLE.'} cur ON cur.id = curass.curriculumid
-                  JOIN (SELECT curriculumid, COUNT(courseid) AS count
-                          FROM {'.curriculumcourse::TABLE.'}
-                      GROUP BY curriculumid) curcrscnt ON cur.id = curcrscnt.curriculumid
+                  LEFT JOIN (SELECT curriculumid, COUNT(courseid) AS count
+                               FROM {'.curriculumcourse::TABLE.'}
+                           GROUP BY curriculumid) curcrscnt ON cur.id = curcrscnt.curriculumid
                  WHERE curass.userid = :userid
               ORDER BY '.$sortclause;
         $where = 'id IN (SELECT curriculumid FROM {'.curriculumstudent::TABLE.'} WHERE userid=:userid)';
@@ -388,6 +388,15 @@ class user_curriculum_selection_table extends selection_table {
 
     function is_sortable_reqcredits() {
         return false;
+    }
+
+    function get_item_display_numcourses($column, $item) {
+        if (empty($item->$column)) {
+            //this handles a NULL count coming from the DB
+            return '0';
+        }
+
+        return $item->$column;
     }
 
     function get_item_display_timecompleted($column, $item) {
