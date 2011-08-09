@@ -661,7 +661,7 @@ class curriculumcourse extends elis_data_object {
         // TO-DO: add/update stuff goes here (if any)
 
         // TO-DO: what do we do about tables that aren't even defined as a variable?
-        events_trigger('pm_program_coursedescription_associated', $this);
+        //events_trigger('pm_program_coursedescription_associated', $this);
 
     }
 

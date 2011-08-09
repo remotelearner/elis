@@ -65,14 +65,14 @@ function userset_groups_pm_classinstance_associated_handler($class_association) 
 }
 
 /**
- * Handler that gets called when a course gets associated with a curriculum
+ * Handler that gets called when a class gets associated with a track
  *
  * @param  trackassignmentclass   $track_class_association  The appropriate track-class association record
  * @return boolean                                          Whether the association was successful
  */
-function userset_groups_pm_program_coursedescription_associated_handler($curriculum_course_association) {
-    $attributes = array('cur.id' => $curriculum_course_association->curriculumid,
-                        'cmcrs.id' => $curriculum_course_association->courseid);
+function userset_groups_pm_track_class_associated_handler($track_class_association) {
+    $attributes = array('trk.id' => $track_class_association->trackid,
+                        'cls.id' => $track_class_association->classid);
 
     return userset_groups_update_groups($attributes);
 }
@@ -83,9 +83,9 @@ function userset_groups_pm_program_coursedescription_associated_handler($curricu
  * @param  object   $cluster_track_association  The appropriate cluster-track association record
  * @return boolean                              Whether the association was successful
  */
-function userset_groups_pm_userset_program_associated_handler($cluster_curriculum_association) {
-    $attributes = array('clst.id' => $cluster_curriculum_association->clusterid,
-                        'cur.id' => $cluster_curriculum_association->curriculumid);
+function userset_groups_pm_userset_track_associated_handler($cluster_track_association) {
+    $attributes = array('clst.id' => $cluster_track_association->clusterid,
+                        'trk.id' => $cluster_track_association->trackid);
 
     return userset_groups_update_groups($attributes);
 }
@@ -396,6 +396,9 @@ function userset_groups_update_user_site_course($userid, $clusterid) {
  *
  * Moodle User - CM User - Cluster - Track - Class - Moodle Course
  *
+ * N.B. If a new CM User, added to this cluster, is assigned to this track - then they need to have the student role in the class(es)
+ * in which they are enrolled in order to be added to the Moodle userset group
+ *
  * @param   array    $attributes  Conditions to apply to the SQL query
  * @return  boolean               Returns true to appease events_trigger
  *
@@ -434,11 +437,11 @@ function userset_groups_update_groups($attributes = array()) {
                 }
             }
 
-            //this query handles the bulk of the work
             $sql = "SELECT DISTINCT crs.id AS courseid,
                                     clst.name AS clustername,
                                     mdlusr.id AS userid,
-                                    clst.id AS clusterid
+                                    clst.id AS clusterid,
+                                    trk.id AS trackid
                     FROM {".pmclass::TABLE."} cls
                     JOIN {".classmoodlecourse::TABLE."} clsmdl
                     ON cls.id = clsmdl.classid
@@ -446,14 +449,16 @@ function userset_groups_update_groups($attributes = array()) {
                     ON clsmdl.moodlecourseid = crs.id
                     JOIN {".course::TABLE."} cmcrs
                     ON cmcrs.id = cls.courseid
-                    JOIN {".curriculumcourse::TABLE."} curcrs
-                    ON curcrs.courseid = cmcrs.id
-                    JOIN {".curriculum::TABLE."} cur
-                    ON curcrs.curriculumid = cur.id
-                    JOIN {".clustercurriculum::TABLE."} clstcur
-                    ON clstcur.curriculumid = curcrs.curriculumid
+                    JOIN {". trackassignment::TABLE. "} trkcls
+                       ON trkcls.classid = cls.id AND trkcls.autoenrol = 1
+                    JOIN {". track::TABLE. "} trk
+                       ON trk.id = trkcls.trackid
+                    JOIN {". usertrack::TABLE. "} usrtrk
+                       ON usrtrk.trackid = trk.id
+                    JOIN {".clustertrack::TABLE."} clsttrk
+                    ON clsttrk.trackid = trk.id
                     JOIN {".userset::TABLE."} clst
-                    ON clstcur.clusterid = clst.id
+                    ON clsttrk.clusterid = clst.id
                     JOIN {".clusterassignment::TABLE."} usrclst
                     ON clst.id = usrclst.clusterid
                     JOIN {".user::TABLE."} usr
@@ -465,8 +470,7 @@ function userset_groups_update_groups($attributes = array()) {
 
             $records = $DB->get_recordset_sql($sql, $params);
 
-            if($records) {
-
+            if($records->valid()) {
                 //used to track changes in clusters
                 $last_cluster_id = 0;
                 $last_group_id = 0;

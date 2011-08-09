@@ -39,7 +39,7 @@ $handlers = array(
         'handlerfunction' => 'userset_groups_pm_classinstance_associated_handler',
         'schedule'        => 'instant'
     ),
-    'pm_program_coursedescription_associated' => array (
+    /*'pm_program_coursedescription_associated' => array (
         'handlerfile'     => '/elis/program/plugins/userset_groups/lib.php',
         'handlerfunction' => 'userset_groups_pm_program_coursedescription_associated_handler',
         'schedule'        => 'instant'
@@ -47,6 +47,16 @@ $handlers = array(
     'pm_userset_program_associated' => array (
         'handlerfile'     => '/elis/program/plugins/userset_groups/lib.php',
         'handlerfunction' => 'userset_groups_pm_userset_program_associated_handler',
+        'schedule'        => 'instant'
+    ),*/
+    'pm_track_class_associated' => array (
+        'handlerfile'     => '/elis/program/plugins/userset_groups/lib.php',
+        'handlerfunction' => 'userset_groups_pm_track_class_associated_handler',
+        'schedule'        => 'instant'
+    ),
+    'pm_userset_track_associated' => array (
+        'handlerfile'     => '/elis/program/plugins/userset_groups/lib.php',
+        'handlerfunction' => 'userset_groups_pm_userset_track_associated_handler',
         'schedule'        => 'instant'
     ),
     'pm_userset_updated' => array (

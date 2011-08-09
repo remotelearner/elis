@@ -51,6 +51,7 @@ $string['address'] = 'Address';
 $string['address2'] = 'Address 2';
 $string['admin_dashboard'] = 'Administrator Dashboard';
 $string['all_items_assigned'] = 'All available items assigned.';
+$string['all_users_already_enrolled'] = 'All users in track already enrolled.';
 $string['assign'] = 'Assign';
 $string['assign_selected'] = 'Assign Selected';
 $string['assigned'] = 'Assigned';
@@ -508,6 +509,7 @@ $string['moodleenrol_subj'] = 'Ready to enrol in {$a->idnumber}.';
 
 $string['name'] = 'Name';
 $string['n_completed'] = 'Not Completed';
+$string['n_users_enrolled'] = '{$a} user(s) enrolled.';
 $string['no_classes_available'] = 'No classes currently available.  Please check again later.';
 $string['no_completion_elements'] = 'There are no learning objectives defined.';
 $string['no_courses'] = 'No course descriptions found';

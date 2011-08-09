@@ -111,7 +111,7 @@ class clustertrack extends elis_data_object {
             }
         }
 
-        events_trigger('crlm_cluster_track_associated', $record);
+        events_trigger('pm_userset_track_associated', $record);
 
     }
 

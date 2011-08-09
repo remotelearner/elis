@@ -678,7 +678,7 @@ class trackassignment extends elis_data_object {
             }
         }
 
-        events_trigger('crlm_track_class_associated', $this);
+        events_trigger('pm_track_class_associated', $this);
     }
 
     /**
@@ -744,9 +744,9 @@ class trackassignment extends elis_data_object {
         // TODO: validate this...
         $sql = "NOT EXISTS (SELECT 'x'
                                 FROM {".student::TABLE. "} s
-                                WHERE s.classid = ? AND s.userid = ?)
+                                WHERE s.classid = ? AND s.userid = {".usertrack::TABLE ."}.userid)
                   AND trackid = ?";
-        $params = array($this->classid, '{' .usertrack::TABLE .'}'.userid, $this->trackid);
+        $params = array($this->classid,$this->trackid);
         $users = $this->_db->get_records_select(usertrack::TABLE, $sql, $params, 'userid');
 
         if ($users) {
