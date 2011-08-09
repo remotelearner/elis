@@ -24,30 +24,29 @@
  *
  */
 
-    global $CFG;
-    require_once('../../config.php');
-    require_once($CFG->dirroot . '/elis/program/config.php');
+require_once('../../../../config.php');
+require_once($CFG->dirroot . '/elis/program/lib/setup.php');
 
-    // Waiting on Marko... require_once elis::lib('data/curriculumcourse.class.php');
-    require_once elis::lib('data/track.class.php');
+require_once elis::lib('data/curriculumcourse.class.php');
+require_once elispm::lib('data/track.class.php');
 
-    $courseid = required_param('courseid', PARAM_INT);
+$courseid = required_param('courseid', PARAM_INT);
 
-    require_login(0, false);
+require_login(0, false);
 
-    $tracks = track_get_listing();
-    $curcrsassign = programcourse_get_list_by_course($courseid);
-    $output = '';
+$tracks = track_get_listing();
+$curcrsassign = curriculumcourse_get_list_by_course($courseid);
+$output = '';
 
-    if(!empty($curcrsassign)) {
-        foreach ($curcrsassign as $recid => $curcrsrec) {
-            foreach ($tracks as $trackid => $trackrec) {
-                if ($trackrec->curid == $curcrsrec->curriculumid) {
-                    $output .= '<option value="'.$trackid.'">'.$trackrec->name.'</option>'."\n";
-                 }
-
+if(!empty($curcrsassign)) {
+    foreach ($curcrsassign as $recid => $curcrsrec) {
+        foreach ($tracks as $trackid => $trackrec) {
+            if ($trackrec->curid == $curcrsrec->curriculumid) {
+                $output .= '<option value="'.$trackid.'">'.$trackrec->name.'</option>'."\n";
             }
+
         }
     }
+}
 
-    echo $output;
+echo $output;
