@@ -149,6 +149,9 @@ class field extends elis_data_object {
         $classname = "field_data_".$this->data_type();
         call_user_func(array($classname, 'delete_records'), $filter, $this->_db);
 
+        //clean up context level associations
+        field_contextlevel::delete_records($filter);
+
         //clean up field record
         parent::delete();
     }
@@ -483,13 +486,18 @@ class field_category extends elis_data_object {
                           array('sortorder' => 'ASC'));
     }
 
-    /*
     function delete() {
-        $result = parent::delete();
-        // FIXME: delete all fields associated with this category
-        return $result;
+        //filter used in general
+        $filter = new field_filter('categoryid', $this->id);
+
+        //delete fields that belong to this category
+        field::delete_records($filter, $this->_db);
+        //delete the record associating the category to a context level
+        field_category_contextlevel::delete_records($filter, $this->_db);
+
+        //delete the actual category record
+        parent::delete();
     }
-    */
 }
 
 /**
