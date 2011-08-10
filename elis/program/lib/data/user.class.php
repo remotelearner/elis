@@ -709,7 +709,7 @@ class pm_show_inactive_filter extends user_filter_type {
      * @param string $field user table filed name
      * @param array $options select options
      */
-    function cm_show_inactive_filter($name, $label, $advanced, $field, $options) {
+    function pm_show_inactive_filter($name, $label, $advanced, $field, $options) {
         parent::user_filter_type($name, $label, $advanced);
         $this->_field   = $field;
         $this->_options = $options;
