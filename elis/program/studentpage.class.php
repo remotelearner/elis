@@ -678,7 +678,7 @@ class student_table extends association_page_table {
     function get_item_display_idnumber($column, $item) {
         global $CFG, $USER;
 
-        $usermanagementpage = new studentpage(); // TBD, WAS: usermanagementpage();
+        $usermanagementpage = new userpage();
         if ($usermanagementpage->can_do_view()) {
             $target = $usermanagementpage->get_new_page(array('action' => 'view', 'id' => $item->userid));
             $link = $target->url;

@@ -439,8 +439,10 @@ class curriculumstudent extends elis_data_object {
 
     public function save() {
         $isnew = empty($this->id);
+        $now = time();
 
         if ($isnew) {
+            $this->timecreated = $now;
             if (!empty(elis::$config->elis_program->enable_curriculum_expiration) &&
                 elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_START &&
                 $this->_db->get_field(curriculum::TABLE, 'frequency', array('id'=>$this->curriculumid))) {
@@ -455,6 +457,7 @@ class curriculumstudent extends elis_data_object {
                 }
             }
         }
+        $this->timemodified = $now;
 
         parent::save();
     }
