@@ -31,8 +31,8 @@ $user_activity_health_checks = array(
 class user_activity_health_empty extends crlm_health_check_base {
     function __construct() {
         global $CURMAN;
-        $this->lastrun = isset(elis::$config->elis_core->user_activity_last_run) ? (int)elis::$config->elis_core->user_activity_last_run : 0;
-        $this->inprogress = isset(elis::$config->elis_core->user_activity_state);
+        $this->lastrun = isset(elis::$config->eliscoreplugins_user_activity->last_run) ? (int)elis::$config->eliscoreplugins_user_activity->last_run : 0;
+        $this->inprogress = !empty(elis::$config->eliscoreplugins_user_activity->state);
     }
 
     function exists() {
@@ -82,4 +82,3 @@ site-wide time summary) from working.";
         }
     }
 }
-?>

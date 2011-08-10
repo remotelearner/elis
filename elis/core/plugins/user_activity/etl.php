@@ -28,8 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__) .'/../../lib/setup.php');
 
-define('CONFIG_TABLE',  'config_plugins');
-define('CONFIG_PLUGIN', 'elis_core'); // ***TBD***
 define('ETL_TABLE',     'etl_user_activity');
 define('ETL_MOD_TABLE', 'etl_user_module_activity');
 
@@ -193,7 +191,7 @@ function user_activity_task_init( $output_mtrace = true ) {
         mtrace('Calculating user activity from Moodle log');
     }
 
-    $state = elis_get_config('user_activity_state');
+    $state = elis::$config->eliscoreplugins_user_activity->state;
     if (!empty($state)) {
         // We already have some state saved.  Use that.
         return unserialize($state);
@@ -201,11 +199,11 @@ function user_activity_task_init( $output_mtrace = true ) {
 
     $state = array();
     // ETL parameters
-    $state['sessiontimeout'] = elis_get_config('user_activity_session_timeout');
-    $state['sessiontail'] = elis_get_config('user_activity_session_tail');
+    $state['sessiontimeout'] = elis::$config->eliscoreplugins_user_activity->session_timeout;
+    $state['sessiontail'] = elis::$config->eliscoreplugins_user_activity->session_tail;
 
     // the last run time that we have processed until
-    $lastrun = elis_get_config('user_activity_last_run');
+    $lastrun = elis::$config->eliscoreplugins_user_activity->last_run;
     $state['starttime'] = !empty($lastrun) ? (int)$lastrun : 0;
 
     $startrec = $DB->get_field_select('log', 'MAX(id)', 'time <= ?',
@@ -232,12 +230,12 @@ function user_activity_task_process(&$state) {
     $starttime = $state['starttime'];
 
     // find the record ID corresponding to our start time
-    $startrec = $DB->get_field_select('log', 'MAX(id)', 'time <= ?', array($starttime));
+    $startrec = $DB->get_field_select('log', 'MIN(id)', 'time >= ?', array($starttime));
     $startrec = empty($startrec) ? 0 : $startrec;
 
     // find the last record that's close to our chunk size, without
     // splitting a second between runs
-    $endtime = $DB->get_field_select('log', 'MAX(time)', 'id <= ?',
+    $endtime = $DB->get_field_select('log', 'MIN(time)', 'id >= ?',
                                      array($startrec + USERACT_RECORD_CHUNK));
     if (!$endtime) {
         $endtime = time();
@@ -376,7 +374,11 @@ function user_activity_task_process(&$state) {
     $state['starttime'] = $endtime;
 
     $endrec = $DB->get_field_select('log', 'MAX(id)', 'time < ?', array($endtime));
-    $totalrec = $DB->get_field_select('log', 'MAX(id)', 'TRUE');
+    // possibly skip the last time when calculating the total number of
+    // records, since we are purposely skipping anything less than $endtime
+    $lasttime = $DB->get_field_select('log', 'MAX(time)', 'TRUE');
+    $totalrec = $DB->get_field_select('log', 'MAX(id)', 'time < ?', array($lasttime));
+    $totalrec = max($totalrec, $endrec);
     return array($endrec ? ($endrec - $state['startrec']) : 0,
                  $totalrec ? ($totalrec - $state['startrec']) : 0);
 }
@@ -388,7 +390,7 @@ function user_activity_task_process(&$state) {
  */
 function user_activity_task_save($state) {
     mtrace('* over time limit -- saving state and pausing');
-    elis_set_config('user_activity_state', serialize($state));
+    set_config('state', serialize($state), 'eliscoreplugins_user_activity');
 }
 
 /**
@@ -398,37 +400,6 @@ function user_activity_task_save($state) {
  */
 function user_activity_task_finish($state) {
     mtrace('* completed');
-    elis_set_config('user_activity_last_run', $state['starttime']);
-    elis_set_config('user_activity_state', 0); // WAS: null but not allowed in config_plugins
+    set_config('last_run', $state['starttime'], 'eliscoreplugins_user_activity');
+    set_config('state', 0, 'eliscoreplugins_user_activity'); // WAS: null but not allowed in config_plugins
 }
-
-if (!function_exists('elis_get_config')) { // ***TBD***
-    function elis_get_config($name) {
-        global $DB;
-        return $DB->get_field(CONFIG_TABLE, 'value',
-                       array('name' => $name, 'plugin' => CONFIG_PLUGIN));
-        //$plugin = CONFIG_PLUGIN;
-        //return elis::$config->{$plugin}->{$name};
-    }
-}
-
-if (!function_exists('elis_set_config')) { // ***TBD***
-    function elis_set_config($name, $value) {
-        global $DB;
-        $plugin = CONFIG_PLUGIN;
-        elis::$config->{$plugin}->{$name} = $value;
-        if ($DB->get_field(CONFIG_TABLE, 'name',
-                           array('name' => $name, 'plugin' => $plugin))
-            !== false) {
-            return $DB->set_field(CONFIG_TABLE, 'value', $value,
-                           array('name' => $name, 'plugin' => $plugin));
-        } else {
-            $config         = new stdClass;
-            $config->name   = $name;
-            $config->value  = $value;
-            $config->plugin = $plugin;
-            return $DB->insert_record(CONFIG_TABLE, $config);
-        }
-    }
-}
-
