@@ -31,7 +31,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once elispm::lib('selectionpage.class.php');
 require_once elispm::file('form/bulkuserform.class.php');
 require_once elispm::lib('data/user.class.php');
-require_once elispm::lib('data/usermanagement.class.php');
 
 /* *** TBD ***
 require_once CURMAN_DIRLOCATION . '/lib/table.class.php';
@@ -108,7 +107,7 @@ class bulkuserpage extends selectionpage {
     function get_records_from_selection($record_ids) {
         global $DB;
 
-        $users = $DB->get_records_select('crlm_user', 'id in ('.implode(',',$record_ids).')');
+        $users = $DB->get_records_select(user::TABLE, 'id in ('. implode(',', $record_ids) .')');
 
         return $users;
     }

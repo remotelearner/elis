@@ -844,3 +844,94 @@ function pm_course_complete($enrolment) {
 
     return true;
 }
+
+/**
+ * Function from old [1.9x] usermanagement.class.php
+ * used by: bulkuserpage.class.php
+ */
+function usermanagement_get_users($sort = 'name', $dir = 'ASC', $startrec = 0,
+                                  $perpage = 0, $extrasql = array(), $contexts = null) {
+    global $DB;
+    require_once(elispm::lib('data/user.class.php'));
+
+    $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+    $select   = 'SELECT usr.id, usr.idnumber as idnumber, usr.country, usr.language, usr.timecreated, '.
+               $FULLNAME . ' as name ';
+    $tables   = 'FROM {'. user::TABLE .'} usr ';
+    $where    = array();
+    $params   = null;
+
+    if (!empty($extrasql) && $extrasql[0]) {
+        $where[] = $extrasql[0];
+        if ($extrasql[1]) {
+            $params = $extrasql[1];
+        }
+    }
+
+    if ($contexts !== null) { // TBV
+        $user_obj = $contexts->get_filter('usr.id', 'user'); // 'id' ???
+        $filter_array = $user_obj->get_sql(false, 'usr');
+        if (isset($filter_array['where'])) {
+            $where[] = '('.$filter_array['where'].')';
+        }
+    }
+
+    if (!empty($where)) {
+        $s_where = 'WHERE '. implode(' AND ', $where) .' ';
+    } else {
+        $s_where = '';
+    }
+
+    if ($sort) { // ***TBD***
+        if ($sort == 'name') {
+            $sort = "ORDER BY lastname {$dir}, firstname {$dir} ";
+        } else {
+            $sort = "ORDER BY {$sort} {$dir} ";
+        }
+    }
+
+    $sql = $select.$tables.$s_where.$sort;
+    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
+}
+
+/**
+ * Count the number of users
+ * Function from old [1.9x] usermanagement.class.php
+ * used by: bulkuserpage.class.php
+ */
+function usermanagement_count_users($extrasql = array(), $contexts = null) {
+    global $DB;
+    require_once(elispm::lib('data/user.class.php'));
+
+    $select  = 'SELECT COUNT(usr.id) ';
+    $tables  = 'FROM {'. user::TABLE .'} usr ';
+    $join    = '';
+    $on      = '';
+    $where   = array();
+    $params  = null;
+
+    if (!empty($extrasql) && $extrasql[0]) {
+        $where[] = $extrasql[0];
+        if ($extrasql[1]) {
+            $params = $extrasql[1];
+        }
+    }
+
+    if ($contexts !== null) { // TBV
+        $user_obj = $contexts->get_filter('usr.id', 'user'); // 'id' ???
+        $filter_array = $user_obj->get_sql(false, 'usr');
+        if (isset($filter_array['where'])) {
+            $where[] = '('.$filter_array['where'].')';
+        }
+    }
+
+    if (!empty($where)) {
+        $s_where = 'WHERE '. implode(' AND ', $where) .' ';
+    } else {
+        $s_where = '';
+    }
+
+    $sql = $select.$tables.$join.$on.$s_where;
+    return $DB->count_records_sql($sql, $params);
+}
+
