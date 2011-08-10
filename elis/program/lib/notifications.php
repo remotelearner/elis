@@ -345,8 +345,8 @@ function pm_notify_send_handler($eventdata){
         $eventdata->fullmessage      = '';
         $eventdata->fullmessagehtml  = $message;
     } else {
-        $eventdata->fullmessage      = '';
-        $eventdata->fullmessagehtml  = $message;
+        $eventdata->fullmessage      = $message;
+        $eventdata->fullmessagehtml  = '';
     }
 
     //store the message unfiltered. Clean up on output.
