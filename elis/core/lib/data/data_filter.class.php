@@ -39,6 +39,9 @@ abstract class data_filter {
      * @param bool $use_join whether or not a JOIN query should be generated
      * (if relevant)
      * @param string $tablename the name or alias of the base table
+     * @param int $paramtype The type of SQL parameter to use.  Only
+     * SQL_PARAMS_NAMED and SQL_PARAMS_QM are supported.  SQL_PARAMS_DOLLAR is
+     * NOT supported.
      * @param moodle_database $db the database that the query will be executed
      * on
      *
@@ -54,7 +57,7 @@ abstract class data_filter {
      * should be interpreted as no filtering performed (that is, all records
      * are returned).
      */
-    abstract public function get_sql($use_join=false, $tablename=null, moodle_database $db=null);
+    abstract public function get_sql($use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null);
 
     /**
      * This is public so that unit tests can have predictable table aliases.
@@ -73,7 +76,7 @@ abstract class data_filter {
     protected static function _get_unique_name($prefix='table') {
         self::$_prefix_num = self::$_prefix_num + 1;
         $num = self::$_prefix_num;
-        return "_{$prefix}_{$num}";
+        return "{$prefix}_{$num}";
     }
 }
 
@@ -88,14 +91,14 @@ class AND_filter extends data_filter {
         $this->filters = $filters;
     }
 
-    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+    public function get_sql($use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null) {
         $where_clauses = array();
         $where_parameters = array();
         $join_clauses = array();
         $join_parameters = array();
 
         foreach ($this->filters as $filter) {
-            $result = $filter->get_sql($use_join, $tablename, $db);
+            $result = $filter->get_sql($use_join, $tablename, $paramtype, $db);
             if (isset($result['where'])) {
                 $where_clauses[] = $result['where'];
                 $where_parameters = array_merge($where_parameters, $result['where_parameters']);
@@ -131,9 +134,9 @@ class AND_filter extends data_filter {
      *
      * @return array same as the get_sql method
      */
-    public static function get_combined_sql(array $filters=array(), $use_join=false, $tablename=null, moodle_database $db=null) {
+    public static function get_combined_sql(array $filters=array(), $use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null) {
         $filter = new AND_filter($filters);
-        return $filter->get_sql($use_join, $tablename, $db);
+        return $filter->get_sql($use_join, $tablename, $paramtype, $db);
     }
 }
 /**
@@ -147,7 +150,7 @@ class OR_filter extends data_filter {
         $this->filters = $filters;
     }
 
-    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+    public function get_sql($use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null) {
         $filters = $this->filters;
         if (count($filters) == 0) {
             // no filters -- return nothing
@@ -156,14 +159,14 @@ class OR_filter extends data_filter {
         if (count($filters) == 1) {
             // only one filter -- just return its result
             $filter = current($filters);
-            return $filter->get_sql($use_join, $tablename, $db);
+            return $filter->get_sql($use_join, $tablename, $paramtype, $db);
         }
         /* otherwise, get each condition (WHERE clause only), and join with an
          * OR */
         $where_clauses = array();
         $where_parameters = array();
         foreach ($this->filters as $filter) {
-            $result = $filter->get_sql(false, $tablename, $db);
+            $result = $filter->get_sql(false, $tablename, $paramtype, $db);
             if (isset($result['where'])) {
                 $where_clauses[] = $result['where'];
                 $where_parameters = array_merge($where_parameters, $result['where_parameters']);
@@ -195,9 +198,9 @@ class OR_filter extends data_filter {
      *
      * @return array same as the get_sql method
      */
-    public static function get_combined_sql(array $filters=array(), $use_join=false, $tablename=null, moodle_database $db=null) {
+    public static function get_combined_sql(array $filters=array(), $use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null) {
         $filter = new OR_filter($filters);
-        return $filter->get_sql($use_join, $tablename, $db);
+        return $filter->get_sql($use_join, $tablename, $paramtype, $db);
     }
 }
 
@@ -214,7 +217,7 @@ class select_filter extends data_filter {
         $this->params = $params;
     }
 
-    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+    public function get_sql($use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null) {
         return array('where' => $this->select,
                      'where_parameters' => $this->params);
     }
@@ -244,13 +247,14 @@ class field_filter extends data_filter {
         $this->comparison = $comparison;
     }
 
-    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+    public function get_sql($use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null) {
         global $DB;
         if ($tablename) {
             $name = "{$tablename}.{$this->name}";
         } else {
             $name = $this->name;
         }
+
         if ($this->value === null) {
             // do the Right Thing with null values (i.e. use IS (NOT) NULL)
             if ($this->comparison == self::NEQ) {
@@ -260,21 +264,30 @@ class field_filter extends data_filter {
                 return array('where' => "{$name} IS NULL",
                              'where_parameters' => array());
             }
-        } else if ($this->comparison === self::LIKE) {
+        }
+
+        if ($paramtype == SQL_PARAMS_NAMED) {
+            $paramindex = data_filter::_get_unique_name('param');
+            $paramname = ":{$paramindex}";
+        } else {
+            $paramname = '?';
+            $paramindex = 0;
+        }
+        if ($this->comparison === self::LIKE) {
             if ($db === null) {
                 $db = $DB;
             }
-            return array('where' => $db->sql_like($name, '?', false),
-                         'where_parameters' => array($this->value));
+            return array('where' => $db->sql_like($name, $paramname, false),
+                         'where_parameters' => array($paramindex => $this->value));
         } else if ($this->comparison === self::NOTLIKE) {
             if ($db === null) {
                 $db = $DB;
             }
-            return array('where' => $db->sql_like($name, '?', false, true, true),
-                         'where_parameters' => array($this->value));
+            return array('where' => $db->sql_like($name, $paramname, false, true, true),
+                         'where_parameters' => array($paramindex => $this->value));
         } else {
-            return array('where' => "{$name} {$this->comparison} ?",
-                         'where_parameters' => array($this->value));
+            return array('where' => "{$name} {$this->comparison} {$paramname}",
+                         'where_parameters' => array($paramindex => $this->value));
         }
     }
 }
@@ -294,8 +307,13 @@ class in_list_filter extends data_filter {
         $this->not_in = $not_in;
     }
 
-    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+    public function get_sql($use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null) {
         global $DB;
+        if ($tablename) {
+            $name = "{$tablename}.{$this->local_field}";
+        } else {
+            $name = $this->local_field;
+        }
         if ($db === null) {
             $db = $DB;
         }
@@ -303,8 +321,8 @@ class in_list_filter extends data_filter {
             return array('where' => 'FALSE',
                          'where_parameters' => array());
         }
-        list($sql, $params) = $db->get_in_or_equal($this->list, SQL_PARAMS_QM, '', !$this->not_in);
-        return array('where' => "{$this->local_field} {$sql}",
+        list($sql, $params) = $db->get_in_or_equal($this->list, $paramtype, data_filter::_get_unique_name('in_param').'_', !$this->not_in);
+        return array('where' => "{$name} {$sql}",
                      'where_parameters' => $params);
     }
 }
@@ -335,7 +353,7 @@ class join_filter extends data_filter {
         $this->unique = $unique;
     }
 
-    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+    public function get_sql($use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null) {
         $rv = array();
         if ($tablename) {
             $local_field = "{$tablename}.{$this->local_field}";
@@ -346,7 +364,7 @@ class join_filter extends data_filter {
         if ($use_join && $this->unique) {
             if ($this->not_exist) {
                 // get the filter SQL to tack on to the JOIN condition
-                $filter_sql = $this->filter ? $this->filter->get_sql(false, $jointablename, $db) : array();
+                $filter_sql = $this->filter ? $this->filter->get_sql(false, $jointablename, $paramtype, $db) : array();
                 $add_filter = empty($filter_sql) ? '' : "AND ({$filter_sql['where']})";
 
                 // and create the join
@@ -358,7 +376,7 @@ class join_filter extends data_filter {
             } else {
                 // get the sql from the filter
                 if ($this->filter) {
-                    $filter_sql = $this->filter->get_sql(true, $jointablename, $db);
+                    $filter_sql = $this->filter->get_sql(true, $jointablename, $paramtype, $db);
                 } else {
                     $filter_sql = array();
                 }
@@ -377,7 +395,7 @@ class join_filter extends data_filter {
                 }
             }
         } else {
-            $filter_sql = $this->filter ? $this->filter->get_sql(true, $jointablename, $db) : array();
+            $filter_sql = $this->filter ? $this->filter->get_sql(true, $jointablename, $paramtype, $db) : array();
             if ($tablename) {
                 // if the table name is specified, we can use the more
                 // efficient EXISTS instead of IN
@@ -398,7 +416,7 @@ class join_filter extends data_filter {
                 $rv['where'] = $sql;
                 $rv['where_parameters'] = $params;
             } else {
-                $filter_sql = $this->filter ? $this->filter->get_sql(true, $jointablename, $db) : array();
+                $filter_sql = $this->filter ? $this->filter->get_sql(true, $jointablename, $paramtype, $db) : array();
                 $in = $this->not_exist ? 'NOT IN' : 'IN';
                 $params = array();
                 $sql = "{$local_field} $in (SELECT {$jointablename}.{$this->foreign_field}

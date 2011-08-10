@@ -318,7 +318,7 @@ class elis_field_filter extends data_filter {
         $this->comparison = $comparison;
     }
 
-    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+    public function get_sql($use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null) {
         global $DB;
         if ($tablename) {
             $name = "{$tablename}.{$this->idfield}";
@@ -327,17 +327,24 @@ class elis_field_filter extends data_filter {
         }
 
         $field_filter = new field_filter('COALESCE(fdata.data, fdefault.data)', $this->value, $this->comparison);
-        $field_filter = $field_filter->get_sql(false, null, $db);
+        $field_filter = $field_filter->get_sql(false, null, $paramtype, $db);
+        if ($paramtype == SQL_PARAMS_NAMED) {
+            $paramindex = data_filter::_get_unique_name('param');
+            $paramname = ":{$paramindex}";
+        } else {
+            $paramname = '?';
+            $paramindex = 0;
+        }
         $sql = "SELECT ctx.id
                   FROM {context} ctx
              LEFT JOIN {{$field->data_table()}} fdata ON fdata.contextid = ctx.id AND fdata.fieldid = {$field->id}
              LEFT JOIN {{$field->data_table()}} fdefault ON fdefault.contextid IS NULL AND fdefault.fieldid = {$field->id}
-                 WHERE ctx.contextlevel = ?";
-        $params = array($this->contextlevel);
+                 WHERE ctx.contextlevel = {$paramname}";
+        $params = array($paramindex => $this->contextlevel);
 
         if (isset($field_filter['where'])) {
             $sql .= " AND {$fieldfilter['where']}";
-            $params += $fieldfilter['where_paremeters'];
+            $params = array_merge($params, $fieldfilter['where_paremeters']);
         }
 
         if ($tablename) {

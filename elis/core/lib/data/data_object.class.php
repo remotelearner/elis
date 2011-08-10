@@ -325,9 +325,9 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } else if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd', $db);
+            $sql_clauses = $filter->get_sql(true, 'd', SQL_PARAMS_QM, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', $db);
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', SQL_PARAMS_QM, $db);
         }
         if (isset($sql_clauses['join'])) {
             $sql = "SELECT d.*
@@ -346,9 +346,9 @@ class elis_data_object {
             if ($filter === null) {
                 // nothing
             } else if (is_object($filter)) {
-                $sql_clauses = $filter->get_sql(false, "{{$tablename}}", $db);
+                $sql_clauses = $filter->get_sql(false, "{{$tablename}}", SQL_PARAMS_QM, $db);
             } else {
-                $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
+                $sql_clauses = AND_filter::get_combined_sql($filter, false, null, SQL_PARAMS_QM, $db);
             }
             if (!isset($sql_clauses['where'])) {
                 $sql_clauses['where'] = '';
@@ -382,9 +382,9 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } else if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd', $db);
+            $sql_clauses = $filter->get_sql(true, 'd', SQL_PARAMS_QM, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', $db);
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', SQL_PARAMS_QM, $db);
         }
         if (isset($sql_clauses['join'])) {
             $sql = "SELECT COUNT(DISTINCT d.id)
@@ -399,9 +399,9 @@ class elis_data_object {
         } else {
             if ($filter === null) {
             } else if (is_object($filter)) {
-                $sql_clauses = $filter->get_sql(false, "{{$tablename}}", $db);
+                $sql_clauses = $filter->get_sql(false, "{{$tablename}}", SQL_PARAMS_QM, $db);
             } else {
-                $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
+                $sql_clauses = AND_filter::get_combined_sql($filter, false, null, SQL_PARAMS_QM, $db);
             }
             if (!isset($sql_clauses['where'])) {
                 $sql_clauses['where'] = '';
@@ -433,9 +433,9 @@ class elis_data_object {
         if ($filter === null) {
             $sql_clauses = array();
         } else if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(true, 'd', $db);
+            $sql_clauses = $filter->get_sql(true, 'd', SQL_PARAMS_QM, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', $db);
+            $sql_clauses = AND_filter::get_combined_sql($filter, true, 'd', SQL_PARAMS_QM, $db);
         }
         if (isset($sql_clauses['join'])) {
             $sql = "SELECT 'x'
@@ -450,9 +450,9 @@ class elis_data_object {
         } else {
             if ($filter === null) {
             } else if (is_object($filter)) {
-                $sql_clauses = $filter->get_sql(false, "{{$tablename}}", $db);
+                $sql_clauses = $filter->get_sql(false, "{{$tablename}}", SQL_PARAMS_QM, $db);
             } else {
-                $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
+                $sql_clauses = AND_filter::get_combined_sql($filter, false, null, SQL_PARAMS_QM, $db);
             }
             if (!isset($sql_clauses['where'])) {
                 $sql_clauses['where'] = '';
@@ -490,9 +490,9 @@ class elis_data_object {
         }
 
         if (is_object($filter)) {
-            $sql_clauses = $filter->get_sql(false, "{{$tablename}}", $db);
+            $sql_clauses = $filter->get_sql(false, "{{$tablename}}", SQL_PARAMS_QM, $db);
         } else {
-            $sql_clauses = AND_filter::get_combined_sql($filter, false, null, $db);
+            $sql_clauses = AND_filter::get_combined_sql($filter, false, null, SQL_PARAMS_QM, $db);
         }
         if (!isset($sql_clauses['where'])) {
             $sql_clauses['where'] = '';
