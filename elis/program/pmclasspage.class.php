@@ -40,7 +40,7 @@ require_once elispm::file('instructorpage.class.php');
 require_once elispm::file('studentpage.class.php');
 require_once elispm::file('waitlistpage.class.php');
 require_once elispm::file('rolepage.class.php');
-//require_once elispm::file('reportlinkspage.class.php'); // missing
+require_once elispm::file('reportlinkspage.class.php');
 
 class pmclasspage extends managementpage {
     var $data_class = 'pmclass';
@@ -168,7 +168,7 @@ class pmclasspage extends managementpage {
         array('tab_id' => 'class_rolepage', 'page' => 'class_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
-        //array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'report')
+        array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'report')
         );
 
         parent::__construct($params);
