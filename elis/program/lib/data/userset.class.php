@@ -338,7 +338,6 @@ class userset extends data_object_with_custom_fields {
         $cluster_context_instance = get_context_instance($cluster_context_level, $clusterid);
 
         $path = $DB->sql_concat('ctxt.path', "'/%'");
-        $LIKE = $DB->sql_like('?', $path);
 
         //query to get parent cluster contexts
         $cluster_permissions_sql = 'SELECT clst.*
@@ -346,7 +345,7 @@ class userset extends data_object_with_custom_fields {
                                     JOIN {context} ctxt
                                          ON clst.id = ctxt.instanceid
                                          AND ctxt.contextlevel = ?
-                                         AND {$LIKE} ";
+                                         AND ? LIKE {$path} ";
 
         $params = array($cluster_context_level, $cluster_context_instance->path);
 
@@ -432,8 +431,8 @@ class userset extends data_object_with_custom_fields {
 class usersubset_filter extends data_filter {
     /**
      * @param string $name the field name containing the user set ID
-     * @param data_filter $filter a filter specifying the target user sets that
-     * we want to find the subsets of.  The cluster ID field will be called 'id'.
+     * @param data_filter $filter a filter on the user subsets.  The user set
+     * ID field will be called 'id'.
      * @param bool $not_subset whether to return the user sets that are not
      * subsets, rather than the ones that are
      */
@@ -443,7 +442,7 @@ class usersubset_filter extends data_filter {
         $this->not_subset = $not_subset;
     }
 
-    public function get_sql($use_join=false, $tablename=null, moodle_database $db=null) {
+    public function get_sql($use_join=false, $tablename=null, $paramtype=SQL_PARAMS_QM, moodle_database $db=null) {
         global $DB;
         if ($db === null) {
             $db = $DB;
@@ -452,10 +451,10 @@ class usersubset_filter extends data_filter {
         $clsttable = data_filter::_get_unique_name();
         $parenttable = data_filter::_get_unique_name();
         $childtable = data_filter::_get_unique_name();
+        $childclsttable = data_filter::_get_unique_name();
 
         $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
         $parent_path = $db->sql_concat("{$parenttable}.path", "'/%'");
-        $LIKE = $db->sql_like("{$childtable}.path", $parent_path);
 
         $sql = "SELECT {$clsttable}.id
                   FROM {" . userset::TABLE . "} {$clsttable}
@@ -463,11 +462,12 @@ class usersubset_filter extends data_filter {
                     ON {$parenttable}.instanceid = {$clsttable}.id
                    AND {$parenttable}.contextlevel = {$cluster_context_level}
                   JOIN {context} {$childtable}
-                    ON {$LIKE}
-                   AND {$childtable}.contextlevel = {$cluster_context_level} ";
+                    ON {$childtable}.path LIKE {$parent_path}
+                   AND {$childtable}.contextlevel = {$cluster_context_level}
+                  JOIN {" . userset::TABLE . "} {$childclsttable}
+                    ON {$childtable}.instanceid = {$childclsttable}.id ";
 
-        $contextset = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:view');
-        $filtersql = $contextset->get_filter('id')->get_sql(true, $clsttable, $db);
+        $filtersql = $this->filter->get_sql(true, $childclsttable, $paramtype, $db);
         $params = array();
         if (isset($filtersql['join'])) {
             $sql .= $filtersql['join'];
@@ -518,8 +518,12 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
     //require plugin code if enabled
     $plugins = get_plugin_list('pmplugins');
     $display_priority_enabled = isset($plugins['userset_display_priority']);
-    if($display_priority_enabled) {
+    if ($display_priority_enabled) {
         require_once(elis::plugin_file('pmplugins_userset_display_priority', 'lib.php'));
+        $priority_field = field::get_for_context_level_with_name('cluster', USERSET_DISPLAY_PRIORITY_FIELD);
+        if (empty($priority_field->id)) {
+            $display_priority_enabled = false;
+        }
     }
 
     $select = 'SELECT clst.* ';
@@ -560,13 +564,18 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
                 $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
                 //use the context path to find parent clusters
-                $path = $DB->sql_concat('path', "'/%'");
-                $LIKE = $DB->sql_like('?', $path);
-                $cluster_filter = implode(',', $viewable_clusters);
+                $path = $DB->sql_concat('parent_context.path', "'/%'");
+                list($IN, $inparams) = $DB->get_in_or_equal($viewable_clusters);
 
-                $sql_condition = new join_filter('id', 'context', 'instanceid',
-                                                 new AND_filter(new field_filter('contextlevel', $cluster_context_level),
-                                                                new select_filter($LIKE)));
+                $sql_condition = new select_filter(
+                    "id IN (SELECT parent_context.instanceid
+                              FROM {context} parent_context
+                              JOIN {context} child_context
+                                ON child_context.path LIKE {$path}
+                               AND parent_context.contextlevel = {$cluster_context_level}
+                               AND child_context.contextlevel = {$cluster_context_level}
+                               AND child_context.instanceid {$IN}
+                           )", $inparams);
             }
         }
 
@@ -610,8 +619,6 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
             $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
             $path = $DB->sql_concat('parentctxt.path', "'/%'");
 
-            $LIKE = $DB->sql_like('childctxt.path', $path);
-
             //this allows both the indirect capability and the direct curriculum filter to work
             $subcluster_filter = new select_filter(
                 "clst.id IN (SELECT childctxt.instanceid
@@ -620,7 +627,7 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
                                  ON clst.id = parentctxt.instanceid
                                 AND parentctxt.contextlevel = {$cluster_context_level}
                                JOIN {context} childctxt
-                                 ON {$LIKE}
+                                 ON childctx.path LIKE {$path}
                                 AND childctxt.contextlevel = {$cluster_context_level}
                               WHERE parentctxt.instanceid IN ({$allowed_clusters_list}))");
             $filters[] = new OR_filter(array($subcluster_filter, $curriculum_filter));
@@ -641,11 +648,17 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
     $sort_clauses = array();
     foreach($sort_fields as $field) {
         $field = trim($field);
-        if($display_priority_enabled && $field == 'priority') {
-            $sort_clauses[] = $field . ' DESC';
+        if($field == 'priority') {
+            if ($display_priority_enabled) {
+                $sort_clauses[] = $field . ' DESC';
+            }
         } else {
             $sort_clauses[] = $field . ' ' . $dir;
         }
+    }
+
+    if (empty($sort_clauses)) {
+        $sort_clauses = array('name ASC');
     }
 
     //determine if we are handling the priority field for ordering
@@ -675,10 +688,7 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
 }
 
 function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = array()) {
-
-    $select = 'SELECT clst.* ';
-    $tables = 'FROM {' . userset::TABLE . '}';
-    $join = '';
+    global $DB;
 
     $filters = array();
 
@@ -714,13 +724,18 @@ function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = ar
                 $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
                 //use the context path to find parent clusters
-                $path = $DB->sql_concat('path', "'/%'");
-                $LIKE = $DB->sql_like('?', $path);
-                $cluster_filter = implode(',', $viewable_clusters);
+                $path = $DB->sql_concat('parent_context.path', "'/%'");
+                list($IN, $inparams) = $DB->get_in_or_equal($viewable_clusters);
 
-                $sql_condition = new join_filter('id', 'context', 'instanceid',
-                                                 new AND_filter(new field_filter('contextlevel', $cluster_context_level),
-                                                                new select_filter($LIKE)));
+                $sql_condition = new select_filter(
+                    "id IN (SELECT parent_context.instanceid
+                              FROM {context} parent_context
+                              JOIN {context} child_context
+                                ON child_context.path LIKE {$path}
+                               AND parent_context.contextlevel = {$cluster_context_level}
+                               AND child_context.contextlevel = {$cluster_context_level}
+                               AND child_context.instanceid {$IN}
+                           )", $inparams);
             }
         }
 
@@ -762,22 +777,19 @@ function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = ar
             $allowed_clusters_list = implode(',', $allowed_clusters);
 
             $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-            $path = sql_concat('parentctxt.path', "'/%'");
-
-            $like = sql_ilike();
-            $LIKE = $DB->sql_like('childctxt.path', $path);
+            $path = $DB->sql_concat('parentctxt.path', "'/%'");
 
             //this allows both the indirect capability and the direct curriculum filter to work
             $subcluster_filter = new select_filter(
-                "clst.id IN (SELECT childctxt.instanceid
-                               FROM {" . userset::TABLE . "} clst
-                               JOIN {context} parentctxt
-                                 ON clst.id = parentctxt.instanceid
-                                AND parentctxt.contextlevel = {$cluster_context_level}
-                               JOIN {context} childctxt
-                                 ON {$LIKE}
-                                AND childctxt.contextlevel = {$cluster_context_level}
-                              WHERE parentctxt.instanceid IN ({$allowed_clusters_list}))");
+                "id IN (SELECT childctxt.instanceid
+                          FROM {" . userset::TABLE . "} clst
+                          JOIN {context} parentctxt
+                            ON clst.id = parentctxt.instanceid
+                           AND parentctxt.contextlevel = {$cluster_context_level}
+                          JOIN {context} childctxt
+                            ON childctxt.path LIKE {$path}
+                           AND childctxt.contextlevel = {$cluster_context_level}
+                         WHERE parentctxt.instanceid IN ({$allowed_clusters_list}))");
             $filters[] = new OR_filter(array($subcluster_filter, $curriculum_filter));
         }
 
@@ -862,9 +874,10 @@ function cluster_deassign_all_user($userid) {
  * This is used for selecting a cluster to be a parent of the target cluster.
  *
  * @param int $target_cluster_id Target cluster id
+ * @param object $contexts Cluster contexts for filtering, if applicable
  * @return array Returned results with key as cluster id and value as cluster name
  */
-function cluster_get_non_child_clusters($target_cluster_id) {
+function cluster_get_non_child_clusters($target_cluster_id, $contexts = null) {
     global $DB;
     $return = array(0=>get_string('userset_top_level','elis_program'));
 
@@ -892,6 +905,14 @@ function cluster_get_non_child_clusters($target_cluster_id) {
                     "{$target_cluster_path}/%",
                     $target_cluster_id);
 
+    if ($contexts !== null) {
+        $filter = $contexts->get_filter('id')->get_sql(false, 'clst');
+        if (isset($filter['where'])) {
+            $sql .= ' AND '.$filter['where'];
+            $params = array_merge($params, $filter['where_parameters']);
+        }
+    }
+
     $clusters = $DB->get_records_sql_menu($sql, $params);
     $clusters = array(0=>get_string('userset_top_level','elis_program')) + $clusters;
 
@@ -905,9 +926,10 @@ function cluster_get_non_child_clusters($target_cluster_id) {
  * - clusters that are already direct subclusters of the target cluster
  *
  * @param int $target_cluster_id Target cluster id
+ * @param object $contexts Cluster contexts for filtering, if applicable
  * @return array Returned results with key as cluster id and value as cluster name
  */
-function cluster_get_possible_sub_clusters($target_cluster_id) {
+function cluster_get_possible_sub_clusters($target_cluster_id, $contexts = null) {
     global $DB;
     if ($target_cluster_id == '') {
         return array();
@@ -919,8 +941,6 @@ function cluster_get_possible_sub_clusters($target_cluster_id) {
     $parent_contexts = explode('/', substr($cluster_context_instance->path,1));
     list($EQUAL, $params) = $DB->get_in_or_equal($parent_contexts, SQL_PARAMS_NAMED, 'param0000', false);
 
-    $clusters = cluster_get_listing();
-
     $sql = "SELECT clst.id, clst.name
               FROM {" . userset::TABLE . "} clst
               JOIN {context} ctx ON ctx.instanceid = clst.id
@@ -930,6 +950,14 @@ function cluster_get_possible_sub_clusters($target_cluster_id) {
 
     $params['ctxlvl'] = $cluster_context_level;
     $params['parent'] = $target_cluster_id;
+
+    if ($contexts !== null) {
+        $filter = $contexts->get_filter('id')->get_sql(false, 'clst', SQL_PARAMS_NAMED);
+        if (isset($filter['where'])) {
+            $sql .= ' AND ('.$filter['where'].')';
+            $params = array_merge($params, $filter['where_parameters']);
+        }
+    }
 
     return $DB->get_records_sql_menu($sql, $params);
 }

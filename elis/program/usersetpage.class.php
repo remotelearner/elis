@@ -142,8 +142,12 @@ class usersetpage extends managementpage {
          */
 
         $viewable_clusters = userset::get_viewable_clusters();
-        return userset::exists(array(new usersubset_filter('id', new field_filter('id', $id)),
-                                     new in_list_filter('id', $viewable_clusters)));
+        $contextset = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:view');
+        return in_array($id, $viewable_clusters)
+            || userset::exists(array(new usersubset_filter('id', new field_filter('id', $id)),
+                                     $contextset->get_filter('id')))
+            || userset::exists(array(new usersubset_filter('id', $contextset->get_filter('id')),
+                                     new field_filter('id', $id)));
 
         /*
          * End of cluster hierarchy extension
@@ -155,7 +159,12 @@ class usersetpage extends managementpage {
     }
 
     function can_do_subcluster() {
-        return $this->_has_capability('block/curr_admin:cluster:edit');
+        //obtain the contexts where editing is allowed for the subcluster
+        $subclusterid = $this->required_param('subclusterid', PARAM_INT);
+        $context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $subclusterid);
+
+        //make sure editing is allowed on both clusters
+        return $this->_has_capability('block/curr_admin:cluster:edit') && has_capability('block/curr_admin:cluster:edit', $context);
     }
 
     function can_do_delete() {
@@ -339,12 +348,18 @@ class usersetpage extends managementpage {
         $this->print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=true, $searchflag=true);
 
         if ($this->optional_param('id', 0, PARAM_INT)) {
-            echo html_writer::start_tag('div', array('align' => 'center'));
-            echo get_string('cluster_subcluster_prompt','elis_program') . ': ';
-            $non_parent_clusters = cluster_get_possible_sub_clusters($this->optional_param('id', 0, PARAM_INT));
-            $url = $this->get_new_page(array('action'=>'subcluster','id'=>$this->optional_param('id', 0, PARAM_INT)))->url . '&amp;subclusterid=';
-            echo $OUTPUT->single_select($url, 'subclusterid', $non_parent_clusters);
-            echo html_writer::end_tag('div');
+            //get the non-parent clusters that are accessible based on the edit capability
+            $contexts = usersetpage::get_contexts('block/curr_admin:cluster:edit');
+            $non_parent_clusters = cluster_get_possible_sub_clusters($this->optional_param('id', 0, PARAM_INT), $contexts);
+
+            //display the dropdown if there are one or more available clusters
+            if (count($non_parent_clusters) > 0) {
+                echo html_writer::start_tag('div', array('align' => 'center'));
+                echo get_string('cluster_subcluster_prompt','elis_program') . ': ';
+                $url = $this->get_new_page(array('action'=>'subcluster','id'=>$this->optional_param('id', 0, PARAM_INT)))->url . '&amp;subclusterid=';
+                echo $OUTPUT->single_select($url, 'subclusterid', $non_parent_clusters);
+                echo html_writer::end_tag('div');
+            }
         }
     }
 
