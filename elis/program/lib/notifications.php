@@ -160,10 +160,11 @@ class notification extends message {
 
         parent::__construct();
 
+        //todo: determine if the modulename property is still needed
         $this->modulename = 'curriculum';
-        $this->component = 'notifications';
+        $this->component = 'elis_program';
 
-        $this->defname    = "message";
+        $this->defname    = "notify_pm";
         $site = get_site();
         $this->defsubject = "Message Event from {$site->fullname}";
     }
@@ -222,8 +223,9 @@ class notification extends message {
         $this->name    = ($this->name == '') ? $this->defname : $this->name;
         $this->subject = ($this->subject == '') ? $this->defsubject : $this->subject;
 
-        $eventname='message_send';
-        events_trigger($eventname, $this);
+        //this call performs the core work involved in notifying users
+        pm_notify_send_handler(clone($this));
+
     /// Insert a notification log if we have data for it.
         if ($logevent !== false) {
             if (!empty($logevent->event)) {
@@ -321,101 +323,50 @@ class notification extends message {
  * Triggered when a message provider wants to send a message.
  * This functions checks the user's processor configuration to send the given type of message,
  * then tries to send it.
+ * Note: This method is sometimes called directly to save on performance.
  * @param object $eventdata information about the message (origin, destination, type, content)
  * @return boolean success
- *
- * @todo Replace with 2.0 functionality
- * COPIED FROM 2.0 '/lib/messagelib.php' - This can be removed after upgrade to 2.0
- *
  */
 function pm_notify_send_handler($eventdata){
-    global $CFG;
+    global $CFG, $SITE;
 
-    /// For 1.9, just user the messaging system until we have recreated the 2.0
-    /// functionality.
     require_once($CFG->dirroot.'/message/lib.php');
-    message_post_message($eventdata->userfrom, $eventdata->userto, $eventdata->fullmessage, $eventdata->fullmessageformat); //, 'direct'
-    return true;
 
-//        global $CFG, $DB;
-//
-//        if (isset($CFG->block_online_users_timetosee)) {
-//            $timetoshowusers = $CFG->block_online_users_timetosee * 60;
-//        } else {
-//            $timetoshowusers = TIMETOSHOWUSERS;
-//        }
-//
-//    /// Work out if the user is logged in or not
-//        if ((time() - $eventdata->userto->lastaccess) > $timetoshowusers) {
-//            $userstate = 'loggedoff';
-//        } else {
-//            $userstate = 'loggedin';
-//        }
-//
-//    /// Create the message object
-//        $savemessage = new object();
-//        $savemessage->useridfrom        = $eventdata->userfrom->id;
-//        $savemessage->useridto          = $eventdata->userto->id;
-//        $savemessage->subject           = $eventdata->subject;
-//        $savemessage->fullmessage       = $eventdata->fullmessage;
-//        $savemessage->fullmessageformat = $eventdata->fullmessageformat;
-//        $savemessage->fullmessagehtml   = $eventdata->fullmessagehtml;
-//        $savemessage->smallmessage      = $eventdata->smallmessage;
-//        $savemessage->timecreated       = time();
-//
-//    /// Find out what processors are defined currently
-//    /// When a user doesn't have settings none gets return, if he doesn't want contact "" gets returned
-//        $processor = get_user_preferences('message_provider_'.$eventdata->component.'_'.$eventdata->name.'_'.$userstate, NULL, $eventdata->userto->id);
-//
-//        if ($processor == NULL){ //this user never had a preference, save default
-//            if (!message_set_default_message_preferences( $eventdata->userto )){
-//                print_error('cannotsavemessageprefs', 'message');
-//            }
-//            if ( $userstate == 'loggedin'){
-//                $processor='popup';
-//            }
-//            if ( $userstate == 'loggedoff'){
-//                $processor='email';
-//            }
-//        }
-//
-//        //if we are suposed to do something with this message
-//        // No processor for this message, mark it as read
-//        if ($processor == "") {  //this user cleared all the preferences
-//            $savemessage->timeread = time();
-//            $messageid = $message->id;
-//            unset($message->id);
-//            $DB->insert_record('message_read', $savemessage);
-//
-//        } else {                        // Process the message
-//        /// Store unread message just in case we can not send it
-//            $savemessage->id = $DB->insert_record('message', $savemessage);
-//
-//        /// Try to deliver the message to each processor
-//            $processorlist = explode(',', $processor);
-//            foreach ($processorlist as $procname) {
-//                $processorfile = $CFG->dirroot. '/message/output/'.$procname.'/message_output_'.$procname.'.php';
-//
-//                if (is_readable($processorfile)) {
-//                    include_once( $processorfile );  // defines $module with version etc
-//                    $processclass = 'message_output_' . $procname;
-//
-//                    if (class_exists($processclass)) {
-//                        $pclass = new $processclass();
-//
-//                        if (! $pclass->send_message($savemessage)) {
-//                            debugging('Error calling message processor '.$procname);
-//                            return false;
-//                        }
-//                    }
-//                } else {
-//                    debugging('Error calling message processor '.$procname);
-//                    return false;
-//                }
-//            }
-//        }
-//
-//        return true;
+    //the following setup work is very similar to that of message_post_message, but does not make assumptions
+    //about the component or message details
+
+    //using string manager directly so that strings in the message will be in the message recipients language rather than the senders
+    $fullname = fullname($eventdata->userfrom);
+    $eventdata->subject = get_string_manager()->get_string('unreadnewmessage', 'message', $fullname, $eventdata->userto->lang);
+
+    //make sure the event is in the correct format
+    $message = $eventdata->fullmessage;
+    if ($eventdata->fullmessageformat == FORMAT_HTML) {
+        $eventdata->fullmessage      = '';
+        $eventdata->fullmessagehtml  = $message;
+    } else {
+        $eventdata->fullmessage      = '';
+        $eventdata->fullmessagehtml  = $message;
+    }
+
+    //store the message unfiltered. Clean up on output.
+    $eventdata->smallmessage = $message;
+
+    //add the email tag line
+    $s = new stdClass();
+    $s->sitename = $SITE->shortname;
+    $s->url = $CFG->wwwroot.'/message/index.php?user='.$eventdata->userto->id.'&id='.$eventdata->userfrom->id;
+
+    $emailtagline = get_string_manager()->get_string('emailtagline', 'message', $s, $eventdata->userto->lang);
+    if (!empty($eventdata->fullmessage)) {
+        $eventdata->fullmessage .= "\n\n---------------------------------------------------------------------\n".$emailtagline;
+    }
+    if (!empty($eventdata->fullmessagehtml)) {
+        $eventdata->fullmessagehtml .= "<br /><br />---------------------------------------------------------------------<br />".$emailtagline;
+    }
+
+    //send the message
+    return message_send($eventdata);
 }
 
 /**

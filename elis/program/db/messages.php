@@ -28,49 +28,11 @@ defined('MOODLE_INTERNAL') || die();
 
 $messageproviders = array (
 
-    // Receive class enrollment notifications
-    'notify_classenrol_message' => array (
-        'capability'  => 'block/curr_admin:notify_classenrol'
-    ),
-
-    // Receive class completion notifications
-    'notify_classcomplete_message' => array (
-        'capability'  => 'block/curr_admin:notify_classcomplete'
-    ),
-
-    // Receive class not started notifications
-    'notify_classnotstart_message' => array (
-        'capability'  => 'block/curr_admin:notify_classnotstart'
-    ),
-
-    // Receive class not completed notifications
-    'notify_classnotcomplete_message' => array (
-        'capability'  => 'block/curr_admin:notify_classnotcomplete'
-    ),
-
-    // Receive curriculum completed notifications
-    'notify_curriculumcomplete_message' => array (
-        'capability'  => 'block/curr_admin:notify_curriculumcomplete'
-    ),
-
-    // Receive curriculum not completed notifications
-    'notify_curriculumnotcomplete_message' => array (
-        'capability'  => 'block/curr_admin:notify_curriculumnotcomplete'
-    ),
-
-    // Receive track enrollment notifications
-    'notify_trackenrol_message' => array (
-        'capability'  => 'block/curr_admin:notify_trackenrol'
-    ),
-
-    // Receive course expiration notifications
-    'notify_courserecurrence_message' => array (
-        'capability'  => 'block/curr_admin:notify_courserecurrence'
-    ),
-
-    // Receive curriculum expiration notifications
-    'notify_curriculumrecurrence_message' => array (
-        'capability'  => 'block/curr_admin:notify_curriculumrecurrence'
+    'notify_pm' => array (
+        'defaults' => array(
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDOFF,
+        ),
     )
 
 );

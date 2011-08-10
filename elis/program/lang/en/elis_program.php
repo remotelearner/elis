@@ -507,6 +507,7 @@ $string['managetracks'] = 'Manage Tracks';
 $string['manageusers'] = 'Manage Users';
 $string['mark_inactive'] = 'Mark as inactive';
 $string['message_nodestinationuser'] = 'No destination user specified for message system.';
+$string['messageprovider:notify_pm'] = 'Program Management notifications';
 $string['moodle_field_sync_warning'] = '* <strong>Warning:</strong> this field is set to synchronize with Moodle user profile fields, but there is no Moodle profile field with the same short name.';
 $string['moodlecourse'] = 'Moodle course';
 $string['moodlecourseurl'] = 'Mooodle Course URL';
