@@ -36,6 +36,17 @@ class class_reportlinkspage extends pm_page {
     var $pagename = 'replnk';
     var $tab_page = 'pmclasspage';
 
+    function build_navbar_default() {
+        global $CFG;
+
+        $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
+        $this->navbar->add(get_string('classreportlinks', 'elis_program'));
+    }
+
+    function get_page_title_default() {
+        return get_string('classreportlinks', 'elis_program');
+    }
+
     /**
      * Returns an instance of the page class that should provide the tabs for this association page.
      * This allows the association interface to be located "under" the general management interface for
