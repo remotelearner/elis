@@ -215,6 +215,21 @@ class repository_elis_files extends repository {
             $ret = $this->print_login();
         }*/
 
+        //Fake file listing for now
+        $ret['list'][] = array('title'=>'File1.jpg',
+                        'path'=>'fake/files',
+                        'thumbnail'=>$OUTPUT->pix_url('f/image-32') . '',
+                        'children'=>array());
+        $ret['list'][] = array('title'=>'File2.png',
+                        'path'=>'fake/files',
+                        'thumbnail'=>$OUTPUT->pix_url('f/image-32') . '',
+                        'children'=>array());
+        $ret['list'][] = array('title'=>'File3.csv',
+                        'path'=>'fake/files',
+                        'thumbnail'=>$OUTPUT->pix_url('f/excel') . '',
+                        'children'=>array());
+
+
         return $ret;
     }
 
