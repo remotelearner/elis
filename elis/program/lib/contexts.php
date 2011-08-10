@@ -104,8 +104,7 @@ class pm_context_set {
                   JOIN {context} c ON ra.contextid = c.id
                  WHERE ra.userid = $userid
                    AND c.contextlevel = $contextlevelnum";
-        $possiblecontexts = $DB->get_records_sql($sql);
-        $possiblecontexts = $possiblecontexts ? $possiblecontexts : array();
+        $possiblecontexts = $DB->get_recordset_sql($sql);
         foreach ($possiblecontexts as $c) {
             if (has_capability($capability, $c, $userid, $doanything)) {
                 $contexts[$contextlevel][] = $c->instanceid;
@@ -223,8 +222,8 @@ class pm_context_set {
                 $context = get_context_instance($ctxlvl, $cluster);
                 $pattern = $context->path . '/%';
                 $where[] = new join_filter($idfieldname, 'context', 'instanceid',
-                                           new AND_filter(new field_filter('path', $pattern, field_filter::LIKE),
-                                                          new field_filter('contextlevel', $ctxlvl)));
+                                           new AND_filter(array(new field_filter('path', $pattern, field_filter::LIKE),
+                                                                new field_filter('contextlevel', $ctxlvl))));
             }
         }
         return $where;
