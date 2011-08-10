@@ -127,10 +127,10 @@ class curriculumcoursepage extends curriculumcoursebasepage {
 
         $columns = array(
             'coursename' => array('header' => get_string('course_name','elis_program'),
-                                         'decorator' => array(new record_link_decorator('coursepage',
-                                                                                        array('action'=>'view'),
-                                                                                        'courseid'),
-                                                              'decorate')),
+                                  'decorator' => array(new record_link_decorator('coursepage',
+                                                                                 array('action'=>'view'),
+                                                                                 'courseid'),
+                                                       'decorate')),
             'required'   => array('header' => get_string('required','elis_program')),
             'frequency'  => array('header' => get_string('frequency','elis_program')),
             'timeperiod' => array('header' => get_string('time_period','elis_program')),
@@ -207,15 +207,12 @@ class curriculumcoursepage extends curriculumcoursebasepage {
                 $output .= "\n";
             }
 
-            /* TO-DO: make this check work again; what is the proper way to get iscustom value?
             $curriculum = $curcrs->curriculum;
             if ($curriculum->iscustom) {
                 $curassid = $this->_db->get_field(curriculumstudent::TABLE, 'id', array('curriculumid'=>$curriculum->id));
                 $stucur   = new curriculumstudent($curassid);
-                redirect('index.php?s=stucur&amp;section=curr&amp;id=' . $stucur->id .
-                                 '&amp;action=edit', $output, 3);
+                redirect('index.php?s=stucur&amp;section=curr&amp;id='.$stucur->id.'&amp;action=edit', $output, 3);
             }
-            */
 
             echo $output;
             // recreate the form, to reflect changes in the lists
@@ -244,7 +241,6 @@ class curriculumcoursepage extends curriculumcoursebasepage {
             $deleted = 0;
 
             /// Process requested corequisite deletions.
-
             $scoreqs = isset($form_data->scoreqs)? $form_data->scoreqs: array();
             foreach ($scoreqs as $scoreq) {
                 if ($curcrs->del_corequisite($scoreq)) {
@@ -273,14 +269,12 @@ class curriculumcoursepage extends curriculumcoursebasepage {
                 $output .= "\n";
             }
 
-            /* TO-DO: make this check work again; what is the proper way to get iscustom value?
+            $curriculum = $curcrs->curriculum;
             if ($curriculum->iscustom) {
                 $curassid = $this->_db->get_field(curriculumstudent::TABLE, 'id', array('curriculumid'=>$curriculum->id));
                 $stucur   = new curriculumstudent($curassid);
-                redirect('index.php?s=stucur&amp;section=curr&amp;id=' . $stucur->id .
-                                 '&amp;action=edit', $output, 3);
+                redirect('index.php?s=stucur&amp;section=curr&amp;id='.$stucur->id.'&amp;action=edit', $output, 3);
             }
-            */
 
             echo $output;
             // recreate the form, to reflect changes in the lists

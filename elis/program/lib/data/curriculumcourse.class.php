@@ -37,7 +37,7 @@ class curriculumcourse extends elis_data_object {
     const TABLE = 'crlm_curriculum_course';
 
     var $verbose_name = 'curriculumcourse';
-    var $_dbloaded = TRUE;  // TO-DO: we probably don't need this anymore?
+    var $_dbloaded = TRUE;
 
     static $associations = array(
         'coursecorequisite' => array(
@@ -94,15 +94,9 @@ class curriculumcourse extends elis_data_object {
     }
 
     function delete() {
-        // TO-DO: since tracks seem not (?) have fields that are associated, should this delete function still be called or is something added to associations array?
-        //$this->delete_all_track_classes();
+        $this->delete_all_track_classes();
 
         parent::delete();
-    }
-
-    function __toString() {
-        // TO-DO: what should this return?
-        return $this->id;
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -658,11 +652,7 @@ class curriculumcourse extends elis_data_object {
     public function save() {
         parent::save();
 
-        // TO-DO: add/update stuff goes here (if any)
-
-        // TO-DO: what do we do about tables that aren't even defined as a variable?
-        //events_trigger('pm_program_coursedescription_associated', $this);
-
+        events_trigger('crlm_curriculum_course_associated', $this);
     }
 
     function get_verbose_name() {
