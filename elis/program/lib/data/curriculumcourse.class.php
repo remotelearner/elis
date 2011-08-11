@@ -779,7 +779,7 @@ function curriculumcourse_get_curriculum_listing($crsid, $sort='position', $dir=
         $name_like = $DB->sql_like('cur.name', '?', FALSE);
 
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
-        $params += array("%$namesearch%");
+        $params[] = "%$namesearch%";
     }
 
     if ($alpha) {
@@ -793,7 +793,7 @@ function curriculumcourse_get_curriculum_listing($crsid, $sort='position', $dir=
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where .= ' AND ' . $filter_sql['where'];
-            $params += $filter_sql['where_parameters'];
+            $params = array_merge($params, $filter_sql['where_parameters']);
         }
     }
 
@@ -826,7 +826,7 @@ function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $al
         $name_like = $DB->sql_like('cur.name', '?', FALSE);
 
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
-        $params += array("%$namesearch%");
+        $params[] = "%$namesearch%";
     }
 
     if ($alpha) {
@@ -840,7 +840,7 @@ function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $al
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where .= ' AND ' . $filter_sql['where'];
-            $params += $filter_sql['where_parameters'];
+            $params = array_merge($params, $filter_sql['where_parameters']);
         }
     }
 
