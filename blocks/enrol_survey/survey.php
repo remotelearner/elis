@@ -32,7 +32,7 @@ require_once($CFG->dirroot .'/elis/program/lib/lib.php');
 require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php'); // cm_get_crlmuserid()
 require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
 
-global $COURSE, $DB, $ME, $OUTPUT, $PAGE, $USER;
+global $COURSE, $DB, $ME, $OUTPUT, $PAGE, $USER, $block;
 
 $instanceid = required_param('id', PARAM_INT);
 $instance = $DB->get_record('block_instances', array('id' => $instanceid));
@@ -50,6 +50,10 @@ if ($COURSE->id == SITEID) {
 
 require_capability('block/enrol_survey:take', $context);
 
+if (cm_get_crlmuserid($USER->id) === false) { // ***TBD***
+    print_error(get_string('noelisuser', 'block_enrol_survey'));
+}
+
 $survey_form = new survey_form($CFG->wwwroot .'/blocks/enrol_survey/survey.php?id='. $instanceid);
 
 if ($survey_form->is_cancelled()) {
@@ -57,24 +61,34 @@ if ($survey_form->is_cancelled()) {
 } else if ($formdata = $survey_form->get_data()) {
     $customfields = get_customfields();
     $profilefields = get_profilefields();
-
     $data = get_object_vars($formdata);
+
     $u = new user(cm_get_crlmuserid($USER->id));
-    if (empty($u->id)) { // ***TBD***
-        print_error(get_string('noelisuser', 'block_enrol_survey'));
-    }
+    $u->load();
+    $u_obj = $u->to_object();
 
     foreach ($data as $key => $fd) {
         if (!empty($fd)) {
             if (in_array($key, $profilefields)) {
-                if (!empty($u->properties[$key])) {
-                    $u->$key($fd);
+                // NOTE: property_exists($u_obj, $key) doesn't work if existing value is NULL
+                try {
+                    $u->__set($key, $fd);
+                } catch (Exception $e) {
+                    // ignore invalid property exception!
+                    error_log("/blocks/enrol_survey/survey.php: Invalid property of crlm_user '{$key}'");
                 }
-            } else if (in_array($key, $customfields)) {
+                if ($key == 'language') { // special case $USER->lang
+                    $key = 'lang';
+                }
+                if (property_exists($USER, $key)) {
+                    $USER->{$key} = $fd;
+                }
+            }
+            if (in_array($key, $customfields)) {
                 $id = $DB->get_field('user_info_field', 'id', array('shortname' => $key));
 
                 if ($DB->record_exists('user_info_data', array('userid' => $USER->id, 'fieldid' => $id))) {
-                    $DB->set_field('user_info_data', 'data', $fd, array('userid'=> $USER->id, 'fieldid' => $id));
+                    $DB->set_field('user_info_data', 'data', $fd, array('userid' => $USER->id, 'fieldid' => $id));
                 } else {
                     $dataobj = new object();
                     $dataobj->userid = $USER->id;
@@ -88,12 +102,34 @@ if ($survey_form->is_cancelled()) {
         }
     }
 
-    $u->save();
-       
-    $usernew = $DB->get_record('user', array('id' => $USER->id));
-    foreach ((array)$usernew as $variable => $value) {
-        $USER->$variable = $value;
+    // unchecked checkboxes have no entry in form $data
+    foreach (get_questions() as $key => $val) {
+        if (!array_key_exists($key, $data)) {
+            switch ($key) {
+                case 'inactive':
+                // case {other_checkbox_profile_fields}:
+                    $u->__set($key, 0);
+                    break;
+                default:
+                    $q_data = $DB->get_record('user_info_field', array('shortname' => $key));
+                    if ($q_data && $q_data->datatype == 'checkbox') {
+                        //error_log("/blocks/enrol_survey/survey.php: unchecked checkbox '{$key}'");
+                        if ($DB->record_exists('user_info_data', array('userid' => $USER->id, 'fieldid' => $q_data->id))) {
+                            $DB->set_field('user_info_data', 'data', 0, array('userid' => $USER->id, 'fieldid' => $q_data->id));
+                        } else {
+                            $dataobj = new object();
+                            $dataobj->userid = $USER->id;
+                            $dataobj->fieldid = $q_data->id;
+                            $dataobj->data = 0;
+                            $DB->insert_record('user_info_data', $dataobj);
+                        }
+                    }
+            }
+        }
     }
+
+    $DB->update_record('user', $USER);
+    $u->save();
 
     if (!is_survey_taken($USER->id, $instanceid) && empty($incomplete)) {
         $dataobject = new object();
@@ -107,9 +143,9 @@ if ($survey_form->is_cancelled()) {
     }
 }
 
-$toform = array();
 $u = new user(cm_get_crlmuserid($USER->id));
-$toform = $u->to_object(); // get_object_vars($u);
+$u->load();
+$toform = array_merge((array)$USER, (array)$u->to_object());
 
 $customdata = $DB->get_records('user_info_data', array('userid' => $USER->id));
 if (!empty($customdata)) {

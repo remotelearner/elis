@@ -28,7 +28,7 @@ require_once(dirname(__FILE__) .'/../../config.php');
 require_once($CFG->dirroot .'/blocks/enrol_survey/forms.php');
 require_once($CFG->dirroot .'/blocks/enrol_survey/lib.php');
 
-global $COURSE, $DB, $ME, $OUTPUT, $PAGE;
+global $COURSE, $DB, $ME, $OUTPUT, $PAGE, $block;
     
 $instanceid        = required_param('id', PARAM_INT);
 
@@ -65,24 +65,38 @@ if (!empty($profile_fields) && count($profile_fields) === count($custom_names)) 
 
 $data = (object)$data;
 
-if (!empty($update) && !empty($data)) {
-    $block->instance_config_save($data);
-} else if (!empty($add_profilefield)) {
-    $data->none = '';
-    $block->instance_config_save($data);
-} else if (!empty($exit)) {
-    $block->instance_config_save($data);
-    redirect($CFG->wwwroot .'/course/view.php?id=' . $COURSE->id);
-} else if (!empty($retake)) {
-    delete_records('block_enrol_survey_taken', 'blockinstanceid', $instanceid);
-} else if (!empty($delete)) {
+$update = false;
+if (!empty($delete)) {
     $keys = array_keys($delete);
-
     foreach($keys as $todel) {
         unset($data->$todel);
     }
+    $update = true;
+}
+if (!empty($update) && !empty($data)) {
+    $update = true;
+}
+if (!empty($add_profilefield)) {
+    $data->none = '';
+    $update = true;
+}
+if (!empty($exit)) {
+    $update = true;
+}
+if (!empty($retake)) {
+    $DB->delete_records('block_enrol_survey_taken', array('blockinstanceid' => $instanceid));
+}
 
+if ($update) {
     $block->instance_config_save($data);
+    // NOTE: instance_config_save() does NOT update $block->config only DBtable!
+    // therefore we MUST reload the block data!
+    $instance = $DB->get_record('block_instances', array('id' => $instanceid));
+    $block = block_instance('enrol_survey', $instance);
+}
+
+if (!empty($exit)) {
+    redirect($CFG->wwwroot .'/course/view.php?id=' . $COURSE->id);
 }
 
 require_capability('block/enrol_survey:edit', $context);

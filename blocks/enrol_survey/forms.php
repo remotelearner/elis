@@ -59,7 +59,7 @@ class edit_survey_form {
             print '<tr align="right">';
             print '<th><span style="margin-right:10px;">' . get_string('name_on_form', 'block_enrol_survey') . '</span></th>';
             print '<th><span style="margin-right:10px;">' . get_string('existing_profile_fileds', 'block_enrol_survey') . '</span></th>';
-            print '<th><span style="margin-right:10px;">' . get_string('action_fields', 'block_enrol_survey') . '</span></th>';
+            print '<th><span style="margin-right:10px;">' . get_string('delete', 'block_enrol_survey') . '</span></th>';
             print '</tr>';
 
             foreach ($questions as $key => $value) {
@@ -82,7 +82,7 @@ class edit_survey_form {
                 
                 print "</select></td>";
 
-                print '<td><input type="submit" name="delete['. $key . ']" value="' . get_string('delete', 'block_enrol_survey') . '" /></td>';
+                print '<td><input type="checkbox" name="delete['. $key . ']" value="delete['. $key . ']" /></td>';
                 print '</tr>';
             }
 
@@ -112,6 +112,7 @@ class survey_form extends moodleform {
      * items in the form
      */
     public function definition() {
+        global $DB;
         $questions      = get_questions();
         $profile_fields = get_profilefields();
         $custom_fields  = get_customfields();
@@ -120,19 +121,23 @@ class survey_form extends moodleform {
 
         unset($questions['none']);
 
-        foreach ($questions as $k=>$q) {
+        foreach ($questions as $k => $q) {
             $extra = null;
-            
+
             if (in_array($k, $profile_fields)) {
                 if (strcmp($k, 'country') === 0) {
                     $type = 'select';
                     $extra = get_string_manager()->get_list_of_countries();
+                } else if (strcmp($k, 'language') === 0) {
+                    $type = 'select';
+                    $extra = get_string_manager()->get_list_of_languages();
+                } else if (strcmp($k, 'inactive') === 0) {
+                    $type = 'checkbox';
                 } else {
                     $type = 'text';
                 }
             } else if (in_array($k, $custom_fields)) {
-                $field = get_record('user_info_field', 'shortname', $k);
-
+                $field = $DB->get_record('user_info_field', array('shortname' => $k));
                 if (strcmp($field->datatype, 'menu') === 0) {
                     $type = 'select';
                     $extra = explode("\n", $field->param1);
