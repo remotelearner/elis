@@ -54,6 +54,23 @@ class waitlistpage extends selectionpage {
         return $pmclasspage->can_do('edit');
     }
 
+    /**
+     * Constructs navigational breadcrumbs
+     */
+    function build_navbar_default() {
+        $id = $this->required_param('id', PARAM_INT);
+        $classpage = new pmclasspage(array('id' => $id));
+        $classpage->build_navbar_view();
+        $this->_navbar = $classpage->navbar;
+    }
+
+    function get_page_title_default() {
+        //this is similar to what associationpage does
+        $id = $this->required_param('id', PARAM_INT);
+        $tabpage = $this->get_tab_page(array('action' => 'view', 'id' => $id));
+        return $tabpage->get_page_title() . ': ' . get_string('breadcrumb_waitlistpage', self::LANG_FILE);
+    }
+
     protected function get_selection_form() {
         return new waitlisteditform();
     }
@@ -129,7 +146,7 @@ class waitlistpage extends selectionpage {
     }
 
     function get_tab_page($params=array()) {
-        return $this; // TBD: new $this->tab_page($params);
+        return new $this->tab_page($params);
     }
 
     function process_selection($data) {
