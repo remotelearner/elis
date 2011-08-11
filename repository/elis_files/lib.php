@@ -280,6 +280,12 @@ class repository_elis_files extends repository {
         return $str;
     }
 
+    public function print_upload() {
+        $str = '<p><b>Uploading Tip</b></p>';
+        $str .= '<p>You can select more than one file for uploading by holding down the control key while clicking on the files.</p>';
+        return $str;
+    }
+
     /**
      * Look for a file
      *
