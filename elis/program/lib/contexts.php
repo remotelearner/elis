@@ -163,7 +163,7 @@ class pm_context_set {
     function _filter_for_curriculum($idfieldname) {
         $where = array();
         if (isset($this->contexts['curriculum'])) {
-            $where[] = new select_filter("$idfieldname IN (".implode(',',$this->contexts['curriculum']).')');
+            $where[] = new in_list_filter($idfieldname, $this->contexts['curriculum']);
         }
         return $where;
     }
