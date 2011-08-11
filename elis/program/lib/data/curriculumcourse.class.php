@@ -836,7 +836,7 @@ function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $al
     }
 
     if ($contexts !== null) {
-        $filter_object = $contexts->get_filter('cur.id', 'curriculum');
+        $filter_object = $contexts->get_filter('id', 'curriculum');
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where .= ' AND ' . $filter_sql['where'];
