@@ -599,7 +599,7 @@ class curriculumcourse extends elis_data_object {
                  WHERE curcrs.id IS NULL ';
         if (isset($filters['contexts'])) {
             $filter_object = $filters['contexts']->get_filter('id', 'course');
-            $filter_sql = $filter_object->get_sql(false, 'cur');
+            $filter_sql = $filter_object->get_sql(false, 'crs');
             if (isset($filter_sql['where'])) {
                 $sql = $sql.' AND '.$filter_sql['where'].' ';
                 $params = array_merge($params, $filter_sql['where_parameters']);
