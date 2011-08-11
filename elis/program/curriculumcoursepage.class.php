@@ -55,15 +55,17 @@ class curriculumcoursebasepage extends associationpage {
     }
 
     function can_do_add() {
-        // the user must have 'block/curr_admin:associate' permissions on both ends
-        /* TO-DO: the following required params are not available for some reason
-        $curriculumid = $this->required_param('curriculumid', PARAM_INT);
-        $courseid = $this->required_param('courseid', PARAM_INT);
+        $curriculumid = $this->optional_param('curriculumid', 0, PARAM_INT);
+        $courseid = $this->optional_param('courseid', 0, PARAM_INT);
 
+        if ($curriculumid == 0 && $courseid == 0) {
+            //just showing the page, so let the child page handle permissions
+            return $this->can_do('default');
+        }
+
+        // the user must have 'block/curr_admin:associate' permissions on both ends
         return curriculumpage::_has_capability('block/curr_admin:associate', $curriculumid)
             && coursepage::_has_capability('block/curr_admin:associate', $courseid);
-        */
-        return true;
     }
 
     function can_do_edit() {
