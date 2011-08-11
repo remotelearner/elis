@@ -598,7 +598,7 @@ class curriculumcourse extends elis_data_object {
              LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs on curcrs.courseid = crs.id AND curcrs.curriculumid = ?
                  WHERE curcrs.id IS NULL ';
         if (isset($filters['contexts'])) {
-            $filter_object = $filters['contexts']->get_filter('cur.id', 'course');
+            $filter_object = $filters['contexts']->get_filter('id', 'course');
             $filter_sql = $filter_object->get_sql(false, 'cur');
             if (isset($filter_sql['where'])) {
                 $sql = $sql.' AND '.$filter_sql['where'].' ';
@@ -618,7 +618,7 @@ class curriculumcourse extends elis_data_object {
              LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs ON curcrs.curriculumid = cur.id AND curcrs.courseid = ?
                  WHERE curcrs.id IS NULL ';
         if (isset($filters['contexts'])) {
-            $filter_object = $filters['contexts']->get_filter('cur.id', 'curriculum');
+            $filter_object = $filters['contexts']->get_filter('id', 'curriculum');
             $filter_sql = $filter_object->get_sql(false, 'cur');
             if (isset($filter_sql['where'])) {
                 $sql = $sql.' AND '.$filter_sql['where'].' ';
