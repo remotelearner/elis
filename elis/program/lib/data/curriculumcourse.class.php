@@ -602,7 +602,7 @@ class curriculumcourse extends elis_data_object {
             $filter_sql = $filter_object->get_sql(false, 'cur');
             if (isset($filter_sql['where'])) {
                 $sql = $sql.' AND '.$filter_sql['where'].' ';
-                $params += $filter_sql['where_parameters'];
+                $params = array_merge($params, $filter_sql['where_parameters']);
             }
         }
         $sql .= 'ORDER BY crs.name ASC';
