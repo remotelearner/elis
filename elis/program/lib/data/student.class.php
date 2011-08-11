@@ -671,103 +671,102 @@ class student extends elis_data_object {
             echo $table->get_html();
         }
 
-        if (isset($this->pmclass->course) && is_object($this->pmclass->course) &&
-            (get_class($this->pmclass->course) == 'course') &&
-            ($elements = $this->pmclass->course->get_completion_elements())) {
-
-            $select = 'classid = ? AND userid = ? ';
-            $grades = $this->_db->get_records_select(student_grade::TABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
-            $columns = array( // TBD
-                'element'    => array('header' => get_string('grade_element', self::LANG_FILE),
-                                      'display_function' => 'htmltab_display_function'),
-                'grade'      => array('header' => get_string('grade_element', self::LANG_FILE),
-                                      'display_function' => 'htmltab_display_function'),
-                'locked'     => array('header' => get_string('student_locked', self::LANG_FILE),
-                                      'display_function' => 'htmltab_display_function'),
-                'timegraded' => array('header' => get_string('date_graded', self::LANG_FILE),
-                                      'display_function' => 'htmltab_display_function')
-            );
-
-            if ($dir !== 'DESC') {
-                $dir = 'ASC';
-            }
-            if (isset($columns[$sort])) {
-                $columns[$sort]['sortable'] = $dir;
-            } else {
-                $sort = 'element'; // TBD
-                $columns[$sort]['sortable'] = $dir;
-            }
-            //$table->width = "100%"; // TBD
-
-            $newarr = array();
-            foreach ($elements as $element) {
-                $tabobj = new stdClass;
-                foreach ($columns as $column => $cdesc) {
-                    switch ($column) {
-                        case 'element':
-                            if (isset($grades[$element->id])) {
-                                $name = 'element['.$grades[$element->id]->id.']';
-                                $value = $element->id;
-                            } else {
-                                $name = 'newelement['.$element->id.']';
-                                $value = $element->id;
-                            }
-                            $tabobj->{$column} = '<input type="hidden" name="'.$name.'" ' .
-                                        'value="' . $value . '" />'.s($element->idnumber);
-                            break;
-
-                        case 'timegraded':
-                            if (isset($grades[$element->id])) {
-                                $name = 'timegraded['.$grades[$element->id]->id.']';
-                                $value = $grades[$element->id]->timegraded;
-                            } else {
-                                $name = 'newtimegraded['.$element->id.']';
-                                $value = 0;
-                            }
-                            $tabobj->{$column} = cm_print_date_selector($name.'[startday]',
-                                                               $name.'[startmonth]',
-                                                               $name.'[startyear]',
-                                                               $value, true);
-                            break;
-
-                        case 'grade':
-                            if (isset($grades[$element->id])) {
-                                $name = 'grade['.$grades[$element->id]->id.']';
-                                $value = $grades[$element->id]->grade;
-                            } else {
-                                $name = 'newgrade['.$element->id.']';
-                                $value = 0;
-                            }
-                            $tabobj->{$column} = '<input type="text" name="'.$name.'" ' .
-                                        'value="' . $value . '" size="5" />';
-                            break;
-
-                        case 'locked':
-                            if (isset($grades[$element->id])) {
-                                $name = 'locked['.$grades[$element->id]->id.']';
-                                $value = $grades[$element->id]->locked;
-                            } else {
-                                $name = 'newlocked['.$element->id.']';
-                                $value = 0;
-                            }
-                            $tabobj->{$column} = '<input type="checkbox" name="'.$name.'" ' .
-                                        'value="1" '.($value?'checked="checked"':'').'/>';
-                            break;
-
-                        default:
-                            $tabobj->{$column} = '';
-                            break;
-                    }
+        if (isset($this->id)) {
+            if ($elements = $this->pmclass->course->get_completion_elements()) {
+                $select = 'classid = ? AND userid = ? ';
+                $grades = $this->_db->get_records_select(student_grade::TABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
+                $columns = array( // TBD
+                    'element'    => array('header' => get_string('grade_element', self::LANG_FILE),
+                                          'display_function' => 'htmltab_display_function'),
+                    'grade'      => array('header' => get_string('grade_element', self::LANG_FILE),
+                                          'display_function' => 'htmltab_display_function'),
+                    'locked'     => array('header' => get_string('student_locked', self::LANG_FILE),
+                                          'display_function' => 'htmltab_display_function'),
+                    'timegraded' => array('header' => get_string('date_graded', self::LANG_FILE),
+                                          'display_function' => 'htmltab_display_function')
+                );
+    
+                if ($dir !== 'DESC') {
+                    $dir = 'ASC';
                 }
-                $newarr[] = $tabobj;
-                //$table->data[] = $newarr;
-            }
-            // TBD: student_table() ???
-            $table = new display_table($newarr, $columns, $this->get_base_url());
-            if (!empty($newarr)) { // TBD: $table or $newarr?
-                echo '<br />';
-                echo $table->get_html();
-                print_string('grade_update_warning', self::LANG_FILE);
+                if (isset($columns[$sort])) {
+                    $columns[$sort]['sortable'] = $dir;
+                } else {
+                    $sort = 'element'; // TBD
+                    $columns[$sort]['sortable'] = $dir;
+                }
+                //$table->width = "100%"; // TBD
+    
+                $newarr = array();
+                foreach ($elements as $element) {
+                    $tabobj = new stdClass;
+                    foreach ($columns as $column => $cdesc) {
+                        switch ($column) {
+                            case 'element':
+                                if (isset($grades[$element->id])) {
+                                    $name = 'element['.$grades[$element->id]->id.']';
+                                    $value = $element->id;
+                                } else {
+                                    $name = 'newelement['.$element->id.']';
+                                    $value = $element->id;
+                                }
+                                $tabobj->{$column} = '<input type="hidden" name="'.$name.'" ' .
+                                            'value="' . $value . '" />'.s($element->idnumber);
+                                break;
+    
+                            case 'timegraded':
+                                if (isset($grades[$element->id])) {
+                                    $name = 'timegraded['.$grades[$element->id]->id.']';
+                                    $value = $grades[$element->id]->timegraded;
+                                } else {
+                                    $name = 'newtimegraded['.$element->id.']';
+                                    $value = 0;
+                                }
+                                $tabobj->{$column} = cm_print_date_selector($name.'[startday]',
+                                                                   $name.'[startmonth]',
+                                                                   $name.'[startyear]',
+                                                                   $value, true);
+                                break;
+    
+                            case 'grade':
+                                if (isset($grades[$element->id])) {
+                                    $name = 'grade['.$grades[$element->id]->id.']';
+                                    $value = $grades[$element->id]->grade;
+                                } else {
+                                    $name = 'newgrade['.$element->id.']';
+                                    $value = 0;
+                                }
+                                $tabobj->{$column} = '<input type="text" name="'.$name.'" ' .
+                                            'value="' . $value . '" size="5" />';
+                                break;
+    
+                            case 'locked':
+                                if (isset($grades[$element->id])) {
+                                    $name = 'locked['.$grades[$element->id]->id.']';
+                                    $value = $grades[$element->id]->locked;
+                                } else {
+                                    $name = 'newlocked['.$element->id.']';
+                                    $value = 0;
+                                }
+                                $tabobj->{$column} = '<input type="checkbox" name="'.$name.'" ' .
+                                            'value="1" '.($value?'checked="checked"':'').'/>';
+                                break;
+    
+                            default:
+                                $tabobj->{$column} = '';
+                                break;
+                        }
+                    }
+                    $newarr[] = $tabobj;
+                    //$table->data[] = $newarr;
+                }
+                // TBD: student_table() ???
+                $table = new display_table($newarr, $columns, $this->get_base_url());
+                if (!empty($newarr)) { // TBD: $table or $newarr?
+                    echo '<br />';
+                    echo $table->get_html();
+                    print_string('grade_update_warning', self::LANG_FILE);
+                }
             }
         }
 
@@ -1002,103 +1001,103 @@ class student extends elis_data_object {
             echo $table->get_html();
         }
 
-        if (isset($this->pmclass->course) && is_object($this->pmclass->course) &&
-            (get_class($this->pmclass->course) == 'course') &&
-            ($elements = $this->pmclass->course->get_completion_elements())) {
+        if (isset($this->id)) {
+            if ($elements = $this->pmclass->course->get_completion_elements()) {
 
-            $select = 'classid = ? AND userid = ? ';
-            $grades = $this->_db->get_records_select(student_grade::TABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
-
-            $columns = array(
-                'element'          => array('header' => get_string('grade_element', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
-                'grade'            => array('header' => get_string('grade', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
-                'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function'),
-                'timegraded'       => array('header' => get_string('date_graded', self::LANG_FILE),
-                                            'display_function' => 'htmltab_display_function')
-            );
-
-            if ($dir !== 'DESC') {
-                $dir = 'ASC';
-            }
-            if (isset($columns[$sort])) {
-                $columns[$sort]['sortable'] = $dir;
-            } else {
-                $sort = 'element'; // TBD
-                $columns[$sort]['sortable'] = $dir;
-            }
-            //$table->width = "100%"; // TBD
-
-            $newarr = array();
-            foreach ($elements as $element) {
-                $tabobj = new stdClass;
-                foreach ($columns as $column => $cdesc) {
-                    switch ($column) {
-                        case 'element':
-                            if (isset($grades[$element->id])) {
-                                $name = 'element['.$grades[$element->id]->id.']';
-                                $value = $element->id;
-                            } else {
-                                $name = 'newelement['.$element->id.']';
-                                $value = $element->id;
-                            }
-                            $tabobj->{$column} = '<input type="hidden" name="'.$name.'" ' .
-                                        'value="' . $value . '" />'.s($element->idnumber);
-                            break;
-
-                        case 'timegraded':
-                            if (isset($grades[$element->id])) {
-                                $name = 'timegraded['.$grades[$element->id]->id.']';
-                                $value = $grades[$element->id]->timegraded;
-                            } else {
-                                $name = 'newtimegraded['.$element->id.']';
-                                $value = 0;
-                            }
-                            $tabobj->{$column} = cm_print_date_selector($name.'[startday]',
-                                                               $name.'[startmonth]',
-                                                               $name.'[startyear]',
-                                                               $value, true);
-                            break;
-
-                        case 'grade':
-                            if (isset($grades[$element->id])) {
-                                $name = 'grade['.$grades[$element->id]->id.']';
-                                $value = $grades[$element->id]->grade;
-                            } else {
-                                $name = 'newgrade['.$element->id.']';
-                                $value = 0;
-                            }
-                            $tabobj->{$column} = '<input type="text" name="'.$name.'" ' .
-                                        'value="' . $value . '" size="5" />';
-                            break;
-
-                        case 'locked':
-                            if (isset($grades[$element->id])) {
-                                $name = 'locked['.$grades[$element->id]->id.']';
-                                $value = $grades[$element->id]->locked;
-                            } else {
-                                $name = 'newlocked['.$element->id.']';
-                                $value = 0;
-                            }
-                            $tabobj->{$column} = '<input type="checkbox" name="'.$name.'" ' .
-                                        'value="1" '.($value?'checked="checked"':'').'/>';
-                            break;
-
-                        default:
-                            $tabobj->{$column} = '';
-                            break;
-                    }
+                $select = 'classid = ? AND userid = ? ';
+                $grades = $this->_db->get_records_select(student_grade::TABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
+    
+                $columns = array(
+                    'element'          => array('header' => get_string('grade_element', self::LANG_FILE),
+                                                'display_function' => 'htmltab_display_function'),
+                    'grade'            => array('header' => get_string('grade', self::LANG_FILE),
+                                                'display_function' => 'htmltab_display_function'),
+                    'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
+                                                'display_function' => 'htmltab_display_function'),
+                    'timegraded'       => array('header' => get_string('date_graded', self::LANG_FILE),
+                                                'display_function' => 'htmltab_display_function')
+                );
+    
+                if ($dir !== 'DESC') {
+                    $dir = 'ASC';
                 }
-                $newarr[] = $tabobj;
-                //$table->data[] = $newarr;
-            }
-            // TBD: student_table() ???
-            $table = new display_table($newarr, $columns, $this->get_base_url());
-            if (!empty($table)) { // TBD: $newarr or $table?
-                echo '<br />';
-                echo $table->get_html();
+                if (isset($columns[$sort])) {
+                    $columns[$sort]['sortable'] = $dir;
+                } else {
+                    $sort = 'element'; // TBD
+                    $columns[$sort]['sortable'] = $dir;
+                }
+                //$table->width = "100%"; // TBD
+    
+                $newarr = array();
+                foreach ($elements as $element) {
+                    $tabobj = new stdClass;
+                    foreach ($columns as $column => $cdesc) {
+                        switch ($column) {
+                            case 'element':
+                                if (isset($grades[$element->id])) {
+                                    $name = 'element['.$grades[$element->id]->id.']';
+                                    $value = $element->id;
+                                } else {
+                                    $name = 'newelement['.$element->id.']';
+                                    $value = $element->id;
+                                }
+                                $tabobj->{$column} = '<input type="hidden" name="'.$name.'" ' .
+                                            'value="' . $value . '" />'.s($element->idnumber);
+                                break;
+    
+                            case 'timegraded':
+                                if (isset($grades[$element->id])) {
+                                    $name = 'timegraded['.$grades[$element->id]->id.']';
+                                    $value = $grades[$element->id]->timegraded;
+                                } else {
+                                    $name = 'newtimegraded['.$element->id.']';
+                                    $value = 0;
+                                }
+                                $tabobj->{$column} = cm_print_date_selector($name.'[startday]',
+                                                                   $name.'[startmonth]',
+                                                                   $name.'[startyear]',
+                                                                   $value, true);
+                                break;
+    
+                            case 'grade':
+                                if (isset($grades[$element->id])) {
+                                    $name = 'grade['.$grades[$element->id]->id.']';
+                                    $value = $grades[$element->id]->grade;
+                                } else {
+                                    $name = 'newgrade['.$element->id.']';
+                                    $value = 0;
+                                }
+                                $tabobj->{$column} = '<input type="text" name="'.$name.'" ' .
+                                            'value="' . $value . '" size="5" />';
+                                break;
+    
+                            case 'locked':
+                                if (isset($grades[$element->id])) {
+                                    $name = 'locked['.$grades[$element->id]->id.']';
+                                    $value = $grades[$element->id]->locked;
+                                } else {
+                                    $name = 'newlocked['.$element->id.']';
+                                    $value = 0;
+                                }
+                                $tabobj->{$column} = '<input type="checkbox" name="'.$name.'" ' .
+                                            'value="1" '.($value?'checked="checked"':'').'/>';
+                                break;
+    
+                            default:
+                                $tabobj->{$column} = '';
+                                break;
+                        }
+                    }
+                    $newarr[] = $tabobj;
+                    //$table->data[] = $newarr;
+                }
+                // TBD: student_table() ???
+                $table = new display_table($newarr, $columns, $this->get_base_url());
+                if (!empty($table)) { // TBD: $newarr or $table?
+                    echo '<br />';
+                    echo $table->get_html();
+                }
             }
         }
 

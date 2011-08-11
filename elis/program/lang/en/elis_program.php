@@ -516,6 +516,7 @@ Please visit {$a->wwwroot}/course/enrol.php?id={$a->id} to complete your enrolme
 $string['moodleenrol_subj'] = 'Ready to enrol in {$a->idnumber}.';
 
 $string['name'] = 'Name';
+$string['name_lower_case'] = 'name';
 $string['n_completed'] = 'Not Completed';
 $string['n_users_enrolled'] = '{$a} user(s) enrolled.';
 $string['no_classes_available'] = 'No classes currently available.  Please check again later.';

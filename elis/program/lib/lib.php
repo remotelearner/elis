@@ -171,14 +171,14 @@ function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get
  * @param string $alpha         the current alpha/letter match
  * @param string $namesearch    the current string search
  * @param string $matchlabel    optional get_string identifier for label prefix of match settings
- *                              default get_string('name', 'elis_program')
+ *                              default get_string('name_lower_case', 'elis_program')
  * @param string $nomatchlabel  optional get_string identifier for label prefix of no matches
  *                              default get_string('no_users_matching', 'elis_program')
  */
 function pmshowmatches($alpha, $namesearch, $matchlabel = null, $nomatchlabel = null) {
     //error_log("pmshowmatches({$alpha}, {$namesearch}, {$matchlabel}, {$nomatchlabel})");
     if (empty($matchlabel)) {
-        $matchlabel = 'name';
+        $matchlabel = 'name_lower_case';
     }
     if (empty($nomatchlabel)) {
         $nomatchlabel = 'no_item_matching';
@@ -190,12 +190,11 @@ function pmshowmatches($alpha, $namesearch, $matchlabel = null, $nomatchlabel = 
     if ($alpha) {
         $match[] = get_string($matchlabel, 'elis_program') .": <b>{$alpha}___</b>";
     }
-    if (!empty($match)) {
-        $matchstring = implode(", ", $match);
-        $sparam = new stdClass;
-        $sparam->match = $matchstring;
-        echo get_string($nomatchlabel, 'elis_program', $sparam), '<br/>'; // TBD
-    }
+
+    $matchstring = implode(", ", $match);
+    $sparam = new stdClass;
+    $sparam->match = $matchstring;
+    echo get_string($nomatchlabel, 'elis_program', $sparam), '<br/>'; // TBD
 }
 
 /** Function to return pm page url with required params

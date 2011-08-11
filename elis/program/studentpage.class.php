@@ -243,7 +243,10 @@ class studentpage extends associationpage {
         if(!empty($waitlist)) {
             $this->get_waitlistform($waitlist);
         } else {
-            $this->display_add(); // TBD: redirect???
+            //redirect back to the main enrolment listing for this class
+            $id = $this->required_param('id', PARAM_INT);
+            $page = $this->get_new_page(array('id' => $id));
+            redirect($page->url);
         }
     }
 
@@ -526,6 +529,25 @@ class studentpage extends associationpage {
                 "action=add&amp;id=$clsid';\" value=\"" . get_string('enrolstudents', self::LANG_FILE) . "\" />";
         }
         echo "</form>";
+    }
+
+    /**
+     * Prints out the page that displays a list of records returned from a query.
+     * @param $items array of records to print
+     * @param $columns associative array of column id => column heading text
+     */
+    function print_list_view($items, $columns) { // TBD
+        global $CFG;
+
+        $id = $this->required_param('id', PARAM_INT);
+
+        if (empty($items)) {
+            //do not output a notice that no elements are found because this is handled by pmshowmatched
+            return;
+        }
+
+        $table = $this->create_table_object($items, $columns);
+        echo $table->get_html();
     }
 
     public function create_table_object($items, $columns /*, $formatters */) {
