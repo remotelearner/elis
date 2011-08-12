@@ -169,15 +169,20 @@ class waitlist extends elis_data_object {
         return $DB->get_records_sql($sql, $params, $startrec, $perpage);
     }
 
-    public function check_autoenrol_after_course_completion($enrolment) {
-        if($enrolment->completestatusid != STUSTATUS_NOTCOMPLETE) {
+    public static function check_autoenrol_after_course_completion($enrolment) {
+        if ($enrolment->completestatusid != STUSTATUS_NOTCOMPLETE) {
             $pmclass = new pmclass($enrolment->classid);
             $pmclass->load();
 
-            if((empty($pmclass->maxstudents) || $pmclass->maxstudents > student::count_enroled($pmclass->id)) && !empty($pmclass->enrol_from_waitlist)) {
+            if ((empty($pmclass->maxstudents) || $pmclass->maxstudents > student::count_enroled($pmclass->id)) && !empty($pmclass->enrol_from_waitlist)) {
                 $wlst = waitlist::get_next($enrolment->classid);
-                if(!empty($wlst)) {
-                    $wlst->enrol();
+                if (!empty($wlst)) {
+                    $crsid = $pmclass->course->id;
+                    foreach ($pmclass->course->curriculumcourse as $curcrs) {
+                        if ($curcrs->courseid == $crsid && $curcrs->prerequisites_satisfied($wlst->userid)) {
+                            $wlst->enrol();
+                        }
+                    }
                 }
             }
         }
@@ -195,7 +200,7 @@ class waitlist extends elis_data_object {
     public static function count_records($clsid, $namesearch = '', $alpha = '') {
         global $DB;
         // TBD: this method should be replaced by association w/ filter
-        if(empty($clsid)) { // TBD
+        if (empty($clsid)) { // TBD
             return array();
         }
 
@@ -299,7 +304,7 @@ class waitlist extends elis_data_object {
 
         if (!isset($this->id)) {
             $new = true;
-            if(empty($this->position)) {
+            if (empty($this->position)) {
                 $max = $this->_db->get_field(waitlist::TABLE, 'MAX(position)', array('classid' => $this->classid));
                 $this->position = $max + 1;
             }
@@ -319,7 +324,7 @@ class waitlist extends elis_data_object {
             $from = get_admin();
 
             notification::notify($message, $user, $from);
-            //email_to_user($user, $from, $subject, $message);
+            //email_to_user($user, $from, $subject, $message); // *TBD*
         }
     }
 
@@ -332,7 +337,7 @@ class waitlist extends elis_data_object {
         $sql = $select . $from . $where . $order;
         $nextStudent = $DB->get_records_sql($sql, array($clsid));
 
-        if(!empty($nextStudent)) {
+        if (!empty($nextStudent)) {
             $nextStudent = current($nextStudent);
             $nextStudent = new waitlist($nextStudent);
         }
