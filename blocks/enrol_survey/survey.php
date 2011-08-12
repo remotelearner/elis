@@ -24,6 +24,8 @@
  *
  */
 
+//define('DEBUG_SURVEY', 1);
+
 require_once(dirname(__FILE__) .'/../../config.php');
 require_once($CFG->dirroot .'/blocks/enrol_survey/forms.php');
 require_once($CFG->dirroot .'/blocks/enrol_survey/lib.php');
@@ -54,6 +56,10 @@ if (cm_get_crlmuserid($USER->id) === false) { // ***TBD***
     print_error(get_string('noelisuser', 'block_enrol_survey'));
 }
 
+$moodle_user = get_complete_user_data('id', $USER->id);
+$elis_user = new user(cm_get_crlmuserid($USER->id));
+$elis_user->load();
+
 $survey_form = new survey_form($CFG->wwwroot .'/blocks/enrol_survey/survey.php?id='. $instanceid);
 
 if ($survey_form->is_cancelled()) {
@@ -61,26 +67,37 @@ if ($survey_form->is_cancelled()) {
 } else if ($formdata = $survey_form->get_data()) {
     $customfields = get_customfields();
     $profilefields = get_profilefields();
+
     $data = get_object_vars($formdata);
 
-    $u = new user(cm_get_crlmuserid($USER->id));
-    $u->load();
-    $u_obj = $u->to_object();
+    if (defined('DEBUG_SURVEY')) {
+        ob_start();
+        var_dump($data);
+        //echo "\n  elis_user: ";
+        //var_dump($eu_obj);
+        //echo "\n  moodle_user: ";
+        //var_dump($moodle_user);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("/blocks/enrol_survey/survey.php: data = {$tmp}");
+    }
 
+    // $eu_obj = $elis_user->to_object();
     foreach ($data as $key => $fd) {
-        if (!empty($fd)) {
+        if (isset($fd) && $fd !== '') { // *MUST* handle checkboxes = '0'
             if (in_array($key, $profilefields)) {
-                // NOTE: property_exists($u_obj, $key) doesn't work if existing value is NULL
+                // NOTE: property_exists($eu_obj, $key) doesn't work if existing value is NULL
                 try {
-                    $u->__set($key, $fd);
+                    $elis_user->__set($key, $fd);
                 } catch (Exception $e) {
                     // ignore invalid property exception!
-                    error_log("/blocks/enrol_survey/survey.php: Invalid property of crlm_user '{$key}'");
+                    error_log("/blocks/enrol_survey/survey.php: Warning - invalid property of crlm_user: '{$key}'");
                 }
                 if ($key == 'language') { // special case $USER->lang
                     $key = 'lang';
                 }
-                if (property_exists($USER, $key)) {
+                if (property_exists($moodle_user, $key)) {
+                    $moodle_user->{$key} = $fd;
                     $USER->{$key} = $fd;
                 }
             }
@@ -102,34 +119,8 @@ if ($survey_form->is_cancelled()) {
         }
     }
 
-    // unchecked checkboxes have no entry in form $data
-    foreach (get_questions() as $key => $val) {
-        if (!array_key_exists($key, $data)) {
-            switch ($key) {
-                case 'inactive':
-                // case {other_checkbox_profile_fields}:
-                    $u->__set($key, 0);
-                    break;
-                default:
-                    $q_data = $DB->get_record('user_info_field', array('shortname' => $key));
-                    if ($q_data && $q_data->datatype == 'checkbox') {
-                        //error_log("/blocks/enrol_survey/survey.php: unchecked checkbox '{$key}'");
-                        if ($DB->record_exists('user_info_data', array('userid' => $USER->id, 'fieldid' => $q_data->id))) {
-                            $DB->set_field('user_info_data', 'data', 0, array('userid' => $USER->id, 'fieldid' => $q_data->id));
-                        } else {
-                            $dataobj = new object();
-                            $dataobj->userid = $USER->id;
-                            $dataobj->fieldid = $q_data->id;
-                            $dataobj->data = 0;
-                            $DB->insert_record('user_info_data', $dataobj);
-                        }
-                    }
-            }
-        }
-    }
-
-    $DB->update_record('user', $USER);
-    $u->save();
+    $DB->update_record('user', $moodle_user); // *MUST* be called before save()
+    $elis_user->save();
 
     if (!is_survey_taken($USER->id, $instanceid) && empty($incomplete)) {
         $dataobject = new object();
@@ -143,9 +134,7 @@ if ($survey_form->is_cancelled()) {
     }
 }
 
-$u = new user(cm_get_crlmuserid($USER->id));
-$u->load();
-$toform = array_merge((array)$USER, (array)$u->to_object());
+$toform = array_merge((array)$moodle_user, (array)$elis_user->to_object());
 
 $customdata = $DB->get_records('user_info_data', array('userid' => $USER->id));
 if (!empty($customdata)) {

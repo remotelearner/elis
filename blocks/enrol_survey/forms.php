@@ -132,7 +132,7 @@ class survey_form extends moodleform {
                     $type = 'select';
                     $extra = get_string_manager()->get_list_of_languages();
                 } else if (strcmp($k, 'inactive') === 0) {
-                    $type = 'checkbox';
+                    $type = 'advcheckbox';
                 } else {
                     $type = 'text';
                 }
@@ -145,7 +145,7 @@ class survey_form extends moodleform {
                 } else if (strcmp($field->datatype, 'text') === 0) {
                     $type = 'text';
                 } else if (strcmp($field->datatype, 'checkbox') === 0) {
-                    $type = 'checkbox';
+                    $type = 'advcheckbox';
                 } else if (strcmp($field->datatype, 'textarea') === 0) {
                     $type = 'textarea';
                 }
