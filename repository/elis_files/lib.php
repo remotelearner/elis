@@ -217,18 +217,28 @@ class repository_elis_files extends repository {
         }*/
 
         //Fake file listing for now
-        $ret['list'][] = array('title'=>'File1.jpg',
+        $ret['list'][] = array('title'=>'Folder',
                         'path'=>'fake/files',
                         'thumbnail'=>$OUTPUT->pix_url('f/image-32') . '',
-                        'children'=>array());
+                        'created'=>'23423225',
+                        'modified'=>'54645645',
+                        'owner'=>'John Smith',
+                        'children'=>array(array('title'=>'Folder',
+                                        'path'=>'fake/files/Folder',
+                                        'thumbnail'=>$OUTPUT->pix_url('f/image-32') . '')
+                    ));
         $ret['list'][] = array('title'=>'File2.png',
                         'path'=>'fake/files',
-                        'thumbnail'=>$OUTPUT->pix_url('f/image-32') . '',
-                        'children'=>array());
+                        'created'=>'23423225',
+                        'modified'=>'54645645',
+                        'owner'=>'Jane Smith',
+                        'thumbnail'=>$OUTPUT->pix_url('f/image-32') . '');
         $ret['list'][] = array('title'=>'File3.csv',
                         'path'=>'fake/files',
-                        'thumbnail'=>$OUTPUT->pix_url('f/excel') . '',
-                        'children'=>array());
+                        'created'=>'23423225',
+                        'modified'=>'54645645',
+                        'owner'=>'Jim Bob Smith',
+                        'thumbnail'=>$OUTPUT->pix_url('f/excel') . '');
 
 
         return $ret;
