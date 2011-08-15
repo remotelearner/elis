@@ -170,6 +170,8 @@ class repository_elis_files extends repository {
         $ret = array();
         $ret['dynload'] = true;
         $ret['nologin'] = true;
+        $ret['showselectedactions'] = true;
+        $ret['showcurrentactions'] = true;
         $ret['list'] = array();
         //TODO: removed for now as we want a fake file list
         /*$server_url = $this->options['elis_files_url'];
