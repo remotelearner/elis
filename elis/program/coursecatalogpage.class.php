@@ -282,7 +282,8 @@ class coursecatalogpage extends pm_page {
         $newstu                     = new student($sturecord);
         $newstu->save(); // TBD: was ->add()
 
-        $this->display_default();
+        $tmppage = new coursecatalogpage(array('action' => 'default'));
+        redirect($tmppage->url); // $this->display_default();
     }
 
     /**
@@ -333,7 +334,7 @@ class coursecatalogpage extends pm_page {
     function display_current() { // action_current()
         global $OUTPUT, $PAGE, $USER;
 
-        $clsid = cm_get_param('clsid', 0);
+        //$clsid = cm_get_param('clsid', 0);
 
         // This is for a Moodle user, so get the Curriculum user id.
         $cuserid = cm_get_crlmuserid($USER->id);
