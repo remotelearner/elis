@@ -211,6 +211,10 @@ class generalized_filter_date extends generalized_filter_type {
             $params[$param_before] = $data['before'];
         }
 
+        if (!empty($params)) {
+            $counter++;
+        }
+
         return array($sql, params);
     }
 
