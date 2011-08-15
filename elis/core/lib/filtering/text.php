@@ -201,7 +201,7 @@ class generalized_filter_text extends generalized_filter_type {
                 break;
             default:
                 //error call
-                print_error('invalidoperator', 'block_php_report');
+                print_error('invalidoperator', 'elis_core'); // TBD
         }
         return array($sql, $params);
     }
