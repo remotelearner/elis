@@ -295,17 +295,25 @@ class repository_elis_files extends repository {
     public function print_upload_dialog() {
         $str = '<p><b>Uploading Tip</b></p>'
              . '<p>You can select more than one file for uploading by holding down the control key while clicking on the files.</p>'
-             . '<p><input type="file" size="20" id="files" name="files[]" multiple="multiple"></p>';
+             . '<p><input type="file" size="20" id="files" name="files[]" multiple="true" /></p>';
         return $str;
     }
 
     public function upload_multiple() {
-        throw new moodle_exception('nofile');
+        //throw new moodle_exception('nofile');
+        $result = array();
+        foreach ($_FILES['files'] as $key=>$val) {
+            // do something with uploaded files
+        }
+        return $result;
     }
 
     public function print_upload_progress() {
+        global $OUTPUT;
+
         $str = '<p><b>Your files are being uploaded</b></p>'
-             . '<p><input type="button" name="cancelupload" value="Cancel"></p>';
+             . '<p><input type="button" name="cancelupload" value="Cancel" /></p>';
+
         return $str;
     }
 
