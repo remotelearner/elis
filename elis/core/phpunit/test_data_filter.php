@@ -114,24 +114,24 @@ class filterTest extends filter_TestCase {
             array('id', 'foreign', 'foreignid'
             ),
             array(
-                'where' => 'id IN (SELECT _table_1.foreignid
-                                     FROM {foreign} _table_1 )',
+                'where' => 'id IN (SELECT table_1.foreignid
+                                     FROM {foreign} table_1 )',
                 'where_parameters' => array()
             ),
             array(
-                'join' => 'JOIN {foreign} _table_1
-                             ON _table_1.foreignid = id',
+                'join' => 'JOIN {foreign} table_1
+                             ON table_1.foreignid = id',
                 'join_parameters' => array()
             ),
             array(
                 'where' => "EXISTS (SELECT 'x'
-                                      FROM {foreign} _table_1
-                                     WHERE _table_1.foreignid = x.id)",
+                                      FROM {foreign} table_1
+                                     WHERE table_1.foreignid = x.id)",
                 'where_parameters' => array()
             ),
             array(
-                'join' => 'JOIN {foreign} _table_1
-                             ON _table_1.foreignid = x.id',
+                'join' => 'JOIN {foreign} table_1
+                             ON table_1.foreignid = x.id',
                 'join_parameters' => array()
             )
         );
@@ -141,25 +141,25 @@ class filterTest extends filter_TestCase {
             array('id', 'foreign', 'foreignid', null, false, false
             ),
             array(
-                'where' => 'id IN (SELECT _table_1.foreignid
-                                     FROM {foreign} _table_1 )',
+                'where' => 'id IN (SELECT table_1.foreignid
+                                     FROM {foreign} table_1 )',
                 'where_parameters' => array()
             ),
             array(
-                'where' => 'id IN (SELECT _table_1.foreignid
-                                     FROM {foreign} _table_1 )',
-                'where_parameters' => array()
-            ),
-            array(
-                'where' => "EXISTS (SELECT 'x'
-                                      FROM {foreign} _table_1
-                                     WHERE _table_1.foreignid = x.id)",
+                'where' => 'id IN (SELECT table_1.foreignid
+                                     FROM {foreign} table_1 )',
                 'where_parameters' => array()
             ),
             array(
                 'where' => "EXISTS (SELECT 'x'
-                                      FROM {foreign} _table_1
-                                     WHERE _table_1.foreignid = x.id)",
+                                      FROM {foreign} table_1
+                                     WHERE table_1.foreignid = x.id)",
+                'where_parameters' => array()
+            ),
+            array(
+                'where' => "EXISTS (SELECT 'x'
+                                      FROM {foreign} table_1
+                                     WHERE table_1.foreignid = x.id)",
                 'where_parameters' => array()
             )
         );
@@ -169,28 +169,28 @@ class filterTest extends filter_TestCase {
             array('id', 'foreign', 'foreignid', null, true
             ),
             array(
-                'where' => 'id NOT IN (SELECT _table_1.foreignid
-                                         FROM {foreign} _table_1 )',
+                'where' => 'id NOT IN (SELECT table_1.foreignid
+                                         FROM {foreign} table_1 )',
                 'where_parameters' => array()
             ),
             array(
-                'join' => 'LEFT JOIN {foreign} _table_1
-                                  ON _table_1.foreignid = id ',
+                'join' => 'LEFT JOIN {foreign} table_1
+                                  ON table_1.foreignid = id ',
                 'join_parameters' => array(),
-                'where' => '_table_1.id IS NULL',
+                'where' => 'table_1.id IS NULL',
                 'where_parameters' => array()
             ),
             array(
                 'where' => "NOT EXISTS (SELECT 'x'
-                                          FROM {foreign} _table_1
-                                         WHERE _table_1.foreignid = x.id)",
+                                          FROM {foreign} table_1
+                                         WHERE table_1.foreignid = x.id)",
                 'where_parameters' => array()
             ),
             array(
-                'join' => 'LEFT JOIN {foreign} _table_1
-                                  ON _table_1.foreignid = x.id',
+                'join' => 'LEFT JOIN {foreign} table_1
+                                  ON table_1.foreignid = x.id',
                 'join_parameters' => array(),
-                'where' => '_table_1.id IS NULL',
+                'where' => 'table_1.id IS NULL',
                 'where_parameters' => array()
             )
         );
@@ -201,32 +201,32 @@ class filterTest extends filter_TestCase {
                   new join_filter('id', 'ff', 'ffid')
             ),
             array(
-                'where' => 'id IN (SELECT _table_1.foreignid
-                                     FROM {foreign} _table_1
-                                     JOIN {ff} _table_3
-                                       ON _table_3.ffid = _table_1.id)',
+                'where' => 'id IN (SELECT table_1.foreignid
+                                     FROM {foreign} table_1
+                                     JOIN {ff} table_3
+                                       ON table_3.ffid = table_1.id)',
                 'where_parameters' => array()
             ),
             array(
-                'join' => 'JOIN {foreign} _table_1
-                             ON _table_1.foreignid = id
-                           JOIN {ff} _table_2
-                             ON _table_2.ffid = _table_1.id',
+                'join' => 'JOIN {foreign} table_1
+                             ON table_1.foreignid = id
+                           JOIN {ff} table_2
+                             ON table_2.ffid = table_1.id',
                 'join_parameters' => array()
             ),
             array(
                 'where' => "EXISTS (SELECT 'x'
-                                      FROM {foreign} _table_1
-                                      JOIN {ff} _table_2
-                                        ON _table_2.ffid = _table_1.id
-                                     WHERE _table_1.foreignid = x.id)",
+                                      FROM {foreign} table_1
+                                      JOIN {ff} table_2
+                                        ON table_2.ffid = table_1.id
+                                     WHERE table_1.foreignid = x.id)",
                 'where_parameters' => array()
             ),
             array(
-                'join' => 'JOIN {foreign} _table_1
-                             ON _table_1.foreignid = x.id
-                           JOIN {ff} _table_2
-                             ON _table_2.ffid = _table_1.id',
+                'join' => 'JOIN {foreign} table_1
+                             ON table_1.foreignid = x.id
+                           JOIN {ff} table_2
+                             ON table_2.ffid = table_1.id',
                 'join_parameters' => array()
             )
         );
@@ -237,39 +237,39 @@ class filterTest extends filter_TestCase {
                   new join_filter('id', 'ff', 'ffid'), true
             ),
             array(
-                'where' => 'id NOT IN (SELECT _table_1.foreignid
-                                         FROM {foreign} _table_1
-                                         JOIN {ff} _table_3
-                                           ON _table_3.ffid = _table_1.id)',
+                'where' => 'id NOT IN (SELECT table_1.foreignid
+                                         FROM {foreign} table_1
+                                         JOIN {ff} table_3
+                                           ON table_3.ffid = table_1.id)',
                 'where_parameters' => array()
             ),
             array(
                 // gross SQL
-                'join' => "LEFT JOIN {foreign} _table_1
-                                  ON _table_1.foreignid = id
+                'join' => "LEFT JOIN {foreign} table_1
+                                  ON table_1.foreignid = id
                                  AND (EXISTS (SELECT 'x'
-                                                FROM {ff} _table_2
-                                               WHERE _table_2.ffid = _table_1.id))",
+                                                FROM {ff} table_2
+                                               WHERE table_2.ffid = table_1.id))",
                 'join_parameters' => array(),
-                'where' => '_table_1.id IS NULL',
+                'where' => 'table_1.id IS NULL',
                 'where_parameters' => array()
             ),
             array(
                 'where' => "NOT EXISTS (SELECT 'x'
-                                          FROM {foreign} _table_1
-                                          JOIN {ff} _table_2
-                                            ON _table_2.ffid = _table_1.id
-                                         WHERE _table_1.foreignid = x.id)",
+                                          FROM {foreign} table_1
+                                          JOIN {ff} table_2
+                                            ON table_2.ffid = table_1.id
+                                         WHERE table_1.foreignid = x.id)",
                 'where_parameters' => array()
             ),
             array(
-                'join' => "LEFT JOIN {foreign} _table_1
-                                  ON _table_1.foreignid = x.id
+                'join' => "LEFT JOIN {foreign} table_1
+                                  ON table_1.foreignid = x.id
                                  AND (EXISTS (SELECT 'x'
-                                                FROM {ff} _table_2
-                                               WHERE _table_2.ffid = _table_1.id))",
+                                                FROM {ff} table_2
+                                               WHERE table_2.ffid = table_1.id))",
                 'join_parameters' => array(),
-                'where' => '_table_1.id IS NULL',
+                'where' => 'table_1.id IS NULL',
                 'where_parameters' => array()
             )
         );
