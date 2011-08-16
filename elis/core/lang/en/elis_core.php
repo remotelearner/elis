@@ -35,3 +35,4 @@ $string['pluginname'] = 'ELIS Core';
 $string['unknown_action'] = 'Unknown action ({$a})';
 $string['workflow_cancelled'] = 'Cancelled';
 $string['workflow_invalidstep'] = 'Invalid step specified';
+$string['write_to_non_overlay_table'] = 'Attempted write to a non-overlay table';

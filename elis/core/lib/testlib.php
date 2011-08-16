@@ -60,6 +60,10 @@ function load_phpunit_data_set(PHPUnit_Extensions_Database_DataSet_IDataSet $dat
  * Overlay certain tables in a Moodle database with dummy tables that can be
  * modified without affecting the original tables.
  *
+ * This class will try to prevent writes to non-overlay tables, and throw an
+ * exception, but not all types of writes will be caught (in particular, calls
+ * to $db->execute()).
+ *
  * WARNING: This will only affect database calls made through this database
  * object.  So you either need to be able to pass a database object to
  * function/object that you are testing, or you need to replace the global $DB
@@ -254,77 +258,84 @@ class overlay_database extends moodle_database {
     }
 
     public function insert_record_raw($table, $params, $returnid=true, $bulk=false, $customsequence=false) {
-        $cacheprefix = $this->basedb->prefix;
-        if (isset($this->overlaytables[$table])) {
-            // HACK!!!
-            $this->basedb->prefix = $this->overlayprefix;
+        if (!isset($this->overlaytables[$table])) {
+            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
         }
+
+        $cacheprefix = $this->basedb->prefix;
+        $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->insert_record_raw($table, $params, $returnid, $bulk, $customsequence);
         $this->basedb->prefix = $cacheprefix;
         return $result;
     }
 
     public function insert_record($table, $dataobject, $returnid=true, $bulk=false) {
-        $cacheprefix = $this->basedb->prefix;
-        if (isset($this->overlaytables[$table])) {
-            // HACK!!!
-            $this->basedb->prefix = $this->overlayprefix;
+        if (!isset($this->overlaytables[$table])) {
+            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
         }
+
+        $cacheprefix = $this->basedb->prefix;
+        $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->insert_record($table, $dataobject, $returnid, $bulk);
         $this->basedb->prefix = $cacheprefix;
         return $result;
     }
 
     public function import_record($table, $dataobject) {
-        $cacheprefix = $this->basedb->prefix;
-        if (isset($this->overlaytables[$table])) {
-            // HACK!!!
-            $this->basedb->prefix = $this->overlayprefix;
+        if (!isset($this->overlaytables[$table])) {
+            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
         }
+
+        $cacheprefix = $this->basedb->prefix;
+        $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->import_record($table, $dataobject);
         $this->basedb->prefix = $cacheprefix;
         return $result;
     }
 
     public function update_record_raw($table, $params, $bulk=false) {
-        $cacheprefix = $this->basedb->prefix;
-        if (isset($this->overlaytables[$table])) {
-            // HACK!!!
-            $this->basedb->prefix = $this->overlayprefix;
+        if (!isset($this->overlaytables[$table])) {
+            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
         }
+
+        $cacheprefix = $this->basedb->prefix;
+        $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->update_record_raw($table, $params, $bulk);
         $this->basedb->prefix = $cacheprefix;
         return $result;
     }
 
     public function update_record($table, $dataobject, $bulk=false) {
-        $cacheprefix = $this->basedb->prefix;
-        if (isset($this->overlaytables[$table])) {
-            // HACK!!!
-            $this->basedb->prefix = $this->overlayprefix;
+        if (!isset($this->overlaytables[$table])) {
+            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
         }
+
+        $cacheprefix = $this->basedb->prefix;
+        $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->update_record($table, $dataobject, $bulk);
         $this->basedb->prefix = $cacheprefix;
         return $result;
     }
 
     public function set_field_select($table, $newfield, $newvalue, $select, array $params=null) {
-        $cacheprefix = $this->basedb->prefix;
-        if (isset($this->overlaytables[$table])) {
-            // HACK!!!
-            $this->basedb->prefix = $this->overlayprefix;
+        if (!isset($this->overlaytables[$table])) {
+            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
         }
+
+        $cacheprefix = $this->basedb->prefix;
+        $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->set_field_select($table, $newfield, $newvalue, $select, $params);
         $this->basedb->prefix = $cacheprefix;
         return $result;
     }
 
     public function delete_records_select($table, $select, array $params=null) {
-        $cacheprefix = $this->basedb->prefix;
-        if (isset($this->overlaytables[$table])) {
-            // HACK!!!
-            $this->basedb->prefix = $this->overlayprefix;
+        if (!isset($this->overlaytables[$table])) {
+            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
         }
+
+        $cacheprefix = $this->basedb->prefix;
+        $this->basedb->prefix = $this->overlayprefix; // HACK!!!
         $result = $this->basedb->delete_records_select($table, $select, $params);
         $this->basedb->prefix = $cacheprefix;
         return $result;
@@ -497,4 +508,7 @@ class overlay_database extends moodle_database {
     public function perf_get_queries() {
         return $this->basedb->perf_get_queries();
     }
+}
+
+class overlay_database_exception extends moodle_exception {
 }
