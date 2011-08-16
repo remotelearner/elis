@@ -204,8 +204,7 @@ class elis_data_object {
         } else if (is_array($src)) {
             $this->_load_data_from_record((object)$src, false, $field_map, $from_db, $extradatafields);
         } else {
-            throw new ErrorException('Invalid argument');
-            // FIXME: error
+            throw new data_object_exception('data_object_construct_invalid_source', 'elis_core');
         }
 
         $this->_associated_objects = $associations;
@@ -609,8 +608,10 @@ class elis_data_object {
                 "Attempt to set to undefined member via __set(): $classname::\${$name} in {$trace[1]['file']} on line {$trace[1]['line']}",
             E_USER_ERROR);
             */
-            $classname = get_class($this);
-            throw new ErrorException("Attempt to set nonexistent member variable $classname::\${$name}");
+            $a = new stdClass;
+            $a->classname = get_class($this);
+            $a->name = $name;
+            throw new data_object_exception('set_nonexistent_member', 'elis_core', '', $a);
         }
     }
 
@@ -984,8 +985,10 @@ function validate_is_unique(elis_data_object $record, array $fields) {
         $filters[] = new field_filter('id', $record->id, field_filter::NEQ);
     }
     if ($classname::exists($filters, $record->get_db())) {
-        throw new ErrorException("{$tablename} record must have unique " . implode(',', $fields) . ' fields');
-        // FIXME: new exception
+        $a = new stdClass;
+        $a->tablename = $tablename;
+        $a->fields = implode(',', $fields);
+        throw new data_object_validation_exception('data_object_validation_unique', 'elis_core', '', $a);
     }
 }
 
@@ -997,10 +1000,11 @@ function validate_not_empty(elis_data_object $record, $field) {
     // new record and the field is empty, then we have an error
     if ((isset($record->id) && isset($record->$field) && empty($record->$field))
         || (!isset($record->id) && empty($record->$field))) {
+        $a = new stdClass;
         $classname = get_class($record);
-        $tablename = $classname::TABLE;
-        throw new ErrorException("{$tablename} record cannot have empty {$field} field");
-        // FIXME: new exception
+        $a->tablename = $classname::TABLE;
+        $a->field = $field;
+        throw new data_object_validation_exception('data_object_validation_not_empty', 'elis_core', '', $a);
     }
 }
 
@@ -1047,4 +1051,10 @@ class validation_helper {
             return call_user_func_array('validate_is_unique', $args);
         }
     }
+}
+
+class data_object_exception extends moodle_exception {
+}
+
+class data_object_validation_exception extends data_object_exception {
 }

@@ -372,7 +372,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
     /**
      * Test validation of duplicates
      *
-     * @expectedException ErrorException
+     * @expectedException data_object_validation_exception
      */
     public function testValidationPreventsDuplicates() {
         global $DB;
@@ -394,7 +394,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
     /**
      * Test validation of required fields
      *
-     * @expectedException ErrorException
+     * @expectedException data_object_validation_exception
      */
     public function testValidationPreventsEmptyValues() {
         global $DB;

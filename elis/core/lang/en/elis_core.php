@@ -26,6 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['data_object_construct_invalid_source'] = 'Attempted to construct a data_object from an invalid source';
+$string['data_object_validation_not_empty'] = '{$a->tablename} record cannot have empty {$a->field} field';
+$string['data_object_validation_unique'] = '{$a->tablename} record must have unique {$a->fields} fields';
 $string['elis'] = 'ELIS';
 $string['elisversion'] = '<strong>ELIS Version:</strong> {$a}';
 $string['finish'] = 'Finish';
@@ -35,8 +38,9 @@ $string['pluginname'] = 'ELIS Core';
 $string['report_filter_all'] = 'Show All';
 $string['report_filter_anyvalue'] = 'No filtering';
 $string['unknown_action'] = 'Unknown action ({$a})';
+$string['set_nonexistent_member'] = 'Attempt to set nonexistent member variable {$a->classname}::${$a->name}';
 $string['subplugintype_eliscoreplugins_plural'] = 'General plugins';
 $string['subplugintype_elisfields_plural'] = 'Custom field types';
 $string['workflow_cancelled'] = 'Cancelled';
 $string['workflow_invalidstep'] = 'Invalid step specified';
-$string['write_to_non_overlay_table'] = 'Attempted write to a non-overlay table';
+$string['write_to_non_overlay_table'] = 'Attempted write to a non-overlay table: {$a}';
