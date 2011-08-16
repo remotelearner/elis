@@ -303,6 +303,12 @@ class repository_elis_files extends repository {
         throw new moodle_exception('nofile');
     }
 
+    public function print_upload_progress() {
+        $str = '<p><b>Your files are being uploaded</b></p>'
+             . '<p><input type="button" name="cancelupload" value="Cancel"></p>';
+        return $str;
+    }
+
     /**
      * Look for a file
      *
