@@ -607,7 +607,7 @@ class cluster_rolepage extends rolepage {
      * capability, then only show them the cluster members (ELIS-1570).
      */
     protected function get_assigned_records($filter) {
-        if (has_capability('block/curr_admin:cluster:role_assign_cluster_users', $this->get_context(), NULL, false)) {
+        if (has_capability('elis/program:userset_role_assign_userset_users', $this->get_context(), NULL, false)) {
             global $CFG, $DB;
 
             $context = $this->get_context();
@@ -672,7 +672,7 @@ class cluster_rolepage extends rolepage {
      * capability, then only show them the cluster members (ELIS-1570).
      */
     protected function get_available_records($filter) {
-        if (has_capability('block/curr_admin:cluster:role_assign_cluster_users', $this->get_context(), NULL, false)) {
+        if (has_capability('elis/program:userset_role_assign_userset_users', $this->get_context(), NULL, false)) {
             global $CFG, $DB;
 
             $context = $this->get_context();
@@ -773,7 +773,7 @@ class cluster_rolepage extends rolepage {
                        AND u.deleted = 0";
 
         //start of RL addition
-        if (has_capability('block/curr_admin:cluster:role_assign_cluster_users', $this->get_context(), NULL, false)) {
+        if (has_capability('elis/program:userset_role_assign_userset_users', $this->get_context(), NULL, false)) {
             //users explicitly assigned this capability are limited to seeing users who are also
             //directly assigned to this cluster
             require_once(elispm::lib('data/clusterassignment.class.php'));

@@ -60,7 +60,7 @@ class userclusterbasepage extends associationpage {
         if(!usersetpage::can_enrol_into_cluster($clustid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if (usersetpage::_has_capability('block/curr_admin:cluster:enrol', $clustid)) {
+        } else if (usersetpage::_has_capability('elis/program:userset_enrol', $clustid)) {
             //current user has the direct capability
             return true;
         }
@@ -100,7 +100,7 @@ class userclusterpage extends userclusterbasepage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        return userpage::_has_capability('block/curr_admin:user:view', $id);
+        return userpage::_has_capability('elis/program:user_view', $id);
     }
 
     function can_do_add() {
@@ -240,7 +240,7 @@ class clusteruserpage extends userclusterbasepage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        return usersetpage::_has_capability('block/curr_admin:cluster:view', $id);
+        return usersetpage::_has_capability('elis/program:userset_view', $id);
     }
 
     function can_do_add() {

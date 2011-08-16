@@ -574,14 +574,14 @@ class course extends data_object_with_custom_fields {
 
         if ($sendtorole) {
             /// Get all users with the notify_courserecurrence capability.
-            if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_courserecurrence')) {
+            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_courserecurrence')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'block/curr_admin:notify_courserecurrence')) {
+            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'elis/program:notify_courserecurrence')) {
                 $users = $users + $supervisors;
             }
         }

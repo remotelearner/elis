@@ -81,12 +81,12 @@ class curriculumpage extends managementpage {
         global $USER;
 
         //check the standard capability
-        if(curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $curriculumid)) {
+        if(curriculumpage::_has_capability('elis/program:program_enrol', $curriculumid)) {
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
 
         //get the clusters and check the context against them
         $clusters = clustercurriculum::get_clusters($curriculumid);
@@ -151,15 +151,15 @@ class curriculumpage extends managementpage {
     }
 
     function can_do_view() {
-        return $this->_has_capability('block/curr_admin:curriculum:view');
+        return $this->_has_capability('elis/program:program_view');
     }
 
     function can_do_edit() {
-        return $this->_has_capability('block/curr_admin:curriculum:edit');
+        return $this->_has_capability('elis/program:program_edit');
     }
 
     function can_do_delete() {
-        return $this->_has_capability('block/curr_admin:curriculum:delete');
+        return $this->_has_capability('elis/program:program_delete');
     }
 
     function can_do_confirm() {
@@ -168,11 +168,11 @@ class curriculumpage extends managementpage {
 
     function can_do_add() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('block/curr_admin:curriculum:create', $context);
+        return has_capability('elis/program:program_create', $context);
     }
 
     function can_do_default() {
-        $contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:view');
+        $contexts = curriculumpage::get_contexts('elis/program:program_view');
         return !$contexts->is_empty();
     }
 
@@ -197,11 +197,11 @@ class curriculumpage extends managementpage {
         );
 
         // Get list of users
-        $items    = curriculum_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, curriculumpage::get_contexts('block/curr_admin:curriculum:view'));
-        $numitems = curriculum_count_records($namesearch, $alpha, curriculumpage::get_contexts('block/curr_admin:curriculum:view'));
+        $items    = curriculum_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, curriculumpage::get_contexts('elis/program:program_view'));
+        $numitems = curriculum_count_records($namesearch, $alpha, curriculumpage::get_contexts('elis/program:program_view'));
 
-        curriculumpage::get_contexts('block/curr_admin:curriculum:edit');
-        curriculumpage::get_contexts('block/curr_admin:curriculum:delete');
+        curriculumpage::get_contexts('elis/program:program_edit');
+        curriculumpage::get_contexts('elis/program:program_delete');
 
         $this->print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=true, $searchflag=true);
     }
@@ -226,7 +226,7 @@ class curriculumpage extends managementpage {
             $context_instance = get_context_instance($context_level, $cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
-            if(!has_capability('block/curr_admin:curriculum:edit', $context_instance)) {
+            if(!has_capability('elis/program:program_edit', $context_instance)) {
                 role_assign(elis::$config->elis_program->default_curriculum_role_id, $USER->id, 0, $context_instance->id);
             }
         }
@@ -263,7 +263,7 @@ class curriculumforcoursepage extends curriculumpage {
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('block/curr_admin:curriculum:create', $context);
+        return has_capability('elis/program:program_create', $context);
         // FIXME: check permissions on the desired course too
     }
 

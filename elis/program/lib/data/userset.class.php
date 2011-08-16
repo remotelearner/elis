@@ -350,7 +350,7 @@ class userset extends data_object_with_custom_fields {
         $params = array($cluster_context_level, $cluster_context_instance->path);
 
         // filter out the records that the user can't see
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
         $filtersql = $context->get_filter('id')->get_sql(true, 'clst');
 
         if (isset($filtersql['join'])) {
@@ -381,8 +381,8 @@ class userset extends data_object_with_custom_fields {
         global $USER;
 
         //retrieve the context at which the current user has the sufficient capability
-        $viewable_contexts = get_contexts_by_capability_for_user('cluster', 'block/curr_admin:cluster:view', $USER->id);
-        $editable_contexts = get_contexts_by_capability_for_user('cluster', 'block/curr_admin:cluster:edit', $USER->id);
+        $viewable_contexts = get_contexts_by_capability_for_user('cluster', 'elis/program:userset_view', $USER->id);
+        $editable_contexts = get_contexts_by_capability_for_user('cluster', 'elis/program:userset_edit', $USER->id);
 
         //allow global access if either capability set allows access at the system context
         if (!empty($viewable_contexts->contexts['system'])) {
@@ -404,7 +404,7 @@ class userset extends data_object_with_custom_fields {
         global $USER;
 
         if ($capabilities === null ) {
-            $capabilities = array('block/curr_admin:cluster:view', 'block/curr_admin:cluster:edit');
+            $capabilities = array('elis/program:userset_view', 'elis/program:userset_edit');
         }
         if (!is_array($capabilities)) {
             $capabilities = array($capabilities);
@@ -603,12 +603,12 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol', $USER->id);
         $curriculum_filter = $curriculum_context->get_filter('id');
 
         if(empty($allowed_clusters)) {
@@ -763,12 +763,12 @@ function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = ar
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol', $USER->id);
         $curriculum_filter = $curriculum_context->get_filter('id');
 
         if(empty($allowed_clusters)) {

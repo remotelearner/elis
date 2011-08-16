@@ -856,14 +856,14 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
 
         $allowed_clusters = array();
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol', $USER->id);
         $curriculum_filter_object = $curriculum_context->get_filter('trk.id', 'track');
         $curriculum_filter = $curriculum_filter_object->get_sql();
 

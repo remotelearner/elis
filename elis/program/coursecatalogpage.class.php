@@ -58,7 +58,7 @@ class coursecatalogpage extends pm_page {
         }
 
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('block/curr_admin:viewcoursecatalog', $context);
+        return has_capability('elis/program:viewcoursecatalog', $context);
     }
 
     function get_title_default() {

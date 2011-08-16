@@ -58,6 +58,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
             }
         }
 
+        /*
         if (!empty($role->id)) {
             require_once(dirname(__FILE__) . '/access.php');
 
@@ -67,6 +68,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                 }
             }
         }
+        */
         upgrade_block_savepoint($result, 2009010102, 'curr_admin');
     }
 
@@ -623,6 +625,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
     }
 
     if ($result && $oldversion < 2009010137) {
+        /*
         $roleid = $DB->get_field('role', 'id', array('shortname' => 'curriculumadmin'));
 
         if (!empty($roleid)) {
@@ -635,6 +638,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                 }
             }
         }
+        */
         upgrade_block_savepoint($result, 2009010137, 'curr_admin');
     }
 
@@ -934,10 +938,10 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
     /// Launch create table for crlm_field_data
         $result = $result && $dbmanager->create_table($table);
 
-        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/customfield.class.php'));
         // make sure all ELIS users have a context
-        update_capabilities('block/curr_admin');
-        $ctxlvl = context_level_base::get_custom_context_level('user', 'block_curr_admin');
+        update_capabilities('elis/program');
+        $ctxlvl = context_level_base::get_custom_context_level('user', 'elis_program');
         $rs = get_recordset('crlm_user');
         foreach ($rs as $rec) {
             get_context_instance($ctxlvl, $rec->id);
@@ -1143,7 +1147,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $result = $result && $dbmanager->create_table($table);
 
 
-        $usercontextid = context_level_base::get_custom_context_level('user', 'block_curr_admin');
+        $usercontextid = context_level_base::get_custom_context_level('user', 'elis_program');
         if ($usercontextid) {
             $sql = "INSERT INTO {$CFG->prefix}crlm_field_category_context
                            (categoryid, contextlevel)

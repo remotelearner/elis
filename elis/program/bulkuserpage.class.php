@@ -53,7 +53,7 @@ class bulkuserpage extends selectionpage {
 
     function can_do_default() {
         //this allows for cluster role assignments to be taken into account
-        $contexts = bulkuserpage::get_contexts('block/curr_admin:user:edit');
+        $contexts = bulkuserpage::get_contexts('elis/program:user_edit');
         return !$contexts->is_empty();
     }
 
@@ -90,7 +90,7 @@ class bulkuserpage extends selectionpage {
         $extrasql = $filter->get_sql_filter();
 
         //filter based on cluster role assignments
-        $context_set = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:user:edit', $USER->id);
+        $context_set = pm_context_set::for_user_with_capability('cluster', 'elis/program:user_edit', $USER->id);
 
         // Get list of users
         $items    = usermanagement_get_users($sort, $dir, $perpage * $pagenum,

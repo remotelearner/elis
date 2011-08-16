@@ -65,7 +65,7 @@ $PAGE->set_context($context);
 //this checks permissions at the track level
 if(!trackpage::can_enrol_into_track($trackid)) {
     //standard failure message
-    require_capability('block/curr_admin:track:enrol', $context);
+    require_capability('elis/program:track_enrol', $context);
 }
 
 // add user to track
@@ -74,7 +74,7 @@ if ($userid) {
     //this checks permissions at the user-track association level
     if(!usertrack::can_manage_assoc($userid, $trackid)) {
         //standard failure message
-        require_capability('block/curr_admin:track:enrol', $context);
+        require_capability('elis/program:track_enrol', $context);
     }
 
     usertrack::enrol($userid, $trackid);
@@ -110,10 +110,10 @@ if ($alpha) {
     $params['lastname'] = "{$alpha}%";
 }
 
-if(!trackpage::_has_capability('block/curr_admin:track:enrol', $trackid)) {
+if(!trackpage::_has_capability('elis/program:track_enrol', $trackid)) {
     //perform SQL filtering for the more "conditional" capability
     //get the context for the "indirect" capability
-    $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
+    $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
 
     //get the clusters and check the context against them
     $clusters = clustertrack::get_clusters($trackid);

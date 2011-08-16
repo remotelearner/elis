@@ -76,28 +76,28 @@ class trackassignmentpage extends associationpage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        return trackpage::_has_capability('block/curr_admin:associate', $id);
+        return trackpage::_has_capability('elis/program:associate', $id);
     }
 
     function can_do_savenew() {
-        // the user must have 'block/curr_admin:associate' permissions on both ends
+        // the user must have 'elis/program:associate' permissions on both ends
         $trackid = $this->required_param('trackid', PARAM_INT);
         $classid = $this->required_param('classid', PARAM_INT);
 
-        return trackpage::_has_capability('block/curr_admin:associate', $trackid)
-            && pmclasspage::_has_capability('block/curr_admin:associate', $classid);
+        return trackpage::_has_capability('elis/program:associate', $trackid)
+            && pmclasspage::_has_capability('elis/program:associate', $classid);
     }
 
     function can_do_edit() {
-        // the user must have 'block/curr_admin:associate' permissions on both
+        // the user must have 'elis/program:associate' permissions on both
         // ends
         $association_id = $this->required_param('association_id', PARAM_INT);
         $record = new trackassignment($association_id);
         $trackid = $record->trackid;
         $classid = $record->classid;
 
-        return trackpage::_has_capability('block/curr_admin:associate', $trackid)
-            && pmclasspage::_has_capability('block/curr_admin:associate', $classid);
+        return trackpage::_has_capability('elis/program:associate', $trackid)
+            && pmclasspage::_has_capability('elis/program:associate', $classid);
     }
 
     function can_do_delete() {
@@ -177,7 +177,7 @@ class trackassignmentpage extends associationpage {
             echo '</div>';
         }
 
-        $contexts = pmclasspage::get_contexts('block/curr_admin:associate');
+        $contexts = pmclasspage::get_contexts('elis/program:associate');
         $filter_object = $contexts->get_filter('cls.id', 'class');
         $filter_sql = $filter_object->get_sql(false, 'cls');
         // find the classes that are part of a course that is part of a

@@ -43,7 +43,7 @@ class customfieldpage extends pm_page {
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('block/curr_admin:managecurricula', $context);
+        return has_capability('elis/program:config', $context) || has_capability('elis/program:manage', $context);
     }
 
     function display_default() {

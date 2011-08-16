@@ -110,7 +110,7 @@ class usersetclassificationpage extends managementpage {
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('block/curr_admin:config', $context);
+        return has_capability('elis/program:config', $context);
     }
 
     public function get_title() {

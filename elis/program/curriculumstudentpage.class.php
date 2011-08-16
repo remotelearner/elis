@@ -98,14 +98,14 @@ class studentcurriculumpage extends associationpage2 {
         $id = $this->required_param('id', PARAM_INT);
         if ($this->is_assigning()) {
             // we have enrol capabilities on some curriculum
-            $curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
+            $curriculum_contexts = curriculumpage::get_contexts('elis/program:program_enrol');
             if (!$curriculum_contexts->is_empty()) {
                 return true;
             }
 
             // find curricula linked to clusters where the target user is a
             // member, and we have enrol cluster user capabilities
-            $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
+            $cluster_contexts = usersetpage::get_contexts('elis/program:program_enrol_userset_user');
             $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
             $cluster_filter_array = $cluster_object->get_sql(false, 'clst');
             $cluster_filter = '';
@@ -126,7 +126,7 @@ class studentcurriculumpage extends associationpage2 {
 
             return $DB->count_records_select($sql, $params) > 0;
         } else {
-            return userpage::_has_capability('block/curr_admin:user:view', $id);
+            return userpage::_has_capability('elis/program:user_view', $id);
         }
     }
 
@@ -229,14 +229,14 @@ class studentcurriculumpage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
-        $this->curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
+        $this->curriculum_contexts = curriculumpage::get_contexts('elis/program:program_enrol');
 
         $id = required_param('id', PARAM_INT);
 
         $where = 'id NOT IN (SELECT curriculumid FROM {'.curriculumstudent::TABLE.'} WHERE userid='.$id.')';
 
         // only show curricula where user has enrol capabilities
-        $curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
+        $curriculum_contexts = curriculumpage::get_contexts('elis/program:program_enrol');
         $curriculum_object = $curriculum_contexts->get_filter('curr.id', 'curriculum');
         $curriculum_filter_array = $curriculum_object->get_sql(false,'curr');
 
@@ -250,7 +250,7 @@ class studentcurriculumpage extends associationpage2 {
 
         // or curricula attached to clusters where user has enrol cluster user
         // capabilities (and target user is a member of that cluster)
-        $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
+        $cluster_contexts = usersetpage::get_contexts('elis/program:program_enrol_userset_user');
         $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
         $cluster_filter_array = $cluster_object->get_sql(false,'clst');
         $cluster_filter = '';
@@ -372,10 +372,10 @@ class user_curriculum_selection_table extends selection_table {
         global $DB;
         parent::__construct($items, $columns, $pageurl);
 
-        $this->curriculum_contexts = curriculumpage::get_contexts('block/curr_admin:curriculum:enrol');
+        $this->curriculum_contexts = curriculumpage::get_contexts('elis/program:program_enrol');
 
         $id = required_param('id', PARAM_INT);
-        $cluster_contexts = usersetpage::get_contexts('block/curr_admin:curriculum:enrol_cluster_user');
+        $cluster_contexts = usersetpage::get_contexts('elis/program:program_enrol_userset_user');
         $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
         $cluster_filter_array = $cluster_object->get_sql(false, 'clst');
         $cluster_filter = '';
@@ -479,7 +479,7 @@ class curriculumstudentpage extends associationpage2 {
         if ($this->is_assigning()) {
             return curriculumpage::can_enrol_into_curriculum($id);
         } else {
-            return curriculumpage::_has_capability('block/curr_admin:curriculum:view', $id);
+            return curriculumpage::_has_capability('elis/program:program_view', $id);
         }
     }
 
@@ -607,9 +607,9 @@ class curriculumstudentpage extends associationpage2 {
             $params = array_merge($params,$extrasql[1]);
         }
 
-        if(!curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $id)) {
+        if(!curriculumpage::_has_capability('elis/program:program_enrol', $id)) {
             //perform SQL filtering for the more "conditional" capability
-            $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
+            $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
 
             $allowed_clusters = array();
 
@@ -741,8 +741,8 @@ class curriculum_user_selection_table extends selection_table {
 
         parent::__construct($items, $columns, $pageurl);
         $id = required_param('id', PARAM_INT);
-        if (!curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $id)) {
-            $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
+        if (!curriculumpage::_has_capability('elis/program:program_enrol', $id)) {
+            $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
 
             $allowed_clusters = array();
 

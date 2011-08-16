@@ -98,12 +98,12 @@ class trackpage extends managementpage {
         global $USER;
 
         //check the standard capability
-        if(trackpage::_has_capability('block/curr_admin:track:enrol', $trackid)) {
+        if(trackpage::_has_capability('elis/program:track_enrol', $trackid)) {
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
 
         //get the clusters and check the context against them
         $clusters = clustertrack::get_clusters($trackid);
@@ -149,15 +149,15 @@ class trackpage extends managementpage {
     }
 
     function can_do_view() {
-        return $this->_has_capability('block/curr_admin:track:view');
+        return $this->_has_capability('elis/program:track_view');
     }
 
     function can_do_edit() {
-        return $this->_has_capability('block/curr_admin:track:edit');
+        return $this->_has_capability('elis/program:track_edit');
     }
 
     function can_do_delete() {
-        return $this->_has_capability('block/curr_admin:track:delete');
+        return $this->_has_capability('elis/program:track_delete');
     }
 
     function can_do_confirm() {
@@ -168,15 +168,15 @@ class trackpage extends managementpage {
         global $USER;
         if (!empty($USER->id)) {
             $contexts = get_contexts_by_capability_for_user('curriculum',
-                            'block/curr_admin:track:create', $USER->id);
+                            'elis/program:track_create', $USER->id);
             if ($contexts->is_empty()) {
                 return false;
             }
         /* ***
-            // Now user MUST have 'block/curr_admin:curriculum:edit'
+            // Now user MUST have 'elis/program:program_edit'
             // on at least one curricula
             $contexts = get_contexts_by_capability_for_user('curriculum',
-                            'block/curr_admin:curriculum:edit', $USER->id);
+                            'elis/program:program_edit', $USER->id);
             return !$contexts->is_empty();
         *** */
             return true;
@@ -185,7 +185,7 @@ class trackpage extends managementpage {
     }
 
     function can_do_default() {
-        $contexts = trackpage::get_contexts('block/curr_admin:track:view');
+        $contexts = trackpage::get_contexts('elis/program:track_view');
         return !$contexts->is_empty();
     }
 
@@ -252,11 +252,11 @@ class trackpage extends managementpage {
             $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
-        $items   = track_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, $parent_clusterid, trackpage::get_contexts('block/curr_admin:track:view'));
-        $numitems = track_count_records($namesearch, $alpha, $id, $parent_clusterid, trackpage::get_contexts('block/curr_admin:track:view'));
+        $items   = track_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, $parent_clusterid, trackpage::get_contexts('elis/program:track_view'));
+        $numitems = track_count_records($namesearch, $alpha, $id, $parent_clusterid, trackpage::get_contexts('elis/program:track_view'));
 
-        trackpage::get_contexts('block/curr_admin:track:edit');
-        trackpage::get_contexts('block/curr_admin:track:delete');
+        trackpage::get_contexts('elis/program:track_edit');
+        trackpage::get_contexts('elis/program:track_delete');
 
         if (!empty($id)) {
             //print curriculum tabs if viewing from the curriculum view
@@ -361,7 +361,7 @@ class trackpage extends managementpage {
             $context_instance = get_context_instance($context_level, $cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
-            if(!has_capability('block/curr_admin:track:edit', $context_instance)) {
+            if(!has_capability('elis/program:track_edit', $context_instance)) {
                 role_assign(elis::$config->elis_program->default_track_role_id, $USER->id, $context_instance->id);
             }
         }

@@ -123,11 +123,11 @@ class userpage extends managementpage {
     }
 
     function can_do_view() {
-        return $this->_has_capability('block/curr_admin:user:view');
+        return $this->_has_capability('elis/program:user_view');
     }
 
     function can_do_edit() {
-        return $this->_has_capability('block/curr_admin:user:edit');
+        return $this->_has_capability('elis/program:user_edit');
     }
 
     function can_do_delete() {
@@ -138,19 +138,19 @@ class userpage extends managementpage {
 
         if (!isset($muser->id)) {
             //no corresponding Moodle user, so just check the capability
-            return $this->_has_capability('block/curr_admin:user:delete');
+            return $this->_has_capability('elis/program:user_delete');
         }
 
-        return !is_primary_admin($muser->id) && $muser->id != $USER->id && $this->_has_capability('block/curr_admin:user:delete');
+        return !is_primary_admin($muser->id) && $muser->id != $USER->id && $this->_has_capability('elis/program:user_delete');
     }
 
     function can_do_add() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('block/curr_admin:user:create', $context);
+        return has_capability('elis/program:user_create', $context);
     }
 
     function can_do_default() {
-        $contexts = userpage::get_contexts('block/curr_admin:user:view');
+        $contexts = userpage::get_contexts('elis/program:user_view');
         return !$contexts->is_empty();
     }
 
@@ -194,14 +194,14 @@ class userpage extends managementpage {
         $extrasql = $filter->get_sql_filter();
 
         // Get list of users
-        $contextset = userpage::get_contexts('block/curr_admin:user:view');
+        $contextset = userpage::get_contexts('elis/program:user_view');
         $userfilter = new AND_filter(array(new select_filter($extrasql[0], $extrasql[1]), $contextset->get_filter('id')));
         $items    = user::find($userfilter, array($sort => $dir), $page*$perpage, $perpage);
         $numitems = user::count($userfilter);
 
         // cache the context capabilities
-        userpage::get_contexts('block/curr_admin:user:edit');
-        userpage::get_contexts('block/curr_admin:user:delete');
+        userpage::get_contexts('elis/program:user_edit');
+        userpage::get_contexts('elis/program:user_delete');
 
         $this->print_list_view($items, $numitems, $columns, $filter);
     }

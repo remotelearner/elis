@@ -67,7 +67,7 @@ class pmclassform extends cmform {
             $courses = array();
             if (!empty($USER->id)) {
                 $contexts = get_contexts_by_capability_for_user(
-                                'course', 'block/curr_admin:class:create',
+                                'course', 'elis/program:class_create',
                                 $USER->id);
                 // get listing of available ELIS courses
                 $courses = course_get_listing('name', 'ASC', 0, 0, '', '',
@@ -372,7 +372,7 @@ class pmclassform extends cmform {
         if(!empty($this->_customdata['obj']) && !empty($this->_customdata['obj']->maxstudents)){
             if($data['maxstudents'] < $this->_customdata['obj']->maxstudents && $data['maxstudents'] < student::count_enroled($this->_customdata['obj']->id)) {
                 $context = get_context_instance(CONTEXT_SYSTEM);
-                if(!has_capability('block/curr_admin:overrideclasslimit', $context)) {
+                if(!has_capability('elis/program:overrideclasslimit', $context)) {
                     $errors['maxstudents'] = get_string('error_n_overenrol', 'elis_program');
                 }
             }

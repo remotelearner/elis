@@ -70,7 +70,7 @@ class class_reportlinkspage extends pm_page {
     function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        return pmclasspage::_has_capability('block/curr_admin:viewreports', $id)
+        return pmclasspage::_has_capability('block/php_report:view', $id)
             || instructor::user_is_instructor_of_class(cm_get_crlmuserid($USER->id), $id);
     }
 

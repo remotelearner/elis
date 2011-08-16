@@ -59,7 +59,7 @@ abstract class managementpage extends pm_page {
 
     public function can_do_default() {
         $context = $this->context;
-        return has_capability('block/curr_admin:managecurricula', $context);
+        return has_capability('elis/program:manage', $context);
     }
 
     /**

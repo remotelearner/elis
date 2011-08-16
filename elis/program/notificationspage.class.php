@@ -38,7 +38,7 @@ class notifications extends pm_page {
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('block/curr_admin:managecurricula', $context);
+        return has_capability('elis/program:config', $context);
     }
 
     function build_navbar_default() { // was build_navigation_default

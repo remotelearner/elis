@@ -83,12 +83,12 @@ class clustercurriculumbasepage extends associationpage {
         }
     }*/
     function can_do_add() {
-        // the user must have 'block/curr_admin:associate' permissions on both ends
+        // the user must have 'elis/program:associate' permissions on both ends
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $curriculumid = $this->required_param('curriculumid', PARAM_INT);
 
-        return usersetpage::_has_capability('block/curr_admin:associate', $clusterid)
-            && curriculumpage::_has_capability('block/curr_admin:associate', $curriculumid);
+        return usersetpage::_has_capability('elis/program:associate', $clusterid)
+            && curriculumpage::_has_capability('elis/program:associate', $curriculumid);
     }
 
     /**
@@ -156,15 +156,15 @@ class clustercurriculumbasepage extends associationpage {
     }
 
     function can_do_edit() {
-        // the user must have 'block/curr_admin:associate' permissions on both
+        // the user must have 'elis/program:associate' permissions on both
         // ends
         $association_id = $this->required_param('association_id', PARAM_INT);
         $record = new clustercurriculum($association_id);
         $clusterid = $record->clusterid;
         $curriculumid = $record->curriculumid;
 
-        return usersetpage::_has_capability('block/curr_admin:associate', $clusterid)
-            && curriculumpage::_has_capability('block/curr_admin:associate', $curriculumid);
+        return usersetpage::_has_capability('elis/program:associate', $clusterid)
+            && curriculumpage::_has_capability('elis/program:associate', $curriculumid);
     }
 
     function can_do_delete() {
@@ -267,7 +267,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
 
-        return usersetpage::_has_capability('block/curr_admin:associate', $id);
+        return usersetpage::_has_capability('elis/program:associate', $id);
     }
 
     function display_default() {
@@ -312,7 +312,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
        $this->print_list_view($items, $columns);
 
         // find the curricula that the user can associate with this cluster
-        $contexts = curriculumpage::get_contexts('block/curr_admin:associate');
+        $contexts = curriculumpage::get_contexts('elis/program:associate');
         $curricula = curriculum_get_listing('name', 'ASC', 0, 0, '', '', $contexts);
         if (empty($curricula)) {
             $num_curricula = curriculum_count_records();
@@ -381,7 +381,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         $sql = 'SELECT * from {' . userset::TABLE.'}';
 
         // Exclude clusters the user does not have the capability to manage/see
-        $context = get_contexts_by_capability_for_user('cluster', 'block/curr_admin:cluster:view', $USER->id);
+        $context = get_contexts_by_capability_for_user('cluster', 'elis/program:userset_view', $USER->id);
 
         foreach ($clusters as $clusid => $clusdata) {
             $haspermission = $context->context_allowed($clusid, 'cluster');
@@ -401,7 +401,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
                                'link' => get_string('program_copy_mdlcrs_link', 'elis_program')
             );
 
-        $contexts = curriculumpage::get_contexts('block/curr_admin:associate');
+        $contexts = curriculumpage::get_contexts('elis/program:associate');
 
         foreach ($clusters as $clusid => $clusdata) {
 
@@ -674,7 +674,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
     }
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        return curriculumpage::_has_capability('block/curr_admin:associate', $id);
+        return curriculumpage::_has_capability('elis/program:associate', $id);
     }
 
     function display_default() {
@@ -712,7 +712,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
 
         $this->print_list_view($items, $columns);
 
-        $contexts = usersetpage::get_contexts('block/curr_admin:associate');
+        $contexts = usersetpage::get_contexts('elis/program:associate');
         $clusters = cluster_get_listing('name', 'ASC', 0, 0, '', '', array('contexts' =>$contexts));
         if (empty($clusters)) {
             $num_clusters = cluster_count_records();

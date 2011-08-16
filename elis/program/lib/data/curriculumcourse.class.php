@@ -230,7 +230,7 @@ class curriculumcourse extends elis_data_object {
             $config_data['existingPrerequisites'] = $existingPrerequisites;
         }
 
-        $contexts = coursepage::get_contexts('block/curr_admin:course:view');
+        $contexts = coursepage::get_contexts('elis/program:course_view');
         $courseListing = course_get_listing('crs.name', 'ASC', 0, 0, '', '', $contexts);
         unset($courseListing[$this->courseid]);
 
@@ -297,7 +297,7 @@ class curriculumcourse extends elis_data_object {
             $config_data['existingCorequisites'] = $existingCorequisites;
         }
 
-        $contexts = coursepage::get_contexts('block/curr_admin:course:view');
+        $contexts = coursepage::get_contexts('elis/program:course_view');
         $courseListing = course_get_listing('crs.name', 'ASC', 0, 0, '', '', $contexts);
         unset($courseListing[$this->courseid]);
 

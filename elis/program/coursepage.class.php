@@ -119,24 +119,24 @@ class coursepage extends managementpage {
     }
 
     function can_do_view() {
-        return $this->_has_capability('block/curr_admin:course:view');
+        return $this->_has_capability('elis/program:course_view');
     }
 
     function can_do_edit() {
-        return $this->_has_capability('block/curr_admin:course:edit');
+        return $this->_has_capability('elis/program:course_edit');
     }
 
     function can_do_delete() {
-        return $this->_has_capability('block/curr_admin:course:delete');
+        return $this->_has_capability('elis/program:course_delete');
     }
 
     function can_do_add() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('block/curr_admin:course:create', $context);
+        return has_capability('elis/program:course_create', $context);
     }
 
     function can_do_default() {
-        $contexts = coursepage::get_contexts('block/curr_admin:course:view');
+        $contexts = coursepage::get_contexts('elis/program:course_view');
         return !$contexts->is_empty();
     }
 
@@ -173,8 +173,8 @@ class coursepage extends managementpage {
         $numitems = course::count(null);
 
         // Cache the context capabilities
-        coursepage::get_contexts('block/curr_admin:course:edit');
-        coursepage::get_contexts('block/curr_admin:course:delete');
+        coursepage::get_contexts('elis/program:course_edit');
+        coursepage::get_contexts('elis/program:course_delete');
 
         $this->print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=true, $searchflag=true);
     }
@@ -380,7 +380,7 @@ class coursepage extends managementpage {
             $context_instance = get_context_instance($context_level, $cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
-            if(!has_capability('block/curr_admin:course:edit', $context_instance)) {
+            if(!has_capability('elis/program:course_edit', $context_instance)) {
                 role_assign(elis::$config->elis_program->default_course_role_id, $USER->id, 0, $context_instance->id);
             }
         }

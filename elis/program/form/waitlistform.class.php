@@ -53,7 +53,7 @@ class waitlistaddform extends cmform {
 
                 $context = get_context_instance(CONTEXT_SYSTEM);
 
-                if(has_capability('block/curr_admin:overrideclasslimit', $context)) {
+                if(has_capability('elis/program:overrideclasslimit', $context)) {
                     $mform->addElement('hidden', 'grade[' . $student->userid . ']', $student->grade);
                     $mform->addElement('hidden', 'credits[' . $student->credits . ']', $student->credits);
                     $mform->addElement('hidden', 'locked[' . $student->locked . ']', $student->locked);
@@ -79,7 +79,7 @@ class waitlistaddform extends cmform {
 
                 $context = get_context_instance(CONTEXT_SYSTEM);
 
-                if(has_capability('block/curr_admin:overrideclasslimit', $context)) {
+                if(has_capability('elis/program:overrideclasslimit', $context)) {
                     $enrol_options[] = $mform->createElement('radio', 'enrol[' . $id . ']', '', get_string('over_enrol', 'elis_program'), 2);
                 }
 

@@ -66,7 +66,7 @@ class usertrackpage extends usertrackbasepage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        return userpage::_has_capability('block/curr_admin:user:view', $id);
+        return userpage::_has_capability('elis/program:user_view', $id);
     }
 
     function can_do_add() {
@@ -95,10 +95,10 @@ class usertrackpage extends usertrackbasepage {
         $id           = required_param('id', PARAM_INT);
         $sort         = $this->optional_param('sort', 'idnumber', PARAM_ALPHANUM);
         $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
-        $contexts = clone(trackpage::get_contexts('block/curr_admin:track:enrol'));
+        $contexts = clone(trackpage::get_contexts('elis/program:track_enrol'));
 
         //look up student's cluster assignments with necessary capability
-        $cluster_contexts = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
+        $cluster_contexts = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
 
         //calculate our filter condition based on cluster accessibility
         //$cluster_filter = $cluster_contexts->sql_filter_for_context_level('clst.id', 'cluster');
@@ -202,7 +202,7 @@ class trackuserpage extends usertrackbasepage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        return trackpage::_has_capability('block/curr_admin:track:view', $id);
+        return trackpage::_has_capability('elis/program:track_view', $id);
     }
 
     function can_do_add() {

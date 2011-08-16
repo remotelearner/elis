@@ -87,9 +87,9 @@ class pm_context_set {
         $obj->contextlevel = $contextlevel;
 
         // if the user has the capability at the system level (or has the
-        // managecurricula master capability), we can stop here
+        // manage master capability), we can stop here
         if (has_capability($capability, get_context_instance(CONTEXT_SYSTEM), $userid, $doanything) ||
-            has_capability('block/curr_admin:managecurricula', get_context_instance(CONTEXT_SYSTEM), $userid, $doanything)) {
+            has_capability('elis/program:manage', get_context_instance(CONTEXT_SYSTEM), $userid, $doanything)) {
             $obj->contexts = array('system' => 1);
             return $obj;
         }

@@ -92,7 +92,7 @@ class coursecurriculumform extends coursecurriculumbaseform {
             $curriculum = $coursecurriculum->curriculum;
             $curriculas[$curriculum->id] = $curriculum->name;
         } else {
-            $contexts = curriculumpage::get_contexts('block/curr_admin:associate');
+            $contexts = curriculumpage::get_contexts('elis/program:associate');
             $curricula_avail = $coursecurriculum->get_curricula_avail(array('contexts' => $contexts));
             $curriculas = array();
 
@@ -141,7 +141,7 @@ class curriculumcourseform extends coursecurriculumbaseform {
         $mform->setType('curriculumname', PARAM_TEXT);
         $mform->addHelpButton('curriculumname', 'curriculumcourseform:curriculum', 'elis_program');
 
-        $contexts = coursepage::get_contexts('block/curr_admin:associate');
+        $contexts = coursepage::get_contexts('elis/program:associate');
         $courses_avail = $coursecurriculum->get_courses_avail(array('contexts' => $contexts));
         $courses = array();
 

@@ -743,11 +743,11 @@ class pmclass extends data_object_with_custom_fields {
     public static function get_allowed_clusters($clsid) {
         global $USER;
 
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:class_enrol_userset_user', $USER->id);
 
         $allowed_clusters = array();
 
-        if (pmclasspage::_has_capability('block/curr_admin:class:enrol_cluster_user', $clsid)) {
+        if (pmclasspage::_has_capability('elis/program:class_enrol_userset_user', $clsid)) {
             require_once elispm::lib('data/usercluster.class.php');
             $cmuserid = pm_get_crlmuserid($USER->id);
             $userclusters = clusterassignment::find(new field_filter('userid', $cmuserid));

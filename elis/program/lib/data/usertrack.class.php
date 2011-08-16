@@ -322,14 +322,14 @@ class usertrack extends elis_data_object {
         global $USER;
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:track:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
 
         $allowed_clusters = array();
 
         if(!trackpage::can_enrol_into_track($trackid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if (trackpage::_has_capability('block/curr_admin:track:enrol', $trackid)) {
+        } else if (trackpage::_has_capability('elis/program:track_enrol', $trackid)) {
             //current user has the direct capability
             return true;
         }

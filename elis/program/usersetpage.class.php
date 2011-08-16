@@ -78,14 +78,14 @@ class usersetpage extends managementpage {
         global $USER;
 
         //check the standard capability
-        if (self::_has_capability('block/curr_admin:cluster:enrol', $clusterid)) {
+        if (self::_has_capability('elis/program:userset_enrol', $clusterid)) {
             return true;
         }
 
         $cluster = new userset($clusterid);
         if(!empty($cluster->parent)) {
             //check to see if the current user has the secondary capability anywhere up the cluster tree
-            $contexts = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
+            $contexts = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
             return $contexts->context_allowed($clusterid, 'cluster');
         }
 
@@ -133,7 +133,7 @@ class usersetpage extends managementpage {
 
     function can_do_view() {
         $id = $this->required_param('id', PARAM_INT);
-        if ($this->_has_capability('block/curr_admin:cluster:view')) {
+        if ($this->_has_capability('elis/program:userset_view')) {
             return true;
         }
 
@@ -142,7 +142,7 @@ class usersetpage extends managementpage {
          */
 
         $viewable_clusters = userset::get_viewable_clusters();
-        $contextset = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:view');
+        $contextset = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_view');
         return in_array($id, $viewable_clusters)
             || userset::exists(array(new usersubset_filter('id', new field_filter('id', $id)),
                                      $contextset->get_filter('id')))
@@ -155,7 +155,7 @@ class usersetpage extends managementpage {
     }
 
     function can_do_edit() {
-        return $this->_has_capability('block/curr_admin:cluster:edit');
+        return $this->_has_capability('elis/program:userset_edit');
     }
 
     function can_do_subcluster() {
@@ -164,11 +164,11 @@ class usersetpage extends managementpage {
         $context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $subclusterid);
 
         //make sure editing is allowed on both clusters
-        return $this->_has_capability('block/curr_admin:cluster:edit') && has_capability('block/curr_admin:cluster:edit', $context);
+        return $this->_has_capability('elis/program:userset_edit') && has_capability('elis/program:userset_edit', $context);
     }
 
     function can_do_delete() {
-        return $this->_has_capability('block/curr_admin:cluster:delete');
+        return $this->_has_capability('elis/program:userset_delete');
     }
 
     function can_do_confirm() {
@@ -187,7 +187,7 @@ class usersetpage extends managementpage {
             $context = get_context_instance(CONTEXT_SYSTEM);
         }
 
-        return has_capability('block/curr_admin:cluster:create', $context);
+        return has_capability('elis/program:userset_create', $context);
     }
 
     /**
@@ -252,7 +252,7 @@ class usersetpage extends managementpage {
         if ($parent) {
             return $this->can_do_view();
         }
-        $contexts = self::get_contexts('block/curr_admin:cluster:view');
+        $contexts = self::get_contexts('elis/program:userset_view');
         return !$contexts->is_empty();
     }
 
@@ -336,20 +336,20 @@ class usersetpage extends managementpage {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        $extrafilters = array('contexts' => self::get_contexts('block/curr_admin:cluster:view'),
+        $extrafilters = array('contexts' => self::get_contexts('elis/program:userset_view'),
                               'parent' => $parent,
                               'classification' => $classification);
         $items = cluster_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $extrafilters);
         $numitems = cluster_count_records($namesearch, $alpha, $extrafilters);
 
-        self::get_contexts('block/curr_admin:cluster:edit');
-        self::get_contexts('block/curr_admin:cluster:delete');
+        self::get_contexts('elis/program:userset_edit');
+        self::get_contexts('elis/program:userset_delete');
 
         $this->print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=true, $searchflag=true);
 
         if ($this->optional_param('id', 0, PARAM_INT)) {
             //get the non-parent clusters that are accessible based on the edit capability
-            $contexts = usersetpage::get_contexts('block/curr_admin:cluster:edit');
+            $contexts = usersetpage::get_contexts('elis/program:userset_edit');
             $non_parent_clusters = cluster_get_possible_sub_clusters($this->optional_param('id', 0, PARAM_INT), $contexts);
 
             //display the dropdown if there are one or more available clusters
@@ -522,7 +522,7 @@ class usersetpage extends managementpage {
             $context_instance = get_context_instance($context_level, $cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
-            if(!has_capability('block/curr_admin:cluster:edit', $context_instance)) {
+            if(!has_capability('elis/program:userset_edit', $context_instance)) {
                 role_assign(elis::$config->elis_program->default_cluster_role_id, $USER->id, 0, $context_instance->id);
             }
         }

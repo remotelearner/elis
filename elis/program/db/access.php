@@ -82,37 +82,25 @@ $contextlevels = array(
 
 $capabilities = array(
 
-    'block/curr_admin:config' => array(
+    'elis/program:config' => array(
 
         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_CONFIG | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:config',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
     ),
 
-// Master control switch:
+// Master control switch, kind of (legacy):
 
-    'block/curr_admin:managecurricula' => array(
+    'elis/program:manage' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
-        'legacy' => array(
-            //'teacher' => CAP_ALLOW,
-            //'editingteacher' => CAP_ALLOW,
-            //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
-        )
-    ),
-
-// Tags:
-
-    'block/curr_admin:tag:view' => array(
-        'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:managecurricula',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -121,10 +109,14 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:tag:create' => array(
+// Programs:
+
+    'elis/program:program_view' => array(
+
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:curriculum:view',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -133,10 +125,12 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:tag:edit' => array(
+    'elis/program:program_create' => array(
+
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:curriculum:create',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -145,10 +139,12 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:tag:delete' => array(
+    'elis/program:program_edit' => array(
+
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:curriculum:edit',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -157,12 +153,12 @@ $capabilities = array(
         )
     ),
 
-// Environments:
+    'elis/program:program_delete' => array(
 
-    'block/curr_admin:environment:view' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:curriculum:delete',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -171,101 +167,12 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:environment:create' => array(
-        'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'legacy' => array(
-            //'teacher' => CAP_ALLOW,
-            //'editingteacher' => CAP_ALLOW,
-            //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
-        )
-    ),
-
-    'block/curr_admin:environment:edit' => array(
-        'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'legacy' => array(
-            //'teacher' => CAP_ALLOW,
-            //'editingteacher' => CAP_ALLOW,
-            //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
-        )
-    ),
-
-    'block/curr_admin:environment:delete' => array(
-        'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'legacy' => array(
-            //'teacher' => CAP_ALLOW,
-            //'editingteacher' => CAP_ALLOW,
-            //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
-        )
-    ),
-
-// Curricula:
-
-    'block/curr_admin:curriculum:view' => array(
+    'elis/program:program_enrol' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
-        'legacy' => array(
-            //'teacher' => CAP_ALLOW,
-            //'editingteacher' => CAP_ALLOW,
-            //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
-        )
-    ),
-
-    'block/curr_admin:curriculum:create' => array(
-
-        'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'legacy' => array(
-            //'teacher' => CAP_ALLOW,
-            //'editingteacher' => CAP_ALLOW,
-            //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
-        )
-    ),
-
-    'block/curr_admin:curriculum:edit' => array(
-
-        'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'legacy' => array(
-            //'teacher' => CAP_ALLOW,
-            //'editingteacher' => CAP_ALLOW,
-            //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
-        )
-    ),
-
-    'block/curr_admin:curriculum:delete' => array(
-
-        'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'legacy' => array(
-            //'teacher' => CAP_ALLOW,
-            //'editingteacher' => CAP_ALLOW,
-            //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
-        )
-    ),
-
-    'block/curr_admin:curriculum:enrol' => array(
-
-        'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:curriculum:enrol',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -276,10 +183,11 @@ $capabilities = array(
 
 // Tracks:
 
-    'block/curr_admin:track:view' => array(
+    'elis/program:track_view' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:track:view',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -288,10 +196,11 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:track:create' => array(
+    'elis/program:track_create' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:track:create',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -300,10 +209,11 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:track:edit' => array(
+    'elis/program:track_edit' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:track:edit',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -312,10 +222,11 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:track:delete' => array(
+    'elis/program:track_delete' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:track:delete',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -324,10 +235,11 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:track:enrol' => array(
+    'elis/program:track_enrol' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:track:enrol',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -336,12 +248,13 @@ $capabilities = array(
         )
     ),
 
-// Clusters:
+// User sets:
 
-    'block/curr_admin:cluster:view' => array(
+    'elis/program:userset_view' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:cluster:view',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -350,10 +263,11 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:cluster:create' => array(
+    'elis/program:userset_create' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:cluster:create',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -362,10 +276,11 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:cluster:edit' => array(
+    'elis/program:userset_edit' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:cluster:edit',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -374,10 +289,11 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:cluster:delete' => array(
+    'elis/program:userset_delete' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:cluster:delete',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -386,10 +302,11 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:cluster:enrol' => array(
+    'elis/program:userset_enrol' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:cluster:enrol',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -400,11 +317,12 @@ $capabilities = array(
 
 // Courses:
 
-    'block/curr_admin:course:view' => array(
+    'elis/program:course_view' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:course:view',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -413,11 +331,12 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:course:create' => array(
+    'elis/program:course_create' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:course:create',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -426,11 +345,12 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:course:edit' => array(
+    'elis/program:course_edit' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:course:edit',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -439,11 +359,12 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:course:delete' => array(
+    'elis/program:course_delete' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:course:delete',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -454,11 +375,12 @@ $capabilities = array(
 
 // Classes:
 
-    'block/curr_admin:class:view' => array(
+    'elis/program:class_view' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:class:view',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -467,11 +389,12 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:class:create' => array(
+    'elis/program:class_create' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:class:create',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -480,11 +403,12 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:class:edit' => array(
+    'elis/program:class_edit' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:class:edit',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -493,11 +417,12 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:class:delete' => array(
+    'elis/program:class_delete' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:class:delete',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -506,11 +431,12 @@ $capabilities = array(
         )
     ),
 
-    'block/curr_admin:class:enrol' => array(
+    'elis/program:class_enrol' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:class:enrol',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -521,41 +447,45 @@ $capabilities = array(
 
 // Users:
 
-    'block/curr_admin:user:view' => array(
+    'elis/program:user_view' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:user:view',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
     ),
 
-    'block/curr_admin:user:create' => array(
+    'elis/program:user_create' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:user:create',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
     ),
 
-    'block/curr_admin:user:edit' => array(
+    'elis/program:user_edit' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:user:edit',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
     ),
 
-    'block/curr_admin:user:delete' => array(
+    'elis/program:user_delete' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:user:delete',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
@@ -563,11 +493,12 @@ $capabilities = array(
 
 // Reports:
 
-    'block/curr_admin:viewreports' => array(
+    'elis/program:viewreports' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:viewreports',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -576,20 +507,22 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:viewgroupreports' => array(
+    'elis/program:viewgroupreports' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:viewgroupreports',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
      ),
 
-    'block/curr_admin:viewownreports' => array(
+    'elis/program:viewownreports' => array(
 
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:viewownreports',
         'legacy' => array(
             'user' => CAP_ALLOW,
             //'student' => CAP_ALLOW,
@@ -599,11 +532,12 @@ $capabilities = array(
 
 // Files
 
-    'block/curr_admin:managefiles' => array(
+    'elis/program:managefiles' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_XSS | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:managefiles',
         'legacy' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
@@ -614,11 +548,12 @@ $capabilities = array(
 
 // Notifications:
 
-    'block/curr_admin:notify_trackenrol' => array(
+    'elis/program:notify_trackenrol' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_trackenrol',
         'legacy' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
@@ -627,11 +562,12 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:notify_classenrol' => array(
+    'elis/program:notify_classenrol' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_classenrol',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -640,11 +576,12 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:notify_classcomplete' => array(
+    'elis/program:notify_classcomplete' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_classcomplete',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -653,11 +590,12 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:notify_classnotstart' => array(
+    'elis/program:notify_classnotstart' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_classnotstart',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -666,11 +604,12 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:notify_classnotcomplete' => array(
+    'elis/program:notify_classnotcomplete' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_classnotcomplete',
         'legacy' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
@@ -679,11 +618,12 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:notify_courserecurrence' => array(
+    'elis/program:notify_courserecurrence' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_courserecurrence',
         'legacy' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
@@ -692,11 +632,12 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:notify_curriculumrecurrence' => array(
+    'elis/program:notify_programrecurrence' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_curriculumrecurrence',
         'legacy' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
@@ -705,11 +646,12 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:notify_curriculumcomplete' => array(
+    'elis/program:notify_programcomplete' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_curriculumcomplete',
         'legacy' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
@@ -718,11 +660,12 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:notify_curriculumnotcomplete' => array(
+    'elis/program:notify_programnotcomplete' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_curriculumnotcomplete',
         'legacy' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
@@ -731,11 +674,12 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:notify_curriculumdue' => array(
+    'elis/program:notify_programdue' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_curriculumdue',
         'legacy' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
@@ -744,11 +688,12 @@ $capabilities = array(
         )
      ),
 
-    'block/curr_admin:notify_coursedue' => array(
+    'elis/program:notify_coursedue' => array(
 
         'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:notify_coursedue',
         'legacy' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
@@ -759,39 +704,43 @@ $capabilities = array(
 
 // Enrolment via clusters:
 
-     'block/curr_admin:curriculum:enrol_cluster_user' => array(
+     'elis/program:program_enrol_userset_user' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:curriculum:enrol_cluster_user',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
     ),
 
-    'block/curr_admin:track:enrol_cluster_user' => array(
+    'elis/program:track_enrol_userset_user' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:track:enrol_cluster_user',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
     ),
 
-    'block/curr_admin:cluster:enrol_cluster_user' => array(
+    'elis/program:userset_enrol_userset_user' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:cluster:enrol_cluster_user',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
     ),
 
-    'block/curr_admin:class:enrol_cluster_user' => array(
+    'elis/program:class_enrol_userset_user' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:class:enrol_cluster_user',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
@@ -799,37 +748,38 @@ $capabilities = array(
 
 // Other:
 
-    'block/curr_admin:viewcoursecatalog' => array(
+    'elis/program:viewcoursecatalog' => array(
 
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:viewcoursecatalog',
         'legacy' => array(
             'user' => CAP_ALLOW,
             //'student' => CAP_ALLOW
         )
      ),
 
-     'block/curr_admin:overrideclasslimit' => array(
+     'elis/program:overrideclasslimit' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:overrideclasslimit',
         'legacy' => array(
                 'admin' => CAP_ALLOW
         )
      ),
 
-     'block/curr_admin:cluster:role_assign_cluster_users' => array(
+     'elis/program:userset_role_assign_cluster_users' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:cluster:role_assign_cluster_users',
      ),
 
-     'block/curr_admin:associate' => array(
+     'elis/program:associate' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/curr_admin:associate',
         'legacy' => array(
             'admin' => CAP_ALLOW
         )
      )
 );
-
-
-?>

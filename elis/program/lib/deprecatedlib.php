@@ -334,13 +334,13 @@ function cm_determine_access($uid = false) {
 
     //require_once($CFG->dirroot . '/curriculum/lib/cluster.class.php');
 
-    if (has_capability('block/curr_admin:managecurricula', $context)) {
+    if (has_capability('elis/program:manage', $context)) {
         return 'admin';
-    //} else if (has_capability('block/curr_admin:viewreports', $context)) {
+    //} else if (has_capability('elis/program:viewreports', $context)) {
     //    return 'reviewer';
-    //} else if (has_capability('block/curr_admin:viewgroupreports', $context)) {
+    //} else if (has_capability('elis/program:viewgroupreports', $context)) {
     //    return 'groupreviewer';
-    } else if (has_capability('block/curr_admin:viewownreports', $context)){
+    } else if (has_capability('elis/program:viewownreports', $context)){
         return 'student';
     }
 }

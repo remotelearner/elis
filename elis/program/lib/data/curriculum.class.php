@@ -388,14 +388,14 @@ class curriculum extends data_object_with_custom_fields {
 
         if ($sendtorole) {
             /// Get all users with the notify_curriculumrecurrence capability.
-            if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_curriculumrecurrence')) {
+            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_programrecurrence')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'block/curr_admin:notify_curriculumrecurrence')) {
+            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'elis/program:notify_programrecurrence')) {
                 $users = $users + $supervisors;
             }
         }
@@ -643,12 +643,12 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = pm_context_set::for_user_with_capability('curriculum', 'block/curr_admin:curriculum:enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('curriculum', 'elis/program:program_enrol', $USER->id);
         $filter_object = $curriculum_context->get_filter('cur.id', 'curriculum');
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {

@@ -178,14 +178,14 @@ class curriculumstudent extends elis_data_object {
 
         if ($sendtorole) {
             /// Get all users with the notify_classenrol capability.
-            if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_curriculumcomplete')) {
+            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_programcomplete')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_curriculumcomplete')) {
+            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_programcomplete')) {
                 $users = $users + $supervisors;
             }
         }
@@ -277,14 +277,14 @@ class curriculumstudent extends elis_data_object {
 
         if ($sendtorole) {
             /// Get all users with the notify_curriculumnotcomplete capability.
-            if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_curriculumnotcomplete')) {
+            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_programnotcomplete')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_curriculumnotcomplete')) {
+            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_programnotcomplete')) {
                 $users = $users + $supervisors;
             }
         }
@@ -404,13 +404,13 @@ class curriculumstudent extends elis_data_object {
         if(!curriculumpage::can_enrol_into_curriculum($curid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if (curriculumpage::_has_capability('block/curr_admin:curriculum:enrol', $curid)) {
+        } else if (curriculumpage::_has_capability('elis/program:program_enrol', $curid)) {
             //current user has the direct capability
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:curriculum:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
 
         $allowed_clusters = array();
 

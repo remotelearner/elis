@@ -62,12 +62,12 @@ class clustertrackbasepage extends associationpage {
     }
 
     function can_do_add() {
-        // the user must have 'block/curr_admin:associate' permissions on both ends
+        // the user must have 'elis/program:associate' permissions on both ends
         $clusterid = $this->required_param('clusterid', PARAM_INT);
         $trackid = $this->required_param('trackid', PARAM_INT);
 
-        return usersetpage::_has_capability('block/curr_admin:associate', $clusterid)
-            && trackpage::_has_capability('block/curr_admin:associate', $trackid);
+        return usersetpage::_has_capability('elis/program:associate', $clusterid)
+            && trackpage::_has_capability('elis/program:associate', $trackid);
     }
 
     function do_add() {
@@ -130,15 +130,15 @@ class clustertrackbasepage extends associationpage {
     }
 
     function can_do_edit() {
-        // the user must have 'block/curr_admin:associate' permissions on both
+        // the user must have 'elis/program:associate' permissions on both
         // ends
         $association_id = $this->required_param('association_id', PARAM_INT);
         $record = new clustertrack($association_id);
         $clusterid = $record->clusterid;
         $trackid = $record->trackid;
 //echo '<br>association id: '.$association_id.' clusterid: '.$clusterid.' trackid: '.$trackid.'*<br>';
-        return usersetpage::_has_capability('block/curr_admin:associate', $clusterid)
-            && trackpage::_has_capability('block/curr_admin:associate', $trackid);
+        return usersetpage::_has_capability('elis/program:associate', $clusterid)
+            && trackpage::_has_capability('elis/program:associate', $trackid);
     }
 
     function can_do_delete() {
@@ -223,7 +223,7 @@ class clustertrackpage extends clustertrackbasepage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        return usersetpage::_has_capability('block/curr_admin:associate', $id);
+        return usersetpage::_has_capability('elis/program:associate', $id);
     }
 
     function display_default() {
@@ -266,7 +266,7 @@ class clustertrackpage extends clustertrackbasepage {
         $this->print_list_view($items, $columns);
 
         // find the tracks that the user can associate with this cluster
-        $contexts = trackpage::get_contexts('block/curr_admin:associate');
+        $contexts = trackpage::get_contexts('elis/program:associate');
         $tracks = track_get_listing('name', 'ASC', 0, 0, '', '', 0, 0, $contexts);
         if (empty($tracks)) {
             $num_tracks = track_count_records();
@@ -298,7 +298,7 @@ class trackclusterpage extends clustertrackbasepage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        return trackpage::_has_capability('block/curr_admin:associate', $id);
+        return trackpage::_has_capability('elis/program:associate', $id);
     }
 
     function display_default() {
@@ -336,7 +336,7 @@ class trackclusterpage extends clustertrackbasepage {
         $this->print_list_view($items, $columns);
 
         // find the tracks that the user can associate with this cluster
-        $contexts = usersetpage::get_contexts('block/curr_admin:associate');
+        $contexts = usersetpage::get_contexts('elis/program:associate');
         $clusters = cluster_get_listing('name', 'ASC', 0, 0, '', '', array('contexts' =>$contexts));
         if (empty($clusters)) {
             $num_clusters = cluster_count_records();

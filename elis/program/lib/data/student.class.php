@@ -269,14 +269,14 @@ class student extends elis_data_object {
 
             if ($sendtorole) {
                 /// Get all users with the notify_classcompleted capability.
-                if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_classcomplete')) {
+                if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classcomplete')) {
                     $users = $users + $roleusers;
                 }
             }
 
             if ($sendtosupervisor) {
                 /// Get parent-context users.
-                if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_classcomplete')) {
+                if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_classcomplete')) {
                     $users = $users + $supervisors;
                 }
             }
@@ -1523,7 +1523,7 @@ class student extends elis_data_object {
         }
 
         // *** TBD ***
-        if(!pmclasspage::_has_capability('block/curr_admin:class:enrol', $this->classid)) {
+        if(!pmclasspage::_has_capability('elis/program:class_enrol', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
@@ -1613,7 +1613,7 @@ class student extends elis_data_object {
         }
 
         // *** TBD ***
-        if(!pmclasspage::_has_capability('block/curr_admin:class:enrol', $this->classid)) {
+        if(!pmclasspage::_has_capability('elis/program:class_enrol', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
@@ -1842,14 +1842,14 @@ class student extends elis_data_object {
 
         if ($sendtorole) {
             /// Get all users with the notify_classnotstart capability.
-            if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_classnotstart')) {
+            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classnotstart')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_classnotstart')) {
+            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_classnotstart')) {
                 $users = $users + $supervisors;
             }
         }
@@ -1919,14 +1919,14 @@ class student extends elis_data_object {
 
         if ($sendtorole) {
             /// Get all users with the notify_classnotcomplete capability.
-            if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_classnotcomplete')) {
+            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classnotcomplete')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'block/curr_admin:notify_classnotcomplete')) {
+            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_classnotcomplete')) {
                 $users = $users + $supervisors;
             }
         }
@@ -1954,13 +1954,13 @@ class student extends elis_data_object {
         if(!pmclasspage::can_enrol_into_class($classid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if (pmclasspage::_has_capability('block/curr_admin:track:enrol', $classid)) {
+        } else if (pmclasspage::_has_capability('elis/program:track_enrol', $classid)) {
             //current user has the direct capability
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:class_enrol_userset_user', $USER->id);
 
         $allowed_clusters = array();
         $allowed_clusters = pmclass::get_allowed_clusters($classid);

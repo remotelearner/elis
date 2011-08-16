@@ -125,13 +125,13 @@ class studentpage extends associationpage {
     function can_do_bulkedit() {
         //todo: allow bulk editing for non-admins
         $id = $this->required_param('id');
-        return pmclasspage::_has_capability('block/curr_admin:track:enrol', $id);
+        return pmclasspage::_has_capability('elis/program:track_enrol', $id);
     }
 
     function can_do_updatemultiple() {
         //todo: allow multi-update for non-admins
         $id = $this->required_param('id');
-        return pmclasspage::_has_capability('block/curr_admin:track:enrol', $id);
+        return pmclasspage::_has_capability('elis/program:track_enrol', $id);
     }
 
     function do_add() { // TBD: must overload the parents since no studentform

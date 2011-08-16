@@ -74,11 +74,11 @@ class clusteruserselectpage extends selectionpage {
             $filters[] = new select_filter($extrasql, $params);
         }
 
-        if(!usersetpage::_has_capability('block/curr_admin:cluster:enrol')) {
+        if(!usersetpage::_has_capability('elis/program:userset_enrol')) {
             //perform SQL filtering for the more "conditional" capability
 
             //get the context for the "indirect" capability
-            $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:enrol_cluster_user', $USER->id);
+            $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
 
             $allowed_clusters = userset::get_allowed_clusters($id);
 

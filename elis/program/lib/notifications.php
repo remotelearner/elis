@@ -556,7 +556,7 @@ function pm_notify_role_assign_handler($eventdata){
 
     if ($sendtorole) {
         // Get all users with the notify_classenrol capability.
-        if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_classenrol')) {
+        if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classenrol')) {
             $users = $users + $roleusers;
         }
     }
@@ -564,7 +564,7 @@ function pm_notify_role_assign_handler($eventdata){
     if ($sendtosupervisor) {
         $pmuserid = pm_get_crlmuserid($eventdata->userid);
         // Get all users with the notify_classenrol capability.
-        if ($supervisors = pm_get_users_by_capability('user', $pmuserid, 'block/curr_admin:notify_classenrol')) {
+        if ($supervisors = pm_get_users_by_capability('user', $pmuserid, 'elis/program:notify_classenrol')) {
             $users = $users + $supervisors;
         }
     }
@@ -694,14 +694,14 @@ function pm_notify_track_assign_handler($eventdata){
 
     if ($sendtorole) {
         /// Get all users with the notify_trackenrol capability.
-        if ($roleusers = get_users_by_capability($context, 'block/curr_admin:notify_trackenrol')) {
+        if ($roleusers = get_users_by_capability($context, 'elis/program:notify_trackenrol')) {
             $users = $users + $roleusers;
         }
     }
 
     if ($sendtosupervisor) {
         /// Get parent-context users.
-        if ($supervisors = pm_get_users_by_capability('user', $eventdata->userid, 'block/curr_admin:notify_trackenrol')) {
+        if ($supervisors = pm_get_users_by_capability('user', $eventdata->userid, 'elis/program:notify_trackenrol')) {
             $users = $users + $supervisors;
         }
     }

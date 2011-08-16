@@ -50,9 +50,9 @@ class trackform extends cmform {
 
         $curs = array();
         if (!empty($USER->id)) {
-            // TBD: and/or capability 'block/curr_admin:curriculum:edit|view' ?
+            // TBD: and/or capability 'elis/program:track_edit|view' ?
             $contexts = get_contexts_by_capability_for_user('curriculum',
-                            'block/curr_admin:track:create', $USER->id);
+                            'elis/program:track_create', $USER->id);
             $curs = curriculum_get_listing('name', 'ASC', 0, 0, '', '',
                         $contexts);
         }

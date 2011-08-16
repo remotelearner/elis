@@ -86,13 +86,13 @@ class pmclasspage extends managementpage {
         global $USER;
 
         //check the standard capability
-        if(pmclasspage::_has_capability('block/curr_admin:class:enrol', $classid)
-           || pmclasspage::_has_capability('block/curr_admin:class:enrol_cluster_user', $classid)) {
+        if(pmclasspage::_has_capability('elis/program:class_enrol', $classid)
+           || pmclasspage::_has_capability('elis/program:class_enrol_userset_user', $classid)) {
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:class:enrol_cluster_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:class_enrol_userset_user', $USER->id);
 
         //we first need to go through tracks to get to clusters
         $track_listing = new trackassignment(array('classid' => $classid));
@@ -177,33 +177,33 @@ class pmclasspage extends managementpage {
     function can_do_view() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        return $this->_has_capability('block/curr_admin:class:view')
+        return $this->_has_capability('elis/program:class_view')
             || instructor::user_is_instructor_of_class(pm_get_crlmuserid($USER->id), $id);
     }
 
     function can_do_edit() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        return $this->_has_capability('block/curr_admin:class:edit')
+        return $this->_has_capability('elis/program:class_edit')
             || instructor::user_is_instructor_of_class(pm_get_crlmuserid($USER->id), $id);
     }
 
     function can_do_delete() {
-        return $this->_has_capability('block/curr_admin:class:delete');
+        return $this->_has_capability('elis/program:class_delete');
     }
 
     function can_do_add() {
         global $USER;
         if (!empty($USER->id)) {
             $contexts = get_contexts_by_capability_for_user('course',
-                            'block/curr_admin:class:create', $USER->id);
+                            'elis/program:class_create', $USER->id);
             return(!$contexts->is_empty());
         }
         return false;
     }
 
     function can_do_default() {
-        $contexts = pmclasspage::get_contexts('block/curr_admin:class:view');
+        $contexts = pmclasspage::get_contexts('elis/program:class_view');
         return !$contexts->is_empty();
     }
 
@@ -302,11 +302,11 @@ class pmclasspage extends managementpage {
             'maxstudents'  => array('header' => get_string('class_maxstudents', 'elis_program')),
         );
 
-        $items    = pmclass_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, false, pmclasspage::get_contexts('block/curr_admin:class:view'), $parent_clusterid);
-        $numitems = pmclass_count_records($namesearch, $alpha, $id, false, pmclasspage::get_contexts('block/curr_admin:class:view'), $parent_clusterid);
+        $items    = pmclass_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, false, pmclasspage::get_contexts('elis/program:class_view'), $parent_clusterid);
+        $numitems = pmclass_count_records($namesearch, $alpha, $id, false, pmclasspage::get_contexts('elis/program:class_view'), $parent_clusterid);
 
-        pmclasspage::get_contexts('block/curr_admin:class:edit');
-        pmclasspage::get_contexts('block/curr_admin:class:delete');
+        pmclasspage::get_contexts('elis/program:class_edit');
+        pmclasspage::get_contexts('elis/program:class_delete');
 
         if (!empty($id)) {
             $coursepage = new coursepage(array('id' => $id));
@@ -391,7 +391,7 @@ class pmclasspage extends managementpage {
             $context_instance = get_context_instance($context_level, $cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
-            if(!has_capability('block/curr_admin:class:edit', $context_instance)) {
+            if(!has_capability('elis/program:class_edit', $context_instance)) {
                 role_assign(elis::$config->elis_program->default_class_role_id, $USER->id, 0, $context_instance->id);
             }
         }

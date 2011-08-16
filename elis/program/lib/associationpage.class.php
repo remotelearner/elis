@@ -59,7 +59,7 @@ class associationpage extends pm_page {
 
     public function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('block/curr_admin:managecurricula', $context);
+        return has_capability('elis/program:manage', $context);
     }
 
     /**

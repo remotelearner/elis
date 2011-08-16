@@ -140,7 +140,7 @@ class block_curr_admin extends block_base {
             $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
             require_once elispm::lib('contexts.php');
-            $context_result = pm_context_set::for_user_with_capability('cluster', 'block/curr_admin:cluster:view', $USER->id);
+            $context_result = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_view', $USER->id);
             $extrafilters = array('contexts' => $context_result,'parent' => 0);
             $num_records = cluster_count_records('', '', $extrafilters);
 
@@ -172,7 +172,7 @@ class block_curr_admin extends block_base {
             $curriculum_css_class = block_curr_admin_get_item_css_class('curriculum_instance');
 
             require_once elispm::file('curriculumpage.class.php');
-            $num_records = curriculum_count_records('', '', curriculumpage::get_contexts('block/curr_admin:curriculum:view'));
+            $num_records = curriculum_count_records('', '', curriculumpage::get_contexts('elis/program:program_view'));
 
             if($curricula = $DB->get_records(curriculum::TABLE, null, 'priority ASC, name ASC', '*', 0, $num_block_icons)) {
                 foreach($curricula as $curriculum) {
