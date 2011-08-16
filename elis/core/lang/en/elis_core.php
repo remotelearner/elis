@@ -33,6 +33,7 @@ $string['invalidid'] = 'Invalid ID';
 $string['invalidoperator'] = 'Invalid Operator';
 $string['pluginname'] = 'ELIS Core';
 $string['report_filter_all'] = 'Show All';
+$string['report_filter_anyvalue'] = 'No filtering';
 $string['unknown_action'] = 'Unknown action ({$a})';
 $string['subplugintype_eliscoreplugins_plural'] = 'General plugins';
 $string['subplugintype_elisfields_plural'] = 'Custom field types';
