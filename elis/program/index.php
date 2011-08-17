@@ -153,15 +153,15 @@ $pages = array(
     // Course Requests
     'crp' => array(
         'class' => 'RequestPage',
-        'file'  => '../blocks/course_request/requestpage.php'
+        'file'  => '../../blocks/course_request/requestpage.php'
         ),
     'erp' => array(
         'class' => 'EditRequestPage',
-        'file'  => '../blocks/course_request/editrequestpage.php'
+        'file'  => '../../blocks/course_request/editrequestpage.php'
         ),
     'arp' => array(
         'class' => 'courserequestapprovepage',
-        'file'  => '../blocks/course_request/approvepage.class.php'
+        'file'  => '../../blocks/course_request/approvepage.class.php'
         )
 );
 
