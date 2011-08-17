@@ -1,5 +1,29 @@
 <?php //$Id$
 /**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author     Remote-Learner.net Inc
+ * @author     Brent Boghosian <brent.boghosian@remote-learner.net>
+ * @version    $Id$
+ * @package    elis-core
+ * @subpackage filtering
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ *
  * radiobuttons.php - filter
  *
  * Group of radio buttons (TBD: add layout options, columns/row designation ...)
@@ -15,15 +39,11 @@
  *   ['numeric']   = boolean - true if DB field is numeric,
  *                             false (the default) -> string
  *
- * @author Brent Boghosian <brent.boghosian@remote-learner.net>
- * @version $Id$
- * @package elis/core/lib/filtering
- * @license  http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
 require_once($CFG->dirroot .'/user/filters/lib.php');
 
 /**
@@ -148,12 +168,13 @@ class generalized_filter_radiobuttons extends generalized_filter_type {
      */
     function get_sql_filter($data) {
         static $counter = 0;
-        $name = 'ex_radiobutton'. $counter++;
+        $param_name = 'ex_radiobuttons'. $counter++;
         $full_fieldname = $this->get_full_fieldname();
         if (empty($full_fieldname)) {
             return null; // TBD ''
         }
-        return array("{$full_fieldname} = :{$name}", array($name => $data['value']));
+        return array("{$full_fieldname} = :{$param_name}",
+                     array($param_name => $data['value']));
     }
 
     function get_report_parameters($data) {
