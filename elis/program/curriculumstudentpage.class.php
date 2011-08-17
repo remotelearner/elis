@@ -684,6 +684,12 @@ class curriculumstudentpage extends associationpage2 {
             $where .= ' AND '.$extrasql[0];
             $sql .= ' AND '.$extrasql[0];
         }
+
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where .= ' AND inactive = 0';
+            $sql .= ' AND usr.inactive = 0';
+        }
+
         if ($extrasql[1]) {
             $params = array_merge($params, $extrasql[1]);
         }
@@ -692,7 +698,6 @@ class curriculumstudentpage extends associationpage2 {
         $sql .= ' ORDER BY '.$sortclause;
 
         $fields = 'curass.id, usr.id AS userid, usr.firstname, usr.lastname, usr.idnumber, usr.country, usr.language, curass.timecreated';
-
         $count = $DB->count_records_select(user::TABLE, $where, $params);
         $users = $DB->get_records_sql($sql, $params, $pagenum*$perpage, $perpage);
         //$users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, $fields, $pagenum*$perpage, $perpage);

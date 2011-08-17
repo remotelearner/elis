@@ -685,7 +685,7 @@ class student extends elis_data_object {
                     'timegraded' => array('header' => get_string('date_graded', self::LANG_FILE),
                                           'display_function' => 'htmltab_display_function')
                 );
-    
+
                 if ($dir !== 'DESC') {
                     $dir = 'ASC';
                 }
@@ -696,7 +696,7 @@ class student extends elis_data_object {
                     $columns[$sort]['sortable'] = $dir;
                 }
                 //$table->width = "100%"; // TBD
-    
+
                 $newarr = array();
                 foreach ($elements as $element) {
                     $tabobj = new stdClass;
@@ -713,7 +713,7 @@ class student extends elis_data_object {
                                 $tabobj->{$column} = '<input type="hidden" name="'.$name.'" ' .
                                             'value="' . $value . '" />'.s($element->idnumber);
                                 break;
-    
+
                             case 'timegraded':
                                 if (isset($grades[$element->id])) {
                                     $name = 'timegraded['.$grades[$element->id]->id.']';
@@ -727,7 +727,7 @@ class student extends elis_data_object {
                                                                    $name.'[startyear]',
                                                                    $value, true);
                                 break;
-    
+
                             case 'grade':
                                 if (isset($grades[$element->id])) {
                                     $name = 'grade['.$grades[$element->id]->id.']';
@@ -739,7 +739,7 @@ class student extends elis_data_object {
                                 $tabobj->{$column} = '<input type="text" name="'.$name.'" ' .
                                             'value="' . $value . '" size="5" />';
                                 break;
-    
+
                             case 'locked':
                                 if (isset($grades[$element->id])) {
                                     $name = 'locked['.$grades[$element->id]->id.']';
@@ -751,7 +751,7 @@ class student extends elis_data_object {
                                 $tabobj->{$column} = '<input type="checkbox" name="'.$name.'" ' .
                                             'value="1" '.($value?'checked="checked"':'').'/>';
                                 break;
-    
+
                             default:
                                 $tabobj->{$column} = '';
                                 break;
@@ -1006,7 +1006,7 @@ class student extends elis_data_object {
 
                 $select = 'classid = ? AND userid = ? ';
                 $grades = $this->_db->get_records_select(student_grade::TABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
-    
+
                 $columns = array(
                     'element'          => array('header' => get_string('grade_element', self::LANG_FILE),
                                                 'display_function' => 'htmltab_display_function'),
@@ -1017,7 +1017,7 @@ class student extends elis_data_object {
                     'timegraded'       => array('header' => get_string('date_graded', self::LANG_FILE),
                                                 'display_function' => 'htmltab_display_function')
                 );
-    
+
                 if ($dir !== 'DESC') {
                     $dir = 'ASC';
                 }
@@ -1028,7 +1028,7 @@ class student extends elis_data_object {
                     $columns[$sort]['sortable'] = $dir;
                 }
                 //$table->width = "100%"; // TBD
-    
+
                 $newarr = array();
                 foreach ($elements as $element) {
                     $tabobj = new stdClass;
@@ -1045,7 +1045,7 @@ class student extends elis_data_object {
                                 $tabobj->{$column} = '<input type="hidden" name="'.$name.'" ' .
                                             'value="' . $value . '" />'.s($element->idnumber);
                                 break;
-    
+
                             case 'timegraded':
                                 if (isset($grades[$element->id])) {
                                     $name = 'timegraded['.$grades[$element->id]->id.']';
@@ -1059,7 +1059,7 @@ class student extends elis_data_object {
                                                                    $name.'[startyear]',
                                                                    $value, true);
                                 break;
-    
+
                             case 'grade':
                                 if (isset($grades[$element->id])) {
                                     $name = 'grade['.$grades[$element->id]->id.']';
@@ -1071,7 +1071,7 @@ class student extends elis_data_object {
                                 $tabobj->{$column} = '<input type="text" name="'.$name.'" ' .
                                             'value="' . $value . '" size="5" />';
                                 break;
-    
+
                             case 'locked':
                                 if (isset($grades[$element->id])) {
                                     $name = 'locked['.$grades[$element->id]->id.']';
@@ -1083,7 +1083,7 @@ class student extends elis_data_object {
                                 $tabobj->{$column} = '<input type="checkbox" name="'.$name.'" ' .
                                             'value="1" '.($value?'checked="checked"':'').'/>';
                                 break;
-    
+
                             default:
                                 $tabobj->{$column} = '';
                                 break;
@@ -1327,6 +1327,10 @@ class student extends elis_data_object {
         $where   = 'stu.classid = :clsid ';
         $params['clsid'] = $classid;
 
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where .= ' AND usr.inactive = 0 ';
+        }
+
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
             $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
@@ -1380,10 +1384,14 @@ class student extends elis_data_object {
 
         $select  = 'SELECT COUNT(stu.id) ';
         $tables  = 'FROM {'. student::TABLE .'} stu ';
-        $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
+        $join    = 'JOIN {'. user::TABLE .'} usr ';
         $on      = 'ON stu.userid = usr.id ';
         $where   = 'stu.completestatusid = ' . STUSTATUS_NOTCOMPLETE . ' AND stu.classid = :clsid ';
         $params['clsid']= $classid;
+
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where .= ' AND usr.inactive = 0 ';
+        }
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
@@ -1427,24 +1435,30 @@ class student extends elis_data_object {
 
         $select  = 'SELECT COUNT(stu.id) ';
         $tables  = 'FROM {'. student::TABLE .'} stu ';
-        $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
+        $join    = 'JOIN {'. user::TABLE .'} usr ';
         $on      = 'ON stu.userid = usr.id ';
-        $where   = 'stu.classid = :clsid ';
+        $where   = array('stu.classid = :clsid ');
         $params['clsid'] = $classid;
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $FULLNAME_LIKE .') ';
+            $where[] = '('.$FULLNAME_LIKE.')';
             $params['name_like'] = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $where[] = '('.$LASTNAME_STARTSWITH.')';
             $params['lastname_startswith'] = "{$alpha}%";
         }
 
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where[] = 'usr.inactive = 0';
+        }
+
         if (!empty($where)) {
-            $where = 'WHERE '.$where.' ';
+            $where = 'WHERE ' . implode(' AND ', $where);
+        } else {
+            $where = '';
         }
 
         $sql = $select . $tables . $join . $on . $where;

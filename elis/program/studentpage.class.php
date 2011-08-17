@@ -621,18 +621,18 @@ class studentpage extends associationpage {
      */
     function print_num_items($classid, $max) {
         $pmclass = new pmclass($classid);
-        $students = $pmclass->count_students_by_section($classid);
+        $students = pmclass::get_completion_counts($classid);
 
         if(!empty($students[STUSTATUS_FAILED])) {
-            echo '<div style="float:right;">' . get_string('num_students_failed', self::LANG_FILE) . ': ' . $students[STUSTATUS_FAILED]->c . '</div><br />';
+            echo '<div style="float:right;">' . get_string('num_students_failed', self::LANG_FILE) . ': ' . $students[STUSTATUS_FAILED] . '</div><br />';
         }
 
         if(!empty($students[STUSTATUS_PASSED])) {
-            echo '<div style="float:right;">' . get_string('num_students_passed', self::LANG_FILE) . ': ' . $students[STUSTATUS_PASSED]->c . '</div><br />';
+            echo '<div style="float:right;">' . get_string('num_students_passed', self::LANG_FILE) . ': ' . $students[STUSTATUS_PASSED] . '</div><br />';
         }
 
         if(!empty($students[STUSTATUS_NOTCOMPLETE])) {
-            echo '<div style="float:right;">' . get_string('num_students_not_complete', self::LANG_FILE) . ': ' . $students[STUSTATUS_NOTCOMPLETE]->c . '</div><br />';
+            echo '<div style="float:right;">' . get_string('num_students_not_complete', self::LANG_FILE) . ': ' . $students[STUSTATUS_NOTCOMPLETE] . '</div><br />';
         }
 
         if(!empty($max)) {

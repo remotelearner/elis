@@ -613,6 +613,10 @@ function instructor_get_listing($classid, $sort = 'name', $dir = 'ASC', $startre
     $where   = 'ins.classid = :clsid ';
     $params['clsid'] = $classid;
 
+    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        $where .= ' AND usr.inactive = 0 ';
+    }
+
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
         $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('.
@@ -638,7 +642,7 @@ function instructor_get_listing($classid, $sort = 'name', $dir = 'ASC', $startre
     }
 
     $sql = $select.$tables.$join.$on.$where.$sort;
-//print_object($sql);
+
     return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
@@ -663,6 +667,10 @@ function instructor_count_records($classid, $namesearch = '', $alpha='') {
     $on      = 'ON ins.userid = usr.id ';
     $where   = 'ins.classid = :clsid ';
     $params['clsid'] = $classid;
+
+    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        $where .= ' AND usr.inactive = 0 ';
+    }
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);

@@ -479,6 +479,9 @@ $string['learningplanname'] = 'Learning Plan: {$a}';
 $string['learningplanintro'] = 'Learning Plan: You have completed {$a->percent} ({$a->coursescomplete} of {$a->coursestotal}) of your current learning plan.';
 $string['learningplanwelcome'] = 'Welcome {$a}';
 $string['learning_plan_setting'] = 'Turn off learning plan';
+$string['legacy_settings'] = 'Legacy Settings';
+$string['legacy_show_inactive_users'] = 'Show inactive users';
+$string['legacy_show_inactive_users_help'] = 'If this setting is enabled, inactive users will be displayed in user listings that cannot be filter based on the user\'s inactive flag.  This setting replicates the behaviour of previous versions of ELIS, and should not be used unless you specifically need the system to behave this way.';
 $string['length_description'] = 'Length Description';
 $string['lp_class_instructions'] = 'This listing indicates all programs you have been assigned to, as well as all class instances within those programs that you are currently enrolled in (automatically or manually).<br/><br/>
                                     This listing also includes class instances you are currently enrolled in that are not included in any programs, if applicable.';

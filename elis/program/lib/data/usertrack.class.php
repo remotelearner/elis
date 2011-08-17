@@ -265,11 +265,16 @@ class usertrack extends elis_data_object {
         $join    = 'JOIN {' . user::TABLE . '} usr '.
             'ON usr.id = usrtrk.userid ';
         $where   = 'WHERE usrtrk.trackid = ? ';
-        $group   = 'GROUP BY usrtrk.id ';
+        //$group   = 'GROUP BY usrtrk.id ';
         $sort    = 'ORDER BY name ASC ';
 
         $params = array($trackid);
-        $sql = $select.$tables.$join.$where.$group.$sort;
+
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where .= ' AND usr.inactive = 0 ';
+        }
+
+        $sql = $select.$tables.$join.$where./*$group.*/$sort;
 
         return $DB->get_records_sql($sql, $params);
     }
@@ -303,6 +308,7 @@ class usertrack extends elis_data_object {
         $sort    = 'ORDER BY trk.idnumber ASC ';
 
         $params = array($userid);
+
         $sql = $select.$tables.$join.$where.$group.$sort;
 
         return $DB->get_records_sql($sql, $params);

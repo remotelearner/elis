@@ -104,4 +104,7 @@ $defaults = array(
     'default_track_role_id' => 0,
 
     'autocreated_unknown_is_yes' => 1,
+
+    //legacy settings
+    'legacy_show_inactive_users' => 0,
 );

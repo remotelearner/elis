@@ -146,6 +146,10 @@ class waitlist extends elis_data_object {
         $where   = 'watlst.classid = :clsid ';
         $params['clsid'] = $clsid;
 
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where .= ' AND usr.inactive = 0 ';
+        }
+
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
             $where     .= (!empty($where) ? ' AND ' : ' ') . $FULLNAME_LIKE;
@@ -216,6 +220,10 @@ class waitlist extends elis_data_object {
         $on     = 'ON watlist.userid = usr.id ';
         $where = 'watlist.classid = :clsid ';
         $params['clsid'] = $clsid;
+
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where .= ' AND usr.inactive = 0 ';
+        }
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);

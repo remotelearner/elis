@@ -130,14 +130,29 @@ class pmclass extends data_object_with_custom_fields {
      *
      * @see course::get_completion_counts()
      */
-    public function get_completion_counts() {
+    public function get_completion_counts($clsid = null) {
+        global $DB;
+
+        if($clsid === null) {
+            if(empty($this->id)) {
+                return array();
+            }
+            $clsid = $this->id;
+        }
+
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $inactive = 'AND usr.inactive = 0';
+        } else {
+            $inactive = '';
+        }
+
         $sql = 'SELECT cce.completestatusid status, COUNT(cce.completestatusid) count
         FROM {'.student::TABLE.'} cce
-        INNER JOIN {'.pmclass::TABLE.'} cc ON cc.id = cce.classid
-        WHERE cc.id = ?
+        INNER JOIN {'.user::TABLE.'} usr ON cce.userid = usr.id
+        WHERE cce.classid = ? ?
         GROUP BY cce.completestatusid';
 
-        $rows = $this->_db->get_records_sql($sql, array($this->id));
+        $rows = $DB->get_records_sql($sql, array($clsid, $inactive));
 
         $ret = array(STUSTATUS_NOTCOMPLETE=>0, STUSTATUS_FAILED=>0, STUSTATUS_PASSED=>0);
 
@@ -146,10 +161,7 @@ class pmclass extends data_object_with_custom_fields {
         }
 
         foreach($rows as $row) {
-            // We add the counts to the existing array, which should be as good as an assignment
-            // because we never have duplicate statuses.  Of course, stranger things have happened.
-
-            $ret[$row->status] += $row->count;
+            $ret[$row->status] = $row->count;
         }
 
         return $ret;
@@ -714,23 +726,6 @@ class pmclass extends data_object_with_custom_fields {
         }
 
         return $this->id;
-    }
-
-    public static function count_students_by_section($clsid = 0){
-        global $DB;
-
-        if(!$clsid) { // static method cannot access $this
-            return array();
-        }
-
-        $select     = 'SELECT stu.completestatusid, COUNT(stu.id) as c ';
-        $from       = 'FROM {'.student::TABLE.'} stu ';
-        $where      = 'WHERE stu.classid = ' . $clsid . ' ';
-        $groupby    = 'GROUP BY stu.completestatusid ';
-
-        $sql = $select . $from . $where . $groupby;
-
-        return $DB->get_records_sql($sql);
     }
 
     /**

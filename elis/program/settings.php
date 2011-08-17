@@ -199,6 +199,14 @@ if ($ADMIN->fulltree) {
         }
     }
 
+    // ***Legacy Settings
+    $settings->add(new admin_setting_heading('legacy_settings', get_string('legacy_settings', 'elis_program'), ''));
+
+    // Legacy toggle for showing inactive users on pm pages
+    $settings->add(new admin_setting_configcheckbox('elis_program/legacy_show_inactive_users',
+                           get_string('legacy_show_inactive_users', 'elis_program'),
+                           get_string('legacy_show_inactive_users_help', 'elis_program'), 0));
+
     $ADMIN->add('elis_program', $settings);
 }
 
