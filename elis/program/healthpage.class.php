@@ -285,8 +285,8 @@ class health_stale_cm_class_moodle extends crlm_health_check_base {
         global $CFG;
 
         $msg = get_string('health_stalesoln', 'elis_program').
-                " DELETE FROM {$CFG->prefix}".classmoodlecourse::TABLE." WHERE classid NOT IN (
-                SELECT id FROM {$CFG->prefix}".pmclass::TABLE." )";
+                " DELETE FROM {". classmoodlecourse::TABLE ."} WHERE classid NOT IN (
+                SELECT id FROM {". pmclass::TABLE ."} )";
         return $msg;
     }
 }
@@ -322,8 +322,8 @@ class health_curriculum_course extends crlm_health_check_base {
         global $CFG;
 
         $msg = get_string('health_curriculumsoln', 'elis_program').
-                "DELETE FROM {$CFG->prefix}".curriculumcourse::TABLE." WHERE courseid NOT IN (
-                 SELECT id FROM {$CFG->prefix}".course::TABLE." )";
+                "DELETE FROM {". curriculumcourse::TABLE ."} WHERE courseid NOT IN (
+                 SELECT id FROM {". course::TABLE ."} )";
         return $msg;
 
     }
@@ -336,18 +336,19 @@ class health_user_sync extends crlm_health_check_base {
     function __construct() {
         global $CFG, $DB;
 
-        $sql = "SELECT COUNT(*) FROM {$CFG->prefix}user WHERE
+        $sql = "SELECT COUNT(*) FROM {user} WHERE
                 username != 'guest'
                 AND deleted = 0
                 AND confirmed = 1
-                AND mnethostid = {$CFG->mnet_localhost_id}
+                AND mnethostid = ?
                 AND idnumber != ''
                 AND NOT EXISTS (SELECT 'x'
-                                FROM {".user::TABLE."} cu
+                                FROM {". user::TABLE ."} cu
                                 WHERE cu.idnumber = {$CFG->prefix}user.idnumber)";
 
-        $this->count = $DB->count_records_sql($sql);
+        $this->count = $DB->count_records_sql($sql, array($CFG->mnet_localhost_id));
     }
+
     function exists() {
         return $this->count != 0;
     }
@@ -391,6 +392,7 @@ class cluster_orphans_check extends crlm_health_check_base {
             foreach ($clusters as $cluster) {
                 $this->parentBad[] = $cluster->name;
             }
+            $clusters->close();
         }
     }
 
@@ -452,6 +454,7 @@ class track_classes_check extends crlm_health_check_base {
             foreach ($trackclasses as $trackclass) {
                 $this->unattachedClasses[] = $trackclass->id;
             }
+            $trackclasses->close();
         }
     }
 

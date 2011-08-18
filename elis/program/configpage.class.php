@@ -66,7 +66,7 @@ class configpage extends pm_page {
     }
 
     function do_default() {
-        global $CFG;
+        global $CFG, $DB;
 
         $target = $this->get_new_page(array('action' => 'default'));
 
@@ -106,19 +106,19 @@ class configpage extends pm_page {
 
             // If this setting is changed, we need to update the existing curriclum expiration values
             if ($curassupdate) {
-                if ($rs = get_recordset(CURASSTABLE, '', '', '', 'id, userid, curriculumid')) {
+                require_once elispm::lib('data/curriculumstudent.class.php');
+                if ($rs = $DB->get_recordset(curriculumstudent::TABLE, null, '', 'id, userid, curriculumid')) {
                     $timenow = time();
 
-                    while ($curass = rs_fetch_next_record($rs)) {
+                    foreach ($rs as $curass) {
                         $update = new stdClass;
                         $update->id           = $curass->id;
                         $update->timeexpired  = calculate_curriculum_expiry(false, $curass->curriculumid, $curass->userid);
                         $update->timemodified = $timenow;
-
-                        update_record(CURASSTABLE, $update);
+                        $DB->update_record(curriculumstudent::TABLE, $update);
                      }
 
-                    rs_close($rs);
+                    $rs->close();
                 }
             }
 

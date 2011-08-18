@@ -224,7 +224,7 @@ class usersetpage extends managementpage {
         }
 
         $like_clause = $DB->sql_like('child_context.path', '?');
-        $parent_path = sql_concat('parent_context.path', "'/%'");
+        $parent_path = $DB->sql_concat('parent_context.path', "'/%'");
 
         list($in_clause, $params) = $DB->get_in_or_equal($viewable_clusters);
 
