@@ -65,7 +65,7 @@ function xmldb_elis_program_upgrade($oldversion=0) {
             $rs->close();
         }
 
-        error_log("xmldb_elis_program_upgrade(): result = {$result}");
+        //error_log("xmldb_elis_program_upgrade(): result = {$result}");
         upgrade_plugin_savepoint($result, 2011070800, 'elis', 'program');
     }
 

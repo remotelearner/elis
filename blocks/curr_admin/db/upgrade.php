@@ -44,7 +44,7 @@
 function xmldb_block_curr_admin_upgrade($oldversion = 0) {
     global $CFG, $THEME, $DB;
     require_once($CFG->dirroot . '/elis/program/lib/setup.php');
-    $dbmanager = $DB->get_manager();
+    $dbman = $DB->get_manager();
 
     $result = true;
 
@@ -76,11 +76,11 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $table = new XMLDBTable('crlm_curriculum');
         $field = new XMLDBField('timetocomplete');
         $field->setAttributes(XMLDB_TYPE_CHAR, '64', NULL, XMLDB_NOTNULL, NULL, NULL, NULL, '0h, 0d, 0w, 0m, 0y', 'timemodified');
-        $result = $result && $dbmanager->add_field($table, $field);
+        $result = $result && $dbman->add_field($table, $field);
 
         $field = new XMLDBField('frequency');
         $field->setAttributes(XMLDB_TYPE_CHAR, '64', NULL, XMLDB_NOTNULL, NULL, NULL, NULL, '0h, 0d, 0w, 0m, 0y', 'timetocomplete');
-        $result = $result && $dbmanager->add_field($table, $field);
+        $result = $result && $dbman->add_field($table, $field);
         upgrade_block_savepoint($result, 2009010103, 'curr_admin');
     }
 
@@ -96,7 +96,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         // PK and indexes
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('name_ix', XMLDB_INDEX_UNIQUE, array('name'));
-        $result = $result && $dbmanager->create_table($table);
+        $result = $result && $dbman->create_table($table);
         upgrade_block_savepoint($result, 2009010104, 'curr_admin');
     }
 
@@ -113,7 +113,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         // PK and indexes
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('courseid_ix', XMLDB_INDEX_UNIQUE, array('courseid'));
-        $result = $result && $dbmanager->create_table($table);
+        $result = $result && $dbman->create_table($table);
         upgrade_block_savepoint($result, 2009010105, 'curr_admin');
     }
 
@@ -1695,6 +1695,89 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         upgrade_block_savepoint($result, 2011050202, 'curr_admin');
     }
 
+    if ($result && $oldversion < 2011070100) {
+        // if we are upgrading from a 1.x version of ELIS CM, create a fake
+        // version stamp for elis_program, so it won't try to re-create the
+        // tables
+        $rec = new stdClass;
+        $rec->plugin = 'elis_program';
+        $rec->name = 'version';
+        $rec->value = '2011010100';
+        $DB->insert_record('config_plugins', $rec);
+
+        upgrade_block_savepoint($result, 2011070100, 'curr_admin');
+    }
+
+    if ($result && $oldversion < 2011070101) {
+        // if we are upgrading from a 1.x version of ELIS CM, rename the custom
+        // field tables from crlm_field* to elis_field*
+        $tables = array('' => '',
+                        '_category' => '_categories',
+                        '_contextlevel' => '_contextlevels',
+                        '_category_context' => '_category_contexts',
+                        '_data_text' => '_data_text',
+                        '_data_int' => '_data_int',
+                        '_data_num' => '_data_num',
+                        '_data_char' => '_data_char',
+                        '_owner' => '_owner');
+        foreach ($tables as $oldname => $newname) {
+            // Define table crlm_field* to be renamed to elis_field*
+            $table = new xmldb_table('crlm_field'.$oldname);
+
+            // Launch rename table for crlm_field*
+            $dbman->rename_table($table, 'elis_field'.$newname);
+        }
+
+        // and create a fake version stamp for elis_core, so it won't try to
+        // re-create the tables
+        if ($DB->count_records('config_plugins', array('plugin' => 'elis_core',
+                                                       'name' => 'version')) == 0) {
+            $rec = new stdClass;
+            $rec->plugin = 'elis_core';
+            $rec->name = 'version';
+            $rec->value = '2011010100';
+            $DB->insert_record('config_plugins', $rec);
+        }
+
+        upgrade_block_savepoint($result, 2011070101, 'curr_admin');
+    }
+
+    if ($result && $oldversion < 2011070102) {
+        // move all custom context levels from block_curr_admin to elis_program
+        $sql = "UPDATE {context_levels}
+                   SET component = 'elis_program'
+                 WHERE component = 'block_curr_admin'";
+        $DB->execute($sql);
+
+        upgrade_block_savepoint($result, 2011070102, 'curr_admin');
+    }
+
+    if ($result && $oldversion < 2011070103) {
+        // Convert ELIS 1.9 CM plugin versions to ELIS 2.0 plugin versions
+        $plugins = array('crlm_cluster_manual' => 'usersetenrol_cluster_manual',
+                         'crlm_cluster_profile' => 'usersetenrol_moodle_profile',
+                         'crlm_user_activity' => 'eliscoreplugins_user_activity',
+                         'crlm_cluster_classification' => 'pmplugins_userset_classification',
+                         'crlm_cluster_display_priority' => 'pmplugins_userset_display_priority',
+                         'crlm_cluster_groups' => 'pmplugins_userset_groups',
+                         'crlm_cluster_themes' => 'pmplugins_userset_themes',
+                         'crlm_enrolment_role_sync' => 'pmplugins_enrolment_role_sync',
+                         'crlm_pre_post_test' => 'pmplugins_pre_post_test');
+
+        foreach ($plugins as $oldname => $newname) {
+            $rec = new stdClass;
+            $rec->id = $DB->get_field('config_plugins', 'id',
+                                      array('plugin' => $oldname,
+                                            'name' => 'version'));
+            if (!$rec->id) {
+                continue;
+            }
+            $rec->plugin = $newname;
+            $DB->update_record('config_plugins', $rec);
+        }
+
+    }
+
     if ($result && $oldversion < 2011070600) {
         // Convert crlm_config to config_plugins with plugin = 'elis_program'
         $settings = $DB->get_records('crlm_config');
@@ -1709,6 +1792,81 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
             $DB->delete_records('crlm_config'); // TBD: delete ALL???
         }
         upgrade_block_savepoint($result, 2011070600, 'curr_admin');
+    }
+
+    if ($result && $oldversion < 2011081600) {
+        // move all capabilities to the elis_program plugin
+        $sql = "UPDATE {capabilities}
+                   SET component = 'elis_program'
+                 WHERE component = 'block_curr_admin'";
+        $DB->execute($sql);
+        upgrade_block_savepoint($result, 2011081600, 'curr_admin');
+    }
+
+    if ($result && $oldversion < 2011081601) {
+        // make sure username field is always lower case
+        $sql = "UPDATE {crlm_user}
+                   SET username = LOWER(username)";
+        $DB->execute($sql);
+        $sql = "UPDATE {user}
+                   SET username = LOWER(username)";
+        $DB->execute($sql);
+        upgrade_block_savepoint($result, 2011081601, 'curr_admin');
+    }
+
+    if ($result && $oldversion < 2011081602) {
+        // move config settings for cluster groups functionality to cluster
+        // groups plugin
+        $settings = array('cluster_groups' => 'userset_groups',
+                          'site_course_cluster_groups' => 'site_course_userset_groups',
+                          'cluster_groupings' => 'userset_groupings');
+        foreach ($settings as $oldsetting => $newsetting) {
+            if ($DB->count_records('config_plugins', array('plugin' => 'pmplugins_userset_groups',
+                                                           'name' => $newsetting)) == 0) {
+                // don't already have a setting with the new name -- try to
+                // copy the old setting
+                $a = new stdClass;
+                $a->id = $DB->get_field('config_plugins', 'id', array('plugin' => 'elis_program',
+                                                                      'name' => 'site_course_cluster_groups'));
+                if (empty($a->id)) {
+                    // no old setting -- nothing to do
+                    continue;
+                }
+                $a->plugin = 'pmplugins_userset_groups';
+                $a->name = $newsetting;
+                $DB->update_record('config_plugins', $a);
+            }
+        }
+        upgrade_block_savepoint($result, 2011081602, 'curr_admin');
+    }
+
+    if ($result && $oldversion < 2011081603) {
+        // move config settings for other plugins
+        $pluginsettings = array(array('plugin' => 'eliscoreplugins_user_activity',
+                                      'prefix' => 'user_activity_'),
+                                array('plugin' => 'pmplugins_enrolment_role_sync',
+                                      'prefix' => 'enrolment_role_sync_'),
+            );
+        foreach ($pluginsettings as $pluginsetting) {
+            $prefix_len = strlen($pluginsetting['prefix']);
+            $settings = $DB->get_recordset_select('config_plugins', "plugin = 'elis_program' AND name LIKE '{$pluginsetting['prefix']}%'");
+            foreach ($settings as $setting) {
+                $newname = substr($setting->name, $prefix_len); // strip off the prefix
+                if ($DB->count_records('config_plugins', array('plugin' => $pluginsetting['plugin'],
+                                                               'name' => $newname)) == 0) {
+                    // no existing setting with the new name exists -- rename the
+                    // old one
+                    $setting->plugin = $pluginsetting['plugin'];
+                    $setting->name = $newname;
+                    $DB->update_record('config_plugins', $setting);
+                } else {
+                    // an existing setting with the new name exists -- delete the
+                    // old one
+                    $DB->delete_records('config_plugins', array('id' => $setting->id));
+                }
+            }
+        }
+        upgrade_block_savepoint($result, 2011081603, 'curr_admin');
     }
 
     return $result;

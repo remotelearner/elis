@@ -24,5 +24,33 @@
  *
  */
 
-$plugin->version = 2011081603;
-$plugin->release = "2.0.0-PRERELEASE (Build: 20100621)";
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot . '/elis/program/lib/setup.php');
+require_once(elis::lib('data/customfield.class.php'));
+
+function xmldb_pmplugins_userset_groups_upgrade($oldversion = 0) {
+    global $CFG, $THEME, $DB;
+    $dbman = $DB->get_manager();
+
+    $result = true;
+
+    if ($oldversion < 2011072600) {
+        // rename fields
+        $fieldnames = array('group', 'groupings');
+        foreach ($fieldnames as $fieldname) {
+            $field = field::find(new field_filter('shortname', 'cluster_'.$fieldname));
+
+            if ($field->valid()) {
+                $field = $field->current();
+                $field->shortname = 'userset_'.$fieldname;
+                $field->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011072600, 'pmplugins', 'userset_groups');
+    }
+
+    return $result;
+}
