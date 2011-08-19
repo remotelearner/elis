@@ -181,7 +181,7 @@ class generalized_filter_date extends generalized_filter_type {
      *               or null if the filter is disabled
      */
     function get_sql_filter($data) {
-        $static $counter = 0;
+        static $counter = 0;
         $params = array();
 
         $full_fieldname = $this->get_full_fieldname();
