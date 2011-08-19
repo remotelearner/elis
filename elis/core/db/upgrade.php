@@ -96,6 +96,16 @@ function xmldb_elis_core_upgrade($oldversion=0) {
     }
     if ($result && $oldversion < 2011080200) {
 
+        // Define index sortorder_ix (not unique) to be dropped form elis_field
+        // (so that we can change the default value)
+        $table = new xmldb_table('elis_field');
+        $index = new xmldb_index('sortorder_ix', XMLDB_INDEX_NOTUNIQUE, array('sortorder'));
+
+        // Conditionally launch drop index shortname_idx
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
         // Changing the default of field sortorder on table elis_field to 0
         $table = new xmldb_table('elis_field');
         $field = new xmldb_field('sortorder', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'categoryid');
