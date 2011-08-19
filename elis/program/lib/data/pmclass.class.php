@@ -292,33 +292,12 @@ class pmclass extends data_object_with_custom_fields {
             return false;
         }
 
-      /* *** TBD: we need to check the enrollment plugins for this! ***
-         *** see: /enrol/index.php ...
-        // check that the course is enrollable, and that we are within the
-        // enrolment dates
-        if (!$course->enrollable ||
-            ($course->enrollable == 2 && $course->enrolstartdate > 0 && $course->enrolstartdate > time()) ||
-            ($course->enrollable == 2 && $course->enrolenddate > 0 && $course->enrolenddate <= time())
-            ) {
+        // check that the elis plugin allows for enrolments from the course catalog
+        $plugin = enrol_get_plugin('elis');
+        $enrol = $plugin->get_or_create_instance($course);
+        if (!$enrol->{enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_DB}) {
             return false;
         }
-        // check if the course is using the ELIS enrolment plugin
-        $enrol = $course->enrol;
-        if (!$enrol) {
-            $enrol = $CFG->enrol;
-        }
-
-        if (elis::$config->elis_program->restrict_to_elis_enrolment_plugin && $enrol != 'elis') {
-            return false;
-        }
-
-        // check that the enrolment plugin allows manual enrolment
-        require_once("$CFG->dirroot/enrol/enrol.class.php");
-        $enrol = enrolment_factory::factory($course->enrol);
-        if (!method_exists($enrol, 'print_entry')) {
-            return false;
-        }
-      *** */
 
         // if all the checks pass, then we're good
         return true;

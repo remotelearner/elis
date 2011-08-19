@@ -339,16 +339,6 @@ $string['email2'] = 'Email address 2';
 $string['enrol'] = 'Enrol';
 $string['enrol_all_users_now'] = 'Enrol all users from this track now';
 $string['enrol_confirmation'] = 'you will be placed on a waiting list for this course. Are you sure  you would like to enrol in ({$a->coursename}){$a->classid}?';
-$string['enrol_elis_help'] = 'If this setting is set, then ELIS will not enrol a user in an ELIS class instance that is linked with a Moodle class that uses an enrolment plugin other than the ELIS enrolment plugin.
-
-In brief, if an ELIS class instance is:
-
-* Not linked to a Moodle class: it is enrollable.
-* Linked to a Moodle class that uses the ELIS enrolment plugin: it is enrollable.
-* Linked to a Moodle class that does not use the ELIS enrolment plugin: it is not enrollable.
-
-This does not affect enrolments from Moodle.';
-$string['enrol_elis_setting'] = 'Only allow enrolments to Moodle courses that use the ELIS plugin';
 $string['enrol_select_all'] = 'Select All';
 $string['enrol_selected'] = 'Enrol Selected';
 $string['enrole_sync_settings'] = 'Enrolment Role Sync Settings';

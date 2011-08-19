@@ -33,6 +33,7 @@ $defaults = array(
     'time_format_12h' => 0,
     'auto_assign_user_idnumber' => 1,
     'restrict_to_elis_enrolment_plugin' => 0,
+    'force_unenrol_in_moodle' => 0,
     'userset_groups' => 0,
     'site_course_userset_groups' => 0,
     'userset_groupings' => 0,

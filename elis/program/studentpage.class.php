@@ -97,11 +97,31 @@ class studentpage extends associationpage {
     }
 
     function can_do_delete() {
-        return $this->can_do_edit();
+        global $DB;
+        $association_id = $this->required_param('association_id', PARAM_INT);
+        $student = new student($association_id);
+        if (empty(elis::$config->elis_program->force_unenrol_in_moodle)) {
+            // check whether the user is enrolled in the Moodle course via any
+            // plugin other than the elis plugin
+            $mcourse = $student->pmclass->classmoodle;
+            $muser = $student->users->get_moodleuser();
+            if ($mcourse->valid() && $muser) {
+                $mcourse = $mcourse->current()->moodlecourseid;
+                if ($mcourse) {
+                    $ctx = get_context_instance(CONTEXT_COURSE, $mcourse);
+                    if ($DB->record_exists_select('role_assignments', "userid = ? AND contextid = ? AND component != 'enrol_elis'", array($muser->id, $ctx->id))) {
+                        // user is assigned a role other than via the elis
+                        // enrolment plugin
+                        return false;
+                    }
+                }
+            }
+        }
+        return student::can_manage_assoc($student->userid, $student->classid);
     }
 
     function can_do_confirm() {
-        return $this->can_do_edit();
+        return $this->can_do_delete();
     }
 
     function can_do_edit() {
@@ -333,7 +353,9 @@ class studentpage extends associationpage {
             $sgrade->save();
         }
 
-        $this->display('default');
+        $studentpage = new studentpage();
+        $target = $studentpage->get_new_page(array('action' => 'default', 'id' => $clsid));
+        redirect($target->url);
     }
 
     /**
@@ -389,7 +411,9 @@ class studentpage extends associationpage {
             }
         }
 
-        $this->display('default');
+        $studentpage = new studentpage();
+        $target = $studentpage->get_new_page(array('action' => 'default', 'id' => $clsid));
+        redirect($target->url);
     }
 
     /**

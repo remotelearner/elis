@@ -354,23 +354,19 @@ class student extends elis_data_object {
 
         /// Unenrol them from the Moodle class.
         if ($moodlecourseid = moodle_get_course($this->classid)) {
-            if ($mcourse = $this->_db->get_record('course', array('id' => $moodlecourseid))) {
-                $enrol = $this->_db->get_record('enrol', array('courseid' => $moodlecourseid, 'enrol' => 'elis'));
-                if (!$enrol) {
-                    $status = new Object();
-                    $status->message = get_string('error_not_using_elis_enrolment', self::LANG_FILE);
-                    return $status;
+            if (($mcourse = $this->_db->get_record('course', array('id' => $moodlecourseid)))
+                && ($muser = $this->users->get_moodleuser())) {
+                $sql = 'SELECT enrol.*
+                          FROM {user_enrolments} enrolments
+                          JOIN {enrol} enrol ON enrol.id = enrolments.enrolid
+                         WHERE enrol.courseid = ?
+                           AND enrolments.userid = ?';
+                $enrolments = $this->_db->get_records_sql($sql, array($moodlecourseid, $muser->id));
+
+                foreach ($enrolments as $enrolment) {
+                    $plugin = enrol_get_plugin($enrolment->enrol);
+                    $plugin->unenrol_user($enrolment, $muser->id);
                 }
-
-                $plugin = enrol_get_plugin('elis');
-
-                if (!($muser = $this->users->get_moodleuser())) {
-                    $muserid = $user->synchronize_moodle_user(true, true);
-                } else {
-                    $muserid = $muser->id;
-                }
-
-                $plugin->unenrol_user($enrol, $muserid);
             }
         }
 
@@ -908,11 +904,26 @@ class student extends elis_data_object {
             $stuobj = new student();
             $newarr = array();
             $table->width = "100%"; // TBD
+            $pmclass = new pmclass($classid);
+            if (empty(elis::$config->elis_program->force_unenrol_in_moodle)) {
+                $mcourse = $pmclass->get_moodle_course_id();
+                $ctx = $mcourse ? get_context_instance(CONTEXT_COURSE, $mcourse) : 0;
+            }
             foreach ($users as $user) {
                 $tabobj = new stdClass;
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
                         case 'unenrol':
+                            if (!empty($mcourse)) {
+                                $userobj = new user($user);
+                                $muser = $userobj->get_moodleuser();
+                                if ($this->_db->record_exists_select('role_assignments', "userid = ? AND contextid = ? AND component != 'enrol_elis'", array($muser->id, $ctx->id))) {
+                                    // user is assigned a role other than via the elis
+                                    // enrolment plugin
+                                    $tabobj->{$column} = '';
+                                    break;
+                                }
+                            }
                             $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][unenrol]" value="1" />';
                             break;
 

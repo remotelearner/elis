@@ -109,10 +109,11 @@ if ($ADMIN->fulltree) {
                            get_string('instructor_role_help', 'elis_program'),
                            0, $roles)); // TBD
 
-    // Only allow enrolments to Moodle courses that use the ELIS plugin
-    $settings->add(new admin_setting_configcheckbox('elis_program/restrict_to_elis_enrolment_plugin',
-                           get_string('enrol_elis_setting', 'elis_program'),
-                           get_string('enrol_elis_help', 'elis_program'), 0));
+    // forcibly unenrol students from the Moodle course regardless of what
+    // enrolment plugin they used to get in
+    $settings->add(new admin_setting_configcheckbox('elis_program/force_unenrol_in_moodle',
+                           get_string('force_unenrol_in_moodle_setting', 'elis_program'),
+                           get_string('force_unenrol_in_moodle_help', 'elis_program'), 0));
 
     // ***Curriculum Administration Block Settings
     $settings->add(new admin_setting_heading('crlm_admin_blk_settings', get_string('crlm_admin_blk_settings', 'elis_program'), '' /* get_string('crlm_admin_blk_settings_info', 'elis_program') */));
