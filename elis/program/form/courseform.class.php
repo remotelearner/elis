@@ -40,10 +40,16 @@ class cmCourseForm extends cmform {
             $id = $this->_customdata['obj']->id;
 
             // TO-DO: this should probably be moved to a different location
-            $template = new coursetemplate($id);
-            $course = $DB->get_record('course', array('id'=>$template->location));
-            if (!empty($course)) {
-                $locationlabel = $course->fullname . ' ' . $course->shortname;
+            $template = coursetemplate::find(new field_filter('courseid', $id));
+            if ($template->valid()) {
+                $template = $template->current();
+                $course = $DB->get_record('course', array('id'=>$template->location));
+                if (!empty($course)) {
+                    $locationlabel = $course->fullname . ' ' . $course->shortname;
+                }
+            } else {
+                // use a blank template
+                $template = new coursetemplate();
             }
         }
 
@@ -117,7 +123,6 @@ class cmCourseForm extends cmform {
             $mform->addElement('hidden', 'location', '', array('id'=>'id_location'));
             $mform->addElement('hidden', 'temptype', '', array('id'=>'tempid'));
         } else {
-            $template = new coursetemplate($id);
             $mform->addElement('hidden', 'location', $template->location, array('id'=>'id_location'));
             $mform->addElement('hidden', 'tempid', $template->id, array('id'=>'tempid'));
         }
