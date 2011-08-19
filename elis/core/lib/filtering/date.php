@@ -55,7 +55,7 @@ class generalized_filter_date extends generalized_filter_type {
     function generalized_filter_date($uniqueid, $alias, $name, $label, $advanced, $field, $options = array()) {
         parent::generalized_filter_type($uniqueid, $alias, $name, $label, $advanced,
                      !empty($options['help'])
-                     ? $options['help'] : array('date', $label, 'filters'));
+                     ? $options['help'] : array('date', $label, 'elis_core'));
 
         $this->_field = $field;
         if (isset($options['never_included'])) {
@@ -81,8 +81,7 @@ class generalized_filter_date extends generalized_filter_type {
         }
 
         $grp =& $mform->addElement('group', $this->_uniqueid.'_grp', $this->_label, $objs, '', false);
-        $grp->setHelpButton($this->_filterhelp);
-
+        $mform->addHelpButton($this->_uniqueid.'_grp', $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */ ); // TBV
         if ($this->_advanced) {
             $mform->setAdvanced($this->_uniqueid.'_grp');
         }

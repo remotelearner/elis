@@ -57,7 +57,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         parent::generalized_filter_type($uniqueid, $alias, $name, $label, $advanced,
                     !empty($options['help'])
                     ? $options['help']
-                    : array('simpleselect', $label, 'filters'));
+                    : array('simpleselect', $label, 'elis_core'));
         $this->_field    = $field;
         $this->_options  = $options['choices'];
         $this->_numeric  = $options['numeric'];
@@ -80,7 +80,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
             $choices = $this->_options;
         }
         $mform->addElement('select', $this->_uniqueid, $this->_label, $choices);
-        $mform->setHelpButton($this->_uniqueid, $this->_filterhelp);
+        $mform->addHelpButton($this->_uniqueid, $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */ ); // TBV
         if ($this->_advanced) {
             $mform->setAdvanced($this->_uniqueid);
         }

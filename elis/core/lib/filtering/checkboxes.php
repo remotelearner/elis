@@ -118,7 +118,7 @@ class generalized_filter_checkboxes extends generalized_filter_type {
                     ? $this->_options['heading']: '' , $objs, '<br/>', false);
 
         if (!empty($this->_filterhelp)) {
-            $mform->setHelpButton($this->_uniqueid.'_grp', $this->_filterhelp);
+            $mform->addHelpButton($this->_uniqueid.'_grp', $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */); // TBV
         }
 
         if (!empty($this->_options['choices'])) {

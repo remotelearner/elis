@@ -370,15 +370,6 @@ class generalized_filter_userprofilematch {
                 $talias = ($userfield == 'fullname')
                           ? '' // CONCAT cannot have table alias prepended!
                           : $options['tables']['user'];
-                // default help for standard user profile fields
-                if (empty($options['help'][$userfield])) {
-                    $options['help'][$userfield] =
-                        array($userfield,
-                              array_key_exists($userfield, $this->defaultlabels)
-                              ? get_string($this->defaultlabels[$userfield],
-                                           'elis_core' /* TBD */)
-                              : $userfield, $langfile /* TBD */);
-                }
             }
             switch ($userfield) {
                 case 'country': // TBD: new 'country' filter spec???
@@ -434,15 +425,28 @@ class generalized_filter_userprofilematch {
                 error_log("curriculum/lib/filtering/userprofilematch.php: empty options['choices'] - requested for user field: $userfield");
                 continue;
             }
-            if (!empty($options['help']) && array_key_exists($userfield, $options['help'])) {
-                $myoptions['help'] = $options['help'][$userfield];
-            }
             $filterid = $uniqueid . substr($userfield, 0, MAX_FILTER_SUFFIX_LEN);
             $ftype = (string)$this->fieldtofiltermap[$myfield];
             $advanced = (!empty($options['advanced']) &&
                          in_array($userfield, $options['advanced']))
                         || (!empty($options['notadvanced']) &&
                             !in_array($userfield, $options['notadvanced']));
+            if (!$is_xfield) {
+                // default help for standard user profile fields
+                if (empty($options['help'][$userfield])) {
+                    $helpid = isset($this->defaultlabels[$userfield])
+                              ? $this->defaultlabels[$userfield] : $ftype;
+                    $options['help'][$userfield] =
+                        array($helpid,
+                              array_key_exists($userfield, $this->defaultlabels)
+                              ? get_string($this->defaultlabels[$userfield],
+                                           'elis_core' /* TBD */)
+                              : $userfield, $langfile /* TBD */);
+                }
+            }
+            if (!empty($options['help']) && array_key_exists($userfield, $options['help'])) {
+                $myoptions['help'] = $options['help'][$userfield];
+            }
             //error_log("userprofilematch.php: creating filter using: new generalized_filter_entry( $filterid, $talias, $dbfield, $fieldlabel, $advanced, $ftype, $myoptions)");
             // Create the filter
             $this->_fields[$myfield] =

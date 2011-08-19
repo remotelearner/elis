@@ -76,7 +76,7 @@ class generalized_filter_selectany extends generalized_filter_selectall {
             $choices = array('' => get_string('report_filter_anyvalue', 'elis_core')) + $this->_options;
         }
         $mform->addElement('select', $this->_uniqueid, $this->_label, $choices);
-        $mform->setHelpButton($this->_uniqueid, array('simpleselect', $this->_label, 'filters'));
+        $mform->addHelpButton($this->_uniqueid, 'simpleselect', 'elis_core' /* , $this->_label */ ); // TBV
         if ($this->_advanced) {
             $mform->setAdvanced($this->_uniqueid);
         }

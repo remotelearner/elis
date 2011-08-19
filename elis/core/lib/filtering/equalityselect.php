@@ -62,7 +62,7 @@ class generalized_filter_equalityselect extends generalized_filter_type {
 
         parent::generalized_filter_type($uniqueid, $alias, $name, $label, $advanced,
                     !empty($options['help'])
-                    ? $options['help'] : array('select', $label, 'filters'));
+                    ? $options['help'] : array('select', $label, 'elis_core'));
         $this->_field   = $field;
 
         $choices = $options['choices'];
@@ -94,7 +94,7 @@ class generalized_filter_equalityselect extends generalized_filter_type {
         $objs[] =& $mform->createElement('select', $this->_uniqueid.'_op', null, $this->get_operators());
         $objs[] =& $mform->createElement('select', $this->_uniqueid, null, $this->_options);
         $grp =& $mform->addElement('group', $this->_uniqueid.'_grp', $this->_label, $objs, '', false);
-        $grp->setHelpButton($this->_filterhelp);
+        $mform->addHelpButton($this->_uniqueid.'_grp', $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */ ); // TBV
         $mform->disabledIf($this->_uniqueid, $this->_uniqueid.'_op', 'eq', 0);
         if (!is_null($this->_default)) {
             $mform->setDefault($this->_uniqueid, $this->_default);
