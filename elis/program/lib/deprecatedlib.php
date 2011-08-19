@@ -377,3 +377,17 @@ function cm_jasper_link_enabled() {
 
     return $show_jasper_link;
 }
+
+/**
+ * Return a formatted date string from a timestamp.
+ * Use this to keep all strings formatted the same way in the system.
+ *
+ */
+function cm_timestamp_to_date($timestamp, $format=CURMAN_DATEFORMAT) {
+    if (is_numeric($timestamp)) {
+        return date($format, $timestamp);
+    } else {
+        return '';
+    }
+}
+
