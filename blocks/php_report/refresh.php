@@ -27,6 +27,9 @@
 require_once('../../config.php');
 require_once('php_report_block.class.php');
 
+global $PAGE;
+$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM)); // TBV
+
 //determine refresh conditions
 
 //report instance id can be a block instance id

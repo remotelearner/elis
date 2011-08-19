@@ -724,11 +724,13 @@ abstract class php_report {
      * @param string $format strftime format
      * @param bool   $fixday If true then the leading zero from %d is removed.
      *               If false (default) then the leading zero is mantained.
+     * @uses   $DB
      * @return string
      */
     function userdate($date, $format='', $fixday = false) { // TBD: false???
+        global $DB;
         $timezone = 99;
-        if ($user_record = get_record('user', 'id', $this->userid)) {
+        if ($user_record = $DB->get_record('user', array('id' => $this->userid))) {
             //determine the user's timezone
             $timezone = php_report::get_user_timezone($user_record, $user_record->timezone);
         }

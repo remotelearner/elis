@@ -147,7 +147,8 @@ class php_report_block {
 
         //div for containing report body
         $output .= html_writer::start_tag('div', array('id'    => 'php_report_body_'.$this->id,
-                                                       'class' => 'php_report_body'));
+                                                       'class' => 'php_report_body',
+                                                       'style' => 'overflow: auto')); // TBD: need horizontal scrollbar when report too wide!
 
         /**
          * Reset the state if the user has changed
