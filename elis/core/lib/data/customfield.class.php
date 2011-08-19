@@ -45,6 +45,11 @@ class field extends elis_data_object {
     protected $_dbfield_multivalued;
     protected $_dbfield_params;
 
+    public static $associations = array(
+        'category' => array('class' => 'field_category',
+                            'idfield' => 'categoryid'),
+    );
+
     private $_owners = null;
 
     static $delete_is_complex = true;
