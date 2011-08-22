@@ -168,6 +168,16 @@ class repository_elis_files extends repository {
         // We will be doing a fake file listing for testing
         global $CFG, $SESSION, $OUTPUT;
         $ret = array();
+        // Return an array of optional columns from file list to include in the details view
+        // Icon and filename are always displayed
+        $title_datecreated =
+        $ret['detailcols'] = array(array('field'=>'created',
+                                         'title'=>get_string('datecreated','repository_elis_files')),
+                                   array('field'=>'modified',
+                                         'title'=>get_string('datemodified','repository_elis_files')),
+                                   array('field'=>'owner',
+                                         'title'=>get_string('modifiedby','repository_elis_files'))
+                             );
         $ret['dynload'] = true;
         $ret['nologin'] = true;
         $ret['showselectedactions'] = true;
