@@ -56,7 +56,6 @@ class nonstarter_report extends table_report {
 
     /**
      * Specifies whether the current report is available
-     * (a.k.a. any the CM system is installed)
      *
      * @uses $CFG
      * @uses $DB
