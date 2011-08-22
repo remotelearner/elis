@@ -254,7 +254,6 @@ class waitlist extends elis_data_object {
         global $CFG;
 
         $class = new pmclass($this->classid);
-        $courseid = $class->get_moodle_course_id();
 
         // enrol directly in the course
         $student                = new student(); // TBD: new student($this); didn't work!!!
@@ -264,21 +263,44 @@ class waitlist extends elis_data_object {
         // Disable validation rules for prerequisites and enrolment_limits
         $student->validation_overrides[] = 'prerequisites';
         $student->validation_overrides[] = 'enrolment_limit';
-        $student->save();
 
+        $courseid = $class->get_moodle_course_id();
         if ($courseid) {
-            $course = $this->_db->get_record('course', array('id' => $this->id));
-            // the elis plugin is treated specially
-            /*if ($course->enrol != 'elis') { // ***TBD***
-                // send the user to the Moodle enrolment page
-                $a = new stdClass;
-                $a->id = $course->id;
-                $a->idnumber = $class->idnumber;
-                $a->wwwroot = $CFG->wwwroot;
-                $subject = get_string('moodleenrol_subj', self::LANG_FILE, $a);
-                $message = get_string('moodleenrol', self::LANG_FILE, $a);
-            }*/
+            $course = $this->_db->get_record('course', array('id' => $courseid));
+
+            // check that the elis plugin allows for enrolments from the course
+            // catalog -- if not, see if there are other plugins that allow
+            // self-enrolment.
+            $plugin = enrol_get_plugin('elis');
+            $enrol = $plugin->get_or_create_instance($course);
+            if (!$enrol->{enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_DB}) {
+                // get course enrolment plugins, and see if any of them allow self-enrolment
+                $enrols = enrol_get_plugins(true);
+                $enrolinstances = enrol_get_instances($course->id, true);
+                foreach($enrolinstances as $instance) {
+                    if (!isset($enrols[$instance->enrol])) {
+                        continue;
+                    }
+                    $form = $enrols[$instance->enrol]->enrol_page_hook($instance);
+                    if ($form) {
+                        // at least one plugin allows self-enrolment -- send
+                        // the user to the course enrolment page, and prevent
+                        // automatic enrolment
+                        $a = new stdClass;
+                        $a->id = $course->id;
+                        $a->idnumber = $class->idnumber;
+                        $a->wwwroot = $CFG->wwwroot;
+                        $subject = get_string('moodleenrol_subj', self::LANG_FILE, $a);
+                        $message = get_string('moodleenrol', self::LANG_FILE, $a);
+
+                        $student->no_moodle_enrol = true;
+                        break;
+                    }
+                }
+            }
         }
+
+        $student->save();
 
         if (!isset($message)) {
             $a = new stdClass;
@@ -287,7 +309,6 @@ class waitlist extends elis_data_object {
             $message = get_string('nowenroled', self::LANG_FILE, $a);
         }
 
-        // TBD: $user = cm_get_moodleuser($this->userid);
         $cuser = new user($this->userid);
         $user = $cuser->get_moodleuser();
         $from = get_admin();
@@ -295,7 +316,7 @@ class waitlist extends elis_data_object {
         notification::notify($message, $user, $from);
         //email_to_user($user, $from, $subject, $message);
 
-        $this->delete(); // $this->data_delete_record() - moved below
+        $this->delete();
     }
 
     /**

@@ -37,8 +37,8 @@ class enrol_elis_edit_form extends moodleform {
 
         $mform->addElement('header', 'header', get_string('pluginname', 'enrol_manual'));
 
-        $mform->addElement('advcheckbox', enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_CONFIG, get_string(enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_CONFIG, 'enrol_elis'), $roles);
-        $mform->setDefault(enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_CONFIG, $plugin->get_config(enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_CONFIG));
+        $mform->addElement('advcheckbox', enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_DB, get_string(enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_CONFIG, 'enrol_elis'));
+        $mform->setDefault(enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_DB, $plugin->get_config(enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_CONFIG));
 
         if ($instance->id) {
             $roles = get_default_enrol_roles($context, $instance->roleid);

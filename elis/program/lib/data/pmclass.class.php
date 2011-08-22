@@ -292,10 +292,25 @@ class pmclass extends data_object_with_custom_fields {
             return false;
         }
 
-        // check that the elis plugin allows for enrolments from the course catalog
+        // check that the elis plugin allows for enrolments from the course
+        // catalog, or that some other plugin allows for manual enrolments
         $plugin = enrol_get_plugin('elis');
         $enrol = $plugin->get_or_create_instance($course);
         if (!$enrol->{enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_DB}) {
+            // get course enrolment plugins, and see if any of them allow self-enrolment
+            $enrols = enrol_get_plugins(true);
+            $enrolinstances = enrol_get_instances($course->id, true);
+            foreach($enrolinstances as $instance) {
+                if (!isset($enrols[$instance->enrol])) {
+                    continue;
+                }
+                $form = $enrols[$instance->enrol]->enrol_page_hook($instance);
+                if ($form) {
+                    // at least one plugin allows self-enrolment, so return
+                    // true
+                    return true;
+                }
+            }
             return false;
         }
 

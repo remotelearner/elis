@@ -71,12 +71,16 @@ if ($mform->is_cancelled()) {
 
 } else if ($data = $mform->get_data()) {
     if ($instance->id) {
+        $instance->{enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_DB} = $data->{enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_DB};
         $instance->roleid       = $data->roleid;
         $instance->timemodified = time();
         $DB->update_record('enrol', $instance);
 
     } else {
-        $fields = array('roleid'=>$data->roleid);
+        $fields = array(
+            enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_DB => $data->{enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_DB},
+            'roleid'=>$data->roleid,
+        );
         $plugin->add_instance($course, $fields);
     }
 
@@ -88,5 +92,6 @@ $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'enrol_elis'));
+$mform->set_data($instance);
 $mform->display();
 echo $OUTPUT->footer();

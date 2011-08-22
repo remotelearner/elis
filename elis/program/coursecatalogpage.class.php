@@ -280,10 +280,42 @@ class coursecatalogpage extends pm_page {
         $sturecord['enrolmenttime'] = max(time(), $class->startdate);
         $sturecord['completetime']  = 0;
         $newstu                     = new student($sturecord);
-        $newstu->save(); // TBD: was ->add()
+
+        $courseid = $class->get_moodle_course_id();
+        if ($courseid) {
+            $course = $DB->get_record('course', array('id' => $courseid));
+
+            // check that the elis plugin allows for enrolments from the course
+            // catalog -- if not, see if there are other plugins that allow
+            // self-enrolment.
+            $plugin = enrol_get_plugin('elis');
+            $enrol = $plugin->get_or_create_instance($course);
+            if (!$enrol->{enrol_elis_plugin::ENROL_FROM_COURSE_CATALOG_DB}) {
+                // get course enrolment plugins, and see if any of them allow self-enrolment
+                $enrols = enrol_get_plugins(true);
+                $enrolinstances = enrol_get_instances($course->id, true);
+                foreach($enrolinstances as $instance) {
+                    if (!isset($enrols[$instance->enrol])) {
+                        continue;
+                    }
+                    $form = $enrols[$instance->enrol]->enrol_page_hook($instance);
+                    if ($form) {
+                        // at least one plugin allows self-enrolment -- send
+                        // the user to the course enrolment page, and prevent
+                        // automatic enrolment
+                        $newstu->no_moodle_enrol = true;
+                        $newstu->save();
+                        redirect("$CFG->wwwroot/course/enrol.php?id=$courseid");
+                        return;
+                    }
+                }
+            }
+        }
+
+        $newstu->save();
 
         $tmppage = new coursecatalogpage(array('action' => 'default'));
-        redirect($tmppage->url); // $this->display_default();
+        redirect($tmppage->url);
     }
 
     /**

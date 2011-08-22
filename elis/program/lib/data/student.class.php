@@ -74,6 +74,12 @@ class student extends elis_data_object {
     );
 
     /**
+     * Whether or not to enrol the student in the associated Moodle course (if
+     * any).
+     */
+    public $no_moodle_enrol = false;
+
+    /**
      * Validates that the associated user record exists
      */
     public function validate_associated_user_exists() {
@@ -318,7 +324,7 @@ class student extends elis_data_object {
         parent::save();
 
         /// Enrol them into the Moodle class, if not already enrolled.
-        if ($moodlecourseid = moodle_get_course($this->classid)) {
+        if (empty($this->no_moodle_enrol) && ($moodlecourseid = moodle_get_course($this->classid))) {
             if ($mcourse = $this->_db->get_record('course', array('id' => $moodlecourseid))) {
                 $plugin = enrol_get_plugin('elis');
                 $enrol = $plugin->get_or_create_instance($mcourse);
