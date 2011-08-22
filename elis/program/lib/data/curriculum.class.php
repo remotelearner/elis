@@ -601,16 +601,22 @@ class curriculum extends data_object_with_custom_fields {
  * @param   string        $alpha       Start initial of curriculum name filter.
  * @param   array         $contexts    Contexts to search (in the form return by
  * @param   int           $userid      The id of the user we are assigning to curricula
- *
+ * @uses    $CFG
+ * @uses    $DB
+ * @uses    $USER
  * @return  object array               Returned records.
  */
-function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $namesearch='',
-                                $alpha='', $contexts = null, $userid = 0) {
-    global $USER, $DB;
+function curriculum_get_listing($sort = 'name', $dir = 'ASC', $startrec = 0,
+                                $perpage = 0, $namesearch = '', $alpha = '',
+                                $contexts = null, $userid = 0) {
+    global $CFG, $DB, $USER;
+    require_once($CFG->dirroot .'/elis/program/lib/data/curriculum.class.php');
+    require_once($CFG->dirroot .'/elis/program/lib/data/curriculumcourse.class.php');
+    require_once($CFG->dirroot .'/elis/program/lib/data/clustercurriculum.class.php');
 
-    $select = 'SELECT cur.*, (SELECT COUNT(*) FROM {'.curriculumcourse::TABLE.'}
+    $select = 'SELECT cur.*, (SELECT COUNT(*) FROM {'. curriculumcourse::TABLE .'}
                WHERE curriculumid = cur.id ) as courses ';
-    $tables = 'FROM {'.curriculum::TABLE.'} cur ';
+    $tables = 'FROM {'. curriculum::TABLE .'} cur ';
     $join   = ' ';
     $on     = ' ';
 
@@ -619,17 +625,15 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
 
     if ($contexts !== null && !empty($namesearch)) {
         $namesearch = trim($namesearch);
-
-        $name_like = $DB->sql_like('name', '?', FALSE);
-
-        $where[] = "($name_like)";
-        $params += array("%$namesearch%");
+        $name_like  = $DB->sql_like('name', '?', FALSE);
+        $where[]    = "($name_like)";
+        $params[]   = "%$namesearch%";
     }
 
     if ($alpha) {
         $name_like = $DB->sql_like('name', '?', FALSE);
-        $where[] = "($name_like)";
-        $params[] = "$alpha%";
+        $where[]   = "($name_like)";
+        $params[]  = "$alpha%";
     }
 
     if ($contexts !== null) {
@@ -641,7 +645,7 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
         }
     }
 
-    if(!empty($userid)) {
+    if (!empty($userid)) {
         //get the context for the "indirect" capability
         $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
 
@@ -656,9 +660,13 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
             $curriculum_params = $filter_sql['where_parameters'];
         }
 
-        if(empty($allowed_clusters)) {
-            $where[] = $curriculum_filter;
-            $params[] = $curriculum_params;
+        if (empty($allowed_clusters)) {
+            if (!empty($curriculum_filter)) {
+                $where[] = $curriculum_filter;
+                if (!empty($curriculum_params)) {
+                    $params += $curriculum_params;
+                }
+            }
         } else {
             $allowed_clusters_list = implode(',', $allowed_clusters);
 
@@ -666,30 +674,147 @@ function curriculum_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=
             $where[] = '(
                           cur.id IN (
                             SELECT clstcur.curriculumid
-                            FROM {'.clustercurriculum::TABLE.'} clstcur
-                            WHERE clstcur.clusterid IN ('.$allowed_clusters_list.')
-                          )
-                          OR
-                          '.$curriculum_filter.'
+                            FROM {'. clustercurriculum::TABLE .'} clstcur
+                            WHERE clstcur.clusterid IN ('. $allowed_clusters_list
+                          .')
                         )';
-            $params[] = $curriculum_params;
+            if (!empty($curriculum_filter)) {
+                $cluster_where .= "OR
+                          {$curriculum_filter}
+                        )";
+                if (!empty($curriculum_params)) {
+                    $params += $curriculum_params;
+                }
+            }
+            $where[] = $cluster_where;
         }
 
     }
 
     if (!empty($where)) {
-        $where = 'WHERE '.implode(' AND ',$where).' ';
+        $where = 'WHERE '. implode(' AND ', $where).' ';
     } else {
         $where = '';
     }
 
     if ($sort) {
-        $sort = 'ORDER BY '.$sort .' '. $dir.' ';
+        $sort = 'ORDER BY '. $sort .' '. $dir .' ';
     }
 
     $sql = $select.$tables.$join.$on.$where.$sort;
-
     return $DB->get_records_sql($sql, $params, $startrec, $perpage);
+}
+
+/**
+ * Gets a curriculum listing with specific sort and other filters as a recordset.
+ *
+ * @param   string        $sort        Field to sort on.
+ * @param   string        $dir         Direction of sort.
+ * @param   int           $startrec    Record number to start at.
+ * @param   int           $perpage     Number of records per page.
+ * @param   string        $namesearch  Search string for curriculum name.
+ * @param   string        $alpha       Start initial of curriculum name filter.
+ * @param   array         $contexts    Contexts to search (in the form return by
+ * @param   int           $userid      The id of the user we are assigning to curricula
+ * @uses    $CFG
+ * @uses    $DB
+ * @uses    $USER
+ * @return  recordset     Returned recordset.
+ */
+function curriculum_get_listing_recordset($sort = 'name', $dir = 'ASC',
+                                          $startrec = 0, $perpage = 0,
+                                          $namesearch = '', $alpha = '',
+                                          $contexts = null, $userid = 0) {
+    global $CFG, $DB, $USER;
+    require_once($CFG->dirroot .'/elis/program/lib/data/curriculum.class.php');
+    require_once($CFG->dirroot .'/elis/program/lib/data/curriculumcourse.class.php');
+    require_once($CFG->dirroot .'/elis/program/lib/data/clustercurriculum.class.php');
+
+    $select = 'SELECT cur.*, (SELECT COUNT(*) FROM {'. curriculumcourse::TABLE .
+              '} WHERE curriculumid = cur.id ) as courses ';
+    $tables = 'FROM {'. curriculum::TABLE .'} cur ';
+    $join   = '';
+    $on     = '';
+
+    $params = array();
+    $where = array("cur.iscustom = '0'");
+    if ($contexts !== null && !empty($namesearch)) {
+        $where[] = '('. $DB->sql_like('name', ':like_param', false) . ')';
+        $namesearch = trim($namesearch);
+        $params['like_param'] = "%{$namesearch}%";
+    }
+
+    if ($alpha) {
+        $where[] = '('. $DB->sql_like('name', ':starts_with', false) .')';
+        $params['starts_with'] = "{$alpha}%";
+    }
+
+    if ($contexts !== null) {
+        $filter_object = $contexts->get_filter('cur.id', 'curriculum');
+        $filter_sql = $filter_object->get_sql(false, 'cur');
+        if (isset($filter_sql['where'])) {
+            $where[] = $filter_sql['where'];
+            $params += $filter_sql['where_parameters'];
+        }
+    }
+
+    if (!empty($userid)) {
+        //get the context for the "indirect" capability
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
+
+        $clusters = cluster_get_user_clusters($userid);
+        $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
+
+        $curriculum_context = pm_context_set::for_user_with_capability('curriculum', 'elis/program:program_enrol', $USER->id);
+        $filter_object = $curriculum_context->get_filter('cur.id', 'curriculum');
+        $filter_sql = $filter_object->get_sql(false, 'cur');
+        if (isset($filter_sql['where'])) {
+            $curriculum_filter = $filter_sql['where'];
+            $curriculum_params = $filter_sql['where_parameters'];
+        }
+
+        if (empty($allowed_clusters)) {
+            if (!empty($curriculum_filter)) {
+                $where[] = $curriculum_filter;
+                if (!empty($curriculum_params)) {
+                    $params += $curriculum_params;
+                }
+            }
+        } else {
+            $allowed_clusters_list = implode(',', $allowed_clusters);
+
+            //this allows both the indirect capability and the direct curriculum filter to work
+            $cluster_where = '(
+                          cur.id IN (
+                            SELECT clstcur.curriculumid
+                            FROM {'. clustercurriculum::TABLE .'} clstcur
+                            WHERE clstcur.clusterid IN ('. $allowed_clusters_list
+                          .')
+                        )';
+            if (!empty($curriculum_filter)) {
+                $cluster_where .= "OR
+                          {$curriculum_filter}
+                        )";
+                if (!empty($curriculum_params)) {
+                    $params += $curriculum_params;
+                }
+            }
+            $where[] = $cluster_where;
+        }
+    }
+
+    if (!empty($where)) {
+        $where = 'WHERE '. implode(' AND ', $where) .' ';
+    } else {
+        $where = '';
+    }
+
+    if ($sort) {
+        $sort = 'ORDER BY '. $sort .' '. $dir .' ';
+    }
+
+    $sql = $select.$tables.$join.$on.$where.$sort;
+    return $DB->get_recordset_sql($sql, $params, $startrec, $perpage);
 }
 
 /**
