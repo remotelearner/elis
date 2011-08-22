@@ -758,7 +758,7 @@ function pm_update_student_progress() {
  * records where applicable based on class grade and required completion elements
  */
 function pm_update_enrolment_status() {
-    global $CFG, $DB;
+    global $DB;
 
     require_once(elispm::lib('data/pmclass.class.php'));
     require_once(elispm::lib('data/student.class.php'));
@@ -858,7 +858,7 @@ function usermanagement_get_users($sort = 'name', $dir = 'ASC', $startrec = 0,
                $FULLNAME . ' as name ';
     $tables   = 'FROM {'. user::TABLE .'} usr ';
     $where    = array();
-    $params   = null;
+    $params   = array();
 
     if (!empty($extrasql) && $extrasql[0]) {
         $where[] = $extrasql[0];
@@ -871,7 +871,8 @@ function usermanagement_get_users($sort = 'name', $dir = 'ASC', $startrec = 0,
         $user_obj = $contexts->get_filter('usr.id', 'user'); // 'id' ???
         $filter_array = $user_obj->get_sql(false, 'usr');
         if (isset($filter_array['where'])) {
-            $where[] = '('.$filter_array['where'].')';
+            $where[] = '('. $filter_array['where'] .')';
+            $params += $filter_array['where_parameters'];
         }
     }
 
@@ -907,7 +908,7 @@ function usermanagement_count_users($extrasql = array(), $contexts = null) {
     $join    = '';
     $on      = '';
     $where   = array();
-    $params  = null;
+    $params  = array();
 
     if (!empty($extrasql) && $extrasql[0]) {
         $where[] = $extrasql[0];
@@ -920,7 +921,8 @@ function usermanagement_count_users($extrasql = array(), $contexts = null) {
         $user_obj = $contexts->get_filter('usr.id', 'user'); // 'id' ???
         $filter_array = $user_obj->get_sql(false, 'usr');
         if (isset($filter_array['where'])) {
-            $where[] = '('.$filter_array['where'].')';
+            $where[] = '('. $filter_array['where'] .')';
+            $params += $filter_array['where_parameters'];
         }
     }
 
@@ -932,5 +934,59 @@ function usermanagement_count_users($extrasql = array(), $contexts = null) {
 
     $sql = $select.$tables.$join.$on.$s_where;
     return $DB->count_records_sql($sql, $params);
+}
+
+/**
+ * Get users recordset
+ * Function from old [1.9x] usermanagement.class.php
+ * used by: individual_user_report.class.php
+ * @uses    $CFG
+ * @uses    $DB
+ */
+function usermanagement_get_users_recordset($sort = 'name', $dir = 'ASC',
+                                            $startrec = 0, $perpage = 0,
+                                            $extrasql = '', $contexts = null) {
+    global $CFG, $DB;
+    require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
+
+    $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+    $select = 'SELECT usr.id, usr.idnumber as idnumber, usr.country, usr.language, usr.timecreated, '.
+               $FULLNAME .' as name ';
+    $tables = 'FROM {'. user::TABLE .'} usr ';
+    $where = array();
+    $params = array();
+
+    if (!empty($extrasql) && $extrasql[0]) {
+        $where[] = $extrasql[0];
+        if ($extrasql[1]) {
+            $params = $extrasql[1];
+        }
+    }
+
+    if ($contexts !== null) { // TBV
+        $user_obj = $contexts->get_filter('usr.id', 'user'); // 'id' ???
+        $filter_array = $user_obj->get_sql(false, 'usr');
+        if (isset($filter_array['where'])) {
+            $where[] = '('. $filter_array['where'] .')';
+            $params += $filter_array['where_parameters'];
+        }
+    }
+
+    if (!empty($where)) {
+        $where = 'WHERE '. implode(' AND ', $where).' ';
+    } else {
+        $where = '';
+    }
+
+    if ($sort) {
+        if ($sort == 'name') {
+            $sort = "ORDER BY lastname {$dir}, firstname {$dir} ";
+        } else {
+            $sort = "ORDER BY {$sort} {$dir} ";
+        }
+    }
+
+    $sql = $select.$tables.$where.$sort;
+    return $DB->get_recordset_sql($sql, $params, $startrec, $perpage);
 }
 
