@@ -302,10 +302,28 @@ class repository_elis_files extends repository {
         return $str;
     }
 
-    public function print_upload_dialog() {
-        $str = '<p><b>Uploading Tip</b></p>'
-             . '<p>You can select more than one file for uploading by holding down the control key while clicking on the files.</p>'
-             . '<p><input type="file" size="20" id="files" name="files[]" multiple="true" /></p>';
+    public function print_upload_popup() {
+        $str = '<p><b>Uploading Tip</b></p>
+                <p>You can select more than one file for uploading by holding down the control key while clicking on the files.</p>
+                <table style="border-style:none; padding:5px;">
+                    <tr>
+                        <td>
+                            <div id="uploaderContainer">
+                            <div id="uploaderOverlay" style="position:absolute; z-index:2"></div>
+                            <div id="selectFilesLink" style="z-index:1"><a id="selectLink" href="javascript:void(0);"><input type="button" value="Select files" /></a></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div id="uploadFilesLink"><a id="uploadLink" href="javascript:void(0);"><input type="button" value="Upload selected files" /></a></div>
+                        </td>
+                    </tr>
+                </table>
+                <div id="files">
+                <table id="filenames" style="border-width:1px; border-style:solid; padding:5px;">
+                <tr><td>Filename</td><td>File size</td><td>Percent uploaded</td></tr>
+                </table>
+                </div>';
+
         return $str;
     }
 
@@ -314,6 +332,7 @@ class repository_elis_files extends repository {
         $result = array();
         foreach ($_FILES['files'] as $key=>$val) {
             // do something with uploaded files
+            error_log('DEBUG: '.$key);
         }
         return $result;
     }
