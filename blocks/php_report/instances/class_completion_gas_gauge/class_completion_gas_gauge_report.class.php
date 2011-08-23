@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage pm-blocks-phpreport-course_completion_gas_gauge
+ * @subpackage pm-block-phpreport-class_completion_gas_gauge
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
@@ -28,7 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/blocks/php_report/type/gas_gauge_table_report.class.php');
 
-class course_completion_gas_gauge_report extends gas_gauge_table_report {
+class class_completion_gas_gauge_report extends gas_gauge_table_report {
+    var $lang_file = 'rlreport_class_completion_gas_gauge';
 
     /**
      * Gets the report category.
@@ -37,7 +38,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      * constants defined above).
      */
     function get_category() {
-        return self::CATEGORY_COURSE;
+        return self::CATEGORY_CLASS;
     }
 
     /**
@@ -83,8 +84,8 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         //require_once($CFG->dirroot .'/elis/program/usermanagementpage.class.php');
 
         //needed to include for filters
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/simpleselect.php');
         require_once($CFG->dirroot .'/elis/core/lib/filtering/setselect.php');
+        require_once($CFG->dirroot .'/elis/program/lib/filtering/courseclassselect.php');
     }
 
     /**
@@ -99,15 +100,15 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         $this->require_dependencies();
 
         //obtain all course contexts where this user can view reports
-        $contexts = get_contexts_by_capability_for_user('course', $this->access_capability, $this->userid);
+        $contexts = get_contexts_by_capability_for_user('class', $this->access_capability, $this->userid);
         //make sure we only count courses within those contexts
-        //$permissions_filter = $contexts->sql_filter_for_context_level('id', 'course');
+        //$permissions_filter = $contexts->sql_filter_for_context_level('id', 'class');
 
         $sql = 'SELECT COUNT(*)
-                FROM {'. course::TABLE .'}
+                FROM {'. pmclass::TABLE .'}
                ';
 
-        $filter_obj = $contexts->get_filter('id', 'course');
+        $filter_obj = $contexts->get_filter('id', 'class');
         $filter_sql = $filter_obj->get_sql(); // TBV
         $params = array();
         if (isset($filter_sql['where'])) {
@@ -121,23 +122,22 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
     /**
      * Generates a SQL query to determine the tooltip text on mouseover for page bar links
      *
-     * @return  array   The sql query that specifies the name
-     *                  as its only field with optional params
+     * @return  array The sql query that specifies the text to use in the tooltip with optional params
      */
     function get_page_tooltip_sql() {
         //make sure context libraries are loaded
         $this->require_dependencies();
 
         //obtain all course contexts where this user can view reports
-        $contexts = get_contexts_by_capability_for_user('course', $this->access_capability, $this->userid);
+        $contexts = get_contexts_by_capability_for_user('class', $this->access_capability, $this->userid);
         //make sure we only count courses within those contexts
-        //$permissions_filter = $contexts->sql_filter_for_context_level('id', 'course');
+        //$permissions_filter = $contexts->sql_filter_for_context_level('id', 'class');
 
-        $sql = 'SELECT name
-                FROM {'. course::TABLE .'}
+        $sql = 'SELECT idnumber
+                FROM {'. pmclass::TABLE .'}
                ';
 
-        $filter_obj = $contexts->get_filter('id', 'course');
+        $filter_obj = $contexts->get_filter('id', 'class');
         $filter_sql = $filter_obj->get_sql(); // TBV
         $params = array();
         if (isset($filter_sql['where'])) {
@@ -155,22 +155,23 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      * @param   int     $i  A number from 1 to n, where n is the number
      *                      of pages (as specified by get_num_page_values)
      *
-     * @return  string      The sql query that specifies the value as its only field
+     * @return  array   The sql query that specifies the value as its only field
+     *                  with optional params
      */
     function get_page_value_sql($i) {
         //make sure context libraries are loaded
         $this->require_dependencies();
 
         //obtain all course contexts where this user can view reports
-        $contexts = get_contexts_by_capability_for_user('course', $this->access_capability, $this->userid);
+        $contexts = get_contexts_by_capability_for_user('class', $this->access_capability, $this->userid);
         //make sure we only count courses within those contexts
-        //$permissions_filter = $contexts->sql_filter_for_context_level('id', 'course');
+        //$permissions_filter = $contexts->sql_filter_for_context_level('id', 'class');
 
         $sql = 'SELECT id
-                FROM {'. course::TABLE .'}
+                FROM {'. pmclass::TABLE .'}
                ';
 
-        $filter_obj = $contexts->get_filter('id', 'course');
+        $filter_obj = $contexts->get_filter('id', 'class');
         $filter_sql = $filter_obj->get_sql(); // TBV
         $params = array();
         if (isset($filter_sql['where'])) {
@@ -189,7 +190,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      */
     function get_page_value_order_by() {
         //pages should be ordered by course name
-        return "ORDER BY name";
+        return "ORDER BY idnumber";
     }
 
     /**
@@ -205,42 +206,33 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         //query that calculates average final course grade
         $avg_score_sql = $this->get_report_sql('AVG(gg.finalgrade)');
 
-        //CM class idnumber
-        $class_heading = get_string('column_class', 'rlreport_course_completion_gas_gauge');
-        $class_column = new table_report_column('cls.idnumber AS classidnumber', $class_heading, 'classidnumber');
-
-        //class enrolment status
-        $completion_heading = get_string('column_completestatus', 'rlreport_course_completion_gas_gauge');
-        $completion_column = new table_report_column('stu.completestatusid AS completestatus',
-                                                     $completion_heading, 'completestatus');
-
-        //user fullname
-        $name_heading = get_string('column_fullname', 'rlreport_course_completion_gas_gauge');
-        $name_column = new table_report_column('u.firstname', $name_heading, 'fullname');
-
-        //percent of completion elements complete
-        $percentcomplete_heading = get_string('column_percentcomplete', 'rlreport_course_completion_gas_gauge');
-        $percentcomplete_column = new table_report_column('0 AS percentcomplete', $percentcomplete_heading, 'percentcomplete',
-                                                          'right', false, true, true, NULL, $percent_complete_sql);
-
-        //number of completion elements complete
-        $numcomplete_heading = get_string('column_numcompleted', 'rlreport_course_completion_gas_gauge');
-        $numcomplete_column = new table_report_column('COUNT(ccg.id) AS numcompleted', $numcomplete_heading, 'numcompleted',
-                                                      'left', false, true, true, NULL, $num_complete_sql);
-
-        //moodle gradebook grade
-        $grade_heading = get_string('column_score', 'rlreport_course_completion_gas_gauge');
-        $grade_column = new table_report_column('gg.finalgrade AS score', $grade_heading, 'score', 'right',
-                                                false, true, true, NULL, $avg_score_sql);
-
-        //collection of all columns
-        return array(
-                $class_column,
-                $completion_column,
-                $name_column,
-                $percentcomplete_column,
-                $numcomplete_column,
-                $grade_column);
+        return array(new table_report_column('stu.completestatusid AS completestatus',
+                                             get_string('column_completestatus', $this->lang_file),
+                                             'completestatus'
+                                            ),
+                     new table_report_column('u.firstname',
+                                             get_string('column_fullname', $this->lang_file),
+                                             'fullname'
+                                            ),
+                     new table_report_column('0 AS percentcomplete',
+                                             get_string('column_percentcomplete', $this->lang_file),
+                                             'percentcomplete', 'right', false, true, true,
+                                             NULL,
+                                             $percent_complete_sql
+                                            ),
+                     new table_report_column('COUNT(ccg.id) AS numcompleted',
+                                             get_string('column_numcompleted', $this->lang_file),
+                                             'numcompleted', 'left', false, true, true,
+                                             NULL,
+                                             $num_complete_sql
+                                            ),
+                     new table_report_column('gg.finalgrade AS score',
+                                             get_string('column_score', $this->lang_file),
+                                             'score', 'right', false, true, true,
+                                             NULL,
+                                             $avg_score_sql
+                                            )
+                    );
     }
 
     /**
@@ -254,22 +246,17 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      */
     function get_filters($init_data = true) {
         //filter by user inactive status
+        $inactive_options = array('choices' => array(get_string('filter_inactive_yes', $this->lang_file) => array(0, 1),
+                                                     get_string('filter_inactive_no',  $this->lang_file) => array(0)),
+                                  'numeric' => true,
+                                  'help' => array('class_completion_gas_gauge_inactive',
+                                                  get_string('filter_inactive', $this->lang_file),
+                                                  $this->lang_file)
+                                 );
 
-        $inactive_yes_label = get_string('filter_inactive_yes', 'rlreport_course_completion_gas_gauge');
-        $inactive_no_label = get_string('filter_inactive_no',  'rlreport_course_completion_gas_gauge');
-        $choices = array(
-                $inactive_yes_label => array(0, 1),
-                $inactive_no_label => array(0));
-        $inactive_options = array('choices' => $choices,
-                                  'numeric' => true);
-        // Need help text
-        $inactive_options['help'] = array('course_completion_gas_gauge_inactive',
-                                    get_string('filter_inactive_help', 'rlreport_course_completion_gas_gauge'),
-                                    'rlreport_course_completion_gas_gauge');
-
-        $inactive_label = get_string('filter_inactive', 'rlreport_course_completion_gas_gauge');
-        return array(new generalized_filter_entry('inactive', 'u', 'inactive', $inactive_label, false,
-                                                  'setselect', $inactive_options));
+        return array(new generalized_filter_entry('inactive', 'u', 'inactive',
+                                                  get_string('filter_inactive', $this->lang_file),
+                                                  false, 'setselect', $inactive_options));
     }
 
     /**
@@ -278,22 +265,22 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      * @return  generalized_filter_entry array  The list of available filters
      */
     function get_page_value_filters() {
-        //filter by CM course the current user has access to
+        global $CFG;
 
-        $this->require_dependencies();
-        $contexts = get_contexts_by_capability_for_user('course', $this->access_capability, $this->userid);
+        $filter_array = array();
 
-        $course_choices = array();
-        if ($listing = course_get_listing('crs.name', 'ASC', 0, 0, '', '', $contexts)) {
-            foreach ($listing as $element) {
-                $course_choices[$element->id] = $element->name;
-            }
-        }
-        $course_options  = array('choices' => $course_choices,
-                                 'numeric' => true);
+        $filter_array[] = new generalized_filter_entry('class', '', 'id',
+                                  get_string('filter_class', $this->lang_file),
+                                  false, 'courseclassselect',
+                                  array('default' => NULL,
+                                        'report_path' => $CFG->wwwroot .'/blocks/php_report/instances/class_completion_gas_gauge/',
+                                        'help' => array('class_completion_gas_gauge_class',
+                                                        get_string('filter_class', $this->lang_file),
+                                                        $this->lang_file)
+                                       )
+                                  );
 
-        $course_label = get_string('filter_course', 'rlreport_course_completion_gas_gauge');
-        return array(new generalized_filter_entry('course', '', 'id', $course_label, false, 'simpleselect', $course_options));
+        return $filter_array;
     }
 
     /**
@@ -302,41 +289,40 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      *
      * @param   array   $columns  The list of columns automatically calculated
      *                            by get_select_columns()
-     * @return  array   The report's main sql statement with optional params
+     * @return  string            The report's main sql statement
      */
     function get_report_sql($columns) {
         //calculates the condition imposed by the current top-level page
-        $page_value_condition = $this->get_page_value_condition('crs.id');
+        $page_value_condition = $this->get_page_value_condition('cls.id');
 
-        $sql = "SELECT {$columns}, u.lastname, COUNT(cc.id) AS numcompletionelements,
-                u.id AS cmuserid, gi.grademax
+        $sql = "SELECT {$columns}, u.lastname, COUNT(cc.id) AS numcompletionelements, u.id AS cmuserid, gi.grademax
                 FROM {". user::TABLE .'} u
                 JOIN {'. student::TABLE .'} stu
-                  ON u.id = stu.userid
+                    ON u.id = stu.userid
                 JOIN {'. pmclass::TABLE .'} cls
-                  ON cls.id = stu.classid
+                    ON cls.id = stu.classid
                 JOIN {'. course::TABLE .'} crs
-                  ON cls.courseid = crs.id
-                LEFT JOIN {'. coursecompletion::TABLE .'} cc
-                  ON cc.courseid = crs.id
-                LEFT JOIN {'. student_grade::TABLE .'} ccg
-                  ON ccg.completionid = cc.id
-                  AND cls.id = ccg.classid
-                  AND stu.userid = ccg.userid
-                  AND ccg.locked = 1
-                LEFT JOIN {'. classmoodlecourse::TABLE ."} clsmdl
-                  ON cls.id = clsmdl.classid
-                LEFT JOIN {course} mdlcrs
-                  ON clsmdl.moodlecourseid = mdlcrs.id
-                LEFT JOIN {grade_items} gi
-                  ON mdlcrs.id = gi.courseid
-                  AND gi.itemtype = 'course'
-                LEFT JOIN {user} mdlu
-                  ON u.idnumber = mdlu.idnumber
-                LEFT JOIN {grade_grades} gg
-                  ON mdlu.id = gg.userid
-                  AND gi.id = gg.itemid
-                ";
+                    ON cls.courseid = crs.id
+           LEFT JOIN {'. coursecompletion::TABLE .'} cc
+                    ON cc.courseid = crs.id
+           LEFT JOIN {'. student_grade::TABLE .'} ccg
+                    ON ccg.completionid = cc.id
+                    AND cls.id = ccg.classid
+                    AND stu.userid = ccg.userid
+                    AND ccg.locked = 1
+           LEFT JOIN {'. classmoodlecourse::TABLE ."} clsmdl
+                    ON cls.id = clsmdl.classid
+           LEFT JOIN {course} mdlcrs
+                    ON clsmdl.moodlecourseid = mdlcrs.id
+           LEFT JOIN {grade_items} gi
+                    ON mdlcrs.id = gi.courseid
+                    AND gi.itemtype = 'course'
+           LEFT JOIN {user} mdlu
+                    ON u.idnumber = mdlu.idnumber
+           LEFT JOIN {grade_grades} gg
+                    ON mdlu.id = gg.userid
+                    AND gi.id = gg.itemid
+           ";
 
         $params = array();
         if (!empty($page_value_condition[0])) {
@@ -347,7 +333,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
     }
 
     /**
-     * Takes a record and transoforms it into an appropriate format
+     * Takes a record and transforms it into an appropriate format
      * This method is set up as a hook to be implented by actual report class
      *
      * @param   stdClass  $record         The current report record
@@ -356,11 +342,14 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      * @return  stdClass                  The reformatted record
      */
     function transform_record($record, $export_format) {
-        if ($record->completestatus == STUSTATUS_PASSED) {
-            $record->completestatus = get_string('status_complete', 'rlreport_course_completion_gas_gauge');
-        } else {
-            $record->completestatus = get_string('status_incomplete', 'rlreport_course_completion_gas_gauge');
+
+        //clear out the class info if there is only one class enrolment for the user and course
+        if (isset($record->numclasses) && $record->numclasses == 1) {
+            $record->classidnumber = '';
         }
+
+        $status = student::$completestatusid_values[$record->completestatus];
+        $record->completestatus = get_string($status, 'elis_program');
 
         if ($export_format == php_report::$EXPORT_FORMAT_HTML) {
             //convert user name to their full name and link to the CM user page for that user
@@ -374,7 +363,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
 
         //calculate the percentage of completion elements satisfied
         if ($record->numcompletionelements == 0) {
-            $record->percentcomplete = get_string('na', 'rlreport_course_completion_gas_gauge');
+            $record->percentcomplete = get_string('na', $this->lang_file);
         } else {
             $record->percentcomplete = $record->numcompleted / $record->numcompletionelements * 100;
             $record->percentcomplete = number_format($record->percentcomplete, 1);
@@ -382,11 +371,11 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
 
         //display logic for the count of completion elements
         //$record->numcompleted = $record->numcompleted . ' / ' . $record->numcompletionelements;
-        $record->numcompleted = get_string('completed_tally', 'rlreport_course_completion_gas_gauge', $record);
+        $record->numcompleted = get_string('completed_tally', $this->lang_file, $record);
 
         //format the Moodle gradebook course score
         if ($record->score === NULL || empty($record->grademax)) {
-            $record->score = get_string('na', 'rlreport_course_completion_gas_gauge');
+            $record->score = get_string('na', $this->lang_file);
         } else {
             $record->score = number_format($record->score/$record->grademax*100, 1);
         }
@@ -395,7 +384,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
     }
 
     /**
-     * Takes a summary row record and transoforms it into an appropriate format
+     * Takes a summary row record and transforms it into an appropriate format
      * This method is set up as a hook to be implented by actual report class
      *
      * @return stdClass  The reformatted record
@@ -403,14 +392,14 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
     function transform_column_summary_record($record) {
         //calculate the percentage of completion elements satisfied
         if ($record->percentcomplete == NULL) {
-            $record->percentcomplete = get_string('na', 'rlreport_course_completion_gas_gauge');
+            $record->percentcomplete = get_string('na', $this->lang_file);
         } else {
             $record->percentcomplete = number_format($record->percentcomplete, 1);
         }
 
         //format the Moodle gradebook course score
         if ($record->score === NULL) {
-            $record->score = get_string('na', 'rlreport_course_completion_gas_gauge');
+            $record->score = get_string('na', $this->lang_file);
         } else {
             $record->score = number_format($record->score, 1);
         }
@@ -441,9 +430,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
     function get_static_sort_columns() {
         //sort by lastname and firstname to keep user's enrolments together
         return 'u.lastname,
-                u.firstname,
-                u.id,
-                classidnumber';
+                u.firstname';
     }
 
     /**
@@ -459,19 +446,17 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         $base_sql = 'SELECT COUNT(DISTINCT u.id)
                      FROM {'. user::TABLE .'} u
                      JOIN {'. student::TABLE .'} stu
-                       ON u.id = stu.userid
+                        ON u.id = stu.userid
                      JOIN {'. pmclass::TABLE .'} cls
-                       ON cls.id = stu.classid
+                        ON cls.id = stu.classid
                      JOIN {'. course::TABLE .'} crs
-                       ON cls.courseid = crs.id
-                     WHERE crs.id = :crsid';
+                        ON cls.courseid = crs.id
+                     WHERE cls.id = :clsid';
 
-        $params = array('crsid' => $this->gas_gauge_page_value);
+        $params = array('clsid' => $this->gas_gauge_page_value);
 
         //take the inactive setting into account
-        $sql_filter = $this->filter->get_sql_filter('', array(),
-                                  $this->allow_interactive_filters(),
-                                  $this->allow_configured_filters());
+        $sql_filter = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(), $this->allow_configured_filters());
         if (!empty($sql_filter[0])) {
             $base_sql .= " AND ({$sql_filter[0]})";
             $params += $sql_filter[1];
@@ -485,7 +470,6 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
 
         //total number of users
         $total_sql = "{$base_sql}";
-
         $total_field = $this->get_field_sql($total_sql, $params);
 
         //avoid dividing by zero
@@ -514,13 +498,13 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
                        ON cls.id = stu.classid
                      JOIN {'. course::TABLE .'} crs
                        ON cls.courseid = crs.id
-                     WHERE crs.id = :crsid';
+                     WHERE cls.id = :clsid';
 
-        $params = array('crsid' => $this->gas_gauge_page_value);
+        $params = array('clsid' => $this->gas_gauge_page_value);
 
         //take the inactive setting into account
-        $sql_filter = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(),
-                                                    $this->allow_configured_filters());
+        $sql_filter = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(), $this->allow_configured_filters());
+
         if (!empty($sql_filter[0])) {
             $base_sql .= " AND ({$sql_filter[0]})";
             $params += $sql_filter[1];
@@ -544,25 +528,25 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      */
     function get_gas_gauge_header_info() {
         global $DB;
-        $course_name = '';
-        if ($course_record = $DB->get_record(course::TABLE, array('id' => $this->gas_gauge_page_value))) {
-            $course_name = $course_record->name;
+        $class_name = '';
+        if ($class_record = $DB->get_record(pmclass::TABLE, array('id' => $this->gas_gauge_page_value))) {
+            $class_name = $class_record->idnumber;
         }
 
-        //course description, including course name
-        $course_description = get_string('course_description', 'rlreport_course_completion_gas_gauge', $course_name);
+        //class description, including class name
+        $class_description = get_string('class_description', $this->lang_file, $class_name);
         //general progress status message
 
         if ($this->gas_gauge_value === NULL) {
-            $display_value = get_string('na', 'rlreport_course_completion_gas_gauge');
+            $display_value = get_string('na', $this->lang_file);
         } else {
             $display_value = number_format($this->gas_gauge_value, 1);
         }
 
-        $course_progress = get_string('course_progress', 'rlreport_course_completion_gas_gauge', $display_value);
+        $class_progress = get_string('class_progress', $this->lang_file, $display_value);
 
-        return array($course_description,
-                     $course_progress);
+        return array($class_description,
+                     $class_progress);
     }
 
     /**
@@ -571,8 +555,8 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      * @return  string  A string to display, or the empty string to use the default label
      */
     function get_gas_gauge_page_label() {
-        //override the default label with a course-related label
-        return get_string('course_paging_label', 'rlreport_course_completion_gas_gauge');
+        //override the default label with a class-related label
+        return get_string('class_paging_label', $this->lang_file);
     }
 
     /**
@@ -585,7 +569,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         $this->require_dependencies();
 
         //make sure the current user can view reports in at least one course context
-        $contexts = get_contexts_by_capability_for_user('course', $this->access_capability, $this->userid);
+        $contexts = get_contexts_by_capability_for_user('class', $this->access_capability, $this->userid);
         return !$contexts->is_empty();
     }
 
