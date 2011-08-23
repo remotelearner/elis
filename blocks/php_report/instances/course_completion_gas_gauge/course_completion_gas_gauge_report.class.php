@@ -79,8 +79,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
         require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
         require_once($CFG->dirroot .'/elis/program/lib/data/classmoodlecourse.class.php');
-        // ***TBD***
-        //require_once($CFG->dirroot .'/elis/program/usermanagementpage.class.php');
+        require_once($CFG->dirroot .'/elis/program/userpage.class.php');
 
         //needed to include for filters
         require_once($CFG->dirroot .'/elis/core/lib/filtering/simpleselect.php');
@@ -364,10 +363,8 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
 
         if ($export_format == php_report::$EXPORT_FORMAT_HTML) {
             //convert user name to their full name and link to the CM user page for that user
-            // ***TBD***
-            //$userpage = new usermanagementpage(array('id' => $record->cmuserid, 'action' => 'view'));
-            //$record->firstname = '<span class="external_report_link"><a href="'. $userpage->url .'" target="_blank">'. fullname($record) .'</a></span>';
-            $record->firstname = fullname($record); // ***TBD***
+            $userpage = new userpage(array('id' => $record->cmuserid, 'action' => 'view'));
+            $record->firstname = '<span class="external_report_link"><a href="'. $userpage->url .'" target="_blank">'. fullname($record) .'</a></span>';
         } else {
             $record->firstname = fullname($record);
         }
