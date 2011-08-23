@@ -48,7 +48,7 @@ class repository_elis_files extends repository {
 
 
     public function __construct($repositoryid, $context = SYSCONTEXTID, $options = array()) {
-        global $SESSION, $CFG;
+        global $SESSION, $CFG, $PAGE;
         parent::__construct($repositoryid, $context, $options);
 
         // May or man not need this
@@ -98,6 +98,9 @@ class repository_elis_files extends repository {
         }*/
            // return $this->verify_setup();
 
+        $PAGE->requires->js('/repository/elis_files/js/jquery-1.6.2.min.js');
+        $PAGE->requires->js('/repository/elis_files/js/jquery-ui-1.8.16.custom.min.js');
+        $PAGE->requires->js('/repository/elis_files/js/fileuploader.js');
     }
 
     public function print_login() {
@@ -303,6 +306,8 @@ class repository_elis_files extends repository {
     }
 
     public function print_upload_popup($framework = 'yui3') {
+        global $CFG;
+
         if ($framework == 'yui3') {
             $str = '<p><b>Uploading Tip</b></p>
                     <p>You can select more than one file for uploading by holding down the control key while clicking on the files.</p>
@@ -328,11 +333,8 @@ class repository_elis_files extends repository {
                     </table>
                     </div>';
         } elseif ($framework == 'jquery') {
-            $str = '<link rel="stylesheet" href="/repository/elis_files/css/fileuploader.css" type="text/css" >
-                    <link rel="stylesheet" href="/repository/elis_files/css/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" title="no title" charset="utf-8">
-                    <script src="/repository/elis_files/js/jquery-1.6.2.min.js"></script>
-                    <script src="/repository/elis_files/js/jquery-ui-1.8.16.custom.min.js"></script>
-                    <script src="/repository/elis_files/js/fileuploader.js"></script>
+            $str = '<link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/fileuploader.css" type="text/css" />
+                    <link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" title="no title" charset="utf-8" />
                     <p><b>Uploading Tip</b></p>
                     <p>You can select more than one file for uploading by holding down the control key while clicking on the files.</p>
                     <div id="progressbar"></div>
