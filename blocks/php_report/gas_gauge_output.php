@@ -17,15 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage pm-blocks-phpreport
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 //need to do this because this file is included from different paths
-require_once(DIRNAME(DIRNAME(DIRNAME(__FILE__))) . '/config.php');
+require_once(dirname(__FILE__) .'/../../config.php');
 require_once($CFG->libdir . '/pChart.1.27d/pChart/pChart.class');
 require_once($CFG->libdir . '/pChart.1.27d/pChart/pData.class');  
 
