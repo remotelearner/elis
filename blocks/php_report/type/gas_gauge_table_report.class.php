@@ -129,9 +129,8 @@ abstract class gas_gauge_table_report extends table_report {
             //apply page value SQL filter
             list($additional_sql, $additional_params) = $this->get_secondary_filter_clause($sql, PHP_REPORT_SECONDARY_FILTERING_PAGE_VALUE);
             $sql .= $additional_sql;
-
             $sql .= ' ' .$this->get_page_value_order_by();
-
+            $params += $additional_params;
             $offset = $this->get_page_value_offset($i);
             return $this->get_field_sql($sql, $params, $offset);
         }
@@ -150,7 +149,7 @@ abstract class gas_gauge_table_report extends table_report {
      *                      and any appropriate parameters
      */
     function get_page_value_sql($i) {
-        return '';
+        return array('', array()); // TBV
     }
 
     /**
@@ -265,7 +264,7 @@ abstract class gas_gauge_table_report extends table_report {
      *                        as its only field, as well as any applicable SQL filters
      */
     function get_gas_gauge_value_sql($key) {
-        return '';
+        return array('', array()); // TBV
     }
 
     /**
@@ -313,7 +312,7 @@ abstract class gas_gauge_table_report extends table_report {
      *                        as its only field, as well as any applicable SQL parameters
      */
     function get_gas_gauge_max_value_sql($key) {
-        return '';
+        return array('', array()); // TBV
     }
 
     /**
@@ -379,7 +378,7 @@ abstract class gas_gauge_table_report extends table_report {
             }
         }
 
-        if($id !== 0) {
+        if ($id !== 0) {
             $effective_url = $CFG->wwwroot . '/blocks/php_report/dynamicreport.php?id=' . $id;
         } else {
             $effective_url = $this->baseurl;
@@ -591,31 +590,31 @@ abstract class gas_gauge_table_report extends table_report {
      * Print the paging headers for the table.
      *
      * @param   int|string  $id  Id of php report element, if applicable
-     *
-     *
+     * @uses    $CFG
+     * @uses    $OUTPUT
      * @return  string           HTML output for display.
      */
     function print_header($id = 0) {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         $output = '';
-
         $args = '';
 
         $export_formats = $this->get_export_formats();
         $allowable_export_formats = php_report::get_allowable_export_formats();
 
-        if($id !== 0) {
+        if ($id !== 0) {
             $effective_url = $CFG->wwwroot . '/blocks/php_report/dynamicreport.php?id=' . $id;
         } else {
             $effective_url = $this->baseurl;
         }
 
         //similar to parent class, but maintains gas gauge page
-        $output .= print_paging_bar($this->numrecs, $this->page, $this->perpage,
+        $paging_bar = new paging_bar($this->numrecs, $this->page, $this->perpage,
                                     "{$effective_url}&amp;sort={$this->sort}&amp;dir={$this->dir}&amp;" .
-                                    "perpage={$this->perpage}&amp;gas_gauge_page={$this->gas_gauge_page}" . $args . "&amp;", 'page', false, true);
+                                    "perpage={$this->perpage}&amp;gas_gauge_page={$this->gas_gauge_page}{$args}&amp;");
 
+        echo $OUTPUT->render($paging_bar);
         echo $this->get_interactive_filter_display();
 
         return $output;
@@ -625,25 +624,28 @@ abstract class gas_gauge_table_report extends table_report {
      * Print the paging footer for the table.
      *
      * @param   int|string  $id  Id of php report element, if applicable
+     * @uses    $CFG
+     * @uses    $OUTPUT
      * @return  string      HTML output for display.
      */
     function print_footer($id = 0) {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         $args = '';
         $output = '';
 
-        if($id !== 0) {
-            $effective_url = $CFG->wwwroot . '/blocks/php_report/dynamicreport.php?id=' . $id;
+        if ($id !== 0) {
+            $effective_url = $CFG->wwwroot .'/blocks/php_report/dynamicreport.php?id=' . $id;
         } else {
             $effective_url = $this->baseurl;
         }
 
         //similar to parent class, but maintains gas gauge page
-        $output .= print_paging_bar($this->numrecs, $this->page, $this->perpage,
+        $paging_bar = new paging_bar($this->numrecs, $this->page, $this->perpage,
                                     "{$effective_url}&amp;sort={$this->sort}&amp;dir={$this->dir}&amp;" .
-                                    "perpage={$this->perpage}&amp;gas_gauge_page={$this->gas_gauge_page}" . $args . "&amp;", 'page', false, true);
+                                    "perpage={$this->perpage}&amp;gas_gauge_page={$this->gas_gauge_page}{$args}&amp;");
 
+        $output .= $OUTPUT->render($paging_bar);
         return $output;
     }
 
@@ -803,7 +805,7 @@ abstract class gas_gauge_table_report extends table_report {
             //End of RL edit
             if ($page > 0) {
                 $pagenum = $page - 1;
-                $alt_title = $this->get_field_sql($tooltip_sql, array(), $pagenum);
+                $alt_title = $this->get_field_sql($tooltip_sql[0], $tooltip_sql[1], $pagenum);
                 if (!is_a($baseurl, 'moodle_url')){
                     $output .= '&nbsp;(<a class="previous" href="'. $baseurl . $pagevar .'='. $pagenum .'" alt="' . $alt_title . '" title="' . $alt_title . '">'. get_string('previous') .'</a>)&nbsp;';
                 } else {
@@ -816,7 +818,7 @@ abstract class gas_gauge_table_report extends table_report {
                 $lastpage = 1;
             }
             if ($page > 15) {
-                $alt_title = $this->get_field_sql($tooltip_sql, array(), 0);
+                $alt_title = $this->get_field_sql($tooltip_sql[0], $tooltip_sql[1], 0);
                 $startpage = $page - 10;
                 if (!is_a($baseurl, 'moodle_url')){
                     $output .= '&nbsp;<a href="'. $baseurl . $pagevar .'=0" alt="' . $alt_title . '" title="' . $alt_title . '">1</a>&nbsp;...';
@@ -833,7 +835,7 @@ abstract class gas_gauge_table_report extends table_report {
                 if ($page == $currpage && empty($nocurr)) {
                     $output .= '&nbsp;&nbsp;'. $displaypage;
                 } else {
-                    $alt_title = $this->get_field_sql($tooltip_sql, array(), $currpage);
+                    $alt_title = $this->get_field_sql($tooltip_sql[0], $tooltip_sql[1], $currpage);
                     if (!is_a($baseurl, 'moodle_url')){
                         $output .= '&nbsp;&nbsp;<a href="'. $baseurl . $pagevar .'='. $currpage .'" alt="' . $alt_title . '" title="' . $alt_title . '">'. $displaypage .'</a>';
                     } else {
@@ -845,7 +847,7 @@ abstract class gas_gauge_table_report extends table_report {
             }
             if ($currpage < $lastpage) {
                 $lastpageactual = $lastpage - 1;
-                $alt_title = $this->get_field_sql($tooltip_sql, array(), $lastpageactual);
+                $alt_title = $this->get_field_sql($tooltip_sql[0], $tooltip_sql[1], $lastpageactual);
                 if (!is_a($baseurl, 'moodle_url')){
                     $output .= '&nbsp;...&nbsp;<a href="'. $baseurl . $pagevar .'='. $lastpageactual .'" alt="' . $alt_title . '" title="' . $alt_title . '">'. $lastpage .'</a>&nbsp;';
                 } else {
@@ -854,7 +856,7 @@ abstract class gas_gauge_table_report extends table_report {
             }
             $pagenum = $page + 1;
             if ($pagenum != $displaypage) {
-                $alt_title = $this->get_field_sql($tooltip_sql, array(), $pagenum);
+                $alt_title = $this->get_field_sql($tooltip_sql[0], $tooltip_sql[1], $pagenum);
                 if (!is_a($baseurl, 'moodle_url')){
                     $output .= '&nbsp;&nbsp;(<a class="next" href="'. $baseurl . $pagevar .'='. $pagenum .'" alt="' . $alt_title . '" title="' . $alt_title . '">'. get_string('next') .'</a>)';
                 } else {

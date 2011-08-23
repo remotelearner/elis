@@ -2146,12 +2146,13 @@ class table_report_column_based_summary_row {
      *                          if no summary row is defined
      */
     function get_row_object($fields) {
+        global $DB;
         $found = false;
         $result = new stdClass;
         foreach ($fields as $field) {
             $effective_field = table_report::get_object_index($field);
             if (array_key_exists($field, $this->mapping)) {
-                $result->$effective_field = get_field_sql($this->mapping[$field]);
+                $result->$effective_field = $DB->get_field_sql($this->mapping[$field][0], $this->mapping[$field][1]);
                 $found = true;
             } else {
                 //empty field value
