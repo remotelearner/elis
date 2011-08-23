@@ -302,31 +302,52 @@ class repository_elis_files extends repository {
         return $str;
     }
 
-    public function print_upload_popup() {
-        $str = '<p><b>Uploading Tip</b></p>
-                <p>You can select more than one file for uploading by holding down the control key while clicking on the files.</p>
-                <table style="border-style:none; padding:5px;">
-                    <tr>
-                        <td>
-                            <div id="uploaderContainer">
-                            <div id="uploaderOverlay" style="position:absolute; z-index:2"></div>
-                            <div id="selectFilesLink" style="z-index:1"><a id="selectLink" href="javascript:void(0);"><input type="button" value="Select files" /></a></div>
-                            </div>
-                        </td>
-                        <td>
-                            <div id="uploadFilesLink"><a id="uploadLink" href="javascript:void(0);"><input type="button" value="Upload selected files" /></a></div>
-                        </td>
-                        <td>
-                            <div id="closeLink"><a id="closeButton" href="javascript:void(0);"><input type="button" value="Close" /></a></div>
-                        </td>
-                    </tr>
-                </table>
-                <div id="files">
-                <table id="filenames" style="border-width:1px; border-style:solid; padding:5px;">
-                <tr><td>Filename</td><td>File size</td><td>Percent uploaded</td></tr>
-                </table>
-                </div>';
-
+    public function print_upload_popup($framework = 'yui3') {
+        if ($framework == 'yui3') {
+            $str = '<p><b>Uploading Tip</b></p>
+                    <p>You can select more than one file for uploading by holding down the control key while clicking on the files.</p>
+                    <table style="border-style:none; padding:5px;">
+                        <tr>
+                            <td>
+                                <div id="uploaderContainer">
+                                <div id="uploaderOverlay" style="position:absolute; z-index:2"></div>
+                                <div id="selectFilesLink" style="z-index:1"><a id="selectLink" href="javascript:void(0);"><input type="button" value="Select files" /></a></div>
+                                </div>
+                            </td>
+                            <td>
+                                <div id="uploadFilesLink"><a id="uploadLink" href="javascript:void(0);"><input type="button" value="Upload selected files" /></a></div>
+                            </td>
+                            <td>
+                                <div id="closeLink"><a id="closeButton" href="javascript:void(0);"><input type="button" value="Close" /></a></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="files">
+                    <table id="filenames" style="border-width:1px; border-style:solid; padding:5px;">
+                    <tr><td>Filename</td><td>File size</td><td>Percent uploaded</td></tr>
+                    </table>
+                    </div>';
+        } elseif ($framework == 'jquery') {
+            $str = '<link rel="stylesheet" href="/repository/elis_files/css/fileuploader.css" type="text/css" >
+                    <link rel="stylesheet" href="/repository/elis_files/css/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" title="no title" charset="utf-8">
+                    <script src="/repository/elis_files/js/jquery-1.6.2.min.js"></script>
+                    <script src="/repository/elis_files/js/jquery-ui-1.8.16.custom.min.js"></script>
+                    <script src="/repository/elis_files/js/fileuploader.js"></script>
+                    <p><b>Uploading Tip</b></p>
+                    <p>You can select more than one file for uploading by holding down the control key while clicking on the files.</p>
+                    <div id="progressbar"></div>
+                    <table style="border-style:none; padding:5px;">
+                        <tr>
+                            <td>
+                                <a id="uploadButton" href="javascript:void(0);"><input type="button" value="Select files" /></a>
+                                <div id="file-uploader"></div>
+                            </td>
+                            <td>
+                                <a id="closeButton" href="javascript:void(0);"><input type="button" value="Close" /></a>
+                            </td>
+                        </tr>
+                    </table>';
+        }
         return $str;
     }
 
