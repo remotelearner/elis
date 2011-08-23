@@ -27,8 +27,11 @@
  */
 
 //require_once dirname(dirname(dirname(dirname(__FILE__)))) . '/lib/adminlib.php';
-require_once $CFG->dirroot . '/repository/elis_files/repository.class.php';
-require_once $CFG->libdir . '/alfresco30/lib.php';
+//require_once $CFG->dirroot . '/repository/elis_files/repository.class.php';
+require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
+
+// Default to alfresco30 for now
+require_once dirname(__FILE__). '/lib/alfresco30/lib.php';
 
 
 class setting_elis_files_root_folder extends admin_setting_configdirectory {

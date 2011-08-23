@@ -28,8 +28,8 @@
 
 
 //require_once($CFG->dirroot . '/repository/elis_files/repository.php');
-require_once($CFG->dirroot . '/repository/elis_files/ELIS_files_factory.class.php');
-require_once($CFG->libdir . '/cmis-php/cmis_repository_wrapper.php');
+require_once dirname(dirname(__FILE__)) . '/ELIS_files_factory.class.php';
+require_once dirname(dirname(__FILE__)) . '/cmis-php/cmis_repository_wrapper.php';
 
 
 /**

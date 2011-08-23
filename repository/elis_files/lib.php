@@ -28,7 +28,7 @@
  */
 
 /// ELIS files class
-require_once $CFG->dirroot . '/repository/elis_files/ELIS_files_factory.class.php';
+require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
 
 //require_once $CFG->dirroot . '/repository/lib.php';
 
@@ -38,6 +38,9 @@ defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES'
 defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
+
+defined('ELIS_FILES_ALFRESCO_30') or define('ELIS_FILES_ALFRESCO_30',   '3.2');
+defined('ELIS_FILES_ALFRESCO_34') or define('ELIS_FILES_ALFRESCO_34',   '3.4');
 
 class repository_elis_files extends repository {
     private $ticket = null;
@@ -433,6 +436,7 @@ class repository_elis_files extends repository {
                               'server_port',        // Alfresco server port
                               'server_username',    // Alfresco server username
                               'server_password',    // Alfresco server password
+                              'alfresco_version',   // Alfresco server version
                               'root_folder',        // Moodle root folder
                               'user_quota',         // User quota N.B. cache is now pulled from general Repository options
                               'deleteuserdir',      // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
@@ -490,6 +494,25 @@ class repository_elis_files extends repository {
 //        $mform->setDefault('elis_files_server_password', '');
         $mform->addElement('static', 'server_password_intro', '', get_string('elis_files_server_password', 'repository_elis_files'));
         $mform->addRule('server_password', get_string('required'), 'required', null, 'client');
+
+//        $mform->addElement('text', 'alfresco_version', get_string('alfrescoversion', 'repository_elis_files'), array('size' => '10'));
+
+//        $alfresco_version = (get_config('repository_elis_files', 'alfresco_version') !== null) ? get_config('repository_elis_files', 'alfresco_version'): '3.2';
+
+        // Set site version of Alfresco
+        $options = array(
+            ELIS_FILES_ALFRESCO_30 => get_string('alfrescoversion30', 'repository_elis_files'),
+            ELIS_FILES_ALFRESCO_34 => get_string('alfrescoversion34', 'repository_elis_files')
+        );
+
+        $mform->addElement('select', 'alfresco_version', get_string('alfrescoversion', 'repository_elis_files'), $options);
+        $mform->setDefault('default_browse', ELIS_FILES_ALFRESCO_30);
+        $mform->addElement('static', 'default_browse_default', '', get_string('elis_files_default_alfresco_version', 'repository_elis_files'));
+//        $mform->addElement('static', 'default_browse_intro', '', get_string('configdefaultfilebrowsinglocation', 'repository_elis_files'));
+//                        $mform->setDefault('alfresco_version', $alfresco_version);
+//        $mform->setDefault('elis_files_server_password', '');
+//        $mform->addElement('static', 'server_password_intro', '', get_string('elis_files_alfresco_version', 'repository_elis_files'));
+//        $mform->addRule('alfresco_version', get_string('required'), 'required', null, 'client');
 
 //        $settings->add(new admin_setting_elis_files_category_select('repository_elis_files_category_filter', get_string('categoryfilter', 'repository_elis_files'),
 //                        get_string('repository_elis_files_category_filter', 'repository_elis_files')));
@@ -558,20 +581,18 @@ echo '<br>label: '.$label;
             $button = repository_elis_files::output_root_folder_html('/moodle');
 
             $rootfolderarray=array();
-            $rootfolderarray[] = &MoodleQuickForm::createElement('text', 'root_folder', get_string('rootfolder', 'repository_elis_files'), array('size' => '30'));
-            //$rootfolderarray[] = &MoodleQuickForm::createElement('button', 'root_folder_popup', get_string('chooserootfolder', 'repository_elis_files'), $attributes);
-            $rootfolderarray[] = &$mform->addElement('static', 'root_folder_popup', get_string('root_folder', 'repository_elis_files'), $button);
+            $rootfolderarray[] = MoodleQuickForm::createElement('text', 'root_folder', get_string('rootfolder', 'repository_elis_files'), array('size' => '30'));
+            $rootfolderarray[] = MoodleQuickForm::createElement('button', 'root_folder_popup', get_string('chooserootfolder', 'repository_elis_files'), $button);
             $mform->addGroup($rootfolderarray, 'rootfolderar', get_string('rootfolder', 'repository_elis_files'), array(' '), false);
              $mform->setDefault('root_folder', '/moodle');
-             //$mform->closeHeaderBefore('rootfolderar');
-        //$mform->addElement('text', 'root_folder', get_string('rootfolder', 'repository_elis_files'), array('size' => '30'));
-        //$mform->addElement('static', 'root_folder_default', '', get_string('elis_files_default_root_folder', 'repository_elis_files'));
+
         // Add checkmark if get root folder works, or whatever...
             $mform->addElement('static', 'root_folder_default', '', get_string('elis_files_default_root_folder', 'repository_elis_files'));
             $mform->addElement('static', 'root_folder_intro', '', get_string('elis_files_root_folder', 'repository_elis_files'));
 //        $mform->addRule('elis_files_category_filter', get_string('required'), 'required', null, 'client');
 
 
+            // Cache time is retrieved from the common cache time and not selected here
         // Display time period options to control browser caching
  /*       $cacheoptions = array(
             7  * DAYSECS  => get_string('numdays', '', 7),
@@ -619,9 +640,6 @@ echo '<br>label: '.$label;
 
         krsort($filesize, SORT_NUMERIC);
 
-        //$settings->add(new admin_setting_configselect('repository_elis_files_user_quota', get_string('userquota', 'repository_elis_files'),
-        //                    get_string('configuserquota', 'repository_elis_files'), 0, $filesize));
-
         $mform->addElement('select', 'user_quota', get_string('userquota', 'repository_elis_files'), $filesize);
         $mform->setDefault('user_quota', '0');
         $mform->addElement('static', 'user_quota_default', '', get_string('elis_files_default_user_quota', 'repository_elis_files'));
@@ -632,9 +650,6 @@ echo '<br>label: '.$label;
 
         // Add a toggle to control whether we will delete a user's home directory in Alfresco when their account is deleted.
         $options = array(1 => get_string('yes'), 0 => get_string('no'));
-
-        //$settings->add(new admin_setting_configselect('repository_elis_files_deleteuserdir', get_string('deleteuserdir', 'repository_elis_files'),
-        //                    get_string('configdeleteuserdir', 'repository_elis_files'), 0, $options));
 
         $mform->addElement('select', 'deleteuserdir', get_string('deleteuserdir', 'repository_elis_files'), $options);
         $mform->setDefault('deleteuserdir', '0');
@@ -778,12 +793,20 @@ echo '<br>label: '.$label;
     function output_root_folder_html($data, $query = '') {
         global $CFG, $PAGE;
 
-        //$PAGE->requires->js_module('json-stringify');
-        $mymodule = array('name'     => 'mod_elis_files',
-                           'fullpath' => '/repository/elis_files/rootfolder.js',
-                           'requires' => array('json'));
+//        $PAGE->requires->js_module('json-stringify');
+// USED TO BE:
+ /*require_js($CFG->wwwroot . '/file/repository/alfresco/rootfolder.js');
 
-        $PAGE->requires->js_init_call('mod_elis_files', array(), false, $mymodule);
+        $default = $this->get_defaultsetting();
+
+        $repoisup = false;
+        */
+        //NOW
+//        $mymodule = array('name'     => 'mod_elis_files',
+//                           'fullpath' => '/repository/elis_files/rootfolder.js',
+//                           'requires' => array('json'));
+
+//        $PAGE->requires->js_init_call('mod_elis_files', array(), false, $mymodule);
         $PAGE->requires->js('/repository/elis_files/rootfolder.js');
 
         $default = '/moodle';

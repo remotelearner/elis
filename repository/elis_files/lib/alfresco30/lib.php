@@ -26,9 +26,7 @@
  *
  */
 
-
-require_once($CFG->dirroot . '/file/repository/alfresco/repository.php');
-
+require_once dirname(__FILE__). '/ELIS_files.php';
 
 /**
  * Send a GET request to the Alfresco repository.
@@ -40,11 +38,11 @@ require_once($CFG->dirroot . '/file/repository/alfresco/repository.php');
 function elis_files_request($uri, $username = '') {
     global $CFG;
 
-    if (ALFRESCO_DEBUG_TRACE) print_object('$uri: ' . $uri);
+    if (ELIS_FILES_DEBUG_TRACE) print_object('$uri: ' . $uri);
 
-    if (!$response = alfresco_utils_invoke_service($uri, 'ticket', array(), 'GET', array(), $username)) {
-        debugging(get_string('couldnotaccessserviceat', 'repository_alfresco', $uri), DEBUG_DEVELOPER);
-        if (ALFRESCO_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response);
+    if (!$response = elis_files_utils_invoke_service($uri, 'ticket', array(), 'GET', array(), $username)) {
+        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
+        if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response);
     }
 
     return $response;
@@ -81,7 +79,7 @@ function elis_files_send($uri, $data = array(), $action = '', $username = '') {
         $action = 'CUSTOM-POST';
     }
 
-    return alfresco_utils_invoke_service($uri, 'ticket', array(), $action, $data, $username);
+    return elis_files_utils_invoke_service($uri, 'ticket', array(), $action, $data, $username);
 }
 
 
@@ -93,7 +91,7 @@ function elis_files_send($uri, $data = array(), $action = '', $username = '') {
  */
 function elis_files_get_services() {
     $services = array();
-    $response = alfresco_request('/api/repository');
+    $response = elis_files_request('/api/repository');
 
     if (empty($response) || !strpos($response, '<?xml') === 0) {
         return false;
@@ -110,16 +108,16 @@ function elis_files_get_services() {
             switch ($type) {
                 case 'root-children':
                 case 'rootchildren':
-                    $services['root'] = str_replace(alfresco_base_url(), '', $node->getAttribute('href'));
+                    $services['root'] = str_replace(elis_files_base_url(), '', $node->getAttribute('href'));
                     break;
 
                 case 'types-children':
                 case 'typeschildren':
-                    $services['types'] = str_replace(alfresco_base_url(), '', $node->getAttribute('href'));
+                    $services['types'] = str_replace(elis_files_base_url(), '', $node->getAttribute('href'));
                     break;
 
                 case 'query':
-                    $services['query'] = str_replace(alfresco_base_url(), '', $node->getAttribute('href'));
+                    $services['query'] = str_replace(elis_files_base_url(), '', $node->getAttribute('href'));
 
                 default:
                     break;
@@ -140,12 +138,12 @@ function elis_files_get_services() {
  * @return string|bool A string containing the version or, True/False if $versioncheck has been specified.
  */
 function elis_files_get_repository_version($versioncheck = '') {
-    $response = alfresco_request('/moodle/repoversion');
+    $response = elis_files_request('/moodle/repoversion');
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
@@ -193,7 +191,7 @@ function elis_files_get_repository_version($versioncheck = '') {
  * @return object Information about the parent node.
  */
 function elis_files_get_parent($uuid) {
-    if ($response = alfresco_request(alfresco_get_uri($uuid, 'parent'))) {
+    if ($response = elis_files_request(elis_files_get_uri($uuid, 'parent'))) {
         if (!strpos($response, '<?xml') === 0) {
             return false;
         }
@@ -212,7 +210,7 @@ function elis_files_get_parent($uuid) {
 
         $type  = '';
 
-        return alfresco_process_node($dom, $nodes->item(0), $type);
+        return elis_files_process_node($dom, $nodes->item(0), $type);
     }
 
     return false;
@@ -229,15 +227,13 @@ function elis_files_uuid_from_path($path, $uuid = '') {
     if ($path == '/') {
         return true;
     }
-
 /// Remove any extraneous slashes from the ends of the string
     $path = trim($path, '/');
 
     $parts = explode('/', $path);
 
 /// Initialize the folder structure if a structure piece wasn't passed to this function.
-    $children = alfresco_read_dir($uuid);
-
+    $children = elis_files_read_dir($uuid);
 /// Get the first piece from the list of path elements.
     $pathpiece = array_shift($parts);
 
@@ -249,7 +245,7 @@ function elis_files_uuid_from_path($path, $uuid = '') {
 
     foreach ($children->folders as $folder) {
         if ($folder->title == $pathpiece) {
-            $fchildren = alfresco_read_dir($folder->uuid);
+            $fchildren = elis_files_read_dir($folder->uuid);
 
         /// If there are no more path elements, we've succeeded!
             if (empty($parts)) {
@@ -257,7 +253,7 @@ function elis_files_uuid_from_path($path, $uuid = '') {
 
         /// Otherwise, keep looking below.
             } else {
-                return alfresco_uuid_from_path(implode('/', $parts), $folder->uuid);
+                return elis_files_uuid_from_path(implode('/', $parts), $folder->uuid);
             }
         }
     }
@@ -281,10 +277,10 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
     $return->files   = array();
 
     if (empty($uuid)) {
-        $services = alfresco_get_services();
-        $response = alfresco_request($services['root']);
+        $services = elis_files_get_services();
+        $response = elis_files_request($services['root']);
     } else {
-        if (alfresco_get_type($uuid) != 'folder') {
+        if (elis_files_get_type($uuid) != 'folder') {
             return;
         }
 
@@ -297,7 +293,7 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
             $username = '';
         }
 
-        $response = alfresco_request(alfresco_get_uri($uuid, 'children'), $username);
+        $response = elis_files_request(elis_files_get_uri($uuid, 'children'), $username);
     }
 
     if (empty($response)) {
@@ -316,7 +312,7 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
         $node = $nodes->item($i);
         $type = '';
 
-        $contentNode = alfresco_process_node($dom, $node, $type);
+        $contentNode = elis_files_process_node($dom, $node, $type);
 
         if ($type == 'folder') {
             $return->folders[] = $contentNode;
@@ -327,8 +323,8 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
         }
     }
 
-    usort($return->folders, 'alfresco_ls_sort');
-    usort($return->files, 'alfresco_ls_sort');
+    usort($return->folders, 'elis_files_ls_sort');
+    usort($return->files, 'elis_files_ls_sort');
 
     return $return;
 }
@@ -344,14 +340,14 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
 function elis_files_base_url() {
     global $CFG;
 
-    $repourl = $CFG->repository_alfresco_server_host;
+    $repourl = $CFG->repository_elis_files_server_host;
 
     if ($repourl[strlen($repourl) - 1] == '/') {
         $repourl = substr($repourl, 0, strlen($repourl) - 1);
     }
 
-    if (!empty($CFG->repository_alfresco_server_port)) {
-        $repourl .= ':' . $CFG->repository_alfresco_server_port;
+    if (!empty($CFG->repository_elis_files_server_port)) {
+        $repourl .= ':' . $CFG->repository_elis_files_server_port;
     }
 
     $repourl .= '/alfresco/s';
@@ -368,7 +364,6 @@ function elis_files_base_url() {
  * @param string $function The type
  */
 function elis_files_get_uri($uuid = '', $function = '') {
-    global $CFG;
 
     if (empty($uuid) && empty($function)) {
         return '/api/node/workspace/SpacesStore/';
@@ -410,7 +405,7 @@ function elis_files_get_uri($uuid = '', $function = '') {
  * @return string|bool A string name for the node type or, False on error.
  */
 function elis_files_get_type($uuid) {
-    if (!$response = alfresco_request(alfresco_get_uri($uuid, 'self'))) {
+    if (!$response = elis_files_request(elis_files_get_uri($uuid, 'self'))) {
         return false;
     }
 
@@ -446,7 +441,7 @@ function elis_files_get_type($uuid) {
  * @return object The properties of the node in an object.
  */
 function elis_files_node_properties($uuid) {
-    if (!$response = alfresco_request(alfresco_get_uri($uuid, 'self'))) {
+    if (!$response = elis_files_request(elis_files_get_uri($uuid, 'self'))) {
         return false;
     }
 
@@ -463,7 +458,7 @@ function elis_files_node_properties($uuid) {
     }
 
     $type  = '';
-    return alfresco_process_node($dom, $nodes->item(0), $type);
+    return elis_files_process_node($dom, $nodes->item(0), $type);
 }
 
 
@@ -477,10 +472,10 @@ function elis_files_node_properties($uuid) {
 function elis_files_get_file($uuid) {
     global $CFG;
 
-    if (ALFRESCO_DEBUG_TRACE) print_object('alfresco_get_file(' . $uuid . ')');
+    if (ELIS_FILES_DEBUG_TRACE) print_object('elis_files_get_file(' . $uuid . ')');
 
-    $node     = alfresco_node_properties($uuid);
-    $contents = alfresco_request($node->fileurl);
+    $node     = elis_files_node_properties($uuid);
+    $contents = elis_files_request($node->fileurl);
 
     return $contents;
 }
@@ -497,16 +492,16 @@ function elis_files_get_file($uuid) {
  * @return mixed
  */
 function elis_files_delete($uuid, $recursive = false) {
-    global $CFG, $USER;
+    global $CFG;
 
-    if (ALFRESCO_DEBUG_TRACE)  print_object('alfresco_delete(' . $uuid . ', ' . $recursive . ')');
+    if (ELIS_FILES_DEBUG_TRACE)  print_object('elis_files_delete(' . $uuid . ', ' . $recursive . ')');
 
     // Ensure that we set the configured admin user to be the owner of the deleted file before deleting.
     // This is to prevent the user's Alfresco account from having space incorrectly attributed to it.
     // ELIS-1102
-    alfresco_request('/moodle/nodeowner/' . $uuid . '?username=' . $CFG->repository_alfresco_server_username);
+    elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . $CFG->repository_elis_files_server_username);
 
-    return (true === alfresco_send(alfresco_get_uri($uuid, 'delete'), array(), 'DELETE'));
+    return (true === elis_files_send(elis_files_get_uri($uuid, 'delete'), array(), 'DELETE'));
 }
 
 
@@ -524,15 +519,15 @@ function elis_files_delete($uuid, $recursive = false) {
 function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin = true) {
     global $CFG, $USER;
 
-    $properties = alfresco_node_properties($uuid);
+    $properties = elis_files_node_properties($uuid);
 
     $data = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
 
-    if (alfresco_get_repository_version('3.2')) {
+    if (elis_files_get_repository_version('3.2')) {
         $data .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" ' .
                  'xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">' . "\n" .
-                 '  <link rel="type" href="' . alfresco_base_url() . '/api/type/folder"/>' . "\n" .
-                 '  <link rel="repository" href="' . alfresco_base_url() . '/api/repository"/>' . "\n";
+                 '  <link rel="type" href="' . elis_files_base_url() . '/api/type/folder"/>' . "\n" .
+                 '  <link rel="repository" href="' . elis_files_base_url() . '/api/repository"/>' . "\n";
     } else {
         $data .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">' . "\n";
     }
@@ -561,10 +556,10 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
         $username = $USER->username;
     }
 
-    $response = alfresco_utils_invoke_service($uri, 'basic', $header, 'CUSTOM-POST', $data, $username);
+    $response = elis_files_utils_invoke_service($uri, 'basic', $header, 'CUSTOM-POST', $data, $username);
 
     if ($response === false) {
-        debugging(get_string('couldnotaccessserviceat', 'repository_alfresco', $uri), DEBUG_DEVELOPER);
+        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
         return false;
     }
 
@@ -581,20 +576,20 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     }
 
     $type       = '';
-    $properties = alfresco_process_node($dom, $nodes->item(0), $type);
+    $properties = elis_files_process_node($dom, $nodes->item(0), $type);
 
     // Ensure that we set the current user to be the owner of the newly created directory.
     if (!empty($properties->uuid)) {
         // So that we don't conflict with the default Alfresco admin account.
-        $username = $USER->username == 'admin' ? $CFG->repository_alfresco_admin_username : $USER->username;
+        $username = $USER->username == 'admin' ? $CFG->repository_elis_files_admin_username : $USER->username;
 
         // We must include the tenant portion of the username here.
-        if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-            $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+        if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+            $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
         }
 
         // We're not going to check the response for this right now.
-        alfresco_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
+        elis_files_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
     }
 
     return $properties;
@@ -642,7 +637,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     }
 
     if (empty($uuid)) {
-        $uuid = $USER->repo->get_root()->uuid;
+        $uuid = $USER->elis_repo->get_root()->uuid;
     }
 
     $chunksize = 8192;
@@ -651,19 +646,19 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 /// that will potentially overrun the maximum memory allowed to a PHP script.
     $data1 = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
 
-    if (alfresco_get_repository_version('3.2')) {
+    if (elis_files_get_repository_version('3.2')) {
         $data1 .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" ' .
                   'xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">' . "\n" .
-                  '  <link rel="type" href="' . alfresco_base_url() . '/api/type/document"/>' . "\n" .
-                  '  <link rel="repository" href="' . alfresco_base_url() . '/api/repository"/>' . "\n";
+                  '  <link rel="type" href="' . elis_files_base_url() . '/api/type/document"/>' . "\n" .
+                  '  <link rel="repository" href="' . elis_files_base_url() . '/api/repository"/>' . "\n";
     } else {
         $data1 .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">' . "\n";
     }
 
-    $data1 .= '  <link rel="type" href="' . alfresco_base_url() . '/api/type/document"/>' . "\n" .
-              '  <link rel="repository" href="' . alfresco_base_url() . '/api/repository"/>' . "\n" .
+    $data1 .= '  <link rel="type" href="' . elis_files_base_url() . '/api/type/document"/>' . "\n" .
+              '  <link rel="repository" href="' . elis_files_base_url() . '/api/repository"/>' . "\n" .
               '  <title>' . $filename . '</title>' . "\n" .
-              '  <summary>' . get_string('uploadedbymoodle', 'repository_alfresco') . '</summary>' . "\n" .
+              '  <summary>' . get_string('uploadedbymoodle', 'repository_elis_files') . '</summary>' . "\n" .
               '  <content type="' . $filemime . '">';
 
     $data2 = '</content>' . "\n" .
@@ -708,7 +703,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     }
 
     $serviceuri = '/api/node/workspace/SpacesStore/' . $uuid . '/descendants';
-    $url        = alfresco_utils_get_wc_url($serviceuri, 'refresh', $username);
+    $url        = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);
 
     $uri        = parse_url($url);
 
@@ -813,7 +808,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 //
 //        } else
     if ($code != 200 && $code != 201 && $code != 304) {
-        debugging(get_string('couldnotaccessserviceat', 'repository_alfresco', $serviceuri), DEBUG_DEVELOPER);
+        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $serviceuri), DEBUG_DEVELOPER);
         return false;
     }
 
@@ -830,20 +825,20 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     }
 
     $type       = '';
-    $properties = alfresco_process_node($dom, $nodes->item(0), $type);
+    $properties = elis_files_process_node($dom, $nodes->item(0), $type);
 
     // Ensure that we set the current user to be the owner of the newly created directory.
     if (!empty($properties->uuid)) {
         // So that we don't conflict with the default Alfresco admin account.
-        $username = $USER->username == 'admin' ? $CFG->repository_alfresco_admin_username : $USER->username;
+        $username = $USER->username == 'admin' ? $CFG->repository_elis_files_admin_username : $USER->username;
 
             // We must include the tenant portion of the username here.
-        if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-            $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+        if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+            $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
         }
 
         // We're not going to check the response for this right now.
-        alfresco_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
+        elis_files_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
     }
 
     return $properties;
@@ -861,7 +856,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 function elis_files_search($query, $page = 1, $perpage = 9999) {
     $skip_count = ($page - 1) * $perpage;
 
-    $response = alfresco_utils_invoke_service('/api/search/keyword.atom?q=' . rawurlencode($query) .
+    $response = elis_files_utils_invoke_service('/api/search/keyword.atom?q=' . rawurlencode($query) .
                                               '&p=' . $page . '&c=' . $perpage);
     $return   = new stdClass;
     $return->folders = array();
@@ -870,7 +865,7 @@ function elis_files_search($query, $page = 1, $perpage = 9999) {
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
@@ -891,12 +886,12 @@ function elis_files_search($query, $page = 1, $perpage = 9999) {
 /// Process each node returned in the search results.
     if ($entries = $sxml->xpath('//D:entry')) {
         foreach ($entries as $entry) {
-            $node = alfresco_node_properties(str_replace('urn:uuid:', '', $entry->id));
+            $node = elis_files_node_properties(str_replace('urn:uuid:', '', $entry->id));
 
             $value = $entry->xpath('relevance:score');
             $node->score = (float)$value[0][0];
 
-            $type = alfresco_get_type($node->uuid);
+            $type = elis_files_get_type($node->uuid);
 
             if ($type == 'folder') {
                 $return->folders[] = $node;
@@ -938,12 +933,12 @@ function elis_files_category_search($categories) {
         );
 
         $cattitle = str_replace($search, $replace, $category->title);
-        $response = alfresco_utils_invoke_service('/moodle/categorysearch/' . $cattitle);
+        $response = elis_files_utils_invoke_service('/moodle/categorysearch/' . $cattitle);
 
         try {
             $sxml = new SimpleXMLElement($response);
         } catch (Exception $e) {
-            debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+            debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
             return false;
         }
 
@@ -956,8 +951,8 @@ function elis_files_category_search($categories) {
 
     if (!empty($nodes)) {
         foreach ($nodes as $uuid => $title) {
-            $node = alfresco_node_properties($uuid);
-            $type = alfresco_get_type($node->uuid);
+            $node = elis_files_node_properties($uuid);
+            $type = elis_files_get_type($node->uuid);
 
             if ($type == 'folder') {
                 $return->folders[] = $node;
@@ -988,16 +983,16 @@ function elis_files_get_node_categories($noderef = '', $uuid = '') {
     $categories = array();
 
     if (empty($noderef)) {
-         $properties = alfresco_node_properties($uuid);
+         $properties = elis_files_node_properties($uuid);
          $noderef    = $properties->noderef;
     }
 
-    $response = alfresco_request('/moodle/nodecategory?nodeRef=' . $noderef);
+    $response = elis_files_request('/moodle/nodecategory?nodeRef=' . $noderef);
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
@@ -1030,7 +1025,7 @@ function elis_files_process_categories($sxml) {
             );
 
             if (!empty($category->categories)) {
-                $cat['children'] = alfresco_process_categories($category->categories);
+                $cat['children'] = elis_files_process_categories($category->categories);
             }
 
             $return[] = $cat;
@@ -1048,17 +1043,17 @@ function elis_files_process_categories($sxml) {
  * @return array A nested array of category information.
  */
 function elis_files_get_categories() {
-    $response = alfresco_request('/moodle/categories');
+    $response = elis_files_request('/moodle/categories');
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
     if (!empty($sxml->category)) {
-        return alfresco_process_categories($sxml);
+        return elis_files_process_categories($sxml);
     }
 
     return array();
@@ -1084,7 +1079,7 @@ function elis_files_process_folder_structure($sxml) {
             );
 
             if (!empty($folder->folders)) {
-                $cat['children'] = alfresco_process_folder_structure($folder->folders);
+                $cat['children'] = elis_files_process_folder_structure($folder->folders);
             }
 
             $return[] = $cat;
@@ -1102,19 +1097,19 @@ function elis_files_process_folder_structure($sxml) {
  * @return array A nested array of category information.
  */
 function elis_files_folder_structure() {
-    $response = alfresco_request('/moodle/folders');
+    $response = elis_files_request('/moodle/folders');
 
     $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
     if (!empty($sxml->folder)) {
-        return alfresco_process_folder_structure($sxml);
+        return elis_files_process_folder_structure($sxml);
     }
 
     return array();
@@ -1140,7 +1135,7 @@ function elis_files_validate_path($path, $folders = null) {
 
 /// Initialize the folder structure if a structure piece wasn't passed to this function.
     if ($folders == null) {
-        $folders = alfresco_folder_structure();
+        $folders = elis_files_folder_structure();
     }
 
 /// Get the first piece from the list of path elements.
@@ -1160,7 +1155,7 @@ function elis_files_validate_path($path, $folders = null) {
 
             /// Otherwise, keep looking below.
                 } else {
-                    return alfresco_validate_path(implode('/', $parts), $folder['children']);
+                    return elis_files_validate_path(implode('/', $parts), $folder['children']);
                 }
             }
         }
@@ -1261,39 +1256,39 @@ function elis_files_process_node($dom, $node, &$type) {
                 case 'link':
                     switch ($cnode->getAttribute('rel')) {
                         case 'self':
-                            $contentNode->links['self'] = str_replace(alfresco_base_url(), '', $cnode->getAttribute('href'));
+                            $contentNode->links['self'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
                         case 'cmis-allowableactions':
-                            $contentNode->links['permissions'] = str_replace(alfresco_base_url(), '', $cnode->getAttribute('href'));
+                            $contentNode->links['permissions'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
                         case 'cmis-relationships':
-                            $contentNode->links['associations'] = str_replace(alfresco_base_url(), '', $cnode->getAttribute('href'));
+                            $contentNode->links['associations'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
                         case 'cmis-parent':
-                            $contentNode->links['parent'] = str_replace(alfresco_base_url(), '', $cnode->getAttribute('href'));
+                            $contentNode->links['parent'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
                         case 'cmis-folderparent':
-                            $contentNode->links['folderparent'] = str_replace(alfresco_base_url(), '', $cnode->getAttribute('href'));
+                            $contentNode->links['folderparent'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
                         case 'cmis-children':
-                            $contentNode->links['children'] = str_replace(alfresco_base_url(), '', $cnode->getAttribute('href'));
+                            $contentNode->links['children'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
                         case 'cmis-descendants':
-                            $contentNode->links['descendants'] = str_replace(alfresco_base_url(), '', $cnode->getAttribute('href'));
+                            $contentNode->links['descendants'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
                         case 'cmis-type':
-                            $contentNode->links['type'] = str_replace(alfresco_base_url(), '', $cnode->getAttribute('href'));
+                            $contentNode->links['type'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
                         case 'cmis-repository':
-                            $contentNode->links['repository'] = str_replace(alfresco_base_url(), '', $cnode->getAttribute('href'));
+                            $contentNode->links['repository'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
                         default:
@@ -1375,12 +1370,12 @@ function elis_files_process_node($dom, $node, &$type) {
  * @return bool True on success, False otherwise.
  */
 function elis_files_root_move($fromuuid, $touuid) {
-    $response = alfresco_request('/moodle/movenode/' . $fromuuid . '/' . $touuid);
+    $response = elis_files_request('/moodle/movenode/' . $fromuuid . '/' . $touuid);
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
@@ -1401,12 +1396,12 @@ function elis_files_root_move($fromuuid, $touuid) {
  * @return bool True on success, False otherwise.
  */
 function elis_files_move_node($fromuuid, $touuid) {
-    $response = alfresco_request('/moodle/movenode/' . $fromuuid . '/' . $touuid);
+    $response = elis_files_request('/moodle/movenode/' . $fromuuid . '/' . $touuid);
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
@@ -1430,18 +1425,18 @@ function elis_files_create_user($user, $password = '') {
     global $CFG;
 
     // So that we don't conflict with the default Alfresco admin account.
-    $username = $user->username == 'admin' ? $CFG->repository_alfresco_admin_username : $user->username;
+    $username = $user->username == 'admin' ? $CFG->repository_elis_files_admin_username : $user->username;
 
     // We must include the tenant portion of the username here.
-    if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-        $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+    if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+        $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
     }
 
-    $result = alfresco_request('/api/people/' . $username);
+    $result = elis_files_request('/api/people/' . $username);
 
     // If a user account in Alfrsco already exists, return true.
     if (empty($password) && $result !== false) {
-        if ($person = alfresco_json_parse($result)) {
+        if ($person = elis_files_json_parse($result)) {
             return true;
         }
     }
@@ -1460,18 +1455,18 @@ function elis_files_create_user($user, $password = '') {
         $newuser['password'] = $password;
     }
 
-    if (!empty($CFG->repository_alfresco_user_quota)) {
-        $newuser['quota'] = $CFG->repository_alfresco_user_quota;
+    if (!empty($CFG->repository_elis_files_user_quota)) {
+        $newuser['quota'] = $CFG->repository_elis_files_user_quota;
     }
 
-    if (!$response = alfresco_send('/moodle/createuser', $newuser, 'POST')) {
+    if (!$response = elis_files_send('/moodle/createuser', $newuser, 'POST')) {
         return false;
     }
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
@@ -1493,22 +1488,22 @@ function elis_files_delete_user($username, $deletehomedir = false) {
     $status = true;
 
     // So that we don't conflict with the default Alfresco admin account.
-    $username = $username == 'admin' ? $CFG->repository_alfresco_admin_username : $username;
+    $username = $username == 'admin' ? $CFG->repository_elis_files_admin_username : $username;
 
     // We must include the tenant portion of the username here.
-    if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-        $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+    if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+        $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
     }
 
     if ($deletehomedir) {
-        $uuid = alfresco_get_home_directory($username);
+        $uuid = elis_files_get_home_directory($username);
     }
 
-    $status = (alfresco_send('/api/people/' . $username, array(), 'DELETE') !== false);
+    $status = (elis_files_send('/api/people/' . $username, array(), 'DELETE') !== false);
 
     // Actually go through with deleting the home directory if it was requested and we found the UUID.
     if (!empty($uuid)) {
-        $status = $status && alfresco_delete($uuid, true);
+        $status = $status && elis_files_delete($uuid, true);
     }
 
     return $status;
@@ -1526,14 +1521,14 @@ function elis_files_get_home_directory($username) {
     global $CFG;
 
     // So that we don't conflict with the default Alfresco admin account.
-    $username = $username == 'admin' ? $CFG->repository_alfresco_admin_username : $username;
+    $username = $username == 'admin' ? $CFG->repository_elis_files_admin_username : $username;
 
     // We must include the tenant portion of the username here.
-    if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-        $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+    if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+        $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
     }
 
-    $response = alfresco_request('/moodle/homedirectory?username=' . $username);
+    $response = elis_files_request('/moodle/homedirectory?username=' . $username);
 
     // Pull out the UUID value from the XML response.
     preg_match('/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/', $response, $matches);
@@ -1570,19 +1565,19 @@ function elis_files_has_permission($uuid, $username = '', $edit = false) {
     }
 
     // So that we don't conflict with the default Alfresco admin account.
-    $username = $username == 'admin' ? $CFG->repository_alfresco_admin_username : $username;
+    $username = $username == 'admin' ? $CFG->repository_elis_files_admin_username : $username;
 
     // We must include the tenant portion of the username here.
-    if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-        $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+    if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+        $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
     }
 
-    $response = alfresco_request('/moodle/getpermissions/' . $uuid . '?username=' . $username);
+    $response = elis_files_request('/moodle/getpermissions/' . $uuid . '?username=' . $username);
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
@@ -1610,12 +1605,12 @@ function elis_files_has_permission($uuid, $username = '', $edit = false) {
             }
         }
 
-        if ($edit && $pname !== ALFRESCO_ROLE_COLLABORATOR) {
+        if ($edit && $pname !== ELIS_FILES_ROLE_COLLABORATOR) {
             continue;
         }
 
         // Make sure that this user or everyone on the site can access the specified node.
-        if (($pfor == $username || $pfor == 'GROUP_EVERYONE') && $pcap == ALFRESCO_CAPABILITY_ALLOWED) {
+        if (($pfor == $username || $pfor == 'GROUP_EVERYONE') && $pcap == ELIS_FILES_CAPABILITY_ALLOWED) {
             return true;
         }
     }
@@ -1647,22 +1642,22 @@ function elis_files_get_permissions($uuid, $username = '') {
 */
     if (!empty($username)) {
         // So that we don't conflict with the default Alfresco admin account.
-        $username = $username == 'admin' ? $CFG->repository_alfresco_admin_username : $username;
+        $username = $username == 'admin' ? $CFG->repository_elis_files_admin_username : $username;
 
         // We must include the tenant portion of the username here.
-        if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-            $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+        if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+            $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
         }
     }
 
     $permissions = array();
 
-    $response = alfresco_request('/moodle/getpermissions/' . $uuid . (!empty($username) ? '?username=' . $username : ''));
+    $response = elis_files_request('/moodle/getpermissions/' . $uuid . (!empty($username) ? '?username=' . $username : ''));
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
@@ -1691,8 +1686,8 @@ function elis_files_get_permissions($uuid, $username = '') {
         }
 
         // Make sure that this user or everyone on the site can access the specified node.
-        if ((!empty($username) && $pfor == $username && $pcap == ALFRESCO_CAPABILITY_ALLOWED) ||
-            ($pcap == ALFRESCO_CAPABILITY_ALLOWED)) {
+        if ((!empty($username) && $pfor == $username && $pcap == ELIS_FILES_CAPABILITY_ALLOWED) ||
+            ($pcap == ELIS_FILES_CAPABILITY_ALLOWED)) {
 
             $permissions[] = $pname;
         }
@@ -1729,11 +1724,11 @@ function elis_files_set_permission($username, $uuid, $role, $capability) {
     global $CFG;
 
     switch ($role) {
-        case ALFRESCO_ROLE_COORDINATOR:
-        case ALFRESCO_ROLE_COLLABORATOR:
-        case ALFRESCO_ROLE_CONTRIBUTOR:
-        case ALFRESCO_ROLE_EDITOR:
-        case ALFRESCO_ROLE_CONSUMER:
+        case ELIS_FILES_ROLE_COORDINATOR:
+        case ELIS_FILES_ROLE_COLLABORATOR:
+        case ELIS_FILES_ROLE_CONTRIBUTOR:
+        case ELIS_FILES_ROLE_EDITOR:
+        case ELIS_FILES_ROLE_CONSUMER:
             break;
 
         default:
@@ -1743,8 +1738,8 @@ function elis_files_set_permission($username, $uuid, $role, $capability) {
     $capability = strtoupper($capability);  // Just in case.
 
     switch ($capability) {
-        case ALFRESCO_CAPABILITY_ALLOWED:
-        case ALFRESCO_CAPABILITY_DENIED:
+        case ELIS_FILES_CAPABILITY_ALLOWED:
+        case ELIS_FILES_CAPABILITY_DENIED:
             break;
 
         default:
@@ -1752,11 +1747,11 @@ function elis_files_set_permission($username, $uuid, $role, $capability) {
     }
 
     // So that we don't conflict with the default Alfresco admin account.
-    $username = $username == 'admin' ? $CFG->repository_alfresco_admin_username : $username;
+    $username = $username == 'admin' ? $CFG->repository_elis_files_admin_username : $username;
 
     // We must include the tenant portion of the username here.
-    if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-        $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+    if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+        $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
     }
 
     $postdata = array(
@@ -1765,12 +1760,12 @@ function elis_files_set_permission($username, $uuid, $role, $capability) {
         'capability' => $capability
     );
 
-    $response = alfresco_send('/moodle/setpermissions/' . $uuid, $postdata, 'POST');
+    $response = elis_files_send('/moodle/setpermissions/' . $uuid, $postdata, 'POST');
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
@@ -1807,14 +1802,14 @@ function elis_files_set_permission($username, $uuid, $role, $capability) {
         }
 
         // Make sure that this user or everyone on the site can access the specified node.
-        if ($pfor == $username && $pname == $role && $pcap == ALFRESCO_CAPABILITY_ALLOWED) {
+        if ($pfor == $username && $pname == $role && $pcap == ELIS_FILES_CAPABILITY_ALLOWED) {
             $found = true;
         }
     }
 
     // Check for the two possible correct results depending on whether we are allowing or denying this
-    if (($found && $capability == ALFRESCO_CAPABILITY_ALLOWED) ||
-        (!$found && $capability == ALFRESCO_CAPABILITY_DENIED)) {
+    if (($found && $capability == ELIS_FILES_CAPABILITY_ALLOWED) ||
+        (!$found && $capability == ELIS_FILES_CAPABILITY_DENIED)) {
 
         return true;
     }
@@ -1835,12 +1830,12 @@ function elis_files_node_rename($uuid, $newname) {
         'name' => $newname
     );
 
-    $response = alfresco_send('/moodle/noderename/' . $uuid, array('name' => $newname), 'POST');
+    $response = elis_files_send('/moodle/noderename/' . $uuid, array('name' => $newname), 'POST');
 
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_alfresco') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
 
@@ -1870,19 +1865,19 @@ function elis_files_quota_info($username = '') {
     }
 
     // So that we don't conflict with the default Alfresco admin account.
-    $username = $USER->username == 'admin' ? $CFG->repository_alfresco_admin_username : $USER->username;
+    $username = $USER->username == 'admin' ? $CFG->repository_elis_files_admin_username : $USER->username;
 
     // We must include the tenant portion of the username here.
-    if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-        $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+    if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+        $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
     }
 
     // Get the JSON response containing user data for the given account.
-    if (($json = alfresco_request('/api/people/' . $username)) === false) {
+    if (($json = elis_files_request('/api/people/' . $username)) === false) {
         return false;
     }
 
-    $userdata = alfresco_json_parse($json);
+    $userdata = elis_files_json_parse($json);
 
     if (!isset($userdata->quota) || !isset($userdata->sizeCurrent)) {
         return false;
@@ -1909,7 +1904,7 @@ function elis_files_quota_check($filesize, $user = null) {
         $user = $USER;
     }
 
-    if (($userdata = alfresco_quota_info($user->username)) === false) {
+    if (($userdata = elis_files_quota_info($user->username)) === false) {
         return false;
     }
 
@@ -1927,7 +1922,7 @@ function elis_files_quota_check($filesize, $user = null) {
  * @return string|bool The node UUID value on succes, False otherwise.
  */
 function elis_files_get_web_scripts_dir($moodle = false) {
-    $dir = alfresco_read_dir();
+    $dir = elis_files_read_dir();
 
     if (empty($dir->folders)) {
         return false;
@@ -1935,7 +1930,7 @@ function elis_files_get_web_scripts_dir($moodle = false) {
 
     foreach ($dir->folders as $folder) {
         if ($folder->title == 'Data Dictionary') {
-            $dir = alfresco_read_dir($folder->uuid);
+            $dir = elis_files_read_dir($folder->uuid);
 
             if (empty($dir->folders)) {
                 return false;
@@ -1947,7 +1942,7 @@ function elis_files_get_web_scripts_dir($moodle = false) {
                         return $folder->uuid;
                     }
 
-                    $dir = alfresco_read_dir($folder->uuid);
+                    $dir = elis_files_read_dir($folder->uuid);
 
                     if (empty($dir->folders)) {
                         return false;
@@ -1955,7 +1950,7 @@ function elis_files_get_web_scripts_dir($moodle = false) {
 
                     foreach ($dir->folders as $folder) {
                         if ($folder->title == 'org') {
-                            $dir = alfresco_read_dir($folder->uuid);
+                            $dir = elis_files_read_dir($folder->uuid);
 
                             if (empty($dir->folders)) {
                                 return false;
@@ -1963,7 +1958,7 @@ function elis_files_get_web_scripts_dir($moodle = false) {
 
                             foreach ($dir->folders as $folder) {
                                 if ($folder->title == 'alfresco') {
-                                    $dir = alfresco_read_dir($folder->uuid);
+                                    $dir = elis_files_read_dir($folder->uuid);
 
                                     if (empty($dir->folders)) {
                                         return false;
@@ -2013,12 +2008,12 @@ function elis_files_install_web_script($files, $uuid) {
             return false;
         }
 
-        $staus = $status && alfresco_upload_file('', $file, $uuid);
+        $staus = $status && elis_files_upload_file('', $file, $uuid);
     }
 
     if ($status) {
         sleep(2);
-        $url = alfresco_base_url() . '/?reset=on';
+        $url = elis_files_base_url() . '/?reset=on';
 
     /// Prepare curl session
         $session = curl_init($url);
@@ -2070,7 +2065,7 @@ function elis_files_json_parse($json) {
 
 
 /**
- * Simply sort the results from an alfresco_read_dir() API call.  This call is
+ * Simply sort the results from an elis_files_read_dir() API call.  This call is
  * fed into usort().
  *
  * @see usort()
@@ -2090,28 +2085,28 @@ function elis_files_ls_sort($a, $b) {
 function elis_files_utils_get_auth_headers($username = '') {
     global $CFG;
 
-    if (ALFRESCO_DEBUG_TRACE) print_object('alfresco_utils_get_auth_headers(' . $username . ')');
+    if (ELIS_FILES_DEBUG_TRACE) print_object('elis_files_utils_get_auth_headers(' . $username . ')');
 
     if (!empty($username)) {
         // So that we don't conflict with the default Alfresco admin account.
-        $username = $username == 'admin' ? $CFG->repository_alfresco_admin_username : $username;
+        $username = $username == 'admin' ? $CFG->repository_elis_files_admin_username : $username;
 
             // We must include the tenant portion of the username here.
-        if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-            $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+        if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+            $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
         }
 
         $user = $username;
         $pass = 'password';
     } else {
-        $user = $CFG->repository_alfresco_server_username;
-        $pass = $CFG->repository_alfresco_server_password;
+        $user = $CFG->repository_elis_files_server_username;
+        $pass = $CFG->repository_elis_files_server_password;
     }
 
     // We must include the tenant portion of the username here if it is not already included.
-    if ($user != $CFG->repository_alfresco_server_username) {
-        if (($tenantpos = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-            $tenantname = substr($CFG->repository_alfresco_server_username, $tenantpos);
+    if ($user != $CFG->repository_elis_files_server_username) {
+        if (($tenantpos = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+            $tenantname = substr($CFG->repository_elis_files_server_username, $tenantpos);
 
             if (strpos($user, $tenantname) === false) {
                 $user .= $tenantname;
@@ -2134,31 +2129,31 @@ function elis_files_utils_get_auth_headers($username = '') {
 function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
     global $CFG;
 
-    if (ALFRESCO_DEBUG_TRACE) print_object('alfresco_utils_get_ticket(' . $op . ', ' . $username . ')');
+    if (ELIS_FILES_DEBUG_TRACE) print_object('elis_files_utils_get_ticket(' . $op . ', ' . $username . ')');
 
-    $alf_username = !empty($_SESSION['alfresco_username']) ? $_SESSION['alfresco_username'] : NULL;
-    $alf_ticket   = !empty($_SESSION['alfresco_ticket']) ? $_SESSION['alfresco_ticket'] : NULL;
+    $alf_username = !empty($_SESSION['elis_files_username']) ? $_SESSION['elis_files_username'] : NULL;
+    $alf_ticket   = !empty($_SESSION['elis_files_ticket']) ? $_SESSION['elis_files_ticket'] : NULL;
 
     if (!empty($username)) {
         // So that we don't conflict with the default Alfresco admin account.
-        $username = $username == 'admin' ? $CFG->repository_alfresco_admin_username : $username;
+        $username = $username == 'admin' ? $CFG->repository_elis_files_admin_username : $username;
 
             // We must include the tenant portion of the username here.
-        if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-            $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
+        if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+            $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
         }
 
         $user = $username;
         $pass = 'password';
     } else {
-        $user = $CFG->repository_alfresco_server_username;
-        $pass = $CFG->repository_alfresco_server_password;
+        $user = $CFG->repository_elis_files_server_username;
+        $pass = $CFG->repository_elis_files_server_password;
     }
 
     // We must include the tenant portion of the username here if it is not already included.
-    if ($user != $CFG->repository_alfresco_server_username) {
-        if (($tenantpos = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-            $tenantname = substr($CFG->repository_alfresco_server_username, $tenantpos);
+    if ($user != $CFG->repository_elis_files_server_username) {
+        if (($tenantpos = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+            $tenantname = substr($CFG->repository_elis_files_server_username, $tenantpos);
 
             if (strpos($user, $tenantname) === false) {
                 $user .= $tenantname;
@@ -2174,12 +2169,12 @@ function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
 
     if ($alf_ticket == NULL || $op == 'refresh') {
         // Authenticate and store the ticket
-        $url = alfresco_utils_get_url('/api/login?u=' . urlencode($user) . '&pw=' . urlencode($pass));
+        $url = elis_files_utils_get_url('/api/login?u=' . urlencode($user) . '&pw=' . urlencode($pass));
 
         // Prepare curl session
         $session = curl_init($url);
 
-        if (ALFRESCO_DEBUG_TRACE) {
+        if (ELIS_FILES_DEBUG_TRACE) {
             curl_setopt($session, CURLOPT_VERBOSE, true);
         }
 
@@ -2202,17 +2197,17 @@ function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
         } else {
             return false;
 
-            debugging(get_string('errorreceivedfromendpoint', 'repository_alfresco') .
+            debugging(get_string('errorreceivedfromendpoint', 'repository_elis_files') .
                       (!empty($response->code) ? $response->code . ' ' : ' ') .
                       $response->error, DEBUG_DEVELOPER);
         }
 
         if ($alf_ticket == '') {
-            debug(get_string('unabletoauthenticatewithendpoint', 'repository_alfresco'), DEBUG_DEVELOPER);
+            debug(get_string('unabletoauthenticatewithendpoint', 'repository_elis_files'), DEBUG_DEVELOPER);
         }
 
-        $_SESSION['alfresco_ticket']   = $alf_ticket;
-        $_SESSION['alfresco_username'] = $user;
+        $_SESSION['elis_files_ticket']   = $alf_ticket;
+        $_SESSION['elis_files_username'] = $user;
     }
 
     return !empty($alf_ticket) ? $alf_ticket : false;
@@ -2226,7 +2221,7 @@ function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
  * @return string A concatenation of the 'base' URL with the service URL.
  **/
 function elis_files_utils_get_url($url) {
-    return alfresco_base_url() . $url;
+    return elis_files_base_url() . $url;
 }
 
 
@@ -2238,8 +2233,8 @@ function elis_files_utils_get_url($url) {
 function elis_files_utils_get_wc_url($url, $op = 'norefresh', $username = '') {
     global $CFG;
 
-    $endpoint = alfresco_base_url();
-    $ticket   = alfresco_utils_get_ticket($op, $username);
+    $endpoint = elis_files_base_url();
+    $ticket   = elis_files_utils_get_ticket($op, $username);
 
     if (false === strstr($url, '?') ) {
         return $endpoint . $url . '?alf_ticket=' . $ticket;
@@ -2260,13 +2255,13 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
 
    global $CFG;
 
-    if (ALFRESCO_DEBUG_TRACE) print_object('alfresco_utils_invoke_service(' . $serviceurl . ', ' . $op . ', ' .
+    if (ELIS_FILES_DEBUG_TRACE) print_object('elis_files_utils_invoke_service(' . $serviceurl . ', ' . $op . ', ' .
                                            'array(), ' . $method . ', $data, ' . $username . ', ' . $retry . ')');
 
     // We must include the tenant portion of the username here if it is not already included.
-//    if ($username != $CFG->repository_alfresco_server_username) {
-//        if (($tenantpos = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-//            $tenantname = substr($CFG->repository_alfresco_server_username, $tenantpos);
+//    if ($username != $CFG->repository_elis_files_server_username) {
+//        if (($tenantpos = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
+//            $tenantname = substr($CFG->repository_elis_files_server_username, $tenantpos);
 //
 //            if (strpos($username, $tenantname) === false) {
 //                $username .= $tenantname;
@@ -2274,7 +2269,7 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
 //        }
 //    }
 
-    $response = alfresco_utils_http_request($serviceurl, $op, $headers, $method, $data, $username, $retry);
+    $response = elis_files_utils_http_request($serviceurl, $op, $headers, $method, $data, $username, $retry);
 
     if ($response->code == 200 || $response->code == 201 || $response->code == 204) {
         $content = $response->data;
@@ -2285,7 +2280,7 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
                 return $content;
             }
         } else {
-            $response2 = alfresco_utils_http_request($serviceurl, 'refresh', $headers, $method, $data, $username, $retry);
+            $response2 = elis_files_utils_http_request($serviceurl, 'refresh', $headers, $method, $data, $username, $retry);
 
             if ($response2->code == 200 || $response->code == 201) {
                 return $response2->data;
@@ -2293,14 +2288,14 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
                 $a = new stdClass;
                 $a->serviceurl = $serviceurl;
                 $a->code       = $response2->code;
-                if (ALFRESCO_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_alfresco', $a));
-                if (ALFRESCO_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response->data);
+                if (ELIS_FILES_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_elis_files', $a));
+                if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response->data);
 
                 return false;
             }
         }
     } else if ($response->code == 302 || $response->code == 505 || $response->code == 401) {
-        $response2 = alfresco_utils_http_request($serviceurl, 'refresh', $headers, $method, $data, $username, $retry);
+        $response2 = elis_files_utils_http_request($serviceurl, 'refresh', $headers, $method, $data, $username, $retry);
 
         if ($response2->code == 200 || $response->code == 201) {
             return $response2->data;
@@ -2309,8 +2304,8 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
             $a = new stdClass;
             $a->serviceurl = $serviceurl;
             $a->code       = $response2->code;
-            if (ALFRESCO_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_alfresco', $a));
-            if (ALFRESCO_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response->data);
+            if (ELIS_FILES_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_elis_files', $a));
+            if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response->data);
 
             return false;
         }
@@ -2318,9 +2313,9 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
         $a = new stdClass;
         $a->serviceurl = $serviceurl;
         $a->code       = $response->code;
-        if (ALFRESCO_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_alfresco', $a) .
+        if (ELIS_FILES_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_elis_files', $a) .
                                                (!empty($response->error) ? ' ' . $response->error : ''));
-        if (ALFRESCO_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response->data);
+        if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response->data);
 
         return false;
     }
@@ -2330,7 +2325,7 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
 /**
  * Use Curl to send the request to the Alfresco repository.
  *
- * @see alfresco_utils_invoke_service
+ * @see elis_files_utils_invoke_service
  */
 function elis_files_utils_http_request($serviceurl, $auth = 'ticket', $headers = array(),
                                      $method = 'GET', $data = NULL, $username = '', $retry = 3) {
@@ -2340,12 +2335,12 @@ function elis_files_utils_http_request($serviceurl, $auth = 'ticket', $headers =
     switch ($auth) {
         case 'ticket':
         case 'refresh':
-            $url = alfresco_utils_get_wc_url($serviceurl, $auth, $username);
+            $url = elis_files_utils_get_wc_url($serviceurl, $auth, $username);
             break;
 
         case 'basic':
-            $url     = alfresco_utils_get_url($serviceurl);
-            $hauth   = alfresco_utils_get_auth_headers($username);
+            $url     = elis_files_utils_get_url($serviceurl);
+            $hauth   = elis_files_utils_get_auth_headers($username);
             $headers = array_merge($hauth, $headers);
             break;
 
@@ -2356,7 +2351,7 @@ function elis_files_utils_http_request($serviceurl, $auth = 'ticket', $headers =
 /// Prepare curl sessiontoge
     $session = curl_init($url);
 
-    if (ALFRESCO_DEBUG_TRACE) {
+    if (ELIS_FILES_DEBUG_TRACE) {
         curl_setopt($session, CURLOPT_VERBOSE, true);
     }
 
@@ -2368,8 +2363,8 @@ function elis_files_utils_http_request($serviceurl, $auth = 'ticket', $headers =
     curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
 
     if ($auth == 'basic') {
-        $user = $CFG->repository_alfresco_server_username;
-        $pass = $CFG->repository_alfresco_server_password;
+        $user = $CFG->repository_elis_files_server_username;
+        $pass = $CFG->repository_elis_files_server_password;
 
         curl_setopt($session, CURLOPT_USERPWD, "$user:$pass");
     }

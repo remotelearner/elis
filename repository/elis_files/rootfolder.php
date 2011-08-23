@@ -29,8 +29,8 @@
 
     require_once dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php';
     require_once dirname(__FILE__) . '/lib.php';
-//    require_once $CFG->libdir . '/HTML_TreeMenu-1.2.0/TreeMenu.php';
-    require_once $CFG->dirroot . '/file/repository/ELIS_files_factory.class.php';
+    require_once dirname(__FILE__) . '/lib/HTML_TreeMenu-1.2.0/TreeMenu.php';
+    require_once dirname(__FILE__) . '/ELIS_files_factory.class.php';
 
 
     require_login(SITEID, false);

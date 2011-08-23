@@ -56,10 +56,12 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
-/// Alfresco API v3.0
+/// Alfresco API v3.4
 //require_once($CFG->libdir . '/alfresco30/lib.php');
+require_once(dirname(__FILE__).'/lib.php');
 //require_once($CFG->libdir . '/cmis-php/cmis_repository_wrapper.php');
-require_once(dirname(__FILE__).'/ELIS_files.php');
+require_once(dirname(__FILE__). '/cmis-php/cmis_repository_wrapper.php');
+//require_once(dirname(__FILE__).'/ELIS_files.php');
 
 
 define('ELIS_FILES_CRON_VALUE',  HOURSECS); // Run the cron job every hour.
@@ -2656,7 +2658,7 @@ class ELIS_files {
  * @return bool True on success, False otherwise.
  */
     function migrate_all_users($limit = 50) {
-        global $CFG;
+        global $CFG, $DB;
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('migrate_all_users(' . $limit . ')');
 
