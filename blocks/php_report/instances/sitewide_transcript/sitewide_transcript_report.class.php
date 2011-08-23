@@ -270,11 +270,14 @@ class sitewide_transcript_report extends table_report {
         //$permissions_filter = $contexts->sql_filter_for_context_level('crlmu.id', 'user');
         $filter_obj = $contexts->get_filter('crlmu.id', 'user');
         $filter_sql = $filter_obj->get_sql(false, 'crlmu'); // TBV
+        $where = array();
         $params = array();
-        $permissions_filter = '';
         if (isset($filter_sql['where'])) {
-            $permissions_filter = ' WHERE '. $filter_sql['where'];
+            $where[] = $filter_sql['where'];
             $params = $filter_sql['where_parameters'];
+        }
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where[] = 'crlmu.inactive = 0';
         }
 
         // Also require Moodle-Only query w/o CM tables!
@@ -286,12 +289,12 @@ class sitewide_transcript_report extends table_report {
            JOIN {crlm_course} crs ON crlmclass.courseid = crs.id
           "
       //." LEFT JOIN {crlm_class_graded} ccg ON crlmu.id = ccg.userid"
-        ."{$permissions_filter}";
+        ;
 
-        //error_log("sitewide_transcript_report.php::get_report_sql($columns); sql={$sql}");
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
-            $sql .= ' AND crlmu.inactive = 0';
+        if (!empty($where)) {
+            $sql .= 'WHERE '. implode(' AND ', $where);
         }
+        //error_log("sitewide_transcript_report.php::get_report_sql($columns); sql={$sql}");
 
         return array($sql, $params);
     }

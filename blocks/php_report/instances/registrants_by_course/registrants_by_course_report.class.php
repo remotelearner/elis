@@ -290,12 +290,10 @@ class registrants_by_course_report extends table_report {
             $where[] = $filter_sql['where'];
             $params = $filter_sql['where_parameters'];
         }
-        //error_log("registrants_by_course::get_report_sql(): permissions_filter = {$permissions_filter}");
 
         if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
             $where[] = 'usr.inactive = 0';
         }
-        $s_where = implode(' AND ', $where);
 
         // Main query
         $sql = "SELECT DISTINCT {$columns},
@@ -314,9 +312,10 @@ class registrants_by_course_report extends table_report {
                     ON cur.id = curcrs.curriculumid
                 ";
 
-        if (!empty($s_where)) {
-            $sql .= "WHERE {$s_where} ";
+        if (!empty($where)) {
+            $sql .= 'WHERE '. implode(' AND ', $where);
         }
+
         return array($sql, $params);
     }
 

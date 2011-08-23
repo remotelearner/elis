@@ -277,13 +277,15 @@ class nonstarter_report extends table_report {
         //$permissions_filter = $contexts->sql_filter_for_context_level('crlmusr.id', 'user');
         $filter_obj = $contexts->get_filter('crlmusr.id', 'user');
         $filter_sql = $filter_obj->get_sql(false, 'crlmusr'); // TBV
+        $where = array();
         $params = array();
-        $permissions_filter = '';
         if (isset($filter_sql['where'])) {
-            $permissions_filter = ' WHERE '. $filter_sql['where'];
+            $where[] = $filter_sql['where'];
             $params = $filter_sql['where_parameters'];
         }
-        //error_log("Non-starter::get_report_sql(): permissions_filter = {$permissions_filter}");
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where[] = 'crlmusr.inactive = 0';
+        }
 
         // Only want users with not-complete status
         $stustatus = STUSTATUS_NOTCOMPLETE;
@@ -358,12 +360,11 @@ class nonstarter_report extends table_report {
             $sql .= "AND time <= {$this->enddate} ";
         }
         $sql .= ")
-           {$permissions_filter} ";
+           ";
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
-            $sql .= ' AND crlmusr.inactive = 0';
+        if (!empty($where)) {
+            $sql .= 'WHERE '. implode(' AND ', $where);
         }
-
         //error_log("nonstarter_report.php::get_report_sql($columns); sql={$sql}");
         return array($sql, $params);
     }

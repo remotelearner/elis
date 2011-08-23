@@ -399,6 +399,9 @@ class sitewide_course_completion_report extends table_report {
             $where[] = $filter_sql['where'];
             $params = $filter_sql['where_parameters'];
         }
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where[] = 'usr.inactive = 0';
+        }
 
         $sql = "SELECT {$columns},
                     cur.id IS NULL AS isnull,
@@ -434,15 +437,9 @@ class sitewide_course_completion_report extends table_report {
                     ";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
-            $where[] = 'usr.inactive = 0';
-        }
-
-        $s_where = '';
         if (!empty($where)) {
-            $s_where = implode(' AND ', $where);
+            $sql .= 'WHERE '. implode(' AND ', $where);
         }
-        $sql .= $s_where;
 
         return array($sql, $params);
     }
