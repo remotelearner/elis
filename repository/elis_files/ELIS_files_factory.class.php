@@ -60,6 +60,8 @@
 
         function factory() {
             global $CFG, $SESSION;
+            // Check for Alfresco version setting
+
             require_once(dirname(__FILE__).'/ELIS_files.php');
             $class = "ELIS_files";
             // Don't store in session for now
