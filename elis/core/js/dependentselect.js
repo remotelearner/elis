@@ -35,12 +35,12 @@ function dependentselect_updateoptions(id, path) {
     var child = document.getElementById('id_'+id);
     var childId = child.value;
 
-	var option_success = function(o) {
-	    var data = YAHOO.lang.JSON.parse(o.responseText);
-	    child.options.length = 0;
-	    for (var key in data) {
-	        addOption(child,childId,key,data[key]);
-	    }
+    var option_success = function(o) {
+        var data = YAHOO.lang.JSON.parse(o.responseText);
+        child.options.length = 0;
+        for (var key in data) {
+            addOption(child,childId,key,data[key]);
+        }
     };
 
     var option_failure = function(o) {
