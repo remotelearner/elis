@@ -351,10 +351,11 @@ class ELIS_files {
 //TODO: for the install issue
 //echo '<br>config:';
 //print_object($config);
-        set_config('repository_elis_files_server_host', stripslashes(trim($config->server_host)));
-        set_config('repository_elis_files_server_port', stripslashes(trim($config->server_port)));
-        set_config('repository_elis_files_server_username', stripslashes(trim($config->server_username)));
-        set_config('repository_elis_files_server_password', stripslashes(trim($config->server_password)));
+
+        set_config('server_host', stripslashes(trim($config->server_host)));
+        set_config('server_port', stripslashes(trim($config->server_port)));
+        set_config('server_username', stripslashes(trim($config->server_username)));
+        set_config('server_password', stripslashes(trim($config->server_password)));
 
         return true;
     }

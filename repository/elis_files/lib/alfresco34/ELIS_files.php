@@ -347,10 +347,10 @@ class ELIS_files {
         set_config('repository_elis_files_server_port', stripslashes(trim($config->repository_elis_files_server_port)), 'elis_files');
         set_config('repository_elis_files_server_username', stripslashes(trim($config->repository_elis_files_server_username)), 'elis_files');
         set_config('repository_elis_files_server_password', stripslashes(trim($config->repository_elis_files_server_password)), 'elis_files');*/
-        set_config('repository_elis_files_server_host', stripslashes(trim($config->server_host)));
-        set_config('repository_elis_files_server_port', stripslashes(trim($config->server_port)));
-        set_config('repository_elis_files_server_username', stripslashes(trim($config->server_username)));
-        set_config('repository_elis_files_server_password', stripslashes(trim($config->server_password)));
+        set_config('server_host', stripslashes(trim($config->server_host)));
+        set_config('server_port', stripslashes(trim($config->server_port)));
+        set_config('server_username', stripslashes(trim($config->server_username)));
+        set_config('server_password', stripslashes(trim($config->server_password)));
 
 
         return true;
