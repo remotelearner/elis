@@ -336,25 +336,25 @@ class ELIS_files {
  * @return bool True on success, False otherwise.
  */
     function process_config($config) {
-        if (!isset($config->repository_elis_files_server_host)) {
-            $config->repository_elis_files_server_host = '';
+        if (!isset($config->server_host)) {
+            $config->server_host = '';
         }
-        if (!isset($config->repository_elis_files_server_port)) {
-            $config->repository_elis_files_server_password = '';
+        if (!isset($config->server_port)) {
+            $config->server_port = '';
         }
-        if (!isset($config->repository_elis_files_server_username)) {
-            $config->repository_elis_files_server_password = '';
+        if (!isset($config->server_username)) {
+            $config->server_username = '';
         }
-        if (!isset($config->repository_elis_files_server_password)) {
-            $config->repository_elis_files_server_password = '';
+        if (!isset($config->server_password)) {
+            $config->server_password = '';
         }
 //TODO: for the install issue
 //echo '<br>config:';
 //print_object($config);
-        set_config('repository_elis_files_server_host', stripslashes(trim($config->repository_elis_files_server_host)));
-        set_config('repository_elis_files_server_port', stripslashes(trim($config->repository_elis_files_server_port)));
-        set_config('repository_elis_files_server_username', stripslashes(trim($config->repository_elis_files_server_username)));
-        set_config('repository_elis_files_server_password', stripslashes(trim($config->repository_elis_files_server_password)));
+        set_config('repository_elis_files_server_host', stripslashes(trim($config->server_host)));
+        set_config('repository_elis_files_server_port', stripslashes(trim($config->server_port)));
+        set_config('repository_elis_files_server_username', stripslashes(trim($config->server_username)));
+        set_config('repository_elis_files_server_password', stripslashes(trim($config->server_password)));
 
         return true;
     }
