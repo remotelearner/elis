@@ -109,8 +109,8 @@ class curricula_report extends table_report {
         require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
 
         //needed to include for filters
-        require_once($CFG->dirroot . '/elis/core/lib/filtering/userprofilematch.php');
-        require_once($CFG->dirroot . '/elis/program/lib/filtering/clusterselect.php');
+        require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofilematch.php');
+        require_once($CFG->dirroot .'/elis/program/lib/filtering/clusterselect.php');
     }
 /**
      * Specifies the particular export formats that are supported by this report
@@ -294,8 +294,6 @@ class curricula_report extends table_report {
     function get_report_sql($columns) {
         global $DB;
 
-        $permissions_filter = '';
-
         //obtain all course contexts where this user can view reports
         $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
 
@@ -303,40 +301,35 @@ class curricula_report extends table_report {
         //$permissions_filter = $contexts->sql_filter_for_context_level('crlmu.id', 'user');
         $filter_obj = $contexts->get_filter('crlmu.id', 'user');
         $filter_sql = $filter_obj->get_sql(false, 'crlmu'); // TBV
+        $where = array();
         $params = array();
-        $permissions_filter = '';
         if (isset($filter_sql['where'])) {
-            $permissions_filter = $filter_sql['where'];
+            $where[] = $filter_sql['where'];
             $params = $filter_sql['where_parameters'];
         }
-        //error_log("Curricula::get_report_sql(): permissions_filter = {$permissions_filter}");
 
-
-        $report_sql = "SELECT  {$columns}, u.firstname AS firstname, crlmu.id as userid, curass.completed AS completed,
-        ". $DB->sql_concat('crlmu.lastname',"' '","COALESCE(crlmu.mi, '')","' '",'crlmu.firstname') ." as sortname
-                FROM {". curriculumstudent::TABLE ."} curass
-                       JOIN {". user::TABLE ."} crlmu
+        $report_sql = "SELECT {$columns}, u.firstname AS firstname, crlmu.id as userid, curass.completed AS completed,
+        ". $DB->sql_concat('crlmu.lastname',"' '","COALESCE(crlmu.mi, '')","' '",'crlmu.firstname') .' as sortname
+                FROM {'. curriculumstudent::TABLE .'} curass
+                       JOIN {'. user::TABLE .'} crlmu
                          ON curass.userid = crlmu.id
-                       JOIN {". curriculum::TABLE ."} cc
+                       JOIN {'. curriculum::TABLE .'} cc
                          ON curass.curriculumid = cc.id
-                       JOIN {". curriculumcourse::TABLE ."} ccc
+                       JOIN {'. curriculumcourse::TABLE .'} ccc
                          ON ccc.curriculumid = cc.id
-                       JOIN {". pmclass::TABLE ."} ccl
+                       JOIN {'. pmclass::TABLE .'} ccl
                          ON ccl.courseid = ccc.courseid
-                       JOIN {". student::TABLE ."} cce
+                       JOIN {'. student::TABLE .'} cce
                          ON (cce.classid = ccl.id) AND (cce.userid = curass.userid)
                        JOIN {user} u
-                         ON u.idnumber = crlmu.idnumber";
+                         ON u.idnumber = crlmu.idnumber
+                      ';
 
-        $where = array();
-        if ($permissions_filter != '') {
-            $where[] = $permissions_filter;
-        }
         if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
             $where[] = 'crlmu.inactive = 0';
         }
         if (!empty($where)) {
-            $report_sql .= ' WHERE ' . implode(' AND ', $where);
+            $report_sql .= 'WHERE '. implode(' AND ', $where);
         }
 
         return array($report_sql, $params);
