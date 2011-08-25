@@ -194,6 +194,7 @@ class course extends data_object_with_custom_fields {
 
         $config_data = array();
 
+        $config_data['course'] = $this;
         $config_data['elem'] = $elem;
         $config_data['elemid'] = $elemid;
         $config_data['formid'] = $formid;

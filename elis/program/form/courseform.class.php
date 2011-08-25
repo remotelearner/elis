@@ -212,7 +212,10 @@ class cmCourseForm extends cmform {
 
 class completionform extends moodleform {
     public function definition() {
+        require_once(elis::lib('form/gradebookidnumber.php'));
+
         $elem = $this->_customdata['elem'];
+        $course = $this->_customdata['course'];
 
         $this->set_data($this->_customdata['elem']);
         $this->set_data($this->_customdata);
@@ -222,7 +225,12 @@ class completionform extends moodleform {
         $mform->addElement('hidden', 'id');
         $mform->addElement('hidden', 'elemid');
 
-        $mform->addElement('text', 'idnumber', get_string('course_idnumber', 'elis_program') . ':');
+        $options = array();
+        if ($course->coursetemplate->valid()) {
+            $template = $course->coursetemplate->current();
+            $options['courseid'] = $template->location;
+        }
+        $mform->addElement(elis_gradebook_idnumber_selector::NAME, 'idnumber', get_string('course_idnumber', 'elis_program') . ':', $options);
         $mform->setType('idnumber', PARAM_TEXT);
         $mform->addRule('idnumber', null, 'maxlength', 100);
         $mform->addRule('idnumber', null, 'required', null, 'client');
