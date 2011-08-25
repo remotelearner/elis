@@ -1002,9 +1002,29 @@ class addclasstable extends yui_table {
         if ((!empty($class->starttimehour) || !empty($class->starttimeminute)) &&
             (!empty($class->endtimehour) || !empty($class->endtimeminute))) {
 
-            return sprintf("%d:%02d - %d:%02d", $class->starttimehour,
-                           $class->starttimeminute, $class->endtimehour,
-                           $class->endtimeminute);
+            if (elis::$config->elis_program->time_format_12h) {
+                $starthour = $class->starttimehour;
+                $startampm = $starthour >= 12 ? 'pm' : 'am';
+                if ($starthour > 12) {
+                    $starthour -= 12;
+                } else if ($starthour == 0) {
+                    $starthour = 12;
+                }
+                $endhour = $class->endtimehour;
+                $endampm = $endhour >= 12 ? 'pm' : 'am';
+                if ($endhour > 12) {
+                    $endhour -= 12;
+                } else if ($endhour == 0) {
+                    $endhour = 12;
+                }
+                return sprintf("%d:%02d %s - %d:%02d %s",
+                               $starthour, $class->starttimeminute, $startampm,
+                               $endhour, $class->endtimeminute, $endampm);
+            } else {
+                return sprintf("%d:%02d - %d:%02d",
+                               $class->starttimehour, $class->starttimeminute,
+                               $class->endtimehour, $class->endtimeminute);
+            }
         } else {
             return 'n/a';
         }

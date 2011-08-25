@@ -623,7 +623,7 @@ class management_page_table extends display_table {
                 if($item->endtimehour / 12 > 1) {
                     return sprintf('%d:%02d pm', ($item->endtimehour % 12), $item->endtimeminute);
                 } else if($item->endtimehour == 12) {
-                    return sprintf('12:%02d pm', $item->starttimeminute);
+                    return sprintf('12:%02d pm', $item->endtimeminute);
                 } else if($item->endtimehour == 0) {
                     return sprintf('12:%02d am', $item->endtimeminute);
                 } else {

@@ -648,7 +648,7 @@ class user extends data_object_with_custom_fields {
     /// Get old completed course data for this user.
         if (!empty($classids)) {
             list($in_sql, $in_params) = $this->_db->get_in_or_equal($classids, SQL_PARAMS_QM, '', false);
-            $sql = 'SELECT stu.id, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+            $sql = 'SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
                       FROM {'.student::TABLE.'} stu
                       JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
                       JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
@@ -670,8 +670,15 @@ class user extends data_object_with_custom_fields {
                 $table->data = array();
 
                 foreach ($classes as $class) {
+                    if ($mdlcrs = moodle_get_course($class->classid)) {
+                        $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
+                            $mdlcrs . '">' . $course->coursename . '</a>';
+                    } else {
+                        $coursename = $course->coursename;
+                    }
+
                     $table->data[] = array(
-                        $class->coursename,
+                        $coursename,
                         $class->grade,
                         date('M j, Y', $class->completetime)
                     );
