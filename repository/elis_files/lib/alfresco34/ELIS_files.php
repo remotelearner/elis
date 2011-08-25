@@ -104,6 +104,7 @@ class ELIS_files {
     var $uuuid    = '';  // User folder UUID
     var $ouuid    = '';  // Organizations folder UUID
     var $root     = '';  // Root folder UUID
+    var $config   = '';  // Config object setting variables for Alfresco
 
     function ELIS_files() {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('ELIS_files()');
@@ -159,15 +160,14 @@ class ELIS_files {
  * @return bool True if the plug-in has the minimum setup done, False otherwise.
  */
     function is_configured() {
-        global $CFG;
+//        global $CFG;
 
-        return (!empty($CFG->repository_elis_files_server_host) &&
-                !empty($CFG->repository_elis_files_server_port) &&
-                !empty($CFG->repository_elis_files_server_username) &&
-                !empty($CFG->repository_elis_files_server_password));
+        return (!empty($this->config->server_host) &&
+                !empty($this->config->server_port) &&
+                !empty($this->config->server_username) &&
+                !empty($this->config->server_password) &&
+                !empty($this->config->alfresco_version));
     }
-
-
 
 /**
  * Verify that the Alfresco repository is currently setup and ready to be
@@ -186,8 +186,8 @@ class ELIS_files {
 
         if (empty($this->cmis)) {
             $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
-                                          $CFG->repository_elis_files_server_username,
-                                          $CFG->repository_elis_files_server_password);
+                                          $this->config->server_username,
+                                          $this->config->server_password);
         }
 
         $root = $this->get_root();
@@ -199,8 +199,8 @@ class ELIS_files {
 //print_object($root);
         // If there is no root folder saved or its set to default,
         // make sure there is a default '/moodle' folder.
-        if (empty($CFG->repository_elis_files_root_folder) ||
-            ($CFG->repository_elis_files_root_folder == '/moodle')) {
+        if (empty($this->config->root_folder) ||
+            ($this->config->root_folder == '/moodle')) {
 
             $dir = $this->read_dir($root->uuid, true);
 //print_object($dir);
@@ -231,7 +231,7 @@ class ELIS_files {
 
         // Otherwise, use the folder that the plug-in has been configured with.
         } else {
-            if (!$uuid = elis_files_uuid_from_path($CFG->repository_elis_files_root_folder)) {
+            if (!$uuid = elis_files_uuid_from_path($this->config->root_folder)) {
                 debugging(get_string('invalidpath', 'repository_elis_files'));
                 return false;
             }
@@ -340,6 +340,12 @@ class ELIS_files {
         if (!isset($config->server_password)) {
             $config->server_password = '';
         }
+        if (!isset($config->alfresco_version)) {
+            $config->alfresco_version = '';
+        }
+
+        // Set the config object to what was retrieved from get_config
+        $this->config = $config;
 //TODO: for the install issue
 //echo '<br>config:';
 //print_object($config);
@@ -347,11 +353,12 @@ class ELIS_files {
         set_config('repository_elis_files_server_port', stripslashes(trim($config->repository_elis_files_server_port)), 'elis_files');
         set_config('repository_elis_files_server_username', stripslashes(trim($config->repository_elis_files_server_username)), 'elis_files');
         set_config('repository_elis_files_server_password', stripslashes(trim($config->repository_elis_files_server_password)), 'elis_files');*/
-        set_config('server_host', stripslashes(trim($config->server_host)));
-        set_config('server_port', stripslashes(trim($config->server_port)));
-        set_config('server_username', stripslashes(trim($config->server_username)));
-        set_config('server_password', stripslashes(trim($config->server_password)));
-
+     /*   set_config('repository_elis_files_server_host', stripslashes(trim($config->server_host)));
+        set_config('repository_elis_files_server_port', stripslashes(trim($config->server_port)));
+        set_config('repository_elis_files_server_username', stripslashes(trim($config->server_username)));
+        set_config('repository_elis_files_server_password', stripslashes(trim($config->server_password)));
+        set_config('repository_elis_files_alfresco_version', stripslashes(trim($config->alfresco_version)));
+*/
 
         return true;
     }
@@ -367,13 +374,13 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_repourl()');
 
-        $repourl = $CFG->repository_elis_files_server_host;
+        $repourl = $this->config->server_host;
 
         if ($repourl[strlen($repourl) - 1] == '/') {
             $repourl = substr($repourl, 0, strlen($repourl) - 1);
         }
 
-        return $repourl . ':' . $CFG->repository_elis_files_server_port . '/alfresco/s/api';
+        return $repourl . ':' . $this->config->server_port . '/alfresco/s/api';
     }
 
 
@@ -388,7 +395,7 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_webapp_url()');
 
-        return $CFG->repository_elis_files_server_host . ':' . $CFG->repository_elis_files_server_port . '/alfresco/' .
+        return $this->config->server_host . ':' . $this->config->server_port . '/alfresco/' .
                ($gotologin ? 'faces/jsp/login.jsp' : '');
     }
 
@@ -404,7 +411,7 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_webdav_url()');
 
-        return $CFG->repository_elis_files_server_host . ':' . $CFG->repository_elis_files_server_port . '/alfresco/webdav/';
+        return $this->config->server_host . ':' . $this->config->server_port . '/alfresco/webdav/';
     }
 
 
@@ -682,8 +689,8 @@ class ELIS_files {
 
             if (!$downloading && !$return) {
             /// Cache this file for the required amount of time.
-                if (!empty($CFG->repository_elis_files_cachetime)) {
-                    $age = $CFG->repository_elis_files_cachetime;
+                if (!empty($this->config->cache_time)) {
+                    $age = $this->config->cache_time;
                 } else {
                 /// The "No" caching option has a value of zero, so
                 /// this handles the default (not set), as well as selecting "No"
@@ -784,8 +791,8 @@ class ELIS_files {
         }
 
     /// Cache this file for the required amount of time.
-        if (!empty($CFG->repository_elis_files_cachetime)) {
-            $age = $CFG->repository_elis_files_cachetime;
+        if (!empty($this->config->cache_time)) {
+            $age = $this->config->cache_time;
         } else {
         /// The "No" caching option has a value of zero, so
         /// this handles the default (not set), as well as selecting "No"
@@ -1160,11 +1167,11 @@ class ELIS_files {
         // Ensure that we set the current user to be the owner of the newly created directory.
         if (!empty($properties->uuid)) {
             // So that we don't conflict with the default Alfresco admin account.
-            $username = $USER->username == 'admin' ? $CFG->repository_elis_files_admin_username : $USER->username;
+            $username = $USER->username == 'admin' ? $this->config->admin_username : $USER->username;
 
             // We must include the tenant portion of the username here.
-            if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
-                $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
+            if (($tenantname = strpos($this->config->server_username, '@')) > 0) {
+                $username .= substr($this->config->server_username, $tenantname);
             }
 
             // We're not going to check the response for this right now.
@@ -1426,7 +1433,7 @@ class ELIS_files {
         // Ensure that we set the configured admin user to be the owner of the deleted file before deleting.
         // This is to prevent the user's Alfresco account from having space incorrectly attributed to it.
         // ELIS-1102
-        elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . $CFG->repository_elis_files_server_username);
+        elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . $this->config->server_username);
 
         if ($this->is_dir($uuid)) {
             if (elis_files_send('/cmis/i/' . $uuid.'/descendants', array(), 'DELETE') === false) {
@@ -1897,8 +1904,8 @@ class ELIS_files {
             $uid = $USER->id;
         }
 
-        if (!empty($CFG->repository_elis_files_root_folder)) {
-            $moodleroot = $CFG->repository_elis_files_root_folder;
+        if (!empty($this->config->root_folder)) {
+            $moodleroot = $this->config->root_folder;
         } else {
             $moodleroot = '/moodle';
         }
@@ -2170,8 +2177,6 @@ class ELIS_files {
                 $cat->path   = !empty($classification->category->id->path) ?
                                $classification->category->id->path : '';
                 $cat->title  = addslashes($category['name']);
-                echo '<br>adding category:';
-                print_object($cat);
                 $cat->id     = $DB->insert_record('elis_files_categories', $cat);
             } else {
                 $cat->parent = $parent;
@@ -2216,8 +2221,9 @@ class ELIS_files {
         foreach ($folders as $i => $folder) {
             $npath = $path . '/' . $folder['name'];
 
-            $text = ' <a href="#" onclick="set_value(\'' . $npath . '\')" title="' . $npath . '">' . $folder['name'] .
-                    (!empty($CFG->repository_elis_files_root_folder) && $CFG->repository_elis_files_root_folder == $npath ?
+            $root_folder = get_config('elis_files','root_folder');
+            $text = ' <a href="#" onclick="set_value(\\\'' . $npath . '\\\')" title="' . $npath . '">' . $folder['name'] .
+                    (!empty($root_folder) && $root_folder == $npath ?
                     ' <span class="pathok">&#x2714;</span>' : '') . '</a>';
 
             $node = new HTML_TreeNode(array(
@@ -2547,11 +2553,11 @@ class ELIS_files {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('update_user_password(' . $user->username . ', ' . $password . ')');
 
         // If the user has an old-style user directory, migrate it's contents and delete the directory.
-        $username = $user->username == 'admin' ? $CFG->repository_elis_files_admin_username : $user->username;
+        $username = $user->username == 'admin' ? $this->config->admin_username : $user->username;
 
         // We must include the tenant portion of the username here.
-        if (($tenantname = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
-            $username .= substr($CFG->repository_elis_files_server_username, $tenantname);
+        if (($tenantname = strpos($this->config->server_username, '@')) > 0) {
+            $username .= substr($this->config->server_username, $tenantname);
         }
 
         // We need to create a new account now.
@@ -2564,8 +2570,8 @@ class ELIS_files {
             'organization' => $user->institution
         );
 
-        if (!empty($CFG->repository_elis_files_user_quota)) {
-            $userdata['quota'] = $CFG->repository_elis_files_user_quota;
+        if (!empty($this->config->user_quota)) {
+            $userdata['quota'] = $this->config->user_quota;
         }
 
         $response = elis_files_send('/moodle/createuser', $userdata, 'POST');
@@ -2736,7 +2742,7 @@ class ELIS_files {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('elis_files_delete(' . $username . ')');
 
         // Get the current value from the configuration option to enable or disable home directory deletion.
-        $deletehomedir = !empty($CFG->repository_elis_files_deleteuserdir);
+        $deletehomedir = !empty($this->config->deleteuserdir);
 
         return elis_files_delete_user($username, $deletehomedir);
     }
@@ -3007,13 +3013,13 @@ class ELIS_files {
         global $CFG, $USER;
 
         // If the default location is set to the default value or not set at all, just return nothing now.
-        if (!isset($CFG->repository_elis_files_default_browse) ||
-            $CFG->repository_elis_files_default_browse == ELIS_FILES_BROWSE_MOODLE_FILES) {
+        if (!isset($this->config->default_browse) ||
+            $this->config->default_browse == ELIS_FILES_BROWSE_MOODLE_FILES) {
 
             return '';
 
         // Or, handle determining if the user can actually access the chosen default location.
-        } else if (isset($CFG->repository_elis_files_default_browse)) {
+        } else if (isset($this->config->default_browse)) {
             if ($cid == SITEID) {
                 $context = get_context_instance(CONTEXT_SYSTEM);
             } else {
@@ -3022,7 +3028,7 @@ class ELIS_files {
 
             // If a user does not have permission to access the default location, fall through to the next
             // lower level to see if they can access that loation.
-            switch ($CFG->repository_elis_files_default_browse) {
+            switch ($this->config->default_browse) {
                 case ELIS_FILES_BROWSE_ELIS_FILES_SITE_FILES:
                     if ($cid == SITEID && (has_capability('block/repository:viewsitecontent', $context) ||
                         has_capability('block/repository:createsitecontent', $context))) {
@@ -3095,8 +3101,8 @@ class ELIS_files {
         if (ELIS_FILES_DEBUG_TIME) $start = microtime(true);
 
     /// See if it's time to execute the cron task.
-        if (!empty($CFG->repository_elis_files_cron) &&
-            ((time() - $CFG->repository_elis_files_cron) < ELIS_FILES_CRON_VALUE)) {
+        if (!empty($this->config->cron) &&
+            ((time() - $this->config->cron) < ELIS_FILES_CRON_VALUE)) {
 
             return;
         }

@@ -27,10 +27,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/// ELIS files class
-require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
 
-//require_once $CFG->dirroot . '/repository/lib.php';
 
 // Define constants for the default file browsing location.
 //define('ELIS_FILES_BROWSE_MOODLE_FILES',          10);
@@ -39,6 +36,7 @@ defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FI
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
 
+defined('ELIS_FILES_SELECT_ALFRESCO_VERSION') or define('ELIS_FILES_SELECT_ALFRESCO_VERSION', null);
 defined('ELIS_FILES_ALFRESCO_30') or define('ELIS_FILES_ALFRESCO_30',   '3.2');
 defined('ELIS_FILES_ALFRESCO_34') or define('ELIS_FILES_ALFRESCO_34',   '3.4');
 
@@ -57,7 +55,13 @@ class repository_elis_files extends repository {
         // May or man not need this
         //$this->config = get_config('elis_files');
 
-        $this->elis_files = repository_factory::factory();
+        $alfresco_version = get_config('elis_files', 'alfresco_version');
+        if ($alfresco_version !== null) {
+            /// ELIS files class
+            require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
+            $this->elis_files = repository_factory::factory();
+            $this->config = get_config('elis_files');
+        }
         // Probably need some of the following...
 
         //$this->sessname = 'elis_files_ticket_'.$this->id;
@@ -101,9 +105,9 @@ class repository_elis_files extends repository {
         }*/
            // return $this->verify_setup();
 
-        $PAGE->requires->js('/repository/elis_files/js/jquery-1.6.2.min.js');
-        $PAGE->requires->js('/repository/elis_files/js/jquery-ui-1.8.16.custom.min.js');
-        $PAGE->requires->js('/repository/elis_files/js/fileuploader.js');
+//        $PAGE->requires->js('/repository/elis_files/js/jquery-1.6.2.min.js');
+//        $PAGE->requires->js('/repository/elis_files/js/jquery-ui-1.8.16.custom.min.js');
+//        $PAGE->requires->js('/repository/elis_files/js/fileuploader.js');
     }
 
     public function print_login() {
@@ -463,16 +467,16 @@ class repository_elis_files extends repository {
 
 //        $mform->addElement('text', 'alfresco_version', get_string('alfrescoversion', 'repository_elis_files'), array('size' => '10'));
 
-//        $alfresco_version = (get_config('repository_elis_files', 'alfresco_version') !== null) ? get_config('repository_elis_files', 'alfresco_version'): '3.2';
-
+        $alfresco_version = get_config('elis_files', 'alfresco_version');
         // Set site version of Alfresco
         $options = array(
+            ELIS_FILES_SELECT_ALFRESCO_VERSION => get_string('alfrescoversionselect', 'repository_elis_files'),
             ELIS_FILES_ALFRESCO_30 => get_string('alfrescoversion30', 'repository_elis_files'),
             ELIS_FILES_ALFRESCO_34 => get_string('alfrescoversion34', 'repository_elis_files')
         );
 
         $mform->addElement('select', 'alfresco_version', get_string('alfrescoversion', 'repository_elis_files'), $options);
-        $mform->setDefault('default_browse', ELIS_FILES_ALFRESCO_30);
+        $mform->setDefault('alfresco_version', ELIS_FILES_SELECT_ALFRESCO_VERSION);
         $mform->addElement('static', 'default_browse_default', '', get_string('elis_files_default_alfresco_version', 'repository_elis_files'));
 //        $mform->addElement('static', 'default_browse_intro', '', get_string('configdefaultfilebrowsinglocation', 'repository_elis_files'));
 //                        $mform->setDefault('alfresco_version', $alfresco_version);
@@ -492,16 +496,16 @@ class repository_elis_files extends repository {
 // For now, just use a link, and only if already installed...
 
         // Check for installed categories table or display 'plugin not yet installed'
-        //if ($DB->get_manager()->table_exists('elis_files_categories')) {
+        if ($DB->get_manager()->table_exists('elis_files_categories')) {
         // Need to check for settings to be saved
-        $user_quota = get_config('elis_files','user_quota');
-        if (isset($user_quota)) {
+//        if (isset($this->config->user_quota)) {
             $popup_settings ="height=400,width=500,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
             $url = $CFG->wwwroot .'/repository/elis_files/config-categories.php';
              // Or fake out a button?
             $jsondata = array('url'=>$url,'name'=>'config-categories','options'=>$popup_settings);
             $jsondata = json_encode($jsondata);
             $title = get_string('configurecategoryfilter', 'repository_elis_files');
+            $disabled = (get_config('elis_files', 'alfresco_version')) == '' ? 'disabled=\'disabled\'': '';
             $button = "<input type='button' value='".$title."' alt='".$title."' title='".$title."' onclick='return openpopup(null,$jsondata);'>";
             $mform->addElement('static', 'category_filter', get_string('categoryfilter', 'repository_elis_files'), $button);
             $mform->addElement('static', 'category_filter_intro', '', get_string('elis_files_category_filter', 'repository_elis_files'));
@@ -558,26 +562,12 @@ echo '<br>label: '.$label;
 //        $mform->addRule('elis_files_category_filter', get_string('required'), 'required', null, 'client');
 
 
-            // Cache time is retrieved from the common cache time and not selected here
-        // Display time period options to control browser caching
- /*       $cacheoptions = array(
-            7  * DAYSECS  => get_string('numdays', '', 7),
-            1  * DAYSECS  => get_string('numdays', '', 1),
-            12 * HOURSECS => get_string('numhours', '', 12),
-            3  * HOURSECS => get_string('numhours', '', 3),
-            2  * HOURSECS => get_string('numhours', '', 2),
-            1  * HOURSECS => get_string('numhours', '', 1),
-            45 * MINSECS  => get_string('numminutes', '', 45),
-            30 * MINSECS  => get_string('numminutes', '', 30),
-            15 * MINSECS  => get_string('numminutes', '', 15),
-            10 * MINSECS  => get_string('numminutes', '', 10),
-            0 => get_string('no')
-        );*/
+        // Cache time is retrieved from the common cache time and displayed here
+        $mform->addElement('text', 'cache_time', get_string('cachetime', 'repository_elis_files'), array('size' => '10'));
+        $mform->addElement('static', 'cache_time_default', '', get_string('elis_files_default_cache_time', 'repository_elis_files'));
+        $mform->setDefault('cache_time', $CFG->repositorycacheexpire);
+        $mform->freeze('cache_time');
 
- /*       $settings->add(new admin_setting_configselect('repository_elis_files_cachetime', get_string('cachetime', 'repository_elis_files'),
-                            get_string('configcachetime', 'repository_elis_files'), 0, $cacheoptions));
-
-*/
         // Generate the list of options for choosing a quota limit size.
         $bytes_1mb = 1048576;
 

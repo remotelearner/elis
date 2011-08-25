@@ -59,7 +59,7 @@
 
         /// Update and store any changes.
             if ($changed) {
-                set_config('repository_elis_files_catfilter', implode(',', $updated));
+                set_config('catfilter', implode(',', $updated), 'elis_files');
                 $catfilter = $updated;
             }
         }

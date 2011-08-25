@@ -42,9 +42,10 @@ function chooseRootFolder(obj) {
     queryString += "&choose=id_root_folder";
     urlString = '/repository/elis_files/rootfolder.php?'  + queryString;
     
-    var myData = {name: "rootfolder", scrollbars: "yes",resizable: "no", width: "640",height: "480" }; 
+    var myData = { url: urlString, name: "rootfolder", scrollbars: "yes",resizable: "no", width: "640",height: "480" }; 
     	 
-    	var jsonStr = YAHOO.lang.JSON.stringify(myData);
+//    	var jsonStr = YAHOO.lang.JSON.stringify(myData);
+//    	var jsonStr = JSON.stringify(myData);
 
-    return openpopup(null, jsonStr);
+    return openpopup(null, myData);
 }

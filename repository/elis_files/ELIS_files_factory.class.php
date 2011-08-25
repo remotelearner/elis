@@ -61,12 +61,12 @@
         function factory() {
             global $CFG, $SESSION;
             // Check for Alfresco version setting
-            $alfresco_version = (get_config('repository_elis_files', 'alfresco_version') !== null) ? get_config('repository_elis_files', 'alfresco_version'): '3.2';
+            $alfresco_version = get_config('elis_files', 'alfresco_version');
             if ($alfresco_version == '3.4') {
                 require_once(dirname(__FILE__).'/lib/alfresco34/ELIS_files.php');
-            } else {
+            } elseif ($alfresco_version == '3.2') {
                 require_once(dirname(__FILE__).'/lib/alfresco30/ELIS_files.php');
-            }
+            } else return false;
 
             $class = "ELIS_files";
             // Don't store in session for now

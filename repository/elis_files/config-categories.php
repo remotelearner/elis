@@ -61,11 +61,11 @@
 
         } else if (isset($data->categories)) {
             // Change this to elis_files plugin specific...
-            set_config('repository_elis_files_catfilter', serialize($data->categories));
+            set_config('catfilter', serialize($data->categories, 'elis_files'));
             //set_config('catfilter', serialize($data->categories), 'elis_files');
 
         } else {
-            set_config('repository_elis_files_catfilter', '');
+            set_config('catfilter', '');
         }
 
 
@@ -77,7 +77,7 @@
     // Set up header etc...
     $url = new moodle_url('/repository/elis_files/config-categories.php');
     $PAGE->set_url($url);
-
+    $PAGE->requires->js('/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.js', true);
 
     $PAGE->set_title($strconfigcatfilter);
     $PAGE->set_heading($SITE->fullname);
@@ -111,14 +111,8 @@
             }
 
             $treemenu = new HTML_TreeMenu_DHTML($menu, array(
-                'images' => $CFG->wwwroot . '/lib/HTML_TreeMenu-1.2.0/images'
+                'images' => $CFG->wwwroot . '/repository/elis_files/lib/HTML_TreeMenu-1.2.0/images'
             ));
-
-            echo '<script language="JavaScript" type="text/javascript">';
-            echo "<!--\n";
-//            include($CFG->libdir . '/HTML_TreeMenu-1.2.0/TreeMenu.js');
-            echo "\n// -->";
-            echo '</script>';
 
             $treemenu->printMenu();
         }

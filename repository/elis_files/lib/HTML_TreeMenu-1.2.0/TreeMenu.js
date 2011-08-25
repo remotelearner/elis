@@ -339,7 +339,7 @@ function arrayCopy(input)
 	{
 		var imgSrc = document.images['img_' + layerID].src;
 	
-		var re = /^(.*)(plus|minus)(bottom|top|single)?.gif$/
+		var re = /^(.*)(plus|minus)(bottom|top|single)?.gif$/;
 		if (matches = imgSrc.match(re)) {
 	
 			document.images['img_' + layerID].src = this.stringFormat('{0}{1}{2}{3}',
