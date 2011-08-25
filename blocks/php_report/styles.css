@@ -119,7 +119,7 @@
 .php_report_body {
   background-image: none;
   background-color: white;
-  overflow: auto
+  overflow: auto;
 }
 
 .php_report_block .php_report_title {
