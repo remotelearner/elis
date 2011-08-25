@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -60,14 +60,14 @@ class menuitemlisting {
         //$jasper_reports = array_keys(jasperreportpage::$reports);
 
         //iterate through the list of pages
-        foreach($this->listing as $id => $value) {
+        foreach ($this->listing as $id => $value) {
 
             //make sure we're a Jasper report page or a standard page
-            if($value->is_page_link()) {
+            if ($value->is_page_link()) {
                 $page_instance = $value->page->page_instance;
 
                 //remove the element if not accessible
-                if(!$page_instance->can_do()) {
+                if (!$page_instance->can_do()) {
                     unset($this->listing[$id]);
                 }
 
@@ -83,7 +83,7 @@ class menuitemlisting {
      */
     private function convert_to_assoc() {
         $result = array();
-        foreach($this->listing as $key => $value) {
+        foreach ($this->listing as $key => $value) {
             $result[$value->name] = $value;
         }
         $this->listing = $result;
@@ -98,17 +98,17 @@ class menuitemlisting {
      */
     public static function flag_leaf_nodes(&$pages) {
 
-        foreach($pages as $id => $outer_page) {
+        foreach ($pages as $id => $outer_page) {
             $found = false;
 
-            foreach(array_values($pages) as $inner_page) {
-                if($inner_page->parent == $outer_page->name) {
+            foreach (array_values($pages) as $inner_page) {
+                if ($inner_page->parent == $outer_page->name) {
                     $found = true;
                     break;
                 }
             }
 
-            if(!$found) {
+            if (!$found) {
                 $pages[$id]->isLeaf = true;
             }
         }
@@ -148,7 +148,7 @@ class menuitemlisting {
 
                 //track the last cluster and curriculum id encountered so that we can
                 //correctly load the child elements
-                if ($current_parts[0] == 'cluster') {
+                if ($current_parts[0] == 'cluster' || $current_parts[0] == 'userset') {
                     $parent_cluster_id = $current_parts[1];
                 } else if ($current_parts[0] == 'curriculum') {
                     $parent_curriculum_id = $current_parts[1];
@@ -230,9 +230,9 @@ class menuitem {
         $this->name = $name;
         $this->page = $page;
 
-        if(!empty($title)) {
+        if (!empty($title)) {
             $this->title = $title;
-        } else if($name != 'root') {
+        } else if ($name != 'root') {
             //the language string will usually correspond with the name
             $this->title = get_string($name, 'elis_program');
         } else {
@@ -240,9 +240,9 @@ class menuitem {
             $this->title = '';
         }
 
-        if(!empty($parent)) {
+        if (!empty($parent)) {
             $this->parent = $parent;
-        } else if(!empty($this->page)) {
+        } else if (!empty($this->page)) {
             //get the parent from the actual page
             $this->parent = $this->page->get_parent_page();
         } else {
@@ -268,7 +268,7 @@ class menuitem {
      */
     function get_link_url_tag() {
         //make sure we are actually linking to a page
-        if($this->is_page_link()) {
+        if ($this->is_page_link()) {
 
             //parameters to pass to the page
             $param_array = array();
@@ -294,7 +294,7 @@ class menuitem {
 
             //this prevents the tree from being expanded when clicking on links
             $stop_propagation_script = 'event.cancelButtle = true;
-                                        if(event.stopPropagation) {
+                                        if (event.stopPropagation) {
                                             event.stopPropagation();
                                         }';
 
@@ -332,7 +332,7 @@ class menuitempage {
 
         $this->page = $page;
 
-        if(!empty($classfile)) {
+        if (!empty($classfile)) {
             $this->classfile = $classfile;
         } else {
             //the classfile will usually match the page name
@@ -352,7 +352,7 @@ class menuitempage {
      * @return  string  The shortname of the parent page, or null if none
      */
     function get_parent_page() {
-        if(!empty($this->page_instance->section)) {
+        if (!empty($this->page_instance->section)) {
             return $this->page_instance->section;
         }
 
@@ -465,8 +465,8 @@ class treerepresentation {
 
         $this->listing = $listing;
 
-        foreach($listing->listing as $key => $value) {
-            if(empty($value->parent)) {
+        foreach ($listing->listing as $key => $value) {
+            if (empty($value->parent)) {
                 $this->root = new treerepresentationnode($value->name, $this);
                 break;
             }
@@ -484,7 +484,7 @@ class treerepresentation {
         global $CFG;
 
         //this prevents handling an empty tree
-        if(empty($this->root->children)) {
+        if (empty($this->root->children)) {
             return '';
         }
 
@@ -589,8 +589,8 @@ class treerepresentationnode {
         $list_entries = $this->parent->get_listing_entries();
 
         //recursively build the tree of children
-        foreach($list_entries as $key => $value) {
-            if($value->parent == $name) {
+        foreach ($list_entries as $key => $value) {
+            if ($value->parent == $name) {
                 $this->children[] = new treerepresentationnode($value->name, $parent);
             }
         }
@@ -618,10 +618,10 @@ class treerepresentationnode {
     function prune() {
 
         //recurse as necessary
-        if(!empty($this->children)) {
-            foreach($this->children as $id => $child) {
+        if (!empty($this->children)) {
+            foreach ($this->children as $id => $child) {
                 $result = $child->prune();
-                if($result == true) {
+                if ($result == true) {
                     //prune the tree along the way
                     unset($this->children[$id]);
                 }
@@ -631,7 +631,7 @@ class treerepresentationnode {
         $listing_entry = $this->parent->get_listing_entry($this->name);
 
         //if an element has no children or link to a page, then it's an empty folder
-        if(empty($this->children) && !$listing_entry->is_page_link()) {
+        if (empty($this->children) && !$listing_entry->is_page_link()) {
             return true;
         } else {
             return false;
@@ -652,20 +652,20 @@ class treerepresentationnode {
         $object->label = $this->parent->get_listing_entry($this->name)->title;
 
         //add link when appropriate (node is a leaf or was forced to be expanded based on entity path)
-        if(empty($this->children) || !empty($this->parent->get_listing_entry($this->name)->forceexpand)) {
+        if (empty($this->children) || !empty($this->parent->get_listing_entry($this->name)->forceexpand)) {
             $url = $this->get_url_tag();
             $object->label = $url . $object->label . '</a>';
         }
 
         $object->children = array();
-        if(!empty($this->children)) {
+        if (!empty($this->children)) {
             //recurse as needed
-            foreach($this->children as $child) {
+            foreach ($this->children as $child) {
                 $object->children[] = $child->get_js_object($expanded_sections);
             }
             
             //flag as expanded when appropriate
-            if(in_array($this->name, $expanded_sections)) {
+            if (in_array($this->name, $expanded_sections)) {
                 $object->expanded = true;
             }
         }
@@ -696,13 +696,13 @@ class treerepresentationnode {
         $current_page = treerepresentation::get_current_section();
 
         //base case
-        if($this->name == $current_page) {
+        if ($this->name == $current_page) {
             return array($this->name);
         }
 
-        foreach($this->children as $child) {
+        foreach ($this->children as $child) {
             $child_result = $child->get_expanded_sections();
-            if(!empty($child_result)) {
+            if (!empty($child_result)) {
                 //should have only one tree "branch", so merge upward
                 return array_merge(array($this->name), $child_result);
             }
@@ -721,23 +721,23 @@ class treerepresentationnode {
      */
     function convert_to_markup($js_sensitive = false) {
 
-        if(!empty($this->parent->get_listing_entry($this->name)->js_sensitive)) {
+        if (!empty($this->parent->get_listing_entry($this->name)->js_sensitive)) {
             return '';
         }
 
         //create the link if necessary
         $url = $this->get_url_tag();
 
-        if($this->name != 'root') {
+        if ($this->name != 'root') {
 
             $style = $this->parent->get_listing_entry($this->name)->style;
             $style_class = '';
 
-            if(!empty($style)) {
+            if (!empty($style)) {
                 $style_class = ' class="' . $style . '"';
             }
 
-            if(!empty($url)) {
+            if (!empty($url)) {
                 $result = "<li{$style_class}>" . $url . $this->parent->get_listing_entry($this->name)->title . '</a>';
             } else {
                 $result = "<li{$style_class}><span class=\"categorytext\">" . $this->parent->get_listing_entry($this->name)->title . "</span>";
@@ -747,15 +747,15 @@ class treerepresentationnode {
         }
 
         //recurse into children if necessary
-        if(!empty($this->children)) {
+        if (!empty($this->children)) {
             $result .= "<ul class=\"block_curr_admin_nonjs\">";
-            foreach($this->children as $child) {
+            foreach ($this->children as $child) {
                 $result .= $child->convert_to_markup();
             }
             $result .= "</ul>";
         }
 
-        if($this->name != 'root') {
+        if ($this->name != 'root') {
             $result .= "</li>";
         }
 
@@ -770,7 +770,7 @@ class treerepresentationnode {
     protected function calculate_identifier() {
         $listing_entry = $this->parent->get_listing_entry($this->name);
 
-        if(empty($listing_entry->contentElId)) {
+        if (empty($listing_entry->contentElId)) {
             return '';
         } else {
             return $listing_entry->contentElId;

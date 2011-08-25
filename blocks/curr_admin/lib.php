@@ -671,7 +671,9 @@ function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $
     $display = '';
 
     //determine the display attribute from the entity type
-    switch($type) {
+    switch ($type) {
+        case 'cluster':
+            $type = 'userset';
         case 'userset':
             $display = 'name';
             break;
@@ -684,10 +686,13 @@ function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $
         case 'track':
             $display = 'name';
             break;
+        case 'cmclass':
+            $type = 'pmclass';
         case 'pmclass':
             $display = 'clsname';
             break;
         default:
+            error_log("blocks/curr_admin/lib.php::block_curr_admin_get_menu_item() invalid type: {$type}");
             break;
     }
 
@@ -741,7 +746,7 @@ function block_curr_admin_get_menu_summary_item($type, $css_class, $num_more, $p
     $page = new menuitempage($type . 'page', $classfile, $params);
 
     //display text
-    if($num_more == 1) {
+    if ($num_more == 1) {
         $display = get_string('menu_summary_item_' . $type . '_singular', 'block_curr_admin', $num_more);
     } else {
         $display = get_string('menu_summary_item_' . $type, 'block_curr_admin', $num_more);
@@ -769,12 +774,12 @@ function block_curr_admin_get_menu_summary_item($type, $css_class, $num_more, $p
  */
 function block_curr_admin_truncate_leaf($type, &$menuitem, $parent_cluster_id, $parent_curriculum_id) {
     //any cluster under a curriculum should be a leaf node
-    if($type == 'cluster' && !empty($parent_curriculum_id)) {
+    if (($type == 'cluster' || $type == 'userset') && !empty($parent_curriculum_id)) {
         $menuitem->isLeaf = true;
     }
 
     //any class should also be a leaf node
-    if($type == 'pmclass') {
+    if ($type == 'pmclass' || $type == 'cmclass') {
         $menuitem->isLeaf = true;
     }
 }
@@ -797,7 +802,7 @@ function block_curr_admin_load_menu_children($type, $id, $parent_cluster_id, $pa
     $result_items = array(new menuitem('root'));
     $extra_results = array();
 
-    if(function_exists($function_name)) {
+    if (function_exists($function_name)) {
         $num_block_icons = isset(elis::$config->elis_program->num_block_icons) ? elis::$config->elis_program->num_block_icons : 5;
 
         $extra_results = call_user_func($function_name, $id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path);
@@ -827,8 +832,8 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
     $listing = cluster_get_listing('name', 'ASC', 0, $num_block_icons, '', '', array('parent' => $id));
     //$listing = cluster_get_listing('priority, name', 'ASC', 0, $num_block_icons, '', '', array('parent' => $id));
 
-    if(!empty($listing)) {
-        foreach($listing as $item) {
+    if (!empty($listing)) {
+        foreach ($listing as $item) {
             $params = array('id' => $item->id,
                             'action' => 'view');
 
@@ -844,7 +849,7 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
 
     //summary item
     $num_records = cluster_count_records('', '', array('parent' => $id));
-    if($num_block_icons < $num_records) {
+    if ($num_block_icons < $num_records) {
         $params = array('id' => $parent_cluster_id);
         $result_items[] = block_curr_admin_get_menu_summary_item('userset', $cluster_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
@@ -856,8 +861,8 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
 
     $curricula = clustercurriculum::get_curricula($id, 0, $num_block_icons, 'cur.priority ASC, cur.name ASC');
 
-    if(!empty($curricula)) {
-        foreach($curricula as $curriculum) {
+    if (!empty($curricula)) {
+        foreach ($curricula as $curriculum) {
             $curriculum->id = $curriculum->curriculumid;
             $params = array('id' => $curriculum->id,
                             'action' => 'view');
@@ -876,7 +881,7 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
 
     //summary item
     $num_records = clustercurriculum::count_curricula($id);
-    if($num_block_icons < $num_records) {
+    if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
         $result_items[] = block_curr_admin_get_menu_summary_item('clustercurriculum', $curriculum_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
@@ -904,8 +909,8 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
 
     $listing = curriculumcourse_get_listing($id, 'position', 'ASC', 0, $num_block_icons);
 
-    if(!empty($listing)) {
-        foreach($listing as $item) {
+    if (!empty($listing)) {
+        foreach ($listing as $item) {
             $item->id = $item->courseid;
             $params = array('id'     => $item->id,
                             'action' => 'view');
@@ -920,7 +925,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
 
     //summary item
     $num_records = curriculumcourse_count_records($id);
-    if($num_block_icons < $num_records) {
+    if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
         $result_items[] = block_curr_admin_get_menu_summary_item('curriculumcourse', $course_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
@@ -930,8 +935,8 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
      *****************************************/
     $track_css_class = block_curr_admin_get_item_css_class('track_instance');
 
-    if($track_records = track_get_listing('name', 'ASC', 0, $num_block_icons, '', '', $id, $parent_cluster_id)) {
-        foreach($track_records as $track_record) {
+    if ($track_records = track_get_listing('name', 'ASC', 0, $num_block_icons, '', '', $id, $parent_cluster_id)) {
+        foreach ($track_records as $track_record) {
             $params = array('id'     => $track_record->id,
                             'action' => 'view');
 
@@ -947,11 +952,11 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
 
     //summary item
     $num_records = track_count_records('', '', $id, $parent_cluster_id);
-    if($num_block_icons < $num_records) {
+    if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
 
         //add extra param if appropriate
-        if(!empty($parent_cluster_id)) {
+        if (!empty($parent_cluster_id)) {
             $params['parent_clusterid'] = $parent_cluster_id;
         }
         $result_items[] = block_curr_admin_get_menu_summary_item('track', $track_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
@@ -965,8 +970,8 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
     $clusters = clustercurriculum::get_clusters($id, $parent_cluster_id, 'name', 'ASC', 0, $num_block_icons);
     //$clusters = clustercurriculum::get_clusters($id, $parent_cluster_id, 'priority, name', 'ASC', 0, $num_block_icons);
 
-    if(!empty($clusters)) {
-        foreach($clusters as $cluster) {
+    if (!empty($clusters)) {
+        foreach ($clusters as $cluster) {
             $cluster->id = $cluster->clusterid;
             $params = array('id'     => $cluster->id,
                             'action' => 'view');
@@ -976,11 +981,11 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
 
     //summary item
     $num_records = clustercurriculum::count_clusters($id, $parent_cluster_id);
-    if($num_block_icons < $num_records) {
+    if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
 
         //add extra param if appropriate
-        if(!empty($parent_cluster_id)) {
+        if (!empty($parent_cluster_id)) {
             $params['parent_clusterid'] = $parent_cluster_id;
         }
 
@@ -1010,8 +1015,8 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
 
     $listing = track_assignment_get_listing($id, 'cls.idnumber', 'ASC', 0, $num_block_icons);
 
-    if(!empty($listing)) {
-        foreach($listing as $item) {
+    if (!empty($listing)) {
+        foreach ($listing as $item) {
             $item->id = $item->classid;
             $params = array('id'     => $item->id,
                             'action' => 'view');
@@ -1021,7 +1026,7 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
 
     //summary item
     $num_records = track_assignment_count_records($id);
-    if($num_block_icons < $num_records) {
+    if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
         $result_items[] = block_curr_admin_get_menu_summary_item('trackassignment', $class_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
@@ -1034,8 +1039,8 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
     $clusters = clustertrack::get_clusters($id, 0, 'name', 'ASC', $num_block_icons, $parent_cluster_id);
     //$clusters = clustertrack::get_clusters($id, 0, 'priority, name', 'ASC', $num_block_icons, $parent_cluster_id);
 
-    if(!empty($clusters)) {
-        foreach($clusters as $cluster) {
+    if (!empty($clusters)) {
+        foreach ($clusters as $cluster) {
             $cluster->id = $cluster->clusterid;
             $params = array('id'     => $cluster->id,
                             'action' => 'view');
@@ -1046,11 +1051,11 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
 
     //summary item
     $num_records = clustertrack::count_clusters($id, $parent_cluster_id);
-    if($num_block_icons < $num_records) {
+    if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
 
         //add extra param if appropriate
-        if(!empty($parent_cluster_id)) {
+        if (!empty($parent_cluster_id)) {
            $params['parent_clusterid'] = $parent_cluster_id;
         }
 
@@ -1080,8 +1085,8 @@ function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $pa
 
     $listing = pmclass_get_listing('crsname', 'asc', 0, $num_block_icons, '', '', $id, false, null, $parent_cluster_id);
 
-    if(!empty($listing)) {
-        foreach($listing as $item) {
+    if (!empty($listing)) {
+        foreach ($listing as $item) {
             $item->clsname = $item->idnumber;
             $params = array('id' => $item->id,
                             'action' => 'view');
@@ -1091,12 +1096,12 @@ function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $pa
 
     //summary item
     $num_records = pmclass_count_records('', '', $id, false, null, $parent_cluster_id);
-    if($num_block_icons < $num_records) {
-        $params = array('action'           => 'default',
-                        'id'               => $id);
+    if ($num_block_icons < $num_records) {
+        $params = array('action' => 'default',
+                        'id'     => $id);
 
         //add extra param if appropriate
-        if(!empty($parent_cluster_id)) {
+        if (!empty($parent_cluster_id)) {
             $params['parent_clusterid'] = $parent_cluster_id;
         }
 
@@ -1119,7 +1124,7 @@ function block_curr_admin_get_item_css_class($class, $category = false) {
 
     //handle empty class
     $class = trim($class);
-    if(empty($class)) {
+    if (empty($class)) {
         return "$category_css tree_icon";
     }
 
@@ -1128,10 +1133,10 @@ function block_curr_admin_get_item_css_class($class, $category = false) {
     $valid_classes = array();
 
     //prefix each token
-    foreach($class_strings as $class_string) {
+    foreach ($class_strings as $class_string) {
         $trimmed = trim($class_string);
 
-        if(!empty($trimmed)) {
+        if (!empty($trimmed)) {
             $valid_classes[] = 'curr_' . $trimmed;
         }
     }
@@ -1154,7 +1159,7 @@ function block_curr_admin_get_item_css_class($class, $category = false) {
  */
 function block_curr_admin_get_tree_category_mapping() {
     global $CFG;
-    require_once($CFG->dirroot . '/blocks/php_report/php_report_base.php');
+    require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
 
     //categories, in a pre-determined order
     return array(php_report::CATEGORY_CURRICULUM    => get_string('curriculum_reports',    'block_php_report'),
@@ -1317,4 +1322,3 @@ function block_curr_admin_get_report_tree_items() {
     return $items;
 }
 
-?>

@@ -52,6 +52,7 @@ $string['address2'] = 'Address 2';
 $string['admin_dashboard'] = 'Administrator Dashboard';
 $string['all_items_assigned'] = 'All available items assigned.';
 $string['all_users_already_enrolled'] = 'All users in track already enrolled.';
+$string['and_all_children'] = '(and all children)';
 $string['assign'] = 'Assign';
 $string['assign_selected'] = 'Assign Selected';
 $string['assigned'] = 'Assigned';
@@ -150,6 +151,7 @@ This type of role assignment will not take place for a particular user set if th
 To disable this functionality, select "N/A" from the list.';
 $string['cluster_role_setting'] = 'Default User Set Role';
 $string['cluster_subcluster_prompt'] = 'Assign existing user set as a user subset';
+$string['cluster_tree_na'] = 'N/A';
 $string['completionform:completion_grade'] = 'Completion grade';
 $string['completionform:completion_grade_help'] = '<p>Minimum grade the learner must received to identify the element as &ldquo;completed&rdquo;.</p>';
 $string['completionform:course_idnumber'] = 'ID Number';
