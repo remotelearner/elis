@@ -45,6 +45,9 @@ class generalized_filter_simpleselect extends generalized_filter_type {
 
     var $_noany;
 
+    var $_nofilter; // boolean - true makes get_sql_filter() always return null
+                    // set with $options['nofilter']
+
     /**
      * Constructor
      * @param string $name the name of the filter instance
@@ -63,6 +66,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         $this->_numeric  = $options['numeric'];
         $this->_anyvalue = (isset($options['anyvalue'])) ? $options['anyvalue'] : NULL;
         $this->_noany = (isset($options['noany'])) ? $options['noany'] : false;
+        $this->_nofilter = !empty($options['nofilter']);
     }
 
     /**
@@ -133,7 +137,8 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         $params = array();
 
         $full_fieldname = $this->get_full_fieldname();
-        if (empty($full_fieldname)) { // for manual filter use
+        if (empty($full_fieldname) || $this->_nofilter) {
+            // for manual filter use
             return null;
         }
 

@@ -35,6 +35,7 @@
  *   ['advanced'] = array('DB field value', ...) - which elements are advanced
  *   ['heading'] = string - the checkbox group heading (optional, raw html)
  *   ['footer'] = string - the checkbox group footer (optional, raw html)
+ *   ['nofilter'] = boolean - true makes get_sql_filter() always return null
  *   ['numeric'] = boolean - true if DB field is numeric,
  *                           false (the default) -> string
  *   ['set_value_fcn'] = callback array for call_user_fcn()::arg1,
@@ -73,6 +74,8 @@ class generalized_filter_checkboxes extends generalized_filter_type {
 
     var $_isrequired;
 
+    var $_nofilter; // boolean - true makes get_sql_filter() always return null
+
     /**
      * Constructor
      * @param string $name the name of the filter instance
@@ -87,6 +90,7 @@ class generalized_filter_checkboxes extends generalized_filter_type {
         $this->_field   = $field;
         $this->_options = $options;
         $this->_isrequired = !empty($options['isrequired']) ? $options['isrequired'] : false;
+        $this->_nofilter = !empty($options['nofilter']);
     }
 
     /**
@@ -228,7 +232,7 @@ class generalized_filter_checkboxes extends generalized_filter_type {
     function get_sql_filter($data) {
         static $counter = 0;
         $full_fieldname = $this->get_full_fieldname();
-        if (!isset($data['value']) || empty($full_fieldname)) {
+        if (!isset($data['value']) || empty($full_fieldname) || $this->_nofilter) {
             return null;
         }
 
