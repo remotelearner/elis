@@ -157,6 +157,9 @@ The filter has the following options:</p>
 
 $string['invalidid'] = 'Invalid ID';
 $string['invalidoperator'] = 'Invalid Operator';
+$string['noidnumber'] = 'No ID number';
+$string['noactivities'] = 'No activities found';
+$string['nogradeitems'] = 'No grade items found';
 $string['pluginname'] = 'ELIS Core';
 $string['profilefield_help'] = '<h1>Profile filter</h1>
 <p>This filter allows you to filter users based on values of profile fields.
