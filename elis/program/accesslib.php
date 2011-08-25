@@ -447,7 +447,7 @@ class context_level_elis_user extends context_level_base {
                    SET depth=2, path='.$DB->sql_concat("'$base/'", 'id')."
                  WHERE contextlevel=$contextlevel
                        AND EXISTS (SELECT 'x'
-                                     FROM {crlm_course} u
+                                     FROM {crlm_user} u
                                     WHERE u.id = {context}.instanceid)
                        $emptyclause";
         $DB->execute($sql);
