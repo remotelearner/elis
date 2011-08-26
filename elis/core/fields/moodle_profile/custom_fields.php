@@ -68,7 +68,7 @@ function sync_profile_field_to_moodle($field) {
                    '.$joins.'
          LEFT JOIN {'.$dest.'} dest ON dest.userid = usr.id AND dest.fieldid = ?
              WHERE dest.id IS NULL';
-    $DB->execute($sql, array($field->id));
+    $DB->execute($sql, array($mfieldid));
 
     // update already-existing values
     $sql = 'UPDATE {'.$dest.'} dest
