@@ -26,6 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['allitemsselected'] = 'All items selected';
 $string['data_object_construct_invalid_source'] = 'Attempted to construct a data_object from an invalid source';
 $string['data_object_validation_not_empty'] = '{$a->tablename} record cannot have empty {$a->field} field';
 $string['data_object_validation_unique'] = '{$a->tablename} record must have unique {$a->fields} fields';
@@ -35,6 +36,8 @@ $string['date_help'] = '<h1>Date filter</h1>
 $string['elis'] = 'ELIS';
 $string['elisversion'] = '<strong>ELIS Version:</strong> {$a}';
 $string['finish'] = 'Finish';
+$string['field_category'] = 'Category';
+$string['field_name'] = 'Name';
 
 // Default user profile field labels for userprofilematch filter - can override
 $string['fld_auth'] = 'Authentication';
@@ -157,9 +160,12 @@ The filter has the following options:</p>
 
 $string['invalidid'] = 'Invalid ID';
 $string['invalidoperator'] = 'Invalid Operator';
-$string['noidnumber'] = 'No ID number';
+
 $string['noactivities'] = 'No activities found';
+$string['nofieldsselected'] = 'No fields selected';
 $string['nogradeitems'] = 'No grade items found';
+$string['noidnumber'] = 'No ID number';
+
 $string['pluginname'] = 'ELIS Core';
 $string['profilefield_help'] = '<h1>Profile filter</h1>
 <p>This filter allows you to filter users based on values of profile fields.

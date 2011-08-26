@@ -178,3 +178,263 @@ M.elis_core.init_gradebook_popup = function(Y, options) {
 	panel.show();
     });
 };
+
+M.elis_core.init_custom_field_multiselect = function(Y, options) {
+    var container = Y.one('#'+options.id+'_container');
+
+    // add the selected fields table and button
+    var tablecontainer = Y.Node.create('<div></div>');
+    container.appendChild(tablecontainer);
+    var button = Y.Node.create('<button type="button">'+M.str.moodle.add+'</button>');
+    container.appendChild(button);
+
+    // create the helper class
+    var MultiselectHelper = function(options) {
+        MultiselectHelper.superclass.constructor.apply(this, arguments);
+    };
+
+    MultiselectHelper.NAME = "MultiselectHelper";
+    MultiselectHelper.ATTRS = {
+        options: {},
+        lang: {}
+    };
+
+    Y.extend(MultiselectHelper, Y.Base, {
+	initializer: function(options) {
+	    this.options = options;
+
+	    // index the fields by ID, so that we can look them up
+	    var fieldsbyid = {};
+	    for (var category in options.fields) {
+		for (var fieldid in options.fields[category]) {
+		    fieldsbyid[fieldid] = options.fields[category][fieldid];
+		}
+	    }
+	    this.options.fieldsbyid = fieldsbyid;
+
+	    var value = Y.one('#'+options.id+'_value').get('value');
+	    if (value) {
+		this.values = Y.Array.map(value.split(','), function(x) { return parseInt(x)});
+		// why doesn't this work? this.values = Y.Array.map(value.split(','), parseInt);
+	    } else {
+		this.values = [];
+	    }
+	    this.update_values();
+	},
+
+	destructor: function() { },
+
+	/**
+	 * Update the display and hidden element for the values.
+	 */
+	update_values: function() {
+	    var values = this.values;
+
+	    // set the value of the hidden element
+	    var valueelem = Y.one('#'+this.options.id+'_value');
+	    valueelem.set('value', values.join(','));
+
+	    if (values.length) {
+		// create a table with the selected fields
+		var table = document.createElement('table');
+		for (var i=0; i < values.length; i++) {
+		    var row = document.createElement('tr');
+		    var cell = document.createElement('td');
+		    cell.appendChild(document.createTextNode(this.options.fieldsbyid[values[i]]));
+		    row.appendChild(cell);
+		    // down button
+		    cell = document.createElement('td');
+		    if (i != values.length-1) {
+			var link = document.createElement('a');
+			link.href = '';
+			var img = document.createElement('img');
+			img.src = this.options.down;
+			img.alt = 'down';
+			link.appendChild(img);
+			var linkNode = Y.one(link);
+			linkNode.on('click', function(e, index) {
+			    // swap with next
+			    var tmp = this.values[index];
+			    this.values[index] = this.values[index+1];
+			    this.values[index+1] = tmp;
+			    this.update_values();
+			    //this.refresh_picker();
+			    e.preventDefault();
+			}, this, i);
+			cell.appendChild(link);
+		    }
+		    row.appendChild(cell);
+		    // up button
+		    cell = document.createElement('td');
+		    if (i != 0) {
+			var link = document.createElement('a');
+			link.href = '';
+			var img = document.createElement('img');
+			img.src = this.options.up;
+			img.alt = 'up';
+			link.appendChild(img);
+			var linkNode = Y.one(link);
+			linkNode.on('click', function(e, index) {
+			    // swap with previous
+			    var tmp = this.values[index];
+			    this.values[index] = this.values[index-1];
+			    this.values[index-1] = tmp;
+			    this.update_values();
+			    //this.refresh_picker();
+			    e.preventDefault();
+			}, this, i);
+			cell.appendChild(link);
+		    }
+		    row.appendChild(cell);
+		    // delete button
+		    cell = document.createElement('td');
+		    var link = document.createElement('a');
+		    link.href = '';
+		    var img = document.createElement('img');
+		    img.src = this.options.del;
+		    img.alt = 'delete';
+		    link.appendChild(img);
+		    var linkNode = Y.one(link);
+		    linkNode.on('click', function(e, index) {
+			// remove
+			this.values.splice(index, 1);
+			this.update_values();
+			this.refresh_picker();
+			e.preventDefault();
+		    }, this, i);
+		    cell.appendChild(link);
+		    row.appendChild(cell);
+
+		    table.appendChild(row);
+		}
+		tablecontainer.setContent(table);
+	    } else {
+		tablecontainer.setContent(document.createTextNode(M.str.elis_core.nofieldsselected));
+	    }
+	},
+
+	/**
+	 * Update the picker with the values that have not been selected
+	 */
+	refresh_picker: function() {
+	    if (!this.rendered) {
+		return;
+	    }
+
+	    var pickerid = this.options.id + '_picker';
+	    var listing = Y.one('#layout-'+pickerid);
+
+	    var values = this.values;
+	    var selected = {};
+	    for (var i=0; i < values.length; i++) {
+		selected[values[i]] = true;
+	    }
+
+	    var table = document.createElement('table');
+	    var row = document.createElement('tr');
+	    var cell = document.createElement('th');
+	    cell.appendChild(document.createTextNode(M.str.elis_core.field_category));
+	    row.appendChild(cell);
+	    cell = document.createElement('th');
+	    cell.appendChild(document.createTextNode(M.str.elis_core.field_name));
+	    row.appendChild(cell);
+	    table.appendChild(row);
+	    var firstincategory = true;
+	    var empty = true;
+	    for (var category in options.fields) {
+		firstincategory = true;
+		for (var fieldid in options.fields[category]) {
+		    if (selected[fieldid]) {
+			// don't show fields that have been selected
+			continue;
+		    }
+		    empty = false;
+		    row = document.createElement('tr');
+		    cell = document.createElement('td');
+		    if (firstincategory) {
+			cell.appendChild(document.createTextNode(category));
+			firstincategory = false;
+		    }
+		    row.appendChild(cell);
+
+		    cell = document.createElement('td');
+		    var link = document.createElement('a');
+		    link.href = '';
+		    link.appendChild(document.createTextNode(options.fields[category][fieldid]));
+		    var linkNode = Y.one(link);
+		    linkNode.on('click', function(e, fieldid) {
+			this.values.push(fieldid);
+			this.update_values();
+			//this.panel.hide();
+			this.refresh_picker();
+			e.preventDefault();
+		    }, this, fieldid);
+		    cell.appendChild(link);
+		    row.appendChild(cell);
+		    table.appendChild(row);
+		}
+	    }
+
+	    if (empty) {
+		listing.setContent(document.createTextNode(M.str.elis_core.allitemsselected));
+	    } else {
+		listing.setContent(table);
+	    }
+
+	    this.panel.moveTo(button.getX(), button.getY());
+	},
+
+	/**
+	 * Create and initialize the popup panel.
+	 */
+	render: function() {
+	    var pickerid = this.options.id + '_picker';
+	    var pickernode = Y.Node.create('<div class="custom-field-picker" id="'+pickerid+'"></div>');
+	    Y.one(document.body).appendChild(pickernode);
+	    var panel = new YAHOO.widget.Panel(pickerid, {
+		draggable: false,
+		close: true,
+		underlay: 'none',
+		zindex: 9999990,
+		monitorresize: false,
+		xy: [button.getX(), button.getY()]
+	    });
+	    var layout = null;
+	    var scope = this;
+	    panel.beforeRenderEvent.subscribe(function() {
+		YAHOO.util.Event.onAvailable('layout-'+pickerid, function() {
+		    scope.refresh_picker();
+		});
+	    });
+
+	    panel.setHeader(M.str.moodle.add);
+	    panel.setBody('<div id="layout-'+pickerid+'"></div>');
+	    panel.render();
+	    this.panel = panel;
+	    this.rendered = true;
+	},
+
+	hide: function() {
+	    this.panel.hide();
+	},
+
+	show: function() {
+	    if (this.rendered) {
+		this.panel.show();
+	    } else {
+		this.launch();
+	    }
+	},
+
+	launch: function() {
+	    this.render();
+	}
+    });
+
+    var helper = new MultiselectHelper(options);
+
+    // show the panel when the button is clicked
+    button.on('click', function(e) {
+	helper.show();
+    });
+};
