@@ -140,13 +140,16 @@ class generalized_filter_dependentselect extends generalized_filter_type {
                           null if the filter is disabled
      */
     function get_sql_filter($data) {
+        static $counter = 0;
         $full_fieldname = $this->get_full_fieldname();
         if (empty($full_fieldname)) {
             return null;
         }
 
+        $param_name = 'ex_dependselect'. $counter++;
         $value = addslashes($data['value']);
-        return array("{$full_fieldname} = ?", array($value));
+        return array("{$full_fieldname} = :{$param_name}",
+                     array($param_name => $value));
     }
 
     /**
