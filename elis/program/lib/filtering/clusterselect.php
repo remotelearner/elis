@@ -86,7 +86,8 @@ class generalized_filter_clusterselect extends generalized_filter_equalityselect
 
         $context_array = array('contexts' => $contexts);
 
-        if ($records = cluster_get_listing('name', 'ASC', 0, 0, '', '', $context_array)) {
+        if ($recordset = cluster_get_listing('name', 'ASC', 0, 0, '', '', $context_array)) {
+            $records = $recordset->to_array();
             foreach ($records as $record) {
                 if ($record->parent == 0) {
                     $choices_array[$record->id] = $record->name;
