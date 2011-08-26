@@ -295,7 +295,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
         }
 
         if (isset($data['specific_clusterid'])) {
-            $param_name = 'clusterid'. $counter++;
+            $param_name = 'clustree_clusterid'. $counter++;
             return array("{$full_fieldname} = :{$param_name}",
                          array($param_name  => $data['specific_clusterid']));
         }
@@ -326,9 +326,9 @@ class generalized_filter_clustertree extends generalized_filter_type {
         $cluster_context_level = context_level_base::get_custom_context_level('userset', 'elis_program'); // TBV
 
         //$params = array();
-        $param_cpath = 'cpath'. $counter .'a';
-        $param_pcpath = 'pcpath'. $counter .'a';
-        $param_cpath2 = 'cpath2'. $counter .'a';
+        $param_cpath = 'clustree_cpath_a'. $counter;
+        $param_pcpath = 'clustree_pcpath'. $counter;
+        $param_cpath2 = 'clustree_cpath_b'. $counter;
 
         $cpath_like = $DB->sql_like('context.path', ":{$param_cpath}",
                                     true); // TBV: case insensitive? 
@@ -340,10 +340,10 @@ class generalized_filter_clustertree extends generalized_filter_type {
                                      true); // TBV: case insensitive? 
         $params[$param_cpath2] = $DB->sql_concat('eclipse_context.path', "'/%'");
 
-        $param_ccl1 = 'cluster_context_level'. $counter .'1';
-        $param_ccl2 = 'cluster_context_level'. $counter .'2';
-        $param_ccl3 = 'cluster_context_level'. $counter .'3';
-        $param_ccl4 = 'cluster_context_level'. $counter .'4';
+        $param_ccl1 = 'clustree_context_a'. $counter;
+        $param_ccl2 = 'clustree_context_b'. $counter;
+        $param_ccl3 = 'clustree_context_c'. $counter;
+        $param_ccl4 = 'clustree_context_d'. $counter;
         $params[$param_ccl1] = $cluster_context_level;
         $params[$param_ccl2] = $cluster_context_level;
         $params[$param_ccl3] = $cluster_context_level;
@@ -548,8 +548,9 @@ class generalized_filter_clustertree extends generalized_filter_type {
         $choices_array = array(0 => get_string('anyvalue', 'filters'));
 
         //set up cluster listing
-        if ($records = cluster_get_listing('name', 'ASC', 0, 0, '', '',
-                           array('contexts' => $context_result))) {
+        if ($recordset = cluster_get_listing('name', 'ASC', 0, 0, '', '',
+                             array('contexts' => $context_result))) {
+            $records = $recordset->to_array();
             foreach ($records as $record) {
                 if ($record->parent == 0) {
                     //merge in child clusters
