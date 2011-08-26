@@ -302,7 +302,8 @@ class course_completion_by_cluster_report extends table_report {
      * @return  array   The report's main sql statement with optional params
      */
     function get_report_sql($columns) {
-        $cluster_context_level = context_level_base::get_custom_context_level('userset', 'elis_program');;
+        $param_prefix = 'ccbcr_';
+        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
         //special version of the select columns used in the non-curriculum case
         $noncurriculum_columns = str_replace('curriculum.id', 'NULL', $columns);
@@ -335,19 +336,20 @@ class course_completion_by_cluster_report extends table_report {
         $extra_noncurriculum_columns = str_replace('curriculum.name', 'NULL', $extra_noncurriculum_columns);
 
         $params = array();
-        $params['cluster_context_level1'] = $cluster_context_level;
-        $params['cluster_context_level2'] = $cluster_context_level;
+        $param_cluster_context = $param_prefix .'clust_context';
+        $params[$param_cluster_context .'1'] = $cluster_context_level;
+        $params[$param_cluster_context .'2'] = $cluster_context_level;
 
         //starting point for both cases
         //TBD: define/const for {crlm_usercluster} TABLE
         $core_tables_fmt = '{'. user::TABLE .'} user
                         JOIN {crlm_usercluster} user_cluster
                           ON user.id = user_cluster.userid
-                        JOIN {'. userset::TABLE .'} cluster
+                        JOIN {'. userset::TABLE ."} cluster
                           ON user_cluster.clusterid = cluster.id
                         JOIN {context} cluster_context
                           ON cluster.id = cluster_context.instanceid
-                          AND cluster_context.contextlevel = :cluster_context_level%d';
+                          AND cluster_context.contextlevel = :{$param_cluster_context}%d";
 
         //course completion info used in both cases
         $completion_tables = 'LEFT JOIN {'. coursecompletion::TABLE .'} course_completion
