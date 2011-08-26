@@ -173,7 +173,6 @@ class elis_custom_field_multiselect extends HTML_QuickForm_group {
             }
         }
 
-        print_object($valuearray);
         $value = array($this->getName() => $valuearray['value']);
 
         return $value;
