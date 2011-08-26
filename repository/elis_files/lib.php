@@ -105,9 +105,9 @@ class repository_elis_files extends repository {
         }*/
            // return $this->verify_setup();
 
-//        $PAGE->requires->js('/repository/elis_files/js/jquery-1.6.2.min.js');
-//        $PAGE->requires->js('/repository/elis_files/js/jquery-ui-1.8.16.custom.min.js');
-//        $PAGE->requires->js('/repository/elis_files/js/fileuploader.js');
+        $PAGE->requires->js('/repository/elis_files/js/jquery-1.6.2.min.js');
+        $PAGE->requires->js('/repository/elis_files/js/jquery-ui-1.8.16.custom.min.js');
+        $PAGE->requires->js('/repository/elis_files/js/fileuploader.js');
     }
 
     public function print_login() {
