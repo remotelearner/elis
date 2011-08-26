@@ -47,15 +47,11 @@
         redirect($CFG->wwwroot);
     }
 
-
     $url      = required_param('url', PARAM_URL);
     $port     = required_param('port', PARAM_INT);
     $username = required_param('username', PARAM_NOTAGS);
     $password = required_param('password', PARAM_NOTAGS);
     $choose   = required_param('choose', PARAM_FILE);
-
-/// Print header.
-//    print_header();
 
     if (!$repo = repository_factory::factory()) {
         print_error('couldnotcreaterepositoryobject', 'repository_elis_files');
@@ -108,31 +104,21 @@
 
     $strrootfolder = get_string('chooserootfolder', 'repository_elis_files');
 
-//    require_js($CFG->wwwroot . '/lib/HTML_TreeMenu-1.2.0/TreeMenu.js');
     $PAGE->requires->js('/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.js', true);
 
-//echo $OUTPUT->header();
     $url = new moodle_url('/repository/elis_files/rootfolder.php');
     $PAGE->set_url($url);
 
     $PAGE->set_title($strrootfolder);
     $PAGE->set_heading($SITE->fullname);
     echo $OUTPUT->header();
-
-    echo $OUTPUT->box_start('box generalbox generalboxcontent boxaligncenter boxwidthwide');
+    echo $OUTPUT->box_start();
 //    print_simple_box_start('center', '75%');
     echo $OUTPUT->heading(get_string('chooserootfolder', 'repository_elis_files'));
-//    print_heading(get_string('chooserootfolder', 'repository_alfresco') . ':', 'center', '3');
 
     $treemenu->printMenu();
-
-//    print_simple_box_end();
     echo $OUTPUT->box_end();
-
-    echo '<br /><br /><center>' . close_window_button('closewindow', true) . '</center>';
-
-//    print_footer('empty');
-    // Footer.
+    echo $OUTPUT->close_window_button();
     echo $OUTPUT->footer();
 
 ?>

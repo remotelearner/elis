@@ -86,11 +86,22 @@ define('ELIS_FILES_CAPABILITY_ALLOWED', 'ALLOWED');
 define('ELIS_FILES_CAPABILITY_DENIED',  'DENIED');
 
 // Define constants for the default file browsing location.
+//WAS from file/repository/alfresco/repository.php - as set up in default ALFRESCO install
+/*// Define constants for the default file browsing location.
+define('ALFRESCO_BROWSE_MOODLE_FILES',          10);
+define('ALFRESCO_BROWSE_ALFRESCO_SITE_FILES',   20);
+define('ALFRESCO_BROWSE_ALFRESCO_SHARED_FILES', 30);
+define('ALFRESCO_BROWSE_ALFRESCO_COURSE_FILES', 40);
+define('ALFRESCO_BROWSE_ALFRESCO_USER_FILES',   50);
+*/
+// Define constants for the default file browsing location.
 //define('ELIS_FILES_BROWSE_MOODLE_FILES',          10);
 defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
-defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
+defined('ELIS_FILES_BROWSE_CLUSTER_FILES') or define('ELIS_FILES_BROWSE_CLUSTER_FILES', 60);
+defined('ELIS_FILES_BROWSE_SERVER_FILES') or define('ELIS_FILES_BROWSE_SERVER_FILES', 70);
+defined('ELIS_FILES_BROWSE_PRIVATE_FILES') or define('ELIS_FILES_BROWSE_PRIVATE_FILES', 80);
 
 
 class ELIS_files {

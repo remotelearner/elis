@@ -72,16 +72,16 @@ $string['configadminusername'] = 'Alfresco has a default username of <b>admin</b
                                  'a Moodle user account with the username value you enter and you should ensure that one ' .
                                  'is not created after this value has been set.';
 $string['configadminusernameconflict'] = 'The username override that you have set for your Moodle <b>admin</b> account: ' .
-                                         '<i>$a->username</i> has already been used to create an Alfresco account.<br /><br />' .
+                                         '<i>{$a}->username</i> has already been used to create an Alfresco account.<br /><br />' .
                                          '<b>WARNING: A Moodle account with that username has been created which will directly ' .
                                          'conflict with the Alfresco account.  You must either delete or change the username ' .
                                          'of the <a href="{$a}->url">Moodle user</a>.</b>';
 $string['configadminusernameset'] = 'The username override that you have set for your Moodle <b>admin</b> account: ' .
-                                    '<i>$a</i> has already been used to create an Alfresco account.';
+                                    '<i>{$a}</i> has already been used to create an Alfresco account.';
 $string['configcachetime'] = 'Specify that files from the repository should be cached for this long in the user\'s browser';
 $string['configurecategoryfilter'] = 'Configure category filter';
 $string['configdefaultfilebrowsinglocation'] = 'If you choose a value here it will be the default location that a user ' .
-                                               'finds themselvses automatically sent to when launching a file browser ' .
+                                               'finds themselves automatically sent to when launching a file browser ' .
                                                'without having a previous location to be sent to.<br /><br /><b>NOTE:</b> ' .
                                                'If a user does not have permissions to view the default location, they ' .
                                                'will see the next available location on the list that they have ' .
@@ -111,7 +111,7 @@ $string['elisfilesnotinstalled'] = '<b>ELIS Files must be configured and saved f
 $string['elis_files_category_filter'] = 'Choose the categories available when filtering search results';
 $string['elis_files_default_admin_username'] = 'Default: moodleadmin';
 $string['elis_files_default_alfresco_version'] = 'Default: None';
-$string['elis_files_default_cache_time'] = 'Default: Cache time (in seconds) as set in Site Administration->Plugins->Repositories->Common repository settings ';
+$string['elis_files_default_cache_time'] = 'Default: Cache time (in seconds) as set in <b>Site Administration->Plugins->Repositories->Common repository settings</b> ';
 $string['elis_files_default_default_browse'] = 'Default: ELIS User Files';
 $string['elis_files_default_deleteuserdir'] = 'Default: No';
 $string['elis_files_default_root_folder'] = 'Default: /moodle';
@@ -152,8 +152,11 @@ $string['processingcategories'] = 'Processing categories...';
 $string['quotanotset'] = 'Not Set';
 $string['quotaunlimited'] = 'Unlimited';
 $string['repository'] = 'ELIS Files';
+$string['repositoryclusterfiles'] = 'ELIS Cluster Files';
 $string['repositorycoursefiles'] = 'ELIS Course Files';
 $string['repositoryname'] = 'ELIS Files';
+$string['repositoryprivatefiles'] = 'My Private Files';
+$string['repositoryserverfiles'] = 'ELIS Server Files';
 $string['repositorysharedfiles'] = 'ELIS Shared Files';
 $string['repositorysitefiles'] = 'ELIS Site Files';
 $string['repositoryuserfiles'] = 'ELIS User Files';

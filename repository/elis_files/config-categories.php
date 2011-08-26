@@ -27,7 +27,6 @@
  */
 
     require_once dirname(dirname(dirname(__FILE__))) . '/config.php';
-//    require_once $CFG->libdir . '/HTML_TreeMenu-1.2.0/TreeMenu.php';
     require_once dirname(__FILE__) . '/lib/HTML_TreeMenu-1.2.0/TreeMenu.php';
     require_once $CFG->dirroot . '/repository/elis_files/ELIS_files_factory.class.php';
    // require_once $CFG->dirroot . '/repository/lib.php';
@@ -62,13 +61,9 @@
         } else if (isset($data->categories)) {
             // Change this to elis_files plugin specific...
             set_config('catfilter', serialize($data->categories, 'elis_files'));
-            //set_config('catfilter', serialize($data->categories), 'elis_files');
-
         } else {
             set_config('catfilter', '');
         }
-
-
     }
 
 /// Get (or create) the array of category IDs that are already selected in the filter.
@@ -83,12 +78,6 @@
     $PAGE->set_heading($SITE->fullname);
     echo $OUTPUT->header();
     echo $OUTPUT->box_start();
-//    echo $OUTPUT->heading($scale->name);
-    echo "<center>";
-//    echo html_writer::select($scalemenu, 'unused');
-    echo "</center>";
-//    echo text_to_html($scale->description);
-
 
     echo '<form method="post" action="' . $CFG->wwwroot . '/repository/elis_files/config-categories.php">';
     echo '<input type="hidden" name="sesskey" value="' . $USER->sesskey . '" />';
@@ -122,7 +111,6 @@
         echo '&nbsp;<input type="button" value="' . get_string('deselectall') . '" onclick="checknone();" /><br />';
         echo '<input type="submit" value="' . get_string('savechanges') . '" /> ';
     } else {
-        //echo $OUTPUT->heading(get_string('nocategoriesfound', 'repository_elis_files'));
         echo get_string('nocategoriesfound', 'repository_elis_files');
     }
     echo '</center>';
