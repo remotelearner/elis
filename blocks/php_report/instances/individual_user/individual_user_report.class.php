@@ -26,7 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/blocks/php_report/type/table_report.class.php');
+require_once($CFG->dirroot .'/blocks/php_report/type/table_report.class.php');
+require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php');
 
 class individual_user_report extends table_report {
     var $lang_file = 'rlreport_individual_user';

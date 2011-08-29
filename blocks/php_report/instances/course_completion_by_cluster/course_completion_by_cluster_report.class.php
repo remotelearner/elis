@@ -681,7 +681,7 @@ class course_completion_by_cluster_report extends table_report {
              if (isset($preferences['php_report_course_completion_by_cluster/clusterrole'])) {
 
                  //context to check for role assignments
-                 $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'block_curr_admin');
+                 $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
                  //query to retrieve users directly assigned the configured role in the current cluster
                  $sql = 'SELECT u.* FROM {user} u

@@ -173,7 +173,7 @@ class course_progress_summary_report extends table_report {
         // Loop through these additional parameters - new columns, will  have to eventually pass the table etc...
         if (isset($filter_params) && is_array($filter_params)) {
             // Working with custom course fields - get all course fields
-            $context = context_level_base::get_custom_context_level('course', 'block_curr_admin');
+            $context = context_level_base::get_custom_context_level('course', 'elis_program');
             $fields = field::get_for_context_level($context);
 
             foreach ($filter_params as $custom_course_id) {
@@ -192,7 +192,7 @@ class course_progress_summary_report extends table_report {
                 $view_field_contexts = get_contexts_by_capability_for_user('course', $view_field_capability, $this->userid);
 
                 //$view_field_filter = $view_field_contexts->sql_filter_for_context_level('ctxt.instanceid', 'course');
-                $filter_obj = $contexts->get_filter('ctxt.instanceid', 'course');
+                $filter_obj = $view_field_contexts->get_filter('ctxt.instanceid', 'course');
                 $filter_sql = $filter_obj->get_sql(false, 'ctxt'); // TBV
                 $view_field_filter = '';
                 $params = array();

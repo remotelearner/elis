@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage pm-blocks-phpreport-course_progress_summary
+ * @subpackage pm-blocks-phpreport-individual_course_progress
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
@@ -27,7 +27,7 @@
 require_once(dirname(__FILE__) .'/../../../../config.php');
 
 // Require all related classes to access session variables
-require_once($CFG->dirroot .'/blocks/php_report/instances/course_progress_summary/course_progress_summary_report.class.php');
+require_once($CFG->dirroot .'/blocks/php_report/instances/individual_course_progress/individual_course_progress_report.class.php');
 require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
 require_once($CFG->dirroot .'/blocks/php_report/lib/filtering.php');
 require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
@@ -37,7 +37,8 @@ require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselec
 require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect_data.php');
 require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect_values.php');
 
-$reportname = 'course_progress_summary';
+$reportname = 'individual_course_progress';
+$lang_file = 'rlreport_'. $reportname;
 
 $block_id      = required_param('block_id', PARAM_TEXT);
 $action        = required_param('action', PARAM_TEXT);
@@ -61,9 +62,9 @@ if (isset($fieldname) && ($fieldname !== null)) {
 // Update the field id and name lists based on the action
 fix_object($SESSION->php_reports[$block_id]);
 
-// Add a new filter for custom fields
+// Create a new data class for custom fields
 $multi_filter = new generalized_filter_custom_field_multiselect_data($block_id,
-                        $fieldidlist, $fieldnamelist);
+ $fieldidlist, $fieldnamelist);
 // Apply the action to the list of field ids and field names
 $multi_filter->update_field_list($action, $fieldid, $fieldname, $fieldidlist, $fieldnamelist, $scheduled);
 
@@ -92,23 +93,23 @@ if (isset($fieldidlist) && !empty($fieldidlist)) {
     }
     $serialized_fieldidlist = base64_encode(serialize($fieldidlist));
 }
-//Retrieve fieldname list
+
+
 if (isset($fieldnamelist)) {
     $fieldnamelist = array_merge($fieldnamelist);
     $serialized_fieldnamelist = base64_encode(serialize($fieldnamelist));
 }
 
-//Retrieve fieldname
 if (isset($fieldname)) {
     $serialized_fieldname = base64_encode(serialize($fieldname));
 }
 
-//$table->head = array(get_string('course_field_title', 'rlreport_course_progress_summary'));
-$table_columns[] = array('course_field_title' => array('header' => get_string('course_field_title', 'rlreport_course_progress_summary'))); // TBV: column name???
+//$table->head = array(get_string('course_field_title', $lang_file));
+$table_columns[] = array('course_field_title' => array('header' => get_string('course_field_title', $lang_file))); // TBV: column name???
 
-$subtable_columns = array('course_field' => array('header' => get_string('course_field', 'rlreport_course_progress_summary')),
-                          'display_order' => array('header' => get_string('display_order', 'rlreport_course_progress_summary')),
-                          'remove_fields' => array('header' => get_string('remove_fields', 'rlreport_course_progress_summary'))
+$subtable_columns = array('course_field' => array('header' => get_string('course_field', $lang_file)),
+                          'display_order' => array('header' => get_string('display_order', $lang_file)),
+                          'remove_fields' => array('header' => get_string('remove_fields', $lang_file))
                         );
 
 $subtable_data = array();
@@ -122,17 +123,17 @@ if (is_array($fieldidlist)) {
         $fieldname = $fieldnamelist[$count];
 
         // Set up reordering links
-        $moveup = get_string('move_up', 'rlreport_course_progress_summary');
-        $movedown = get_string('move_down', 'rlreport_course_progress_summary');
+        $moveup = get_string('move_up', $lang_file);
+        $movedown = get_string('move_down', $lang_file);
         if ($count < $numfields) {
             $image_filename = 'arrow-down.png';
         } else {
             $image_filename = 'arrow-blank.png';
             $move_down = '';
         }
-        $moveupdown = '<input type="image" src="'. $CFG->wwwroot .'/blocks/php_report/pix/'. $image_filename . '" '.
+        $moveupdown = '<input type="image" src="'. $CFG->wwwroot . '/blocks/php_report/pix/'. $image_filename . '" '.
                 ' onclick="customfields_updateTable(\''.$block_id.'\',\'down\',\''.
-                $CFG->wwwroot.'/blocks/php_report/instances/course_progress_summary/\',\''.
+                $CFG->wwwroot .'/blocks/php_report/instances/individual_course_progress/\',\''.
                 $field_id .'\',\''. $serialized_fieldname .'\',\''. $serialized_fieldidlist .'\',\''.
                 $serialized_fieldnamelist .'\');return false;" '.
                 'alt="'.$movedown.'" title="'.$movedown.'" />';
@@ -142,22 +143,22 @@ if (is_array($fieldidlist)) {
             $image_filename = 'arrow-blank.png';
             $move_up = '';
         }
-        $moveupdown .= '<input type="image" src="'. $CFG->wwwroot .'/blocks/php_report/pix/'. $image_filename . '" '.
+        $moveupdown .= '<input type="image" src="'.$CFG->wwwroot . '/blocks/php_report/pix/'. $image_filename . '" '.
                 ' onclick="customfields_updateTable(\''.$block_id.'\',\'up\',\''.
-                $CFG->wwwroot .'/blocks/php_report/instances/course_progress_summary/\',\''.
+                $CFG->wwwroot.'/blocks/php_report/instances/individual_course_progress/\',\''.
                 $field_id .'\',\''. $serialized_fieldname .'\',\''. $serialized_fieldidlist .'\',\''.
                 $serialized_fieldnamelist .'\');return false;" '.
-                'alt="'. $moveup .'" title="'. $moveup .'" />';
+                'alt="'.$moveup.'" title="'.$moveup.'" />';
 
         // Set up remove link
         $image_filename = 'remove.png';
-        $removethis = get_string('remove_this', 'rlreport_course_progress_summary');
+        $removethis = get_string('remove_this', $lang_file);
         $remove = '<input type="image" src="'. $CFG->wwwroot .'/blocks/php_report/pix/'. $image_filename .'" '.
                 ' onclick="customfields_updateTable(\''.$block_id.'\',\'remove\',\''.
-                $CFG->wwwroot .'/blocks/php_report/instances/course_progress_summary/\',\''.
+                $CFG->wwwroot .'/blocks/php_report/instances/individual_course_progress/\',\''.
                 $field_id .'\',\''. $serialized_fieldname .'\',\''. $serialized_fieldidlist .'\',\''.
                 $serialized_fieldnamelist .'\');return false;" '.
-                'alt="'. $removethis .'" title="'. $removethis .'" />';
+                'alt="'.$removethis.'" title="'.$removethis.'" />';
 
         $subtable_data[] = array('course_field'  => $fieldname,
                                  'display_order' => $moveupdown,
@@ -168,7 +169,7 @@ if (is_array($fieldidlist)) {
 }
 
 $table = new display_table(array(), $table_columns);
-$table->class = 'course_progress_summary'; // TBV
+$table->class = 'individual_course_progress'; // TBV
 
 $subtable = new display_table($subtable_data, $subtable_columns);
 $subtable->class = ''; // TBV
@@ -178,7 +179,7 @@ echo $table;
 echo $subtable;
 
 // Now append our serialized fields to this output for the javascript to update the form
-echo ':'.$serialized_fieldidlist.':'.$serialized_fieldnamelist.':';
+echo ':'. $serialized_fieldidlist .':'. $serialized_fieldnamelist .':';
 
 /* Do the serialize/unserialize trick to enable all the functionality of the class
  * @param   object  &$object    object to fix

@@ -488,7 +488,7 @@ class course_usage_summary_report extends icon_config_report {
         $result = get_string('na', 'rlreport_course_usage_summary');
 
         //Get the course context
-        $course_context_level = context_level_base::get_custom_context_level('course', 'block_curr_admin');
+        $course_context_level = context_level_base::get_custom_context_level('course', 'elis_program');
 
         $avg_crs_grd = 0;
 
