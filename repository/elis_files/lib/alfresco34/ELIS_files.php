@@ -97,12 +97,12 @@ define('ALFRESCO_BROWSE_ALFRESCO_USER_FILES',   50);
 // Define constants for the default file browsing location.
 //define('ELIS_FILES_BROWSE_MOODLE_FILES',          10);
 defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
+// Were shared now called server files
+//defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
+defined('ELIS_FILES_BROWSE_SERVER_FILES') or define('ELIS_FILES_BROWSE_SERVER_FILES', 30);
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
-defined('ELIS_FILES_BROWSE_CLUSTER_FILES') or define('ELIS_FILES_BROWSE_CLUSTER_FILES', 60);
-defined('ELIS_FILES_BROWSE_SERVER_FILES') or define('ELIS_FILES_BROWSE_SERVER_FILES', 70);
-defined('ELIS_FILES_BROWSE_PRIVATE_FILES') or define('ELIS_FILES_BROWSE_PRIVATE_FILES', 80);
-
+defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_FILES', 60);
 
 class ELIS_files {
 
@@ -113,7 +113,7 @@ class ELIS_files {
     var $suuid    = '';  // Shared folder UUID
     var $cuuid    = '';  // Course folder UUID
     var $uuuid    = '';  // User folder UUID
-    var $ouuid    = '';  // Organizations folder UUID
+    var $ouuid    = '';  // usersets folder UUID
     var $root     = '';  // Root folder UUID
     var $config   = '';  // Config object setting variables for Alfresco
 
@@ -262,7 +262,7 @@ class ELIS_files {
                     $this->cuuid = $folder->uuid;
                 } else if ($folder->title == 'user') {
                     $this->uuuid = $folder->uuid;
-                } else if ($folder->title == 'organization') {
+                } else if ($folder->title == 'userset') {
                     $this->ouuid = $folder->uuid;
                 }
             }
@@ -292,9 +292,9 @@ class ELIS_files {
             $this->node_inherit($cuuid, false);
         }
 
-        // Create the organization shared storage directory.
+        // Create the userset shared storage directory.
         if (empty($this->ouuid)) {
-            $ouuid = $this->create_dir('organization', $this->muuid, true);
+            $ouuid = $this->create_dir('userset', $this->muuid, true);
 
             if ($ouuid === false) {
                 return false;
@@ -1533,14 +1533,14 @@ class ELIS_files {
 /**
  * Get the UUID of a specific orgnanization shared storage area.
  *
- * @param int  $oid    The organization ID.
- * @param bool $create Set to false to not automatically create an organization storage area.
+ * @param int  $oid    The userset ID.
+ * @param bool $create Set to false to not automatically create an userset storage area.
  * @return string|bool The course store UUID value or, False on error.
  */
-    function get_organization_store($oid, $create = true) {
+    function get_userset_store($oid, $create = true) {
         global $DB;
 
-        if (ELIS_FILES_DEBUG_TRACE) mtrace('get_organization_store(' . $oid . ')');
+        if (ELIS_FILES_DEBUG_TRACE) mtrace('get_userset_store(' . $oid . ')');
 
         $uuid = '';
 
@@ -1549,13 +1549,13 @@ class ELIS_files {
         }
 
         // Attempt to get the store UUID value
-        if (($uuid = $DB->get_field('elis_files_organization_store', 'uuid', array('organizationid'=> $oid))) !== false) {
+        if (($uuid = $DB->get_field('elis_files_userset_store', 'uuid', array('usersetid'=> $oid))) !== false) {
             return $uuid;
         }
 
         $dir = $this->read_dir($this->ouuid);
 
-        // Look at all of the organization directories that exist for our organization ID.
+        // Look at all of the userset directories that exist for our userset ID.
         if (!empty($dir->folders)) {
             foreach ($dir->folders as $folder) {
                 if (!empty($uuid)) {
@@ -1580,11 +1580,11 @@ class ELIS_files {
             return false;
         }
 
-        if (!$organization = $DB->get_record('crlm_cluster', array('id'=> $oid))) {
+        if (!$userset = $DB->get_record('crlm_cluster', array('id'=> $oid))) {
             return false;
         }
 
-        if ($node = elis_files_create_dir($organization->name, $this->ouuid, $organization->display)) {
+        if ($node = elis_files_create_dir($userset->name, $this->ouuid, $userset->display)) {
             $uuid = $node->uuid;
 
             // Disable inheriting parent space permissions.  This can be disabled in Alfresco without being
@@ -1594,11 +1594,11 @@ class ELIS_files {
 
         if (!empty($uuid)) {
             // Store the UUID value if it hasn't been stored already.
-            if (!record_exists('elis_files_organization_store', 'organizationid', $oid)) {
-                $organizationstore = new stdClass;
-                $organizationstore->organizationid = $oid;
-                $organizationstore->uuid           = $uuid;
-                $organizationstore->id             = $DB->insert_record('elis_files_organization_store', $organizationstore);
+            if (!record_exists('elis_files_userset_store', 'usersetid', $oid)) {
+                $usersetstore = new stdClass;
+                $usersetstore->usersetid = $oid;
+                $usersetstore->uuid           = $uuid;
+                $usersetstore->id             = $DB->insert_record('elis_files_userset_store', $usersetstore);
             }
 
             return $uuid;
@@ -2267,7 +2267,7 @@ class ELIS_files {
  * @uses $USER
  * @param int    $cid         A course record ID.
  * @param int    $uid         A user record ID.
- * @param int    $ouuid       The Alfresco uuid of an organizational cluster.
+ * @param int    $ouuid       The Alfresco uuid of an usersetal cluster.
  * @param bool   $shared      A flag to indicate whether the user is currently located in the shared repository area.
  * @param string $choose      File browser 'choose' parameter.
  * @param string $origurl     The originating URL from where this function was called.
@@ -2296,13 +2296,13 @@ class ELIS_files {
         $editalfshared   = false;
         $viewalfshared   = false;
         $editalfpersonal = false;
-        $viewalforganization = false;
-        $editalforganization = false;
+        $viewalfuserset = false;
+        $editalfuserset = false;
 
         if (!empty($USER->access['rdef'])) {
             foreach ($USER->access['rdef'] as $rdef) {
                 if ($viewalfshared && $editalfshared &&
-                    $viewalforganization && $editalforganization) {
+                    $viewalfuserset && $editalfuserset) {
                     continue;
                 }
 
@@ -2319,13 +2319,13 @@ class ELIS_files {
                           $rdef['block/repository:createsharedcontent'] == CAP_ALLOW) {
                     $editalfshared = true;
                 }
-                if (isset($rdef['block/repository:vieworganizationcontent']) &&
-                          $rdef['block/repository:vieworganizationcontent'] == CAP_ALLOW) {
-                    $viewalforganization = true;
+                if (isset($rdef['block/repository:viewusersetcontent']) &&
+                          $rdef['block/repository:viewusersetcontent'] == CAP_ALLOW) {
+                    $viewalfuserset = true;
                 }
-                if (isset($rdef['block/repository:createorganizationcontent']) &&
-                          $rdef['block/repository:createorganizationcontent'] == CAP_ALLOW) {
-                    $editalforganization = true;
+                if (isset($rdef['block/repository:createusersetcontent']) &&
+                          $rdef['block/repository:createusersetcontent'] == CAP_ALLOW) {
+                    $editalfuserset = true;
                 }
             }
         }
@@ -2343,7 +2343,7 @@ class ELIS_files {
             $opts[$surl] = ($cid == SITEID) ? get_string('sitefiles') : get_string('coursefiles');
         }
 
-        // Build the option for browsing from the repository organization / course / site files.
+        // Build the option for browsing from the repository userset / course / site files.
         if ($cid === SITEID && $viewalfsite) {
             $curl        = $alfrescourl . 'id=' . $cid . '&amp;userid=0&amp;choose=' . $choose;
             $opts[$curl] = get_string('repositorysitefiles', 'repository');
@@ -2421,19 +2421,19 @@ class ELIS_files {
         }
 
 
-        // Only allow organizational views/edits to those users who have the capability
-        if ($viewalforganization  || $editalforganization) {
-            // Get organizations folders to which the users belongs
-            if ($organization_folders = $this->find_organization_folders($USER->id, $USER->username)) {
-                foreach ($organization_folders as $name => $uuid) {
-                    // Include organization name and uuid in the url
+        // Only allow usersetal views/edits to those users who have the capability
+        if ($viewalfuserset  || $editalfuserset) {
+            // Get usersets folders to which the users belongs
+            if ($userset_folders = $this->find_userset_folders($USER->id, $USER->username)) {
+                foreach ($userset_folders as $name => $uuid) {
+                    // Include userset name and uuid in the url
                     $ourl        = $alfrescourl . 'id=' . $cid . '&amp;ouuid='.$uuid.'&amp;oname='.$name. '&amp;userid=0&amp;choose=' . $choose;
                     $opts[$ourl] = $name;
-                    if ($editalforganization) {
+                    if ($editalfuserset) {
                         if (!elis_files_has_permission($uuid, $USER->username, true)) {
                             $this->allow_edit($USER->username, $uuid);
                         }
-                    } else { // viewalforganization
+                    } else { // viewalfuserset
                         if (!elis_files_has_permission($uuid, $USER->username)) {
                             $this->allow_read($USER->username, $uuid);
                         }
@@ -2442,10 +2442,10 @@ class ELIS_files {
             }
         }
 
-        // If ouuid is passed to this function, include it and the organization name in the default url
+        // If ouuid is passed to this function, include it and the userset name in the default url
         if (!empty($ouuid)) {
-            // Get the organization folder name from Moodle
-            $oname = array_search($ouuid,$this->find_organization_folders($USER->id,$USER->username));
+            // Get the userset folder name from Moodle
+            $oname = array_search($ouuid,$this->find_userset_folders($USER->id,$USER->username));
         }
 
         // Assemble the default menu selection based on the information given to this method.
@@ -2456,14 +2456,14 @@ class ELIS_files {
     }
 
  /**
- * Find a list of organization folders that the user has access to.
+ * Find a list of userset folders that the user has access to.
  *
  * @param $CFG
  * @param int $muserid     The Moodle user id.
  * @param string $username The Moodle user name.
  * @return array Alfresco repository folder names.
  */
-    function find_organization_folders($muserid,$username) {
+    function find_userset_folders($muserid,$username) {
         global $CFG, $DB;
 
         require_once($CFG->libdir . '/ddllib.php');
@@ -2511,8 +2511,8 @@ class ELIS_files {
                 return false;
             }
 
-            // Make sure we can get the storage space from Alfresco for this organization.
-            if (!$uuid = $this->get_organization_store($cluster->id)) {
+            // Make sure we can get the storage space from Alfresco for this userset.
+            if (!$uuid = $this->get_userset_store($cluster->id)) {
                 return false;
             }
 

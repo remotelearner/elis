@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Home Directory</shortname>
+  <description>Get a user's home directory UUID value.</description>
+  <url>/moodle/homedirectory?username={username}</url>
+  <format default="xml" />
+  <authentication>user</authentication>
+</webscript>

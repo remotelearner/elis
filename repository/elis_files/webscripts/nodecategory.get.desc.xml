@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Node Category Retrieval Service</shortname>
+  <description>Node Category Retrieval Service</description>
+  <url>/moodle/nodecategory</url>
+  <format default="xml" />
+  <authentication>user</authentication>
+</webscript>

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Update file contents</shortname>
+  <description>Update the contents of an existing node with new data</description>
+  <format default="xml" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <url>/moodle/updatecontent</url>
+</webscript>

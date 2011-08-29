@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Node Owner</shortname>
+  <description>Change the user who owns a specific node in the system.</description>
+  <url>/moodle/nodeowner/{uuid}?username={username}</url>
+  <format default="xml" />
+  <authentication>admin</authentication>
+  <transaction>required</transaction>
+</webscript>
