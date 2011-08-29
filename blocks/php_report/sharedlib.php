@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Specifies the mapping of tree category shortnames to display names
  *
@@ -362,7 +364,7 @@ function block_php_report_field_capability($owners, $default_view_capability = '
 function block_php_report_field_accessible($owners) {
     global $USER, $CFG;
 
-    require_once($CFG->dirroot.'/curriculum/lib/contexts.php');
+    require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
 
     if ($view_capability = block_php_report_field_capability($owners)) {
         //make sure the user has the view capability in some course
