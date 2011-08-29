@@ -2167,12 +2167,12 @@ function get_root() {
             return false;
         }
 
-        if (!file_exists($CFG->dirroot . '/curriculum/plugins/cluster_classification/clusterclassification.class.php')) {
+        if (!file_exists($CFG->dirroot . '/elis/program/plugins/userset_classification/usersetclassification.class.php')) {
             return false;
         }
 
-        require_once($CFG->dirroot . '/curriculum/plugins/cluster_classification/clusterclassification.class.php');
-        require_once($CFG->dirroot . '/curriculum/lib/cluster.class.php');
+        require_once($CFG->dirroot . '/elis/program/plugins/userset_classification/usersetclassification.class.php');
+        require_once($CFG->dirroot . '/elis/program/lib/data/userset.class.php');
 
         // Get user clusters
         if ($clusters = cluster_get_user_clusters($muserid)) {
@@ -2187,7 +2187,7 @@ function get_root() {
         $org_folders = array();
         foreach ($cluster_info as $cluster) {
             // Get the extra cluster data and ensure it is present before proceeding.
-            $clusterdata = clusterclassification::get_for_cluster($cluster);
+            $clusterdata = usersetclassification::get_for_cluster($cluster);
 
             if (empty($clusterdata->params)) {
                 return false;
@@ -2225,7 +2225,7 @@ function get_root() {
             if (!isset($cluster_data)) {
                 $cluster_data = array();
             }
-            if (!($ucid = $DB->get_field(CLSTUSERTABLE, 'id', array('userid'=> $muserid, 'clusterid'=> $clusterinfo)))) {
+            if (!($ucid = $DB->get_field(clustertrack::TABLE, 'id', array('userid'=> $muserid, 'clusterid'=> $clusterinfo)))) {
                 $ucid = 0;
             }
             $cluster_data[$ucid] = new cluster($clusterinfo);

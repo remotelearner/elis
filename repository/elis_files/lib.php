@@ -201,11 +201,9 @@ class repository_elis_files extends repository {
                                         'path'=> get_string('datemodified','repository_elis_files')),
                                   array('name'=> get_string('repositoryuserfiles','repository_elis_files'),
                                         'path'=> get_string('modifiedby','repository_elis_files')),
-                                  array('name'=> get_string('repositoryclusterfiles','repository_elis_files'),
+                                  array('name'=> get_string('repositoryusersetfiles','repository_elis_files'),
                                         'path'=> get_string('modifiedby','repository_elis_files')),
                                   array('name'=> get_string('repositoryserverfiles','repository_elis_files'),
-                                        'path'=> get_string('modifiedby','repository_elis_files')),
-                                  array('name'=> get_string('repositoryprivatefiles','repository_elis_files'),
                                         'path'=> get_string('modifiedby','repository_elis_files'))
                              );
         $ret['dynload'] = true;
@@ -286,6 +284,9 @@ class repository_elis_files extends repository {
             $ret = $this->print_login();
         }*/
 
+        // Let's try... just for 3.2 to save Marko problems for now...
+//        $wdir = "/";
+//        repository_elis_files::displaydir($wdir);
         //Fake file listing for now
         $ret['list'][] = array('title'=>'Folder',
                         'path'=>'fake/files',
@@ -623,9 +624,8 @@ class repository_elis_files extends repository {
             ELIS_FILES_BROWSE_SITE_FILES   => get_string('repositorysitefiles', 'repository_elis_files'),
             ELIS_FILES_BROWSE_COURSE_FILES => get_string('repositorycoursefiles', 'repository_elis_files'),
             ELIS_FILES_BROWSE_USER_FILES   => get_string('repositoryuserfiles', 'repository_elis_files'),
-            ELIS_FILES_BROWSE_CLUSTER_FILES => get_string('repositoryclusterfiles', 'repository_elis_files'),
-            ELIS_FILES_BROWSE_SERVER_FILES => get_string('repositoryserverfiles', 'repository_elis_files'),
-            ELIS_FILES_BROWSE_PRIVATE_FILES => get_string('repositoryprivatefiles', 'repository_elis_files')
+            ELIS_FILES_BROWSE_USERSET_FILES => get_string('repositoryusersetfiles', 'repository_elis_files'),
+            ELIS_FILES_BROWSE_SERVER_FILES => get_string('repositoryserverfiles', 'repository_elis_files')
         );
 
         $mform->addElement('select', 'default_browse', get_string('defaultfilebrowsinglocation', 'repository_elis_files'), $options);
@@ -858,6 +858,13 @@ class repository_elis_files extends repository {
         return (FILE_INTERNAL | FILE_EXTERNAL);
     }
 
+
+    function print_cell($alignment="center", $text="&nbsp;") {
+        echo "<td align=\"$alignment\" nowrap=\"nowrap\">\n";
+        echo "$text";
+        echo "</td>\n";
+    }
+
     /// This function get's the image size
     public function get_image_size($uuid) {
         global $repo;
@@ -887,7 +894,7 @@ class repository_elis_files extends repository {
         global $basedir;
         global $usecheckboxes;
         global $id;
-        global $USER, $CFG;
+        global $USER, $CFG, $OUTPUT;
 
         $fullpath = $basedir.$wdir;
 
@@ -956,14 +963,14 @@ class repository_elis_files extends repository {
 
                 if ($usecheckboxes) {
                     if ($fileurl === '/moddata') {
-                        print_cell();
+                        repository_elis_files::print_cell();
                     } else {
-                        print_cell("center", "<input type=\"checkbox\" name=\"file$count\" value=\"$fileurl\" onclick=\"return set_rename('$dir');\" />");
+                        repository_elis_files::print_cell("center", "<input type=\"checkbox\" name=\"file$count\" value=\"$fileurl\" onclick=\"return set_rename('$dir');\" />");
                     }
                 }
-                print_cell("left", "<a href=\"coursefiles.php?id=$id&amp;wdir=$fileurl\" onclick=\"return reset_value();\"><img src=\"$CFG->pixpath/f/folder.gif\" class=\"icon\" alt=\"".get_string('folder')."\" /></a> <a href=\"coursefiles.php?id=$id&amp;wdir=$fileurl&amp;usecheckboxes=$usecheckboxes\" onclick=\"return reset_value();\">".htmlspecialchars($dir)."</a>");
-                print_cell("right", "&nbsp;");
-                print_cell("right", $filedate);
+                repository_elis_files::print_cell("left", "<a href=\"coursefiles.php?id=$id&amp;wdir=$fileurl\" onclick=\"return reset_value();\"><img src=\"" . $OUTPUT->pix_url('/f/folder.gif') ."\" class=\"icon\" alt=\"".get_string('folder')."\" /></a> <a href=\"coursefiles.php?id=$id&amp;wdir=$fileurl&amp;usecheckboxes=$usecheckboxes\" onclick=\"return reset_value();\">".htmlspecialchars($dir)."</a>");
+                repository_elis_files::print_cell("right", "&nbsp;");
+                repository_elis_files::print_cell("right", $filedate);
 
                 echo "</tr>";
             }
@@ -982,7 +989,7 @@ class repository_elis_files extends repository {
                 $fileurl     = "$wdir/$file";
                 $filedate    = userdate(filemtime($filename), "%d %b %Y, %I:%M %p");
 
-                $dimensions = get_image_size($filename);
+                $dimensions = repository_elis_files::get_image_size($filename);
                 if($dimensions) {
                     $imgwidth = $dimensions[0];
                     $imgheight = $dimensions[1];
@@ -994,12 +1001,12 @@ class repository_elis_files extends repository {
                 echo "<tr>\n";
 
                 if ($usecheckboxes) {
-                    print_cell("center", "<input type=\"checkbox\" name=\"file$count\" value=\"$fileurl\" onclick=\";return set_rename('$file');\" />");
+                    repository_elis_files::print_cell("center", "<input type=\"checkbox\" name=\"file$count\" value=\"$fileurl\" onclick=\";return set_rename('$file');\" />");
                 }
                 echo "<td align=\"left\" nowrap=\"nowrap\">";
                 $ffurl = get_file_url($id.$fileurl);
                 link_to_popup_window ($ffurl, "display",
-                                      "<img src=\"$CFG->pixpath/f/$icon\" class=\"icon\" alt=\"$strfile\" />",
+                                      "<img src=\"" . $OUTPUT->pix_url('/f/'.$icon) . "\" class=\"icon\" alt=\"$strfile\" />",
                                       480, 640);
                 $file_size = filesize($filename);
 
