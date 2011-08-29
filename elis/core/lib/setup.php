@@ -99,10 +99,12 @@ class elis_config {
             $config = new stdClass;
 
             // load the defaults
-            $defaults = array();
-            include(elis::plugin_file($name, 'defaults.php'));
-            foreach ($defaults as $key => $value) {
-                $config->$key = $value;
+            if (file_exists(elis::plugin_file($name, 'defaults.php'))) {
+                $defaults = array();
+                include(elis::plugin_file($name, 'defaults.php'));
+                foreach ($defaults as $key => $value) {
+                    $config->$key = $value;
+                }
             }
 
             $configrecs = $DB->get_records('config_plugins', array('plugin' => $name));
