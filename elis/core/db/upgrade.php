@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_elis_core_upgrade($oldversion=0) {
-    global $CFG, $THEME, $DB;
+    global $CFG, $THEME, $DB, $OUTPUT;
 
     $dbman = $DB->get_manager();
     $result = true;
@@ -94,6 +94,7 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         // core savepoint reached
         upgrade_plugin_savepoint(true, 2011063000, 'elis', 'core');
     }
+
     if ($result && $oldversion < 2011080200) {
 
         // Define index sortorder_ix (not unique) to be dropped form elis_field
@@ -129,6 +130,37 @@ function xmldb_elis_core_upgrade($oldversion=0) {
 
         // core savepoint reached
         upgrade_plugin_savepoint(true, 2011080200, 'elis', 'core');
+    }
+
+    if ($result && $oldversion < 2011083000) {
+        // Remove elis_info blocks
+        $eiblock = $DB->get_record('block', array('name' => 'elis_info'));
+        if ($eiblock) {
+            // elis_info block exists
+            $eiinstance = $DB->get_record('block_instances', array('blockname' => 'elis_info'));
+
+            if ($eiinstance) {
+                // elis_info instances exist, delete them ...
+                $DB->delete_records('block_positions', array('blockinstanceid' => $eiinstance->id));
+
+                // remove instance
+                $DB->delete_records('block_instances', array('blockname' => 'elis_info'));
+            }
+
+            // remove any old instances
+            $DB->delete_records('block_instance_old', array('blockid' => $eiblock->id));
+            // remove any old pinned blocks
+            $DB->delete_records('block_pinned_old', array('blockid' => $eiblock->id));
+            // remove block record
+            $DB->delete_records('block', array('id' => $eiblock->id));
+
+            if (file_exists($CFG->dirroot .'/blocks/elis_info')) {
+                echo $OUTPUT->notification("Warning: {$CFG->dirroot}/blocks/elis_info directory still exists - please remove it!");
+            }
+        }
+
+        // core savepoint reached
+        upgrade_plugin_savepoint(true, 2011083000, 'elis', 'core');
     }
 
     return $result;
