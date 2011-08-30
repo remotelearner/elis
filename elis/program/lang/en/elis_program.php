@@ -152,6 +152,7 @@ To disable this functionality, select "N/A" from the list.';
 $string['cluster_role_setting'] = 'Default User Set Role';
 $string['cluster_subcluster_prompt'] = 'Assign existing user set as a user subset';
 $string['cluster_tree_na'] = 'N/A';
+$string['completed_label'] = 'Completed';
 $string['completionform:completion_grade'] = 'Completion grade';
 $string['completionform:completion_grade_help'] = '<p>Minimum grade the learner must received to identify the element as &ldquo;completed&rdquo;.</p>';
 $string['completionform:course_idnumber'] = 'ID Number';
@@ -295,6 +296,7 @@ $string['curriculum_shortdescription'] = 'Short description';
 $string['customfields'] = 'Custom fields';
 
 $string['dashboard'] = 'Dashboard';
+$string['date'] = 'Date';
 $string['datecompleted'] = 'Completion Date';
 $string['date_completed'] = 'Date Completed';
 $string['date_graded'] = 'Date Graded';
@@ -434,6 +436,7 @@ $string['health_user_syncsoln'] = 'Users need to be synchronized by running the 
                 This process can take a long time, we recommend you run it during non-peak hours, and leave this window open until you see a success message.
                 If the script times out (stops loading before indicating success), please open a support ticket to have this run for you.<br/><br/>
                 <a href="{$a->wwwroot}/elis/program/scripts/migrate_moodle_users.php">Fix this now</a>';
+$string['hidecourses'] = 'Hide Courses';
 
 $string['icon_collapse_help'] = 'This setting determines the number of icons of each type to display in the Program Administration block.
 This setting applies at the top level and also for nest entities.
@@ -514,6 +517,7 @@ $string['moodleenrol'] = 'You have been removed from the waiting list for class 
 Please visit {$a->wwwroot}/course/enrol.php?id={$a->id} to complete your enrolment.';
 $string['moodleenrol_subj'] = 'Ready to enrol in {$a->idnumber}.';
 
+$string['na'] = 'NA';
 $string['name'] = 'Name';
 $string['name_lower_case'] = 'name';
 $string['n_completed'] = 'Not Completed';
@@ -537,6 +541,7 @@ $string['noclassyet'] = 'No Class Instance Yet';
 $string['nolearningplan'] = 'You do not currently have a learning plan assigned';
 $string['nomoodleuser'] = 'No moodle user found for specified user id.';
 $string['nomoodleuser_filt'] = 'Does not have an associated Moodle user';
+$string['noncurriculacourses'] = 'Non-program Course Descriptions';
 $string['none'] = 'None';
 $string['noroleselected'] = 'N/A';
 $string['norolesexist'] = 'There are currently no roles that users can be assigned on this entity.';
@@ -747,6 +752,7 @@ $string['selectacourse'] = 'Select a course';
 $string['selectedonly'] = 'Show selected items only';
 $string['showallitems'] = 'Show all items';
 $string['show_all_users'] = 'Show All Users';
+$string['showcourses'] = 'Show Courses';
 $string['showinactive'] = 'Show inactive';
 $string['site_not_defined'] = 'Site is not defined';
 $string['student_credits'] = 'Credits';
@@ -774,6 +780,8 @@ $string['sync_instructor_role_setting'] = 'Instructor Role';
 $string['sync_student_role_help'] = 'If you select a role here, then any user with this role in an ELIS class instance will be enrolled as a student in the class instance.';
 $string['sync_student_role_setting'] = 'Student Role';
 
+$string['tab_archived_learning_plans'] = 'Archived Learning Plans';
+$string['tab_current_learning_plans'] = 'Current Learning Plans';
 $string['tag_name'] = 'Name';
 $string['tags'] = 'Tags';
 $string['timecreated'] = 'Creation time';

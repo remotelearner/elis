@@ -539,156 +539,269 @@ class user extends data_object_with_custom_fields {
      * @todo move out of this class
      */
     function get_dashboard() {
-        global $CFG, $OUTPUT;
+        global $CFG, $OUTPUT, $DB, $PAGE;
 
         require_once elispm::lib('data/curriculumstudent.class.php');
 
+        $PAGE->requires->yui2_lib(array('dom', 'event', 'connection'));
+        $PAGE->requires->js('/elis/program/js/util.js', true);
+        $PAGE->requires->js('/elis/program/js/dashboard.js', true);
+
+        if (optional_param('tab','',PARAM_CLEAN) == 'archivedlp') {
+            $tab = 'archivedlp';
+            $show_archived = 1;
+        } else {
+            $tab = 'currentlp';
+            $show_archived = 0;
+        }
+
         $content = '';
-
-        $table = new html_table();
-        $table->head = array(
-            get_string('learningplan', 'elis_program'),
-            get_string('class', 'elis_program'),
-            get_string('score', 'elis_program'),
-            get_string('datecompleted', 'elis_program')
-        );
-
-        $table->data = array();
-
-        $data = array();
+        $archive_var = '_elis_program_archive';
 
         $totalcourses    = 0;
         $completecourses = 0;
 
-    /// Store class IDs the student is enrolled into from their current curriculua.
+        $curriculas = array();
         $classids = array();
 
         if ($usercurs = curriculumstudent::get_curricula($this->id)) {
             foreach ($usercurs as $usercur) {
-                if ($courses = curriculumcourse_get_listing($usercur->curid, 'curcrs.position, crs.name', 'ASC')) {
-                    foreach ($courses as $course) {
-                        $totalcourses++;
-
-                        if ($classdata = student_get_class_from_course($course->courseid, $this->id)) {
-                            if (!in_array($classdata->id, $classids)) {
-                                $classids[] = $classdata->id;
-                            }
-
-                            if ($classdata->completestatusid == student::STUSTATUS_PASSED) {
-                                $completecourses++;
-                            }
-
-                            if ($mdlcrs = moodle_get_course($classdata->id)) {
-                                $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
-                                              $mdlcrs . '">' . $course->coursename . '</a>';
-                            } else {
-                                $coursename = $course->coursename;
-                            }
-
-                            if ($classdata->completestatusid == student::STUSTATUS_PASSED && !empty($classdata->completetime)) {
-
-                            }
-
-                            $data[] = array(
-                                empty(elis::$config->elis_program->disablecoursecatalog) ? ('<a href="index.php?s=crscat&section=curr&showcurid=' . $usercur->curid . '">' . $usercur->name . '</a>') : $usercur->name,
-                                $coursename,
-                                $classdata->grade,
-                                $classdata->completestatusid == student::STUSTATUS_PASSED && !empty($classdata->completetime) ?
-                                    date('M j, Y', $classdata->completetime) : 'NA'
-                            );
-                        } else {
-                            $data[] = array(
-                                empty(elis::$config->elis_program->disablecoursecatalog) ? ('<a href="index.php?s=crscat&section=curr&showcurid=' . $usercur->curid . '">' . $usercur->name . '</a>') : $usercur->name,
-                                $course->coursename,
-                                0,
-                                'NA'
-                            );
-                        }
+                // Check if this curricula is set as archived and whether we want to display it
+                $crlm_context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $usercur->curid);
+                $data_array = field_data::get_for_context_and_field($crlm_context, $archive_var);
+                $crlm_archived = 0;
+                if (is_array($data_array) && !empty($data_array)) {
+                    foreach ($data_array as $data_key=>$data_obj) {
+                        $crlm_archived = (!empty($data_obj->data))
+                                       ? 1
+                                       : 0;
                     }
                 }
-            }
-        }
 
-        if (!empty($data)) {
-            $cursused = array();
+                if ($show_archived == $crlm_archived) {
 
-            foreach ($data as $datum) {
-                $curname = '';
+                    $curriculas[$usercur->curid]['id'] = $usercur->curid;
+                    $curriculas[$usercur->curid]['name'] = $usercur->name;
+                    $data = array();
 
-                if (in_array($datum[0], $cursused)) {
-                    $datum[0] = '';
+                    if ($courses = curriculumcourse_get_listing($usercur->curid, 'curcrs.position, crs.name', 'ASC')) {
+                        foreach ($courses as $course) {
+                            $totalcourses++;
+
+                            $course_obj = new course($course->courseid);
+                            $coursedesc = $course_obj->syllabus;
+
+                            if ($classdata = student_get_class_from_course($course->courseid, $this->id)) {
+                                if (!in_array($classdata->id, $classids)) {
+                                    $classids[] = $classdata->id;
+                                }
+
+                                if ($classdata->completestatusid == STUSTATUS_PASSED) {
+                                    $completecourses++;
+                                }
+
+                                if ($mdlcrs = moodle_get_course($classdata->id)) {
+                                    $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
+                                                  $mdlcrs . '">' . $course->coursename . '</a>';
+                                } else {
+                                    $coursename = $course->coursename;
+                                }
+
+                                $data[] = array(
+                                    $coursename,
+                                    $coursedesc,
+                                    $classdata->grade,
+                                    $classdata->completestatusid == STUSTATUS_PASSED ? get_string('yes') : get_string('no'),
+                                    $classdata->completestatusid == STUSTATUS_PASSED && !empty($classdata->completetime) ?
+                                        date('M j, Y', $classdata->completetime) : get_string('na','elis_program')
+                                );
+                            } else {
+                                $data[] = array(
+                                    $course->coursename,
+                                    $coursedesc,
+                                    0,
+                                    get_string('no'),
+                                    get_string('na','elis_program')
+                                );
+                            }
+                        }
+                    }
+
+                    $curriculas[$usercur->curid]['data'] = $data;
+
                 } else {
-                    $cursused[] = $datum[0];
-                }
 
-                $table->data[] = $datum;
+                    // Keep note of the classid's regardless if set archived or not for later use in determining non-curricula courses
+                    if ($courses = curriculumcourse_get_listing($usercur->curid, 'curcrs.position, crs.name', 'ASC')) {
+                        foreach ($courses as $course) {
+                            if ($classdata = student_get_class_from_course($course->courseid, $this->id)) {
+                                if (!in_array($classdata->id, $classids)) {
+                                    $classids[] = $classdata->id;
+                                }
+                            }
+                        }
+                    }
+
+                }
             }
         }
 
-//        $content .= print_heading_block(get_string('learningplanwelcome', 'elis_program', fullname($this)), '', true);
+        // Show different css for IE below version 8
+        if (check_browser_version('MSIE',7.0) && !check_browser_version('MSIE',8.0)) {
+            // IEs that are lower than version 8 do not get the float because it messes up the tabs at the top of the page for some reason
+            $float_style = 'text-align:right;';
+        } else {
+            // Sane browsers get the float tag
+            $float_style = 'text-align:right; float:right;';
+        }
+
+        // Tab header
+        $field_exists = field::get_for_context_level_with_name('curriculum', $archive_var);
+        if (!empty($field_exists)) {
+            $tabrow = array();
+            $tabrow[] = new tabobject('currentlp', $CFG->wwwroot.'/elis/program/index.php?tab=currentlp',
+                                      get_string('tab_current_learning_plans','elis_program'));
+            $tabrow[] = new tabobject('archivedlp', $CFG->wwwroot.'/elis/program/index.php?tab=archivedlp',
+                                      get_string('tab_archived_learning_plans','elis_program'));
+            $tabrows = array($tabrow);
+            print_tabs($tabrows, $tab);
+        }
+
+        //$content .= print_heading_block(get_string('learningplanwelcome', 'elis_program', fullname($this)), '', true);
         $content .= $OUTPUT->heading(get_string('learningplanwelcome', 'elis_program', fullname($this)));
 
-
         if ($totalcourses === 0) {
-            $content .= '<br /><center>' . get_string('nolearningplan', 'elis_program') . '</center>';
-            return $content;
+            $blank_lang = ($tab == 'archivedlp') ? 'noarchivedplan' : 'nolearningplan';
+            $content .= '<br /><center>' . get_string($blank_lang, 'elis_program') . '</center>';
         }
 
-        $a = new stdClass;
-        $a->percent         = ($totalcourses != 0) ? sprintf("%d%%", $completecourses / $totalcourses * 100) : '';
-        $a->coursescomplete = $completecourses;
-        $a->coursestotal    = $totalcourses;
+        // Load the user preferences for hide/show button states
+        if ($collapsed = get_user_preferences('crlm_learningplan_collapsed_curricula')) {
+            $collapsed_array = explode(',',$collapsed);
+        } else {
+            $collapsed = '';
+            $collapsed_array = array();
+        }
 
-//        $content .= print_heading(get_string('learningplanintro', 'elis_program', $a), 'left', 2, 'main', true);
-        $content .= html_writer::tag('p', get_string('learningplanintro', 'elis_program', $a), array('left'=> 2, 'main'=> true));
+        $content .= '<input type="hidden" name="collapsed" id="collapsed" value="' . $collapsed . '">';
 
+        if (!empty($curriculas)) {
+            foreach ($curriculas as $curricula) {
 
-        $content .= html_writer::table($table);
-
-    /// Get old completed course data for this user.
-        if (!empty($classids)) {
-            list($in_sql, $in_params) = $this->_db->get_in_or_equal($classids, SQL_PARAMS_QM, '', false);
-            $sql = 'SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
-                      FROM {'.student::TABLE.'} stu
-                      JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
-                      JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
-                     WHERE userid = ?
-                       AND stu.completestatusid != '.student::STUSTATUS_NOTCOMPLETE . "
-                       AND classid $in_sql
-                  ORDER BY crs.name ASC, stu.completetime ASC";
-
-            $params = array_merge(array($this->id), $in_params);
-
-            if ($classes = $this->_db->get_records_sql($sql, $params)) {
-                $table = new stdClass;
+                //$table = new stdClass;
+                $table = new html_table();
                 $table->head = array(
-                    'Class',
-                    'Score',
-                    'Completion Date'
+                    get_string('class', 'elis_program'),
+                    get_string('description', 'elis_program'),
+                    get_string('score', 'elis_program'),
+                    get_string('completed_label', 'elis_program'),
+                    get_string('date', 'elis_program')
+                );
+                $table->data = $curricula['data'];
+
+                $curricula_name = empty(elis::$config->elis_program->disablecoursecatalog)
+                                ? ('<a href="index.php?s=crscat&section=curr&showcurid=' . $curricula['id'] . '">' . $curricula['name'] . '</a>')
+                                : $curricula['name'];
+
+                $header_curr_name = get_string('learningplanname', 'elis_program', $curricula_name);
+                if (in_array($curricula['id'],$collapsed_array)) {
+                    $button_label = get_string('showcourses','elis_program');
+                    $extra_class = ' hide';
+                } else {
+                    $button_label = get_string('hidecourses','elis_program');
+                    $extra_class = '';
+                }
+                $heading = '<div class="clearfix"></div>'
+                         . '<div style="' . $float_style . '">'
+                         . '<script id="curriculum' . $curricula['id'] . 'script" type="text/javascript">toggleVisibleInitWithState("curriculum'
+                         . $curricula['id'] . 'script", "curriculum' . $curricula['id'] . 'button", "'
+                         . $button_label . '", "' . get_string('hidecourses','elis_program') . '", "'
+                         . get_string('showcourses','elis_program') . '", "curriculum-'
+                         . $curricula['id'] . '");</script></div>' . $header_curr_name;
+
+                $content .= '<div class="dashboard_curricula_block">';
+                //$content .= print_heading($heading, 'left', 2, 'main', true);
+                $content .= $OUTPUT->heading($heading);
+                $content .= '<div id="curriculum-' . $curricula['id'] . '" class="yui-skin-sam ' . $extra_class . '">';
+                //$content .= print_table($table, true);
+                $content .= html_writer::table($table);
+                $content .= '</div>';
+                $content .= '</div>';
+            }
+        }
+
+        /// Completed non-curricula course data
+        if ($tab != 'archivedlp') {
+            if (!empty($classids)) {
+                $sql = 'SELECT stu.id, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+                        FROM {'.student::TABLE.'} stu
+                        INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
+                        INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
+                        WHERE userid = '.$this->id.'
+                        AND classid '.(count($classids) == 1 ? '!= ' . current($classids) :
+                        'NOT IN (' . implode(', ', $classids) . ')').'
+                        ORDER BY crs.name ASC, stu.completetime ASC';
+            } else {
+                $sql = 'SELECT stu.id, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+                        FROM {'.student::TABLE.'} stu
+                        INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
+                        INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
+                        WHERE userid = '.$this->id.'
+                        ORDER BY crs.name ASC, stu.completetime ASC';
+            }
+
+            if ($classes = $DB->get_records_sql($sql)) {
+                //$table = new stdClass;
+                $table = new html_table();
+                $table->head = array(
+                    get_string('class', 'elis_program'),
+                    get_string('score', 'elis_program'),
+                    get_string('completed_label', 'elis_program'),
+                    get_string('date', 'elis_program')
                 );
 
                 $table->data = array();
 
                 foreach ($classes as $class) {
-                    if ($mdlcrs = moodle_get_course($class->classid)) {
+                    if ($mdlcrs = moodle_get_course($class->id)) {
                         $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
-                            $mdlcrs . '">' . $course->coursename . '</a>';
+                                      $mdlcrs . '">' . $class->coursename . '</a>';
                     } else {
-                        $coursename = $course->coursename;
+                        $coursename = $class->coursename;
                     }
 
                     $table->data[] = array(
                         $coursename,
                         $class->grade,
-                        date('M j, Y', $class->completetime)
+                        $class->completestatusid == STUSTATUS_PASSED ? get_string('yes') : get_string('no'),
+                        $class->completestatusid == STUSTATUS_PASSED && !empty($class->completetime) ?
+                            date('M j, Y', $class->completetime) : get_string('na','elis_program')
                     );
                 }
 
-                $content .= '<hr style="height: 2px; border-width: 0; color: gray; background-color: gray" />';
-                $content .= print_heading(get_string('previouscourses', 'elis_program'), 'center',
-                                          2, 'main', true);
+                $header_curr_name = get_string('noncurriculacourses', 'elis_program');
+                if (in_array('na',$collapsed_array)) {
+                    $button_label = get_string('showcourses','elis_program');
+                    $extra_class = ' hide';
+                } else {
+                    $button_label = get_string('hidecourses','elis_program');
+                    $extra_class = '';
+                }
+                $heading = '<div class="clearfix"></div>'
+                         . '<div style="' . $float_style . '">'
+                         . '<script id="noncurriculascript" type="text/javascript">toggleVisibleInitWithState("noncurriculascript", "noncurriculabutton", "'
+                         . $button_label . '", "' . get_string('hidecourses','elis_program') . '", "'
+                         . get_string('showcourses','elis_program') . '", "curriculum-na");</script></div>'
+                         . $header_curr_name;
 
-                $content .= print_table($table, true);
+                $content .= '<div class="dashboard_curricula_block">';
+                //$content .= print_heading($heading, 'left', 2, 'main', true);
+                $content .= $OUTPUT->heading($heading);
+                $content .= '<div id="curriculum-na" class="yui-skin-sam ' . $extra_class . '">';
+                //$content .= print_table($table, true);
+                $content .= html_writer::table($table);
+                $content .= '</div>';
+                $content .= '</div>';
             }
         }
 
