@@ -296,7 +296,7 @@ function pm_synchronize_moodle_class_grades() {
             $causers = $DB->get_recordset_sql($sql, array('classid' => $pmclass->id,
                                                           'roles' => $CFG->gradebookroles));
 
-            if(empty($causers)) {
+            if (empty($causers)) {
                 // nothing to see here, move on
                 continue;
             }
@@ -371,7 +371,7 @@ function pm_synchronize_moodle_class_grades() {
                 // (this works since both sets are sorted by Moodle user ID)
                 // (in theory, we shouldn't need this, but just in case...)
                 while ($sturec && $sturec->muid < $stugrades->user->id) {
-                    $sturec = rs_fetch_next_record($causers);
+                    $sturec = next($causers);
                 }
                 if (!$sturec) {
                     break;
@@ -392,15 +392,24 @@ function pm_synchronize_moodle_class_grades() {
 
                 /// If no enrolment record in ELIS, then let's set one.
                 if (empty($sturec->id)) {
-                    if(!$doenrol) {
+                    if (!$doenrol) {
                         continue;
                     }
                     $sturec->classid = $class->classid;
                     $sturec->userid = $cmuserid;
+
                     /// Enrolment time will be the earliest found role assignment for this user.
-                    $enroltime = $DB->get_field('user_enrolments', 'timestart as enroltime', array('enrolid' => $class->moodlecourseid,
-                                                                                                   'userid'  => $sturec->muid));
-                    $sturec->enrolmenttime = (!empty($enroltime) ? $enroltime : $timenow);
+                    $enroltime = $timenow;
+                    $enrolments = $DB->get_records('enrol', array('courseid' => $class->moodlecourseid));
+                    foreach ($enrolments as $enrolment) {
+                        $etime = $DB->get_field('user_enrolments', 'timestart',
+                                          array('enrolid' => $enrolment->id,
+                                                'userid'  => $sturec->muid));
+                        if (!empty($etime) && $etime < $enroltime) {
+                            $enroltime = $etime;
+                        }
+                    }
+                    $sturec->enrolmenttime = $enroltime;
                     $sturec->completetime = 0;
                     $sturec->endtime = 0;
                     $sturec->completestatusid = STUSTATUS_NOTCOMPLETE;

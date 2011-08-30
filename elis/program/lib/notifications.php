@@ -472,13 +472,23 @@ function pm_assign_student_from_mdl($eventdata) {
     $classes = $DB->get_records(classmoodlecourse::TABLE, array('moodlecourseid'=> $context->instanceid));
     if (is_array($classes) && (count($classes) == 1)) { // only if course is associated with one class
         $class = current($classes);
-        if (!$DB->get_record(student::TABLE, array('classid'=> $class->classid,
-                                                   'userid'=> $pmuserid))) {
+        if (!$DB->get_record(student::TABLE, array('classid' => $class->classid,
+                                                   'userid'  => $pmuserid))) {
             $sturec = new Object();
             $sturec->classid = $class->classid;
             $sturec->userid = $pmuserid;
-            /// todo: determine if there's a smarter way to determine enrolment time (ELIS-2972)
-            $sturec->enrolmenttime = $timenow;
+            /// determine enrolment time (ELIS-2972)
+            $enroltime = $timenow;
+            $enrolments = $DB->get_records('enrol', array('courseid' => $class->moodlecourseid));
+            foreach ($enrolments as $enrolment) {
+                $etime = $DB->get_field('user_enrolments', 'timestart',
+                                  array('enrolid' => $enrolment->id,
+                                        'userid'  => $eventdata->userid));
+                if (!empty($etime) && $etime < $enroltime) {
+                    $enroltime = $etime;
+                }
+            }
+            $sturec->enrolmenttime = $enroltime;
             $sturec->completetime = 0;
             $sturec->completestatusid = STUSTATUS_NOTCOMPLETE;
             $sturec->grade = 0;
