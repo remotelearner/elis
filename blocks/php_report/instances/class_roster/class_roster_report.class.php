@@ -168,6 +168,7 @@ class class_roster_report extends table_report {
                            $this->get_report_shortname(), 'classid',
                            $this->filter);
 
+        $cmclass = null;
         if (!empty($cls_setting[0]['value'])) {
             $classid = $cls_setting[0]['value'];
             $cmclass = new pmclass($classid);
@@ -191,9 +192,11 @@ class class_roster_report extends table_report {
         if (!empty($classid)) {
             // Add dates if available
             if (!empty($cmclass)) {
+                $cmclass = $cmclass->to_object(); // TBD: no date data w/o?!?!
                 $startdate = $cmclass->startdate;
                 $enddate = $cmclass->enddate;
 
+                //error_log("class_roster::get_header_entries() dates: {$startdate} ~ {$enddate}");
                 // Add start date if available
                 if (!empty($startdate)) {
                     $header_obj = new stdClass;
