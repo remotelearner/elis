@@ -53,7 +53,7 @@ class generalized_filter_courseclassselect extends generalized_filter_dependents
 
         $options['numeric'] = true;
 
-        $choices_array = array('0' => 'Select a class');
+        $choices_array = array('0' => get_string('selectaclass', 'elis_program'));
 
         $contexts = get_contexts_by_capability_for_user('class', 'block/php_report:view', $USER->id);
         if ($records = pmclass_get_listing('crsname', 'ASC', 0, 0, '', '', 0, false, $contexts)) {
@@ -88,14 +88,14 @@ class generalized_filter_courseclassselect extends generalized_filter_dependents
     function get_main_options() {
         global $USER;
 
-        $courses_array = array('0' => 'Select a course');
+        $courses_array = array('0' => get_string('selectacourse', 'elis_program'));
 
         // Fetch array of allowed classes
         $contexts = get_contexts_by_capability_for_user('class', 'block/php_report:view', $USER->id);
         if ($records = pmclass_get_listing('crsname', 'ASC', 0, 0, '', '', 0, false, $contexts)) {
             $allowed_courses = array();
             foreach ($records as $record) {
-                if (!in_array($record->courseid,$allowed_courses)) {
+                if (!in_array($record->courseid, $allowed_courses)) {
                     $allowed_courses[] = $record->courseid;
                 }
             }
@@ -105,8 +105,8 @@ class generalized_filter_courseclassselect extends generalized_filter_dependents
             $course_list = course_get_listing('name', 'ASC', 0, 0, '', '');
             foreach ($course_list as $course_obj) {
                 // Only show courses that are associated with an allowed class
-                if (in_array($course_obj->id,$allowed_courses)) {
-                    $courses_array[$course_obj->id] = (strlen($course_obj->name) > 80) ? substr($course_obj->name,0,80) . '...' : $course_obj->name;
+                if (in_array($course_obj->id, $allowed_courses)) {
+                    $courses_array[$course_obj->id] = (strlen($course_obj->name) > 80) ? substr($course_obj->name, 0, 80) .'...' : $course_obj->name;
                 }
             }
         }
