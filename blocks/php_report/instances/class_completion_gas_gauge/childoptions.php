@@ -31,6 +31,7 @@
 require_once(dirname(__FILE__) .'/../../../../config.php');
 
 require_once($CFG->dirroot .'/blocks/php_report/instances/class_completion_gas_gauge/class_completion_gas_gauge_report.class.php');
+require_once($CFG->dirroot .'/elis/program/lib/setup.php');
 require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
 require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
 
