@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @return  boolean  true  Returns true to satisfy install procedure
  */
-function xmldb_pmplugins_userset_classification_install() {
+function xmldb_enrol_elis_install() {
     global $CFG;
 
     if (!enrol_is_enabled('elis')) {
