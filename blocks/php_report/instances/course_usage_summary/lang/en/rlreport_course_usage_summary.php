@@ -32,6 +32,7 @@ $string['option_tot_crs_rscs'] = 'Total Course Resources Accessed';
 $string['option_tot_disc_posts'] = 'Total Discussion Posts';
 $string['option_tot_quizzes'] = 'Total Quizzes Graded';
 
+$string['pluginname'] = 'Site Usage Summary Report';
 $string['present'] = 'Present';
 $string['report_heading'] = 'Site Usage Summary Report: ';
 

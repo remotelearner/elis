@@ -50,6 +50,7 @@ $string['name'] = 'Name';
 $string['nofieldsfound'] = 'No custom fields were found.';
 
 $string['percent_symbol'] = '%';
+$string['pluginname'] = 'Course Progress Summary Report';
 $string['present'] = 'Present';
 
 $string['remove_fields'] = 'Remove Fields';

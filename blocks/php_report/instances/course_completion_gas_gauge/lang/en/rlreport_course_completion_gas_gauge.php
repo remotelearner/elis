@@ -24,7 +24,10 @@ $string['filter_inactive'] = 'Choose whether to include inactive users';
 $string['filter_inactive_help'] = 'selecting custom course fields';
 $string['filter_inactive_no'] = 'No';
 $string['filter_inactive_yes'] = 'Yes';
+
 $string['na'] = 'N/A';
+$string['pluginname'] = 'Course Completion Gas Gauge Report';
+
 $string['status_complete'] = 'complete';
 $string['status_incomplete'] = 'incomplete';
 

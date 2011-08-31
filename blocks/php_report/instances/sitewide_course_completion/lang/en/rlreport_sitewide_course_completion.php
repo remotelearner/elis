@@ -32,6 +32,7 @@ $string['incomplete'] = 'Incomplete';
 $string['na'] = 'N/A';
 $string['no'] = 'No';
 $string['percent_symbol'] = '%';
+$string['pluginname'] = 'Sitewide Course Completion Report';
 
 $string['sitewide_course_completion_course'] = 'Select Course';
 $string['sitewide_course_completion_course_help'] = '<p align="center"><b>Sitewide Course Completion Report Help</b></p>

@@ -17,6 +17,7 @@ $string['grouping_username'] = 'Student Name';
 $string['header_date_range'] = 'New Student Registrants';
 
 $string['na'] = 'Not available';
+$string['pluginname'] = 'Registrants By Student Report';
 
 $string['registrants_by_student_cluster'] = 'Select Userset';
 $string['registrants_by_student_cluster_help'] = '<p align="center"><b>Registrants By Student Report Help</b></p>

@@ -19,6 +19,7 @@ $string['grouping_class'] = 'Class ID';
 $string['header_date_range'] = 'New Student Registrants By Course';
 
 $string['na'] = 'Not available';
+$string['pluginname'] = 'Registrants By Course Report';
 
 $string['registrants_by_course_curriculum'] = 'Select Curriculum';
 $string['registrants_by_course_curriculum_help'] = '<p align="center"><b>Registrants By Course Report Help</b></p>

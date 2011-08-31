@@ -31,6 +31,8 @@ $string['filter_inactive_no'] = 'No';
 
 $string['na'] = 'N/A';
 
+$string['pluginname'] = 'Class Completion Gas Gauge Report';
+
 $string['status_complete'] = 'Complete';
 $string['status_incomplete'] = 'Incomplete';
 

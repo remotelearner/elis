@@ -61,6 +61,7 @@ $string['numcomplete_tally'] = '{$a->numcomplete} / {$a->numtotal}';
 
 $string['passed'] = 'Passed';
 $string['percent_symbol'] = '%';
+$string['pluginname'] = 'Course Completion By Userset Report';
 
 $string['required_no'] = 'No';
 $string['required_yes'] = 'Yes';

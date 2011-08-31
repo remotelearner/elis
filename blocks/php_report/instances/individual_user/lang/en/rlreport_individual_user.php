@@ -38,6 +38,7 @@ $string['not_available'] = 'Not Available';
 $string['not_complete'] = 'Not Complete';
 
 $string['percent_symbol'] = '%';
+$string['pluginname'] = 'Individual User Report';
 
 $string['transform_complete'] = 'Complete';
 $string['transform_course_name'] = 'Course name';

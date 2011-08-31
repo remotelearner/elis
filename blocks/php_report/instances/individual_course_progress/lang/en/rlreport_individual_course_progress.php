@@ -64,6 +64,7 @@ $string['not_available'] = 'Not Available';
 
 $string['of'] = '{$a->value} of {$a->total}';
 $string['percent_symbol'] = '%';
+$string['pluginname'] = 'Individual Course Progress Report';
 
 $string['remove_fields'] = 'Remove Fields';
 $string['remove_this'] = 'Remove this custom field.';

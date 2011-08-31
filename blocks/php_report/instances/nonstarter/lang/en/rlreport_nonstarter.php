@@ -17,6 +17,7 @@ $string['nonstarter_report_help'] = '<p align="center"><b>Non-Starter Report Hel
 
 <p>The start and end dates maybe used to filter information from after and/or before the selected dates.</p>
 <p>Note: if a Class does not specify start and end dates, then its enrolled users will be potential non-starters regardless of the date filter settings.</p>';
+$string['pluginname'] = 'Non-starter Report';
 $string['present'] = 'Present';
 $string['report_heading'] = 'Non-Starters Report By Course: ';
 $string['role'] = 'User Role';

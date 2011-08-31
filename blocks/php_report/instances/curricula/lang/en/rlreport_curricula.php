@@ -28,3 +28,4 @@ $string['grouping_not_completed'] = 'Not Completed';
 $string['na'] = 'NA';
 $string['not_completed'] = 'Not Completed';
 
+$string['pluginname'] = 'Curricula Report';
