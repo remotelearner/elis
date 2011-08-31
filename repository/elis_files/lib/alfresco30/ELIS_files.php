@@ -89,8 +89,8 @@ define('ALFRESCO_BROWSE_ALFRESCO_USER_FILES',   50);
 //define('ELIS_FILES_BROWSE_MOODLE_FILES',          10);
 defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
 // Were shared now called server files
-//defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
-defined('ELIS_FILES_BROWSE_SERVER_FILES') or define('ELIS_FILES_BROWSE_SERVER_FILES', 30);
+defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
+//defined('ELIS_FILES_BROWSE_SERVER_FILES') or define('ELIS_FILES_BROWSE_SERVER_FILES', 30);
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
 defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_FILES', 60);
@@ -1141,8 +1141,8 @@ class ELIS_files {
                 $time = $end - $start;
                 mtrace("create_dir('$name', '$uuid', '$description'): $time");
             }
-
-            return $node->uuid;
+            // was $node->uuid
+            return $node;
         }
 
         return false;
@@ -1157,6 +1157,8 @@ class ELIS_files {
  * @return string|bool The course store UUID value or, False on error.
  */
     function get_course_store($cid, $create = true) {
+        global $DB;
+
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_course_store(' . $cid . ')');
 
         $uuid = '';
@@ -1194,7 +1196,7 @@ class ELIS_files {
     		return false;
         }
 
-        if ($node = alfresco_create_dir($course->shortname, $this->cuuid, $course->fullname)) {
+        if ($node = $this->create_dir($course->shortname, $this->cuuid, $course->fullname)) {
             $uuid = $node->uuid;
 
             // Disable inheriting parent space permissions.  This can be disabled in Alfresco without being
@@ -1204,10 +1206,12 @@ class ELIS_files {
 
         if (!empty($uuid)) {
             // Store the UUID value if it hasn't been stored already.
-            if (!record_exists('elis_files_course_store', 'courseid', $cid)) {
+            if (!$DB->record_exists('elis_files_course_store', array('courseid'=> $cid))) {
                 $coursestore = new stdClass;
                 $coursestore->courseid = $cid;
                 $coursestore->uuid     = $uuid;
+                echo '<br>inserting:';
+                print_object($coursestore);
                 $coursestore->id       = $DB->insert_record('elis_files_course_store', $coursestore);
             }
 
@@ -2501,21 +2505,18 @@ function get_root() {
  * @return bool True on success, False otherwise.
  */
     function node_inherit($uuid, $inherit) {
+
         if (ELIS_FILES_DEBUG_TRACE) mtrace('/moodle/nodeinherit/' . $uuid . '?enabled=' . ($inherit ? 'true' : 'false'));
-
         $response = elis_files_request('/moodle/nodeinherit/' . $uuid . '?enabled=' . ($inherit ? 'true' : 'false'));
-
         try {
             $sxml = new SimpleXMLElement($response);
         } catch (Exception $e) {
             debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
             return false;
         }
-
         if (empty($sxml->uuid) || empty($sxml->enabled)) {
             return false;
         }
-
         return ($sxml->uuid == $uuid && ($inherit && $sxml->enabled == 'true' || !$inherit && $sxml->enabled == 'false'));
     }
 
@@ -2712,10 +2713,9 @@ function get_root() {
     function get_default_browsing_location(&$cid, &$uid, &$shared) {
         global $CFG, $USER;
 
-        // If the default location is set to the default value or not set at all, just return nothing now.
-        if (!isset($this->config->default_browse) ||
-            $this->config->default_browse == ELIS_FILES_BROWSE_MOODLE_FILES) {
-
+        // If the default location is not set at all, just return nothing now.
+        if (!isset($this->config->default_browse)
+        ) {
             return '';
 
         // Or, handle determining if the user can actually access the chosen default location.
@@ -2729,7 +2729,7 @@ function get_root() {
             // If a user does not have permission to access the default location, fall through to the next
             // lower level to see if they can access that loation.
             switch ($this->config->default_browse) {
-                case ELIS_FILES_BROWSE_ELIS_FILES_SITE_FILES:
+                case ELIS_FILES_BROWSE_SITE_FILES:
                     if ($cid == SITEID && (has_capability('block/repository:viewsitecontent', $context) ||
                         has_capability('block/repository:createsitecontent', $context))) {
 
@@ -2743,7 +2743,7 @@ function get_root() {
                         }
                     }
 
-                case ELIS_FILES_BROWSE_ELIS_FILES_SHARED_FILES:
+                case ELIS_FILES_BROWSE_SHARED_FILES:
                     if (!empty($USER->access['rdef'])) {
                         foreach ($USER->access['rdef'] as $rdef) {
                             if (isset($rdef['block/repository:viewsharedcontent']) &&
@@ -2759,7 +2759,7 @@ function get_root() {
                         }
                     }
 
-                case ELIS_FILES_BROWSE_ELIS_FILES_COURSE_FILES:
+                case ELIS_FILES_BROWSE_COURSE_FILES:
                     if ($cid != SITEID && (has_capability('block/repository:viewcoursecontent', $context) ||
                         has_capability('block/repository:createcoursecontent', $context))) {
                             $shared = '';
@@ -2768,7 +2768,7 @@ function get_root() {
                             return $this->get_course_store($cid);
                     }
 
-                case ELIS_FILES_BROWSE_ELIS_FILES_USER_FILES:
+                case ELIS_FILES_BROWSE_USER_FILES:
                     if (empty($this->uuuid)) {
                         $this->uuuid = $this->elis_files_userdir($USER->username);
                     }

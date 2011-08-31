@@ -241,7 +241,7 @@ function elis_files_uuid_from_path($path, $uuid = '') {
 /// Get the first piece from the list of path elements.
     $pathpiece = array_shift($parts);
 
-/// This node has no child folders, which means the current part of the path we're looking
+    /// This node has no child folders, which means the current part of the path we're looking
 /// for does not exist.
     if (empty($children->folders)) {
         return false;
@@ -250,11 +250,9 @@ function elis_files_uuid_from_path($path, $uuid = '') {
     foreach ($children->folders as $folder) {
         if ($folder->title == $pathpiece) {
             $fchildren = elis_files_read_dir($folder->uuid);
-
         /// If there are no more path elements, we've succeeded!
             if (empty($parts)) {
                 return $folder->uuid;
-
         /// Otherwise, keep looking below.
             } else {
                 return elis_files_uuid_from_path(implode('/', $parts), $folder->uuid);
@@ -1259,12 +1257,20 @@ function elis_files_validate_path($path, $folders = null) {
  */
 function elis_files_process_node($node, &$type) {
     $contentNode = new stdClass;
+
     $contentNode->uuid    = str_replace('urn:uuid:', '', $node->uuid);
     $contentNode->summary = ''; // Not returned with CMIS data
     $contentNode->title   = $node->properties['cmis:name'];
     $contentNode->icon    = '';
     $contentNode->type    = $type = $node->properties['cmis:objectTypeId'];
 
+    if (isset($node->properties['cmis:lastModifiedBy'])) {
+        $contentNode->owner   = $node->properties['cmis:lastModifiedBy'];
+    } else if (isset($node->properties['cmis:createdBy'])) {
+        $contentNode->owner   = $node->properties['cmis:createdBy'];
+    } else {
+        $contentNode->owner   = 'none';
+    }
     if (isset($node->properties['cmis:contentStreamFileName'])) {
         $contentNode->filename = $node->properties['cmis:contentStreamFileName'];
     }
@@ -1363,10 +1369,14 @@ function elis_files_process_node_old($dom, $node, &$type) {
             if (!isset($cnode->tagName)) {
                 continue;
             }
-
+//echo '<br>tagname: '.$cnode->tagName;
             switch ($cnode->tagName) {
                 case 'id':
                     $contentNode->uuid = str_replace('urn:uuid:', '', $cnode->nodeValue);
+                    break;
+
+                case 'author':
+                    $contentNode->owner = $cnode->nodeValue;
                     break;
 
                 case 'published':
@@ -1494,48 +1504,54 @@ function elis_files_process_node_old($dom, $node, &$type) {
             $type = $prop->nodeValue;
         } else {
             $propname = $prop->getAttribute('cmis:name');
-
             if (empty($propname)) {
                 $propname = $prop->getAttribute('name');
-            }
 
-            switch ($propname) {
-                case 'ObjectId':
-                    $contentNode->noderef = $prop->nodeValue;
-                    break;
+                if (!empty($propname)) {
+                    switch ($propname) {
+                        case 'ObjectId':
+                            $contentNode->noderef = $prop->nodeValue;
+                            break;
 
-                case 'BaseType':
-                    if ($prop->nodeValue == 'folder') {
-                        $isfolder = true;
-                    } else if ($prop->nodeValue == 'document') {
-                        $isdocument = true;
+                        case 'BaseType':
+                            if ($prop->nodeValue == 'folder') {
+                                $isfolder = true;
+                            } else if ($prop->nodeValue == 'document') {
+                                $isdocument = true;
+                            }
+
+                            break;
+
+                        case 'ContentStreamLength':
+                            $contentNode->filesize = $prop->nodeValue;
+                            break;
+
+                        case 'ContentStreamMimeType':
+                            $contentNode->filemimetype = $prop->nodeValue;
+                            break;
+
+                        case 'ContentStreamFilename':
+                            $contentNode->filename = $prop->nodeValue;
+                            break;
+
+                        case 'ContentStreamURI':
+                        case 'ContentStreamUri':
+                            $contentNode->fileurl = $prop->nodeValue;
+                            break;
+
+                         default:
+                            break;
                     }
-
-                    break;
-
-                case 'ContentStreamLength':
-                    $contentNode->filesize = $prop->nodeValue;
-                    break;
-
-                case 'ContentStreamMimeType':
-                    $contentNode->filemimetype = $prop->nodeValue;
-                    break;
-
-                case 'ContentStreamFilename':
-                    $contentNode->filename = $prop->nodeValue;
-                    break;
-
-                case 'ContentStreamURI':
-                case 'ContentStreamUri':
-                    $contentNode->fileurl = $prop->nodeValue;
-                    break;
-
-                default:
-                    break;
+                } else if ($prop->nodeValue == 'cmis:folder') { // Added for Moodle 2.1 as this seems to be the only way to find folders
+                    $type = $prop->nodeValue;
+                    $isfolder = true;
+                } else if ($prop->nodeValue == 'cmis:document') { // Added for Moodle 2.1 as this seems to be the only way to find folders
+                    $type = $prop->nodeValue;
+                    $isfolder = true;
+                }
             }
         }
     }
-
     return $contentNode;
 }
 

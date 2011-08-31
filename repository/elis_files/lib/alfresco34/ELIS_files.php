@@ -98,8 +98,8 @@ define('ALFRESCO_BROWSE_ALFRESCO_USER_FILES',   50);
 //define('ELIS_FILES_BROWSE_MOODLE_FILES',          10);
 defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
 // Were shared now called server files
-//defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
-defined('ELIS_FILES_BROWSE_SERVER_FILES') or define('ELIS_FILES_BROWSE_SERVER_FILES', 30);
+defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
+//defined('ELIS_FILES_BROWSE_SERVER_FILES') or define('ELIS_FILES_BROWSE_SERVER_FILES', 30);
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
 defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_FILES', 60);
@@ -189,8 +189,6 @@ class ELIS_files {
  * @return bool True if setup, False otherwise.
  */
     function verify_setup() {
-        // skip for ELIS2
-        return true;
         global $CFG;
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('verify_setup()');
@@ -202,17 +200,13 @@ class ELIS_files {
         }
 
         $root = $this->get_root();
-
         if ($root == false || !isset($root->uuid)) {
             return false;
         }
-
 //print_object($root);
         // If there is no root folder saved or its set to default,
         // make sure there is a default '/moodle' folder.
-        if (empty($this->config->root_folder) ||
-            ($this->config->root_folder == '/moodle')) {
-
+        if (empty($this->config->root_folder)) {
             $dir = $this->read_dir($root->uuid, true);
 //print_object($dir);
             if (!empty($dir->folders)) {
@@ -306,7 +300,6 @@ class ELIS_files {
 
         // We no longer will automatically create the course space directory as it's no longer needed.
 
-
         // Make sure the temp directory is enabled.
         if (!is_dir($CFG->dataroot . '/temp/alfresco')) {
             mkdir($CFG->dataroot . '/temp/alfresco', $CFG->directorypermissions, true);
@@ -357,6 +350,7 @@ class ELIS_files {
 
         // Set the config object to what was retrieved from get_config
         $this->config = $config;
+
 //TODO: for the install issue
 //echo '<br>config:';
 //print_object($config);
@@ -1475,6 +1469,7 @@ class ELIS_files {
         $uuid = '';
 
         if (empty($this->cuuid)) {
+            echo '<br>returning false';
             return false;
         }
 
@@ -1516,7 +1511,7 @@ class ELIS_files {
 
         if (!empty($uuid)) {
             // Store the UUID value if it hasn't been stored already.
-            if (!record_exists('elis_files_course_store', 'courseid', $cid)) {
+            if (!$DB->record_exists('elis_files_course_store', array('courseid'=> $cid))) {
                 $coursestore = new stdClass;
                 $coursestore->courseid = $cid;
                 $coursestore->uuid     = $uuid;
@@ -2812,6 +2807,7 @@ class ELIS_files {
  * @return bool True on success, False otherwise.
  */
     function node_inherit($uuid, $inherit) {
+
         if (ELIS_FILES_DEBUG_TRACE) mtrace('/moodle/nodeinherit/' . $uuid . '?enabled=' . ($inherit ? 'true' : 'false'));
 
         $response = elis_files_request('/moodle/nodeinherit/' . $uuid . '?enabled=' . ($inherit ? 'true' : 'false'));
@@ -3025,7 +3021,7 @@ class ELIS_files {
 
         // If the default location is set to the default value or not set at all, just return nothing now.
         if (!isset($this->config->default_browse) ||
-            $this->config->default_browse == ELIS_FILES_BROWSE_MOODLE_FILES) {
+            $this->config->default_browse == ELIS_FILES_BROWSE_USER_FILES) {
 
             return '';
 
@@ -3040,7 +3036,7 @@ class ELIS_files {
             // If a user does not have permission to access the default location, fall through to the next
             // lower level to see if they can access that loation.
             switch ($this->config->default_browse) {
-                case ELIS_FILES_BROWSE_ELIS_FILES_SITE_FILES:
+                case ELIS_FILES_BROWSE_SITE_FILES:
                     if ($cid == SITEID && (has_capability('block/repository:viewsitecontent', $context) ||
                         has_capability('block/repository:createsitecontent', $context))) {
 
@@ -3054,7 +3050,7 @@ class ELIS_files {
                         }
                     }
 
-                case ELIS_FILES_BROWSE_ELIS_FILES_SHARED_FILES:
+                case ELIS_FILES_BROWSE_SHARED_FILES:
                     if (!empty($USER->access['rdef'])) {
                         foreach ($USER->access['rdef'] as $rdef) {
                             if (isset($rdef['block/repository:viewsharedcontent']) &&
@@ -3070,7 +3066,7 @@ class ELIS_files {
                         }
                     }
 
-                case ELIS_FILES_BROWSE_ELIS_FILES_COURSE_FILES:
+                case ELIS_FILES_BROWSE_COURSE_FILES:
                     if ($cid != SITEID && (has_capability('block/repository:viewcoursecontent', $context) ||
                         has_capability('block/repository:createcoursecontent', $context))) {
                             $shared = '';
@@ -3079,7 +3075,7 @@ class ELIS_files {
                             return $this->get_course_store($cid);
                     }
 
-                case ELIS_FILES_BROWSE_ELIS_FILES_USER_FILES:
+                case ELIS_FILES_BROWSE_USER_FILES:
                     if (empty($this->uuuid)) {
                         $this->uuuid = $this->elis_files_userdir($USER->username);
                     }

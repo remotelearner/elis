@@ -584,7 +584,8 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     if (!empty($properties->uuid)) {
         // So that we don't conflict with the default Alfresco admin account.
 
-        $username = $user->username == 'admin' ? elis::$config->elis_files->admin_username : $user->username;
+        // was $user
+        $username = $USER->username == 'admin' ? elis::$config->elis_files->admin_username : $USER->username;
 
         // We must include the tenant portion of the username here.
         if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
@@ -1183,7 +1184,24 @@ function elis_files_process_node($dom, $node, &$type) {
     if ($node->hasChildNodes()) {
         $contentNode = new stdClass;
         $contentNode->links = array();
+/*    $type       = '';
+    $properties = elis_files_process_node($dom, $nodes->item(0), $type);
 
+    // Ensure that we set the current user to be the owner of the newly created directory.
+    if (!empty($properties->uuid)) {
+        // So that we don't conflict with the default Alfresco admin account.
+        $username = $USER->username == 'admin' ? elis::$config->elis_files->admin_username : $USER->username;
+
+            // We must include the tenant portion of the username here.
+        if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
+            $username .= substr(elis::$config->elis_files->server_username, $tenantname);
+        }
+
+        // We're not going to check the response for this right now.
+        elis_files_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
+    }
+
+*/
         foreach ($node->childNodes as $cnode) {
             if (!isset($cnode->tagName)) {
                 continue;
@@ -1193,6 +1211,9 @@ function elis_files_process_node($dom, $node, &$type) {
                 case 'id':
                     $contentNode->uuid = str_replace('urn:uuid:', '', $cnode->nodeValue);
                     break;
+
+                case 'author':
+                    $contentNode->owner = $cnode->nodeValue;
 
                 case 'published':
                     $created = $cnode->nodeValue;
