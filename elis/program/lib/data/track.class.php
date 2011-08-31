@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -105,7 +105,7 @@ class track extends data_object_with_custom_fields {
     public static function delete_for_curriculum($id) {
 
         //look up and delete associated tracks
-        if($tracks = track_get_listing('name', 'ASC', 0, 0, '', '', $id)) {
+        if ($tracks = track_get_listing('name', 'ASC', 0, 0, '', '', $id)) {
             foreach ($tracks as $track) {
                 $record = new track($track->id);
                 $record->delete();
@@ -120,7 +120,6 @@ class track extends data_object_with_custom_fields {
      * TODO: return some data
      */
     function track_auto_create() {
-
         // Had to load $this due to lazy-loading
         $this->load();
         if (empty($this->curid) or
@@ -149,9 +148,15 @@ class track extends data_object_with_custom_fields {
         // For every course of the curricula determine which ones need -
         // to have their auto enrol flag set
         foreach ($curcourse as $recid => $curcourec) {
-            $idnumber = (!empty($curcourec->idnumber) ? $curcourec->idnumber.'-' : '') . $this->idnumber;
-            $classojb = new pmclass(array('courseid' => $curcourec->courseid,
-                                          'idnumber' => $idnumber));
+            $suffix = 0;
+            do {
+                $idnumber = (!empty($curcourec->idnumber) ? $curcourec->idnumber .'-' : '') . $this->idnumber . ($suffix ? $suffix : '');
+                ++$suffix;
+                $classojb = new pmclass(array('courseid' => $curcourec->courseid,
+                                              'idnumber' => $idnumber));
+            } while ($this->_db->record_exists(pmclass::TABLE,
+                                     array('courseid' => $curcourec->courseid,
+                                           'idnumber' => $idnumber)));
 
             // Course is required
             if ($curcourec->required) {
@@ -174,7 +179,7 @@ class track extends data_object_with_custom_fields {
             }
 
             // Create class
-            if (!($classid = $classojb->auto_create_class(array('courseid'=>$curcourec->courseid)))) {
+            if (!($classid = $classojb->auto_create_class(array('courseid' => $curcourec->courseid)))) {
                 cm_error('Could not create class');
                 echo '<br>could not create class';
                 die();
@@ -188,7 +193,7 @@ class track extends data_object_with_custom_fields {
 
             $trackclassobj = new trackassignment(array('courseid' => $curcourec->courseid,
                                                        'trackid'  => $this->id,
-                                                       'classid' => $classojb->id));
+                                                       'classid'  => $classojb->id));
 
             // Set auto-enrol flag
             if ($autoenrol) {
@@ -205,7 +210,7 @@ class track extends data_object_with_custom_fields {
 
                 $trackclassobj = new trackassignment(array('courseid' => $curcourec->courseid,
                                                            'trackid'  => $trkid,
-                                                           'classid' => $classojb->id));
+                                                           'classid'  => $classojb->id));
 
                 // Set auto-enrol flag
                 if ($autoenrol) {
@@ -262,8 +267,8 @@ class track extends data_object_with_custom_fields {
      */
     function get_default_track() {
 
-        $trackid = $this->_db->get_field(TABLE, 'id', array('curid'=> $this->curid,
-                                                     'defaulttrack'=> 1));
+        $trackid = $this->_db->get_field(TABLE, 'id', array('curid' => $this->curid,
+                                                            'defaulttrack' => 1));
         return $trackid;
     }
 
@@ -338,7 +343,7 @@ class track extends data_object_with_custom_fields {
     /*public function duplicate_check($record=null) {
         global $DB;
 
-        if(empty($record)) {
+        if (empty($record)) {
             $record = $this;
         }
 
@@ -355,7 +360,7 @@ class track extends data_object_with_custom_fields {
 
         $retval = $DB->get_record(TABLE, 'idnumber', $idnumber);
 
-        if(!empty($retval)) {
+        if (!empty($retval)) {
             $retval = new track($retval->id);
         } else {
             $retval = null;
@@ -569,19 +574,19 @@ class trackassignment extends elis_data_object {
     public static function delete_for_class($id) {
         global $DB;
 
-        return $DB->delete_records(trackassignment::TABLE, array('classid'=> $id));
+        return $DB->delete_records(trackassignment::TABLE, array('classid' => $id));
     }
 
     public static function delete_for_track($id) {
         global $DB;
 
-        return $DB->delete_records(trackassignment::TABLE, array('trackid'=> $id));
+        return $DB->delete_records(trackassignment::TABLE, array('trackid' => $id));
     }
 
 
     function count_assigned_classes_from_track() {
 
-        //return $this->_db->count_records(trackassignment::TABLE, array('trackid'=> $this->trackid));
+        //return $this->_db->count_records(trackassignment::TABLE, array('trackid' => $this->trackid));
         $trackassignments = trackassignment::count(new field_filter('trackid', $this->trackid), $this->_db);
         return $trackassignments;
 
@@ -598,7 +603,7 @@ class trackassignment extends elis_data_object {
 
         $assigned   = array();
 
-        $result = $this->_db->get_records(trackassignment::TABLE, array('classid'=> $this->classid));
+        $result = $this->_db->get_records(trackassignment::TABLE, array('classid' => $this->classid));
 
         if ($result) {
             foreach ($result as $data) {
@@ -617,8 +622,8 @@ class trackassignment extends elis_data_object {
     function is_class_assigned_to_track() {
 
         // check if assignment already exists
-        return $this->_db->record_exists(trackassignment::TABLE, array('classid'=> $this->classid,
-                                                                'trackid'=> $this->trackid));
+        return $this->_db->record_exists(trackassignment::TABLE, array('classid' => $this->classid,
+                                                                'trackid' => $this->trackid));
     }
 
     public function set_from_data($data) {
@@ -634,7 +639,7 @@ class trackassignment extends elis_data_object {
     function save() { //add()
 
         if (empty($this->courseid)) {
-            $this->courseid = $this->_db->get_field(pmclass::TABLE, 'courseid', array('id'=> $this->classid));
+            $this->courseid = $this->_db->get_field(pmclass::TABLE, 'courseid', array('id' => $this->classid));
         }
 
         if ((empty($this->trackid) or
@@ -643,7 +648,7 @@ class trackassignment extends elis_data_object {
             empty(elis::$config->elis_program->userdefinedtrack)) {
             cm_error('trackid and classid have not been properly initialized');
             return false;
-        } elseif ((empty($this->courseid) or
+        } else if ((empty($this->courseid) or
                    empty($this->classid)) and
                   elis::$config->elis_program->userdefinedtrack) {
             cm_error('courseid has not been properly initialized');
@@ -656,8 +661,8 @@ class trackassignment extends elis_data_object {
 
         // Determine whether class is required
         $curcrsobj = new curriculumcourse(
-            array('curriculumid'    => $this->track->curid,
-                  'courseid'        => $this->classid));
+            array('curriculumid' => $this->track->curid,
+                  'courseid'     => $this->classid));
 
         // insert assignment record
         parent::save(); //updated for ELIS2 from $this->data_insert_record()
@@ -693,7 +698,7 @@ class trackassignment extends elis_data_object {
             return false;
         }
         if (empty($this->courseid)) {
-            $this->courseid = $this->_db->get_field(pmclass::TABLE, 'courseid', array('id'=> $this->classid));
+            $this->courseid = $this->_db->get_field(pmclass::TABLE, 'courseid', array('id' => $this->classid));
         }
         $select = "trackid = ? AND courseid = ? AND classid != ?";
         $params = array($this->trackid, $this->courseid, $this->classid);
@@ -720,22 +725,22 @@ class trackassignment extends elis_data_object {
         // Get the curriculum id
         // check if default track exists
         $exists = $this->_db->record_exists(TABLE, 'curid', $this->track->curid,
-                                             array('defaulttrack'=> 1));
+                                             array('defaulttrack' => 1));
 
         if (!$exists) {
             return false;
         }
 
         // Retrieve track id
-        $trackid = $this->_db->get_field(TABLE, 'id', array('curid'=> $this->track->curid,
-                                                            'defaulttrack'=> 1));
+        $trackid = $this->_db->get_field(TABLE, 'id', array('curid' => $this->track->curid,
+                                                            'defaulttrack' => 1));
         if (false === $trackid) {
             cm_error('Error #1001: selecting field from crlm_track table');
         }
 
         // Check if class is assigned to default track
-        return $this->_db->record_exists(trackassignment::TABLE, array('classid'=> $this->classid,
-                                                           'trackid'=> $trackid));
+        return $this->_db->record_exists(trackassignment::TABLE, array('classid' => $this->classid,
+                                                           'trackid' => $trackid));
     }
 
     function enrol_all_track_users_in_class() {
@@ -763,10 +768,10 @@ class trackassignment extends elis_data_object {
                 $result = $enrol->save(array('prereq' => 1, 'waitlist' => 1));
                 if ($result === true) {
                     $count++;
-                } elseif (is_object($result)) {
+                } else if (is_object($result)) {
                     if ($result->code = 'user_waitlisted') {
                         $waitlisted++;
-                    } elseif ($result->code = 'user_waitlisted') {
+                    } else if ($result->code = 'user_waitlisted') {
                         $prereq++;
                     }
                 }
@@ -854,7 +859,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
         }
     }
 
-    if(!empty($userid)) {
+    if (!empty($userid)) {
         //get the context for the "indirect" capability
         $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
 
@@ -868,7 +873,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
         $curriculum_filter = $curriculum_filter_object->get_sql();
 
         if (isset($curriculum_filter['where'])) {
-            if(count($allowed_clusters)!=0) {
+            if (count($allowed_clusters)!=0) {
                 $where[] = $curriculum_filter['where'];
                 $params += $curriculum_filter['where_parameters'];
             } else {
@@ -978,7 +983,7 @@ function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $
 function track_get_list_from_curr($curid) {
     global $DB;
 
-    $tracks = $DB->get_records(track::TABLE, array('curid'=> $curid));
+    $tracks = $DB->get_records(track::TABLE, array('curid' => $curid));
 
     if (is_array($tracks)) {
         foreach ($tracks as $key => $track) {
