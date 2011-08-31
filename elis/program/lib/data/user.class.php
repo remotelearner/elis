@@ -544,8 +544,18 @@ class user extends data_object_with_custom_fields {
         require_once elispm::lib('data/curriculumstudent.class.php');
 
         $PAGE->requires->yui2_lib(array('dom', 'event', 'connection'));
-        $PAGE->requires->js('/elis/program/js/util.js', true);
-        $PAGE->requires->js('/elis/program/js/dashboard.js', true);
+        //$PAGE->requires->js('/elis/program/js/util.js', true); // not working to load at top of page so adding inline below
+        //$PAGE->requires->js('/elis/program/js/dashboard.js', true); // not working to load at top of page so adding inline below
+
+        $content = '';
+        $content .= '<script type="text/javascript" src="'.$CFG->wwwroot.'/lib/javascript.php?file=%2Felis%2Fprogram%2Fjs%2Futil.js&amp;rev=207"></script>';
+        $content .= '<script type="text/javascript" src="'.$CFG->wwwroot.'/lib/javascript.php?file=%2Felis%2Fprogram%2Fjs%2Fdashboard.js&amp;rev=207"></script>';
+
+        $archive_var     = '_elis_program_archive';
+        $totalcourses    = 0;
+        $completecourses = 0;
+        $curriculas      = array();
+        $classids        = array();
 
         if (optional_param('tab','',PARAM_CLEAN) == 'archivedlp') {
             $tab = 'archivedlp';
@@ -555,27 +565,14 @@ class user extends data_object_with_custom_fields {
             $show_archived = 0;
         }
 
-        $content = '';
-        $archive_var = '_elis_program_archive';
-
-        $totalcourses    = 0;
-        $completecourses = 0;
-
-        $curriculas = array();
-        $classids = array();
-
         if ($usercurs = curriculumstudent::get_curricula($this->id)) {
             foreach ($usercurs as $usercur) {
                 // Check if this curricula is set as archived and whether we want to display it
                 $crlm_context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $usercur->curid);
                 $data_array = field_data::get_for_context_and_field($crlm_context, $archive_var);
                 $crlm_archived = 0;
-                if (is_array($data_array) && !empty($data_array)) {
-                    foreach ($data_array as $data_key=>$data_obj) {
-                        $crlm_archived = (!empty($data_obj->data))
-                                       ? 1
-                                       : 0;
-                    }
+                if (is_object($data_array->rs) && !empty($data_array->rs)) {
+                    $crlm_archived = !empty($data_array->rs->current()->data) ? 1 : 0;
                 }
 
                 if ($show_archived == $crlm_archived) {
@@ -667,7 +664,6 @@ class user extends data_object_with_custom_fields {
             print_tabs($tabrows, $tab);
         }
 
-        //$content .= print_heading_block(get_string('learningplanwelcome', 'elis_program', fullname($this)), '', true);
         $content .= $OUTPUT->heading(get_string('learningplanwelcome', 'elis_program', fullname($this)));
 
         if ($totalcourses === 0) {
@@ -687,8 +683,6 @@ class user extends data_object_with_custom_fields {
 
         if (!empty($curriculas)) {
             foreach ($curriculas as $curricula) {
-
-                //$table = new stdClass;
                 $table = new html_table();
                 $table->head = array(
                     get_string('class', 'elis_program'),
@@ -720,10 +714,8 @@ class user extends data_object_with_custom_fields {
                          . $curricula['id'] . '");</script></div>' . $header_curr_name;
 
                 $content .= '<div class="dashboard_curricula_block">';
-                //$content .= print_heading($heading, 'left', 2, 'main', true);
                 $content .= $OUTPUT->heading($heading);
                 $content .= '<div id="curriculum-' . $curricula['id'] . '" class="yui-skin-sam ' . $extra_class . '">';
-                //$content .= print_table($table, true);
                 $content .= html_writer::table($table);
                 $content .= '</div>';
                 $content .= '</div>';
@@ -751,7 +743,6 @@ class user extends data_object_with_custom_fields {
             }
 
             if ($classes = $DB->get_records_sql($sql)) {
-                //$table = new stdClass;
                 $table = new html_table();
                 $table->head = array(
                     get_string('class', 'elis_program'),
@@ -795,10 +786,8 @@ class user extends data_object_with_custom_fields {
                          . $header_curr_name;
 
                 $content .= '<div class="dashboard_curricula_block">';
-                //$content .= print_heading($heading, 'left', 2, 'main', true);
                 $content .= $OUTPUT->heading($heading);
                 $content .= '<div id="curriculum-na" class="yui-skin-sam ' . $extra_class . '">';
-                //$content .= print_table($table, true);
                 $content .= html_writer::table($table);
                 $content .= '</div>';
                 $content .= '</div>';

@@ -30,7 +30,7 @@
  * Returns OK or ERROR
  */
 
-require_once('../config.php');
+require_once('../../config.php');
 
 $param = required_param('param', PARAM_CLEAN);
 $value = optional_param('value', null, PARAM_CLEAN);

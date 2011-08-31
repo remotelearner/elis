@@ -34,6 +34,16 @@ abstract class pm_page extends elis_page {
      */
     var $pagename;
 
+    protected function _init_display() {
+        global $CFG, $PAGE;
+
+        if (file_exists($CFG->dirroot.'/elis/program/styles.css')) {
+            $PAGE->requires->css('/elis/program/styles.css');
+        }
+
+        parent::_init_display();
+    }
+
     protected function _get_page_url() {
         global $CFG;
         return "{$CFG->wwwroot}/elis/program/index.php";

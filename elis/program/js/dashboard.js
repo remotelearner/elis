@@ -73,7 +73,7 @@ function saveLearningPlanVisibilityState(e, data) {
         failure: false,
         cache: false
     };
-    var requestURL = '../elis/program/userprefset.php?param=' + userprefparam + '&value=' + newitems;
+    var requestURL = M.cfg.wwwroot + '/elis/program/userprefset.php?param=' + userprefparam + '&value=' + newitems;
     YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
 
     return false;
