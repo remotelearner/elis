@@ -387,12 +387,15 @@ class clusteruserpage extends userclusterbasepage {
     }
 
     function print_assign_link() {
+        global $OUTPUT;
         $id = $this->required_param('id', PARAM_INT);
 
         $target = new clusteruserselectpage(array('id' => $id));
         if ($target->can_do()) {
             echo html_writer::empty_tag('br');
-            echo html_writer::tag('div', html_writer::link($target->url, get_string('assign_users', 'usersetenrol_manual')), array('align' => 'center'));
+            $button = new single_button($target->url, get_string('assign_users', 'usersetenrol_manual'), 'get');
+            //echo html_writer::tag('div', html_writer::link($target->url, get_string('assign_users', 'usersetenrol_manual')), array('align' => 'center'));
+            echo html_writer::tag('div', $OUTPUT->render($button), array('align' => 'center'));
         }
     }
 }
