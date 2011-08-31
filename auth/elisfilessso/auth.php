@@ -43,7 +43,7 @@ class auth_plugin_elisfilessso extends auth_plugin_base {
 
         $this->authtype = 'elisfilessso';
         $this->config   = get_config('auth/elisfilessso');
-        $this->isactive = file_exists($CFG->dirroot . '/repository/elis_files/ELIS_files.php');
+        $this->isactive = file_exists($CFG->dirroot . '/repository/elis_files/ELIS_files_factory.class.php');
     }
 
 
