@@ -544,13 +544,10 @@ class user extends data_object_with_custom_fields {
         require_once elispm::lib('data/curriculumstudent.class.php');
 
         $PAGE->requires->yui2_lib(array('dom', 'event', 'connection'));
-        //$PAGE->requires->js('/elis/program/js/util.js', true); // not working to load at top of page so adding inline below
-        //$PAGE->requires->js('/elis/program/js/dashboard.js', true); // not working to load at top of page so adding inline below
+        $PAGE->requires->js('/elis/program/js/util.js');
+        $PAGE->requires->js('/elis/program/js/dashboard.js');
 
-        $content = '';
-        $content .= '<script type="text/javascript" src="'.$CFG->wwwroot.'/lib/javascript.php?file=%2Felis%2Fprogram%2Fjs%2Futil.js&amp;rev=207"></script>';
-        $content .= '<script type="text/javascript" src="'.$CFG->wwwroot.'/lib/javascript.php?file=%2Felis%2Fprogram%2Fjs%2Fdashboard.js&amp;rev=207"></script>';
-
+        $content         = '';
         $archive_var     = '_elis_program_archive';
         $totalcourses    = 0;
         $completecourses = 0;
@@ -705,13 +702,16 @@ class user extends data_object_with_custom_fields {
                     $button_label = get_string('hidecourses','elis_program');
                     $extra_class = '';
                 }
+
+                $jscode = 'toggleVisibleInitWithState("curriculum'.$curricula['id'].'script", '
+                        . '"curriculum'.$curricula['id'].'button", "'
+                        . $button_label.'", "'.get_string('hidecourses','elis_program').'", "'
+                        . get_string('showcourses','elis_program').'", "curriculum-'.$curricula['id'].'");';
+                $PAGE->requires->js_init_code($jscode, true);
+
                 $heading = '<div class="clearfix"></div>'
-                         . '<div style="' . $float_style . '">'
-                         . '<script id="curriculum' . $curricula['id'] . 'script" type="text/javascript">toggleVisibleInitWithState("curriculum'
-                         . $curricula['id'] . 'script", "curriculum' . $curricula['id'] . 'button", "'
-                         . $button_label . '", "' . get_string('hidecourses','elis_program') . '", "'
-                         . get_string('showcourses','elis_program') . '", "curriculum-'
-                         . $curricula['id'] . '");</script></div>' . $header_curr_name;
+                         . '<div style="'.$float_style.'"><div id="curriculum'.$curricula['id'].'script"></div></div>'
+                         . $header_curr_name;
 
                 $content .= '<div class="dashboard_curricula_block">';
                 $content .= $OUTPUT->heading($heading);
@@ -778,11 +778,14 @@ class user extends data_object_with_custom_fields {
                     $button_label = get_string('hidecourses','elis_program');
                     $extra_class = '';
                 }
+
+                $jscode = 'toggleVisibleInitWithState("noncurriculascript", "noncurriculabutton", "'
+                                 . $button_label . '", "' . get_string('hidecourses','elis_program') . '", "'
+                                 . get_string('showcourses','elis_program') . '", "curriculum-na");';
+                $PAGE->requires->js_init_code($jscode, true);
+
                 $heading = '<div class="clearfix"></div>'
-                         . '<div style="' . $float_style . '">'
-                         . '<script id="noncurriculascript" type="text/javascript">toggleVisibleInitWithState("noncurriculascript", "noncurriculabutton", "'
-                         . $button_label . '", "' . get_string('hidecourses','elis_program') . '", "'
-                         . get_string('showcourses','elis_program') . '", "curriculum-na");</script></div>'
+                         . '<div style="'.$float_style.'"><div id="noncurriculascript"></div></div>'
                          . $header_curr_name;
 
                 $content .= '<div class="dashboard_curricula_block">';
