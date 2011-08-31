@@ -3,7 +3,7 @@
  * Health check for ELIS.  Based heavily on /admin/health.php.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -211,6 +211,7 @@ class crlm_health_check_base {
 
 global $core_health_checks;
 $core_health_checks = array(
+    'cron_lastruntimes_check',
     'health_duplicate_enrolments',
     'health_stale_cm_class_moodle',
     'health_curriculum_course',
@@ -511,4 +512,48 @@ class completion_export_check extends crlm_health_check_base {
         return get_string('health_completionsoln', 'elis_program', array('wwwroot'=>$CFG->wwwroot, 'dirroot'=>$CFG->dirroot));
     }
 }
-?>
+
+/**
+ * Checks if the completion export block is present.
+ */
+class cron_lastruntimes_check extends crlm_health_check_base {
+    private $blocks = array(); // empty array for none; 'curr_admin' ?
+    private $plugins = array(); // TBD: 'elis_program', 'elis_core' ?
+
+    function exists() {
+        return true;
+    }
+
+    function title() {
+        return get_string('health_cron_title', 'elis_program');
+    }
+
+    function severity() {
+        return healthpage::SEVERITY_NOTICE;
+    }
+
+    function description() {
+        global $DB;
+        $description = '';
+        foreach ($this->blocks as $block) {
+            $a = new stdClass;
+            $a->name = $block;
+            $lastcron = $DB->get_field('block', 'lastcron', array('name' => $block));
+            $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'elis_program');
+            $description .= get_string('health_cron_block', 'elis_program', $a);
+        }
+        foreach ($this->plugins as $plugin) {
+            $a = new stdClass;
+            $a->name = $plugin;
+            $lastcron = $DB->get_field('config_plugins', 'value', array('plugin' => $plugin, 'name' => 'lastcron'));
+            $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'elis_program');
+            $description .= get_string('health_cron_plugin', 'elis_program', $a);
+        }
+        $lasteliscron = $DB->get_field('elis_scheduled_tasks', 'MAX(lastruntime)', array());
+        $lastcron = $lasteliscron ? userdate($lasteliscron) : get_string('cron_notrun', 'elis_program');
+        $description .= get_string('health_cron_elis', 'elis_program', $lastcron);
+        return $description;
+    }
+
+}
+
