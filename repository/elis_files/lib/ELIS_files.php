@@ -56,12 +56,10 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
-/// Alfresco API v3.4
-//require_once($CFG->libdir . '/alfresco30/lib.php');
-require_once(dirname(__FILE__).'/lib.php');
-//require_once($CFG->libdir . '/cmis-php/cmis_repository_wrapper.php');
+/// Alfresco API v3.0
+require_once dirname(__FILE__). '/lib.php';
+// Alfresco 3.4
 require_once(dirname(__FILE__). '/cmis-php/cmis_repository_wrapper.php');
-//require_once(dirname(__FILE__).'/ELIS_files.php');
 
 
 define('ELIS_FILES_CRON_VALUE',  HOURSECS); // Run the cron job every hour.
@@ -70,7 +68,7 @@ define('ELIS_FILES_LOGIN_RESET', 5 * MINSECS);      // Reset a login after 5 min
 define('ELIS_FILES_DEBUG_TIME',  false);
 define('ELIS_FILES_DEBUG_TRACE', false);
 
-// Alfresco type definitions
+// Alfresco 3.4 type definitions
 define('ELIS_FILES_TYPE_FOLDER',   'cmis:folder');
 define('ELIS_FILES_TYPE_DOCUMENT', 'cmis:document');
 
@@ -94,7 +92,6 @@ define('ALFRESCO_BROWSE_ALFRESCO_SHARED_FILES', 30);
 define('ALFRESCO_BROWSE_ALFRESCO_COURSE_FILES', 40);
 define('ALFRESCO_BROWSE_ALFRESCO_USER_FILES',   50);
 */
-// Define constants for the default file browsing location.
 //define('ELIS_FILES_BROWSE_MOODLE_FILES',          10);
 defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
 // Were shared now called server files
@@ -103,6 +100,7 @@ defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FI
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
 defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_FILES', 60);
+
 
 class ELIS_files {
 
@@ -176,9 +174,9 @@ class ELIS_files {
         return (!empty($this->config->server_host) &&
                 !empty($this->config->server_port) &&
                 !empty($this->config->server_username) &&
-                !empty($this->config->server_password) &&
-                !empty($this->config->alfresco_version));
+                !empty($this->config->server_password));
     }
+
 
 /**
  * Verify that the Alfresco repository is currently setup and ready to be
@@ -189,25 +187,54 @@ class ELIS_files {
  * @return bool True if setup, False otherwise.
  */
     function verify_setup() {
-        global $CFG;
+        // skip for ELIS2
+//        return true;
+        global $CFG, $USER;
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('verify_setup()');
 
-        if (empty($this->cmis)) {
-            $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
-                                          $this->config->server_username,
-                                          $this->config->server_password);
-        }
-
-        $root = $this->get_root();
-        if ($root == false || !isset($root->uuid)) {
+        if (!elis_files_get_services()) {
             return false;
         }
-    }
-//print_object($root);
-        // If there is no root folder saved or its set to default,
+
+        // Ensure that the current user is already setup on the
+/*
+        if (isloggedin()) {
+            if (!$this->elis_files_userdir($USER->username)) {
+                if (!$this->migrate_user($USER->username)) {
+                    return false;
+                }
+            }
+        }
+*/
+
+        // Set up the root node
+        $response = elis_files_request(elis_files_get_uri('', 'sites'));
+
+        $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
+
+        $dom = new DOMDocument();
+        $dom->preserveWhiteSpace = false;
+        $dom->loadXML($response);
+
+        $nodes = $dom->getElementsByTagName('entry');
+        $type  = '';
+
+        $this->root = elis_files_process_node($dom, $nodes->item(0), $type);
+
+        // If there is no root folder saved or it's set to default,
         // make sure there is a default '/moodle' folder.
-        if (empty($this->config->root_folder)) {
+        if (empty($this->config->root_folder) ||
+            ($this->config->root_folder == '/moodle')) {
+
+            $root = $this->get_root();
+
+            if (empty($root->uuid)) {
+                return false;
+            }
+
+            $root = $this->get_root();
+
             $dir = $this->read_dir($root->uuid, true);
 //print_object($dir);
             if (!empty($dir->folders)) {
@@ -301,6 +328,7 @@ class ELIS_files {
 
         // We no longer will automatically create the course space directory as it's no longer needed.
 
+
         // Make sure the temp directory is enabled.
         if (!is_dir($CFG->dataroot . '/temp/alfresco')) {
             mkdir($CFG->dataroot . '/temp/alfresco', $CFG->directorypermissions, true);
@@ -309,21 +337,6 @@ class ELIS_files {
         return true;
     }
 
-
-/**
- * Get information about the root node in the repository.
- *
- * @param none
- * @return object|bool Processed node data or, False on error.
- */
-    function get_root() {
-        if (!$root = $this->cmis->getObjectByPath('/')) {
-            	return false;
-        }
-//print_object($root);
-        $type = '';
-        return elis_files_process_node($root, $type);
-	}
 
 /**
  * Processes and stored configuration data for the repository plugin.
@@ -344,27 +357,18 @@ class ELIS_files {
         if (!isset($config->server_password)) {
             $config->server_password = '';
         }
-        if (!isset($config->alfresco_version)) {
-            $config->alfresco_version = '';
-        }
 
         // Set the config object to what was retrieved from get_config
         $this->config = $config;
-
 //TODO: for the install issue
 //echo '<br>config:';
 //print_object($config);
-        /*set_config('repository_elis_files_server_host', stripslashes(trim($config->repository_elis_files_server_host)), 'elis_files');
-        set_config('repository_elis_files_server_port', stripslashes(trim($config->repository_elis_files_server_port)), 'elis_files');
-        set_config('repository_elis_files_server_username', stripslashes(trim($config->repository_elis_files_server_username)), 'elis_files');
-        set_config('repository_elis_files_server_password', stripslashes(trim($config->repository_elis_files_server_password)), 'elis_files');*/
-     /*   set_config('repository_elis_files_server_host', stripslashes(trim($config->server_host)));
+
+       /* set_config('repository_elis_files_server_host', stripslashes(trim($config->server_host)));
         set_config('repository_elis_files_server_port', stripslashes(trim($config->server_port)));
         set_config('repository_elis_files_server_username', stripslashes(trim($config->server_username)));
         set_config('repository_elis_files_server_password', stripslashes(trim($config->server_password)));
-        set_config('repository_elis_files_alfresco_version', stripslashes(trim($config->alfresco_version)));
 */
-
         return true;
     }
 
@@ -372,6 +376,7 @@ class ELIS_files {
 /**
  * Get the URL used to connect to the repository.
  *
+ * @uses $CFG
  * @return string The connection URL.
  */
     function get_repourl() {
@@ -392,11 +397,12 @@ class ELIS_files {
 /**
  * Get the URL that allows for direct access to the web application.
  *
+ * @uses $CFG
  * @param bool $gotologin Set to False to not give a URL directly to the login form.
  * @return string A URL for accessing the Alfrecso web application.
  */
     function get_webapp_url($gotologin = true) {
-        //global $CFG;
+        global $CFG;
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_webapp_url()');
 
@@ -408,6 +414,7 @@ class ELIS_files {
 /**
  * Get a WebDAV-specific URL for the repository.
  *
+ * @uses $CFG
  * @param none
  * @return string A WebDAV-specific URL.
  */
@@ -465,12 +472,7 @@ class ELIS_files {
     function get_info($uuid) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_info(' . $uuid . ')');
 
-        if (!$node = $this->cmis->getObject('workspace://SpacesStore/' . $uuid)) {
-            return false;
-        }
-
-        $type = '';
-        return elis_files_process_node($node, $type);
+        return elis_files_node_properties($uuid);
     }
 
 
@@ -483,14 +485,7 @@ class ELIS_files {
     function is_dir($uuid) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('is_dir(' . $uuid . ')');
 
-        if (!$node = $this->cmis->getObject('workspace://SpacesStore/' . $uuid)) {
-            return false;
-        }
-
-        $type  = '';
-        $pnode = elis_files_process_node($node, $type);
-
-        return ($type == ELIS_FILES_TYPE_FOLDER);
+        return (elis_files_get_type($uuid) == 'folder');
     }
 
 
@@ -587,35 +582,7 @@ class ELIS_files {
  */
     function read_dir($uuid = '', $useadmin = true) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('read_dir(' . $uuid . ', ' . ($useadmin !== true ? 'false' : 'true') . ')');
-
-        if (empty($uuid)) {
-            if ($root = $this->get_root()) {
-                $uuid = $root->uuid;
-            }
-        }
-//print_object('workspace://SpacesStore/' . $uuid);
-        if (!$result = $this->cmis->getChildren('workspace://SpacesStore/' . $uuid)) {
-            return false;
-        }
-
-        $return = new stdClass;
-        $return->folders = array();
-        $return->files   = array();
-
-        foreach ($result->objectsById as $child) {
-            $type = '';
-
-            $node = elis_files_process_node($child, $type);
-
-            if ($type == ELIS_FILES_TYPE_FOLDER) {
-                $return->folders[] = $node;
-            // Only include a file in the list if it's title does not start with a period '.'
-            } else if ($type == ELIS_FILES_TYPE_DOCUMENT && !empty($node->title) && $node->title[0] !== '.') {
-                $return->files[] = $node;
-            }
-        }
-
-        return $return;
+        return elis_files_read_dir($uuid, $useadmin);
     }
 
 
@@ -709,10 +676,10 @@ class ELIS_files {
                 header('Content-Disposition: filename="' . $node->filename . '"');
             }
 
-        /// Close session - not needed anymore.
-            if (!$return) {
-                @session_write_close();
-            }
+            /// Close session - not needed anymore.
+                if (!$return) {
+                    @session_write_close();
+                }
 
         /// Read the file contents in chunks and output directly.
             if ($fh = fopen($url, 'rb')) {
@@ -934,8 +901,6 @@ class ELIS_files {
 /**
  * Process an uploaded file and send it into the repository.
  *
- * @uses $CFG
- * @uses $USER
  * @param string $upload   The array index for the uploaded file in the $_FILES superglobal.
  * @param string $uuid     The parent folder UUID value.
  * @param bool   $useadmin Set to false to make sure that the administrative user configured in
@@ -943,247 +908,20 @@ class ELIS_files {
  * @return string|bool The new node's UUID value or, False on error.
  */
     function upload_file($upload = '', $path = '', $uuid = '', $useadmin = true) {
-        global $CFG, $USER;
-
         if (ELIS_FILES_DEBUG_TRACE) mtrace('upload_file(' . $upload . ', ' . $path . ', ' . $uuid . ')');
         if (ELIS_FILES_DEBUG_TIME) $start = microtime(true);
 
-        require_once($CFG->libdir . '/filelib.php');
-
-        if (!empty($upload)) {
-            if (!isset($_FILES[$upload]) || !empty($_FILES[$upload]->error)) {
-                return false;
+        if ($node = elis_files_upload_file($upload, $path, $uuid)) {
+            if (ELIS_FILES_DEBUG_TIME) {
+                $end  = microtime(true);
+                $time = $end - $start;
+                mtrace("upload_file('$upload', '$path', '$uuid'): $time");
             }
 
-            $filename = $_FILES[$upload]['name'];
-            $filepath = $_FILES[$upload]['tmp_name'];
-            $filemime = $_FILES[$upload]['type'];
-            $filesize = $_FILES[$upload]['size'];
-
-        } else if (!empty($path)) {
-            if (!is_file($path)) {
-                return false;
-            }
-
-            $filename = basename($path);
-            $filepath = $path;
-            $filemime = mimeinfo('type', $filename);
-            $filesize = filesize($path);
-        } else {
-            return false;
+            return $node->uuid;
         }
 
-//        if (!$content = file_get_contents($filepath)) {
-//            return false;
-//        }
-
-//        $result = $this->cmis->createDocument('workspace://SpacesStore/' . $uuid, $filename, array(), $content, $filemime);
-//
-//        if ($result !== false) {
-//            $type = '';
-//            $node = elis_files_process_node($result, $type);
-//            return $node->uuid;
-//        }
-//
-//        return false;
-//    }
-
-        $chunksize = 8192;
-
-        $data1 = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<atom:entry xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
-            xmlns:cmism="http://docs.oasis-open.org/ns/cmis/messaging/200908/"
-            xmlns:atom="http://www.w3.org/2005/Atom"
-            xmlns:app="http://www.w3.org/2007/app"
-            xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
-    <atom:title>' . $filename . '</atom:title>
-    <atom:summary>' . get_string('uploadedbymoodle', 'repository_elis_files') . '</atom:summary>
-    <cmisra:content>
-        <cmisra:mediatype>' . $filemime . '</cmisra:mediatype>
-        <cmisra:base64>';
-
-        $data2 = '</cmisra:base64>
-    </cmisra:content>
-
-    <cmisra:object>
-        <cmis:properties>
-            <cmis:propertyId propertyDefinitionId="cmis:objectTypeId">
-                <cmis:value>cmis:document</cmis:value>
-            </cmis:propertyId>
-        </cmis:properties>
-    </cmisra:object>
-</atom:entry>';
-
-        $encodedbytes = 0;
-
-        // Use a stream filter to base64 encode the file contents to a temporary file.
-        if ($fi = fopen($filepath, 'r')) {
-            if ($fo = tmpfile()) {
-                stream_filter_append($fi, 'convert.base64-encode');
-
-                // Write the beginning of the XML document to the temporary file.
-                $encodedbytes += fwrite($fo, $data1, strlen($data1));
-
-                // Copy the uploaded file into the temporary file (usng the base64 encode stream filter)
-                // in 8K chunks to conserve memory.
-                while(($encbytes = stream_copy_to_stream($fi, $fo, $chunksize)) !== 0) {
-                    $encodedbytes += $encbytes;
-                }
-                fclose($fi);
-
-                // Write the end of the XML document to the temporary file.
-                $encodedbytes += fwrite($fo, $data2, strlen($data2));
-            }
-        }
-
-        rewind($fo);
-
-        // Force the usage of the configured Alfresco admin account, if requested.
-        if ($useadmin) {
-            $username = '';
-        } else {
-            $username = $USER->username;
-        }
-
-        $serviceuri = '/cmis/s/workspace://SpacesStore/i/' . $uuid . '/children';
-        $url        = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);
-
-        $uri        = parse_url($url);
-
-        switch ($uri['scheme']) {
-            case 'http':
-                $port = isset($uri['port']) ? $uri['port'] : 80;
-                $host = $uri['host'] . ($port != 80 ? ':'. $port : '');
-                $fp = @fsockopen($uri['host'], $port, $errno, $errstr, 15);
-                break;
-
-            case 'https':
-            /// Note: Only works for PHP 4.3 compiled with OpenSSL.
-                $port = isset($uri['port']) ? $uri['port'] : 443;
-                $host = $uri['host'] . ($port != 443 ? ':'. $port : '');
-                $fp = @fsockopen('ssl://'. $uri['host'], $port, $errno, $errstr, 20);
-                break;
-
-            default:
-                $result->error = 'invalid schema '. $uri['scheme'];
-                return $result;
-        }
-
-        // Make sure the socket opened properly.
-        if (!$fp) {
-            $result->error = trim($errno .' '. $errstr);
-            return $result;
-        }
-
-        // Construct the path to act on.
-        $path = isset($uri['path']) ? $uri['path'] : '/';
-        if (isset($uri['query'])) {
-            $path .= '?'. $uri['query'];
-        }
-
-        // Create HTTP request.
-        $headers = array(
-            // RFC 2616: "non-standard ports MUST, default ports MAY be included".
-            // We don't add the port to prevent from breaking rewrite rules checking
-            // the host that do not take into account the port number.
-            'Host'           => "Host: $host",
-            'Content-type'   => 'Content-type: application/atom+xml;type=entry',
-            'User-Agent'     => 'User-Agent: Moodle (+http://moodle.org/)',
-            'Content-Length' => 'Content-Length: ' . $encodedbytes,
-            'MIME-Version'   => 'MIME-Version: 1.0'
-        );
-
-        $request = 'POST  '. $path . " HTTP/1.0\r\n";
-        $request .= implode("\r\n", $headers);
-        $request .= "\r\n\r\n";
-
-        fwrite($fp, $request);
-
-        // Write the XML request (which contains the base64-encoded uploaded file contents) into the socket.
-        stream_copy_to_stream($fo, $fp);
-
-        fclose($fo);
-
-        fwrite($fp, "\r\n");
-
-        // Fetch response.
-        $response = '';
-        while (!feof($fp) && $chunk = fread($fp, 1024)) {
-            $response .= $chunk;
-        }
-        fclose($fp);
-
-        // Parse response.
-        list($split, $result->data) = explode("\r\n\r\n", $response, 2);
-        $split = preg_split("/\r\n|\n|\r/", $split);
-
-        list($protocol, $code, $text) = explode(' ', trim(array_shift($split)), 3);
-        $result->headers = array();
-
-        // Parse headers.
-        while ($line = trim(array_shift($split))) {
-            list($header, $value) = explode(':', $line, 2);
-            if (isset($result->headers[$header]) && $header == 'Set-Cookie') {
-                // RFC 2109: the Set-Cookie response header comprises the token Set-
-                // Cookie:, followed by a comma-separated list of one or more cookies.
-                $result->headers[$header] .= ','. trim($value);
-            } else {
-                $result->headers[$header] = trim($value);
-            }
-        }
-
-        $responses = array(
-            100 => 'Continue', 101 => 'Switching Protocols',
-            200 => 'OK', 201 => 'Created', 202 => 'Accepted', 203 => 'Non-Authoritative Information', 204 => 'No Content', 205 => 'Reset Content', 206 => 'Partial Content',
-            300 => 'Multiple Choices', 301 => 'Moved Permanently', 302 => 'Found', 303 => 'See Other', 304 => 'Not Modified', 305 => 'Use Proxy', 307 => 'Temporary Redirect',
-            400 => 'Bad Request', 401 => 'Unauthorized', 402 => 'Payment Required', 403 => 'Forbidden', 404 => 'Not Found', 405 => 'Method Not Allowed', 406 => 'Not Acceptable', 407 => 'Proxy Authentication Required', 408 => 'Request Time-out', 409 => 'Conflict', 410 => 'Gone', 411 => 'Length Required', 412 => 'Precondition Failed', 413 => 'Request Entity Too Large', 414 => 'Request-URI Too Large', 415 => 'Unsupported Media Type', 416 => 'Requested range not satisfiable', 417 => 'Expectation Failed',
-            500 => 'Internal Server Error', 501 => 'Not Implemented', 502 => 'Bad Gateway', 503 => 'Service Unavailable', 504 => 'Gateway Time-out', 505 => 'HTTP Version not supported'
-        );
-
-        // RFC 2616 states that all unknown HTTP codes must be treated the same as
-        // the base code in their class.
-        if (!isset($responses[$code])) {
-            $code = floor($code / 100) * 100;
-        }
-    //TODO: check for $code 500 and add menu to replace copy or cancel the uploaded file with the same name as an existing file
-    //        if($code == 500) {
-    //
-    //        } else
-        if ($code != 200 && $code != 201 && $code != 304) {
-            debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $serviceuri), DEBUG_DEVELOPER);
-            return false;
-        }
-
-        $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
-
-        $dom = new DOMDocument();
-        $dom->preserveWhiteSpace = false;
-        $dom->loadXML($result->data);
-
-        $nodes = $dom->getElementsByTagName('entry');
-
-        if (!$nodes->length) {
-            return false;
-        }
-
-        $type       = '';
-        $properties = elis_files_process_node_old($dom, $nodes->item(0), $type);
-
-        // Ensure that we set the current user to be the owner of the newly created directory.
-        if (!empty($properties->uuid)) {
-            // So that we don't conflict with the default Alfresco admin account.
-            $username = $USER->username == 'admin' ? $this->config->admin_username : $USER->username;
-
-            // We must include the tenant portion of the username here.
-            if (($tenantname = strpos($this->config->server_username, '@')) > 0) {
-                $username .= substr($this->config->server_username, $tenantname);
-            }
-
-            // We're not going to check the response for this right now.
-            elis_files_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
-        }
-
-        return $properties;
+        return false;
     }
 
 
@@ -1205,7 +943,7 @@ class ELIS_files {
 
     /// Make sure the location we are meant to upload files and create new
     /// directories actually exists and is a folder, not a content node.
-        if (!$this->is_dir($uuid)) {
+        if (elis_files_get_type($uuid) != 'folder') {
             return false;
         }
 
@@ -1276,7 +1014,7 @@ class ELIS_files {
         $node = $this->get_info($uuid);
 
     /// Make sure we've been pointed to a directory
-        if (!$this->is_dir($node->uuid)) {
+        if (elis_files_get_type($node->uuid) != 'folder') {
             return false;
         }
 
@@ -1339,9 +1077,9 @@ class ELIS_files {
 
         $this->errormsg = '';
 
-        $node = $this->get_info($uuid);
+        $node = elis_files_node_properties($uuid);
 
-        if ($this->is_dir($uuid)) {
+        if (elis_files_get_type($uuid) == 'folder') {
             return $this->download_dir($location, $uuid, true);
         }
 
@@ -1372,7 +1110,7 @@ class ELIS_files {
             if (!empty($repodir->folders)) {
                 foreach ($repodir->folders as $folder) {
                     if ($folder->title == $name) {
-                        return true;
+                        return false;
                     }
                 }
             }
@@ -1399,58 +1137,17 @@ class ELIS_files {
 
         $this->errormsg = '';
 
-        if ($return = $this->cmis->createFolder('workspace://SpacesStore/' . $uuid, $name)) {
-            $type = '';
-            $node = elis_files_process_node($return, $type);
-
-            return $node->uuid;
-        }
-/*
         if ($node = elis_files_create_dir($name, $uuid, $description, $useadmin)) {
             if (ELIS_FILES_DEBUG_TIME) {
                 $end  = microtime(true);
                 $time = $end - $start;
                 mtrace("create_dir('$name', '$uuid', '$description'): $time");
             }
-
-            return $node->uuid;
+            // was $node->uuid
+            return $node;
         }
-*/
+
         return false;
-    }
-
-
-/**
- * Delete a node from the repository, optionally recursing into sub-directories (only
- * relevant when the node being deleted is a folder).
- *
- * @uses $CFG
- * @uses $USER
- * @param string $uuid      The node UUID.
- * @param bool   $recursive Whether to recursively delete child content.
- * @return mixed
- */
-    function delete($uuid, $recursive = false) {
-        global $CFG;
-
-        if (ELIS_FILES_DEBUG_TRACE)  print_object('repo elis_files_delete(' . $uuid . ', ' . $recursive . ')');
-
-        // Ensure that we set the configured admin user to be the owner of the deleted file before deleting.
-        // This is to prevent the user's Alfresco account from having space incorrectly attributed to it.
-        // ELIS-1102
-        elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . $this->config->server_username);
-
-        if ($this->is_dir($uuid)) {
-            if (elis_files_send('/cmis/i/' . $uuid.'/descendants', array(), 'DELETE') === false) {
-                return false;
-            }
-        } else {
-           if ($this->cmis->deleteObject('workspace://SpacesStore/' . $uuid) === false) {
-            return false;
-           }
-        }
-
-        return true;
     }
 
 
@@ -1468,19 +1165,13 @@ class ELIS_files {
 
         $uuid = '';
 
-        if (empty($this->cuuid)) {
-            echo '<br>returning false';
+        if (!isset($this->cuuid)) {
             return false;
         }
 
         // Attempt to get the store UUID value
         if (($uuid = $DB->get_field('elis_files_course_store', 'uuid', array('courseid'=> $cid))) !== false) {
-            // Verify that the folder still exists and if not, delete the DB record so we can create a new one below.
-            if ($this->get_info($uuid) === false) {
-                delete_records('elis_files_course_store', 'courseid', $cid);
-            } else {
-                return $uuid;
-            }
+            return $uuid;
         }
 
         $dir = $this->read_dir($this->cuuid);
@@ -1498,12 +1189,18 @@ class ELIS_files {
             }
         }
 
-        if (!$course = $DB->get_record('course', array('id'=> $cid), 'shortname, fullname')) {
+        // If we've forced it off, don't automatically create a course storage directory at this point.
+        if (!$create) {
             return false;
         }
 
-        // If we're allowed to create a course store, do so now.
-        if ($create && ($uuid = $this->create_dir($course->shortname, $this->cuuid, $course->fullname))) {
+        if (!$course = $DB->get_record('course', array('id'=> $cid), 'shortname, fullname')) {
+    		return false;
+        }
+
+        if ($node = $this->create_dir($course->shortname, $this->cuuid, $course->fullname)) {
+            $uuid = $node->uuid;
+
             // Disable inheriting parent space permissions.  This can be disabled in Alfresco without being
             // reset by the code elsewhere.
             $this->node_inherit($uuid, false);
@@ -1612,10 +1309,6 @@ class ELIS_files {
     function has_old_user_store($uid) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('has_user_store(' . $uid . ')');
 
-        if (empty($this->uuuid)) {
-            return false;
-        }
-
         $dir = $this->read_dir($this->uuuid, true);
 
         // Look at all of the course directories that exist for our course ID.
@@ -1696,6 +1389,15 @@ class ELIS_files {
         return ($this->get_root()->uuid == $uuid);
     }
 
+/**
+ * Get the root node of the repository.
+ *
+ * @param none
+ * @return object The processed root node properties.
+ */
+function get_root() {
+    return $this->root;
+}
 
 /**
  * Get the parent of a specific node.
@@ -1706,12 +1408,7 @@ class ELIS_files {
     function get_parent($uuid) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_parent(' . $uuid . ')');
 
-        if (!$node = $this->cmis->getFolderParent('workspace://SpacesStore/' . $uuid)) {
-            return false;
-        }
-
-        $type = '';
-        return elis_files_process_node($node, $type);
+        return elis_files_get_parent($uuid);
     }
 
 
@@ -1729,22 +1426,19 @@ class ELIS_files {
 
     /// Get the "ending" UUID for the 'root' of navigation.
         if ((empty($courseid) || $courseid == SITEID) && empty($userid) && empty($shared)) {
-            $end = $this->get_root()->uuid;
+            $end   = $this->get_root()->uuid;
         } else if (empty($userid) && $shared == 'true') {
             $end = $this->suuid;
-//            print_object('End = shared: ' . $end);
         } else if (empty($userid) && empty($shared) && !empty($courseid) && $courseid != SITEID) {
             $end = $this->get_course_store($courseid);
-//            print_object('End = course: ' . $end);
         } else if (!empty($userid)) {
             $end = $this->get_user_store($userid);
-//            print_object('End = user: ' . $end);
         }
 
         $stack = array();
-        $node  = $this->get_info($uuid);
+        $node  = elis_files_node_properties($uuid);
 
-        if ($node->type == ELIS_FILES_TYPE_FOLDER) {
+        if (elis_files_get_type($uuid) == 'folder') {
             $nav = array(
                 'name' => $node->title,
                 'uuid' => $node->uuid
@@ -1752,7 +1446,7 @@ class ELIS_files {
 
             array_push($stack, $nav);
 
-        } else if ($node->type != ELIS_FILES_TYPE_DOCUMENT) {
+        } else if (elis_files_get_type($uuid) != 'content') {
             return false;
         }
 
@@ -1764,7 +1458,7 @@ class ELIS_files {
             return false;
         }
 
-        while (!empty($parent->uuid) && $parent->uuid != $end) {
+        while ($parent->uuid != $end) {
             $nav = array(
                 'name' => $parent->title,
                 'uuid' => $parent->uuid
@@ -1794,14 +1488,19 @@ class ELIS_files {
 
         $stack = array();
 
-        if (($node = $this->get_info($uuid)) === false) {
+        if (($node = elis_files_node_properties($uuid)) === false) {
             print_error('couldnotgetnodeproperties', 'repository_elis_files', '', $uuid);
             return false;
         }
 
-        if ($node->type == ELIS_FILES_TYPE_FOLDER) {
+        if (($type = elis_files_get_type($uuid)) === false) {
+            print_error('couldnotgetnodeproperties', 'repository_elis_files', '', $uuid);
+            return false;
+        }
+
+        if ($type == 'folder') {
             array_push($stack, $node->title);
-        } else if ($node->type !== ELIS_FILES_TYPE_DOCUMENT) {
+        } else if ($type !== 'document') {
             return false;
         }
 
@@ -1836,7 +1535,7 @@ class ELIS_files {
 
         $this->errormsg = '';
 
-        $node  = $this->get_root();
+        $node  =$this->get_root();
         $parts = explode('/', $path);
         $uuid  = $node->uuid;
 
@@ -2227,9 +1926,8 @@ class ELIS_files {
         foreach ($folders as $i => $folder) {
             $npath = $path . '/' . $folder['name'];
 
-            $root_folder = get_config('elis_files','root_folder');
             $text = ' <a href="#" onclick="set_value(\\\'' . $npath . '\\\')" title="' . $npath . '">' . $folder['name'] .
-                    (!empty($root_folder) && $root_folder == $npath ?
+                    (!empty($this->config->root_folder) && $this->config->root_folder == $npath ?
                     ' <span class="pathok">&#x2714;</span>' : '') . '</a>';
 
             $node = new HTML_TreeNode(array(
@@ -2416,7 +2114,7 @@ class ELIS_files {
         }
 
 
-        // Only allow usersetal views/edits to those users who have the capability
+        // Only allow userset views/edits to those users who have the capability
         if ($viewalfuserset  || $editalfuserset) {
             // Get usersets folders to which the users belongs
             if ($userset_folders = $this->find_userset_folders($USER->id, $USER->username)) {
@@ -2458,7 +2156,7 @@ class ELIS_files {
  * @param string $username The Moodle user name.
  * @return array Alfresco repository folder names.
  */
-    function find_userset_folders($muserid,$username) {
+    function userset($muserid,$username) {
         global $CFG, $DB;
 
         require_once($CFG->libdir . '/ddllib.php');
@@ -2531,7 +2229,7 @@ class ELIS_files {
             if (!isset($cluster_data)) {
                 $cluster_data = array();
             }
-            if (!($ucid = $DB->get_field(usertrack::TABLE, 'id', array('userid'=> $muserid, 'clusterid'=> $clusterinfo)))) {
+            if (!($ucid = $DB->get_field(clustertrack::TABLE, 'id', array('userid'=> $muserid, 'clusterid'=> $clusterinfo)))) {
                 $ucid = 0;
             }
             $cluster_data[$ucid] = new cluster($clusterinfo);
@@ -2809,20 +2507,16 @@ class ELIS_files {
     function node_inherit($uuid, $inherit) {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('/moodle/nodeinherit/' . $uuid . '?enabled=' . ($inherit ? 'true' : 'false'));
-
         $response = elis_files_request('/moodle/nodeinherit/' . $uuid . '?enabled=' . ($inherit ? 'true' : 'false'));
-
         try {
             $sxml = new SimpleXMLElement($response);
         } catch (Exception $e) {
             debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
             return false;
         }
-
         if (empty($sxml->uuid) || empty($sxml->enabled)) {
             return false;
         }
-
         return ($sxml->uuid == $uuid && ($inherit && $sxml->enabled == 'true' || !$inherit && $sxml->enabled == 'false'));
     }
 
@@ -3020,10 +2714,9 @@ class ELIS_files {
     function get_default_browsing_location(&$cid, &$uid, &$shared) {
         global $CFG, $USER;
 
-        // If the default location is set to the default value or not set at all, just return nothing now.
-        if (!isset($this->config->default_browse) ||
-            $this->config->default_browse == ELIS_FILES_BROWSE_USER_FILES) {
-
+        // If the default location is not set at all, just return nothing now.
+        if (!isset($this->config->default_browse)
+        ) {
             return '';
 
         // Or, handle determining if the user can actually access the chosen default location.

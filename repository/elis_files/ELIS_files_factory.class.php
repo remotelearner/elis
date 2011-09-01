@@ -59,7 +59,7 @@
     class repository_factory {
 
         function factory() {
-            global $CFG, $SESSION;
+            /*global $CFG, $SESSION;
             // Check for Alfresco version setting
             $alfresco_version = get_config('elis_files', 'alfresco_version');
             if ($alfresco_version == '3.4') {
@@ -79,7 +79,27 @@
            //     $SESSION->elis_repo = unserialize(serialize($SESSION->elis_repo));
            // }
            // return $SESSION->elis_repo;
-           return new $class;
+           return new $class;*/
+//        function factory($repository = '') {
+            global $CFG, $USER;
+//            if (!$repository) {
+//                $repository = $CFG->repository;
+//            }
+            if (file_exists(dirname(__FILE__).'/lib/ELIS_files.php')) {
+                require_once(dirname(__FILE__).'/lib/ELIS_files.php');
+                $class = "ELIS_files";
+                // Need to test that this will work in 2.0
+                /*if (!(isset($SESSION->repo))) {
+                    $SESSION->repo = new $class;
+                } else {
+                    $SESSION->repo = unserialize(serialize($USER->repo));
+                }
+                return $SESSION->repo;*/
+                return new $class;
+            } else {
+                trigger_error(dirname(__FILE__).'/lib/ELIS_files.php does not exist');
+                error(dirname(__FILE__).'/lib/ELIS_files.php does not exist');
+            }
         }
     }
 ?>

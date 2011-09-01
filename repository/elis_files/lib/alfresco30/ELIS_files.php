@@ -58,6 +58,8 @@
 
 /// Alfresco API v3.0
 require_once dirname(__FILE__). '/lib.php';
+// Alfresco 3.4
+require_once(dirname(__FILE__). '/cmis-php/cmis_repository_wrapper.php');
 
 
 define('ELIS_FILES_CRON_VALUE',  HOURSECS); // Run the cron job every hour.
@@ -65,6 +67,10 @@ define('ELIS_FILES_LOGIN_RESET', 5 * MINSECS);      // Reset a login after 5 min
 
 define('ELIS_FILES_DEBUG_TIME',  false);
 define('ELIS_FILES_DEBUG_TRACE', false);
+
+// Alfresco 3.4 type definitions
+define('ELIS_FILES_TYPE_FOLDER',   'cmis:folder');
+define('ELIS_FILES_TYPE_DOCUMENT', 'cmis:document');
 
 // Define constants for the Alfresco role names.
 define('ELIS_FILES_ROLE_COORDINATOR',  'Coordinator');   // The coordinator gets all permissions and permission groups defined
@@ -100,6 +106,7 @@ class ELIS_files {
 
     var $errormsg = '';  // Standard error message varible.
     var $log      = '';  // Cron task log messages.
+    var $cmis     = null;  // CMIS service connection object.
     var $muuid    = '';  // Moodle root folder UUID
     var $suuid    = '';  // Shared folder UUID
     var $cuuid    = '';  // Course folder UUID
@@ -162,7 +169,7 @@ class ELIS_files {
  * @return bool True if the plug-in has the minimum setup done, False otherwise.
  */
     function is_configured() {
-        global $CFG;
+//        global $CFG;
 
         return (!empty($this->config->server_host) &&
                 !empty($this->config->server_port) &&

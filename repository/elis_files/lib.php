@@ -58,15 +58,14 @@ class repository_elis_files extends repository {
         // May or man not need this
         //$this->config = get_config('elis_files');
 
-        $alfresco_version = get_config('elis_files', 'alfresco_version');
         require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
-        if ($alfresco_version !== null) {
+//        if ($alfresco_version !== null) {
             /// ELIS files class
             $this->elis_files = repository_factory::factory('elis_files');
 //            $this->alfresco = new Alfresco_Repository($this->options['alfresco_url']);
             $this->config = get_config('elis_files');
             $this->current_node = null;
-        }
+//        }
         // Probably need some of the following...
 
         //$this->sessname = 'elis_files_ticket_'.$this->id;
