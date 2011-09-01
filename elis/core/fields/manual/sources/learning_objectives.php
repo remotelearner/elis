@@ -34,10 +34,10 @@ class manual_options_learning_objectives extends manual_options_base_class {
     function get_options($data) {
         if (is_array($data) && isset($data['obj']) && !empty($data['obj']->id)) {
             $dataobject = $data['obj'];
-            if (is_a($dataobject, 'course')) {
-                $course = $dataobject;
-            } else if (is_a($dataobject, 'cmclass')) {
-                $course = $dataobject->course;
+            if (property_exists($dataobject, 'name')) {
+                $course = new course($dataobject);
+            } else if (property_exists($dataobject, 'idnumber')) {
+                $course = new course($dataobject->courseid);
             } else {
                 return array();
             }
