@@ -241,6 +241,9 @@ function php_report_filtering_get_user_preferences($report_shortname) {
                 //error_log("/blocks/php_report/lib/filtering.php::php_report_filtering_get_user_preferences($report_shortname, $force_persistent) over-riding filter values with URL param: {$key}={$val}");
                 $SESSION->php_report_default_params[$reportid.'/'.$key] = $val;
                 set_user_preferences(array($reportid.'/'.$key => $val)); // let's save URL params as persistent to avoid random session craziness issues
+
+                //flag this report as having custom parameters set up
+                php_report_filtering_flag_report_as_overridden($report_shortname);
             }
         }
         $user_prefs = $SESSION->php_report_default_params;
