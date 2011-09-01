@@ -2836,7 +2836,7 @@ class ELIS_files {
  * @return none
  */
     function sync_permissions($user) {
-        global $CFG;
+        global $CFG, $DB;
 
         // Presently, we are only checking for site-wide and shared repository space capabilities.
         $capabilities = array(
@@ -2855,11 +2855,12 @@ class ELIS_files {
             $sql = "SELECT ra.id
                     FROM {$CFG->prefix}role_assignments ra
                     INNER JOIN {$CFG->prefix}role_capabilities rc ON rc.roleid = ra.roleid
-                    WHERE ra.userid = {$user->id}
-                    AND rc.capability = '$capability'
+                    WHERE ra.userid = :userid
+                    AND rc.capability = :capability
                     AND rc.permission = " . CAP_ALLOW;
+            $params = array('userid'=>$user->id, 'capability'=>$capability);
 
-            if (record_exists_sql($sql)) {
+            if ($DB->record_exists_sql($sql, $params)) {
                 if ($capability == 'block/repository:createsitecontent') {
                     $this->allow_edit($user->username, $root->uuid);
                     $sitecap = true;
