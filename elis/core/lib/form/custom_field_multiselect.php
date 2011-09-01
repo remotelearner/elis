@@ -38,9 +38,14 @@ class elis_custom_field_multiselect extends MoodleQuickForm_group {
      * Options for the element
      *
      * 'contextlevel' => the context level to display fields for
+     * 'fieldfilter' => a callback function for filtering out fields.  If this
+     *     is set, it should be a callback function that takes a field as an
+     *     argument, and returns true if the field should be shown, and false
+     *     otherwise.
      */
     public $_options = array(
         'contextlevel' => CONTEXT_SYSTEM,
+        'fieldfilter' => null,
     );
 
     /**
@@ -59,7 +64,7 @@ class elis_custom_field_multiselect extends MoodleQuickForm_group {
         // set the options, do not bother setting bogus ones
         if (is_array($options)) {
             foreach ($options as $name => $value) {
-                if (isset($this->_options[$name])) {
+                if (array_key_exists($name, $this->_options)) {
                     if (is_array($value) && is_array($this->_options[$name])) {
                         $this->_options[$name] = @array_merge($this->_options[$name], $value);
                     } else {
@@ -98,7 +103,11 @@ class elis_custom_field_multiselect extends MoodleQuickForm_group {
         );
         $fields = field::get_for_context_level($this->_options['contextlevel']);
         $fieldsbycategory = array();
+        $filter = $this->_options['fieldfilter'];
         foreach ($fields as $field) {
+            if ($filter && !call_user_func($filter, $field)) {
+                continue;
+            }
             if (!isset($fieldsbycategory[$field->categoryname])) {
                 $fieldsbycategory[$field->categoryname] = array();
             }
