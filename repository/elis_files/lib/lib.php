@@ -43,7 +43,7 @@ function elis_files_request($uri, $username = '') {
     if (ELIS_FILES_DEBUG_TRACE) print_object('$uri: ' . $uri);
 
     if (!$response = elis_files_utils_invoke_service($uri, 'ticket', array(), 'GET', array(), $username)) {
-        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
+//        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
         if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response);
     }
 
@@ -1458,7 +1458,7 @@ function elis_files_create_user($user, $password = '') {
 
     $result = elis_files_request('/api/people/' . $username);
 
-    // If a user account in Alfrsco already exists, return true.
+    // If a user account in Alfresco already exists, return true.
     if (empty($password) && $result !== false) {
         if ($person = elis_files_json_parse($result)) {
             return true;
