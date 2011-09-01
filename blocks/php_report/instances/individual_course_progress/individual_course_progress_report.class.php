@@ -88,7 +88,7 @@ class individual_course_progress_report extends table_report {
 
         //needed to get the filtering libraries
         require_once($CFG->dirroot .'/elis/core/lib/filtering/simpleselect.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/custom_field_multiselect_values.php');
+        require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect_values.php');
 
         //needed for the permissions-checking logic on custom fields
         require_once($CFG->dirroot .'/blocks/php_report/sharedlib.php');
@@ -258,7 +258,7 @@ class individual_course_progress_report extends table_report {
                 $course_id_field = "ctxt_instanceid_{$custom_course_id}";
 
                 //make sure the user can view fields for the current course
-                $view_field_capability = block_php_report_field_capability($custom_course_field->owners);
+                $view_field_capability = generalized_filter_custom_field_multiselect_values::field_capability($custom_course_field->owners);
                 $view_field_contexts = get_contexts_by_capability_for_user('course', $view_field_capability, $this->userid);
 
                 //$view_field_filter = $view_field_contexts->sql_filter_for_context_level('ctxt.instanceid', 'course');

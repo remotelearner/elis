@@ -320,63 +320,6 @@ function block_php_report_get_names_by_category($require_exportable = false, $us
 }
 
 /**
- * Specifies the capability we need to check for a particular custom field to be
- * checked for course-level custom field access in a report
- *
- * @param   array           $owners                   shortname-indexed collection of all field owners
- * @param   string          $default_view_capability  capability to use if default setting was selected
- *                                                    on the manual field owner
- *
- * @return  string|boolean                            returns the capability we need to check, or false
- *                                                    on failure
- */
-function block_php_report_field_capability($owners, $default_view_capability = 'elis/program:course_view') {
-
-    if (isset($owners['manual'])) {
-        //the manual owner contains the permissions info
-        $manual_owner = $owners['manual'];
-        $params = unserialize($manual_owner->params);
-
-        if (isset($params['view_capability'])) {
-            //found the view capability settings
-            $view_capability = $params['view_capability'];
-            if ($view_capability === '') {
-                //default flag, so use the specified default
-                $view_capability = $default_view_capability;
-            }
-
-            return $view_capability;
-        }
-    }
-
-    //data error
-    return false;
-}
-
-/**
- * Specifies whether a course-level custom field is accessible to the
- * current user in at least once course context
- *
- * @param   array    $owners  shortname-indexed collection of all field owners
- *
- * @return  boolean           true if accessible, otherwise false
- */
-function block_php_report_field_accessible($owners) {
-    global $USER, $CFG;
-
-    require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
-
-    if ($view_capability = block_php_report_field_capability($owners)) {
-        //make sure the user has the view capability in some course
-        $contexts = get_contexts_by_capability_for_user('course', $view_capability, $USER->id);
-        return !$contexts->is_empty();
-    } else {
-        //data error
-        return false;
-    }
-}
-
-/**
  * This function adjusts a GMT timestamp to timezone
  * @param $timestamp
  * @param $timezone
