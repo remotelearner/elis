@@ -59,9 +59,9 @@ class repository_elis_files extends repository {
         //$this->config = get_config('elis_files');
 
         $alfresco_version = get_config('elis_files', 'alfresco_version');
+        require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
         if ($alfresco_version !== null) {
             /// ELIS files class
-            require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
             $this->elis_files = repository_factory::factory('elis_files');
 //            $this->alfresco = new Alfresco_Repository($this->options['alfresco_url']);
             $this->config = get_config('elis_files');
@@ -159,15 +159,19 @@ class repository_elis_files extends repository {
 
     private function get_url($node) {
         $result = null;
-        if ($node->type == "{http://www.alfresco.org/model/content/1.0}content") {
-            $contentData = $node->cm_content;
-            if ($contentData != null) {
-                $result = $contentData->getUrl();
-            }
+//        echo '<br>node:';
+//        print_object($node);
+//        if ($node->type == "{http://www.alfresco.org/model/content/1.0}content") {
+        if ($node->type == "cmis:document") {
+//            $contentData = $node->cm_content;
+//            if ($contentData != null) {
+//                $result = $contentData->getUrl();
+            $result = $node->fileurl;
+//            }
         } else {
             $result = "index.php?".
-                "&uuid=".$node->id.
-                "&name=".$node->cm_name.
+                "&uuid=".$node->uuid.
+                "&name=".$node->filename.
                 "&path=".'Company Home';
         }
         return $result;
@@ -334,8 +338,8 @@ class repository_elis_files extends repository {
             $ret['list'][] = array('title'=>$child->title,
                     'path'=>$child->uuid, // or links['self']??? need to get a path
                     'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
-                    'created'=>date("M. j, Y",$child->created),
-                    'modified'=>date("M. j, Y",$child->modified),
+                    'created'=>'',
+                    'modified'=>'',
                     'owner'=>'',
                     'children'=>array());
         }
@@ -389,7 +393,8 @@ class repository_elis_files extends repository {
      * @return array
      */
     public function get_file($uuid, $file = '') {
-        $node = $this->user_session->getNode($this->store, $uuid);
+//        $node = $this->user_session->getNode($this->store, $uuid);
+        $node = $this->elis_files->get_info($uuid);
         $url = $this->get_url($node);
         $path = $this->prepare_file($file);
         $fp = fopen($path, 'w');
@@ -841,6 +846,9 @@ class repository_elis_files extends repository {
 
         $default = '/moodle';
 /// Validate the path, if we can.
+
+        // Catch-22 fix along with adding alfresco_version set to 3.4 in the database
+        //require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
         if ($repo = repository_factory::factory('elis_files')) {
             $repoisup = $repo->is_configured() && $repo->verify_setup();
         }

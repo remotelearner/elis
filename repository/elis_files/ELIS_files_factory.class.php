@@ -66,7 +66,10 @@
                 require_once(dirname(__FILE__).'/lib/alfresco34/ELIS_files.php');
             } elseif ($alfresco_version == '3.2') {
                 require_once(dirname(__FILE__).'/lib/alfresco30/ELIS_files.php');
-            } else return false;
+            } else {
+                return false;
+            // part of catch-22 fix require_once(dirname(__FILE__).'/lib/alfresco34/ELIS_files.php');
+            }
 
             $class = "ELIS_files";
             // Don't store in session for now

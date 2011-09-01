@@ -60,7 +60,7 @@
 
         } else if (isset($data->categories)) {
             // Change this to elis_files plugin specific...
-            set_config('catfilter', serialize($data->categories, 'elis_files'));
+            set_config('catfilter', serialize($data->categories), 'elis_files');
         } else {
             set_config('catfilter', '');
         }
