@@ -64,6 +64,19 @@ class scheduling_form_step_label extends moodleform {
 
         workflowpage::add_navigation_buttons($mform);
     }
+
+    /**
+     * Set error message for a form element
+     *
+     * @param     string    $element    Name of form element to set error for
+     * @param     string    $message    Error message, if empty then removes the current error message
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setElementError($element, $message = null) {
+        $this->_form->setElementError($element, $message);
+    }
 }
 
 class scheduling_form_step_schedule extends moodleform {
@@ -244,6 +257,19 @@ class scheduling_form_step_schedule extends moodleform {
 
         workflowpage::add_navigation_buttons($mform, scheduling_workflow::STEP_LABEL);
     }
+
+    /**
+     * Set error message for a form element
+     *
+     * @param     string    $element    Name of form element to set error for
+     * @param     string    $message    Error message, if empty then removes the current error message
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setElementError($element, $message = null) {
+        $this->_form->setElementError($element, $message);
+    }
 }
 
 class scheduling_form_step_parameters extends parameter_form {
@@ -327,6 +353,19 @@ class scheduling_form_step_parameters extends parameter_form {
         }
 
         return $this->_form->_errors;
+    }
+
+    /**
+     * Set error message for a form element
+     *
+     * @param     string    $element    Name of form element to set error for
+     * @param     string    $message    Error message, if empty then removes the current error message
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setElementError($element, $message = null) {
+        $this->_form->setElementError($element, $message);
     }
 }
 
@@ -414,6 +453,19 @@ class scheduling_form_step_recipients extends moodleform {
         $mform->addElement('htmleditor', 'message', '<div class="php_report_bold_header">'.htmlspecialchars(get_string('message', 'block_php_report')).'</div>');
 
         workflowpage::add_navigation_buttons($mform, scheduling_workflow::STEP_FORMAT);
+    }
+
+    /**
+     * Set error message for a form element
+     *
+     * @param     string    $element    Name of form element to set error for
+     * @param     string    $message    Error message, if empty then removes the current error message
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setElementError($element, $message = null) {
+        $this->_form->setElementError($element, $message);
     }
 }
 
@@ -590,27 +642,13 @@ class scheduling_form_step_confirm extends moodleform {
                         continue; // filter not used
                     }
                     $field = $fields[$fname];
-                    // Check for custom field id list
-                    if (isset($field->_fieldidlist)) {
-                        // Extract list from parameters instead of datas
-                        $fieldnamelist = "fieldnamelist".$report->id;
-
-                        // Build description from field label and imploded array of custom field names
-                        $description = $field->get_label($datas[0]).implode(',',unserialize(base64_decode($parameters->$fieldnamelist)));
+                    foreach($datas as $i=>$sub_data) {
+                        $description = $field->get_label($sub_data);
                         if ($count > 0) {
                             $param_string .= '<br>';
                         }
                         $param_string .= $description;
                         $count++;
-                    } else {
-                        foreach($datas as $i=>$sub_data) {
-                            $description = $field->get_label($sub_data);
-                            if ($count > 0) {
-                                $param_string .= '<br>';
-                            }
-                            $param_string .= $description;
-                            $count++;
-                        }
                     }
                 }
             }
@@ -664,6 +702,19 @@ class scheduling_form_step_confirm extends moodleform {
         $mform->addElement('static', 'message', get_string('message', 'message').':', $data['message']);
 
         workflowpage::add_navigation_buttons($mform, scheduling_workflow::STEP_RECIPIENTS, workflow::STEP_FINISH);
+    }
+
+    /**
+     * Set error message for a form element
+     *
+     * @param     string    $element    Name of form element to set error for
+     * @param     string    $message    Error message, if empty then removes the current error message
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setElementError($element, $message = null) {
+        $this->_form->setElementError($element, $message);
     }
 }
 

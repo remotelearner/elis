@@ -1041,7 +1041,7 @@ class scheduling_page extends workflowpage {
                 $checkbox = '<input type="checkbox" name="schedule_' . $record->scheduleid . '">';
 
                 //link for editing this particular schedule instance
-                $edit_schedule_params = array('id' => $record->scheduleid);
+                $edit_schedule_params = array('id' => $record->scheduleid, 'action' => 'default');
                 $edit_schedule_page = $this->get_new_page($edit_schedule_params);
                 $edit_schedule_link = '<a href="' . $edit_schedule_page->url . '">' . $config_data['label'] . '</a>';
 
@@ -1088,7 +1088,7 @@ class scheduling_page extends workflowpage {
         $form = new scheduling_form_step_label(null, $this);
         if ($errors) {
             foreach ($errors as $element=>$msg) {
-                $form->_form->setElementError($element, $msg);
+                $form->setElementError($element, $msg);
             }
         }
         $workflowdata = $this->workflow->unserialize_data(array());
@@ -1112,7 +1112,7 @@ class scheduling_page extends workflowpage {
         $form = new scheduling_form_step_schedule(null, $this);
         if ($errors) {
             foreach ($errors as $element=>$msg) {
-                $form->_form->setElementError($element, $msg);
+                $form->setElementError($element, $msg);
             }
         }
         $workflowdata = $this->workflow->unserialize_data(array());
@@ -1303,7 +1303,7 @@ class scheduling_page extends workflowpage {
         $form = new scheduling_form_step_parameters(null, array('page' => $this, 'filterobject' => $report_filter));
         if ($errors) {
             foreach ($errors as $element=>$msg) {
-                $form->_form->setElementError($element, $msg);
+                $form->setElementError($element, $msg);
             }
         }
         $workflowdata = $this->workflow->unserialize_data(array());
@@ -1399,7 +1399,7 @@ class scheduling_page extends workflowpage {
         $form = new scheduling_form_step_recipients(null, $this);
         if ($errors) {
             foreach ($errors as $element=>$msg) {
-                $form->_form->setElementError($element, $msg);
+                $form->setElementError($element, $msg);
             }
         }
         $workflowdata = $this->workflow->unserialize_data(array());
@@ -1435,7 +1435,7 @@ class scheduling_page extends workflowpage {
                                                              'filterobject' => $report_filter));
         if ($errors) {
             foreach ($errors as $element=>$msg) {
-                $form->_form->setElementError($element, $msg);
+                $form->setElementError($element, $msg);
             }
         }
         $form->display();

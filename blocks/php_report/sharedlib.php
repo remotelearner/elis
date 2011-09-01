@@ -330,7 +330,7 @@ function block_php_report_get_names_by_category($require_exportable = false, $us
  * @return  string|boolean                            returns the capability we need to check, or false
  *                                                    on failure
  */
-function block_php_report_field_capability($owners, $default_view_capability = 'block/curr_admin:course:view') {
+function block_php_report_field_capability($owners, $default_view_capability = 'elis/program:course_view') {
 
     if (isset($owners['manual'])) {
         //the manual owner contains the permissions info

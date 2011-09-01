@@ -31,9 +31,14 @@ require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/blocks/php_report/lib/filtering.php');
 
 //not using require_login here because permissions are determined
-//by the reports themselved
-$PAGE = new moodle_page();
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+//by the reports themselves
+
+if (!isset($this)) {
+    // only edit the page, and show the header/footer if we are called directly
+    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+    $PAGE->set_pagelayout('embedded');
+    echo $OUTPUT->header();
+}
 
 //report instance id
 $id = required_param('id', PARAM_CLEAN);
@@ -101,3 +106,6 @@ if ($data = $parameter_form->get_data()) {
  */
 $parameter_form->display();
 
+if (!isset($this)) {
+    echo $OUTPUT->footer();
+}

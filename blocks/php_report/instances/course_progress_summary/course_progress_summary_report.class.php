@@ -84,7 +84,7 @@ class course_progress_summary_report extends table_report {
         require_once($CFG->dirroot .'/elis/core/lib/filtering/date.php');
         require_once($CFG->dirroot .'/elis/core/lib/filtering/selectany.php');
         require_once($CFG->dirroot .'/elis/program/lib/filtering/clusterselect.php');
-        //TBD require_once($CFG->dirroot .'/elis/program/lib/filtering/customfieldselect.php');
+        require_once($CFG->dirroot .'/elis/core/lib/filtering/custom_field_multiselect_values.php');
 
         //needed for the permissions-checking logic on custom fields
         require_once($CFG->dirroot .'/blocks/php_report/sharedlib.php');
@@ -114,17 +114,7 @@ class course_progress_summary_report extends table_report {
         $curricula_options = array('choices' => $cms,
                                    'numeric' => false);
 
-        // Needs to pull from saved prefs
-        $user_preferences = php_report_filtering_get_user_preferences($this->get_report_shortname());
-        $report_index = 'php_report_'.$this->get_report_shortname() .'/field'.$this->id;
-
-        if (isset($user_preferences[$report_index])) {
-            $default_fieldid_list = unserialize(base64_decode($user_preferences[$report_index]));
-        } else {
-            $default_fieldid_list = array();
-        }
-        $field_list = array('fieldids' => $default_fieldid_list);
-
+        $field_list = array();
         // Add block id to field list array
         $field_list['block_instance'] = $this->id;
         $field_list['reportname'] = $this->get_report_shortname();
@@ -139,8 +129,7 @@ class course_progress_summary_report extends table_report {
 
         $filter_entries[] = new generalized_filter_entry('cluster', 'enrol', 'userid', get_string('filter_cluster', 'rlreport_course_progress_summary'), false, 'clusterselect', array('default' => null));
 
-        // TBD: add multiselect filter when completed!
-        //$filter_entries[] = new generalized_filter_entry('field'.$this->id, 'field'.$this->id, 'id', get_string('filter_field', 'rlreport_course_progress_summary'), false, 'custom_field_multiselect_values', $field_list);
+        $filter_entries[] = new generalized_filter_entry('field'.$this->id, 'field'.$this->id, 'id', get_string('filter_field', 'rlreport_course_progress_summary'), false, 'custom_field_multiselect_values', $field_list);
 
         $filter_entries[] = new generalized_filter_entry('enrol', 'enrol', 'enrolmenttime', get_string('filter_course_date', 'rlreport_course_progress_summary'), false, 'date');
 
@@ -167,14 +156,14 @@ class course_progress_summary_report extends table_report {
                              'field'. $this->get_report_shortname(),
                              $this->filter);
 
-        // Unserialize value of filter params to get field ids array
-        $filter_params = unserialize(base64_decode($filter_params[0]['value']));
+        $filter_params = $filter_params[0]['value'];
+        $filter_params = $filter_params ? explode(',', $filter_params) : array();
 
         // Loop through these additional parameters - new columns, will  have to eventually pass the table etc...
         if (isset($filter_params) && is_array($filter_params)) {
             // Working with custom course fields - get all course fields
             $context = context_level_base::get_custom_context_level('course', 'elis_program');
-            $fields = field::get_for_context_level($context);
+            $fields = field::get_for_context_level($context)->to_array();
 
             foreach ($filter_params as $custom_course_id) {
                 $custom_course_field = new field($custom_course_id);
@@ -194,7 +183,7 @@ class course_progress_summary_report extends table_report {
                 //$view_field_filter = $view_field_contexts->sql_filter_for_context_level('ctxt.instanceid', 'course');
                 $filter_obj = $view_field_contexts->get_filter('ctxt.instanceid', 'course');
                 $filter_sql = $filter_obj->get_sql(false, 'ctxt'); // TBV
-                $view_field_filter = '';
+                $view_field_filter = 'TRUE';
                 $params = array();
                 if (isset($filter_sql['where'])) {
                     $view_field_filter = $filter_sql['where'];

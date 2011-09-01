@@ -36,9 +36,7 @@ $string['header_reg_date'] = 'Reg. Date';
 $string['header_student'] = 'Student';
 
 $string['individual_course_progress_field'] = 'select Custom Fields';
-$string['individual_course_progress_field_help'] = '<p align="center"><b>Individual Course Progress Report Help</b></p>
-
-<p>To add custom course fields, click on the <i>Add another course field to the list</i>
+$string['individual_course_progress_field_help'] = '<p>To add custom course fields, click on the <i>Add another course field to the list</i>
 link and then click on the name of the custom course field you would like to add to your report.</p>
 <p>These fields will be added to the report in the order that they are listed.</p>
 <p>Use the reordering icons
