@@ -28,7 +28,7 @@ global $CFG;
 require_once("{$CFG->libdir}/form/group.php");
 require_once(elis::lib('data/customfield.class.php'));
 
-class elis_custom_field_multiselect extends HTML_QuickForm_group {
+class elis_custom_field_multiselect extends MoodleQuickForm_group {
     /**
      * the name used to identify the formslib element
      */
