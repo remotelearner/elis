@@ -847,7 +847,7 @@ class repository_elis_files extends repository {
 /// Validate the path, if we can.
 
         // Catch-22 fix along with adding alfresco_version set to 3.4 in the database
-        //require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
+        require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
         if ($repo = repository_factory::factory('elis_files')) {
             $repoisup = $repo->is_configured() && $repo->verify_setup();
         }

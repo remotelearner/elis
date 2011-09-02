@@ -41,7 +41,8 @@ function elis_files_request($uri, $username = '') {
     global $CFG;
 
     if (ELIS_FILES_DEBUG_TRACE) print_object('$uri: ' . $uri);
-
+echo '<br>uri:';
+print_object($uri);
     if (!$response = elis_files_utils_invoke_service($uri, 'ticket', array(), 'GET', array(), $username)) {
 //        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
         if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response);
@@ -141,7 +142,8 @@ function elis_files_get_services() {
  */
 function elis_files_get_repository_version($versioncheck = '') {
     $response = elis_files_request('/moodle/repoversion');
-
+echo '<br>response:';
+print_object($response);
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
@@ -557,9 +559,9 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     } else {
         $username = $USER->username;
     }
-
+//echo '<br>2 invoke: '.$uri.' data: '.$data.' username: '.$username;
     $response = elis_files_utils_invoke_service($uri, 'basic', $header, 'CUSTOM-POST', $data, $username);
-
+//echo '<br>after create dir: '.$response.'*';
     if ($response === false) {
         debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
         return false;
@@ -2294,8 +2296,10 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
 //    }
 
     $response = elis_files_utils_http_request($serviceurl, $op, $headers, $method, $data, $username, $retry);
-
+//echo '<br>response:';
+//print_object($response);
     if ($response->code == 200 || $response->code == 201 || $response->code == 204) {
+//        echo '<br>response code: '.$response->code;
         $content = $response->data;
         if (false === strstr($content, 'Alfresco Web Client - Login') ) {
             if ($response->code == 204 && $method == 'CUSTOM-DELETE') {
