@@ -28,6 +28,7 @@
 
 require_once dirname(__FILE__). '/ELIS_files.php';
 require_once dirname(dirname(dirname(dirname(__FILE__)))). '/elis/core/lib/setup.php';
+require_once dirname(__FILE__) . '/cmis-php/cmis_repository_wrapper.php';
 
 
 /**
@@ -212,7 +213,13 @@ function elis_files_get_parent($uuid) {
 
         $type  = '';
 
-        return elis_files_process_node($dom, $nodes->item(0), $type);
+        $alfresco_version = elis_files_get_repository_version();
+
+		if ($alfresco_version == '3.2.1') {
+        	return elis_files_process_node($dom, $nodes->item(0), $type);
+		} else { // Alfresco 3.4
+        	return elis_files_process_node_old($dom, $nodes->item(0), $type);
+		}
     }
 
     return false;
@@ -248,11 +255,9 @@ function elis_files_uuid_from_path($path, $uuid = '') {
     foreach ($children->folders as $folder) {
         if ($folder->title == $pathpiece) {
             $fchildren = elis_files_read_dir($folder->uuid);
-
         /// If there are no more path elements, we've succeeded!
             if (empty($parts)) {
                 return $folder->uuid;
-
         /// Otherwise, keep looking below.
             } else {
                 return elis_files_uuid_from_path(implode('/', $parts), $folder->uuid);
@@ -278,14 +283,33 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
     $return->folders = array();
     $return->files   = array();
 
-    if (empty($uuid)) {
-        $services = elis_files_get_services();
-        $response = elis_files_request($services['root']);
-    } else {
-        if (elis_files_get_type($uuid) != 'folder') {
-            return;
-        }
+    $alfresco_version = elis_files_get_repository_version();
 
+    if (empty($uuid)) {
+		if ($alfresco_version == '3.2.1') {
+        	$services = elis_files_get_services();
+        	$response = elis_files_request($services['root']);
+        } else { // Alfresco 3.4
+        	// Force the usage of the configured Alfresco admin account, if requested.
+        	if ($useadmin) {
+            	$username = '';
+            } else if (isloggedin()) {
+            	$username = $USER->username;
+            } else {
+            	$username = '';
+            }
+            $response = elis_files_request('/cmis/p/children', $username);
+        }
+    } else {
+        if ($alfresco_version == '3.2.1') {
+        	if (elis_files_get_type($uuid) != 'folder') {
+            	return;
+        	}
+        } else { // Alfresco 3.4
+        	if (elis_files_get_type($uuid) != 'cmis:folder') {
+            	return;
+        	}
+        }
         // Force the usage of the configured Alfresco admin account, if requested.
         if ($useadmin) {
             $username = '';
@@ -295,7 +319,11 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
             $username = '';
         }
 
-        $response = elis_files_request(elis_files_get_uri($uuid, 'children'), $username);
+        if ($alfresco_version == '3.2.1') {
+        	$response = elis_files_request(elis_files_get_uri($uuid, 'children'), $username);
+        } else { // Alfresco 3.4
+            $response = elis_files_request('/cmis/i/' . $uuid .'/children', $username);
+        }
     }
 
     if (empty($response)) {
@@ -314,15 +342,27 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
         $node = $nodes->item($i);
         $type = '';
 
-        $contentNode = elis_files_process_node($dom, $node, $type);
+        $alfresco_version = elis_files_get_repository_version();
 
-        if ($type == 'folder') {
-            $return->folders[] = $contentNode;
+		if ($alfresco_version == '3.2.1') {
+        	$contentNode = elis_files_process_node($dom, $node, $type);
 
-        // Only include a file in the list if it's title does not start with a period '.'
-        } else if ($type == 'document' && !empty($contentNode->title) && $contentNode->title[0] !== '.') {
-            $return->files[] = $contentNode;
-        }
+        	if ($type == 'folder') {
+            	$return->folders[] = $contentNode;
+
+        	// Only include a file in the list if it's title does not start with a period '.'
+        	} else if ($type == 'document' && !empty($contentNode->title) && $contentNode->title[0] !== '.') {
+            	$return->files[] = $contentNode;
+        	}
+        } else { // Alfresco 3.4
+			if ($type == 'cmis:folder') {
+            	$return->folders[] = $contentNode;
+
+        	// Only include a file in the list if it's title does not start with a period '.'
+        	} else if ($type == 'cmis:document' && !empty($contentNode->title) && $contentNode->title[0] !== '.') {
+            	$return->files[] = $contentNode;
+        	}
+		}
     }
 
     usort($return->folders, 'elis_files_ls_sort');
@@ -335,12 +375,10 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
 /**
  * Return the base URL used for accessing the configured repository.
  *
- * @uses $CFG
  * @param none
  * @return string The base URL.
  */
 function elis_files_base_url() {
-    global $CFG;
 
     $repourl = elis::$config->elis_files->server_host;
 
@@ -407,9 +445,17 @@ function elis_files_get_uri($uuid = '', $function = '') {
  * @return string|bool A string name for the node type or, False on error.
  */
 function elis_files_get_type($uuid) {
-    if (!$response = elis_files_request(elis_files_get_uri($uuid, 'self'))) {
-        return false;
-    }
+	$alfresco_version = elis_files_get_repository_version();
+
+	if ($alfresco_version == '3.2.1') {
+    	if (!$response = elis_files_request(elis_files_get_uri($uuid, 'self'))) {
+        	return false;
+    	}
+	} else { // Alfresco 3.4
+		if (!$response = elis_files_request('/cmis/i/' . $uuid)) {
+        	return false;
+    	}
+	}
 
     $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
 
@@ -417,21 +463,49 @@ function elis_files_get_type($uuid) {
     $dom->preserverWhiteSpace = false;
     $dom->loadXML($response);
 
-    $entries = $dom->getElementsByTagName('propertyString');
+    if ($alfresco_version == '3.2.1') {
+		$entries = $dom->getElementsByTagName('propertyString');
 
-    if ($entries->length) {
-        for ($i = 0; $i < $entries->length; $i++) {
-            $node = $entries->item($i);
+    	if ($entries->length) {
+        	for ($i = 0; $i < $entries->length; $i++) {
+            	$node = $entries->item($i);
 
-        /// Sloppily handle strict namespacing here.
-            if ($node->getAttribute('cmis:name') == 'BaseType' ||
-                $node->getAttribute('name') == 'BaseType') {
+        	/// Sloppily handle strict namespacing here.
+            	if ($node->getAttribute('cmis:name') == 'BaseType' ||
+                	$node->getAttribute('name') == 'BaseType') {
 
-                return $node->nodeValue;
-            }
-        }
-    }
+                	return $node->nodeValue;
+            	}
+        	}
+    	}
+	} else { // Alfresco 3.4
+		if ($elm->length === 1) {
+        	$elm = $elm->item(0);
+//print_object($elm->nodeName);
+        	$properties = $elm->childNodes;
 
+       		if ($properties->length) {
+//print_object($properties);
+           		for ($i = 0; $i < $properties->length; $i++) {
+                	$node = $properties->item($i);
+//print_object($node);
+//print_object($node->tagName);
+//print_object($node->nodeValue);
+//                	if (get_class($node) == 'DOMText' || $node->hasAttributes()) {
+                	if (!$node->hasAttributes()) {
+                    	continue;
+                	}
+
+            /// Sloppily handle strict namespacing here.
+                	if ($node->hasAttribute('propertyDefinitionId') && $node->getAttribute('propertyDefinitionId') == 'cmis:objectTypeId') {
+//print_object('Returning nodeValue: ' . $node->nodeValue);
+                    	return $node->nodeValue;
+                	}
+            	}
+        	}
+    	}
+
+	}
     return false;
 }
 
@@ -460,19 +534,24 @@ function elis_files_node_properties($uuid) {
     }
 
     $type  = '';
-    return elis_files_process_node($dom, $nodes->item(0), $type);
+
+	$alfresco_version = elis_files_get_repository_version();
+
+	if ($alfresco_version == '3.2.1') {
+    	return elis_files_process_node($dom, $nodes->item(0), $type);
+	} else { // Alfresco 3.4
+    	return elis_files_process_node_old($dom, $nodes->item(0), $type);
+	}
 }
 
 
 /**
  * Get a file's contents and send them to the user's browser.
  *
- * @uses $CFG
  * @param string $uuid The node UUID.
  * @return mixed The file contents.
  */
 function elis_files_get_file($uuid) {
-    global $CFG;
 
     if (ELIS_FILES_DEBUG_TRACE) print_object('elis_files_get_file(' . $uuid . ')');
 
@@ -487,23 +566,43 @@ function elis_files_get_file($uuid) {
  * Delete a node from the repository, optionally recursing into sub-directories (only
  * relevant when the node being deleted is a folder).
  *
- * @uses $CFG
- * @uses $USER
  * @param string $uuid      The node UUID.
  * @param bool   $recursive Whether to recursively delete child content.
  * @return mixed
  */
-function elis_files_delete($uuid, $recursive = false) {
-    global $CFG;
+function elis_files_delete($uuid, $recursive = false, $repo = NULL) {
 
     if (ELIS_FILES_DEBUG_TRACE)  print_object('elis_files_delete(' . $uuid . ', ' . $recursive . ')');
 
     // Ensure that we set the configured admin user to be the owner of the deleted file before deleting.
     // This is to prevent the user's Alfresco account from having space incorrectly attributed to it.
     // ELIS-1102
-    elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
 
-    return (true === elis_files_send(elis_files_get_uri($uuid, 'delete'), array(), 'DELETE'));
+
+	$alfresco_version = elis_files_get_repository_version();
+
+	if ($alfresco_version == '3.2.1') {
+		elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
+    	return (true === elis_files_send(elis_files_get_uri($uuid, 'delete'), array(), 'DELETE'));
+	} else { // Alfresco 3.4
+		$result = elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
+
+    	// Get node type and use descendants delete for folders
+    	$node_type = elis_files_get_type($uuid);
+
+    	if (!(strstr($node_type,'folder') === FALSE)) {
+        	if (elis_files_send('/cmis/i/' . $uuid.'/descendants', array(), 'DELETE') === false) {
+            	return false;
+        	}
+    	} else {
+       		//if ($repo->cmis->deleteObject('workspace://SpacesStore/' . $uuid) === false) {
+        	if (elis_files_send('/cmis/i/' . $uuid, array(), 'DELETE') === false) {
+            	return false;
+        	}
+    	}
+
+    	return true;
+	}
 }
 
 
@@ -523,18 +622,21 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
 
     $properties = elis_files_node_properties($uuid);
 
-    $data = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
+	$alfresco_version = elis_files_get_repository_version();
 
-    if (elis_files_get_repository_version('3.2')) {
-        $data .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" ' .
+	if ($alfresco_version == '3.2.1') {
+    	$data = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
+
+    	if (elis_files_get_repository_version('3.2')) {
+        	$data .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" ' .
                  'xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">' . "\n" .
                  '  <link rel="type" href="' . elis_files_base_url() . '/api/type/folder"/>' . "\n" .
                  '  <link rel="repository" href="' . elis_files_base_url() . '/api/repository"/>' . "\n";
-    } else {
-        $data .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">' . "\n";
-    }
+    	} else {
+        	$data .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">' . "\n";
+    	}
 
-    $data .= '  <title>' . $name . '</title>' . "\n" .
+    	$data .= '  <title>' . $name . '</title>' . "\n" .
              '  <summary>' . $description . '</summary>' . "\n" .
              '  <cmis:object>' . "\n" .
              '    <cmis:properties>' . "\n" .
@@ -544,12 +646,32 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
              '    </cmis:properties>' . "\n" .
              '  </cmis:object>' . "\n" .
              '</entry>';
+	} else { // Alfresco 3.4
+    	$data = '<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom"
+       xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/"
+       xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
+  <title>' . $name . '</title>
+  <summary>' . $description . '</summary>
+  <cmisra:object>
+    <cmis:properties>
+      <cmis:propertyId propertyDefinitionId="cmis:objectTypeId">
+        <cmis:value>cmis:folder</cmis:value>
+      </cmis:propertyId>
+    </cmis:properties>
+  </cmisra:object>
+</entry>';
+	}
 
     $header[] = 'Content-type: application/atom+xml;type=entry';
     $header[] = 'Content-length: ' . strlen($data);
     $header[] = 'MIME-Version: 1.0';
 
-    $uri = '/api/node/workspace/SpacesStore/' . $uuid . '/descendants';
+	if ($alfresco_version == '3.2.1') {
+    	$uri = '/api/node/workspace/SpacesStore/' . $uuid . '/descendants';
+	} else { // Alfresco 3.4
+		$uri = '/cmis/i/' . $uuid . '/children';
+	}
 
     // Force the usage of the configured Alfresco admin account, if requested.
     if ($useadmin) {
@@ -578,14 +700,16 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     }
 
     $type       = '';
-    $properties = elis_files_process_node($dom, $nodes->item(0), $type);
+	if ($alfresco_version == '3.2.1') {
+    	$properties = elis_files_process_node($dom, $nodes->item(0), $type);
+	} else { // Alfresco 3.4
+    	$properties = elis_files_process_node_old($dom, $nodes->item(0), $type);
+	}
 
     // Ensure that we set the current user to be the owner of the newly created directory.
     if (!empty($properties->uuid)) {
         // So that we don't conflict with the default Alfresco admin account.
-
-        // was $user
-        $username = $USER->username == 'admin' ? elis::$config->elis_files->admin_username : $USER->username;
+		$username = $USER->username == 'admin' ? elis::$config->elis_files->admin_username : $USER->username;
 
         // We must include the tenant portion of the username here.
         if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
@@ -650,7 +774,8 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 /// that will potentially overrun the maximum memory allowed to a PHP script.
     $data1 = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
 
-    if (elis_files_get_repository_version('3.2')) {
+	$alfresco_version = elis_files_get_repository_version();
+    if ($alfresco_version == '3.2.1') {
         $data1 .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" ' .
                   'xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">' . "\n" .
                   '  <link rel="type" href="' . elis_files_base_url() . '/api/type/document"/>' . "\n" .
@@ -829,7 +954,12 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     }
 
     $type       = '';
-    $properties = elis_files_process_node($dom, $nodes->item(0), $type);
+
+	if ($alfresco_version == '3.2.1') {
+    	$properties = elis_files_process_node($dom, $nodes->item(0), $type);
+	} else { // Alfresco 3.4
+    	$properties = elis_files_process_node_old($dom, $nodes->item(0), $type);
+	}
 
     // Ensure that we set the current user to be the owner of the newly created directory.
     if (!empty($properties->uuid)) {
@@ -1063,7 +1193,18 @@ function elis_files_get_categories() {
     return array();
 }
 
+function elis_files_get_config() {
+    global $CFG;
 
+    require_once($CFG->dirroot . '/repository/elis_files/ELIS_files_factory.class.php');
+
+    if (!$repo = repository_factory::factory()) {
+        return false;
+    } else {
+        return $repo;
+    }
+
+}
 /**
  * Process a SimpleXML object from the Alfresco web script XML data to make an array
  * structure usable in Moodle.
@@ -1168,6 +1309,107 @@ function elis_files_validate_path($path, $folders = null) {
     return false;
 }
 
+/**
+ * Process a node to return an array of values for it and determine whether it is
+ * a folder or content node.
+ *
+ * @param DOMDocument $dom  The XML data read into a DOMDocument object.
+ * @param DOMNode     $node The specific node from the document we are processing.
+ * @param string      $type Refernce to a variable to store the node type.
+ * @return object The node properties in an object format.
+ */
+function elis_files_process_node_new($node, &$type) {
+    $contentNode = new stdClass;
+
+    $contentNode->uuid    = str_replace('urn:uuid:', '', $node->uuid);
+    $contentNode->summary = ''; // Not returned with CMIS data
+    $contentNode->title   = $node->properties['cmis:name'];
+    $contentNode->icon    = '';
+    $contentNode->type    = $type = $node->properties['cmis:objectTypeId'];
+
+    if (isset($node->properties['cmis:lastModifiedBy'])) {
+        $contentNode->owner   = $node->properties['cmis:lastModifiedBy'];
+    } else if (isset($node->properties['cmis:createdBy'])) {
+        $contentNode->owner   = $node->properties['cmis:createdBy'];
+    } else {
+        $contentNode->owner   = 'none';
+    }
+    if (isset($node->properties['cmis:contentStreamFileName'])) {
+        $contentNode->filename = $node->properties['cmis:contentStreamFileName'];
+    }
+
+    if (isset($node->properties['cmis:contentStreamLength'])) {
+        $contentNode->filesize = $node->properties['cmis:contentStreamLength'];
+    }
+
+    if (isset($node->properties['cmis:contentStreamMimeType'])) {
+        $contentNode->filemimetype = $node->properties['cmis:contentStreamMimeType'];
+    }
+
+    // We have to recontextualize the date & time values given to us into
+    // a standard UNIX timestamp value that Moodle uses.
+    $created = $node->properties['cmis:creationDate'];
+
+    if (!empty($created)) {
+        $d_year   = substr($created, 0, 4);
+        $d_month  = substr($created, 5, 2);
+        $d_day    = substr($created, 8, 2);
+        $t_hour   = substr($created, 11, 2);
+        $t_minute = substr($created, 14, 2);
+        $t_second = substr($created, 17, 2);
+        $tz       = substr($created, -6, 3);
+        if (substr($created, -2, 2) == '30') {
+            $tz .= '.5';
+        } else {
+            $tz .= '.0';
+        }
+
+        $contentNode->created = make_timestamp($d_year, $d_month, $d_day, $t_hour,
+                                               $t_minute, $t_second, $tz);
+    }
+
+    // We have to recontextualize the date & time values given to us into
+    // a standard UNIX timestamp value that Moodle uses.
+    $updated = $node->properties['cmis:lastModificationDate'];
+
+    if (!empty($updated)) {
+        $d_year   = substr($updated, 0, 4);
+        $d_month  = substr($updated, 5, 2);
+        $d_day    = substr($updated, 8, 2);
+        $t_hour   = substr($updated, 11, 2);
+        $t_minute = substr($updated, 14, 2);
+        $t_second = substr($updated, 17, 2);
+        $tz       = substr($updated, -6, 3);
+        if (substr($updated, -2, 2) == '30') {
+            $tz .= '.5';
+        } else {
+            $tz .= '.0';
+        }
+
+        $contentNode->modified = make_timestamp($d_year, $d_month, $d_day, $t_hour,
+                                                $t_minute, $t_second, $tz);
+    }
+
+    $contentNode->links['self']         = $node->links['self'];
+
+    if (!empty($node->links['down'])) {
+        $contentNode->links['children'] = $node->links['down'];
+    }
+
+    if (!empty($node->links['down-tree'])) {
+        $contentNode->links['descendants'] = $node->links['down-tree'];
+    }
+
+    if (!empty($node->links['describedby'])) {
+        $contentNode->links['type'] = $node->links['describedby'];
+    }
+
+    if (!empty($node->links['edit-media'])) {
+        $contentNode->fileurl = $node->links['edit-media'];
+    }
+
+    return $contentNode;
+}
 
 /**
  * Process a node to return an array of values for it and determine whether it is
@@ -1385,6 +1627,211 @@ function elis_files_process_node($dom, $node, &$type) {
     return $contentNode;
 }
 
+/**
+ * Process a node to return an array of values for it and determine whether it is
+ * a folder or content node.
+ *
+ * @param DOMDocument $dom  The XML data read into a DOMDocument object.
+ * @param DOMNode     $node The specific node from the document we are processing.
+ * @param string      $type Refernce to a variable to store the node type.
+ * @return object The node properties in an object format.
+ */
+function elis_files_process_node_old($dom, $node, &$type) {
+    $xpath = new DOMXPath($dom);
+
+    if ($node->hasChildNodes()) {
+        $contentNode = new stdClass;
+        $contentNode->links = array();
+
+        foreach ($node->childNodes as $cnode) {
+            if (!isset($cnode->tagName)) {
+                continue;
+            }
+//echo '<br>tagname: '.$cnode->tagName;
+            switch ($cnode->tagName) {
+                case 'id':
+                    $contentNode->uuid = str_replace('urn:uuid:', '', $cnode->nodeValue);
+                    break;
+
+                case 'author':
+                    $contentNode->owner = $cnode->nodeValue;
+                    break;
+
+                case 'published':
+                    $created = $cnode->nodeValue;
+
+                /// We have to recontextualize the date & time values given to us into
+                /// a standard UNIX timestamp value that Moodle uses.
+                    if ($created != '-') {
+                        $d_year   = substr($created, 0, 4);
+                        $d_month  = substr($created, 5, 2);
+                        $d_day    = substr($created, 8, 2);
+                        $t_hour   = substr($created, 11, 2);
+                        $t_minute = substr($created, 14, 2);
+                        $t_second = substr($created, 17, 2);
+                        $tz       = substr($created, -6, 3);
+                        if (substr($created, -2, 2) == '30') {
+                            $tz .= '.5';
+                        } else {
+                            $tz .= '.0';
+                        }
+
+                        $contentNode->created = make_timestamp($d_year, $d_month, $d_day, $t_hour,
+                                                               $t_minute, $t_second, $tz);
+                    }
+
+                    break;
+
+                case 'updated':
+                    $updated = $cnode->nodeValue;
+
+                /// We have to recontextualize the date & time values given to us into
+                /// a standard UNIX timestamp value that Moodle uses.
+                    if ($updated != '-') {
+                        $d_year   = substr($updated, 0, 4);
+                        $d_month  = substr($updated, 5, 2);
+                        $d_day    = substr($updated, 8, 2);
+                        $t_hour   = substr($updated, 11, 2);
+                        $t_minute = substr($updated, 14, 2);
+                        $t_second = substr($updated, 17, 2);
+                        $tz       = substr($updated, -6, 3);
+                        if (substr($updated, -2, 2) == '30') {
+                            $tz .= '.5';
+                        } else {
+                            $tz .= '.0';
+                        }
+
+                        $contentNode->modified = make_timestamp($d_year, $d_month, $d_day, $t_hour,
+                                                                $t_minute, $t_second, $tz);
+                    }
+
+                    break;
+
+                case 'summary':
+                    $contentNode->summary = $cnode->nodeValue;
+                    break;
+
+                case 'title':
+                    $contentNode->title = $cnode->nodeValue;
+                    break;
+
+                case 'alf:icon':
+                    $contentNode->icon = $cnode->nodeValue;
+                    break;
+
+                case 'link':
+                    switch ($cnode->getAttribute('rel')) {
+                        case 'self':
+                            $contentNode->links['self'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
+                            break;
+
+                        case 'cmis-allowableactions':
+                            $contentNode->links['permissions'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
+                            break;
+
+                        case 'cmis-relationships':
+                            $contentNode->links['associations'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
+                            break;
+
+                        case 'cmis-parent':
+                            $contentNode->links['parent'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
+                            break;
+
+                        case 'cmis-folderparent':
+                            $contentNode->links['folderparent'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
+                            break;
+
+                        case 'cmis-children':
+                            $contentNode->links['children'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
+                            break;
+
+                        case 'cmis-descendants':
+                            $contentNode->links['descendants'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
+                            break;
+
+                        case 'cmis-type':
+                            $contentNode->links['type'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
+                            break;
+
+                        case 'cmis-repository':
+                            $contentNode->links['repository'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                    break;
+
+                default:
+                    break;
+            }
+
+        }
+    }
+
+    $entries    = $xpath->query('.//cmis:properties/*', $node);
+    $isfolder   = false;
+    $isdocument = false;
+    $j          = 0;
+
+    while ($prop = $entries->item($j++)) {
+    /// Sloppily handle strict namespacing here.
+        if ($prop->getAttribute('cmis:name') == 'BaseType' ||
+            $prop->getAttribute('name') == 'BaseType') {
+            $type = $prop->nodeValue;
+        } else {
+            $propname = $prop->getAttribute('cmis:name');
+            if (empty($propname)) {
+                $propname = $prop->getAttribute('name');
+
+                if (!empty($propname)) {
+                    switch ($propname) {
+                        case 'ObjectId':
+                            $contentNode->noderef = $prop->nodeValue;
+                            break;
+
+                        case 'BaseType':
+                            if ($prop->nodeValue == 'folder') {
+                                $isfolder = true;
+                            } else if ($prop->nodeValue == 'document') {
+                                $isdocument = true;
+                            }
+
+                            break;
+
+                        case 'ContentStreamLength':
+                            $contentNode->filesize = $prop->nodeValue;
+                            break;
+
+                        case 'ContentStreamMimeType':
+                            $contentNode->filemimetype = $prop->nodeValue;
+                            break;
+
+                        case 'ContentStreamFilename':
+                            $contentNode->filename = $prop->nodeValue;
+                            break;
+
+                        case 'ContentStreamURI':
+                        case 'ContentStreamUri':
+                            $contentNode->fileurl = $prop->nodeValue;
+                            break;
+
+                         default:
+                            break;
+                    }
+                } else if ($prop->nodeValue == 'cmis:folder') { // Added for Moodle 2.1 as this seems to be the only way to find folders
+                    $type = $prop->nodeValue;
+                    $isfolder = true;
+                } else if ($prop->nodeValue == 'cmis:document') { // Added for Moodle 2.1 as this seems to be the only way to find folders
+                    $type = $prop->nodeValue;
+                    $isfolder = true;
+                }
+            }
+        }
+    }
+    return $contentNode;
+}
 
 /**
  * Move the contents of a root Alfresco node from one location to another.
@@ -2160,9 +2607,9 @@ function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
 
     if (!empty($username)) {
         // So that we don't conflict with the default Alfresco admin account.
-        $username = $username == 'admin' ? $Cthis->config->admin_username : $username;
+        $username = $username == 'admin' ? elis::$config->elis_files->admin_username : $username;
 
-            // We must include the tenant portion of the username here.
+        // We must include the tenant portion of the username here.
         if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
             $username .= substr(elis::$config->elis_files->server_username, $tenantname);
         }
@@ -2255,7 +2702,6 @@ function elis_files_utils_get_url($url) {
  * @param string $username The username to use for user authentication.
  */
 function elis_files_utils_get_wc_url($url, $op = 'norefresh', $username = '') {
-    global $CFG;
 
     $endpoint = elis_files_base_url();
     $ticket   = elis_files_utils_get_ticket($op, $username);
