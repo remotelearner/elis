@@ -95,6 +95,217 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2011063000, 'elis', 'core');
     }
 
+    if ($result && $oldversion < 2011080100) {
+        // create tables that were created by block curr_admin (if upgrading a
+        // non-CM site)
+
+        // Define table context_levels to be created
+        $table = new xmldb_table('context_levels');
+
+        // Adding fields to table context_levels
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('component', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table context_levels
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table context_levels
+        $table->add_index('name', XMLDB_INDEX_NOTUNIQUE, array('name'));
+        $table->add_index('component', XMLDB_INDEX_NOTUNIQUE, array('component'));
+
+        // Conditionally launch create table for context_levels
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table elis_field to be created
+        $table = new xmldb_table('elis_field');
+
+        // Adding fields to table elis_field
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('shortname', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('name', XMLDB_TYPE_TEXT, 'big', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('datatype', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, 'big', null, null, null, null);
+        $table->add_field('categoryid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
+        $table->add_field('multivalued', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, null, null, '0');
+        $table->add_field('forceunique', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
+        $table->add_field('params', XMLDB_TYPE_TEXT, 'big', null, null, null, null);
+
+        // Adding keys to table elis_field
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table elis_field
+        $table->add_index('shortname_idx', XMLDB_INDEX_NOTUNIQUE, array('shortname'));
+
+        // Conditionally launch create table for elis_field
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table elis_field_categories to be created
+        $table = new xmldb_table('elis_field_categories');
+
+        // Adding fields to table elis_field_categories
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table elis_field_categories
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for elis_field_categories
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table elis_field_contextlevels to be created
+        $table = new xmldb_table('elis_field_contextlevels');
+
+        // Adding fields to table elis_field_contextlevels
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('contextlevel', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table elis_field_contextlevels
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for elis_field_contextlevels
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table elis_field_category_contexts to be created
+        $table = new xmldb_table('elis_field_category_contexts');
+
+        // Adding fields to table elis_field_category_contexts
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('categoryid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null);
+        $table->add_field('contextlevel', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null);
+
+        // Adding keys to table elis_field_category_contexts
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table elis_field_category_contexts
+        $table->add_index('contextlevel_idx', XMLDB_INDEX_NOTUNIQUE, array('contextlevel'));
+        $table->add_index('category_idx', XMLDB_INDEX_NOTUNIQUE, array('categoryid'));
+
+        // Conditionally launch create table for elis_field_category_contexts
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table elis_field_data_text to be created
+        $table = new xmldb_table('elis_field_data_text');
+
+        // Adding fields to table elis_field_data_text
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null);
+        $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('data', XMLDB_TYPE_TEXT, 'big', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table elis_field_data_text
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table elis_field_data_text
+        $table->add_index('context_idx', XMLDB_INDEX_NOTUNIQUE, array('contextid'));
+        $table->add_index('field_idx', XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
+
+        // Conditionally launch create table for elis_field_data_text
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table elis_field_data_int to be created
+        $table = new xmldb_table('elis_field_data_int');
+
+        // Adding fields to table elis_field_data_int
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null);
+        $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('data', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table elis_field_data_int
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table elis_field_data_int
+        $table->add_index('context_idx', XMLDB_INDEX_NOTUNIQUE, array('contextid'));
+        $table->add_index('field_idx', XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
+
+        // Conditionally launch create table for elis_field_data_int
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table elis_field_data_num to be created
+        $table = new xmldb_table('elis_field_data_num');
+
+        // Adding fields to table elis_field_data_num
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null);
+        $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('data', XMLDB_TYPE_NUMBER, '15, 5', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table elis_field_data_num
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table elis_field_data_num
+        $table->add_index('context_idx', XMLDB_INDEX_NOTUNIQUE, array('contextid'));
+        $table->add_index('field_idx', XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
+
+        // Conditionally launch create table for elis_field_data_num
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table elis_field_data_char to be created
+        $table = new xmldb_table('elis_field_data_char');
+
+        // Adding fields to table elis_field_data_char
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null);
+        $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('data', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table elis_field_data_char
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table elis_field_data_char
+        $table->add_index('context_idx', XMLDB_INDEX_NOTUNIQUE, array('contextid'));
+        $table->add_index('field_idx', XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
+
+        // Conditionally launch create table for elis_field_data_char
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define table elis_field_owner to be created
+        $table = new xmldb_table('elis_field_owner');
+
+        // Adding fields to table elis_field_owner
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null);
+        $table->add_field('plugin', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('exclude', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, null, null, '0');
+        $table->add_field('params', XMLDB_TYPE_TEXT, 'big', null, null, null, null);
+
+        // Adding keys to table elis_field_owner
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table elis_field_owner
+        $table->add_index('field_idx', XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
+
+        // Conditionally launch create table for elis_field_owner
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // core savepoint reached
+        upgrade_plugin_savepoint(true, 2011080100, 'elis', 'core');
+    }
+
     if ($result && $oldversion < 2011080200) {
 
         // Define index sortorder_ix (not unique) to be dropped form elis_field
