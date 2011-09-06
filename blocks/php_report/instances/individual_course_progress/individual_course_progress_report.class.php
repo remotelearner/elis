@@ -458,7 +458,11 @@ class individual_course_progress_report extends table_report {
         $posttest_query = $this->get_max_test_score_sql('_elis_course_posttest');
 
         //main query
-        $sql = "SELECT {$columns}, crs.id AS courseid
+        $sql = "SELECT {$columns}, crs.id AS courseid,
+                       cls.starttimehour AS starttimehour,
+                       cls.starttimeminute AS starttimeminute,
+                       cls.endtimehour AS endtimehour,
+                       cls.endtimeminute AS endtimeminute
                  FROM {". pmclass::TABLE .'} cls
                  JOIN {'. student::TABLE .'} enrol
                    ON enrol.classid = cls.id
@@ -546,7 +550,7 @@ class individual_course_progress_report extends table_report {
 
         $record->startdate = ($record->startdate == 0)
                              ? get_string('na', $this->lang_file)
-                             : $this->userdate($record->startdate);
+                             : $this->pmclassdate($record, 'start');
 
         $today = strtotime(date('Y-m-d'));
         if ($record->enddate > $today) {
@@ -555,7 +559,7 @@ class individual_course_progress_report extends table_report {
         } else {
             $record->enddate = ($record->enddate == 0)
                                ? get_string('na', $this->lang_file)
-                               : $this->userdate($record->enddate);
+                               : $this->pmclassdate($record, 'end');
         }
 
         //make sure this is set to something so that the horizontal bar graph doesn't disappear
