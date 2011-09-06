@@ -416,7 +416,7 @@ class user extends data_object_with_custom_fields {
      */
     static function get_current_classes_in_curriculum($userid, $curid) {
         global $DB;
-        $sql = 'SELECT curcrs.*, crs.name AS coursename
+        $sql = 'SELECT curcrs.*, crs.name AS coursename, cls.id AS classid
                   FROM {'.curriculumcourse::TABLE.'} curcrs
                   JOIN {'.course::TABLE.'} crs ON curcrs.courseid = crs.id
                        -- Next two are to limit to currently enrolled courses
@@ -441,7 +441,7 @@ class user extends data_object_with_custom_fields {
      */
     static function get_non_curriculum_classes($userid) {
         global $DB;
-        $sql = 'SELECT curcrs.*, crs.name AS coursename, crs.id AS courseid
+        $sql = 'SELECT curcrs.*, crs.name AS coursename, crs.id AS courseid, cls.id AS classid
                   FROM {'.student::TABLE.'} clsenrol
                   JOIN {'.pmclass::TABLE.'} cls ON cls.id = clsenrol.classid
                   JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
@@ -585,30 +585,32 @@ class user extends data_object_with_custom_fields {
                             $course_obj = new course($course->courseid);
                             $coursedesc = $course_obj->syllabus;
 
-                            if ($classdata = student_get_class_from_course($course->courseid, $this->id)) {
-                                if (!in_array($classdata->id, $classids)) {
-                                    $classids[] = $classdata->id;
-                                }
+                            if ($cdata = student_get_class_from_course($course->courseid, $this->id)) {
+                                foreach($cdata as $classdata) {
+                                    if (!in_array($classdata->id, $classids)) {
+                                        $classids[] = $classdata->id;
+                                    }
 
-                                if ($classdata->completestatusid == STUSTATUS_PASSED) {
-                                    $completecourses++;
-                                }
+                                    if ($classdata->completestatusid == STUSTATUS_PASSED) {
+                                        $completecourses++;
+                                    }
 
-                                if ($mdlcrs = moodle_get_course($classdata->id)) {
-                                    $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
-                                                  $mdlcrs . '">' . $course->coursename . '</a>';
-                                } else {
-                                    $coursename = $course->coursename;
-                                }
+                                    if ($mdlcrs = moodle_get_course($classdata->id)) {
+                                        $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
+                                            $mdlcrs . '">' . $course->coursename . '</a>';
+                                    } else {
+                                        $coursename = $course->coursename;
+                                    }
 
-                                $data[] = array(
-                                    $coursename,
-                                    $coursedesc,
-                                    $classdata->grade,
-                                    $classdata->completestatusid == STUSTATUS_PASSED ? get_string('yes') : get_string('no'),
-                                    $classdata->completestatusid == STUSTATUS_PASSED && !empty($classdata->completetime) ?
+                                    $data[] = array(
+                                        $coursename,
+                                        $coursedesc,
+                                        $classdata->grade,
+                                        $classdata->completestatusid == STUSTATUS_PASSED ? get_string('yes') : get_string('no'),
+                                        $classdata->completestatusid == STUSTATUS_PASSED && !empty($classdata->completetime) ?
                                         date('M j, Y', $classdata->completetime) : get_string('na','elis_program')
-                                );
+                                        );
+                                }
                             } else {
                                 $data[] = array(
                                     $course->coursename,
@@ -628,9 +630,11 @@ class user extends data_object_with_custom_fields {
                     // Keep note of the classid's regardless if set archived or not for later use in determining non-curricula courses
                     if ($courses = curriculumcourse_get_listing($usercur->curid, 'curcrs.position, crs.name', 'ASC')) {
                         foreach ($courses as $course) {
-                            if ($classdata = student_get_class_from_course($course->courseid, $this->id)) {
-                                if (!in_array($classdata->id, $classids)) {
-                                    $classids[] = $classdata->id;
+                            if ($cdata = student_get_class_from_course($course->courseid, $this->id)) {
+                                foreach ($cdata as $classdata) {
+                                    if (!in_array($classdata->id, $classids)) {
+                                        $classids[] = $classdata->id;
+                                    }
                                 }
                             }
                         }

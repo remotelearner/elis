@@ -2370,7 +2370,5 @@ function student_get_class_from_course($crsid, $userid) {
             INNER JOIN {'. pmclass::TABLE .'} cls ON stu.classid = cls.id
             WHERE stu.userid = ?
             AND cls.courseid = ? ';
-    error_log("student_get_class_from_course({$crsid}, {$userid}); sql = {$sql}");
-    return $DB->get_record_sql($sql, array($userid, $crsid));
+    return $DB->get_records_sql($sql, array($userid, $crsid));
 }
-

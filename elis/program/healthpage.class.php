@@ -557,3 +557,34 @@ class cron_lastruntimes_check extends crlm_health_check_base {
 
 }
 
+/**
+ * Checks for duplicate PM profile records.
+ */
+class duplicate_moodle_profile extends crlm_health_check_base {
+    function __construct() {
+        global $DB;
+        $concat = sql_concat('fieldid', "'/'", 'userid');
+        $sql = "SELECT $concat, COUNT(*)-1 AS dup
+                  FROM {user_info_data} dat
+              GROUP BY fieldid, userid
+                HAVING COUNT(*) > 1";
+        $this->counts = $DB->get_records_sql($sql);
+    }
+    function exists() {
+        return !empty($this->counts);
+    }
+    function severity() {
+        return healthpage::SEVERITY_ANNOYANCE;
+    }
+    function title() {
+        return 'Duplicate Moodle profile field records';
+    }
+    function description() {
+        $count = array_reduce($this->counts, create_function('$a,$b', 'return $a + $b->dup;'), $null);
+        return "There were {$count} duplicate Moodle profile field records.";
+    }
+    function solution() {
+        $msg = 'Run the script fix_duplicate_moodle_profile.php to remove all duplicate profile field records.';
+        return $msg;
+    }
+}

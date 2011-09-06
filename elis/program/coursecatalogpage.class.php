@@ -786,7 +786,11 @@ class currentclasstable extends yui_table {
 
     function get_class($item) {
         if (!isset($this->current_class) || !isset($this->current_class->courseid) || $this->current_class->courseid != $item->courseid) {
-            $this->current_class = student_get_class_from_course($item->courseid, $this->cuserid);
+            if (!empty($item->classid)) {
+                $this->current_class = new pmclass($item->classid);
+            } else {
+                $this->current_class = false;
+            }
         }
         return $this->current_class;
     }

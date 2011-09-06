@@ -283,9 +283,9 @@ class userform extends cmform {
 
         foreach ($fields as $field) {
             if ($field->forceunique) {
-                $fielddata = $DB->get_record(FIELDDATATABLE, 'fieldid', $field->id, 'data', $data["field_{$field->shortname}"]);
+                $fielddata = $DB->get_record($field->data_table(), 'fieldid', $field->id, 'data', $data["field_{$field->shortname}"]);
                 if ($fielddata && $fielddata->contextid != $contextid) {
-                    $err["field_{$field->shortname}"] = get_string('valuealreadyused');
+                    $errors["field_{$field->shortname}"] = get_string('valuealreadyused');
                 }
             }
         }
