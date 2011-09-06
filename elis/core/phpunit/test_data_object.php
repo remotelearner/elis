@@ -76,13 +76,14 @@ class role_assignment_object extends elis_data_object {
     protected $_dbfield_contextid;
 }
 
-class data_objectTest extends PHPUnit_Framework_TestCase {
+class data_objectTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
-    protected function tearDown() {
-        if (isset($this->overlaydb)) {
-            $this->overlaydb->cleanup();
-        }
+    protected static function get_overlay_tables() {
+        return array(
+            'config' => 'moodle',
+            'role_assignments' => 'moodle'
+        );
     }
 
     public function baseConstructorProvider() {
@@ -159,8 +160,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
-        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
-        $this->overlaydb = $overlaydb;
+        $overlaydb = self::$overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
@@ -193,8 +193,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
-        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
-        $this->overlaydb = $overlaydb;
+        $overlaydb = self::$overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
@@ -215,14 +214,16 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
-        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
-        $this->overlaydb = $overlaydb;
+        $overlaydb = self::$overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
         config_object::delete_records(new field_filter('name', 'foo'), $overlaydb);
-        $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $overlaydb), 0);
-        $this->assertEquals(config_object::count(null, $overlaydb), 2);
+
+        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(null, array(), 0, 0, $overlaydb));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_delete_test_result.csv'));
+        $this->assertTablesEqual($dataset->getTable('config'), $result);
     }
 
     /**
@@ -234,8 +235,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
-        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
-        $this->overlaydb = $overlaydb;
+        $overlaydb = self::$overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
@@ -251,8 +251,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
-        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
-        $this->overlaydb = $overlaydb;
+        $overlaydb = self::$overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
@@ -267,8 +266,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
     public function testCanSaveRecords() {
         global $DB;
 
-        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
-        $this->overlaydb = $overlaydb;
+        $overlaydb = self::$overlaydb;
 
         // create a new record
         $config = new config_object(false, null, array(), false, array(), $overlaydb);
@@ -276,23 +274,23 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $config->value = 'foovalue';
         $config->save();
 
-        $config = config_object::find(null, array(), 0, 0, $overlaydb);
-        $config = $config->to_array();
-        $this->assertEquals(count($config), 1);
-        $config = current($config);
-        $this->assertEquals($config->name, 'foo');
-        $this->assertEquals($config->value, 'foovalue');
+        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(null, array(), 0, 0, $overlaydb));
+        $expected = array(array('name' => 'foo',
+                                'value' => 'foovalue',
+                                'id' => 1));
+        $expected = new moodle_recordset_phpunit_datatable('config', $expected);
+        $this->assertTablesEqual($expected, $result);
 
         // modify an existing record
         $config->value = 'newfoovalue';
         $config->save();
 
-        $config = config_object::find(null, array(), 0, 0, $overlaydb);
-        $config = $config->to_array();
-        $this->assertEquals(count($config), 1);
-        $config = current($config);
-        $this->assertEquals($config->name, 'foo');
-        $this->assertEquals($config->value, 'newfoovalue');
+        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(null, array(), 0, 0, $overlaydb));
+        $expected = array(array('name' => 'foo',
+                                'value' => 'newfoovalue',
+                                'id' => 1));
+        $expected = new moodle_recordset_phpunit_datatable('config', $expected);
+        $this->assertTablesEqual($expected, $result);
     }
 
     /**
@@ -304,8 +302,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
-        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
-        $this->overlaydb = $overlaydb;
+        $overlaydb = self::$overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
@@ -313,7 +310,10 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $config = $config->current();
         $config->delete();
 
-        $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $overlaydb), 0);
+        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(null, array(), 0, 0, $overlaydb));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_delete_test_result.csv'));
+        $this->assertTablesEqual($dataset->getTable('config'), $result);
     }
 
     /**
@@ -322,8 +322,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
     public function testGetAssociatedRecords() {
         global $DB, $USER;
 
-        $overlaydb = new overlay_database($DB, array('role_assignments' => 'moodle'));
-        $this->overlaydb = $overlaydb;
+        $overlaydb = self::$overlaydb;
 
         // get some random user
         $user = $DB->get_record('user', array(), '*', IGNORE_MULTIPLE);
@@ -380,8 +379,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
-        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
-        $this->overlaydb = $overlaydb;
+        $overlaydb = self::$overlaydb;
 
         load_phpunit_data_set($dataset, true, $overlaydb);
 
@@ -399,8 +397,7 @@ class data_objectTest extends PHPUnit_Framework_TestCase {
     public function testValidationPreventsEmptyValues() {
         global $DB;
 
-        $overlaydb = new overlay_database($DB, array('config' => 'moodle'));
-        $this->overlaydb = $overlaydb;
+        $overlaydb = self::$overlaydb;
 
         $config = new config_object(false, null, array(), false, array(), $overlaydb);
         $config->save();

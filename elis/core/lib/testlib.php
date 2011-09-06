@@ -26,6 +26,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once('PHPUnit/Extensions/Database/DataSet/IDataSet.php');
+require_once('PHPUnit/Extensions/Database/DataSet/DefaultTable.php');
+require_once('PHPUnit/Extensions/Database/DataSet/DefaultTableMetaData.php');
+
 /**
  * Load a PHPUnit data set into the Moodle database.
  *
@@ -511,4 +515,132 @@ class overlay_database extends moodle_database {
 }
 
 class overlay_database_exception extends moodle_exception {
+}
+
+/**
+ * PHPUnit DataTable for a Moodle recordset (or record array, or ELIS data
+ * collection)
+ */
+class moodle_recordset_phpunit_datatable extends PHPUnit_Extensions_Database_DataSet_DefaultTable {
+    public function __construct($tablename, $rs) {
+        // try to get the column names from an entry
+        if (is_array($rs)) {
+            if (!empty($rs)) {
+                $ref_obj = current($rs);
+            }
+        } else if ($rs->valid()) {
+            $ref_obj = $rs->current();
+        }
+        if (isset($ref_obj)) {
+            if (method_exists($ref_obj, 'to_array')) {
+                $ref_obj = $ref_obj->to_array();
+            } else if (method_exists($ref_obj, 'to_object')) {
+                $ref_obj = $ref_obj->to_object();
+            }
+            if (is_array($ref_obj)) {
+                $columns = array_keys($ref_obj);
+            } else {
+                $columns = array_keys(get_object_vars($ref_obj));
+            }
+        } else {
+            $columns = array();
+        }
+
+        $metadata = new PHPUnit_Extensions_Database_DataSet_DefaultTableMetaData($tablename, $columns);
+
+        parent::__construct($metadata);
+
+        foreach ($rs as $record) {
+            if (is_array($record)) {
+                $this->addRow($record);
+            } else if (method_exists($record, 'to_array')) {
+                $this->addRow($record->to_array());
+            } else {
+                $this->addRow((array)$record);
+            }
+        }
+    }
+}
+
+abstract class elis_database_test extends PHPUnit_Framework_TestCase {
+    /**
+     * The overlay database object set up by a test.
+     */
+    protected static $overlaydb;
+    /**
+     * The original global $DB object.
+     */
+    protected static $origdb;
+
+    /**
+     * Return the list of tables that should be overlayed.
+     */
+    abstract static protected function get_overlay_tables();
+
+    /**
+     * Clean up the temporary database tables.
+     */
+    public static function tearDownAfterClass() {
+        if (!empty(self::$overlaydb)) {
+            self::$overlaydb->cleanup();
+            self::$overlaydb = null;
+        }
+        if (!empty(self::$origdb)) {
+            self::$origdb = null;
+        }
+    }
+
+    public static function setUpBeforeClass() {
+        // called before each test function
+        global $DB;
+        self::$origdb = $DB;
+        self::$overlaydb = new overlay_database($DB, static::get_overlay_tables());
+    }
+
+    /**
+     * reset the $DB global
+     */
+    protected function tearDown() {
+        global $DB;
+        $DB = self::$origdb;
+    }
+
+    protected function setUp() {
+        // called before each test method
+        global $DB;
+        self::$overlaydb->reset_overlay_tables();
+        $DB = self::$overlaydb;
+    }
+
+    /**
+     * The following two functions are stolen from PHPUnit_Extensions_Database_TestCase
+     */
+    /**
+     * Asserts that two given tables are equal.
+     *
+     * @param PHPUnit_Extensions_Database_DataSet_ITable $expected
+     * @param PHPUnit_Extensions_Database_DataSet_ITable $actual
+     * @param string $message
+     */
+    public static function assertTablesEqual(PHPUnit_Extensions_Database_DataSet_ITable $expected, PHPUnit_Extensions_Database_DataSet_ITable $actual, $message = '')
+    {
+        $constraint = new PHPUnit_Extensions_Database_Constraint_TableIsEqual($expected);
+
+        self::assertThat($actual, $constraint, $message);
+    }
+
+    /**
+     * Asserts that two given datasets are equal.
+     *
+     * @param PHPUnit_Extensions_Database_DataSet_ITable $expected
+     * @param PHPUnit_Extensions_Database_DataSet_ITable $actual
+     * @param string $message
+     */
+    public static function assertDataSetsEqual(PHPUnit_Extensions_Database_DataSet_IDataSet $expected, PHPUnit_Extensions_Database_DataSet_IDataSet $actual, $message = 
+'')
+    {
+        $constraint = new PHPUnit_Extensions_Database_Constraint_DataSetIsEqual($expected);
+
+        self::assertThat($actual, $constraint, $message);
+    }
 }
