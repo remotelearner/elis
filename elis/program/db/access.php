@@ -768,7 +768,7 @@ $capabilities = array(
         )
      ),
 
-     'elis/program:userset_role_assign_cluster_users' => array(
+     'elis/program:userset_role_assign_userset_users' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:cluster:role_assign_cluster_users',
