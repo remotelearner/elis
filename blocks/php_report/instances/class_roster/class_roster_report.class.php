@@ -157,6 +157,32 @@ class class_roster_report extends table_report {
         return 'ASC';
     }
 
+    /**
+     * Return class start/end date-time
+     *
+     * @param  object  $pmclass      The pmclass who's date/time we desire
+     * @param  string  $start_or_end Either 'start' or 'end'
+     * @param  string  $fmt          Optional format string
+     * @return string  The formatted date/time string.
+     */
+    function pmclassdate($pmclass, $start_or_end = 'start', $fmt = '') {
+        if (empty($pmclass)) {
+            return '-';
+        }
+        if ($start_or_end != 'start' && $start_or_end != 'end') {
+            error_log("class_roster_report::pmclassdate() coding error - invalid value for arg#2: start_or_end = '{$start_or_end}'");
+            return '';
+        }
+
+        $date     = $start_or_end .'date';
+        $hour     = $start_or_end .'timehour';
+        $minute   = $start_or_end .'timeminute';
+        $datetime = $pmclass->{$date};
+        $datetime += $pmclass->{$hour} * HOURSECS;
+        $datetime += $pmclass->{$minute} * MINSECS;
+        return $this->userdate($datetime, $fmt);
+    }
+
     function get_header_entries() {
         global $CFG;
 
@@ -193,24 +219,22 @@ class class_roster_report extends table_report {
             // Add dates if available
             if (!empty($cmclass)) {
                 $cmclass = $cmclass->to_object(); // TBD: no date data w/o?!?!
-                $startdate = $cmclass->startdate;
-                $enddate = $cmclass->enddate;
 
                 //error_log("class_roster::get_header_entries() dates: {$startdate} ~ {$enddate}");
                 // Add start date if available
-                if (!empty($startdate)) {
+                if (!empty($cmclass->startdate)) {
                     $header_obj = new stdClass;
                     $header_obj->label = get_string('header_start_date', $this->lang_file) .':';
-                    $header_obj->value = $this->userdate($startdate, get_string('strftimedaydate'));
+                    $header_obj->value = $this->pmclassdate($cmclass, 'start');
                     $header_obj->css_identifier = '';
                     $header_array[] = $header_obj;
                 }
 
                 // Add end date if available
-                if (!empty($enddate)) {
+                if (!empty($cmclass->enddate)) {
                     $header_obj = new stdClass;
                     $header_obj->label = get_string('header_end_date', $this->lang_file) .':';
-                    $header_obj->value = $this->userdate($enddate, get_string('strftimedaydate'));
+                    $header_obj->value = $this->pmclassdate($cmclass, 'end');
                     $header_obj->css_identifier = '';
                     $header_array[] = $header_obj;
                 }
