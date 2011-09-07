@@ -114,12 +114,17 @@ class cmCourseForm extends cmform {
         // Print form items for course template browsing
 
         $mform->addElement('html', '<br />');
-        $mform->addElement('hidden', 'templateclass', 'moodlecourseurl', array('id'=>'id_templateclass'));
-        $mform->addElement('text', 'locationlabel', get_string('coursetemplate', 'elis_program'), array('readonly'=>'readonly', 'value'=>$locationlabel));
-        $mform->setType('locationlabel', PARAM_TEXT);
-        $mform->addHelpButton('locationlabel', 'courseform:coursetemplate', 'elis_program');
+        $mform->addElement('hidden', 'templateclass', 'moodlecourseurl', array('id' => 'id_templateclass'));
+        if (empty($locationlabel) || optional_param('action', '', PARAM_CLEAN) != 'view') {
+            $mform->addElement('text', 'locationlabel', get_string('coursetemplate', 'elis_program'), array('readonly' => 'readonly', 'value' => $locationlabel));
+            $mform->setType('locationlabel', PARAM_TEXT);
+            $mform->addHelpButton('locationlabel', 'courseform:coursetemplate', 'elis_program');
+        } else {
+            $mform->addElement('static', 'locationlabellink', get_string('coursetemplate', 'elis_program').':',  "<a href=\"{$CFG->wwwroot}/course/view.php?id={$course->id}\">{$locationlabel}</a>");
+            $mform->addHelpButton('locationlabellink', 'courseform:coursetemplate', 'elis_program');
+        }
 
-        if(empty($id)) {
+        if (empty($id)) {
             $mform->addElement('hidden', 'location', '', array('id'=>'id_location'));
             $mform->addElement('hidden', 'temptype', '', array('id'=>'tempid'));
         } else {
