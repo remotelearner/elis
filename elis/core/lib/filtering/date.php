@@ -214,7 +214,7 @@ class generalized_filter_date extends generalized_filter_type {
             $counter++;
         }
 
-        return array($sql, params);
+        return array($sql, $params);
     }
 
 }

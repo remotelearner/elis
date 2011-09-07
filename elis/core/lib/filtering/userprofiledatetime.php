@@ -72,6 +72,8 @@ class generalized_filter_userprofiledatetime extends generalized_filter_date {
             return null;
         }
 
+        $param_id = 'userprofiledateid'. $counter;
+        $params[$param_id] = $this->_fieldid;
         $sql = "{$this->_tables['user']}.id IN
                 (SELECT userid FROM {user_info_data}
                  WHERE fieldid = :{$param_id}
@@ -107,7 +109,7 @@ class generalized_filter_userprofiledatetime extends generalized_filter_date {
             $counter++;
         }
 
-        return array($sql, params);
+        return array($sql, $params);
     }
 
 }
