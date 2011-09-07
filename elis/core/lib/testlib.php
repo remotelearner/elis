@@ -124,6 +124,9 @@ class overlay_database extends moodle_database {
             $table = $structure->getTable($tablename);
             // FIXME: when http://bugs.mysql.com/bug.php?id=10327 gets fixed,
             // we can switch this back to create_temp_table
+            if ($manager->table_exists($table)) {
+                $manager->drop_table($table);
+            }
             $manager->create_table($table);
         }
         $this->xmldbfiles = $xmldbfiles;
@@ -211,7 +214,15 @@ class overlay_database extends moodle_database {
     public function get_tables($usecache=true) {
         $tables = $this->basedb->get_tables($usecache);
         if (empty($this->donesetup)) {
+            // not done creating the tables: remove the overlay tables
             $tables = array_diff($tables, array_keys($this->overlaytables));
+            // re-add the ones that have already been created
+            $cacheprefix = $this->basedb->prefix;
+            $this->basedb->prefix = $this->overlayprefix; // HACK!!!
+            $tables = array_merge($tables, $this->basedb->get_tables(false));
+            $this->basedb->prefix = $cacheprefix;
+            // fetch again, to refresh the cache using the real prefix
+            $this->basedb->get_tables(false);
         }
         return $tables;
     }
