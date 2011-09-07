@@ -576,18 +576,19 @@ class generalized_filter_clustertree extends generalized_filter_type {
         //hack the nested fieldset into an html element
         $helptext = get_string('helpprefix2', '', $this->_filterhelp[1]);
         $helpurl = '/help.php?component='. $this->_filterhelp[2] .'&amp;identifier='. $this->_filterhelp[0] .'&amp;lang='. $USER->lang; // TBV
-        $helplink = '<span class="helplink"><a title=""'.
-                    ' href="'. $CFG->wwwroot . $helpurl.'"'.
-                    ' onclick="this.target=\'popup\'; '.
-                    ' return openpopup(\''.$helpurl.'\', \'popup\', \'menubar=0,location=0,scrollbars,resizable,width=500,height=400\', 0);">'.
+        $helplink = '<span class="helplink"><a id="helpicon000000" title=""'.
+                    ' href="'. $CFG->wwwroot . $helpurl .'" >'.
                     ' <img class="iconhelp" alt="'. $helptext .'" title="'. $helptext .'" src="'. $OUTPUT->pix_url('help') .'"></a></span>';
 
         $nested_fieldset = '<fieldset class="nested clearfix" id="'
-                           . $this->_uniqueid ."_label\">\n".
-                           '<legend class="ftoggler">'.  $this->_label . $helplink
-                           . "</legend>\n";
+                           . $this->_uniqueid ."_label\">\n";
+        $legend = '<legend class="ftoggler">'. $this->_label //. $helplink
+                  ."</legend>\n";
 
-        $mform->addElement('html', $style . $nested_fieldset);
+        $mform->addElement('html', $style . $nested_fieldset . $legend);
+        $mform->addElement('static', $this->_uniqueid .'_help', '');
+        // Must use addHelpButton() to NOT open help link on page, but in popup!
+        $mform->addHelpButton($this->_uniqueid .'_help', $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */); // TBV
 
         //cluster select dropdown
         $mform->addElement('select', $this->_uniqueid .'_dropdown', '', $choices_array);
