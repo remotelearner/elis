@@ -93,7 +93,7 @@ $string['configdeleteuserdir'] = 'When deleting a Moodle user account, if that u
                                  'that was located in that directory.';
 $string['configuserquota'] = 'Set the default value for how much storage space all Moodle users on Alfresco can use.  ' .
                              '<b>Select Unlimited for unlimited storage space.</b>';
-$string['couldnotaccessserviceat'] = 'Could not access Alfrecso service at: {$a}';
+$string['couldnotaccessserviceat'] = 'Could not access Alfresco service at: {$a}';
 $string['couldnotdeletefile'] = '<br />Error: Could not delete: {$a}';
 $string['couldnotgetalfrescouserdirectory'] = 'Could not get Alfresco user directory for user: {$a}';
 $string['couldnotgetfiledataforuuid'] = 'Could not get file data for UUID: {$a}';
@@ -109,6 +109,17 @@ $string['deleteuserdir'] = 'Auto-delete Alfresco user directories';
 $string['description'] = 'Connect to the Alfresco document management system repository.';
 $string['done'] = 'done';
 $string['elisfilesnotinstalled'] = '<b>ELIS Files must be configured and saved first</b>';
+$string['elis_files:view'] = 'View ELIS Files Repository';
+$string['elis_files:createsitecontent'] = 'Create site-level content';
+$string['elis_files:viewsitecontent'] = 'View site-level content';
+$string['elis_files:createsharedcontent'] = 'Create shared content';
+$string['elis_files:viewsharedcontent'] = 'View shared content';
+$string['elis_files:createcoursecontent'] = 'Create course-level content';
+$string['elis_files:viewcoursecontent'] = 'View course-level content';
+$string['elis_files:createowncontent'] = 'Create personal content';
+$string['elis_files:viewowncontent'] = 'View personal content';
+$string['elis_files:createusersetcontent'] = 'Create shared userset content';
+$string['elis_files:viewusersetcontent'] = 'View shared userset content';
 $string['elis_files_category_filter'] = 'Choose the categories available when filtering search results';
 $string['elis_files_default_admin_username'] = 'Default: moodleadmin';
 $string['elis_files_default_alfresco_version'] = 'Default: None';

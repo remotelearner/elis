@@ -2290,7 +2290,7 @@ function elis_files_set_permission($username, $uuid, $role, $capability) {
 
 
 /**
- * Rename a node in Alfrecso, keeping all other data intact.
+ * Rename a node in Alfresco, keeping all other data intact.
  *
  * @param string $uuid    The node UUID value.
  * @param string $newname The new name value for the node.
