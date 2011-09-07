@@ -878,7 +878,8 @@ class course_usage_summary_report extends icon_config_report {
 
         //main query
         $sql = 'SELECT COUNT(enrol.id) as num_students
-                  FROM {'. student::TABLE .'} enrol';
+                  FROM {'. student::TABLE .'} enrol
+               ';
 
         if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
             $sql .= 'JOIN {'. user::TABLE .'} usr
