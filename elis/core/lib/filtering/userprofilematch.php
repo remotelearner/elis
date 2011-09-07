@@ -127,6 +127,7 @@ require_once($CFG->dirroot .'/elis/core/lib/filtering/text.php');
 require_once($CFG->dirroot .'/elis/core/lib/filtering/date.php');
 require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofileselect.php');
 require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofiletext.php');
+require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofiledatetime.php');
 
 define('MAX_FILTER_SUFFIX_LEN', 30); // TBD: limited by table field
 
@@ -145,6 +146,7 @@ class generalized_filter_userprofilematch {
     const filtertypedate = 'date';
     const filtertype_userprofiletext = 'userprofiletext';
     const filtertype_userprofileselect = 'userprofileselect';
+    const filtertype_userprofiledatetime = 'userprofiledatetime';
 
     /**
      * Class properties
@@ -271,6 +273,8 @@ class generalized_filter_userprofilematch {
                    => generalized_filter_userprofilematch::filtertype_userprofileselect,
                'menu'
                    => generalized_filter_userprofilematch::filtertype_userprofileselect,
+               'datetime'
+                   => generalized_filter_userprofilematch::filtertype_userprofiledatetime,
             );
 
         // Array $xoptions to append to existing options['choices']
@@ -287,9 +291,15 @@ class generalized_filter_userprofilematch {
                 }
                 $shortfields[] = $shortfieldname;
                 $this->fieldtofiltermap[$xfield->shortname]
-                    = $datatypemap[$xfield->datatype];
+                    = array_key_exists($xfield->datatype, $datatypemap)
+                      ? $datatypemap[$xfield->datatype]
+                      : generalized_filter_userprofilematch::filtertype_userprofiletext;
+                // ^default to text input - TBD??? Or create userprofiledatetime filter ???
                 $xoptions[$xfield->shortname] = $xfield->name;
                 switch ($xfield->datatype) {
+                    case 'datetime':
+                        // no options required for datetime fields
+                        break;
                     case 'text':
                         // fall-thru case!
                     case 'textarea':
@@ -417,6 +427,8 @@ class generalized_filter_userprofilematch {
                  generalized_filter_userprofilematch::filtertypetext && 
                 $this->fieldtofiltermap[$myfield] !=
                  generalized_filter_userprofilematch::filtertypedate &&
+                $this->fieldtofiltermap[$myfield] !=
+                 generalized_filter_userprofilematch::filtertype_userprofiledatetime &&
                 $this->fieldtofiltermap[$myfield] !=
                  generalized_filter_userprofilematch::filtertype_userprofiletext
                 && empty($myoptions['choices']))
