@@ -229,9 +229,13 @@ class trackuserpage extends usertrackbasepage {
     }
 
     function display_default() {
-        $id = $this->required_param('id', PARAM_INT);
-        $sort         = $this->optional_param('sort', 'idnumber', PARAM_ALPHANUM);
-        $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
+        global $OUTPUT;
+
+        $id      = $this->required_param('id', PARAM_INT);
+        $sort    = $this->optional_param('sort', 'idnumber', PARAM_ALPHANUM);
+        $dir     = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
+        $page    = $this->optional_param('page', 0, PARAM_INT);
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
 
         if (!empty($id)) {
             //print curriculum tabs if viewing from the curriculum view
@@ -240,21 +244,20 @@ class trackuserpage extends usertrackbasepage {
         }
 
         $columns = array(
-                'idnumber'    => array('header'=> get_string('student_idnumber', 'elis_program'),
-                                       'decorator' => array(new record_link_decorator('userpage',
-                                                                                      array('action'=>'view'),
-                                                                                      'userid'),
-                                                      'decorate')),
-                'name'        => array('header'=> get_string('tag_name', 'elis_program'),
-                                       'decorator' => array(new record_link_decorator('userpage',
-                                                                                      array('action'=>'view'),
-                                                                                      'userid'),
-                                                      'decorate')),
-                'email'       => array('header'=> get_string('email', 'elis_program')),
-                'manage'      => array('header'=> ''),
+                'idnumber' => array('header' => get_string('student_idnumber', 'elis_program'),
+                                    'decorator' => array(
+                                        new record_link_decorator('userpage',
+                                                array('action' => 'view'), 'userid'), 'decorate')),
+                'name'     => array('header' => get_string('tag_name', 'elis_program'),
+                                    'decorator' => array(
+                                        new record_link_decorator('userpage',
+                                                array('action' => 'view'),
+                                                'userid'),
+                                                'decorate')),
+                'email'    => array('header' => get_string('email', 'elis_program')),
+                'manage'   => array('header' => ''),
         );
 
-        // TBD
         if ($dir !== 'DESC') {
             $dir = 'ASC';
         }
@@ -266,6 +269,9 @@ class trackuserpage extends usertrackbasepage {
         }
 
         $items = usertrack::get_users($id);
+        $count = $items ? count($items) : 0;
+        $items = usertrack::get_users($id, $page, $perpage);
+        echo $OUTPUT->paging_bar($count, $page, $perpage, $this->url);
 
         $this->print_list_view($items, $columns);
 

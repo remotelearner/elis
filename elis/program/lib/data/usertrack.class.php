@@ -248,14 +248,14 @@ class usertrack extends elis_data_object {
      * @uses $CURMAN
      * @param int $trackid The track id.
      */
-    public static function get_users($trackid = 0) {
+    public static function get_users($trackid = 0, $page = 0, $perpage = 0) {
         global $DB;
 
         if (empty($DB)) {
             return NULL;
         }
 
-        if(empty($trackid) && !empty($this->trackid)) {
+        if (empty($trackid) && !empty($this->trackid)) {
             $trackid = $this->trackid;
         }
 
@@ -275,8 +275,7 @@ class usertrack extends elis_data_object {
         }
 
         $sql = $select.$tables.$join.$where./*$group.*/$sort;
-
-        return $DB->get_records_sql($sql, $params);
+        return $DB->get_records_sql($sql, $params, $page * $perpage, $perpage);
     }
 
 
