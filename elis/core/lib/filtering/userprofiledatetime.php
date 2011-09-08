@@ -26,7 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/elis/core/lib/filtering/lib.php');
+require_once($CFG->dirroot.'/elis/core/lib/filtering/date.php');
 
 /**
  * Generic filter based on a date.

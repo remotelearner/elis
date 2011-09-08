@@ -38,6 +38,15 @@ class generalized_filter_date extends generalized_filter_type {
 
     var $_field;
 
+    /**
+     * the timezone to use for date labels with default
+     */
+    var $_timezone = 99;
+
+    /**
+     * the format for date labels with default
+     */
+    var $_dateformat = '';
 
     /**
      * Boolean set from options['never_included'],
@@ -60,6 +69,12 @@ class generalized_filter_date extends generalized_filter_type {
         $this->_field = $field;
         if (isset($options['never_included'])) {
             $this->_never_included = $options['never_included'];
+        }
+        if (isset($options['timezone'])) {
+            $this->_timezone = $options['timezone'];
+        }
+        if (isset($options['dateformat'])) {
+            $this->_dateformat = $options['dateformat'];
         }
     }
 
@@ -154,8 +169,8 @@ class generalized_filter_date extends generalized_filter_type {
 
         $a = new object();
         $a->label  = $this->_label;
-        $a->after  = userdate($after);
-        $a->before = userdate($before);
+        $a->after  = userdate($after, $this->_dateformat, $this->_timezone);
+        $a->before = userdate($before, $this->_dateformat, $this->_timezone);
 
         if ($never) {
             $strnever = ' ('. get_string('includenever', 'filters') .')';
