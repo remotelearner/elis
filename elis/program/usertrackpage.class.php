@@ -303,9 +303,7 @@ class trackuserpage extends usertrackbasepage {
 
         echo <<<EOD
 <div align="center"><br />
-<a href="javascript:null;" onclick='return openpopup(null,$jsondata);'>
-$title
-</a>
+<input type="button" onclick='return openpopup(null,$jsondata);' value="{$title}"/>
 </div>
 EOD;
 
