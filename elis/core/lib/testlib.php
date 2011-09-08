@@ -83,12 +83,20 @@ class overlay_database extends moodle_database {
      * is the table name (without prefix), and the value is the component where
      * the table's structure is defined (in its db/install.xml file),
      * e.g. 'moodle', or 'block_foo'.
+     * @param array $ignoretables an array of tables that will be ignored for
+     * writes.  Normally, writes to non-overlay tables will result in an
+     * exception being thrown.  If a table is specified here, the write will be
+     * ignored instead.  Only use this if you are certain that all writes to
+     * this table will be no-ops.  The array is an associative array where the
+     * key is the table name (without prefix).  The value can be anything (but
+     * it's probably best to do use the same format as $overlaytables)
      * @param string $overlayprefix the prefix to use for the dummy tables
      */
-    public function __construct(moodle_database $basedb, array $overlaytables, $overlayprefix='ovr_') {
+    public function __construct(moodle_database $basedb, array $overlaytables, array $ignoretables, $overlayprefix='ovr_') {
         parent::__construct($basedb->external);
         $this->basedb = $basedb;
         $this->overlaytables = $overlaytables;
+        $this->ignoretables = $ignoretables;
         $this->pattern = '/{('.implode('|', array_keys($this->overlaytables)).')}/';
         $this->overlayprefix = $overlayprefix;
         $this->temptables = $basedb->temptables;
@@ -272,9 +280,19 @@ class overlay_database extends moodle_database {
         return $this->basedb->get_fieldset_sql($this->fix_overlay_table_names($sql), $params);
     }
 
-    public function insert_record_raw($table, $params, $returnid=true, $bulk=false, $customsequence=false) {
+    private function check_table_writable($table) {
         if (!isset($this->overlaytables[$table])) {
+            if (isset($this->ignoretables[$table])) {
+                return null;
+            }
             throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
+        }
+        return true;
+    }
+
+    public function insert_record_raw($table, $params, $returnid=true, $bulk=false, $customsequence=false) {
+        if ($this->check_table_writable($table) === null) {
+            return true;
         }
 
         $cacheprefix = $this->basedb->prefix;
@@ -285,8 +303,8 @@ class overlay_database extends moodle_database {
     }
 
     public function insert_record($table, $dataobject, $returnid=true, $bulk=false) {
-        if (!isset($this->overlaytables[$table])) {
-            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
+        if ($this->check_table_writable($table) === null) {
+            return true;
         }
 
         $cacheprefix = $this->basedb->prefix;
@@ -297,8 +315,8 @@ class overlay_database extends moodle_database {
     }
 
     public function import_record($table, $dataobject) {
-        if (!isset($this->overlaytables[$table])) {
-            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
+        if ($this->check_table_writable($table) === null) {
+            return true;
         }
 
         $cacheprefix = $this->basedb->prefix;
@@ -309,8 +327,8 @@ class overlay_database extends moodle_database {
     }
 
     public function update_record_raw($table, $params, $bulk=false) {
-        if (!isset($this->overlaytables[$table])) {
-            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
+        if ($this->check_table_writable($table) === null) {
+            return true;
         }
 
         $cacheprefix = $this->basedb->prefix;
@@ -321,8 +339,8 @@ class overlay_database extends moodle_database {
     }
 
     public function update_record($table, $dataobject, $bulk=false) {
-        if (!isset($this->overlaytables[$table])) {
-            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
+        if ($this->check_table_writable($table) === null) {
+            return true;
         }
 
         $cacheprefix = $this->basedb->prefix;
@@ -333,8 +351,8 @@ class overlay_database extends moodle_database {
     }
 
     public function set_field_select($table, $newfield, $newvalue, $select, array $params=null) {
-        if (!isset($this->overlaytables[$table])) {
-            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
+        if ($this->check_table_writable($table) === null) {
+            return true;
         }
 
         $cacheprefix = $this->basedb->prefix;
@@ -345,8 +363,8 @@ class overlay_database extends moodle_database {
     }
 
     public function delete_records_select($table, $select, array $params=null) {
-        if (!isset($this->overlaytables[$table])) {
-            throw new overlay_database_exception('write_to_non_overlay_table', 'elis_core', '', $table);
+        if ($this->check_table_writable($table) === null) {
+            return true;
         }
 
         $cacheprefix = $this->basedb->prefix;
@@ -589,6 +607,13 @@ abstract class elis_database_test extends PHPUnit_Framework_TestCase {
     abstract static protected function get_overlay_tables();
 
     /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        return array();
+    }
+
+    /**
      * Clean up the temporary database tables.
      */
     public static function tearDownAfterClass() {
@@ -605,7 +630,7 @@ abstract class elis_database_test extends PHPUnit_Framework_TestCase {
         // called before each test function
         global $DB;
         self::$origdb = $DB;
-        self::$overlaydb = new overlay_database($DB, static::get_overlay_tables());
+        self::$overlaydb = new overlay_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
     }
 
     /**
@@ -647,8 +672,7 @@ abstract class elis_database_test extends PHPUnit_Framework_TestCase {
      * @param PHPUnit_Extensions_Database_DataSet_ITable $actual
      * @param string $message
      */
-    public static function assertDataSetsEqual(PHPUnit_Extensions_Database_DataSet_IDataSet $expected, PHPUnit_Extensions_Database_DataSet_IDataSet $actual, $message = 
-'')
+    public static function assertDataSetsEqual(PHPUnit_Extensions_Database_DataSet_IDataSet $expected, PHPUnit_Extensions_Database_DataSet_IDataSet $actual, $message = '')
     {
         $constraint = new PHPUnit_Extensions_Database_Constraint_DataSetIsEqual($expected);
 
