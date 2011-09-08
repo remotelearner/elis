@@ -34,63 +34,26 @@ require_once(elispm::lib('data/track.class.php'));
 /** Since class is defined within track.class.php
  *  testDataObjectsFieldsAndAssociations.php will not auto test this class
  */
-class trackassignmentTest extends PHPUnit_Framework_TestCase {
+class trackassignmentTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
-    /**
-     * The overlay database object set up by a test.
-     */
-    private static $overlaydb;
-    /**
-     * The original global $DB object.
-     */
-    private static $origdb;
-
-    /**
-     * Clean up the temporary database tables.
-     */
-    public static function tearDownAfterClass() {
-        if (!empty(self::$overlaydb)) {
-            self::$overlaydb->cleanup();
-            self::$overlaydb = null;
-        }
-        if (!empty(self::$origdb)) {
-            self::$origdb = null;
-        }
-    }
-
-    public static function setUpBeforeClass() {
-        // called before each test function
-        global $DB;
-        self::$origdb = $DB;
-        self::$overlaydb = new overlay_database($DB,
-                                      array('context'      => 'moodle',
-                                            'course'       => 'moodle',
-                                               user::TABLE => 'elis_program',
-                                            student::TABLE => 'elis_program',
-                                            pmclass::TABLE => 'elis_program',
-                                             course::TABLE => 'elis_program',
-                                              track::TABLE => 'elis_program',
-                                    trackassignment::TABLE => 'elis_program',
-                                   curriculumcourse::TABLE => 'elis_program'
-                                      )
-                               );
-    }
-
-    /**
-     * reset the $DB global
-     */
-    protected function tearDown() {
-        global $DB;
-        $DB = self::$origdb;
+    protected static function get_overlay_tables() {
+        return array(
+            'context' => 'moodle',
+            'course' => 'moodle',
+            user::TABLE => 'elis_program',
+            student::TABLE => 'elis_program',
+            pmclass::TABLE => 'elis_program',
+            course::TABLE => 'elis_program',
+            track::TABLE => 'elis_program',
+            trackassignment::TABLE => 'elis_program',
+            curriculumcourse::TABLE => 'elis_program',
+        );
     }
 
     protected function setUp() {
-        // called before each test method
-        global $DB;
-        self::$overlaydb->reset_overlay_tables();
+        parent::setUp();
         $this->setUpContextsTable();
-        $DB = self::$overlaydb;
     }
 
     /**
@@ -110,7 +73,7 @@ class trackassignmentTest extends PHPUnit_Framework_TestCase {
     protected function load_csv_data() {
         // load initial data from a CSV file
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(trackassignment::TABLE, elis::component_file('program', 'phpunit/trackassignment.csv')); // TBD: more generic 'phpunit/' . get_class($this) ???
+        $dataset->addTable(trackassignment::TABLE, elis::component_file('program', 'phpunit/trackassignment.csv'));
         $dataset->addTable(track::TABLE, elis::component_file('program', 'phpunit/track.csv'));
         $dataset->addTable(curriculumcourse::TABLE, elis::component_file('program', 'phpunit/curriculum_course.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);

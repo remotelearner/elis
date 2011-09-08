@@ -32,60 +32,37 @@ require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 require_once(elispm::lib('data/userset.class.php'));
 require_once($CFG->dirroot . '/user/profile/lib.php');
 
-class userTest extends PHPUnit_Framework_TestCase {
+class userTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
-    /**
-     * The overlay database object set up by a test.
-     */
-    private static $overlaydb;
-    /**
-     * The original global $DB object.
-     */
-    private static $origdb;
-
-    /**
-     * Clean up the temporary database tables.
-     */
-    public static function tearDownAfterClass() {
-        if (!empty(self::$overlaydb)) {
-            self::$overlaydb->cleanup();
-            self::$overlaydb = null;
-        }
-        if (!empty(self::$origdb)) {
-            self::$origdb = null;
-        }
-    }
-
-    public static function setUpBeforeClass() {
-        // called before each test function
-        global $DB;
-        self::$origdb = $DB;
-        self::$overlaydb = new overlay_database($DB,
-                                                array('context'      => 'moodle',
-                                                      'course'       => 'moodle',
-                                                      'events_queue' => 'moodle',
-                                                      'events_queue_handlers' => 'moodle',
-                                                      'user'         => 'moodle',
-                                                      'user_info_category' => 'moodle',
-                                                      'user_info_field' => 'moodle',
-                                                      'user_info_data' => 'moodle',
-                                                      field::TABLE => 'elis_core',
-                                                      field_owner::TABLE => 'elis_core',
-                                                      field_category::TABLE => 'elis_core',
-                                                      field_data_int::TABLE => 'elis_core',
-                                                      field_data_num::TABLE => 'elis_core',
-                                                      field_data_char::TABLE => 'elis_core',
-                                                      field_data_text::TABLE => 'elis_core',
-                                                      field_contextlevel::TABLE => 'elis_core',
-                                                      field_category_contextlevel::TABLE => 'elis_core',
-                                                      user::TABLE => 'elis_program',
-                                                    ));
+    protected static function get_overlay_tables() {
+        return array(
+            'context' => 'moodle',
+            'course' => 'moodle',
+            'events_queue' => 'moodle',
+            'events_queue_handlers' => 'moodle',
+            'user' => 'moodle',
+            'user_info_category' => 'moodle',
+            'user_info_field' => 'moodle',
+            'user_info_data' => 'moodle',
+            field::TABLE => 'elis_core',
+            field_owner::TABLE => 'elis_core',
+            field_category::TABLE => 'elis_core',
+            field_data_int::TABLE => 'elis_core',
+            field_data_num::TABLE => 'elis_core',
+            field_data_char::TABLE => 'elis_core',
+            field_data_text::TABLE => 'elis_core',
+            field_contextlevel::TABLE => 'elis_core',
+            field_category_contextlevel::TABLE => 'elis_core',
+            user::TABLE => 'elis_program',
+        );
     }
 
     protected function setUp() {
         global $DB;
-        self::$overlaydb->reset_overlay_tables();
+        parent::setUp();
+        $DB = self::$origdb; // setUpContextsTable needs $DB to be the real
+                             // database for get_admin()
         $this->setUpContextsTable();
         $DB = self::$overlaydb;
     }
@@ -125,11 +102,6 @@ class userTest extends PHPUnit_Framework_TestCase {
         }
     }
 
-    protected function tearDown() {
-        global $DB;
-        $DB = self::$origdb;
-    }
-
     protected function load_csv_data() {
         // load initial data from a CSV file
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
@@ -141,6 +113,8 @@ class userTest extends PHPUnit_Framework_TestCase {
         $dataset->addTable(field_category::TABLE, elis::component_file('program', 'phpunit/user_field_category.csv'));
         $dataset->addTable(field::TABLE, elis::component_file('program', 'phpunit/user_field.csv'));
         $dataset->addTable(field_owner::TABLE, elis::component_file('program', 'phpunit/user_field_owner.csv'));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
+        $dataset->addSubStrReplacement('\n', "\n");
         load_phpunit_data_set($dataset, true, self::$overlaydb);
 
         // load field data next (we need the user context ID and context level)
@@ -247,10 +221,16 @@ class userTest extends PHPUnit_Framework_TestCase {
         profile_load_data($retr);
         $this->assertEquals($src->firstname, $retr->firstname);
         $this->assertEquals($src->lastname, $retr->lastname);
-        // first text field should not be changed
-        $this->assertEquals('First text entry field', $retr->profile_field_sometext);
-        // second text field should be changed
-        $this->assertEquals($src->field_sometextfrompm, $retr->profile_field_sometextfrompm);
+
+        // check custom fields
+        $result = new moodle_recordset_phpunit_datatable('user_info_data', self::$overlaydb->get_records('user_info_data', null, '', 'id, userid, fieldid, data'));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('user_info_data', elis::component_file('program', 'phpunit/user_info_data.csv'));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
+        // only the second text field should be changed; everything else should
+        // be the same
+        $dataset->addFullReplacement('Second text entry field', 'bla');
+        $this->assertTablesEqual($dataset->getTable('user_info_data'), $result);
     }
 
     /**
@@ -315,9 +295,27 @@ class userTest extends PHPUnit_Framework_TestCase {
         $retr->reset_custom_field_list();
         $this->assertEquals($mdluser->firstname, $retr->firstname);
         $this->assertEquals($mdluser->lastname, $retr->lastname);
-        // first text field should be changed
-        $this->assertEquals($src->profile_field_sometext, $retr->field_sometext);
-        // second text field should not be changed
-        $this->assertEquals('Second text entry field', $retr->field_sometextfrompm);
+
+        // check custom fields
+        $result = new PHPUnit_Extensions_Database_DataSet_DefaultDataSet();
+        $result->addTable(new moodle_recordset_phpunit_datatable(field_data_int::TABLE, self::$overlaydb->get_recordset(field_data_int::TABLE, null, '', 'contextid, fieldid, data')));
+        //$result->addTable(new moodle_recordset_phpunit_datatable(field_data_num::TABLE, self::$overlaydb->get_recordset(field_data_num::TABLE, null, '', 'contextid, fieldid, data'));
+        $result->addTable(new moodle_recordset_phpunit_datatable(field_data_char::TABLE, self::$overlaydb->get_recordset(field_data_char::TABLE, null, '', 'contextid, fieldid, data')));
+        $result->addTable(new moodle_recordset_phpunit_datatable(field_data_text::TABLE, self::$overlaydb->get_recordset(field_data_text::TABLE, null, '', 'contextid, fieldid, data')));
+        $usercontextlevel = context_level_base::get_custom_context_level('user', 'elis_program');
+        $usercontext = get_context_instance($usercontextlevel, 103);
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable(field_data_int::TABLE, elis::component_file('program', 'phpunit/user_field_data_int.csv'));
+        //we don't have any num field data
+        //$dataset->addTable(field_data_num::TABLE, elis::component_file('program', 'phpunit/user_field_data_num.csv'));
+        $dataset->addTable(field_data_char::TABLE, elis::component_file('program', 'phpunit/user_field_data_char.csv'));
+        $dataset->addTable(field_data_text::TABLE, elis::component_file('program', 'phpunit/user_field_data_text.csv'));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
+        $dataset->addFullReplacement('##USERCTXID##', $usercontext->id);
+        $dataset->addFullReplacement('##USERCTXLVL##', $usercontextlevel);
+        // only the first text field should be changed; everything else should
+        // be the same
+        $dataset->addFullReplacement('First text entry field', $src->profile_field_sometext);
+        $this->assertDataSetsEqual($dataset, $result);
     }
 }

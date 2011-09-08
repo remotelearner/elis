@@ -34,47 +34,26 @@ require_once(elispm::lib('data/student.class.php'));
 require_once(elispm::lib('data/pmclass.class.php'));
 require_once(elispm::lib('data/course.class.php'));
 
-class studentTest extends PHPUnit_Framework_TestCase {
+class studentTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
-    /**
-     * The overlay database object set up by a test.
-     */
-    private static $overlaydb;
-    /**
-     * The original global $DB object.
-     */
-    private static $origdb;
-
-    public static function setUpBeforeClass() {
-        // called before each test function
-        global $DB;
-        self::$origdb = $DB;
-        self::$overlaydb = new overlay_database($DB, array('context' => 'moodle',
-                                                           'user' => 'moodle',
-                                                           'course' => 'moodle',
-                                                           user::TABLE => 'elis_program',
-                                                           student::TABLE => 'elis_program',
-                                                           pmclass::TABLE => 'elis_program',
-                                                           course::TABLE => 'elis_program')); 
-    }
-
-    /**
-     * Clean up the temporary database tables.
-     */
-    public static function tearDownAfterClass() {
-        if (!empty(self::$overlaydb)) {
-            self::$overlaydb->cleanup();
-            self::$overlaydb = null;
-        }
-        if (!empty(self::$origdb)) {
-            self::$origdb = null;
-        }
+    protected static function get_overlay_tables() {
+        return array(
+            'context' => 'moodle',
+            'user' => 'moodle',
+            'course' => 'moodle',
+            user::TABLE => 'elis_program',
+            student::TABLE => 'elis_program',
+            pmclass::TABLE => 'elis_program',
+            course::TABLE => 'elis_program'
+        );
     }
 
     protected function setUp() {
         global $DB;
-        self::$overlaydb->reset_overlay_tables();
+        parent::setUp();
+        $DB = self::$origdb; // setUpContextsTable needs $DB to be the real
+                             // database for get_admin()
         $this->setUpContextsTable();
         $DB = self::$overlaydb;
     }
@@ -131,7 +110,7 @@ class studentTest extends PHPUnit_Framework_TestCase {
     /**
      * Test validation of empty userid
      *
-     * @expectedException ErrorException
+     * @expectedException data_object_validation_exception
      */
     public function testStudentValidationPreventsEmptyUserid() {
         $this->load_csv_data();
@@ -144,7 +123,7 @@ class studentTest extends PHPUnit_Framework_TestCase {
     /**
      * Test validation of empty classid
      *
-     * @expectedException ErrorException
+     * @expectedException data_object_validation_exception
      */
     public function testStudentValidationPreventsEmptyClassid() {
         $this->load_csv_data();

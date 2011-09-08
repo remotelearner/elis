@@ -31,55 +31,45 @@ require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 require_once(elispm::lib('data/userset.class.php'));
 
-class usersetTest extends PHPUnit_Framework_TestCase {
+class usersetTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
-    /**
-     * The overlay database object set up by a test.
-     */
-    private static $overlaydb;
-    /**
-     * The original global $DB object.
-     */
-    private static $origdb;
-
-    /**
-     * Clean up the temporary database tables.
-     */
-    public static function tearDownAfterClass() {
-        if (!empty(self::$overlaydb)) {
-            self::$overlaydb->cleanup();
-            self::$overlaydb = null;
-        }
-        if (!empty(self::$origdb)) {
-            self::$origdb = null;
-        }
+    protected static function get_overlay_tables() {
+        return array(
+            'context'      => 'moodle',
+            'course'       => 'moodle',
+            userset::TABLE => 'elis_program',
+        );
     }
 
-    public static function setUpBeforeClass() {
-        // called before each test function
-        global $DB;
-        self::$origdb = $DB;
-        self::$overlaydb = new overlay_database($DB,
-                                      array('context'      => 'moodle',
-                                            'course'       => 'moodle',
-                                            userset::TABLE => 'elis_program'));
-    }
-
-    /**
-     * reset the $DB global
-     */
-    protected function tearDown() {
-        global $DB;
-        $DB = self::$origdb;
+    protected static function get_ignored_tables() {
+        return array(
+            // these aren't actually used, but userset::delete will run a query
+            // on them
+            clustercurriculum::TABLE => 'elis_program',
+            clustertrack::TABLE => 'elis_program',
+            clusterassignment::TABLE => 'elis_program',
+            userset_profile::TABLE => 'elis_program',
+            field_data_int::TABLE => 'elis_core',
+            field_data_num::TABLE => 'elis_core',
+            field_data_char::TABLE => 'elis_core',
+            field_data_text::TABLE => 'elis_core',
+            'block_instances' => 'moodle',
+            'block_positions' => 'moodle',
+            'filter_active' => 'moodle',
+            'filter_config' => 'moodle',
+            'comments' => 'moodle',
+            'rating' => 'moodle',
+            'cache_flags' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'role_names' => 'moodle',
+        );
     }
 
     protected function setUp() {
-        // called before each test method
-        global $DB;
-        self::$overlaydb->reset_overlay_tables();
+        parent::setUp();
         $this->setUpContextsTable();
-        $DB = self::$overlaydb;
     }
 
     /**
@@ -99,7 +89,7 @@ class usersetTest extends PHPUnit_Framework_TestCase {
     protected function load_csv_data() {
         // load initial data from a CSV file
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv')); // TBD: more generic 'phpunit/' . get_class($this) ???
+        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
@@ -151,17 +141,16 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         $src->save();
 
         // read it back
-        $retr = new userset(3, null, array(), false, array(), self::$overlaydb);
-        $this->assertEquals($src->name, $retr->name);
-        $this->assertEquals($src->display, $retr->display);
-        $this->assertEquals($src->parent, $retr->parent);
-        $this->assertEquals(3, $retr->depth);
+        $result = new moodle_recordset_phpunit_datatable(userset::TABLE, userset::find(null, array(), 0, 0, self::$overlaydb));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset_update_test_result.csv'));
+        $this->assertTablesEqual($dataset->getTable(userset::TABLE), $result);
     }
 
     /**
-     * Test that you can delete and promote sub user sets
+     * Test that you can delete and promote user subsets
      */
-    public function testDeletingRecordCanPromoteSubUserSets() {
+    public function testDeletingRecordCanPromoteUserSubsets() {
         $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
@@ -175,19 +164,17 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         $src->deletesubs = false;
         $src->delete();
 
-        // test that the record is deleted
-        $this->assertFalse(userset::exists(new field_filter('id', 2), self::$overlaydb));
-
-        // test that the child cluster is promoted
-        $retr = new userset(4, null, array(), false, array(), self::$overlaydb);
-        $this->assertEquals(0, $retr->parent);
-        $this->assertEquals(1, $retr->depth);
+        // read it back
+        $result = new moodle_recordset_phpunit_datatable(userset::TABLE, userset::find(null, array(), 0, 0, self::$overlaydb));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset_promote_test_result.csv'));
+        $this->assertTablesEqual($dataset->getTable(userset::TABLE), $result);
     }
 
     /**
-     * Test that you can delete a user set and all its sub user sets
+     * Test that you can delete a user set and all its user subsets
      */
-    public function testDeleteRecordCanDeleteSubUserSets() {
+    public function testDeleteRecordCanDeleteUserSubsets() {
         $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
@@ -201,9 +188,10 @@ class usersetTest extends PHPUnit_Framework_TestCase {
         $src->deletesubs = true;
         $src->delete();
 
-        // test that the record is deleted
-        $this->assertFalse(userset::exists(new field_filter('id', 2), self::$overlaydb));
-        // test that the child userset is deleted
-        $this->assertFalse(userset::exists(new field_filter('id', 4), self::$overlaydb));
+        // read it back
+        $result = new moodle_recordset_phpunit_datatable(userset::TABLE, userset::find(null, array(), 0, 0, self::$overlaydb));
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset_delete_subset_test_result.csv'));
+        $this->assertTablesEqual($dataset->getTable(userset::TABLE), $result);
     }
 }

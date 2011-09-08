@@ -312,9 +312,9 @@ class student extends elis_data_object {
         }
 
         //set end time based on class duration
-        $studentclass = $this->pmclass;
-        if (empty($this->id) && empty($this->endtime)) {
-            if (!empty($this->pmclass->duration)) {
+        if (empty($this->id) && empty($this->endtime) && !empty($this->classid)) {
+            $studentclass = $this->pmclass;
+            if (!empty($studentclass->duration)) {
                 $this->endtime = $this->enrolmenttime + $studentclass->duration;
             } else {
                 // no class duration -> no end time
