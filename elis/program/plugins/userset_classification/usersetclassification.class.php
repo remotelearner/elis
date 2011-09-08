@@ -76,7 +76,7 @@ class usersetclassification extends elis_data_object {
     }
 
     public function set_from_data($data) {
-        $fields = array('autoenrol_curricula', 'autoenrol_tracks', 'child_classification', 'autoenrol_groups', 'autoenrol_groupings');
+        $fields = array('autoenrol_curricula', 'autoenrol_tracks', 'child_classification', 'autoenrol_groups', 'autoenrol_groupings', 'elis_files_shared_folder');
         foreach ($fields as $field) {
             $fieldname = "param_{$field}";
             if (isset($data->$fieldname)) {
@@ -105,7 +105,7 @@ class usersetclassification extends elis_data_object {
     public function to_object() {
         $obj = parent::to_object();
 
-        $fields = array('autoenrol_curricula', 'autoenrol_tracks', 'child_classification', 'autoenrol_groups', 'autoenrol_groupings');
+        $fields = array('autoenrol_curricula', 'autoenrol_tracks', 'child_classification', 'autoenrol_groups', 'autoenrol_groupings', 'elis_files_shared_folder');
         foreach ($fields as $field) {
             $field_name = "param_{$field}";
             if (isset($this->$field_name)) {
