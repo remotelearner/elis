@@ -61,19 +61,19 @@ class usersetclassificationform extends cmform {
         $mform->addHelpButton('param_autoenrol_groupings', 'usersetclassificationform:autoenrol_groupings', 'pmplugins_userset_classification');
 
         // Add option for Alfresco shared organization space creation (if Alfresco code is present)
-        if (file_exists($CFG->dirroot . '/repository/elisfiles/repository.php') &&
-            record_exists('block', 'name', 'repository')) {
+        if (file_exists($CFG->dirroot . '/repository/elisfiles/lib.php') &&
+            record_exists('config_plugins', 'plugin', 'elis_files')) {
 
-            $mform->addElement('advcheckbox', 'param_alfresco_shared_folder',
-                               get_string('alfresco_shared_folder', 'pmplugins_userset_classification'));
+            $mform->addElement('advcheckbox', 'param_elis_files_shared_folder',
+                               get_string('elis_files_shared_folder', 'pmplugins_userset_classification'));
 
             $button = array(
-                'alfresco_shared_folder',
-                get_string('alfresco_shared_folder', 'pmplugins_userset_classification'),
+                'elis_files_shared_folder',
+                get_string('elis_files_shared_folder', 'pmplugins_userset_classification'),
                 'pmplugins_userset_classification'
             );
 
-            $mform->setHelpButton('param_alfresco_shared_folder', $button);
+            $mform->setHelpButton('param_elis_files_shared_folder', $button);
         }
 
         $recs = $DB->get_records(usersetclassification::TABLE, null, 'name ASC', 'shortname, name');

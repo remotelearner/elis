@@ -14,6 +14,7 @@ $string['classification_field_name'] = 'Userset classification';
 $string['classification_category_name'] = 'Userset classification';
 $string['cluster_classification'] = 'Userset classification';
 $string['delete_cluster_classification'] = 'Delete userset classification';
+$string['elis_files_shared_folder'] = 'Automatically create an ELIS Files userset shared folder';
 $string['manageclusterclassifications'] = 'Userset classifications';
 $string['name'] = 'Name';
 $string['same_classification'] = 'Same classification';

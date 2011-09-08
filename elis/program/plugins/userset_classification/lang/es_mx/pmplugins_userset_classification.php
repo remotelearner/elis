@@ -13,6 +13,7 @@ $string['classification_field_name'] = 'Cluster classification';
 $string['classification_category_name'] = 'Clasificación de clúster';
 $string['cluster_classification'] = 'Clasificación de clúster';
 $string['delete_cluster_classification'] = 'Eliminar clasificación de clúster';
+$string['elis_files_shared_folder'] = 'Automatically create an ELIS Files userset shared folder';
 $string['manageclusterclassifications'] = 'Clasificaciónes de clúster';
 $string['name'] = 'Nombre';
 $string['same_classification'] = 'Clasificación de la misma';
