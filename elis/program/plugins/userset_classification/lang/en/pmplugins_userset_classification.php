@@ -27,4 +27,7 @@ $string['usersetclassificationform:autoenrol_groupings_help'] = '<p>Enabling thi
    by default.</p><p>For this functionality to work, cluster grouping auto-assignment must be enabled globally for the site level and groupings must also be
    enabled on this site. This functionality does not currently extend to groups in courses.</p>';
 $string['userset_classification'] = 'Userset Classifications';
+$string['usersetclassificationform:elis_files_shared_folder'] = 'Help with create an ELIS Files userset shared folder';
+$string['usersetclassificationform:elis_files_shared_folder_help'] = '<p>Enabling this setting allows a shared folder to be created in the ELIS Files repository for this userset.</p>';
+
 
