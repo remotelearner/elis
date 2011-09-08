@@ -159,6 +159,7 @@ class moodlecourseurl {
         // Build breadcrumb of course subcategories
         $navigation['navlinks'] .= $this->buildNavLinks($category,'');
 
+        $PAGE->set_pagelayout('popup'); // TBD: embedded ??? to disable blocks
         $PAGE->set_title($site->fullname);
         $PAGE->set_heading($site->shortname);
         $PAGE->set_cacheable(true);
