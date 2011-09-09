@@ -248,7 +248,7 @@ class usertrack extends elis_data_object {
      * @uses $CURMAN
      * @param int $trackid The track id.
      */
-    public static function get_users($trackid = 0, $sort = '', $dir = '', $page = 0, $perpage = 0) {
+    public static function get_users($trackid = 0, $sort = '', $dir = 'ASC', $page = 0, $perpage = 0) {
         global $DB;
 
         if (empty($DB)) {
