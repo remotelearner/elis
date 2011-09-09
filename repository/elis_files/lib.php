@@ -47,7 +47,7 @@ class repository_elis_files extends repository {
     private $ticket = null;
     private $user_session = null;
     private $store = null;
-    private $elis_files;
+    public $elis_files;
     var $config   = null; // Config options for ELIS files
 
 
@@ -192,7 +192,6 @@ class repository_elis_files extends repository {
         $ret = array();
         // Return an array of optional columns from file list to include in the details view
         // Icon and filename are always displayed
-        $title_datecreated =
         $ret['detailcols'] = array(array('field'=>'created',
                                          'title'=>get_string('datecreated','repository_elis_files')),
                                    array('field'=>'modified',
@@ -373,6 +372,8 @@ class repository_elis_files extends repository {
         $ret['path'][] = array ('name'=>$this->current_node->title,
                                 'path'=>$uuid);
 
+        $ret['thisuuid'] = $uuid;
+
         $children = elis_files_read_dir($this->current_node->uuid);
 //            print_object($children);
         foreach ($children->folders as $child) {
@@ -506,6 +507,19 @@ class repository_elis_files extends repository {
         return $str;
     }
 
+    public function print_newdir_popup($uuid) {
+        global $CFG;
+
+        $str = '<div>
+                        <input type="hidden" id="parentuuid" name="parentuuid" value="'.$uuid.'">
+                        <input type="text" id="newdirname" name="newdirname"/>
+                        <br><br>
+                        <input id="okButton" type="button" default="default" value="OK" />
+                        <input id="cancelButton" type="button" value="Cancel" />
+                        </div>';
+
+        return $str;
+    }
     public function print_upload_popup() {
         global $CFG;
 

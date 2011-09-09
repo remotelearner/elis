@@ -368,7 +368,7 @@ class ELIS_files {
 		$alfresco_version = elis_files_get_repository_version();
 
 		if ($alfresco_version == '3.2.1') {
-			return $this->root
+			return $this->root;
     	} else { // Alfresco 3.4
         	if (!$root = $this->cmis->getObjectByPath('/')) {
             	return false;
@@ -1699,8 +1699,8 @@ require_once($CFG->libdir . '/filelib.php');
 
         // Make sure that the optional table we are about to check actually exists.
         $table = new XMLDBTable('crlm_cluster');
-
-        if (!table_exists($table)) {
+        $manager = $DB->get_manager();
+        if (!$manager->table_exists($table)) {
             return false;
         }
 
@@ -1718,7 +1718,7 @@ require_once($CFG->libdir . '/filelib.php');
 
         if (!empty($uuid)) {
             // Store the UUID value if it hasn't been stored already.
-            if (!record_exists('elis_files_userset_store', 'usersetid', $oid)) {
+            if (!$DB->record_exists('elis_files_userset_store', array('usersetid'=> $oid))) {
                 $usersetstore = new stdClass;
                 $usersetstore->usersetid = $oid;
                 $usersetstore->uuid           = $uuid;
@@ -2612,7 +2612,7 @@ require_once($CFG->libdir . '/filelib.php');
         // Only allow userset views/edits to those users who have the capability
         if ($viewalfuserset  || $editalfuserset) {
             // Get usersets folders to which the users belongs
-            if ($userset_folders = $this->find_userset_folders($USER->id, $USER->username)) {
+            if ($userset_folders = $this->find_userset_folders($USER->id, $USER->username, $context)) {
                 foreach ($userset_folders as $name => $uuid) {
                     if ($editalfuserset) {
                         if (!elis_files_has_permission($uuid, $USER->username, true)) {
@@ -2653,10 +2653,11 @@ require_once($CFG->libdir . '/filelib.php');
  * @param string $username The Moodle user name.
  * @return array Alfresco repository folder names.
  */
-    function find_userset_folders($muserid,$username) {
+    function find_userset_folders($muserid,$username, $context) {
         global $CFG, $DB;
 
         require_once($CFG->libdir . '/ddllib.php');
+//        require_once($CFG->dirroot.'/elis/program/lib/lib.php');
 
         // Ensure that the cluster table actually exists before we query it.
         $table = new XMLDBTable('crlm_cluster');
@@ -2676,11 +2677,18 @@ require_once($CFG->libdir . '/filelib.php');
         require_once($CFG->dirroot . '/elis/program/plugins/userset_classification/usersetclassification.class.php');
         require_once($CFG->dirroot . '/elis/program/lib/data/userset.class.php');
 
+        // Get cm userid
+        $userid = pm_get_crlmuserid($muserid);
         // Get user clusters
-        if ($clusters = cluster_get_user_clusters($muserid)) {
-           if (!$cluster_info = $this->load_cluster_info($clusters, $muserid)) {
-               return false;
-           }
+//        echo '<br>muserid: '.$muserid.' cm userid: '.$userid;
+        $clusters = cluster_get_user_clusters($userid);
+        if ($clusters->valid()) {
+//            echo '<br>clusters for userid: '.$userid.' : ';
+//            print_object($clusters);
+//            $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
+            if (!$cluster_info = $this->load_cluster_info($clusters, $userid)) {
+                return false;
+            }
         } else {
             return false;
         }
@@ -2723,7 +2731,7 @@ require_once($CFG->libdir . '/filelib.php');
     function load_cluster_info($clusterinfo, $muserid) {
         global $DB;
 
-        if (is_int($clusterinfo) || is_numeric($clusterinfo)) {
+       /* if (is_int($clusterinfo) || is_numeric($clusterinfo)) {
             if (!isset($cluster_data)) {
                 $cluster_data = array();
             }
@@ -2731,14 +2739,15 @@ require_once($CFG->libdir . '/filelib.php');
                 $ucid = 0;
             }
             $cluster_data[$ucid] = new cluster($clusterinfo);
-        } else if (is_array($clusterinfo)) {
+        } else */
+//        if (is_array($clusterinfo)) {
             foreach ($clusterinfo as $ucid => $usercluster) {
                 if (!isset($cluster_data)) {
                     $cluster_data = array();
                 }
-                $cluster_data[$ucid] = new cluster($usercluster->clusterid);
+                $cluster_data[$ucid] = new userset($usercluster->clusterid);
             }
-        }
+//        }
         return $cluster_data;
     }
 /**
