@@ -424,7 +424,7 @@ abstract class php_report {
                 $icon = 'f/'.mimeinfo('icon', "foo.$allowable_export_format");
 
                 //start of anchor for link
-                $result .= html_writer::start_tag('a', array('href' => $export_url));
+                $result .= html_writer::start_tag('a', array('href' => $export_url, 'target' => '_blank'));
                 //icon
                 $result .= html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url($icon),
                                                                'border' => 0,
