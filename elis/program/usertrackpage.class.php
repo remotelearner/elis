@@ -270,7 +270,7 @@ class trackuserpage extends usertrackbasepage {
 
         $items = usertrack::get_users($id);
         $count = $items ? count($items) : 0;
-        $items = usertrack::get_users($id, $page, $perpage);
+        $items = usertrack::get_users($id, $sort, $dir, $page, $perpage);
         echo $OUTPUT->paging_bar($count, $page, $perpage, $this->url);
 
         $this->print_list_view($items, $columns);

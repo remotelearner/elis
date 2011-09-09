@@ -248,7 +248,7 @@ class usertrack extends elis_data_object {
      * @uses $CURMAN
      * @param int $trackid The track id.
      */
-    public static function get_users($trackid = 0, $page = 0, $perpage = 0) {
+    public static function get_users($trackid = 0, $sort = '', $dir = '', $page = 0, $perpage = 0) {
         global $DB;
 
         if (empty($DB)) {
@@ -266,7 +266,14 @@ class usertrack extends elis_data_object {
             'ON usr.id = usrtrk.userid ';
         $where   = 'WHERE usrtrk.trackid = ? ';
         //$group   = 'GROUP BY usrtrk.id ';
-        $sort    = 'ORDER BY name ASC ';
+        if ($sort) {
+            if ($dir != 'ASC') {
+                $dir = 'DESC';
+            }
+            $sort = 'ORDER BY '. $sort .' '. $dir .' ';
+        } else {
+            $sort = 'ORDER BY name ASC ';
+        }
 
         $params = array($trackid);
 
