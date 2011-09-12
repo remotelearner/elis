@@ -15,7 +15,9 @@ $string['class_paging_label'] = 'Class';
 $string['class_progress'] = 'All students in this class: {$a}% of enrolled students have completed this class';
 
 $string['column_completestatus'] = 'Status';
+$string['column_firstname'] = 'Firstname';
 $string['column_fullname'] = 'Student';
+$string['column_lastname'] = 'Lastname';
 $string['column_numcompleted'] = '# Complete';
 $string['column_percentcomplete'] = '% Complete';
 $string['column_score'] = 'Score';

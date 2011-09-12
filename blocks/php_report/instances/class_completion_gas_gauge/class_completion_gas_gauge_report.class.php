@@ -210,9 +210,17 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
                                              'completestatus'
                                             ),
                      new table_report_column('u.firstname',
-                                             get_string('column_fullname', $this->lang_file),
-                                             'fullname'
-                                            ),
+                             get_string('column_fullname', $this->lang_file),
+                             'fullname', 'left', true, true, true,
+                             array(php_report::$EXPORT_FORMAT_PDF, php_report::$EXPORT_FORMAT_HTML)),
+                     new table_report_column('u.lastname',
+                             get_string('column_lastname', $this->lang_file),
+                             'fullname', 'left', true, true, true,
+                             array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
+                     new table_report_column('u.firstname AS userfirstname',
+                             get_string('column_firstname', $this->lang_file),
+                             'fullname', 'left', true, true, true,
+                             array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
                      new table_report_column('0 AS percentcomplete',
                                              get_string('column_percentcomplete', $this->lang_file),
                                              'percentcomplete', 'right', false, true, true,
@@ -294,7 +302,11 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         //calculates the condition imposed by the current top-level page
         $page_value_condition = $this->get_page_value_condition('cls.id');
 
-        $sql = "SELECT {$columns}, u.lastname, COUNT(cc.id) AS numcompletionelements, u.id AS cmuserid, gi.grademax
+        $lastname = 'u.lastname';
+        if (stripos($columns, $lastname) === FALSE) {
+            $columns .= ", {$lastname}";
+        }
+        $sql = "SELECT {$columns}, COUNT(cc.id) AS numcompletionelements, u.id AS cmuserid, gi.grademax
                 FROM {". user::TABLE .'} u
                 JOIN {'. student::TABLE .'} stu
                     ON u.id = stu.userid
@@ -354,7 +366,8 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
             //convert user name to their full name and link to the CM user page for that user
             $userpage = new userpage(array('id' => $record->cmuserid, 'action' => 'view'));
             $record->firstname = '<span class="external_report_link"><a href="'. $userpage->url .'" target="_blank">'. fullname($record) .'</a></span>';
-        } else {
+        } else if ($export_format != php_report::$EXPORT_FORMAT_CSV &&
+                   $export_format != php_report::$EXPORT_FORMAT_EXCEL) {
             $record->firstname = fullname($record);
         }
 
