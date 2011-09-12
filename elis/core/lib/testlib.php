@@ -92,7 +92,7 @@ class overlay_database extends moodle_database {
      * it's probably best to do use the same format as $overlaytables)
      * @param string $overlayprefix the prefix to use for the dummy tables
      */
-    public function __construct(moodle_database $basedb, array $overlaytables, array $ignoretables, $overlayprefix='ovr_') {
+    public function __construct(moodle_database $basedb, array $overlaytables, array $ignoretables=array(), $overlayprefix='ovr_') {
         parent::__construct($basedb->external);
         $this->basedb = $basedb;
         $this->overlaytables = $overlaytables;
