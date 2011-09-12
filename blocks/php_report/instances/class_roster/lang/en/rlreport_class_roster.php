@@ -7,8 +7,8 @@ $string['class_roster_courseclass_help'] = '<p align="center"><b>Class Roster Re
 
 $string['column_email'] = 'Email';
 $string['column_student'] = 'Student';
-$string['column_student_firstname'] = 'Student Firstname';
-$string['column_student_lastname'] = 'Student Lastname';
+$string['column_student_firstname'] = 'Firstname';
+$string['column_student_lastname'] = 'Lastname';
 
 $string['displayname'] = 'Class Roster Report';
 

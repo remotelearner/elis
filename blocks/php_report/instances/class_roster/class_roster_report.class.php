@@ -130,9 +130,19 @@ class class_roster_report extends table_report {
      * @return  table_report_column array  The list of report columns
      */
     function get_columns() {
-        return array(new table_report_column('usr.lastname AS r_student',
-                                             get_string('column_student', $this->lang_file),
-                                             'cssstudent', 'left', true),
+        return array(
+                     new table_report_column('usr.lastname AS r_student',
+                             get_string('column_student', $this->lang_file),
+                             'cssstudent', 'left', true, true, true,
+                             array(php_report::$EXPORT_FORMAT_PDF, php_report::$EXPORT_FORMAT_HTML)),
+                     new table_report_column('usr.lastname AS lastname',
+                             get_string('column_student_lastname', $this->lang_file),
+                             'cssstudent', 'left', true, true, true,
+                             array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
+                     new table_report_column('usr.firstname AS firstname',
+                             get_string('column_student_firstname', $this->lang_file),
+                             'cssstudent', 'left', true, true, true,
+                             array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
                      new table_report_column('usr.email AS r_email',
                                              get_string('column_email', $this->lang_file),
                                              'cssemail', 'left', true)
@@ -252,11 +262,12 @@ class class_roster_report extends table_report {
         $user->lastname = $record->r_student;
         $fullname = fullname($user);
 
-        $userpage = new userpage(array('id' => $record->cmuserid, 'action' => 'view'));
         if ($export_format == php_report::$EXPORT_FORMAT_HTML) {
+            $userpage = new userpage(array('id' => $record->cmuserid, 'action' => 'view'));
             $record->r_student = '<span class="external_report_link"><a href="'
                                  . $userpage->url .'">' . $fullname .'</a></span>';
-        } else {
+        } else if ($export_format != php_report::$EXPORT_FORMAT_CSV &&
+                   $export_format != php_report::$EXPORT_FORMAT_EXCEL) {
             $record->r_student = $fullname;
         }
 
@@ -285,8 +296,11 @@ class class_roster_report extends table_report {
             $params = $filter_sql['where_parameters'];
         }
 
-
-        $sql = "SELECT {$columns}, usr.firstname AS firstname, usr.id AS cmuserid
+        $firstname = 'usr.firstname AS firstname';
+        if (stripos($columns, $firstname) === FALSE) {
+            $columns .= ", {$firstname}";
+        }
+        $sql = "SELECT {$columns}, usr.id AS cmuserid
                 FROM {". student::TABLE .'} clsenr
                 JOIN {'. user::TABLE .'} usr
                     ON usr.id = clsenr.userid
