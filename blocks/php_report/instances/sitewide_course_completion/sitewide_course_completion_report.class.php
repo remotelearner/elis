@@ -199,10 +199,19 @@ class sitewide_course_completion_report extends table_report {
                                WHERE courseid = crs.id
                               ";
 
-        $columns = array(new table_report_column('usr.lastname AS r_student',
-                                                 get_string('column_student', $this->lang_file),
-                                                 'cssstudent', 'left', true
-                                                ),
+        $columns = array(
+                         new table_report_column('usr.lastname AS r_student',
+                                 get_string('column_student', $this->lang_file),
+                                 'cssstudent', 'left', true, true, true,
+                                 array(php_report::$EXPORT_FORMAT_PDF, php_report::$EXPORT_FORMAT_HTML)),
+                         new table_report_column('usr.lastname AS lastname',
+                                 get_string('column_student_lastname', $this->lang_file),
+                                 'cssstudent', 'left', true, true, true,
+                                 array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
+                         new table_report_column('usr.firstname AS firstname',
+                                 get_string('column_student_firstname', $this->lang_file),
+                                 'cssstudent', 'left', true, true, true,
+                                 array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
                          new table_report_column('clsenr.completestatusid != 0 AS r_status',
                                                  get_string('column_status', $this->lang_file),
                                                  'cssstatus', 'left', true
@@ -308,10 +317,13 @@ class sitewide_course_completion_report extends table_report {
      * @return  stdClass                  The reformatted record
      */
     function transform_record($record, $export_format) {
-        $user = new stdClass;
-        $user->firstname = $record->firstname;
-        $user->lastname = $record->r_student;
-        $record->r_student = fullname($user);
+        if ($export_format != php_report::$EXPORT_FORMAT_CSV &&
+            $export_format != php_report::$EXPORT_FORMAT_EXCEL) {
+            $user = new stdClass;
+            $user->firstname = $record->firstname;
+            $user->lastname = $record->r_student;
+            $record->r_student = fullname($user);
+        }
 
         if (empty($record->r_elements)) {
             $record->r_elements = '0';
@@ -403,9 +415,11 @@ class sitewide_course_completion_report extends table_report {
             $where[] = 'usr.inactive = 0';
         }
 
-        $sql = "SELECT {$columns},
-                    cur.id IS NULL AS isnull,
-                    usr.firstname as firstname
+        $firstname = 'usr.firstname AS firstname';
+        if (stripos($columns, $firstname) === FALSE) {
+            $columns .= ", {$firstname}";
+        }
+        $sql = "SELECT {$columns}, cur.id IS NULL AS isnull
                 FROM {". pmclass::TABLE ."} cls
                 JOIN {". course::TABLE ."} crs
                     ON crs.id = cls.courseid
