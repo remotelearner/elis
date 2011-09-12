@@ -175,10 +175,17 @@ class curricula_report extends table_report {
                                              'left',
                                               false),
                      new table_report_column("u.lastname AS lastname",
-                                              get_string('column_name', 'rlreport_curricula'),
-                                             'student',
-                                             'left',
-                                              false),
+                             get_string('column_name', 'rlreport_curricula'),
+                             'student', 'left', false, true, true,
+                             array(php_report::$EXPORT_FORMAT_PDF, php_report::$EXPORT_FORMAT_HTML)),
+                     new table_report_column("u.lastname AS userlastname",
+                             get_string('column_lastname', 'rlreport_curricula'),
+                             'student_lastname', 'left', false, true, true,
+                             array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
+                     new table_report_column("u.firstname AS firstname",
+                             get_string('column_firstname', 'rlreport_curricula'),
+                             'student_firstname', 'left', false, true, true,
+                             array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
                      new table_report_column('cc.name AS curname',
                                               get_string('column_curriculum_name', 'rlreport_curricula'),
                                              'curriculum_name',
@@ -308,7 +315,11 @@ class curricula_report extends table_report {
             $params = $filter_sql['where_parameters'];
         }
 
-        $report_sql = "SELECT {$columns}, u.firstname AS firstname, crlmu.id as userid, curass.completed AS completed,
+        $firstname = 'u.firstname AS firstname';
+        if (stripos($columns, $firstname) === FALSE) {
+            $columns .= ", {$firstname}";
+        }
+        $report_sql = "SELECT {$columns}, crlmu.id as userid, curass.completed AS completed,
         ". $DB->sql_concat('crlmu.lastname',"' '","COALESCE(crlmu.mi, '')","' '",'crlmu.firstname') .' as sortname
                 FROM {'. curriculumstudent::TABLE .'} curass
                        JOIN {'. user::TABLE .'} crlmu
@@ -370,11 +381,10 @@ class curricula_report extends table_report {
 
         // Currently CSV does not do grouping headings, so convert fullname here
 
-
-        if ($export_format == php_report::$EXPORT_FORMAT_CSV) {
-            $fullname = fullname($new_record);
-            $new_record->lastname = $fullname;
-        }
+        //if ($export_format == php_report::$EXPORT_FORMAT_CSV) {
+        //    $fullname = fullname($new_record);
+        //    $new_record->lastname = $fullname;
+        //}
 
         return $new_record;
     }
@@ -409,7 +419,8 @@ class curricula_report extends table_report {
             $element->lastname = "<span class=\"external_report_link\">
                              <a href=\"{$single_student_report_url}\">{$fullname}</a>
                              </span>";
-        } else {
+        } else if ($export_format != php_report::$EXPORT_FORMAT_CSV &&
+                   $export_format != php_report::$EXPORT_FORMAT_EXCEL) {
             $element->lastname = $fullname;
         }
 

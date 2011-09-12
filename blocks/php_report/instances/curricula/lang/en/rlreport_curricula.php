@@ -5,7 +5,9 @@ $string['column_credits_required'] = 'Credits Required';
 $string['column_credits_completed'] = 'Credits Completed';
 $string['column_curriculum_name'] = 'Curriculum';
 $string['column_expires'] = 'Expires';
+$string['column_firstname'] = 'Firstname';
 $string['column_idnumber'] = 'ID Number';
+$string['column_lastname'] = 'Lastname';
 $string['column_name'] = 'User Name';
 $string['column_transfer_credits'] = 'Transfer Credits';
 
