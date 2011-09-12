@@ -255,7 +255,11 @@ class nonstarter_report extends table_report {
      * @return  stdClass                  The reformatted record
      */
     function transform_record($record, $export_format) {
-        $record->lastname = fullname($record);
+        if ($export_format != php_report::$EXPORT_FORMAT_CSV &&
+            $export_format != php_report::$EXPORT_FORMAT_EXCEL) {
+            $record->lastname = fullname($record);
+            //unset($record->firstname);
+        }
         return $record;
     }
 
@@ -290,8 +294,12 @@ class nonstarter_report extends table_report {
         // Only want users with not-complete status
         $stustatus = STUSTATUS_NOTCOMPLETE;
 
+        $firstname = 'u.firstname AS firstname';
+        if (stripos($columns, $firstname) === FALSE) {
+            $columns .= ", {$firstname}";
+        }
         // Also require Moodle-Only query w/o CM tables!
-        $sql = "SELECT {$columns}, u.firstname as firstname
+        $sql = "SELECT {$columns}
            FROM {crlm_curriculum} cur
            JOIN {crlm_curriculum_course} curcrs ON curcrs.curriculumid = cur.id
            JOIN {crlm_course} crs ON crs.id = curcrs.courseid
@@ -378,7 +386,9 @@ class nonstarter_report extends table_report {
      */
     function get_columns() {
         return array(
-            new table_report_column('u.lastname AS lastname', get_string('column_studentname', 'rlreport_nonstarter'), 'studentname', 'left', true),
+            new table_report_column('u.lastname AS lastname', get_string('column_studentname', 'rlreport_nonstarter'), 'studentname', 'left', true, true, true, array(php_report::$EXPORT_FORMAT_PDF, php_report::$EXPORT_FORMAT_HTML)),
+            new table_report_column('u.lastname AS studentlastname', get_string('column_studentlastname', 'rlreport_nonstarter'), 'studentlastname', 'left', true, true, true, array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
+            new table_report_column('u.firstname AS firstname', get_string('column_studentfirstname', 'rlreport_nonstarter'), 'studentfirstname', 'left', true, true, true, array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
             new table_report_column('u.idnumber AS idnumber', get_string('column_idnumber', 'rlreport_nonstarter'), 'idnumber', 'left', true)
         );
     }

@@ -1,6 +1,8 @@
 <?php
 
 $string['column_idnumber'] = 'ID Number';
+$string['column_studentfirstname'] = 'Firstname';
+$string['column_studentlastname'] = 'Lastname';
 $string['column_studentname'] = 'Student Name';
 $string['column_userrole'] = 'User Role';
 $string['date_format'] = '%m/%d/%Y';

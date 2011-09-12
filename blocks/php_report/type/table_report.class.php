@@ -207,6 +207,7 @@ abstract class table_report extends php_report {
             //use these as a default
             $this->columnexportformats[$id] = array(php_report::$EXPORT_FORMAT_CSV,
                                                     php_report::$EXPORT_FORMAT_EXCEL,
+                                                    php_report::$EXPORT_FORMAT_HTML,
                                                     php_report::$EXPORT_FORMAT_PDF);
         }
         $this->aggregation_sql[$id] = $aggregation_sql;
@@ -247,7 +248,8 @@ abstract class table_report extends php_report {
         $this->horizontalbarheight[$id] = $height;
 
         //bar graphs only supported in PDF export format
-        $this->columnexportformats[$id] = array(php_report::$EXPORT_FORMAT_PDF);
+        $this->columnexportformats[$id] = array(php_report::$EXPORT_FORMAT_PDF,
+                                                php_report::$EXPORT_FORMAT_HTML);
     }
 
     /**
@@ -488,7 +490,7 @@ abstract class table_report extends php_report {
         }
 
         $this->print_report_title();
-        $this->generate_column_headers();
+        $this->generate_column_headers(php_report::$EXPORT_FORMAT_HTML);
         // Multiple level grouping initialization
         $grouping_object = $this->initialize_groupings();
 
@@ -519,7 +521,8 @@ abstract class table_report extends php_report {
 
 
             // Get a row of data
-            $this->table->data[] = $this->get_row_content($datum);
+            $this->table->data[] = $this->get_row_content($datum, false,
+                                              php_report::$EXPORT_FORMAT_HTML);
         }
 
         $this->table->width = '100%';
@@ -535,12 +538,17 @@ abstract class table_report extends php_report {
 
     /**
      * Generate report headers
+     *
+     * @param $exportformat  the desired export format, null (default) for any.
      */
-    function generate_column_headers() {
+    function generate_column_headers($exportformat = null) {
         global $CFG, $OUTPUT;
 
         foreach ($this->headers as $column => $header) {
-
+            if ($exportformat && !in_array($exportformat,
+                                           $this->columnexportformats[$column])) {
+                continue;
+            }
             $this->table->headercolumncss[] = empty($this->css_identifiers[$column]) ? 'php_report_header_entry' : "php_report_header_entry php_report_column_{$this->css_identifiers[$column]}";
             $this->table->columncss[]       = empty($this->css_identifiers[$column]) ? 'php_report_body_entry' :   "php_report_body_entry   php_report_column_{$this->css_identifiers[$column]}";
 
@@ -750,7 +758,7 @@ abstract class table_report extends php_report {
                             //"Below" position with per-column data
                             $datum_group_copy = clone($datum_group);
                             $datum_group_copy = $this->transform_grouping_header_record($datum_group_copy, $datum, php_report::$EXPORT_FORMAT_HTML);
-                            $grouping_display_text = $this->get_row_content($datum_group_copy, $grouping_row);
+                            $grouping_display_text = $this->get_row_content($datum_group_copy, $grouping_row, php_report::$EXPORT_FORMAT_HTML);
                             $this->add_grouping_table_row($grouping_display_text, false, false, 'php_report_table_row',$index);
                             //$current_key++;
                         } else {
@@ -851,7 +859,7 @@ abstract class table_report extends php_report {
      * @params  $datum  array of current data for this row
      * @return  $row    array of output
      */
-    function get_row_content ($datum, $grouping_row=false, $export_format=null) {
+    function get_row_content($datum, $grouping_row=false, $export_format=null) {
         global $CFG;
 
         $row = array();
@@ -860,6 +868,11 @@ abstract class table_report extends php_report {
             $row = 'hr';
         } else {
             foreach ($this->headers as $id => $header) {
+                if ($export_format && !in_array($export_format,
+                                                $this->columnexportformats[$id])) {
+                    continue;
+                }
+
                 //remove everything before AS where applicable
                 $effective_id = $this->get_object_index($id);
 
@@ -2207,6 +2220,7 @@ class table_report_column {
             //sane defaults
             $this->columnexportformats = array(php_report::$EXPORT_FORMAT_CSV,
                                                php_report::$EXPORT_FORMAT_EXCEL,
+                                               php_report::$EXPORT_FORMAT_HTML,
                                                php_report::$EXPORT_FORMAT_PDF);
         }
         $this->aggregation_sql = $aggregation_sql;
