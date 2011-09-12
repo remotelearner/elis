@@ -3,7 +3,9 @@
 
 $string['column_class'] = 'Class';
 $string['column_completestatus'] = 'Status';
+$string['column_firstname'] = 'Firstname';
 $string['column_fullname'] = 'Student';
+$string['column_lastname'] = 'Lastname';
 $string['column_numcompleted'] = '# Complete';
 $string['column_percentcomplete'] = '% Complete';
 $string['column_score'] = 'Score';
