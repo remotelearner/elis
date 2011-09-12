@@ -257,7 +257,11 @@ class course_completion_by_cluster_report extends table_report {
 
         //user fullname
         $name_heading = get_string('column_user_name', 'rlreport_course_completion_by_cluster');
-        $name_column = new table_report_column('user.firstname', $name_heading, 'user_name');
+        $name_column = new table_report_column('user.firstname', $name_heading, 'user_name', 'left', false, true, true, array(php_report::$EXPORT_FORMAT_PDF, php_report::$EXPORT_FORMAT_HTML));
+        $lastname_heading = get_string('column_lastname', 'rlreport_course_completion_by_cluster');
+        $lastname_column = new table_report_column('user.lastname', $lastname_heading, 'user_name', 'left', false, true, true, array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL));
+        $firstname_heading = get_string('column_lastname', 'rlreport_course_completion_by_cluster');
+        $firstname_column = new table_report_column('user.firstname AS userfirstname', $firstname_heading, 'user_name', 'left', false, true, true, array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL));
 
         //CM course name
         $course_heading = get_string('column_course', 'rlreport_course_completion_by_cluster');
@@ -272,7 +276,7 @@ class course_completion_by_cluster_report extends table_report {
         $class_column = new table_report_column('class.idnumber AS classidnumber', $class_heading, 'class');
 
         //array of all columns
-        $result = array($idnumber_column, $name_column, $course_column, $required_column, $class_column);
+        $result = array($idnumber_column, $name_column, $lastname_column, $firstname_column, $course_column, $required_column, $class_column);
 
         //add the enrolment status column if applicable, based on the filter
         if ($show_status) {
@@ -309,8 +313,7 @@ class course_completion_by_cluster_report extends table_report {
         $noncurriculum_columns = str_replace('curriculum.id', 'NULL', $columns);
 
         //extra column needed for the curriculum-specific records
-        $extra_curriculum_columns = 'user.lastname,
-                                     COUNT(course_completion.id) AS numtotal,
+        $extra_curriculum_columns = 'COUNT(course_completion.id) AS numtotal,
                                      enrol.id AS enrolid,
                                      class.id AS classid,
                                      cluster.id AS clusterid,
@@ -382,6 +385,10 @@ class course_completion_by_cluster_report extends table_report {
             $filter_params = $filter_sql['where_parameters'];
         }
 
+        $lastname = 'user.lastname';
+        if (stripos($columns, $lastname) === FALSE) {
+            $columns .= ", {$lastname}";
+        }
         //the master query
         $sql = "SELECT * FROM (
                   SELECT {$columns},
@@ -750,8 +757,11 @@ class course_completion_by_cluster_report extends table_report {
                                       $element->useridnumber .'</a></span>';
         }
 
-        //use the user's full name
-        $element->firstname = fullname($datum);
+        if ($export_format != php_report::$EXPORT_FORMAT_CSV &&
+            $export_format != php_report::$EXPORT_FORMAT_EXCEL) {
+            //use the user's full name
+            $element->firstname = fullname($datum);
+        }
         //make this a link if we're in HTML format
         if ($export_format == php_report::$EXPORT_FORMAT_HTML) {
             $element->firstname = '<span class="external_report_link"><a href="'

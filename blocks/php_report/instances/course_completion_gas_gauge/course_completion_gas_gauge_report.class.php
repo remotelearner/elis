@@ -215,13 +215,11 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
 
         //user fullname
         $name_heading = get_string('column_fullname', 'rlreport_course_completion_gas_gauge');
-        $name_column = new table_report_column('u.firstname', $name_heading, 'fullname', 'left', true, true, true, array(php_report::$EXPORT_FORMAT_PDF, php_report::$EXPORT_FORMAT_HTML));
+        $name_column = new table_report_column('u.firstname', $name_heading, 'fullname', 'left', false, true, true, array(php_report::$EXPORT_FORMAT_PDF, php_report::$EXPORT_FORMAT_HTML));
         $lastname_heading = get_string('column_lastname', 'rlreport_course_completion_gas_gauge');
-        $lastname_column = new table_report_column('u.lastname', $lastname_heading, 'lastname', 'left', true, true, true, array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL));
+        $lastname_column = new table_report_column('u.lastname', $lastname_heading, 'lastname', 'left', false, true, true, array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL));
         $firstname_heading = get_string('column_firstname', 'rlreport_course_completion_gas_gauge');
-        $firstname_column = new table_report_column('u.firstname as userfirstname', $firstname_heading, 'firstname', 'left', true, true, true, array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL));
-
-
+        $firstname_column = new table_report_column('u.firstname as userfirstname', $firstname_heading, 'firstname', 'left', false, true, true, array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL));
 
         //percent of completion elements complete
         $percentcomplete_heading = get_string('column_percentcomplete', 'rlreport_course_completion_gas_gauge');
