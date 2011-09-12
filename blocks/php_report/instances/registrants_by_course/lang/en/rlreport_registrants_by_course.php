@@ -3,7 +3,9 @@
 $string['allcurricula'] = 'All curricula';
 $string['anytime'] = 'Any Time';
 
+$string['column_firstname'] = 'Firstname';
 $string['column_id'] = 'ID Number';
+$string['column_lastname'] = 'Lastname';
 $string['column_start_date'] = 'Start Date';
 $string['column_student'] = 'Student Name';
 

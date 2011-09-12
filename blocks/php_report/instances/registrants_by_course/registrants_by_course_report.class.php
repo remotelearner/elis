@@ -194,9 +194,19 @@ class registrants_by_course_report extends table_report {
      * @return  table_report_column array  The list of report columns
      */
     function get_columns() {
-        $columns = array(new table_report_column('usr.lastname AS r_student',
-                                                 get_string('column_student', $this->lang_file),
-                                                 'cssstudent', 'left', true),
+        $columns = array(
+                         new table_report_column('usr.lastname AS r_student',
+                                 get_string('column_student', $this->lang_file),
+                                 'cssstudent', 'left', true, true, true,
+                                 array(php_report::$EXPORT_FORMAT_PDF, php_report::$EXPORT_FORMAT_HTML)),
+                         new table_report_column('usr.lastname AS lastname',
+                                 get_string('column_lastname', $this->lang_file),
+                                 'cssstudent', 'left', true, true, true,
+                                 array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
+                         new table_report_column('usr.firstname AS firstname',
+                                 get_string('column_firstname', $this->lang_file),
+                                 'cssstudent', 'left', true, true, true,
+                                 array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL)),
                          new table_report_column('usr.idnumber AS r_idnumber',
                                                  get_string('column_id', $this->lang_file),
                                                  'cssidnumber', 'left', true),
@@ -254,11 +264,14 @@ class registrants_by_course_report extends table_report {
      * @return  stdClass                  The reformatted record
      */
     function transform_record($record, $export_format) {
-        $user = new stdClass;
-        $user->firstname = $record->firstname;
-        $user->lastname = $record->r_student;
+        if ($export_format != php_report::$EXPORT_FORMAT_CSV &&
+            $export_format != php_report::$EXPORT_FORMAT_EXCEL) {
+            $user = new stdClass;
+            $user->firstname = $record->firstname;
+            $user->lastname = $record->r_student;
+            $record->r_student = fullname($user);
+        }
 
-        $record->r_student = fullname($user);
         $record->curriculum_name = ($record->curriculum_name == '')
                                    ? get_string('na', $this->lang_file)
                                    : $record->curriculum_name;
@@ -295,10 +308,13 @@ class registrants_by_course_report extends table_report {
             $where[] = 'usr.inactive = 0';
         }
 
+        $firstname = 'usr.firstname AS firstname';
+        if (stripos($columns, $firstname) === FALSE) {
+            $columns .= ", {$firstname}";
+        }
         // Main query
         $sql = "SELECT DISTINCT {$columns},
-                    cur.id IS NULL AS isnull,
-                    usr.firstname AS firstname
+                    cur.id IS NULL AS isnull
                 FROM {". course::TABLE ."} crs
                 JOIN {". pmclass::TABLE ."} cls
                     ON cls.courseid = crs.id
