@@ -59,47 +59,21 @@
     class repository_factory {
 
         function factory() {
-            /*global $CFG, $SESSION;
-            // Check for Alfresco version setting
-            $alfresco_version = get_config('elis_files', 'alfresco_version');
-            if ($alfresco_version == '3.4') {
-                require_once(dirname(__FILE__).'/lib/alfresco34/ELIS_files.php');
-            } elseif ($alfresco_version == '3.2') {
-                require_once(dirname(__FILE__).'/lib/alfresco30/ELIS_files.php');
-            } else {
-                return false;
-            // part of catch-22 fix require_once(dirname(__FILE__).'/lib/alfresco34/ELIS_files.php');
-            }
-
-            $class = "ELIS_files";
-            // Don't store in session for now
-            //if (!(isset($SESSION->elis_repo))) {
-            //    $SESSION->elis_repo = new $class;
-           // } else {
-           //     $SESSION->elis_repo = unserialize(serialize($SESSION->elis_repo));
-           // }
-           // return $SESSION->elis_repo;
-           return new $class;*/
-//        function factory($repository = '') {
-            global $CFG, $USER;
-//            if (!$repository) {
-//                $repository = $CFG->repository;
-//            }
+            global $SESSION, $USER;
             if (file_exists(dirname(__FILE__).'/lib/ELIS_files.php')) {
                 require_once(dirname(__FILE__).'/lib/ELIS_files.php');
+
                 $class = "ELIS_files";
-                // Need to test that this will work in 2.0
-                /*if (!(isset($SESSION->repo))) {
+                                if (!(isset($SESSION->repo))) {
                     $SESSION->repo = new $class;
                 } else {
-                    $SESSION->repo = unserialize(serialize($USER->repo));
+                    $SESSION->repo = unserialize(serialize($SESSION->repo));
                 }
-                return $SESSION->repo;*/
-                return new $class;
+                return $SESSION->repo;
             } else {
                 trigger_error(dirname(__FILE__).'/lib/ELIS_files.php does not exist');
                 error(dirname(__FILE__).'/lib/ELIS_files.php does not exist');
             }
         }
     }
-?>
+
