@@ -105,9 +105,12 @@ class individual_course_progress_report extends table_report {
         // Find all the clusters this user is in
         if (!empty($cm_user_id[0]['value'])) {
             $user_obj = new user($cm_user_id[0]['value']);
-            if ($user_obj && !empty($user_obj->cluster)) {
-                foreach ($user_obj->cluster as $cluster) {
-                    $cluster_names[] = $cluster->name;
+            if ($user_obj) {
+                $user_obj->load();
+                if (!empty($user_obj->clusterassignments)) {
+                    foreach ($user_obj->clusterassignments as $cluster) {
+                        $cluster_names[] = $cluster->cluster->name;
+                    }
                 }
             }
         }
@@ -115,7 +118,7 @@ class individual_course_progress_report extends table_report {
         if (!empty($user_obj)) {
             $header_obj = new stdClass;
             $header_obj->label = get_string('header_student', $this->lang_file).':';
-            $header_obj->value = fullname($user_obj);
+            $header_obj->value = fullname($user_obj->to_object());
             $header_obj->css_identifier = '';
             $header_array[] = $header_obj;
 
