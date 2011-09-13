@@ -99,7 +99,8 @@ class generalized_filter_text extends generalized_filter_type {
         $field    = $this->_uniqueid;
         $operator = $field.'_op';
 
-        if (array_key_exists($operator, $formdata)) {
+        if (property_exists($formdata, $operator) &&
+            property_exists($formdata, $field)) {
             if ($formdata->$operator != 5 and $formdata->$field == '') {
                 // no data - no change except for empty filter
                 return false;
