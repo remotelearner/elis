@@ -331,7 +331,7 @@ class php_report_export_pdf extends php_report_export {
      * @param  FPDF reference  $newpdf  The PDF being created
      */
     protected function render_pdf_headers(&$newpdf) {
-        $header_entries = $this->report->get_header_entries();
+        $header_entries = $this->report->get_header_entries(php_report::$EXPORT_FORMAT_PDF);
 
         //add headers to the output
         if (!empty($header_entries)) {

@@ -31,6 +31,10 @@ $string['filter_inactive'] = 'Include inactive users?';
 $string['filter_inactive_yes'] = 'Yes';
 $string['filter_inactive_no'] = 'No';
 
+$string['header_class'] = 'Class: ';
+$string['header_course'] = 'Course: ';
+$string['header_crs_value'] = '{$a->name} ({$a->idnumber})';
+
 $string['na'] = 'N/A';
 
 $string['pluginname'] = 'Class Completion Gas Gauge Report';

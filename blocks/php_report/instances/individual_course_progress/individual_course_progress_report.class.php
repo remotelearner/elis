@@ -95,7 +95,7 @@ class individual_course_progress_report extends table_report {
         require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php');
     }
 
-    function get_header_entries() {
+    function get_header_entries($export_format) {
         $header_array = array();
 
         $cm_user_id = php_report_filtering_get_active_filter_values(

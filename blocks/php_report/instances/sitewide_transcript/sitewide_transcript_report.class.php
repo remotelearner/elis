@@ -172,10 +172,10 @@ class sitewide_transcript_report extends table_report {
      * Specifies the report title
      *
      * @uses none
-     * @param none
+     * @param   $export_format  The desired export format for the headers
      * @return array - header entires
      */
-    function get_header_entries() {
+    function get_header_entries($export_format) {
         $header_obj = new stdClass;
         $header_obj->label = get_string('report_heading', $this->langfile);
         $header_obj->value = ''; // TBD

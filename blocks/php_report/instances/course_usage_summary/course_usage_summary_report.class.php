@@ -1017,9 +1017,10 @@ class course_usage_summary_report extends icon_config_report {
      * Specifies header summary data
      * representing curricula, date range, cluster and number of courses in report
      *
+     * @param   $export_format  The desired export format for the headers
      * @return  array  A mapping of display names to values
      */
-    function get_header_entries() {
+    function get_header_entries($export_format) {
         //Get a start and end date to display on the header entry
         $sdate = !empty($this->startdate)
                  ? $this->userdate($this->startdate, get_string('date_format', 'rlreport_course_usage_summary'))

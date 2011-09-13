@@ -296,10 +296,10 @@ class sitewide_time_summary_report extends table_report {
      * Specifies the report title
      *
      * @uses none
-     * @param none
+     * @param $export_format  The desired export format for the headers
      * @return array - header entires
      */
-    function get_header_entries() {
+    function get_header_entries($export_format) {
         // Get date filter parameters req'd for header title
         $this->get_filter_values();
         $sdate = $this->userdate($this->startdate, STSR_DATE_FORMAT);

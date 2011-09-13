@@ -203,7 +203,7 @@ class php_report_export_csv extends php_report_export {
         //open the file
         $csv_file_handle = $this->open_file($storage_path, $filename);
 
-        $header_entries = $this->report->get_header_entries();
+        $header_entries = $this->report->get_header_entries(php_report::$EXPORT_FORMAT_CSV);
         if (!empty($header_entries)) {
             //write out the header entries
             foreach ($header_entries as $header) {

@@ -435,9 +435,10 @@ class course_progress_summary_report extends table_report {
      * representing curricula, date range, cluster and number of courses in report
      *
      * @uses    $DB
+     * @param   $export_format  The desired export format for the headers
      * @return  array  A mapping of display names to values
      */
-    function get_header_entries() {
+    function get_header_entries($export_format) {
         global $DB;
         //need to get start_date and end_date from report interface
         $cluster_display = '';

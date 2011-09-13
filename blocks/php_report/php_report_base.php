@@ -136,9 +136,9 @@ abstract class php_report {
 
         $result = '';
 
-        if($entries = $this->get_header_entries()) {
+        if ($entries = $this->get_header_entries(php_report::$EXPORT_FORMAT_HTML)) {
             $result .= html_writer::start_tag('div', array('class' => 'php_report_header_entries'));
-            foreach($entries as $value) {
+            foreach ($entries as $value) {
 
                 $label_class = "php_report_header_{$value->css_identifier} php_report_header_label";
                 $value_class = "php_report_header_{$value->css_identifier} php_report_header_value";
@@ -157,9 +157,10 @@ abstract class php_report {
      * This method provides a way for reports to define entries to show at
      * top as summary data (default to none, but allow implementations to override)
      *
-     * @return  array  A mapping of display names to values
+     * @param   $export_format  The desired export format for the headers
+     * @return  array           A mapping of display names to values
      */
-    function get_header_entries() {
+    function get_header_entries($export_format) {
         return array();
     }
 

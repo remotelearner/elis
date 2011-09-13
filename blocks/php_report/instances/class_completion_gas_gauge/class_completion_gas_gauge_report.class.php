@@ -570,6 +570,40 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
     }
 
     /**
+     * Specifies the report title
+     *
+     * @param   $export_format  The desired export format for the headers
+     * @return array - header entires
+     */
+    function get_header_entries($export_format) {
+        $header_objs = array();
+        if ($export_format == php_report::$EXPORT_FORMAT_CSV ||
+            $export_format == php_report::$EXPORT_FORMAT_EXCEL) {
+            // Get courseclass filter values for class id
+            $filter = php_report_filtering_get_active_filter_values(
+                          $this->get_report_shortname(), 'class', $this->filter);
+            if (!empty($filter) && is_array($filter) &&
+                !empty($filter[0]['value'])) {
+                $pmclass = new pmclass($filter[0]['value']);
+                $header_obj = new stdClass;
+                $header_obj->label = get_string('header_course', $this->lang_file);
+                $class_obj = new stdClass;
+                $class_obj->name = $pmclass->course->name;
+                $class_obj->idnumber = $pmclass->course->idnumber;
+                $header_obj->value = get_string('header_crs_value', $this->lang_file, $class_obj);
+                $header_obj->css_identifier = '';
+                $header_objs[] = $header_obj;
+                $header_obj = new stdClass;
+                $header_obj->label = get_string('header_class', $this->lang_file);
+                $header_obj->value = $pmclass->idnumber;
+                $header_obj->css_identifier = '';
+                $header_objs[] = $header_obj;
+            }
+        }
+        return $header_objs;
+    }
+
+    /**
      * Determines whether the current user can view this report, based on being logged in
      *
      * @return  boolean  True if permitted, otherwise false

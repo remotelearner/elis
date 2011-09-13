@@ -91,7 +91,7 @@ class individual_user_report extends table_report {
 
     }
 
-    function get_header_entries() {
+    function get_header_entries($export_format) {
         global $CFG;
 
         $header_array = array();

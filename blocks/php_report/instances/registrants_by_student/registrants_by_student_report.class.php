@@ -86,7 +86,7 @@ class registrants_by_student_report extends table_report {
 
     }
 
-    function get_header_entries() {
+    function get_header_entries($export_format) {
         $header_array = array();
 
         $show_after = php_report_filtering_get_active_filter_values(
