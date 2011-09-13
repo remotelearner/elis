@@ -112,12 +112,23 @@ $string['browse'] = 'Browse';
 $string['bulkedit_select_all'] = 'Select All';
 
 $string['cert_border_help'] = 'The certificate border image is what gets displayed as the background for certificates in the program.
-You can add more border images by uploading them to your moodledata directory under the directory: TBD/pix/certificate/borders/';
+You can add more border images by uploading them to your moodledata directory under the directory: /elis/program/pix/certificate/borders/';
 $string['cert_border_setting'] = 'Certificate border image';
 $string['cert_seal_help'] = 'The certificate seal image is what gets displayed as the logo on certificates in the program.
-You can add more seal images by uploading them to your moodledata directory under the directory: TBD/pix/certificate/seals/';
+You can add more seal images by uploading them to your moodledata directory under the directory: /elis/program/pix/certificate/seals/';
 $string['cert_seal_setting'] = 'Certificate seal image';
+$string['certificate_border_image'] = 'Certificate border image';
+$string['certificate_certify'] = 'This is to certify that';
+$string['certificate_date'] = 'on {$a}';
+$string['certificate_expires'] = 'This certificate will expire on:';
+$string['certificate_has_completed'] = 'has completed';
+$string['certificate_seal_image'] = 'Certificate seal image';
+$string['certificate_title'] = 'Certificate of Achievement';
+$string['certificatelist'] = 'Certificate List';
 $string['certificates'] = 'Certificates';
+$string['certificates_earned'] = 'You have earned the following certificates:';
+$string['certificates_none_earned'] = 'You have not earned any certificates yet.';
+
 $string['choose_class_course'] = 'Choose class for course {$a}';
 $string['chooseclass'] = 'Choose class';
 $string['class'] = 'Class Instance';
@@ -294,6 +305,7 @@ This type of role assignment will not take place for a particular program if tha
 To disable this functionality, select "N/A" from the list.';
 $string['curriculum_role_setting'] = 'Default Program Role';
 $string['curriculum_shortdescription'] = 'Short description';
+$string['curriculum_userid_mismatch'] = 'Your current user ID does not match the user ID for this curriculum completion.';
 $string['customfields'] = 'Custom fields';
 
 $string['dashboard'] = 'Dashboard';
@@ -355,6 +367,7 @@ $string['enrolstudents'] = 'Enrol Student'; // TBD (s) ?
 $string['environment'] = 'Environment';
 $string['error_bulk_delete'] = 'Error deleting users.';
 $string['error_bulk_inactive'] = 'Error marking users as inactive.';
+$string['error_curriculum_incomplete'] = 'Error: curriculum not completed.';
 $string['error_date_range'] = 'Start date must be before the end date.';
 $string['error_duration'] = 'Start time must be before the end time.';
 $string['error_n_overenrol'] = 'The over enrol capability is required for this';
@@ -472,6 +485,7 @@ $string['instructors'] = 'Instructors';
 $string['interface_settings'] = 'Interface Settings';
 $string['invalid_category_id'] = 'Invalid category ID';
 $string['invalid_context_level'] = 'Invalid context level';
+$string['invalid_curriculum_completion'] = 'Invalid curriculum completion.';
 $string['invalid_field_id'] = 'Invalid field ID';
 $string['invalid_objectid'] = 'Invalid object id: {$a->id}';
 $string['invalidconfirm'] = 'Invalid confirmation code!';

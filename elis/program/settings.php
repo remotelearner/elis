@@ -4,7 +4,7 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once dirname(__FILE__) .'/lib/setup.php';
 require_once elispm::lib('data/curriculumstudent.class.php'); // defines
-//require_once elispm::lib('certificate.class.php'); // TBD: cm_certificate_get__()
+require_once elispm::lib('certificate.php'); // TBD: cm_certificate_get__()
 
 global $DB; // TBD: roles
 
@@ -56,8 +56,11 @@ if ($ADMIN->fulltree) {
     // Certificate border image
     $borders = function_exists('cm_certificate_get_borders')
                ? cm_certificate_get_borders()
-               : array('Fancy1-blue', 'Fancy1-green',
-                       'Fancy2-black', 'Fancy2-brown', 'None'); // for testing
+               : array('Fancy1-blue.jpg'  => 'Fancy1-blue',
+                       'Fancy1-green.jpg' => 'Fancy1-green',
+                       'Fancy2-black.jpg' => 'Fancy2-black',
+                       'Fancy2-brown.jpg' => 'Fancy2-brown',
+                       ''                 => 'None'); // for testing
     $settings->add(new admin_setting_configselect('elis_program/certificate_border_image',
                            get_string('cert_border_setting', 'elis_program'),
                            get_string('cert_border_help', 'elis_program'),
@@ -66,8 +69,9 @@ if ($ADMIN->fulltree) {
     // Certificate seal image
     $seals = function_exists('cm_certificate_get_seals')
              ? cm_certificate_get_seals()
-             : array('Fancy', 'Logo', 'Plain', 'Quality',
-                     'Teamwork', 'None'); // for testing
+             : array('Fancy.png' => 'Fancy', 'Logo.png' => 'Logo',
+                     'Plain.png' => 'Plain', 'Quality.png' => 'Quality',
+                     'Teamwork.png' => 'Teamwork', '' => 'None'); // for testing
     $settings->add(new admin_setting_configselect('elis_program/certificate_seal_image',
                            get_string('cert_seal_setting', 'elis_program'),
                            get_string('cert_seal_help', 'elis_program'),
