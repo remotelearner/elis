@@ -236,7 +236,7 @@ class scheduling_form_step_schedule extends moodleform {
         $mform->disabledIf('monthdays', 'caldaystype', 'neq', 2);
 
         $group = array();
-        $group[] = $mform->createElement('checkbox', 'allmonths', '', get_string('all'), 1);
+        $group[] = $mform->createElement('advcheckbox', 'allmonths', '', get_string('all'), 1);
         $group[] = $mform->createElement('static', '', '', '<br />');
         $group[] = $mform->createElement('checkbox', 'month[1]', '', strftime('%b', mktime(0, 0, 0, 1, 1)));
         $group[] = $mform->createElement('checkbox', 'month[2]', '', strftime('%b', mktime(0, 0, 0, 2, 1)));
@@ -252,8 +252,9 @@ class scheduling_form_step_schedule extends moodleform {
         $group[] = $mform->createElement('checkbox', 'month[11]', '', strftime('%b', mktime(0, 0, 0, 11, 1)));
         $group[] = $mform->createElement('checkbox', 'month[12]', '', strftime('%b', mktime(0, 0, 0, 12, 1)));
         $mform->addGroup($group, 'month', get_string('months', 'block_php_report'), '', false);
-        $mform->disabledIf('month', 'allmonths', 'checked');
-
+        for ($i = 1; $i <= 12; ++$i) {
+            $mform->disabledIf("month[{$i}]", 'allmonths', 'checked');
+        }
 
         workflowpage::add_navigation_buttons($mform, scheduling_workflow::STEP_LABEL);
     }
@@ -543,8 +544,9 @@ class scheduling_form_step_confirm extends moodleform {
 
             }
             // months
-            if ($data['schedule']['month'] == "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12") {
+            if ($data['schedule']['month'] == '1,2,3,4,5,6,7,8,9,10,11,12' || $data['schedule']['month'] == '*') {
                 $months_string = get_string('every_month', 'block_php_report');
+                $data['schedule']['month'] = '1,2,3,4,5,6,7,8,9,10,11,12';
             } else {
                 $months_array = array ('1' => strftime('%b', mktime(0, 0, 0, 1, 1)),
                                        '2' => strftime('%b', mktime(0, 0, 0, 2, 1)),
@@ -559,7 +561,7 @@ class scheduling_form_step_confirm extends moodleform {
                                       '11' => strftime('%b', mktime(0, 0, 0, 11, 1)),
                                       '12' => strftime('%b', mktime(0, 0, 0, 12, 1))
                                        );
-                $months_selected_array = explode(',',$data['schedule']['month']);
+                $months_selected_array = explode(',', $data['schedule']['month']);
                 $months_string = '';
                 $count = 0;
                 foreach ($months_selected_array as $month) {

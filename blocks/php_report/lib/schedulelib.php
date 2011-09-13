@@ -150,6 +150,13 @@ class scheduling_workflow extends workflow {
             $schedule['enddate'] = empty($values->enddate) ? null : $values->enddate;
 
         } else {
+           /* ***
+            ob_start();
+            var_dump($values);
+            $tmp = ob_get_contents();
+            ob_end_clean();
+            debug_error_log("save_values_for_step_schedule(values) => {$tmp}");
+           *** */
             $errors = array();
             if (empty($values->dayofweek)) {
                 $errors['dayofweek'] = get_string('required');
@@ -176,8 +183,8 @@ class scheduling_workflow extends workflow {
             $schedule['minute'] = empty($values->minute) ? 0 : $values->minute;
             $schedule['dayofweek'] = $values->dayofweek;
             $schedule['day'] = $values->day;
-            if (!empty($values->allmonths)) {
-                $schedule['month'] = "1,2,3,4,5,6,7,8,9,10,11,12";
+            if (!empty($values->allmonths) || $values->month == '1,2,3,4,5,6,7,8,9,10,11,12') {
+                $schedule['month'] = '*';
             } else {
                 $schedule['month'] = $values->month;
             }
@@ -238,7 +245,7 @@ class scheduling_workflow extends workflow {
         }
         $data = $this->unserialize_data(array());
         $data['recipients'] = $values->recipients;
-        $recipients = explode(',',$values->recipients);
+        $recipients = explode(',', $values->recipients);
         foreach ($recipients as $recipient) {
             if (!validate_email(trim($recipient))) {
                 $errors['recipients'] = get_string('validemails','block_php_report');
@@ -1188,7 +1195,7 @@ class scheduling_page extends workflowpage {
                 } else {
                     $data->caldaystype = 1;
                     // get all the days of the week
-                    $daysofweek = explode(',',$workflowdata['schedule']['dayofweek']);
+                    $daysofweek = explode(',', $workflowdata['schedule']['dayofweek']);
                     foreach ($daysofweek as $day) {
                         if ((int) $day) {
                             $data->dayofweek[(int) $day] = 1;
@@ -1196,10 +1203,11 @@ class scheduling_page extends workflowpage {
                     }
                 }
 
-                if ($workflowdata['schedule']['month'] == "1,2,3,4,5,6,7,8,9,10,11,12") {
+                if ($workflowdata['schedule']['month'] == '1,2,3,4,5,6,7,8,9,10,11,12' || $workflowdata['schedule']['month'] == '*') {
                     $data->allmonths = 1;
+                    //$workflowdata['schedule']['month'] = '1,2,3,4,5,6,7,8,9,10,11,12';
                 } else {
-                    $months = explode(',',$workflowdata['schedule']['month']);
+                    $months = explode(',', $workflowdata['schedule']['month']);
                     foreach ($months as $month) {
                         if ((int) $month) {
                             $data->month[(int) $month] = 1;
