@@ -111,6 +111,8 @@ $pages = array(
                       'file' => 'taginstancepage.class.php'),
     'crsrole' => array('class' => 'course_rolepage',
                        'file' => 'rolepage.class.php'),
+    'crsengine' => array('class' => 'course_enginepage',
+                         'file' => 'enginepage.class.php'),
 
     // Manage Classes
     'cls' => array('class' => 'pmclasspage',

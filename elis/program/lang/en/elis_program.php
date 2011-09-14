@@ -355,6 +355,7 @@ $string['elis_settings'] = 'ELIS Settings';
 $string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a}';
 $string['email'] = 'Email address';
 $string['email2'] = 'Email address 2';
+$string['engine'] = 'Engine';
 $string['enrol'] = 'Enrol';
 $string['enrol_all_users_now'] = 'Enrol all users from this track now';
 $string['enrol_confirmation'] = 'you will be placed on a waiting list for this course. Are you sure  you would like to enrol in ({$a->coursename}){$a->classid}?';
@@ -794,6 +795,7 @@ $string['reports'] = 'Reports';
 $string['required'] = 'Required';
 $string['required_credits'] = 'Required Credits';
 $string['required_field'] = 'Error: {$a} is a required field';
+$string['results_engine'] = 'Results Engine';
 
 $string['save_enrolment_changes'] = 'Save Changes';
 $string['saved'] = 'saved';
