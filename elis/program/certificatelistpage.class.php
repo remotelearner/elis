@@ -63,6 +63,9 @@ class certificatelistpage extends pm_page {
 
         // This is for a Moodle user, so get the Curriculum user id.
         $cuserid = cm_get_crlmuserid($USER->id);
+        if (empty($cuserid)) {
+            print_error('notelisuser', 'elis_program');
+        }
 
         $curasses = curriculumstudent::get_completed_for_user($cuserid);
         if (count($curasses) == 0) {
