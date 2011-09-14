@@ -39,6 +39,7 @@ $string['na'] = 'N/A';
 
 $string['pluginname'] = 'Class Completion Gas Gauge Report';
 
+$string['selectclass'] = 'Select a class';
 $string['status_complete'] = 'Complete';
 $string['status_incomplete'] = 'Incomplete';
 

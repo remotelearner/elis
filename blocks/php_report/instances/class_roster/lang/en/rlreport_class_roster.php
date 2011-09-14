@@ -23,3 +23,6 @@ $string['header_instructors'] = 'Instructors';
 $string['header_start_date'] = 'Start Date';
 
 $string['pluginname'] = 'Class Roster Report';
+
+$string['selectclass'] = 'Select a class';
+

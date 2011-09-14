@@ -42,7 +42,7 @@ if (!isloggedin() || isguestuser()) {
 
 $id = optional_param('id', 0, PARAM_INT);
 
-$choices_array = array('' => 'Select a class'); // Must have blank value as the default here (instead of zero) or it breaks the gas guage report
+$choices_array = array('' => get_string('selectclass', 'rlreport_class_completion_gas_gauge')); // Must have blank value as the default here (instead of zero) or it breaks the gas guage report
 
 if ($id > 0) {
     $contexts = get_contexts_by_capability_for_user('class', 'block/php_report:view', $USER->id);

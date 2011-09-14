@@ -44,7 +44,7 @@ if (!isloggedin() || isguestuser()) {
 
 $id = optional_param('id', 0, PARAM_INT);
 
-$choices_array = array('' => 'Select a class');
+$choices_array = array('' => get_string('selectclass', 'rlreport_class_roster'));
 
 if ($id > 0) {
     $contexts = get_contexts_by_capability_for_user('class', 'block/php_report:view', $USER->id);
