@@ -77,7 +77,7 @@ class certificatelistpage extends pm_page {
 
         echo "<UL>\n";
         foreach ($curasses as $curass) {
-            echo "<LI><a href=\"certificate.php?id={$curass->id}\">{$curass->curriculum->name}</a></LI>\n";
+            echo "<LI><a href=\"certificate.php?id={$curass->id}\" target=\"_blank\">{$curass->curriculum->name}</a></LI>\n";
         }
         echo "</UL>\n";
     }
