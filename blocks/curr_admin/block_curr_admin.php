@@ -237,8 +237,8 @@ class block_curr_admin extends block_base {
                 //Curriculum
                 new menuitem('curr', null, 'root', get_string('curriculum', 'elis_program'),
                              block_curr_admin_get_item_css_class('curr', true)),
-                //new menuitem('certificatelist', new menuitempage('certificatelistpage'), null, '',
-                //             block_curr_admin_get_item_css_class('certificatelist')),
+                new menuitem('certificatelist', new menuitempage('certificatelistpage'), null, '',
+                             block_curr_admin_get_item_css_class('certificatelist')),
                 new menuitem('managecurricula', new menuitempage('curriculumpage'), null, '',
                              block_curr_admin_get_item_css_class('managecurricula')),
                 new menuitem('managecourses', new menuitempage('coursepage'), null, '',
