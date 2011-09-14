@@ -26,6 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+
 /**Callback function for ELIS Config/admin: Cluster Group Settings
  *
  * @param string $name  the fullname of the parameter that changed

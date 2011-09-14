@@ -44,7 +44,7 @@ function xmldb_pmplugins_userset_themes_upgrade($oldversion = 0) {
 
             if ($field->valid()) {
                 $field = $field->current();
-                $field->shortname = 'userset_'.$fieldname;
+                $field->shortname = '_elis_userset_'.$fieldname;
                 $field->save();
             }
         }
