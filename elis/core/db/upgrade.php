@@ -374,5 +374,28 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2011083000, 'elis', 'core');
     }
 
+    if ($result && $oldversion < 2011091401) {
+        $table = new xmldb_table('elis_scheduled_tasks');
+
+        // change precisions of cron fields from varchar(25) to varchar(50)
+        $field = new xmldb_field('minute', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $dbman->change_field_precision($table, $field);
+
+        $field = new xmldb_field('hour', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $dbman->change_field_precision($table, $field);
+
+        $field = new xmldb_field('day', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $dbman->change_field_precision($table, $field);
+
+        $field = new xmldb_field('month', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $dbman->change_field_precision($table, $field);
+
+        $field = new xmldb_field('dayofweek', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $dbman->change_field_precision($table, $field);
+
+        // core savepoint reached
+        upgrade_plugin_savepoint(true, 2011091401, 'elis', 'core');
+    }
+
     return $result;
 }
