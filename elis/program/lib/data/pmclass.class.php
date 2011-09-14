@@ -987,7 +987,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     }
 
     if ($contexts !== null) {
-        $filter_object = $contexts->get_filter('cls.id', 'class');
+        $filter_object = $contexts->get_filter('id', 'class');
         $filter_sql = $filter_object->get_sql(false, 'cls');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
@@ -1071,7 +1071,7 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
     }
 
     if ($contexts !== null) {
-        $filter_object = $contexts->get_filter('cls.id', 'class');
+        $filter_object = $contexts->get_filter('id', 'class');
         $filter_sql = $filter_object->get_sql(false, 'cls');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];

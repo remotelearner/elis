@@ -809,7 +809,7 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
     }
 
     if ($contexts !== null) {
-        $filter_object = $contexts->get_filter('crs.id', 'course');
+        $filter_object = $contexts->get_filter('id', 'course');
         $filter_sql = $filter_object->get_sql(false, 'crs');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
@@ -853,7 +853,7 @@ function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
     }
 
     if ($contexts !== null) {
-        $filter_object = $contexts->get_filter('crs.id', 'course');
+        $filter_object = $contexts->get_filter('id', 'course');
         $filter_sql = $filter_object->get_sql(false, 'crs');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];

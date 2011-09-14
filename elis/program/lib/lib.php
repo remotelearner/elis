@@ -879,7 +879,7 @@ function usermanagement_get_users($sort = 'name', $dir = 'ASC', $startrec = 0,
     }
 
     if ($contexts !== null) { // TBV
-        $user_obj = $contexts->get_filter('usr.id', 'user'); // 'id' ???
+        $user_obj = $contexts->get_filter('id', 'user');
         $filter_array = $user_obj->get_sql(false, 'usr');
         if (isset($filter_array['where'])) {
             $where[] = '('. $filter_array['where'] .')';
@@ -929,7 +929,7 @@ function usermanagement_count_users($extrasql = array(), $contexts = null) {
     }
 
     if ($contexts !== null) { // TBV
-        $user_obj = $contexts->get_filter('usr.id', 'user'); // 'id' ???
+        $user_obj = $contexts->get_filter('id', 'user');
         $filter_array = $user_obj->get_sql(false, 'usr');
         if (isset($filter_array['where'])) {
             $where[] = '('. $filter_array['where'] .')';
@@ -975,7 +975,7 @@ function usermanagement_get_users_recordset($sort = 'name', $dir = 'ASC',
     }
 
     if ($contexts !== null) { // TBV
-        $user_obj = $contexts->get_filter('usr.id', 'user'); // 'id' ???
+        $user_obj = $contexts->get_filter('id', 'user');
         $filter_array = $user_obj->get_sql(false, 'usr');
         if (isset($filter_array['where'])) {
             $where[] = '('. $filter_array['where'] .')';

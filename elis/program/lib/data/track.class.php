@@ -851,7 +851,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
     }
 
     if ($contexts !== null) {
-        $filter_object = $contexts->get_filter('trk.id', 'track');
+        $filter_object = $contexts->get_filter('id', 'track');
         $filter_sql = $filter_object->get_sql(false, 'trk');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
@@ -869,8 +869,8 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
         $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol', $USER->id);
-        $curriculum_filter_object = $curriculum_context->get_filter('trk.id', 'track');
-        $curriculum_filter = $curriculum_filter_object->get_sql();
+        $curriculum_filter_object = $curriculum_context->get_filter('id', 'track');
+        $curriculum_filter = $curriculum_filter_object->get_sql(false, 'trk');
 
         if (isset($curriculum_filter['where'])) {
             if (count($allowed_clusters)!=0) {

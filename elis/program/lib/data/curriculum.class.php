@@ -637,7 +637,7 @@ function curriculum_get_listing($sort = 'name', $dir = 'ASC', $startrec = 0,
     }
 
     if ($contexts !== null) {
-        $filter_object = $contexts->get_filter('cur.id', 'curriculum');
+        $filter_object = $contexts->get_filter('id', 'curriculum');
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
@@ -653,7 +653,7 @@ function curriculum_get_listing($sort = 'name', $dir = 'ASC', $startrec = 0,
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
         $curriculum_context = pm_context_set::for_user_with_capability('curriculum', 'elis/program:program_enrol', $USER->id);
-        $filter_object = $curriculum_context->get_filter('cur.id', 'curriculum');
+        $filter_object = $curriculum_context->get_filter('id', 'curriculum');
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $curriculum_filter = $filter_sql['where'];
@@ -750,7 +750,7 @@ function curriculum_get_listing_recordset($sort = 'name', $dir = 'ASC',
     }
 
     if ($contexts !== null) {
-        $filter_object = $contexts->get_filter('cur.id', 'curriculum');
+        $filter_object = $contexts->get_filter('id', 'curriculum');
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
@@ -766,7 +766,7 @@ function curriculum_get_listing_recordset($sort = 'name', $dir = 'ASC',
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
         $curriculum_context = pm_context_set::for_user_with_capability('curriculum', 'elis/program:program_enrol', $USER->id);
-        $filter_object = $curriculum_context->get_filter('cur.id', 'curriculum');
+        $filter_object = $curriculum_context->get_filter('id', 'curriculum');
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $curriculum_filter = $filter_sql['where'];
@@ -847,7 +847,7 @@ function curriculum_count_records($namesearch = '', $alpha = '', $contexts = nul
     }
 
     if ($contexts != null) {
-        $filter_object = $contexts->get_filter('cur.id', 'curriculum');
+        $filter_object = $contexts->get_filter('id', 'curriculum');
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];

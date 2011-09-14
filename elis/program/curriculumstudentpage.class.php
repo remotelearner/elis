@@ -106,7 +106,7 @@ class studentcurriculumpage extends associationpage2 {
             // find curricula linked to clusters where the target user is a
             // member, and we have enrol cluster user capabilities
             $cluster_contexts = usersetpage::get_contexts('elis/program:program_enrol_userset_user');
-            $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
+            $cluster_object = $cluster_contexts->get_filter('id', 'cluster');
             $cluster_filter_array = $cluster_object->get_sql(false, 'clst');
             $cluster_filter = '';
 
@@ -237,7 +237,7 @@ class studentcurriculumpage extends associationpage2 {
 
         // only show curricula where user has enrol capabilities
         $curriculum_contexts = curriculumpage::get_contexts('elis/program:program_enrol');
-        $curriculum_object = $curriculum_contexts->get_filter('curr.id', 'curriculum');
+        $curriculum_object = $curriculum_contexts->get_filter('id', 'curriculum');
         $curriculum_filter_array = $curriculum_object->get_sql(false,'curr');
 
         if (isset($curriculum_filter_array['where'])) {
@@ -251,7 +251,7 @@ class studentcurriculumpage extends associationpage2 {
         // or curricula attached to clusters where user has enrol cluster user
         // capabilities (and target user is a member of that cluster)
         $cluster_contexts = usersetpage::get_contexts('elis/program:program_enrol_userset_user');
-        $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
+        $cluster_object = $cluster_contexts->get_filter('id', 'cluster');
         $cluster_filter_array = $cluster_object->get_sql(false,'clst');
         $cluster_filter = '';
 
@@ -376,7 +376,7 @@ class user_curriculum_selection_table extends selection_table {
 
         $id = required_param('id', PARAM_INT);
         $cluster_contexts = usersetpage::get_contexts('elis/program:program_enrol_userset_user');
-        $cluster_object = $cluster_contexts->get_filter('clst.id', 'cluster');
+        $cluster_object = $cluster_contexts->get_filter('id', 'cluster');
         $cluster_filter_array = $cluster_object->get_sql(false, 'clst');
         $cluster_filter = '';
 
