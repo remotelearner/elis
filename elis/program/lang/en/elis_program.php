@@ -700,6 +700,7 @@ $string['program:course_delete'] = 'Delete course description';
 $string['program:course_edit'] = 'Edit course description';
 $string['program:course_view'] = 'View course description';
 $string['program:manage'] = 'Manage Program Management system (Deprecated)';
+$string['program:managefiles'] = 'Manage Program files';
 $string['program:notify_classcomplete'] = "Receive class completion notifications";
 $string['program:notify_classenrol'] = "Receive class enrolment notifications";
 $string['program:notify_classnotcomplete'] = "Receive class not completed notifications";
