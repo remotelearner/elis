@@ -520,7 +520,7 @@ class repository_elis_files extends repository {
 
         return $str;
     }
-    public function print_upload_popup() {
+    public function print_upload_popup($uuid) {
         global $CFG;
 
         $str = '<link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/fileuploader.css" type="text/css" />
