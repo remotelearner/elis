@@ -340,7 +340,9 @@ class student extends elis_data_object {
 
                 $context = get_context_instance(CONTEXT_COURSE, $moodlecourseid);
                 if (!is_enrolled($context, $muserid)) {
-                    $plugin->enrol_user($enrol, $muserid, $enrol->roleid, $this->enrolmenttime, $this->endtime);
+                    $plugin->enrol_user($enrol, $muserid, $enrol->roleid,
+                                        $this->enrolmenttime,
+                                        $this->endtime ? $this->endtime : 0);
                 }
             }
         }
