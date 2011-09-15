@@ -196,9 +196,7 @@ class repository_elis_files extends repository {
 //            echo '<br>empty uuid';
             if ($ruuid = $this->elis_files->get_repository_location($COURSE->id, $userid, $shared, $this->context)) {
                 $uuid = $ruuid;
-            }
-
-            if ($duuid = $this->elis_files->get_default_browsing_location($COURSE->id, $userid, $shared, $this->context)) {
+            } else if ($duuid = $this->elis_files->get_default_browsing_location($COURSE->id, $userid, $shared, $this->context)) {
                 $uuid = $duuid;
             }
              // uid here is actually only set iff current uuid == get_user_store($USER->id)
@@ -258,7 +256,7 @@ class repository_elis_files extends repository {
                 break;
             }
             $ret['list'][] = array('title'=>$child->title,
-                    'path'=>$child->uuid, // or links['self']??? need to get a path
+                    'path'=>$child->uuid,
                     'name'=>$child->title,
                     'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
                     'created'=>'',
@@ -271,8 +269,9 @@ class repository_elis_files extends repository {
             if (!$this->elis_files->permission_check($child->uuid, $uid, false)) {
                 break;
             }
-//            echo '<br><<<<<<<<<<<<<<<<< in item loop';
+
             $ret['list'][] = array('title'=>$child->title,
+                    'path'=>$child->uuid,
                     'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 32))->out(false),
                     'created'=>date("M. j, Y",$child->created),
                     'modified'=>date("M. j, Y",$child->modified),
@@ -883,18 +882,8 @@ function check_context($id, $uuid, $userid='') {
 /// as checking for correct permissions.
     if (!empty($userid) && !empty($id)) {
         $personalfiles = false;
-        if (!empty($USER->access['rdef'])) {
-            foreach ($USER->access['rdef'] as $ucontext) {
-                if ($personalfiles) {
-                    continue;
-                }
-
-                if (isset($ucontext['repository/elis_files:viewowncontent']) &&
-                    $ucontext['repository/elis_files:viewowncontent']) {
-
-                    $personalfiles = true;
-                }
-            }
+        if (has_capability('repository/elis_files:viewowncontent')) {
+            $personalfiles = true;
         }
 
         if (!$personalfiles) {
