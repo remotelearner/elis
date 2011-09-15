@@ -28,14 +28,6 @@ $capabilities = array(
         )
     ),
 
-    'repository/elis_files:viewsitecontent' => array(
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'legacy' => array(
-            'manager'=> CAP_ALLOW
-        )
-    ),
-
     'repository/elis_files:createsharedcontent' => array(
 
         'riskbitmask' => RISK_XSS| RISK_DATALOSS,
