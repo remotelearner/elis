@@ -489,7 +489,7 @@ class treerepresentation {
         }
 
         //use the appropriate css for the menu
-        $style = '<style>@import url("' . $CFG->wwwroot . '/lib/yui/treeview/assets/skins/sam/treeview.css");</style>';
+        $style = ''; // '<style>@import url("' . $CFG->wwwroot . '/lib/yui/treeview/assets/skins/sam/treeview.css");</style>';
 
         //YUI needs an appropriate div to place the tree in
         $result = $style . "<div id=\"block_curr_admin_tree\" class=\"admintree\"></div>";
