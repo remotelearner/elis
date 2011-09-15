@@ -848,10 +848,10 @@ function curriculum_count_records($namesearch = '', $alpha = '', $contexts = nul
 
     if ($contexts != null) {
         $filter_object = $contexts->get_filter('id', 'curriculum');
-        $filter_sql = $filter_object->get_sql(false, 'cur');
+        $filter_sql = $filter_object->get_sql();
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
-            $params[] = $filter_sql['where_parameters'];
+            $params += $filter_sql['where_parameters'];
         }
     }
 

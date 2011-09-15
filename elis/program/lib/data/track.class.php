@@ -959,7 +959,7 @@ function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $
         $where[] = $filter_object->get_sql();
         */
         $filter_object = $contexts->get_filter('id', 'track');
-        $filter_sql = $filter_object->get_sql(false, 'trk');
+        $filter_sql = $filter_object->get_sql();
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
             $params += $filter_sql['where_parameters'];
