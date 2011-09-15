@@ -43,13 +43,20 @@ abstract class enginepage extends pm_page {
         $this->section = $this->get_parent_page()->section;
     }
 
-    function display_engine_config() {
-
-    }
-
     abstract protected function get_context();
 
     abstract protected function get_parent_page();
+
+    abstract protected function get_course_id();
+
+    /**
+     * Return the engine form
+     *
+     * @return object The engine form
+     */
+    protected function get_engine_form() {
+        return new cmEngineForm(null, array('courseid' => $this->get_course_id()));
+    }
 
     function get_tab_page() {
         return $this->get_parent_page();
@@ -116,62 +123,14 @@ abstract class enginepage extends pm_page {
         return count_role_users($roleid, $context, $parent);
     }
 
+    /**
+     * Display the default page
+     */
     function display_default() {
-        global $CURMAN, $DB, $OUTPUT;
+        $form = $this->get_engine_form();
 
-        //the specific role we are asigning users to
-        $roleid = $this->optional_param('role', '', PARAM_INT);
-        //the specific context id we are assigning roles on
-        $context = $this->get_context();
+        $form->display_html();
 
-        if ($roleid) {
-            //make sure the current user can assign roles on the current context
-            $assignableroles = get_assignable_roles($context, ROLENAME_BOTH);
-            $roleids = array_keys($assignableroles);
-            if (!in_array($roleid, $roleids)) {
-                print_error('nopermissions', 'error');
-            }
-
-            return parent::display_default();
-        } else {
-            //use the standard link decorator to link role names to their specific sub-pages
-            $decorators = array(new role_name_decorator($this), 'decorate');
-
-            //determine all apprlicable roles we can assign users as the current context
-            $assignableroles = get_assignable_roles($context, ROLENAME_BOTH);
-
-            if (count($assignableroles) > 0) {
-                $roles = array();
-
-                foreach ($assignableroles as $roleid => $rolename) {
-                    $rec = new stdClass;
-                    $rec->id = $roleid;
-                    $rec->name = $rolename;
-                    $rec->description = format_string($DB->get_field('role', 'description', array('id' => $roleid)));
-                    $rec->count = $this->count_role_users($roleid, $context);
-                    $roles[$roleid] = $rec;
-                }
-
-                $columns = array('name'        => array('header' => get_string('name'),
-                                                        'decorator' => $decorators),
-                                 'description' => array('header' => get_string('description')),
-                                 'count'       => array('header' =>  get_string('users')));
-                $table = new nosort_table($roles, $columns, $this->url);
-                echo $table->get_html();
-            } else {
-                //determine if there are any roles whose assignments are not permitted for the current user
-                //by the "Allow role assignments" tab
-                $admin_assignable_roles = get_assignable_roles($context, ROLENAME_BOTH, false, get_admin());
-
-                if (count($admin_assignable_roles) > 0) {
-                    //denied based on configuration
-                    echo $OUTPUT->box(get_string('norolespermitted', 'elis_program'));
-                } else {
-                    //no roles are assignable at this context
-                    echo $OUTPUT->box(get_string('norolesexist', 'elis_program'));
-                }
-            }
-        }
     }
 
     protected function get_base_params() {
@@ -428,10 +387,19 @@ abstract class enginepage extends pm_page {
     }
 }
 
-
+/**
+ * Engine page for courses
+ *
+ * @author Tyler Bannister <tyler.bannister@remote-learner.net>
+ */
 class course_enginepage extends enginepage {
-    var $pagename = 'crsengine';
+    public $pagename = 'crsengine';
 
+    /**
+     * Get context
+     *
+     * @return object The context
+     */
     protected function get_context() {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
@@ -443,6 +411,22 @@ class course_enginepage extends enginepage {
         return $this->context;
     }
 
+    /**
+     * Get the course id.
+     *
+     * @return int The course id
+     */
+    protected function get_course_id() {
+        return $this->required_param('id', PARAM_INT);
+    }
+
+    /**
+     * Get parent page object
+     *
+     * @return object An object of the same type as the parent page
+     * @uses $CFG
+     * @uses $CURMAN
+     */
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
             global $CFG, $CURMAN;
@@ -455,9 +439,21 @@ class course_enginepage extends enginepage {
     }
 }
 
+/**
+ * Engine page for classes
+ *
+ * Classes have an extra form field that courses don't have.
+ *
+ * @author Tyler Bannister <tyler.bannister@remote-learner.net>
+ */
 class class_enginepage extends enginepage {
-    var $pagename = 'clsengine';
+    public $pagename = 'clsengine';
 
+    /**
+     * Get context
+     *
+     * @return object The context
+     */
     protected function get_context() {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
@@ -469,6 +465,27 @@ class class_enginepage extends enginepage {
         return $this->context;
     }
 
+    /**
+     * Get the course id.
+     *
+     * @return int The course id
+     * @uses $DB
+     */
+    protected function get_course_id() {
+        global $DB;
+
+        $classid  = $this->required_param('id', PARAM_INT);
+        $courseid = $DB->get_field('courseid', 'crlm_class', array('id' => $classid));
+        return $courseid;
+    }
+
+    /**
+     * Get parent page object
+     *
+     * @return object An object of the same type as the parent page
+     * @uses $CFG
+     * @uses $CURMAN
+     */
     protected function get_parent_page() {
         if (!isset($this->parent_page)) {
             global $CFG, $CURMAN;
