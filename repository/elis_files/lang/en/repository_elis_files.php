@@ -39,6 +39,7 @@ $string['username'] = 'User name';
 
 //ELIS language strings - just copied straight over
 $string['adminusername'] = 'Admin username override';
+$string['advanced'] = 'Advanced';
 $string['alfheader'] = 'Alfresco multimedia filters';
 $string['alfheaderintro'] = 'To customize the media dimetions add &d=WIDTHxHEIGHT to the end of the URL.  Width and height also accept a percent.';
 $string['alfmediapluginavi'] = 'Enable .avi filter';
@@ -178,6 +179,7 @@ $string['repositoryuserfiles'] = 'ELIS User Files';
 $string['resetcategories'] = 'Reset categories';
 $string['resetcategoriesdesc'] = 'This will force an update of all the categories from the repository (note: this will probably take about 30-60 seconds to complete)';
 $string['rootfolder'] = 'Root folder';
+$string['searchforfilesinrepository'] = 'Search for files in the repository';
 $string['serverpassword'] = 'Password';
 $string['serverport'] = 'Port';
 $string['serverurl'] = 'URL';

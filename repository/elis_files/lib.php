@@ -332,7 +332,11 @@ class repository_elis_files extends repository {
     }
 
     public function print_search() {
-        $str = parent::print_search();
+        $str = '<p>'.get_string('searchforfilesinrepository', 'repository_elis_files').'</p>';
+
+        $str .= parent::print_search();
+
+        /* old code
         $str .= '<label>Space: </label><br /><select name="space">';
         foreach ($this->user_session->stores as $v) {
             $str .= '<option ';
@@ -345,6 +349,8 @@ class repository_elis_files extends repository {
             $str .= '</option>';
         }
         $str .= '</select>';
+        */
+
         return $str;
     }
 
@@ -450,6 +456,9 @@ $fs = get_file_storage();
      * @return array
      */
     public function search($search_text) {
+        global $OUTPUT;
+
+        /* old code
         $space = optional_param('space', 'workspace://SpacesStore', PARAM_RAW);
         $currentStore = $this->user_session->getStoreFromString($space);
         $nodes = $this->user_session->query($currentStore, $search_text);
@@ -458,6 +467,36 @@ $fs = get_file_storage();
         foreach($nodes as $v) {
             $ret['list'][] = array('title'=>$v->cm_name, 'source'=>$v->id);
         }
+        */
+
+        $ret = array();
+
+        $ret['detailcols'] = array(array('field'=>'created',
+                                         'title'=>get_string('datecreated','repository_elis_files')),
+                                   array('field'=>'modified',
+                                         'title'=>get_string('datemodified','repository_elis_files')),
+                                   array('field'=>'owner',
+                                         'title'=>get_string('modifiedby','repository_elis_files'))
+                             );
+        $ret['dynload'] = true;
+        $ret['nologin'] = true;
+        $ret['showselectedactions'] = true;
+        $ret['showcurrentactions'] = true;
+        $ret['list'] = array();
+
+        $search_result = elis_files_search($search_text);
+
+        if (!empty($search_result->files)) {
+            foreach ($search_result->files as $file_object) {
+                $ret['list'][] = array('title'=>$file_object->title,
+                                       'thumbnail' => $OUTPUT->pix_url(file_extension_icon($file_object->filename, 32))->out(false),
+                                       'created'=>date("M. j, Y",$file_object->created),
+                                       'modified'=>date("M. j, Y",$file_object->modified),
+                                       'owner'=>$file_object->owner,
+                                       'source'=>$file_object->uuid);
+            }
+        }
+
         return $ret;
     }
 
