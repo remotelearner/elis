@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/user/filters/lib.php');
 require_once(elis::lib('form/custom_field_multiselect.php'));
 
