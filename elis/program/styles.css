@@ -94,3 +94,8 @@ dd.solution li {
 .elis_page .tabtree .tabrow1 LI.here .empty {
     display: none;
 }
+
+fieldset.engineform {
+    border: 1px black solid;
+    padding: 5px;
+}

@@ -32,9 +32,11 @@ require_once elispm::lib('lib.php');
 /**
  * the form element for curriculum
  */
-class cmEngneForm extends cmform {
+class cmEngineForm extends cmform {
     const LANG_FILE = 'elis_program';
 
+    // Form html
+    protected $_html = array();
     /**
      * defines items in the form
      */
@@ -43,6 +45,8 @@ class cmEngneForm extends cmform {
 
         $this->defineActivation();
         $this->defineResults();
+
+        $mform =& $this->_form;
 
         $attributes = array('rows'=>'2', 'cols'=>'40');
         $mform->addElement('textarea', 'description', get_string('curriculum_description', 'elis_program') . ':', $attributes);
@@ -110,50 +114,102 @@ class cmEngneForm extends cmform {
 
     /**
      * Define the activation section of the form.
+     *
+     * @uses $DB
      */
     protected function defineActivation() {
+        global $DB;
+
+        $grades = array(0 => get_string('engineform:class_grade', self::LANG_FILE));
+        $dates  = array(1 => get_string('engineform:after_class_start', self::LANG_FILE),
+                        2 => get_string('engineform:before_class_end', self::LANG_FILE),
+                        3 => get_string('engineform:after_class_end', self::LANG_FILE));
+
+        $conditions = array('courseid' => $this->_customdata['courseid']);
+
+        $completions = $DB->get_records(coursecompletion::TABLE, $conditions);
+
+        foreach ($completions as $completion) {
+            $grades[$completion->id] = $completion->name;
+        }
+
+        // Setup form elements so we can use Moodle form validation and stuff.
         $mform =& $this->_form;
 
         $mform->addElement('hidden', 'id');
         $mform->addElement('hidden', 'instanceid');
 
-        $mform->addElement('text', 'activate', get_string('active_this_rule', self::LANG_FILE));
+        $mform->addElement('checkbox', 'activate', get_string('engineform:activate_this_rule', self::LANG_FILE));
         $mform->setType('activate', PARAM_BOOL);
-        $mform->addHelpButton('activate', 'engineform:activate', self::LANG_FILE);
-
-
-
-        $mform->addElement('html', '<fieldset>');
-        $mform->addElement('html', '<label>'. get_string('event_trigger', self::LANG_FILE) .'</label>');
-        $mform->addElement('html', '<table><tr><td>');
 
         $mform->addElement('radio', 'trigger', '', null, 'grade');
-        $mform->setType('name', PARAM_ALPHA);
-        $mform->addRule('name', null, 'maxlength', 6);
-
-        $mform->addElement('html', '</td><td>'. get_string('when_student_grade_set', self::LANG_FILE));
-
-        $mform->addElement('checkbox', 'locked', get_string('use_locked_grades',self::LANG_FILE));
-
-        $mform->addElement('html', '</td></tr><tr><td>');
-
         $mform->addElement('radio', 'trigger', '', null, 'date');
-        $mform->addElement('html', '</td><td>');
-
-        $mform->addElement('html', '</td></tr><tr><td>');
-
         $mform->addElement('radio', 'trigger', '', null, 'manual');
-        $mform->addElement('html', '</td><td>');
-        $mform->addElement('html', '</td></tr></table>');
+        $mform->setType('trigger', PARAM_ALPHA);
+        $mform->addRule('trigger', null, 'maxlength', 6);
 
+        $mform->addElement('checkbox', 'locked',
+                           get_string('engineform:use_locked_grades',self::LANG_FILE));
+        $mform->setType('locked', PARAM_BOOL);
+
+        $mform->addElement('text', 'days', get_string('days'));
+
+        $mform->addElement('select', 'date', '', $dates);
+
+        $mform->addElement('select', 'grade', '', $grades);
+
+        // Setup an alternate html output so we can make the form user friendly.
+        $html = array();
+        $html[] = '<form>';
+        $html[] = '<fieldset class="engineform">';
+        $html[] = '<legend>'. get_string('engineform:activation_rules', self::LANG_FILE) .'</legend>';
+        $html[] = '<input type="hidden" name="id" value="" />';
+        $html[] = '<input type="hidden" name="instanceid" value="" />';
+        $html[] = get_string('engineform:activate_this_rule', self::LANG_FILE)
+                .' <input type="checkbox" name="activate" value="1" /><br />';
+
+        $html[] = '<fieldset class="engineform">';
+        $html[] = '<legend>'. get_string('engineform:event_trigger', self::LANG_FILE) .'</legend>';
+        $html[] = '<input type="radio" name="trigger" value="grade" />'
+                . get_string('when_student_grade_set', self::LANG_FILE)
+                . ' <input type="checkbox" name="locked_only" value="1" />'
+                . get_string('engineform:use_locked_grades',self::LANG_FILE) .'<br />';
+
+        $html[] = '<input type="radio" name="trigger" value="date" />'
+                . get_string('on', self::LANG_FILE);
+        $html[] = ' <input type="text" name="days" value="" /> '. get_string('days');
+
+        $html[] = '<select name="date">';
+        foreach ($dates as $id => $string) {
+            $html[] = "<option value=\"{$id}\">{$string}</option>";
+        }
+        $html[] = '</select><br />';
+
+        $html[] = '<input type="radio" name="trigger" value="manual" />'
+                . get_string('engineform:manual_trigger', self::LANG_FILE);
+        $html[] = '</fieldset>';
+
+        $html[] = '<fieldset class="engineform">';
+        $html[] = '<legend>'. get_string('engineform:criterion', self::LANG_FILE) .'</legend>';
+        $html[] = get_string('engineform:select_grade', self::LANG_FILE) .':<br />';
+
+        $html[] = '<select name="grade">';
+        foreach ($grades as $id => $string) {
+            $html[] = "<option value=\"{$id}\">{$string}</option>";
+        }
+        $html[] = '</select><br />';
+
+        $html[] = '</fieldset>';
+
+        $html[] = '</fieldset>';
+
+        $this->_html = $html;
     }
 
     /**
      * Define the results section of the form.
      */
     protected function defineResults() {
-        $mform =& $this->_form;
-
     }
 
     function check_unique($table, $field, $value, $id) {
@@ -204,5 +260,15 @@ class cmEngneForm extends cmform {
         }
 
         return $data;
+    }
+
+    /**
+     * Display HTML
+     *
+     * This function works around the limitations of the moodle form forms by printing html
+     * directly.  This allows for more custom designed forms.
+     */
+    function display_html() {
+        print(implode("\n", $this->_html));
     }
 }
