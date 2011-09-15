@@ -442,6 +442,17 @@ function clustertree_propagate_selected_unexpanded(instanceid, uniqueid, tree_vi
  * @param  TextNode  newNode     The newly revealed node
  */
 function clustertree_tick_selected_child(instanceid, uniqueid, tree_view, node, newNode) {
+    //if the parent element is cleared, don't select the new node
+    var clear_unexpanded_values = clustertree_get_list_values(instanceid, uniqueid + '_clrunexpanded');
+    for (var i = 0; i < clear_unexpanded_values.length; i++) {
+        if (node.contentElId == clear_unexpanded_values[i]) {
+            //set the child element as cleared
+            clustertree_append_to_list(instanceid, uniqueid + '_clrunexpanded', newNode.contentElId);
+            return;
+        }
+    }
+
+    //main work to select the new node
     var values = clustertree_get_list_values(instanceid, uniqueid + '_listing');
     for (var i = 0; i < values.length; i++) {
         if (newNode.contentElId == values[i] && newNode.highlightState != 1) {
