@@ -208,6 +208,8 @@ class block_curr_admin extends block_base {
                 new menuitem('bulkuser', new menuitempage('bulkuserpage'), null, get_string('userbulk', 'admin'), block_curr_admin_get_item_css_class('bulkuser'))
                 );
 
+        // ELIS-3208 - commented out this code as the Jasper reports no longer work in ELIS 2
+/*
         //show the Jasper report server link if applicable
         if (cm_jasper_link_enabled()) {
             //page action
@@ -219,7 +221,7 @@ class block_curr_admin extends block_base {
 
             $pages[] = new menuitem('reportslist', $jasper_link_page, null, '', $jasper_link_css);
         }
-
+*/
         $pages = array_merge($pages, array(
                 new menuitem('customfields', new menuitempage('customfieldpage', '', array('level' => 'user')), null, '',
                              block_curr_admin_get_item_css_class('customfields')),
