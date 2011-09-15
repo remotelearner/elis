@@ -1945,5 +1945,92 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         upgrade_block_savepoint($result, 2011081603, 'curr_admin');
     }
 
+    if ($result && $oldversion < 2011081604) {
+
+        /// table
+        $table = new xmldb_table('crlm_results_engine');
+
+        /// Adding fields
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, true);
+        $table->add_field('active', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('eventtriggertype', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('lockedgrade', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('triggerstartdate', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('criteriatype', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+
+
+        /// Adding keys and index
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        //$table->add_index('rs_contextid', XMLDB_INDEX_UNIQUE, array('contextid'));
+
+
+        /// Create table
+        if (!$dbman->table_exists($table)) {
+           $result = $result and $dbman->create_table($table);
+        }
+
+        /// table
+        $table = new xmldb_table('crlm_results_engine_action');
+
+        /// Adding fields
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', false, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('resultengineid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('actiontype', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('minimum', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('maximum', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('trackid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('fieldata', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL);
+
+        /// Adding keys and index
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_index('rs_resultengineid', XMLDB_INDEX_NOTUNIQUE, array('resultengineid'));
+
+        /// Create table
+        if (!$dbman->table_exists($table)) {
+           $result = $result and $dbman->create_table($table);
+        }
+
+        /// table
+        $table = new xmldb_table('crlm_results_engine_class_log');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', false, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('classid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('datescheduled', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL);
+        $table->add_field('daterun', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL);
+
+        /// Adding keys and index
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_index('rs_classid', XMLDB_INDEX_NOTUNIQUE, array('classid'));
+
+        /// Create table
+        if (!$dbman->table_exists($table)) {
+           $result = $result and $dbman->create_table($table);
+        }
+
+        /// table
+        $table = new xmldb_table('crlm_results_engine_student_log');
+
+        /// Adding keys and index
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', false, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('classlogid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('action', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL);
+        $table->add_field('daterun', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL);
+
+        /// Adding keys and index
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_index('rs_classlogid', XMLDB_INDEX_NOTUNIQUE, array('classlogid'));
+
+        /// Create table
+        if (!$dbman->table_exists($table)) {
+           $result = $result and $dbman->create_table($table);
+        }
+
+        upgrade_block_savepoint($result, 2011081604, 'curr_admin');
+
+    }
+
     return $result;
 }
