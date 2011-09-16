@@ -511,7 +511,7 @@ class individual_course_progress_report extends table_report {
 
         $course_context_level = context_level_base::get_custom_context_level('course', 'elis_program');
 
-        if ($field_id = $DB->get_field('crlm_field', 'id', array('shortname' => $field_shortname))) {
+        if ($field_id = $DB->get_field('elis_field', 'id', array('shortname' => $field_shortname))) {
             $field = new field($field_id);
             $data_table = $field->data_table();
 
