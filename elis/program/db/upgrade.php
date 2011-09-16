@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_elis_program_upgrade($oldversion=0) {
-    global $DB;
+    global $DB, $CFG;
 
     $dbman = $DB->get_manager();
     $result = true;
@@ -80,6 +80,13 @@ function xmldb_elis_program_upgrade($oldversion=0) {
 
         // elis savepoint reached
         upgrade_plugin_savepoint(true, 2011080200, '', 'elis');
+    }
+
+    if ($result && $oldversion < 2011091600) {
+        require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
+        //make sure the site has exactly one curr admin block instance
+        //that is viewable everywhere
+        block_curr_admin_create_instance();
     }
 
     return $result;
