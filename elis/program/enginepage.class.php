@@ -28,6 +28,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once elispm::lib('data/resultsengine.class.php');
 require_once elispm::lib('lib.php');
 require_once elispm::lib('page.class.php');
 require_once elispm::file('form/engineform.class.php');
@@ -35,8 +36,12 @@ require_once elispm::file('form/engineform.class.php');
 abstract class enginepage extends pm_page {
     const LANG_FILE = 'elis_program';
 
+    public $data_class = 'resultsengine';
+    public $form_class = 'cmEngineForm';
+
     protected $parent_page;
     protected $section;
+    protected $_form;
 
     public function __construct($params = null) {
         parent::__construct($params);
@@ -50,12 +55,50 @@ abstract class enginepage extends pm_page {
     abstract protected function get_course_id();
 
     /**
+     * Check if the user can edit
+     *
+     * @return bool True if the user has permission to use the default action
+     */
+    function can_do_edit() {
+        return $this->can_do_default();
+    }
+
+    /**
+     * Check if the user can do the default action
+     *
+     * @return bool True if the user has permission to use the default action
+     */
+    function can_do_default() {
+        return $this->_has_capability('elis/program:'. $this->type .'_edit', $this->get_context());
+    }
+
+    /**
      * Return the engine form
      *
      * @return object The engine form
      */
-    protected function get_engine_form() {
-        return new cmEngineForm(null, array('courseid' => $this->get_course_id()));
+    protected function get_engine_form($params = null) {
+
+        $s = $this->required_param('s', PARAM_ALPHA);
+
+        if ($params === null) {
+            $action = $this->optional_param('action', 'default', PARAM_ALPHA);
+            $id     = $this->required_param('id', PARAM_INT);
+
+            $fields = array(
+                'action'   => $action,
+                'courseid' => $this->get_course_id(),
+                'id'       => $id,
+                'page'     => $s,
+            );
+            $obj = new object($params);
+            $params = array('obj' => $obj);
+        } else {
+            $params['obj']->courseid = $this->get_course_id();
+            $params['obj']->page     = $s;
+        }
+
+        return new cmEngineForm(null, $params);
     }
 
     function get_tab_page() {
@@ -97,294 +140,71 @@ abstract class enginepage extends pm_page {
         $id = $this->required_param('id', PARAM_INT);
         $params['id'] = $id;
 
-        $page = $this->optional_param('page', 0, PARAM_INT);
-        if ($page != 0) {
-            $params['page'] = $page;
-        }
-
         return $params;
-    }
-
-    function can_do_default() {
-        return has_capability('moodle/role:assign', $this->get_context());
-    }
-
-    /**
-     * Counts all the users assigned this role in this context or higher
-     * (can be used by child classes to override the counting with other criteria)
-     *
-     * @param mixed $roleid either int or an array of ints
-     * @param object $context
-     * @param bool $parent if true, get list of users assigned in higher context too
-     * @return int Returns the result count
-     */
-    function count_role_users($roleid, $context, $parent = false) {
-        //default behaviour of counting role assignments
-        return count_role_users($roleid, $context, $parent);
     }
 
     /**
      * Display the default page
      */
     function display_default() {
-        $form = $this->get_engine_form();
+        $this->display_edit();
+    }
+
+    /**
+     * Display the edit page
+     */
+    function display_edit() {
+        if (! isset($this->_form)) {
+            $this->_form = new $this->get_engine_form();
+        }
 
         $this->print_tabs();
-        $form->display();
-
+        $this->_form->display();
     }
 
-    protected function get_base_params() {
-        $params = parent::get_base_params();
-        $params['role'] = $this->required_param('role', PARAM_INT);
-        return $params;
-    }
-
-    // ELISAT-349: Part 1
-    function get_extra_page_params() {
-        $extra_params = array();
-        $sort = optional_param('sort', 'name', PARAM_ACTION);
-        $order = optional_param('dir', 'ASC', PARAM_ACTION);
-        if ($order != 'DESC') {
-            $order = 'ASC';
-        }
-        $extra_params['sort'] = $sort;
-        $extra_params['dir'] = $order;
-        return $extra_params;
-    }
-
-    protected function get_selection_form() {
-        if ($this->is_assigning()) {
-            return new addroleform();
-        } else {
-            return new removeroleform();
-        }
-    }
-
-    protected function process_assignment($data) {
-        $context = $this->get_context();
-
-        //make sure the current user can assign roles on the current context
-        $assignableroles = get_assignable_roles($context, ROLENAME_BOTH);
-        $roleids = array_keys($assignableroles);
-        if (!in_array($data->role, $roleids)) {
-            print_error('nopermissions', 'error');
-        }
-
-        //perform the role assignments
-        foreach ($data->_selection as $user) {
-            role_assign($data->role, cm_get_moodleuserid($user), $context->id);
-        }
-
-        //set up the redirect to the appropriate page
+    /**
+     * Process the edit
+     */
+    function do_edit() {
         $id = $this->required_param('id', PARAM_INT);
-        $role = $this->required_param('role', PARAM_INT);
-        $tmppage = $this->get_new_page(array('_assign' => 'assign',
-                                             'id'      => $id,
-                                             'role'    => $role));
-        redirect($tmppage->url, get_string('users_assigned_to_role','elis_program',count($data->_selection)));
-    }
+        $target = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
 
-    protected function process_unassignment($data) {
-        $context = $this->get_context();
-
-        //make sure the current user can assign roles on the current context
-        $assignableroles = get_assignable_roles($context, ROLENAME_BOTH);
-        $roleids = array_keys($assignableroles);
-        if (!in_array($data->role, $roleids)) {
-            print_error('nopermissions', 'error');
+        $obj = $this->get_new_data_object($id);
+        $filter = new field_filter('contextid', $id);
+        if ($obj->exists($filter)) {
+            $obj->load();
         }
 
-        //perform the role unassignments
-        foreach ($data->_selection as $user) {
-            role_unassign($data->role, cm_get_moodleuserid($user), $context->id);
+        $form = $this->get_engine_form(array('obj' => $obj->to_object()));
+
+        if ($form->is_cancelled()) {
+            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
+            redirect($target->url);
+            return;
         }
 
-        //set up the redirect to the appropriate page
-        $id = $this->required_param('id', PARAM_INT);
-        $role = $this->required_param('role', PARAM_INT);
-        $tmppage = $this->get_new_page(array('_assign' => 'unassign',
-                                             'id'      => $id,
-                                             'role'    => $role));
-        redirect($tmppage->url, get_string('users_removed_from_role','elis_program',count($data->_selection)));
-    }
+        $data = $form->get_data();
 
-    protected function get_selection_filter() {
-        $post = $_POST;
-        $filter = new pm_user_filtering(null, 'index.php', array('s' => $this->pagename) + $this->get_base_params());
-        $_POST = $post;
-        return $filter;
-    }
+        if($data) {
+            require_sesskey();
 
-    protected function print_selection_filter($filter) {
-        $filter->display_add();
-        $filter->display_active();
-    }
-
-    protected function get_assigned_records($filter) {
-        global $CFG, $DB;
-
-        $context = $this->get_context();
-        $roleid = $this->required_param('role', PARAM_INT);
-
-        $pagenum = optional_param('page', 0, PARAM_INT);
-        $perpage = 30;
-
-        $sort = optional_param('sort', 'name', PARAM_ACTION);
-        $order = optional_param('dir', 'ASC', PARAM_ACTION);
-        if ($order != 'DESC') {
-            $order = 'ASC';
-        }
-
-        static $sortfields = array(
-            'name' => array('lastname', 'firstname'),
-            'idnumber' => 'idnumber',
-            );
-        if (!array_key_exists($sort, $sortfields)) {
-            $sort = key($sortfields);
-        }
-        if (is_array($sortfields[$sort])) {
-            $sortclause = implode(', ', array_map(create_function('$x', "return \"\$x $order\";"), $sortfields[$sort]));
+            $obj->set_from_data($data);
+            $obj->save();
+            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
+            redirect($target->url);
         } else {
-            $sortclause = "{$sortfields[$sort]} $order";
+            $this->_form = $form;
+            $this->display('edit');
         }
-
-        $where = "idnumber IN (SELECT mu.idnumber
-                                 FROM {user} mu
-                                 JOIN {role_assignments} ra
-                                      ON ra.userid = mu.id
-                                WHERE ra.contextid = :contextid
-                                  AND ra.roleid = :roleid
-                                  AND mu.mnethostid = :mnethostid)";
-
-        $params = array('contextid' => $context->id,
-                        'roleid' => $roleid,
-                        'mnethostid' => $CFG->mnet_localhost_id);
-
-        list($extrasql, $extraparams) = $filter->get_sql_filter();
-        if ($extrasql) {
-            $where .= " AND $extrasql";
-            $params = array_merge($params, $extraparams);
-        }
-
-        $count = $DB->count_records_select(user::TABLE, $where, $params);
-        $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
-
-        return array($users, $count);
     }
 
-    protected function get_available_records($filter) {
-        global $CFG, $DB;
-
-        $context = $this->get_context();
-        $roleid = required_param('role', PARAM_INT);
-
-        $pagenum = optional_param('page', 0, PARAM_INT);
-        $perpage = 30;
-
-        $sort = optional_param('sort', 'name', PARAM_ACTION);
-        $order = optional_param('dir', 'ASC', PARAM_ACTION);
-        if ($order != 'DESC') {
-            $order = 'ASC';
-        }
-
-        static $sortfields = array(
-            'name' => array('lastname', 'firstname'),
-            'lastname' => array('lastname', 'firstname'),
-            'firstname' => array('firstname', 'lastname'),
-            'idnumber' => 'idnumber',
-            );
-        if (!array_key_exists($sort, $sortfields)) {
-            $sort = key($sortfields);
-        }
-        if (is_array($sortfields[$sort])) {
-            $sortclause = implode(', ', array_map(create_function('$x', "return \"\$x $order\";"), $sortfields[$sort]));
-        } else {
-            $sortclause = "{$sortfields[$sort]} $order";
-        }
-
-        $where = "idnumber NOT IN (SELECT mu.idnumber
-                                     FROM {user} mu
-                                LEFT JOIN {role_assignments} ra
-                                          ON ra.userid = mu.id
-                                    WHERE ra.contextid = :contextid
-                                      AND ra.roleid = :roleid
-                                      AND mu.mnethostid = :mnethostid)";
-
-        $params = array('contextid' => $context->id,
-                        'roleid' => $roleid,
-                        'mnethostid' => $CFG->mnet_localhost_id);
-
-        list($extrasql, $extraparams) = $filter->get_sql_filter();
-
-        if ($extrasql) {
-            $where .= " AND $extrasql";
-            $params = array_merge($params, $extraparams);
-        }
-
-        $count = $DB->count_records_select(user::TABLE, $where, $params);
-        $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
-
-        return array($users, $count);
-    }
-
-    function get_records_from_selection($record_ids) {
-        global $DB;
-
-        //figure out the body if the equals or in clause
-        list($idtest, $params) = $DB->get_in_or_equal($record_ids);
-
-        //apply the condition to the user id
-        $where = "id {$idtest}";
-
-        $records = $DB->get_records_select(user::TABLE, $where, $params);
-        return $records;
-    }
-
-    protected function print_record_count($count) {
-        print_string('usersfound','elis_program',$count);
-    }
-
-    protected function create_selection_table($records, $baseurl) {
-        $pagenum = optional_param('page', 0, PARAM_INT);
-        $baseurl .= "&page={$pagenum}"; // ELISAT-349: part 2
-
-        //persist our specific parameters
-        $id = $this->required_param('id', PARAM_INT);
-        $baseurl .= "&id={$id}";
-        $assign = $this->optional_param('_assign', 'unassign', PARAM_ACTION);
-        $baseurl .= "&_assign={$assign}";
-        $role = $this->required_param('role', PARAM_INT);
-        $baseurl .= "&role={$role}";
-
-        $records = $records ? $records : array();
-        $columns = array('_selection' => array('header' => ''),
-                         'idnumber'   => array('header' => get_string('idnumber')),
-                         'name'       => array('header' => array('firstname' => array('header' => get_string('firstname')),
-                                                                 'lastname' => array('header' => get_string('lastname'))
-                                                                 ),
-                                               'display_function' => 'user_table_fullname'
-
-                        )
-        );
-
-        //determine sort order
-        $sort = optional_param('sort', 'lastname', PARAM_ALPHA);
-        $dir  = optional_param('dir', 'ASC', PARAM_ALPHA);
-        if ($dir !== 'DESC') {
-            $dir = 'ASC';
-        }
-
-        if (isset($columns[$sort])) {
-            $columns[$sort]['sortable'] = $dir;
-        } elseif (isset($columns['name']['header'][$sort])) {
-            $columns['name']['header'][$sort]['sortable'] = $dir;
-        } else {
-            $sort = 'lastname';
-            $columns['name']['header']['lastname']['sortable'] = $dir;
-        }
-
-        return new user_selection_table($records, $columns, new moodle_url($baseurl));
+    /**
+     * Returns a new instance of the data object class this page manages.
+     * @param $id
+     * @return object
+     */
+    public function get_new_data_object($id=false) {
+        return new $this->data_class($id);
     }
 }
 
@@ -395,6 +215,7 @@ abstract class enginepage extends pm_page {
  */
 class course_enginepage extends enginepage {
     public $pagename = 'crsengine';
+    public $type     = 'course';
 
     /**
      * Get context
@@ -438,6 +259,15 @@ class course_enginepage extends enginepage {
         }
         return $this->parent_page;
     }
+
+    /**
+     * Check if the user can do the default action
+     *
+     * @return bool True if the user has permission to use the default action
+     */
+    function can_do_default() {
+        return has_capability('elis/program:course_edit', $this->get_context());
+    }
 }
 
 /**
@@ -449,6 +279,7 @@ class course_enginepage extends enginepage {
  */
 class class_enginepage extends enginepage {
     public $pagename = 'clsengine';
+    public $type     = 'class';
 
     /**
      * Get context

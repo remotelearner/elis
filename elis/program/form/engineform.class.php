@@ -37,6 +37,10 @@ class cmEngineForm extends cmform {
 
     // Form html
     protected $_html = array();
+
+    // Layout switching
+    protected $_layout = 'default';
+
     /**
      * defines items in the form
      */
@@ -45,69 +49,6 @@ class cmEngineForm extends cmform {
 
         $this->defineActivation();
         $this->defineResults();
-
-        $mform =& $this->_form;
-
-        $attributes = array('rows'=>'2', 'cols'=>'40');
-        $mform->addElement('textarea', 'description', get_string('curriculum_description', 'elis_program') . ':', $attributes);
-        $mform->setType('description', PARAM_CLEAN);
-        $mform->addHelpButton('description', 'curriculaform:curriculum_description', 'elis_program');
-
-        $mform->addElement('text', 'reqcredits', get_string('required_credits', 'elis_program') . ':');
-        $mform->setType('reqcredits', PARAM_TEXT);
-        $mform->addRule('reqcredits', null, 'maxlength', 10);
-        $mform->addHelpButton('reqcredits', 'curriculaform:required_credits', 'elis_program');
-
-        $choices = range(0, 10);
-        $mform->addElement('select', 'priority', get_string('priority', 'elis_program') . ':', $choices);
-        $mform->addHelpButton('priority', 'curriculaform:priority', 'elis_program');
-
-        //because moodle forms will not allow headers within headers
-        $mform->addElement('header', 'editform', get_string('time_settings', 'elis_program'));
-
-        // Time to complete
-        $mform->addElement('text', 'timetocomplete', get_string('time_to_complete', 'elis_program') . ':');
-        $mform->setType('timetocomplete', PARAM_TEXT);
-        $mform->addRule('timetocomplete', null, 'maxlength', 64);
-        $mform->addHelpButton('timetocomplete', 'curriculaform:time_to_complete', 'elis_program');
-
-        //$mform->addElement('html', '<small>' . get_string('tips_time_to_complete', 'elis_program') . '</small><br /><br />');
-
-        // Frequency (only display if curriculum expiration is currently enabled).
-        if (!empty(elis::$config->elis_program->enable_curriculum_expiration)) {
-            $mform->addElement('text', 'frequency', get_string('expiration', 'elis_program') . ':');
-            $mform->setType('frequency', PARAM_TEXT);
-            $mform->addRule('frequency', null, 'maxlength', 64);
-            $mform->addHelpButton('frequency', 'curriculaform:expiration', 'elis_program');
-        } else {
-            $mform->addElement('hidden', 'frequency');
-        }
-
-        //$mform->addElement('html', '<small>' . get_string('tips_time_to_redo', 'elis_program') . '</small><br /><br />');
-
-        $mform->addElement('static', '', '', '<small>'.get_string('tips_time_format', 'elis_program').'</small>');
-
-        // custom fields
-        $fields = field::get_for_context_level('curriculum');
-        $fields = $fields ? $fields : array();
-
-        $lastcat = null;
-        $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $this->_customdata['obj']->id)
-            : get_context_instance(CONTEXT_SYSTEM);
-        require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
-
-        foreach ($fields as $rec) {
-            $field = new field($rec);
-            if (!isset($field->owners['manual'])) {
-                continue;
-            }
-            if ($lastcat != $rec->categoryid) {
-                $lastcat = $rec->categoryid;
-                $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
-            }
-            manual_field_add_form_element($this, $mform, $context, $this->_customdata, $field);
-        }
 
         $this->add_action_buttons();
     }
@@ -125,7 +66,7 @@ class cmEngineForm extends cmform {
                         2 => get_string('engineform:before_class_end', self::LANG_FILE),
                         3 => get_string('engineform:after_class_end', self::LANG_FILE));
 
-        $conditions = array('courseid' => $this->_customdata['courseid']);
+        $conditions = array('courseid' => $this->_customdata['obj']->courseid);
 
         $completions = $DB->get_records(coursecompletion::TABLE, $conditions);
 
@@ -133,77 +74,107 @@ class cmEngineForm extends cmform {
             $grades[$completion->id] = $completion->name;
         }
 
-        // Setup form elements so we can use Moodle form validation and stuff.
-        $mform =& $this->_form;
+        $activationrules = get_string('engineform:activation_rules', self::LANG_FILE);
+        $eventtrigger    = get_string('engineform:event_trigger', self::LANG_FILE);
+        $activaterule    = get_string('engineform:activate_this_rule', self::LANG_FILE);
+        $uselocked       = get_string('engineform:use_locked_grades',self::LANG_FILE);
+        $gradeset        = get_string('engineform:when_student_grade_set', self::LANG_FILE);
+        $on              = get_string('engineform:on', self::LANG_FILE);
+        $days            = get_string('days');
+        $manualtrigger   = get_string('engineform:manual_trigger', self::LANG_FILE);
+        $criterion       = get_string('engineform:criterion', self::LANG_FILE);
+        $selectgrade     = get_string('engineform:select_grade', self::LANG_FILE);
 
-        $mform->addElement('hidden', 'id');
-        $mform->addElement('hidden', 'instanceid');
+        if ($this->_layout == 'custom') {
+            // Setup an alternate html output so we can make the form user friendly.
+            $html = array();
+            $html[] = '<form>';
+            $html[] = '<fieldset class="engineform">';
+            $html[] = '<legend>'. $activationrules .'</legend>';
+            $html[] = '<input type="hidden" name="action" value="edit" />';
+            $html[] = '<input type="hidden" name="id" value="'. $this->_customdata['id'] .'" />';
+            $html[] = '<input type="hidden" name="s" value="'. $this->_customdata['data'] .'" />';
+            $html[] = $activaterule .' <input type="checkbox" name="activate" value="1" /><br />';
 
-        $mform->addElement('checkbox', 'activate', get_string('engineform:activate_this_rule', self::LANG_FILE));
-        $mform->setType('activate', PARAM_BOOL);
+            $html[] = '<fieldset class="engineform">';
+            $html[] = '<legend>'. $eventtrigger .'</legend>';
+            $html[] = '<input type="radio" name="trigger" value="grade" />'. $gradeset
+                    .' <input type="checkbox" name="locked_only" value="1" />'. $uselocked .'<br />';
 
-        $mform->addElement('radio', 'trigger', '', null, 'grade');
-        $mform->addElement('radio', 'trigger', '', null, 'date');
-        $mform->addElement('radio', 'trigger', '', null, 'manual');
-        $mform->setType('trigger', PARAM_ALPHA);
-        $mform->addRule('trigger', null, 'maxlength', 6);
+            $html[] = '<input type="radio" name="trigger" value="date" />'. $on;
+            $html[] = ' <input type="text" name="days" value="" /> '. $days;
 
-        $mform->addElement('checkbox', 'locked',
-                           get_string('engineform:use_locked_grades',self::LANG_FILE));
-        $mform->setType('locked', PARAM_BOOL);
+            $html[] = '<select name="date">';
+            foreach ($dates as $id => $string) {
+                $html[] = "<option value=\"{$id}\">{$string}</option>";
+            }
+            $html[] = '</select><br />';
 
-        $mform->addElement('text', 'days', get_string('days'));
+            $html[] = '<input type="radio" name="trigger" value="manual" />'. $manualtrigger;
+            $html[] = '</fieldset>';
 
-        $mform->addElement('select', 'date', '', $dates);
+            $html[] = '<fieldset class="engineform">';
+            $html[] = '<legend>'. $criterion .'</legend>';
+            $html[] = $selectgrade .':<br />';
 
-        $mform->addElement('select', 'grade', '', $grades);
+            $html[] = '<select name="grade">';
+            foreach ($grades as $id => $string) {
+                $html[] = "<option value=\"{$id}\">{$string}</option>";
+            }
+            $html[] = '</select><br />';
 
-        // Setup an alternate html output so we can make the form user friendly.
-        $html = array();
-        $html[] = '<form>';
-        $html[] = '<fieldset class="engineform">';
-        $html[] = '<legend>'. get_string('engineform:activation_rules', self::LANG_FILE) .'</legend>';
-        $html[] = '<input type="hidden" name="id" value="" />';
-        $html[] = '<input type="hidden" name="instanceid" value="" />';
-        $html[] = get_string('engineform:activate_this_rule', self::LANG_FILE)
-                .' <input type="checkbox" name="activate" value="1" /><br />';
+            $html[] = '</fieldset>';
 
-        $html[] = '<fieldset class="engineform">';
-        $html[] = '<legend>'. get_string('engineform:event_trigger', self::LANG_FILE) .'</legend>';
-        $html[] = '<input type="radio" name="trigger" value="grade" />'
-                . get_string('when_student_grade_set', self::LANG_FILE)
-                . ' <input type="checkbox" name="locked_only" value="1" />'
-                . get_string('engineform:use_locked_grades',self::LANG_FILE) .'<br />';
+            $html[] = '</fieldset>';
 
-        $html[] = '<input type="radio" name="trigger" value="date" />'
-                . get_string('on', self::LANG_FILE);
-        $html[] = ' <input type="text" name="days" value="" /> '. get_string('days');
+            $this->_html = $html;
+        } else {
+            $mform =& $this->_form;
 
-        $html[] = '<select name="date">';
-        foreach ($dates as $id => $string) {
-            $html[] = "<option value=\"{$id}\">{$string}</option>";
+            $mform->addElement('hidden', 'action', 'edit');
+            $mform->addElement('hidden', 'id', $this->_customdata['obj']->id);
+            $mform->addElement('hidden', 's', $this->_customdata['obj']->page);
+
+            $mform->addElement('html', '<fieldset class="engineform">');
+            $mform->addElement('html', '<legend>'. $activationrules .'</legend>');
+
+            $mform->addElement('checkbox', 'activate', $activaterule);
+            $mform->setType('activate', PARAM_BOOL);
+
+            $mform->addElement('html', '<fieldset class="engineform">');
+            $mform->addElement('html', '<legend>'. $eventtrigger .'</legend>');
+
+            $grade = array();
+            $grade[] = $mform->createElement('radio', 'trigger', '', $gradeset, 'grade');
+            $grade[] = $mform->createElement('checkbox', 'locked', '', $uselocked);
+
+            $date = array();
+            $date[] = $mform->createElement('radio', 'trigger', '', $on, 'date');
+            $date[] = $mform->createElement('text', 'days', '', 'size="2"');
+            $date[] = $mform->createElement('select', 'date', '', $dates);
+
+            $manual = array();
+            $manual[] = $mform->createElement('radio', 'trigger', '', $manualtrigger, 'manual');
+
+            $mform->addGroup($grade, '', '', ' ', false);
+            $mform->addGroup($date, '', '', array(' ', ' '. $days .' '), false);
+            $mform->addGroup($manual, '', '', ' ', false);
+
+            $mform->setType('locked', PARAM_BOOL);
+            $mform->addElement('html', '</fieldset>');
+
+            $mform->addElement('html', '<fieldset class="engineform">');
+            $mform->addElement('html', '<legend>'. $criterion .'</legend>');
+
+            $grade = array();
+            $grade[] = $mform->createElement('select', 'grade', '', $grades);
+
+            $mform->addElement('html', $selectgrade .'<br />');
+            $mform->addGroup($grade);
+
+            $mform->addElement('html', '</fieldset>');
+            $mform->addElement('html', '</fieldset>');
         }
-        $html[] = '</select><br />';
-
-        $html[] = '<input type="radio" name="trigger" value="manual" />'
-                . get_string('engineform:manual_trigger', self::LANG_FILE);
-        $html[] = '</fieldset>';
-
-        $html[] = '<fieldset class="engineform">';
-        $html[] = '<legend>'. get_string('engineform:criterion', self::LANG_FILE) .'</legend>';
-        $html[] = get_string('engineform:select_grade', self::LANG_FILE) .':<br />';
-
-        $html[] = '<select name="grade">';
-        foreach ($grades as $id => $string) {
-            $html[] = "<option value=\"{$id}\">{$string}</option>";
-        }
-        $html[] = '</select><br />';
-
-        $html[] = '</fieldset>';
-
-        $html[] = '</fieldset>';
-
-        $this->_html = $html;
     }
 
     /**
@@ -246,29 +217,16 @@ class cmEngineForm extends cmform {
     }
 
     /**
-     * Overridden to specially handle timetocomplete and frequency fields.
-     */
-    function get_data($slashed=false) {
-        $data = parent::get_data($slashed);
-
-        if(!empty($data)) {
-            $datedelta = new datedelta($data->timetocomplete);
-            $data->timetocomplete = $datedelta->getDateString();
-
-            $datedelta = new datedelta($data->frequency);
-            $data->frequency = $datedelta->getDateString();
-        }
-
-        return $data;
-    }
-
-    /**
      * Display HTML
      *
-     * This function works around the limitations of the moodle form forms by printing html
+     * This function works around the limitations of the moodle forms by printing html
      * directly.  This allows for more custom designed forms.
      */
-    function display_html() {
-        print(implode("\n", $this->_html));
+    function display() {
+        if ($this->_layout == 'custom') {
+            print(implode("\n", $this->_html));
+        } else {
+            parent::display();
+        }
     }
 }
