@@ -67,6 +67,7 @@ class repository_elis_files extends repository {
         $PAGE->requires->js('/repository/elis_files/js/jquery-1.6.2.min.js');
         $PAGE->requires->js('/repository/elis_files/js/jquery-ui-1.8.16.custom.min.js');
         $PAGE->requires->js('/repository/elis_files/js/fileuploader.js');
+        $PAGE->requires->js('/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.js', true);
     }
 
     public function print_login() {
@@ -331,6 +332,13 @@ class repository_elis_files extends repository {
     }
 
     public function print_search() {
+        global $CFG, $DB;
+
+        require_once $CFG->dirroot.'/repository/elis_files/lib/ELIS_files.php';
+        require_once $CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php';
+        require_once $CFG->dirroot.'/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.php';
+        require_once $CFG->dirroot.'/repository/elis_files/tree_menu_lib.php';
+
         $str = '<p>'.get_string('searchforfilesinrepository', 'repository_elis_files').'</p>';
 
         $str .= parent::print_search();
@@ -349,6 +357,46 @@ class repository_elis_files extends repository {
         }
         $str .= '</select>';
         */
+
+        $str .= '<div id="search_advanced_options" style="display:none;">';
+        $str .= '<label>Category: </label><br />';
+
+        $repo = repository_factory::factory();
+        $catfilter = elis_files_get_category_filter();
+
+        if ($DB->get_manager()->table_exists('elis_files_categories') && $categories = $repo->category_get_children(0)) {
+            $str .= '<center><input type="button" value="' . get_string('selectall') . '" onclick="checkall();" />';
+            $str .= '&nbsp;<input type="button" value="' . get_string('deselectall') . '" onclick="checknone();" /><br />';
+            $str .= '</center><br />';
+
+            if ($nodes = elis_files_make_category_select_tree_choose($categories, $catfilter)) {
+                $menu  = new HTML_TreeMenu();
+
+                for ($i = 0; $i < count($nodes); $i++) {
+                    $menu->addItem($nodes[$i]);
+                }
+
+                $treemenu = new HTML_TreeMenu_DHTML($menu, array(
+                    'images' => $CFG->wwwroot . '/repository/elis_files/lib/HTML_TreeMenu-1.2.0/images'
+                ));
+
+                //$treemenu->printMenu();
+                $treemenu_html = $treemenu->toHTML();
+
+                //error_log('treemenu_html:'.$treemenu_html);
+
+                $str .= $treemenu_html;
+            }
+
+            $str .= '<center><br />';
+            $str .= '<input type="button" value="' . get_string('selectall') . '" onclick="checkall();" />';
+            $str .= '&nbsp;<input type="button" value="' . get_string('deselectall') . '" onclick="checknone();" /><br />';
+            $str .= '</center> ';
+        } else {
+            $str .= get_string('nocategoriesfound', 'repository_elis_files');
+        }
+
+        $str .= '</div>';
 
         return $str;
     }
@@ -454,7 +502,7 @@ $fs = get_file_storage();
      * @param string $search_text
      * @return array
      */
-    public function search($search_text) {
+    public function search($search_text, $categories = NULL) {
         global $OUTPUT;
 
         /* old code
@@ -487,6 +535,27 @@ $fs = get_file_storage();
 
         if (!empty($search_result->files)) {
             foreach ($search_result->files as $file_object) {
+                //error_log("DEBUG: search result");
+                //$flat = print_r($file_object,true);
+                //error_log($flat);
+
+                if (!empty($categories)) {
+                    $found_category = false;
+                    $category_result = elis_files_get_node_categories($file_object->noderef, $file_object->uuid);
+                    foreach ($categories as $category) {
+                        if (!empty($category_result[$category])) {
+                            $found_category = true;
+                            break;
+                        }
+                    }
+                    if (!$found_category) {
+                        continue;
+                    }
+                }
+                //error_log("DEBUG: category result");
+                //$flat = print_r($category_result,true);
+                //error_log($flat);
+
                 $ret['list'][] = array('title'=>$file_object->title,
                                        'thumbnail' => $OUTPUT->pix_url(file_extension_icon($file_object->filename, 32))->out(false),
                                        'created'=>date("M. j, Y",$file_object->created),

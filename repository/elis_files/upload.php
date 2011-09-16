@@ -1,6 +1,7 @@
 <?php
 /**
  * Handle the jquery file uploads to Alfresco
+ * Works in conjunction with Valums fileuploader.js
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
@@ -44,6 +45,7 @@ class qqUploadedFileXhr {
         }
 
         // save temporary file in moodledata
+        // TO-DO: eventually this should be changed to send the file directory to alfresco and skip the intermediate temporary local save step
         $target = fopen($path, "w");
         fseek($temp, 0, SEEK_SET);
         stream_copy_to_stream($temp, $target);

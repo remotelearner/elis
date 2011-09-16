@@ -150,7 +150,8 @@
                 'expanded'     => $expanded
             ));
 
-            if ($children = $repo->category_get_children($cats[$i]->id)) {
+//            if ($children = $repo->category_get_children($cats[$i]->id)) {
+            if ($children = ELIS_files::category_get_children($cats[$i]->id)) {
                 if ($cnodes = elis_files_make_category_select_tree_choose($children, $selected)) {
                     for ($j = 0; $j < count($cnodes); $j++) {
                         $node->addItem($cnodes[$j]);

@@ -1038,6 +1038,50 @@ function elis_files_search($query, $page = 1, $perpage = 9999) {
     return $return;
 }
 
+/**
+ * Perform an ad-hoc query
+ *
+ * @param string $statement               The query string to use.
+ * @param bool   $searchAllVersions       Toggle to search all versions (default=false) (optional).
+ * @param bool   $includeAllowableActions Toggle to include allowable actions (default=false) (optional).
+ * @param string $includeRelationships    The relationships to include (default=none) (optional).
+ * @param int    $maxItems                The number of results to return (default=0=Repository default) (optional).
+ * @param int    $skipCount               The starting position of results (default=0=Start at first position) (optional).
+ * @return object An object containing an array of results.
+ */
+function elis_files_query($statement, $searchAllVersions = false, $includeAllowableActions = false,
+                          $includeRelationships = 'none', $maxItems = 0, $skipCount = 0) {
+
+    // TO-DO: this function is under construction
+
+    $response = elis_files_utils_invoke_service('/api/query',
+                                                'ticket',
+                                                array(),
+                                                'CUSTOM-POST',
+                                                array("statement"=>$statement,
+                                                      "searchAllVersions"=>$searchAllVersions,
+                                                      "includeAllowableActions"=>$includeAllowableActions,
+                                                      "includeRelationships"=>$includeRelationships,
+                                                      "maxItems"=>$maxItems,
+                                                      "skipCount"=>$skipCount
+                                                     )
+                                               );
+
+    $return   = new stdClass;
+    $return->folders = array();
+    $return->files   = array();
+
+    /*
+    try {
+        $sxml = new SimpleXMLElement($response);
+    } catch (Exception $e) {
+        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+        return false;
+    }
+    */
+
+    return $return;
+}
 
 /**
  * Perform a search for all content within a specific category.
@@ -2874,5 +2918,3 @@ function elis_files_utils_http_request($serviceurl, $auth = 'ticket', $headers =
 
     return $result;
 }
-
-?>
