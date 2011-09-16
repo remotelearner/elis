@@ -130,7 +130,7 @@ abstract class enginepage extends pm_page {
         $form = $this->get_engine_form();
 
         $this->print_tabs();
-        $form->display_html();
+        $form->display();
 
     }
 
