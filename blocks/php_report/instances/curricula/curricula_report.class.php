@@ -126,11 +126,14 @@ class curricula_report extends table_report {
 
     /**
      * Specifies available report filters
-     * (allow for filtering on various user and cluster-related fields)
+     * (empty by default but can be implemented by child class)
      *
-     * @return  generalized_filter_entry array  The list of available filters
+     * @param   boolean  $init_data  If true, signal the report to load the
+     *                               actual content of the filter objects
+     *
+     * @return  array                The list of available filters
      */
-    function get_filters() {
+    function get_filters($init_data = true) {
 
         // Create all requested User Profile field filters
         $upfilter =
@@ -151,11 +154,9 @@ class curricula_report extends table_report {
 
         $filters = array_merge($filters,
                  array(
-                     new generalized_filter_entry(
-                         'cluster',
-                         'crlmu', 'id', get_string('filter_cluster',
-                         'rlreport_curricula'), false, 'clusterselect',
-                          array('default' => null)
+                     new generalized_filter_entry('cluster', 'crlmu', 'id',
+                         get_string('filter_cluster', 'rlreport_curricula'),
+                         false, 'clusterselect', array('default' => null)
                      )
                  )
              );

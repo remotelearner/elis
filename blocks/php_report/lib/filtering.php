@@ -17,20 +17,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage pm-blocks-phpreports
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-//need access to report base class for execution mode constants
-require_once($CFG->dirroot.'/blocks/php_report/php_report_base.php');
+defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/formslib.php');
+require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+
+//need access to report base class for execution mode constants
+require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
+
+require_once($CFG->libdir .'/formslib.php');
 
 //needed for base filter form
-require_once($CFG->dirroot.'/user/filters/user_filter_forms.php');
+require_once($CFG->dirroot .'/user/filters/user_filter_forms.php');
 
 //needed for filters
 require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
@@ -41,13 +45,27 @@ require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
 function php_report_filtering_require_dependencies() {
     global $CFG;
 
-    //go through the files in the filtering directory
-    if (file_exists($CFG->dirroot . '/blocks/php_report/filter') &&
-        $handle = opendir($CFG->dirroot.'/blocks/php_report/filter')) {
+    //go through the files in the /elis/core/ filtering directory
+    if (file_exists($CFG->dirroot .'/elis/core/lib/filtering') &&
+        $handle = opendir($CFG->dirroot .'/elis/core/lib//filtering')) {
         while (false !== ($file = readdir($handle))) {
             //load filter definition if it's a PHP file
             if(strrpos($file, '.php') == strlen($file) - strlen('.php')) {
-                require_once($CFG->dirroot.'/blocks/php_report/filter/'.$file);
+                require_once($CFG->dirroot .'/elis/core/lib/filtering/'. $file);
+            }
+        }
+    }
+
+    //go through the files in the /elis/program/ filtering directory
+    if (file_exists($CFG->dirroot .'/elis/program/lib//filtering') &&
+        $handle = opendir($CFG->dirroot .'/elis/program/lib//filtering')) {
+        while (false !== ($file = readdir($handle))) {
+            if ($file == 'clustertree_load_menu.php') {
+                continue;
+            }
+            //load filter definition if it's a PHP file
+            if(strrpos($file, '.php') == strlen($file) - strlen('.php')) {
+                require_once($CFG->dirroot .'/elis/program/lib/filtering/'. $file);
             }
         }
     }

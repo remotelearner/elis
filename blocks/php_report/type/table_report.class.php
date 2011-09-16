@@ -19,12 +19,14 @@
  * TO DO: enable wrapping of table headers
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage pm-blocks-phpreports
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/blocks/php_report/php_report_base.php');
 
@@ -140,33 +142,6 @@ abstract class table_report extends php_report {
 /////////////////////////////////////////////////////////////////////
 
     /**
-     * Specifies the attributes of this report object that
-     * should be persisted after the report is generated
-     */
-    function get_persistent_attributes() {
-        //persist the summary row
-        return array('column_based_summary_row');
-    }
-
-    /**
-     * Persist the state of this report
-     */
-    function persist_state() {
-        global $SESSION;
-
-        //get all applicable attributes
-        $persistent_attributes = $this->get_persistent_attributes();
-        if (!empty($persistent_attributes)) {
-            //find all corresponding values and persist them
-            foreach ($persistent_attributes as $persistent_attribute) {
-                if (isset($this->$persistent_attribute)) {
-                    $SESSION->php_reports[$this->id]->inner_report->$persistent_attribute = $this->$persistent_attribute;
-                }
-            }
-        }
-    }
-
-    /**
      * Set the array of report columns.
      *
      * @param   string        $id                   The column ID.
@@ -273,7 +248,7 @@ abstract class table_report extends php_report {
         $lowercase_column = strtolower(trim($column));
 
         $as_position = strpos($lowercase_column, ' as ');
-        if($as_position == false) {
+        if ($as_position == false) {
             $result->alias = '';
             $rest = $column;
         } else {
@@ -283,7 +258,7 @@ abstract class table_report extends php_report {
 
         $dot_position = strpos($rest, '.');
         $parts = explode('.', $rest);
-        if(count($parts) == 1) {
+        if (count($parts) == 1) {
             $result->table = '';
             $result->column = $parts[0];
         } else {
@@ -306,33 +281,33 @@ abstract class table_report extends php_report {
     private function header_is_sortable($column, $headers = null) {
         $current_column = $this->create_column_object($column);
 
-        if(!empty($headers)) {
+        if (!empty($headers)) {
             $headers = $headers;
         } else {
             $headers = $this->headers;
         }
 
-        foreach($headers as $key => $value) {
+        foreach ($headers as $key => $value) {
             $header_column = $this->create_column_object($key);
 
             /*
              * Logic for matching column to a header
              */
-            if(!empty($current_column->alias) && $current_column->alias == $header_column->alias) {
+            if (!empty($current_column->alias) && $current_column->alias == $header_column->alias) {
                 //aliases match
                 return true;
-            } else if(!empty($current_column->table) &&
+            } else if (!empty($current_column->table) &&
                       $current_column->table == $header_column->table &&
                       $current_column->column == $header_column->column) {
                 //tables and columns match
                 return true;
-            } else if((empty($current_column->table) || empty($header_column->table)) &&
+            } else if ((empty($current_column->table) || empty($header_column->table)) &&
                       !empty($current_column->column) &&
                       $current_column->column == $header_column->column) {
                 //columns match with tables not specified on both sides
                 return true;
 
-            } else if(!empty($header_column->alias) &&
+            } else if (!empty($header_column->alias) &&
                       empty($current_column->alias) &&
                       $header_column->alias == $current_column->column) {
                 //definition's alias is referred to as a column in sorting
@@ -364,7 +339,7 @@ abstract class table_report extends php_report {
         //remote everything before AS where applicable
         $defsort_lowercase = strtolower($this->defsort);
         $as_position = strpos($defsort_lowercase, ' as ');
-        if($as_position !== false) {
+        if ($as_position !== false) {
             $this->defsort = substr($this->defsort, $as_position + strlen(' as '));
         }
 
@@ -421,7 +396,7 @@ abstract class table_report extends php_report {
      * @return  string  The paragraph's HTML code
      */
     function print_header_logo() {
-        if(!empty($this->headericon)) {
+        if (!empty($this->headericon)) {
             return '<p><img src="' . $this->headericon . '" style="width: 20%" class="php_report_icon"/></p>';
         }
         return '';
@@ -443,7 +418,7 @@ abstract class table_report extends php_report {
             foreach ($this->groupings as $index=>$grouping) {
                 //Set up a mask to not display any fields that are part of any column grouping break
                 $this->groupings[$index]->mask = array();
-                foreach($this->headers as $key=>$value) {
+                foreach ($this->headers as $key=>$value) {
                     if (in_array($key,$this->groupings[$index]->col_element)) {
                         $this->groupings[$index]->mask[$key] = 1;
                     } else {
@@ -473,7 +448,7 @@ abstract class table_report extends php_report {
 
         $output = '';
 
-        if($id !== 0) {
+        if ($id !== 0) {
             $this->effective_url = $CFG->wwwroot . '/blocks/php_report/dynamicreport.php?id=' . $id;
         } else {
             $his->effective_url = $this->baseurl;
@@ -557,7 +532,7 @@ abstract class table_report extends php_report {
                 //remove everything before AS where applicable
                 $lowercase_column = strtolower($column);
                 $as_position = strpos($lowercase_column, ' as ');
-                if($as_position === FALSE) {
+                if ($as_position === FALSE) {
                     $effective_column = $column;
                 } else {
                     $effective_column = substr($column, $as_position + strlen(' as '));
@@ -656,7 +631,7 @@ abstract class table_report extends php_report {
 
                 //loop through col_element array to collect info about
                 //the defined columns
-                foreach($grouping->col_element as $col_element) {
+                foreach ($grouping->col_element as $col_element) {
                     $simple_col_element[] = $this->get_object_index($col_element);
                 }
 
@@ -890,12 +865,12 @@ abstract class table_report extends php_report {
                     continue;
                 }
 
-                if(!empty($this->ishorizontalbar[$id])) {
+                if (!empty($this->ishorizontalbar[$id])) {
                     //horizontal bar image
-                    if(is_null($datum->$effective_id)) {
+                    if (is_null($datum->$effective_id)) {
                         $row[$effective_id] = '';
                     } else {
-                        if(is_numeric($this->totalcolumn[$id])) {
+                        if (is_numeric($this->totalcolumn[$id])) {
                             $total_value = $this->totalcolumn[$id];
                         } else {
                             $total_value_column = $this->get_object_index($this->totalcolumn[$id]);
@@ -904,13 +879,13 @@ abstract class table_report extends php_report {
                         $parameters = array('value=' . $datum->$effective_id,
                                             'total=' . $total_value,
                                             'displaytext=' . urlencode($this->displaystring[$id]));
-                        if(!empty($this->displaypercentsign)) {
+                        if (!empty($this->displaypercentsign)) {
                             $parameters[] = 'displaypercentsign=' . $this->displaypercentsign[$id];
                         }
-                        if(!empty($this->horizontalbarwidth[$id])) {
+                        if (!empty($this->horizontalbarwidth[$id])) {
                             $parameters[] = 'width=' . $this->horizontalbarwidth[$id];
                         }
-                        if(!empty($this->horizontalbarheight[$id])) {
+                        if (!empty($this->horizontalbarheight[$id])) {
                             $parameters[] = 'height=' . $this->horizontalbarheight[$id];
                         }
                         if ($export_format == php_report::$EXPORT_FORMAT_PDF) {
@@ -940,12 +915,12 @@ abstract class table_report extends php_report {
     static function get_object_index($id) {
         $lowercase_id = strtolower($id);
         $as_position = strpos($lowercase_id, ' as ');
-        if($as_position === FALSE) {
+        if ($as_position === FALSE) {
             $effective_id = $id;
 
             //only use column name portion
             $dot_position = strpos($effective_id, '.');
-            if($dot_position !== FALSE) {
+            if ($dot_position !== FALSE) {
                 $effective_id = substr($effective_id, $dot_position + strlen('.'));
             }
         } else {
@@ -1091,7 +1066,7 @@ abstract class table_report extends php_report {
         $export_formats = $this->get_export_formats();
         $allowable_export_formats = php_report::get_allowable_export_formats();
 
-        if($id !== 0) {
+        if ($id !== 0) {
             $effective_url = $CFG->wwwroot . '/blocks/php_report/dynamicreport.php?id=' . $id;
         } else {
             $effective_url = $this->baseurl;
@@ -1121,7 +1096,7 @@ abstract class table_report extends php_report {
         $args = '';
         $output = '';
 
-        if($id !== 0) {
+        if ($id !== 0) {
             $effective_url = $CFG->wwwroot . '/blocks/php_report/dynamicreport.php?id=' . $id;
         } else {
             $effective_url = $this->baseurl;
@@ -1140,9 +1115,9 @@ abstract class table_report extends php_report {
      */
     function init_columns() {
         //got columns from API
-        if($columns = $this->get_columns()) {
+        if ($columns = $this->get_columns()) {
             //actually add them to the report
-            foreach($columns as $column) {
+            foreach ($columns as $column) {
                 $column->add_to_report($this);
             }
         }
@@ -1193,15 +1168,15 @@ abstract class table_report extends php_report {
         global $CFG;
 
         //check the API for a defined icon
-        if($header_icon = $this->get_preferred_header_icon()) {
+        if ($header_icon = $this->get_preferred_header_icon()) {
 
             //convert to file path to check existence
             $header_icon_file = $header_icon;
-            if(strpos($header_icon_file, $CFG->wwwroot) == 0) {
+            if (strpos($header_icon_file, $CFG->wwwroot) == 0) {
                 $header_icon_file = $CFG->dirroot . substr($header_icon_file, strlen($CFG->wwwroot));
             }
 
-            if(file_exists($header_icon_file)) {
+            if (file_exists($header_icon_file)) {
                 //file exists, so OK to use
                 $this->set_header_icon($header_icon);
             }
@@ -1216,7 +1191,7 @@ abstract class table_report extends php_report {
      */
     function init_all($id, $parameter_data = NULL) {
         //initialize filters
-        $this->init_filter($id);
+        $this->init_filter($id, false);
 
         //use the provided data to set gas-gauge parameters
         if ($parameter_data !== NULL) {
@@ -1253,14 +1228,15 @@ abstract class table_report extends php_report {
     function main($sort = '', $dir = '', $page = 0, $perpage = 0, $download = '', $id = 0) {
         global $CFG;
 
+        $this->display_header();
+
         $this->set_paging_and_sorting($page, $perpage, $sort, $dir);
 
         $this->init_all($id);
 
         $this->render_report($id);
 
-        //persist type-specific fields in sessionized report
-        $this->persist_state();
+        $this->display_footer();
     }
 
     /**
@@ -1316,24 +1292,24 @@ abstract class table_report extends php_report {
 
         $list = array();
 
-        foreach($this->headers as $key => $value) {
+        foreach ($this->headers as $key => $value) {
             $list[] = $key;
         }
 
         //add fields we need for totals for horizontal bar graphs
-        foreach($this->ishorizontalbar as $key => $value) {
-            if(!empty($value) && !is_numeric($this->totalcolumn[$key])) {
+        foreach ($this->ishorizontalbar as $key => $value) {
+            if (!empty($value) && !is_numeric($this->totalcolumn[$key])) {
                 $list[] = $this->totalcolumn[$key];
             }
         }
 
         //add field for the grand total if applicable
-        if(!empty($this->summary_row->field)) {
+        if (!empty($this->summary_row->field)) {
             $list[] = $this->summary_row->field;
         }
 
         //add fields for multi-level grouping
-        if(!empty($this->groupings)) {
+        if (!empty($this->groupings)) {
             foreach ($this->groupings as $grouping) {
                 $list[] = $grouping->field . " as " . $grouping->id;
             }
@@ -1356,10 +1332,10 @@ abstract class table_report extends php_report {
         $params = array();
 
         //error checking
-        if(!empty($this->filter)) {
+        if (!empty($this->filter)) {
             //run the calculation
             list($additional_sql, $additional_params) = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(), $this->allow_configured_filters());
-            if(!empty($additional_sql)) {
+            if (!empty($additional_sql)) {
                 //one or more filters are active
                 $sql .= " {$conditional_symbol} ({$additional_sql})";
                 $params = array_merge($params, $additional_params);
@@ -1390,11 +1366,17 @@ abstract class table_report extends php_report {
             $result = " ORDER BY ".implode(',',$order_array);
         }
 
-        if(!empty($this->sort) && !empty($this->dir)) {
-            if(!empty($result)) {
-                $result .= ", {$this->sort} {$this->dir}";
+        if (!empty($this->sort) && !empty($this->dir)) {
+            $sort = $this->sort;
+            $lowercase_sort = strtolower($sort);
+            $as_position = strpos($lowercase_sort, ' as ');
+            if ($as_position !== false) {
+                $sort = substr($sort, $as_position + strlen(' as '));
+            }
+            if (!empty($result)) {
+                $result .= ", {$sort} {$this->dir}";
             } else {
-                $result = " ORDER BY {$this->sort} {$this->dir}";
+                $result = " ORDER BY {$sort} {$this->dir}";
             }
         }
 
@@ -1434,7 +1416,7 @@ abstract class table_report extends php_report {
      * Sets sort preferences to the defaults when necessary
      */
     function resolve_sort_preferences() {
-        if(empty($this->sort) && !empty($this->defsort)) {
+        if (empty($this->sort) && !empty($this->defsort)) {
             $this->sort = $this->defsort;
             $this->dir = $this->defdir;
         }
@@ -1476,7 +1458,7 @@ abstract class table_report extends php_report {
 
         $conditional_symbol = 'WHERE';
 
-        if($has_where_clause) {
+        if ($has_where_clause) {
             $conditional_symbol = 'AND';
         }
 
@@ -1505,7 +1487,7 @@ abstract class table_report extends php_report {
      *                    false otherwise.
      */
     function any_group_will_change($currecord, $nextrecord) {
-        if(!empty($this->groupings)) {
+        if (!empty($this->groupings)) {
             foreach ($this->groupings as $grouping) {
                 if ($currecord->{$grouping->id} != $nextrecord->{$grouping->id})
                 {
@@ -1532,7 +1514,7 @@ abstract class table_report extends php_report {
         $offset = $paging_info[table_report::offset];
         $limit = $paging_info[table_report::limit];
 
-        if($report_results = $DB->get_recordset_sql($sql, $params, $offset, $limit) and
+        if ($report_results = $DB->get_recordset_sql($sql, $params, $offset, $limit) and
            $report_results->valid()) {
             $this->data = array();
             $this->summary = array();
@@ -1680,7 +1662,7 @@ abstract class table_report extends php_report {
      *
      * @param  int|string  $id  The id of the report
      */
-    function render_report($id=0) {
+    function render_report($id = 0) {
         $this->get_data();
 
         //header link for configuring default parameters
@@ -1880,7 +1862,7 @@ function print_table($table, $return=false) {
                 $extraclass = '';
             }
 
-            if(!isset($header_wrap[$key])) {
+            if (!isset($header_wrap[$key])) {
                 $header_wrap[$key] = '';
             }
             $columns_header_output .= '<th style="vertical-align:top;'. $align[$key].$size[$key].$header_wrap[$key] . '" class="c'.$key.$extraclass.  ' ' . $table->headercolumncss[$key] . '" scope="col">'. $heading .'</th>';
@@ -1912,12 +1894,12 @@ function print_table($table, $return=false) {
             if ($row == 'hr' and $countcols) {
                 $output .= '<tr class="r'.$oddeven.' '.$table->rowclass[$key].'">'."\n";
                 $output .= '<td colspan="'. $countcols .'"></td>';
-            } else if(!empty($table->spanrow[$key])) {
+            } else if (!empty($table->spanrow[$key])) {
                 //reset oddeven
                 $oddeven = 1;
                 $output .= '<tr class="'.$table->rowclass[$key].'">'."\n";
                 $output .= '<td colspan="'. $countcols .'">' . $row[0] . '</td>';
-            } else if(!empty($table->firstcolumn[$key])) {
+            } else if (!empty($table->firstcolumn[$key])) {
                 //reset oddeven
                 $oddeven = 1;
                 $output .= '<tr class="'.$table->rowclass[$key].'">'."\n";
@@ -2074,6 +2056,43 @@ function print_table($table, $return=false) {
     function get_grouping_summary_row_colour() {
         return array(255, 255, 255);
     }
+
+    /**
+     * Calculates and returns a message to display that
+     * informs users on how recent their data is
+     *
+     * @param   int|string     $id  The current report block id
+     *
+     * @return  string         HTML for a form with the display text and a reset button
+     */
+    function get_lastload_display($id = 0) {
+        global $CFG, $USER;
+
+        $format = '%A, %B %e, %l:%M:%S %P';
+
+        $element_id = 'refresh_report';
+        if (!empty($id)) {
+            $element_id .= '_' . $id;
+        }
+
+        $timezone = 99;
+        if (isset($USER->timezone)) {
+            $timezone = $USER->timezone;
+        }
+        $lastload = time();
+        $a = userdate($lastload, $format, $timezone);
+
+        return '<form id="'. $element_id .'" action="'. $CFG->wwwroot .'/blocks/php_report/dynamicreport.php" '.
+               'onsubmit="start_throbber(); return true;" >'.
+               '<input type="hidden" id="id" name="id" value="'. $id .'" />' .
+               '<input type="hidden" id="page" name="page" value="'. $this->page .'" />'.
+               '<input type="hidden" id="sort" name="sort" value="'. $this->sort .'" />'.
+               '<input type="hidden" id="dir" name="dir" value="'. $this->dir .'" />'.
+               '<p align="center" class="php_report_caching_info">'. get_string('infocurrent', 'block_php_report', $a) .'<br/>'.
+               '<input id="'. $element_id .'" type="submit" value="Refresh"/></p>'.
+               '</form>';
+    }
+
 }
 
 /**

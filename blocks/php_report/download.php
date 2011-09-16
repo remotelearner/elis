@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,16 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage pm-blocks-phpreports
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once('../../config.php');
-require_once($CFG->dirroot . '/blocks/php_report/php_report_block.class.php');
-require_once($CFG->dirroot . '/blocks/php_report/lib/filtering.php');
+require_once(dirname(__FILE__) .'/../../config.php');
+require_once($CFG->dirroot .'/blocks/php_report/lib/filtering.php');
 
 //report instance id can be a block instance id
 //or a general report shortname
@@ -37,28 +36,25 @@ $format = required_param('format', PARAM_CLEAN);
 //needed to satisfy base page requirements
 $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 
-//load reporting-related dependencies, including the report definition
-php_report_block::require_dependencies($id);
 //load filter classes
 php_report_filtering_require_dependencies();
 
-if (isset($SESSION->php_reports[$id])) {
-    $classname = get_class($SESSION->php_reports[$id]->inner_report);
-    $report = new $classname($id);
-    //permissions checking
-    if ($report->can_view_report()) {
-        $report->init_all($id);
-        //require any necessary report-specific dependencies
-        $report->require_dependencies();
-        //initiate download using sql query without paging
+$report = php_report::get_default_instance($id);
 
-        //make sure we have enough resources to export our report
-        php_report::allocate_extra_resources();
+//permissions checking
+if ($report->can_view_report()) {
+    //NOTE: this is fast because it will not populate filter values
+    $report->init_all($id);
+    //require any necessary report-specific dependencies
+    $report->require_dependencies();
 
-        //obtain the query and parameter values
-        list($sql, $params) = $report->get_complete_sql_query(false);
+    //make sure we have enough resources to export our report
+    php_report::allocate_extra_resources();
 
-        //run the query and export the results
-        $report->download($format, $sql, $params);
-    }
+    //obtain the query and parameter values
+    list($sql, $params) = $report->get_complete_sql_query(false);
+
+    //initiate download using sql query without paging
+    $report->download($format, $sql, $params);
 }
+

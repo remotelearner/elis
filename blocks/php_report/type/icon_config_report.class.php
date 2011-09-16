@@ -120,7 +120,7 @@ abstract class icon_config_report extends icon_report {
         global $CFG;
 
         if (!isset($this->filter) && $filters = $this->get_filters($init_data)) {
-            $dynamic_report_filter_url = $CFG->wwwroot .'/blocks/php_report/dynamicreport.php?id=' . $id;
+            $dynamic_report_filter_url = $CFG->wwwroot .'/blocks/php_report/dynamicreport.php?id='. $id;
             // Need to have a different php_report_default_capable_filtering that is smarter
             $this->filter = new php_report_config_capable_filtering($filters,
                                     $dynamic_report_filter_url, null, $id,
@@ -143,38 +143,12 @@ abstract class icon_config_report extends icon_report {
     }
 
     /**
-     * Specifies the attributes of this report object that
-     * should be persisted after the report is generated
-     */
-    function get_persistent_attributes() {
-        //persist the summary row
-        return array('column_based_summary_row'); // ***TBD***
-    }
-
-
-    /**
-     * Persist the state of this report
-     */
-    function persist_state() {
-        global $SESSION;
-
-        //get all applicable attributes
-        $persistent_attributes = $this->get_persistent_attributes();
-        if (!empty($persistent_attributes)) {
-            //find all corresponding values and persist them
-            foreach ($persistent_attributes as $persistent_attribute) {
-                if (isset($this->$persistent_attribute)) {
-                    $SESSION->php_reports[$this->id]->inner_report->$persistent_attribute = $this->$persistent_attribute;
-                }
-            }
-        }
-    }
-
-    /**
      * Mainline function for running the report
      */
     function main($sort = '', $dir = '', $page = 0, $perpage = 20,
                   $download = '', $id = 0) {
+
+        $this->display_header();
 
         //set_paging_and_sorting($page, $perpage, $sort, $dir);
 
@@ -185,8 +159,7 @@ abstract class icon_config_report extends icon_report {
 
         echo $this->display_icons($id);
 
-        //persist type-specific fields in sessionized report
-        $this->persist_state();
+        $this->display_footer();
     }
 
 }

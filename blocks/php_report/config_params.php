@@ -25,78 +25,92 @@
  */
 
 require_once(dirname(__FILE__) .'/../../config.php');
-require_once($CFG->dirroot . '/blocks/php_report/parameter_form.class.php');
-require_once($CFG->dirroot . '/blocks/php_report/php_report_block.class.php');
-require_once($CFG->libdir . '/formslib.php');
-require_once($CFG->dirroot . '/blocks/php_report/lib/filtering.php');
+require_once($CFG->dirroot .'/blocks/php_report/parameter_form.class.php');
+require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
+require_once($CFG->libdir .'/formslib.php');
+require_once($CFG->dirroot .'/blocks/php_report/lib/filtering.php');
 
 //not using require_login here because permissions are determined
 //by the reports themselves
 
 if (!isset($this)) {
     // only edit the page, and show the header/footer if we are called directly
+    $PAGE->set_url($ME);
     $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
-    $PAGE->set_pagelayout('embedded');
+    $PAGE->set_pagelayout('standard'); // was 'embedded'
+    //$PAGE->blocks->add_regions(array('side-pre', 'side-post')); // TBV ?
     echo $OUTPUT->header();
 }
 
-//report instance id
-$id = required_param('id', PARAM_CLEAN);
+//report shortname
+$report_shortname = required_param('id', PARAM_CLEAN);
 //optional action url for form
 $action = optional_param('url', null, PARAM_CLEAN);
 
-//require dependencies for filters and the report itself
+//require dependencies for filters
 php_report_filtering_require_dependencies();
-php_report_block::require_dependencies($id);
+
+//key report data
+$instance = php_report::get_default_instance($report_shortname);
+//NOTE: this is slow because it populates filter values
+$filters = $instance->get_filters();
+
+//obtain any necessary information regarding secondary filterings
+$dynamic_report_filter_url = $CFG->wwwroot .'/blocks/php_report/dynamicreport.php?id='. $report_shortname;
+$secondary_filterings = $instance->get_secondary_filterings(
+                                       $dynamic_report_filter_url,
+                                       $report_shortname, $report_shortname);
+
+//when set, show the cancel button
+$showcancel = optional_param('showcancel', 0, PARAM_INT);
 
 //create the form, whose contents depend on on the current report's available filters
-if (!empty($SESSION->php_reports[$id]->inner_report->filter)) {
-    $filter_object = $SESSION->php_reports[$id]->inner_report->filter;
-    //reset form reset value
-    $SESSION->php_reports[$id]->inner_report->filter->reset=false;
-
-    $parameter_form = new parameter_form($action, array('filterobject' => $filter_object));
+if (!empty($filters)) {
+    //report has filters
+    $dynamic_report_filter_url = $CFG->wwwroot.'/blocks/php_report/dynamicreport.php?id='.$report_shortname;
+    $filter_object = new php_report_default_capable_filtering($filters,
+                             $dynamic_report_filter_url, null, $report_shortname, $report_shortname);
+    $params = array('filterobject' => $filter_object,
+                    'showcancel' => $showcancel);
+    $parameter_form = new parameter_form($action, $params);
 } else {
-    $parameter_form = new parameter_form($action);
+    //report does not have filters
+    $params = array('showcancel' => $showcancel);
+    $parameter_form = new parameter_form($action, $params);
 }
 
 //send report id to the form
-$parameter_form->set_data(array('id' => $id));
-
-//get the report name
-$report_name = get_class($SESSION->php_reports[$id]->inner_report);
-$report_name = substr($report_name, 0, strlen($report_name) - strlen('_report'));
+$parameter_form->set_data(array('id' => $report_shortname, 'showcancel' => $showcancel));
 
 //update form with current settings
-php_report_filtering_update_form($report_name, $parameter_form);
-
-
+php_report_filtering_update_form($report_shortname, $parameter_form);
 
 if ($data = $parameter_form->get_data()) {
     //NOTE: this has to be checked after get_data in this case
     //because get_data calls definition_after_data, which adds the cancel button
     if ($parameter_form->is_cancelled()) {
-        if ($SESSION->php_reports[$id]->lastload) {
-            //just re-display the report
-            echo $SESSION->php_reports[$id]->display();
-            die;
+        //just re-display the report
+        $instance->main('', '', 0, 20, '', $report_shortname);
+        if (!isset($this)) {
+            echo $OUTPUT->footer();
         }
+        die;
     } else if (isset($data->save_defaults)) {
         //store form settings as report-specific user preferences
-        php_report_filtering_save_preferences($data, $filter_object, $report_name);
+        php_report_filtering_save_preferences($data, $filter_object, $report_shortname);
     } else if (isset($data->reset_form)) {
-        //set reset flag to true
-        $SESSION->php_reports[$id]->inner_report->filter->reset=true;
         //store form settings as report-specific user preferences
-        php_report_filtering_reset_form($data, $filter_object, $report_name, $parameter_form);
+        php_report_filtering_reset_form($data, $filter_object, $report_shortname, $parameter_form);
 
     } else if (isset($data->show_report)) {
         //store temporary preferences
-        php_report_filtering_save_preferences($data, $filter_object, $report_name, true);
+        php_report_filtering_save_preferences($data, $filter_object, $report_shortname, true);
 
-        //reset the state of the report
-        $SESSION->php_reports[$id]->reset_state();
-        echo $SESSION->php_reports[$id]->display();
+        //re-display the report
+        $instance->main('', '', 0, 20, '', $report_shortname);
+        if (!isset($this)) {
+            echo $OUTPUT->footer();
+        }
         die;
     }
 }

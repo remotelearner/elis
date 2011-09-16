@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage pm-blocks-phpreports
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/blocks/php_report/php_report_base.php');
 
@@ -220,7 +222,7 @@ abstract class icon_report extends php_report {
      */
     function init_all($id, $parameter_data = NULL) {
         //initialize filters
-        $this->init_filter($id);
+        $this->init_filter($id, false);
 
         //initialize icons to the empty set
         $this->icons = array();
@@ -232,6 +234,8 @@ abstract class icon_report extends php_report {
     function main($sort = '', $dir = '', $page = 0, $perpage = 20, $download = '', $id = 0) {
         global $CFG;
 
+        $this->display_header();
+
         $this->init_all($id);
 
         //calculate actual report data
@@ -239,6 +243,7 @@ abstract class icon_report extends php_report {
 
         echo $this->display_icons($id);
 
+        $this->display_footer();
     }
 
 }

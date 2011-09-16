@@ -35,7 +35,7 @@ require_once($CFG->dirroot .'/blocks/php_report/instances/'. $report_name .'/'.
              $report_name .'_report.class.php');
 require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
 require_once($CFG->dirroot .'/blocks/php_report/lib/filtering.php');
-require_once($CFG->dirroot .'/elis/program/lib/filtering/lib.php');
+require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
 require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect.php');
 require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect_data.php');
 require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect_values.php');
