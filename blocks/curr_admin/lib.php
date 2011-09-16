@@ -719,7 +719,6 @@ function block_curr_admin_create_instance() {
     // Set up the block information and add a block instance
     $dummy_page->blocks->add_region('side-pre');
     $dummy_page->blocks->set_default_region('side-pre');
-    $dummy_page->blocks->load_blocks();
     $dummy_page->blocks->add_block_at_end_of_default_region('curr_admin');
 
     // Update the block instanceso that it shows up in subcontexts
