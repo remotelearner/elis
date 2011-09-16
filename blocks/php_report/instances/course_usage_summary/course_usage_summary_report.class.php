@@ -493,7 +493,7 @@ class course_usage_summary_report extends icon_config_report {
         $avg_crs_grd = 0;
 
         //Get the field id of the field shortname to use in the data table
-        if ($field_id = $DB->get_field('crlm_field', 'id', array('shortname' => $field_shortname))) {
+        if ($field_id = $DB->get_field('elis_field', 'id', array('shortname' => $field_shortname))) {
 
             $field = new field($field_id);
             $data_table = $field->data_table();
