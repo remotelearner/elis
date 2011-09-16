@@ -99,3 +99,8 @@ fieldset.engineform {
     border: 1px black solid;
     padding: 5px;
 }
+
+fieldset fieldset.engineform {
+    border: 1px black solid;
+    padding: 5px;
+}
