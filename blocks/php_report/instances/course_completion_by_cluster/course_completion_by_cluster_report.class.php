@@ -597,11 +597,11 @@ class course_completion_by_cluster_report extends table_report {
      *                                                    being handled
      * @param   stdClass               $datum             The most recent record encountered
      * @param   string    $export_format  The format being used to render the report
-     *
+     * @uses    $DB
      * @return  string array                              Set of text entries to display
      */
      function transform_grouping_header_label($grouping_current, $grouping, $datum, $export_format) {
-
+         global $DB;
          if ($grouping->field == 'curriculum.id') {
              /**
               * Curriculum grouping - display the curriculum name or a default
@@ -643,7 +643,7 @@ class course_completion_by_cluster_report extends table_report {
 
              //get the current (new) cluster id
              $clusterid = $grouping_current[$grouping->field];
-             $cluster = new cluster($clusterid);
+             $cluster = new userset($clusterid);
 
              $result = array();
 
@@ -655,7 +655,7 @@ class course_completion_by_cluster_report extends table_report {
                  $result[] = $this->add_grouping_header($grouping->label,
                                                         $cluster->name,
                                                         $export_format);
-                 $cluster = new cluster($cluster->parent);
+                 $cluster = new userset($cluster->parent);
              }
 
              //really need it top-down for comparison
