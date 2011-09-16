@@ -129,6 +129,7 @@ abstract class enginepage extends pm_page {
     function display_default() {
         $form = $this->get_engine_form();
 
+        $this->print_tabs();
         $form->display_html();
 
     }
