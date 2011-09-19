@@ -39,6 +39,8 @@ class resultsengine extends elis_data_object {
     const TABLE = ENGINETABLE;
     const LANG_FILE = 'elis_program';
 
+    static public $_unset = -1;
+
     private $form_url = null;  //moodle_url object
 
     protected $_dbfield_id;
@@ -48,21 +50,6 @@ class resultsengine extends elis_data_object {
     protected $_dbfield_lockedgrade;
     protected $_dbfield_triggerstartdate;
     protected $_dbfield_criteriatype;
-
-    static $associations = array(
-        'contextid' => array('class' => 'user',
-                             'idfield' => 'contextid'),
-    );
-
-    static $validation_rules = array(array('validation_helper', 'not_empty_contextid'),
-                                     'validate_associated_contextid_exists');
-
-    /**
-     * Validates that the associated user record exists
-     */
-    public function validate_associated_contextid_exists() {
-        validate_associated_record_exists($this, 'context');
-    }
 
     /**
      * Perform parent add

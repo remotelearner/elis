@@ -79,26 +79,28 @@ abstract class enginepage extends pm_page {
      */
     protected function get_engine_form($params = null) {
 
+        $id     = $this->required_param('id', PARAM_INT);
+        $target = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
         $s = $this->required_param('s', PARAM_ALPHA);
 
         if ($params === null) {
             $action = $this->optional_param('action', 'default', PARAM_ALPHA);
-            $id     = $this->required_param('id', PARAM_INT);
 
             $fields = array(
-                'action'   => $action,
-                'courseid' => $this->get_course_id(),
-                'id'       => $id,
-                'page'     => $s,
+                'action'    => $action,
+                'courseid'  => $this->get_course_id(),
+                'contextid' => $this->get_context()->id,
+                'page'      => $s,
             );
             $obj = new object($params);
             $params = array('obj' => $obj);
         } else {
-            $params['obj']->courseid = $this->get_course_id();
-            $params['obj']->page     = $s;
+            $params['obj']->courseid  = $this->get_course_id();
+            $params['obj']->contextid = $this->get_context()->id;
+            $params['obj']->page      = $s;
         }
 
-        return new cmEngineForm(null, $params);
+        return new cmEngineForm($target->url, $params);
     }
 
     function get_tab_page() {
@@ -154,8 +156,8 @@ abstract class enginepage extends pm_page {
      * Display the edit page
      */
     function display_edit() {
-        if (! isset($this->_form)) {
-            $this->_form = new $this->get_engine_form();
+        if (!isset($this->_form)) {
+            throw new ErrorException('Display called before Do');
         }
 
         $this->print_tabs();
@@ -163,34 +165,59 @@ abstract class enginepage extends pm_page {
     }
 
     /**
-     * Process the edit
+     * Do the default
+     *
+     * Set up the editing form before save.
      */
-    function do_edit() {
-        $id = $this->required_param('id', PARAM_INT);
-        $target = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
+    function do_default() {
+        $id  = $this->optional_param('id', 0, PARAM_INT);
 
         $obj = $this->get_new_data_object($id);
-        $filter = new field_filter('contextid', $id);
+        $filter = new field_filter('contextid', $this->get_context()->id);
+
         if ($obj->exists($filter)) {
             $obj->load();
         }
 
         $form = $this->get_engine_form(array('obj' => $obj->to_object()));
+        $this->_form = $form;
+        $this->display('default');
+    }
+
+    /**
+     * Process the edit
+     */
+    function do_edit() {
+        $known = false;
+        $id = $this->required_param('id', PARAM_INT);
+        $target = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
+
+        $obj = $this->get_new_data_object($id);
+        $filter = new field_filter('contextid', $this->get_context()->id);
+        if ($obj->exists($filter)) {
+            $obj->load();
+            $known = true;
+        }
+
+
+        $form = $this->get_engine_form(array('obj' => $obj->to_object()));
 
         if ($form->is_cancelled()) {
-            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
             return;
         }
 
         $data = $form->get_data();
 
-        if($data) {
+        if ($data) {
             require_sesskey();
-
             $obj->set_from_data($data);
+            if (! $known) {
+                unset($obj->id);
+            }
             $obj->save();
-            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
             redirect($target->url);
         } else {
             $this->_form = $form;

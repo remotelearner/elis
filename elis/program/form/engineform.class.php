@@ -93,24 +93,25 @@ class cmEngineForm extends cmform {
             $html[] = '<legend>'. $activationrules .'</legend>';
             $html[] = '<input type="hidden" name="action" value="edit" />';
             $html[] = '<input type="hidden" name="id" value="'. $this->_customdata['id'] .'" />';
+            $html[] = '<input type="hidden" name="contextid" value="'. $this->_customdata['contextid'] .'" />';
             $html[] = '<input type="hidden" name="s" value="'. $this->_customdata['data'] .'" />';
-            $html[] = $activaterule .' <input type="checkbox" name="activate" value="1" /><br />';
+            $html[] = $activaterule .' <input type="checkbox" name="active" value="1" /><br />';
 
             $html[] = '<fieldset class="engineform">';
             $html[] = '<legend>'. $eventtrigger .'</legend>';
-            $html[] = '<input type="radio" name="trigger" value="grade" />'. $gradeset
-                    .' <input type="checkbox" name="locked_only" value="1" />'. $uselocked .'<br />';
+            $html[] = '<input type="radio" name="eventtriggertype" value="grade" />'. $gradeset
+                    .' <input type="checkbox" name="lockedgrade" value="1" />'. $uselocked .'<br />';
 
-            $html[] = '<input type="radio" name="trigger" value="date" />'. $on;
+            $html[] = '<input type="radio" name="eventtriggertype" value="date" />'. $on;
             $html[] = ' <input type="text" name="days" value="" /> '. $days;
 
-            $html[] = '<select name="date">';
+            $html[] = '<select name="triggerstartdate">';
             foreach ($dates as $id => $string) {
                 $html[] = "<option value=\"{$id}\">{$string}</option>";
             }
             $html[] = '</select><br />';
 
-            $html[] = '<input type="radio" name="trigger" value="manual" />'. $manualtrigger;
+            $html[] = '<input type="radio" name="eventtriggertype" value="manual" />'. $manualtrigger;
             $html[] = '</fieldset>';
 
             $html[] = '<fieldset class="engineform">';
@@ -133,28 +134,31 @@ class cmEngineForm extends cmform {
 
             $mform->addElement('hidden', 'action', 'edit');
             $mform->addElement('hidden', 'id', $this->_customdata['obj']->id);
+            $mform->addElement('hidden', 'contextid', $this->_customdata['obj']->contextid);
             $mform->addElement('hidden', 's', $this->_customdata['obj']->page);
 
             $mform->addElement('html', '<fieldset class="engineform">');
             $mform->addElement('html', '<legend>'. $activationrules .'</legend>');
 
-            $mform->addElement('checkbox', 'activate', $activaterule);
-            $mform->setType('activate', PARAM_BOOL);
+            $mform->addElement('advcheckbox', 'active', $activaterule);
+            $mform->setType('active', PARAM_BOOL);
 
             $mform->addElement('html', '<fieldset class="engineform">');
             $mform->addElement('html', '<legend>'. $eventtrigger .'</legend>');
 
             $grade = array();
-            $grade[] = $mform->createElement('radio', 'trigger', '', $gradeset, 'grade');
-            $grade[] = $mform->createElement('checkbox', 'locked', '', $uselocked);
+            $grade[] = $mform->createElement('radio', 'eventtriggertype', '', $gradeset, 1);
+            $grade[] = $mform->createElement('advcheckbox', 'lockedgrade', '', $uselocked);
 
             $date = array();
-            $date[] = $mform->createElement('radio', 'trigger', '', $on, 'date');
+            $date[] = $mform->createElement('radio', 'eventtriggertype', '', $on, 2);
             $date[] = $mform->createElement('text', 'days', '', 'size="2"');
-            $date[] = $mform->createElement('select', 'date', '', $dates);
+            $date[] = $mform->createElement('select', 'triggerstartdate', '', $dates);
 
             $manual = array();
-            $manual[] = $mform->createElement('radio', 'trigger', '', $manualtrigger, 'manual');
+            $manual[] = $mform->createElement('radio', 'eventtriggertype', '', $manualtrigger, 3);
+
+            $mform->setDefaults(array('eventtriggertype' => 3));
 
             $mform->addGroup($grade, '', '', ' ', false);
             $mform->addGroup($date, '', '', array(' ', ' '. $days .' '), false);
@@ -167,7 +171,7 @@ class cmEngineForm extends cmform {
             $mform->addElement('html', '<legend>'. $criterion .'</legend>');
 
             $grade = array();
-            $grade[] = $mform->createElement('select', 'grade', '', $grades);
+            $grade[] = $mform->createElement('select', 'criteriatype', '', $grades);
 
             $mform->addElement('html', $selectgrade .'<br />');
             $mform->addGroup($grade);

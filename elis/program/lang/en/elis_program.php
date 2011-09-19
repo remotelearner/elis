@@ -330,6 +330,7 @@ $string['delete_course'] = 'Delete Course Description';
 $string['delete_curriculum'] = 'Delete Program';
 $string['delete_label'] = 'Delete';
 $string['delete_pmclass'] = 'Delete Class Instance';
+$string['delete_resultsengine'] = 'Delete Engine Settings';
 $string['delete_track'] = 'Delete Track';
 $string['delete_user'] = 'Delete user';
 $string['delete_userset'] = 'Delete User Set';
