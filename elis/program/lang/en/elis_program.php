@@ -529,6 +529,7 @@ $string['manageusers'] = 'Manage Users';
 $string['mark_inactive'] = 'Mark as inactive';
 $string['message_nodestinationuser'] = 'No destination user specified for message system.';
 $string['messageprovider:notify_pm'] = 'Program Management notifications';
+$string['misc_category'] = 'Miscellaneous';
 $string['moodle_field_sync_warning'] = '* <strong>Warning:</strong> this field is set to synchronize with Moodle user profile fields, but there is no Moodle profile field with the same short name.';
 $string['moodlecourse'] = 'Moodle course';
 $string['moodlecourseurl'] = 'Mooodle Course URL';
@@ -803,6 +804,7 @@ $string['sync_student_role_setting'] = 'Student Role';
 
 $string['tab_archived_learning_plans'] = 'Archived Learning Plans';
 $string['tab_current_learning_plans'] = 'Current Learning Plans';
+$string['tag_custom_data'] = 'Custom Data for Tag {$a}';
 $string['tag_name'] = 'Name';
 $string['tags'] = 'Tags';
 $string['timecreated'] = 'Creation time';

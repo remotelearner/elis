@@ -1001,3 +1001,201 @@ function usermanagement_get_users_recordset($sort = 'name', $dir = 'ASC',
     return $DB->get_recordset_sql($sql, $params, $startrec, $perpage);
 }
 
+/**
+ * Migrate tags and tag instances to custom fields and custom field data
+ * (run as a one-off during the elis program upgrade)
+ *
+ * If there are one or more entities (curricula, courses, classes) with tags
+ * assigned to them, a new category and custom field is created, specific to the
+ * appropriate context level. Then, that custom field is populated for each entity
+ * that has one or more tags assigned (custom field is a multi-select, where the options
+ * are all the different tags on the site).
+ *
+ * If one or more tag instances have custom data defined, a custom field is set up for
+ * each such tag instance, and data is associated to the particular entities using this sparate
+ * custom field.
+ */
+function pm_migrate_tags() {
+    global $DB;
+
+    require_once(elis::lib('data/customfield.class.php'));
+
+    //set up our contextlevel mapping
+    $contextlevels = array('cur' => 'curriculum',
+                           'crs' => 'course',
+                           'cls' => 'class');
+
+    //lookup on all tags
+    $tag_lookup = $DB->get_records('crlm_tag', null, '', 'id, name');
+    foreach ($tag_lookup as $id => $tag) {
+        $tag_lookup[$id] = $tag->name;
+    }
+
+    //go through each contextlevel and look for tags
+    foreach ($contextlevels as $instancetype => $contextname) {
+
+        //calculate the context level integer
+        $contextlevel = context_level_base::get_custom_context_level($contextname, 'elis_program');
+
+        //make sure one or more tags are used at the current context level
+        if ($DB->record_exists('crlm_tag_instance', array('instancetype' => $instancetype))) {
+
+            //used to reference the category name
+            $category = new field_category(array('name' => get_string('misc_category', 'elis_program')));
+
+            //make sure our field for storing tags is created
+            $field = new field(array('shortname'   => "_19upgrade_{$contextname}_tags",
+                                     'name'        => get_string('tags', 'elis_program'),
+                                     'datatype'    => 'char',
+                                     'multivalued' => 1));
+            $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
+
+            //determine tag options
+            $options = array();
+            if ($records = $DB->get_recordset('crlm_tag', null, 'name', 'DISTINCT name')) {
+                foreach ($records as $record) {
+                    $options[] = $record->name;
+                }
+            }
+            $options = implode("\n", $options);
+
+            //set up our field owner
+            field_owner::ensure_field_owner_exists($field, 'manual', array('control'         => 'menu',
+                                                                           'options'         => $options,
+                                                                           'edit_capability' => '',
+                                                                           'view_capability' => ''));
+            //set up data for all relevant entries
+            $sql = "SELECT instanceid, GROUP_CONCAT(tagid) AS tagids, data
+                    FROM {crlm_tag_instance}
+                    WHERE instancetype = ?
+                    GROUP BY instanceid";
+            if ($records = $DB->get_recordset_sql($sql, array($instancetype))) {
+                foreach ($records as $record) {
+                    $tagids = explode(',', $record->tagids);
+                    foreach ($tagids as $k => $v) {
+                        $tagids[$k] = $tag_lookup[$v];
+                    }
+                    $context = get_context_instance($contextlevel, $record->instanceid);
+
+                    field_data::set_for_context_and_field($context, $field, $tagids);
+                }
+            }
+
+            //find all tags that have associated custom data and create a separate
+            //custom field for each one
+            $sql = "SELECT DISTINCT tagid
+                    FROM {crlm_tag_instance}
+                    WHERE instancetype = ?
+                    AND data != ''";
+            if ($records = $DB->get_recordset_sql($sql, array($instancetype))) {
+                foreach ($records as $record) {
+                    $tagname = $tag_lookup[$record->tagid];
+                    $field = new field(array('shortname' => "_19upgrade_{$contextname}_tag_data_{$tagname}",
+                                             'name'      => get_string('tag_custom_data', 'elis_program', $tagname),
+                                             'datatype'  => 'char'));
+                    $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
+
+                    field_owner::ensure_field_owner_exists($field, 'manual', array('control'         => 'text',
+                                                                                   'edit_capability' => '',
+                                                                                   'view_capability' => ''));
+                }
+            }
+
+            //set the data on all entities of the corresponding type for each tag
+            //custom data entity that is set
+            $sql = "SELECT instanceid, tagid, data
+                    FROM {crlm_tag_instance}
+                    WHERE instancetype = ?
+                    AND data != ''";
+            if ($records = $DB->get_recordset_sql($sql, array($instancetype))) {
+                foreach ($records as $record) {
+                    $tagname = $tag_lookup[$record->tagid];
+                    if ($field = $DB->get_record(field::TABLE, array('shortname' => "_19upgrade_{$contextname}_tag_data_{$tagname}"))) {
+                        $field = new field($field->id);
+
+                        $context = get_context_instance($contextlevel, $record->instanceid);
+                        field_data::set_for_context_and_field($context, $field, $record->data); 
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Update environments and environment assignments to custom fields and
+ * custom field data (run as a one-off during the elis program upgrade)
+ *
+ * If there are one or more entities (courses, classes) with environments
+ * assigned to them, a new category and custom field is created, specific to the
+ * appropriate context level. Then, that custom field is populated for each entity
+ * that has and environment assigned (custom field is a single-select, where the options
+ * are all the different environments on the site). 
+ */
+function pm_migrate_environments() {
+    global $DB;
+
+    require_once(elis::lib('data/customfield.class.php'));
+    require_once(elispm::lib('data/course.class.php'));
+    require_once(elispm::lib('data/pmclass.class.php'));
+
+    //set up our contextlevel mapping
+    $contextlevels = array(course::TABLE  => 'course',
+                           pmclass::TABLE => 'class');
+
+    //lookup on all tags
+    $environment_lookup = $DB->get_records('crlm_environment', null, '', 'id, name');
+    foreach ($environment_lookup as $id => $environment) {
+        $environment_lookup[$id] = $environment->name;
+    }
+
+    //go through each contextlevel and look for tags
+    foreach ($contextlevels as $instancetable => $contextname) {
+
+        //calculate the context level integer
+        $contextlevel = context_level_base::get_custom_context_level($contextname, 'elis_program');
+
+        //make sure one or more environments are used at the current context level
+        $select = 'environmentid != 0';
+
+        if ($DB->record_exists_select($instancetable, $select)) {
+
+            //used to reference the category name
+            $category = new field_category(array('name' => get_string('misc_category', 'elis_program')));
+
+            //make sure our field for storing environments is created
+            $field = new field(array('shortname'   => "_19upgrade_{$contextname}_environment",
+                                     'name'        => get_string('environment', 'elis_program'),
+                                     'datatype'    => 'char'));
+            $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
+
+            //determine environment options
+            $options = array();
+            if ($records = $DB->get_recordset('crlm_environment', null, 'name', 'DISTINCT name')) {
+                foreach ($records as $record) {
+                    $options[] = $record->name;
+                }
+            }
+            $options = implode("\n", $options);
+
+            //set up our field owner
+            field_owner::ensure_field_owner_exists($field, 'manual', array('control'         => 'menu',
+                                                                           'options'         => $options,
+                                                                           'edit_capability' => '',
+                                                                           'view_capability' => ''));
+
+            //set up data for all relevant entries
+            $sql = "SELECT id, environmentid
+                    FROM {{$instancetable}}
+                    WHERE environmentid != 0";
+            if ($records = $DB->get_recordset_sql($sql)) {
+                foreach ($records as $record) {
+                    $context = get_context_instance($contextlevel, $record->id);
+
+                    $environmentid = $environment_lookup[$record->environmentid];
+                    field_data::set_for_context_and_field($context, $field, $environmentid);
+                }
+            }
+        }
+    }
+}

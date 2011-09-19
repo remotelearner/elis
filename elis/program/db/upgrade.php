@@ -79,7 +79,7 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $dbman->change_field_default($table, $field);
 
         // elis savepoint reached
-        upgrade_plugin_savepoint(true, 2011080200, '', 'elis');
+        upgrade_plugin_savepoint(true, 2011080200, 'elis', 'program');
     }
 
     if ($result && $oldversion < 2011091600) {
@@ -87,6 +87,21 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         //make sure the site has exactly one curr admin block instance
         //that is viewable everywhere
         block_curr_admin_create_instance();
+
+        // elis savepoint reached
+        upgrade_plugin_savepoint(true, 2011091600, 'elis', 'program');
+    }
+
+    if ($result && $oldversion < 2011091900) {
+        require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
+
+        //migrate tag data to custom fields
+        pm_migrate_tags();
+        //migrade environment data to custom fields
+        pm_migrate_environments();
+
+        // elis savepoint reached
+        upgrade_plugin_savepoint(true, 2011091900, 'elis', 'program');
     }
 
     return $result;
