@@ -125,7 +125,7 @@ class report_page extends elis_page {
     }
 
     protected function _get_page_params() {
-        return array('report' => $this->report_shortname) + parent::_get_page_params();
+        return array('report' => $this->optional_param('report', '', PARAM_ALPHAEXT)) + parent::_get_page_params();
     }
 }
 
