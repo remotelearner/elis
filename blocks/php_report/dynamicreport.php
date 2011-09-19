@@ -29,6 +29,8 @@ require_once('php_report_base.php');
 
 //needed to satisfy the base page type
 $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE->set_pagelayout('embedded'); // TBV
+$PAGE->set_pagetype('elis'); // TBV
 
 $report_shortname = required_param('id', PARAM_CLEAN);
 

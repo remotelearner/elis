@@ -830,7 +830,7 @@ abstract class php_report {
      * including handling the filter form display if necessary
      */
     function display_header() {
-        global $CFG, $PAGE;
+        global $CFG, $PAGE, $OUTPUT;
 
         $report_shortname = $this->get_report_shortname();
 
@@ -865,7 +865,7 @@ abstract class php_report {
             $output .= '</div>';
             //end of php_report_block div
             $output .= '</div>';
-
+            $output .= $OUTPUT->footer();
             echo $output;
             die;
         }

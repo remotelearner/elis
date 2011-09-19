@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage pm-blocks-phpreports
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -32,15 +32,6 @@ require_once($CFG->dirroot .'/blocks/php_report/lib/filtering.php');
 
 //not using require_login here because permissions are determined
 //by the reports themselves
-
-if (!isset($this)) {
-    // only edit the page, and show the header/footer if we are called directly
-    $PAGE->set_url($ME);
-    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
-    $PAGE->set_pagelayout('standard'); // was 'embedded'
-    //$PAGE->blocks->add_regions(array('side-pre', 'side-post')); // TBV ?
-    echo $OUTPUT->header();
-}
 
 //report shortname
 $report_shortname = required_param('id', PARAM_CLEAN);
@@ -54,6 +45,16 @@ php_report_filtering_require_dependencies();
 $instance = php_report::get_default_instance($report_shortname);
 //NOTE: this is slow because it populates filter values
 $filters = $instance->get_filters();
+
+if (!isset($this)) {
+    // only edit the page, and show the header/footer if we are called directly
+    $PAGE->set_url($ME);
+    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+    $PAGE->set_pagelayout('embedded'); // TBV: was 'embedded'
+    $PAGE->set_pagetype('elis'); // TBV
+    $PAGE->set_title($instance->title);
+    echo $OUTPUT->header();
+}
 
 //obtain any necessary information regarding secondary filterings
 $dynamic_report_filter_url = $CFG->wwwroot .'/blocks/php_report/dynamicreport.php?id='. $report_shortname;
