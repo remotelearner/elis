@@ -393,46 +393,6 @@ class repository_elis_files extends repository {
         $str .= '</select>';
         */
 
-        $str .= '<div id="search_advanced_options" style="display:none;">';
-        $str .= '<label>Category: </label><br />';
-
-        $repo = repository_factory::factory();
-        $catfilter = elis_files_get_category_filter();
-
-        if ($DB->get_manager()->table_exists('elis_files_categories') && $categories = $repo->category_get_children(0)) {
-            $str .= '<center><input type="button" value="' . get_string('selectall') . '" onclick="checkall();" />';
-            $str .= '&nbsp;<input type="button" value="' . get_string('deselectall') . '" onclick="checknone();" /><br />';
-            $str .= '</center><br />';
-
-            if ($nodes = elis_files_make_category_select_tree_choose($categories, $catfilter)) {
-                $menu  = new HTML_TreeMenu();
-
-                for ($i = 0; $i < count($nodes); $i++) {
-                    $menu->addItem($nodes[$i]);
-                }
-
-                $treemenu = new HTML_TreeMenu_DHTML($menu, array(
-                    'images' => $CFG->wwwroot . '/repository/elis_files/lib/HTML_TreeMenu-1.2.0/images'
-                ));
-
-                //$treemenu->printMenu();
-                $treemenu_html = $treemenu->toHTML();
-
-                //error_log('treemenu_html:'.$treemenu_html);
-
-                $str .= $treemenu_html;
-            }
-
-            $str .= '<center><br />';
-            $str .= '<input type="button" value="' . get_string('selectall') . '" onclick="checkall();" />';
-            $str .= '&nbsp;<input type="button" value="' . get_string('deselectall') . '" onclick="checknone();" /><br />';
-            $str .= '</center> ';
-        } else {
-            $str .= get_string('nocategoriesfound', 'repository_elis_files');
-        }
-
-        $str .= '</div>';
-
         return $str;
     }
 
@@ -590,6 +550,9 @@ class repository_elis_files extends repository {
         $search_result = elis_files_search($search_text);
 
         $category_uuids = array();
+
+        //$flat = print_r($categories, true);
+        //error_log('Cats:'.$flat);
 
         // Convert elis category IDs to matching repository category UUIDs
         if (is_array($categories))
@@ -1176,5 +1139,13 @@ function check_editing_permissions($context, $id, $uuid, $userid = '') {
         return $results;
     }
 
+    function category_tree() {
+        global $DB;
+
+        $result = array();
+        $tree = $DB->get_records('elis_files_categories');
+
+        return $tree;
+    }
 
 }
