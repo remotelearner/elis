@@ -57,10 +57,13 @@ abstract class pm_page extends elis_page {
         return array('s' => $this->pagename) + parent::_get_page_params();
     }
 
-    function build_navbar_default() {
+    function build_navbar_default($who = null) {
         global $CFG;
+        if (!$who) {
+            $who = $this;
+        }
         parent::build_navbar_default();
 
-        $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
+        $who->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
     }
 }

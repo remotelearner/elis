@@ -154,10 +154,8 @@ class studentcurriculumpage extends associationpage2 {
         return $this->get_parent_page();
     }
 
-    function build_navigation_default() {
-        $navigation = parent::build_navigation_default();
-
-        $this->navbar->add($navigation);
+    function build_navbar_default() {
+        $this->get_parent_page()->build_navbar_view($this);
     }
 
     protected function get_selection_form() {
@@ -507,10 +505,8 @@ class curriculumstudentpage extends associationpage2 {
         return $this->get_parent_page();
     }
 
-    function build_navigation_default() {
-        $navigation = parent::build_navigation_default();
-
-        $this->navbar->add($navigation);
+    function build_navbar_default() {
+        $this->get_parent_page()->build_navbar_view($this);
     }
 
     protected function get_selection_form() {

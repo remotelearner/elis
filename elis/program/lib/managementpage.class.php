@@ -466,38 +466,50 @@ abstract class managementpage extends pm_page {
         return array_merge($defaults, $tab);
     }
 
-    public function build_navbar_add() {
-        $this->build_navbar_default();
+    public function build_navbar_add($who = null) {
+        if (!$who) {
+            $who = $this;
+        }
+        $this->build_navbar_default($who);
 
         $url = $this->get_new_page(array('action' => 'add'), true)->url;
-        $this->navbar->add(get_string("add_{$this->data_class}", 'elis_program'), $url);
+        $who->navbar->add(get_string("add_{$this->data_class}", 'elis_program'), $url);
     }
 
-    function build_navbar_edit() {
-        $this->build_navbar_view();
+    function build_navbar_edit($who = null) {
+        $this->build_navbar_view($who);
     }
 
-    function build_navbar_delete() {
-        $this->build_navbar_view();
+    function build_navbar_delete($who = null) {
+        if (!$who) {
+            $who = $this;
+        }
+        $this->build_navbar_view($who);
 
-        $this->navbar->add(get_string('delete'));
+        $who->navbar->add(get_string('delete'));
     }
 
-    function build_navbar_view() {
-        $this->build_navbar_default();
+    function build_navbar_view($who = null) {
+        if (!$who) {
+            $who = $this;
+        }
+        $this->build_navbar_default($who);
 
-        $id = $this->required_param('id', PARAM_INT);
-        $obj = $this->get_new_data_object($id);
+        $id = $who->required_param('id', PARAM_INT);
+        $obj = $this->get_new_data_object($id); // TBD: $who-> ???
         $obj->load();
         $url = $this->get_new_page(array('action' => 'view', 'id' => $id), true)->url;
-        $this->navbar->add(htmlspecialchars($obj), $url, navbar::TYPE_CUSTOM, null, null, new pix_icon('user', '', 'elis_program'));
+        $who->navbar->add(htmlspecialchars($obj), $url, navbar::TYPE_CUSTOM, null, null, new pix_icon('user', '', 'elis_program'));
     }
 
-    public function build_navbar_default() {
-        parent::build_navbar_default();
+    public function build_navbar_default($who = null) {
+        if (!$who) {
+            $who = $this;
+        }
+        parent::build_navbar_default($who);
 
         $url = $this->get_new_page(array(), true)->url;
-        $this->navbar->add(get_string("manage_{$this->data_class}", 'elis_program'), $url);
+        $who->navbar->add(get_string("manage_{$this->data_class}", 'elis_program'), $url);
     }
 
     public function get_page_title_default() {
