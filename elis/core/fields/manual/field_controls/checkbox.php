@@ -24,7 +24,7 @@ function checkbox_control_display($form, $mform, $customdata, $field, $as_filter
         if ($as_filter || $field->multivalued) {
 //            require_once(CURMAN_DIRLOCATION.'/plugins/manual/field_controls/menu.php');
             require_once elis::plugin_file('elisfields_manual', 'field_controls/menu.php');
-            return menu_control_display($form, $field, $as_filter);
+            return menu_control_display($form, $mform, $customdata, $field, $as_filter);
         }
         $manual = new field_owner($field->owners['manual']);
         $options = explode("\n", $manual->param_options);
