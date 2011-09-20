@@ -50,7 +50,11 @@ class cmEngineForm extends cmform {
         $this->defineActivation();
         $this->defineResults();
 
-        $this->add_action_buttons();
+        $submitlabel = get_string('savechanges');
+        $mform =& $this->_form;
+        $buttonarray[] = &$mform->createElement('submit', 'submitbutton', $submitlabel);
+        $buttonarray[] = &$mform->createElement('cancel');
+        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
     }
 
     /**
@@ -125,18 +129,17 @@ class cmEngineForm extends cmform {
             $html[] = '</select><br />';
 
             $html[] = '</fieldset>';
-
             $html[] = '</fieldset>';
 
             $this->_html = $html;
         } else {
             $mform =& $this->_form;
 
+
+            $mform->addElement('header', 'activationrules', $activationrules);
+
             $mform->addElement('hidden', 'rid', $this->_customdata['rid']);
             $mform->addElement('hidden', 'contextid', $this->_customdata['contextid']);
-
-            $mform->addElement('html', '<fieldset class="engineform">');
-            $mform->addElement('html', '<legend>'. $activationrules .'</legend>');
 
             $mform->addElement('advcheckbox', 'active', $activaterule);
             $mform->setType('active', PARAM_BOOL);
@@ -176,6 +179,10 @@ class cmEngineForm extends cmform {
 
             $mform->addElement('html', '</fieldset>');
             $mform->addElement('html', '</fieldset>');
+
+            // TODO: Find out where the extra </div> that this opens comes from.
+            // Removing this line will prevent the side menu from showing up.
+            $mform->addElement('html', '<div>');
         }
     }
 
