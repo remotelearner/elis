@@ -502,8 +502,8 @@ $fs = get_file_storage();
      * @param string $search_text
      * @return array
      */
-    public function search($search_text, $categories = NULL) {
-        global $OUTPUT;
+    public function search($search_text, $page = 1, $categories = NULL) {
+        global $OUTPUT, $DB;
 
         /* old code
         $space = optional_param('space', 'workspace://SpacesStore', PARAM_RAW);
@@ -533,17 +533,29 @@ $fs = get_file_storage();
 
         $search_result = elis_files_search($search_text);
 
+        $category_uuids = array();
+
+        // Convert elis category IDs to matching repository category UUIDs
+        if (is_array($categories))
+        {
+            foreach ($categories as $category_id) {
+                $category_result = $DB->get_record('elis_files_categories', array('id'=> $category_id));
+                if (!empty($category_result)) {
+                    $category_uuids[] = $category_result->uuid;
+                }
+            }
+        }
         if (!empty($search_result->files)) {
             foreach ($search_result->files as $file_object) {
                 //error_log("DEBUG: search result");
                 //$flat = print_r($file_object,true);
                 //error_log($flat);
 
-                if (!empty($categories)) {
+                if (!empty($category_uuids)) {
                     $found_category = false;
                     $category_result = elis_files_get_node_categories($file_object->noderef, $file_object->uuid);
-                    foreach ($categories as $category) {
-                        if (!empty($category_result[$category])) {
+                    foreach ($category_uuids as $category_uuid) {
+                        if (!empty($category_result[$category_uuid])) {
                             $found_category = true;
                             break;
                         }
