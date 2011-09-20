@@ -70,7 +70,7 @@ if (!empty($filters)) {
     //report has filters
     $dynamic_report_filter_url = $CFG->wwwroot.'/blocks/php_report/dynamicreport.php?id='.$report_shortname;
     $filter_object = new php_report_default_capable_filtering($filters,
-                             $dynamic_report_filter_url, null, $report_shortname, $report_shortname);
+                             $dynamic_report_filter_url, null, $report_shortname, $report_shortname, $secondary_filterings);
     $params = array('filterobject' => $filter_object,
                     'showcancel' => $showcancel);
     $parameter_form = new parameter_form($action, $params);
