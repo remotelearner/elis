@@ -47,11 +47,13 @@ class pmclassform extends cmform {
                 $this->set_data(array('disableend' => '1'));
             }
 
-            if (isset($obj->starttimeminute) && isset($obj->starttimehour)) {
+            if (isset($obj->starttimeminute) && isset($obj->starttimehour)
+                && $obj->starttimeminute < 61 && $obj->starttimehour < 25) {
                 $this->set_data(array('starttime' => array('minute' => $obj->starttimeminute,
                                                            'hour' => $obj->starttimehour)));
             }
-            if (isset($obj->endtimeminute) && isset($obj->endtimehour)) {
+            if (isset($obj->endtimeminute) && isset($obj->endtimehour)
+                && $obj->endtimeminute < 61 && $obj->endtimehour < 25) {
                 $this->set_data(array('endtime' => array('minute' => $obj->endtimeminute,
                                                          'hour' => $obj->endtimehour)));
             }
@@ -137,8 +139,7 @@ class pmclassform extends cmform {
 
         $mform->addElement('date_selector', 'enddate', get_string('class_enddate', 'elis_program') . ':', array('optional'=>true));
 
-        // They may very likely be a much better way of checking for this...
-        if (empty($obj->starttimehour) and empty($obj->starttimeminute)) {
+        if ($obj->starttimehour >= 25 || $obj->starttimeminute >= 61) {
             $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'checked', 'display_12h'=>elis::$config->elis_program->time_format_12h));
         } else {
@@ -148,7 +149,7 @@ class pmclassform extends cmform {
         $mform->addHelpButton('starttime', 'pmclassform:class_starttime', 'elis_program');
 
         // Do the same thing for the endtime
-        if (empty($obj->endtimehour) and empty($obj->endtimeminute)) {
+        if ($obj->endtimehour >= 25 || $obj->endtimeminute >= 61) {
             $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'elis_program') . ':',
                                array('optional'=>true, 'checked'=>'checked', 'display_12h'=>elis::$config->elis_program->time_format_12h));
         } else {
@@ -420,7 +421,7 @@ class pmclassform extends cmform {
                 $data->starttimehour = (int)$timearray['hours'];
                 $data->starttimeminute = (int)$timearray['minutes'];
             } else {
-                $data->starttimehour = $data->starttimeminute = 0;
+                $data->starttimehour = $data->starttimeminute = 61;
             }
 
             if(!empty($data->endtime) and
@@ -429,10 +430,9 @@ class pmclassform extends cmform {
                 $data->endtimehour = (int)$timearray['hours'];
                 $data->endtimeminute = (int)$timearray['minutes'];
             } else {
-                $data->endtimehour = $data->endtimeminute = 0;
+                $data->endtimehour = $data->endtimeminute = 61;
             }
         }
-
         return $data;
     }
 

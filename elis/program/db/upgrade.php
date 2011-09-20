@@ -104,6 +104,34 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2011091900, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2011092000) {
+        /**
+         * Support class start/end times = 00:00 (midnight)
+         * invalid/disabled is now hour/minute out-of-range (> 24/60)
+         */
+        $pmclasses = $DB->get_recordset('crlm_class');
+        if ($pmclasses) {
+            foreach ($pmclasses as $pmclass) {
+                $change = false;
+                if ($pmclass->starttimeminute == '0' && $pmclass->starttimehour == '0') {
+                    $pmclass->starttimeminute = $pmclass->starttimehour = 61;
+                    $change = true;
+                }
+                if ($pmclass->endtimeminute == '0' && $pmclass->endtimehour == '0') {
+                    $pmclass->endtimeminute = $pmclass->endtimehour = 61;
+                    $change = true;
+                }
+                if ($change) {
+                    $DB->update_record('crlm_class', $pmclass);
+                }
+            }
+            $pmclasses->close();
+        }
+
+        // elis savepoint reached
+        upgrade_plugin_savepoint(true, 2011092000, 'elis', 'program');
+    }
+
     return $result;
 }
 

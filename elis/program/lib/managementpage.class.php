@@ -606,7 +606,7 @@ class management_page_table extends display_table {
     }
 
     function get_item_display_starttime($column, $item) {
-        if (($item->starttimehour == '0') && ($item->starttimeminute == '0')) {
+        if ($item->starttimehour >= 25 || $item->starttimeminute >= 61) {
             return '-';
         } else {
             if(empty(elis::$config->time_format_12h)) {
@@ -626,7 +626,7 @@ class management_page_table extends display_table {
     }
 
     function get_item_display_endtime($column, $item) {
-        if (($item->endtimehour == '0') && ($item->endtimeminute == '0')) {
+        if ($item->endtimehour >= 25 || $item->endtimeminute >= 61) {
             return '-';
         } else {
             if(empty(elis::$config->time_format_12h)) {
