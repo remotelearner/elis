@@ -34,6 +34,7 @@ require_once elispm::file('curriculumcoursepage.class.php');
 require_once elispm::file('form/courseform.class.php');
 require_once elispm::file('pmclasspage.class.php');
 require_once elispm::file('rolepage.class.php');
+require_once elis::lib('data/data_filter.class.php');
 
 class coursepage extends managementpage {
     var $data_class = 'course';
@@ -141,6 +142,8 @@ class coursepage extends managementpage {
     }
 
     function display_default() {
+        global $DB;
+
         // Get parameters
         $sort         = optional_param('sort', 'name', PARAM_ALPHA);
         $dir          = optional_param('dir', 'ASC', PARAM_ALPHA);
@@ -168,9 +171,20 @@ class coursepage extends managementpage {
             $columns[$sort]['sortable'] = $dir;
         }
 
+        //handle name search and first letter ("alpha")
+        $filter = array();
+        if (!empty($namesearch)) {
+            $namesearch = trim($namesearch);
+            $filter[] = new field_filter('name', "%{$DB->sql_like_escape($namesearch)}%", field_filter::LIKE);
+        }
+
+        if (!empty($alpha)) {
+            $filter[] = new field_filter('name', "{$DB->sql_like_escape($alpha)}%", field_filter::LIKE);
+        }
+
         // Get list of courses
-        $items    = course::find(null, array($sort => $dir), $page*$perpage, $perpage);
-        $numitems = course::count(null);
+        $items    = course::find($filter, array($sort => $dir), $page*$perpage, $perpage);
+        $numitems = course::count($filter);
 
         // Cache the context capabilities
         coursepage::get_contexts('elis/program:course_edit');

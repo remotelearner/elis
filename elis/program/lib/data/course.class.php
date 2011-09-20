@@ -799,7 +799,7 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
         $idnumber_like = $DB->sql_like('crs.idnumber', '?', FALSE);
 
         $where[] = "(($name_like) OR ($idnumber_like))";
-        $params += array("%$namesearch%", "%$namesearch%");
+        $params = array_merge($params, array("%$namesearch%", "%$namesearch%"));
     }
 
     if ($alpha) {
@@ -813,7 +813,7 @@ function course_get_listing($sort='crs.name', $dir='ASC', $startrec=0, $perpage=
         $filter_sql = $filter_object->get_sql(false, 'crs');
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
-            $params += $filter_sql['where_parameters'];
+            $params = array_merge($params, $filter_sql['where_parameters']);
         }
     }
 
@@ -843,7 +843,7 @@ function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
         $idnumber_like = $DB->sql_like('idnumber', '?', FALSE);
 
         $where[] = "(($name_like) OR ($idnumber_like))";
-        $params += array("%$namesearch%", "%$namesearch%");
+        $params = array_merge($params, array("%$namesearch%", "%$namesearch%"));
     }
 
     if ($alpha) {

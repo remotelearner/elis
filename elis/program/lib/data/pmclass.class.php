@@ -968,7 +968,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
         $clslike = $DB->sql_like('cls.idnumber', '?', FALSE);
 
         $where[] = "(($crslike) OR ($clslike))";
-        $params += array("%$namesearch%", "%$namesearch%");
+        $params = array_merge($params, array("%$namesearch%", "%$namesearch%"));
     }
 
     if ($alpha) {
@@ -1052,7 +1052,7 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
         $clslike = $DB->sql_like('cls.idnumber', '?', FALSE);
 
         $where[] = "(($crslike) OR ($clslike))";
-        $params += array("%$namesearch%", "%$namesearch%");
+        $params = array_merge($params, array("%$namesearch%", "%$namesearch%"));
     }
 
     if ($alpha) {

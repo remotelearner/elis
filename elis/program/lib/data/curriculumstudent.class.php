@@ -489,7 +489,7 @@ function curriculumstudent_count_students($type = 'student', $namesearch = '', $
         $namesearch = trim($namesearch);
         $name_like = $DB->sql_like($FULLNAME, '?', FALSE);
         $where[] = "($name_like)";
-        $params += array("%$namesearch%");
+        $params[] = "%$namesearch%";
     }
 
     if ($alpha) {

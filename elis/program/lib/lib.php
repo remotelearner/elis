@@ -883,7 +883,7 @@ function usermanagement_get_users($sort = 'name', $dir = 'ASC', $startrec = 0,
         $filter_array = $user_obj->get_sql(false, 'usr');
         if (isset($filter_array['where'])) {
             $where[] = '('. $filter_array['where'] .')';
-            $params += $filter_array['where_parameters'];
+            $params = array_merge($params, $filter_array['where_parameters']);
         }
     }
 
@@ -933,7 +933,7 @@ function usermanagement_count_users($extrasql = array(), $contexts = null) {
         $filter_array = $user_obj->get_sql(false, 'usr');
         if (isset($filter_array['where'])) {
             $where[] = '('. $filter_array['where'] .')';
-            $params += $filter_array['where_parameters'];
+            $params = array_merge($params, $filter_array['where_parameters']);
         }
     }
 
@@ -979,7 +979,7 @@ function usermanagement_get_users_recordset($sort = 'name', $dir = 'ASC',
         $filter_array = $user_obj->get_sql(false, 'usr');
         if (isset($filter_array['where'])) {
             $where[] = '('. $filter_array['where'] .')';
-            $params += $filter_array['where_parameters'];
+            $params = array_merge($params, $filter_array['where_parameters']);
         }
     }
 

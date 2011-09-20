@@ -691,7 +691,7 @@ function curriculumcourse_get_listing($curid, $sort='position', $dir='ASC', $sta
         $name_like = $DB->sql_like('crs.name', '?', FALSE);
 
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
-        $params += array("%$namesearch%");
+        $params[] = "%$namesearch%";
     }
 
     if ($alpha) {
@@ -731,7 +731,7 @@ function curriculumcourse_count_records($curid, $namesearch = '', $alpha = '') {
         $name_like = $DB->sql_like('crs.name', '?', FALSE);
 
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
-        $params += array("%$namesearch%");
+        $params[] = "%$namesearch%";
     }
 
     if ($alpha) {

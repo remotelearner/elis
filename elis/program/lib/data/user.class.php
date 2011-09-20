@@ -1153,7 +1153,7 @@ function user_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $na
     }
 
     if ($alpha) {
-        $filters[] = new field_filter($FULLNAME, "%{$DB->sql_like_escape($alpha)}", field_filter::LIKE);
+        $filters[] = new field_filter($FULLNAME, "{$DB->sql_like_escape($alpha)}%", field_filter::LIKE);
     }
 
     if ($sort) {
