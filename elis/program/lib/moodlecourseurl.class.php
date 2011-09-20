@@ -59,8 +59,6 @@ class moodlecourseurl {
         $this->_referenceTable =  'course';
 
         $context = get_context_instance(CONTEXT_SYSTEM);
-        $PAGE->set_context($context);
-        $PAGE->set_url($ME, $_GET);
     }
 
     /**
