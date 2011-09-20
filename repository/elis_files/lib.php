@@ -161,6 +161,7 @@ class repository_elis_files extends repository {
         /*$opts = $repo->file_browse_options($course->id, $userid, $ouuid, $shared, $choose, 'file/repository/index.php',
                                                'files/index.php', 'file/repository/index.php', $default);
                              */
+        // Set permissible browsing locations
         $ret['locations'] = array();
         $this->elis_files->file_browse_options($COURSE->id, '', $ret['locations']);
 
@@ -168,7 +169,6 @@ class repository_elis_files extends repository {
         $ret['nologin'] = true;
         $ret['showselectedactions'] = true;
         $ret['showcurrentactions'] = true;
-        $ret['list'] = array();
 
         $server_url = $this->elis_files->get_repourl();
 
@@ -232,6 +232,9 @@ class repository_elis_files extends repository {
 
         }
 
+        // Send the userid used for permissions
+        $ret['uid'] = $uid;
+
         // Get editing privileges - set canedit flag...
         $canedit = repository_elis_files::check_editing_permissions($this->context, $COURSE->id, $uuid, $uid);
         $ret['canedit'] = $canedit;
@@ -251,6 +254,7 @@ class repository_elis_files extends repository {
         $this->elis_files->set_repository_location($uuid, $COURSE->id, $uid, $shared);
 
         $children = elis_files_read_dir($this->current_node->uuid);
+        $ret['list'] = array();
 
         foreach ($children->folders as $child) {
             if (!$this->elis_files->permission_check($child->uuid, $uid, false)) {
@@ -331,6 +335,37 @@ class repository_elis_files extends repository {
         return $url;
     }
 
+    /*
+     * Get Alfresco folders under current uuid
+     */
+    public function get_folder_listing($uuid, $uid) {
+        global $OUTPUT, $USER;
+
+//        $uid = $USER->id;
+        $children = elis_files_read_dir($uuid);
+//echo "\n uid: ".$uid. " for uuid: ".$uuid;
+        $return = array();
+
+        foreach ($children->folders as $child) {
+            if (!$this->elis_files->permission_check($child->uuid, $uid, false)) {
+                echo "\n failed permission check";
+                break;
+            }
+            // Hmmm, what to do here...
+            $return[] = array('title'=>$child->title,
+                    'path'=>$child->uuid,
+                    'name'=>$child->title,
+                    'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
+                    'created'=>'',
+                    'modified'=>'',
+                    'owner'=>'',
+                    'children'=>array());
+        }
+        return $return;
+        // Also set up a listing of the other, non-selected folders
+    }
+
+
     public function print_search() {
         global $CFG, $DB;
 
@@ -401,27 +436,29 @@ class repository_elis_files extends repository {
         return $str;
     }
 
+    /*
+     * Popup to confirm the list of files to delete
+     * @param   string  $parentuuid     parent uuid passed for refreshing page
+     * @param   array   $files_array    list of files to be deleted
+     * @return  string  $str            html to be displayed
+     */
     public function print_delete_popup($parentuuid, $files_array) {
         global $CFG, $DB, $OUTPUT, $USER;
 
         // we keep the parent uuid around so we know which uuid to refresh the page to when refreshing
         $str = '<div>
                         <input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'">';
-//                       <input type="hidden" id="fileslist" name="fileslist" value="'.implode(',',$files_array).'">';
+
         // display list of files to delete...
         $str .= '<div>'.get_string('deletecheckfiles','repository_elis_files').'</div>';
         $filelist = array();
         $str .= repository_elis_files::printfilelist($files_array, $filelist);
         $str.='<input type="hidden" name="filelist" id="fileslist" value="'.implode(",",$filelist).'">';
         $resourcelist = false;
-$fs = get_file_storage();
+        $fs = get_file_storage();
 
         foreach ($filelist as $uuid) {
             // If file is specified in a resource, then delete that too.
-//            $clean_name = substr($file, 1);
-//            $fb = get_file_browser();
-            //get_file_info($context = NULL, $component = NULL, $filearea = NULL, $itemid = NULL, $filepath = NULL, $filename = NULL)
-//            $file = get_file_info(NULL,NULL,NULL,NULL,NULL,$clean_name);
             $node = $this->elis_files->get_info($uuid);
             $clean_name = $node->title;
 //            echo '<br>looking for: '.$clean_name;
@@ -429,19 +466,10 @@ $fs = get_file_storage();
                 continue;
             }
             if ($DB->record_exists('files', array('filename'=> $clean_name))) {
-//                if (!$resourcelist) {
-//                    $resourcelist = true;
-//                }
-//                $resource_id = repository_elis_files::files_get_cm_from_resource_name($clean_name, $uuid);
-// Warn user that they are deleting a resource that is used... maybe
+                // Warn user that they are deleting a resource that is used... maybe
                 $str.= '<p>' . get_string('warningdeleteresource', 'repository_elis_files', $clean_name);
-//                     " <a href='$CFG->wwwroot/course/mod.php?update=$resource_id&sesskey=$USER->sesskey'>" .
-//                     get_string('update')."</a></p>";
             }
-            // Check if a media resource type and warn if so...
         }
-//        if ($resourcelist) {
-//        }
 
         $str .=        '<input id="okButton" type="button" default="default" value="Yes" />
                         <input id="cancelButton" type="button" value="No" />
@@ -449,6 +477,29 @@ $fs = get_file_storage();
 
         return $str;
     }
+
+    /*
+     * Generate html string to return for popup
+     * @return  string  $str
+     */
+    // TODO: turn options into language strings... for all popups
+    public function print_move_dialog() {
+        global $CFG;
+
+        $str = '<div>
+                        <div id="repository_tabs"></div>
+                        <input id="moveButton" type="button" default="default" value="Move" />
+                        <input id="cancelButton" type="button" value="Cancel" />
+                        </div>';
+
+        return $str;
+    }
+
+    /*
+     * Generate html string to return for popup
+     * @param   string  $parentuuid parent uuid needed for page refresh
+     * @return  string  $str
+     */
     public function print_newdir_popup($parentuuid) {
         global $CFG;
 
@@ -463,9 +514,14 @@ $fs = get_file_storage();
         return $str;
     }
 
+    /*
+     * Generate html string to return for popup
+     * @return  string  $str
+     */
     public function print_upload_popup() {
         global $CFG;
 
+        // TODO These css includes will need to be removed elsewhere
         $str = '<link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/fileuploader.css" type="text/css" />
                 <link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" title="no title" charset="utf-8" />
                 <p><b>Uploading Tip</b></p>
@@ -1057,5 +1113,68 @@ function check_editing_permissions($context, $id, $uuid, $userid = '') {
             return true;
         }
     }
+
+    /*
+     * Get the applicable location parent of the given uuid
+     */
+    function get_location_parent($uuid, $uid) {
+        global $COURSE;
+
+//        echo "\n in get location parent and uuid:".$uuid;
+        // Set permissible browsing locations
+        $locations = array();
+        $this->elis_files->file_browse_options($COURSE->id, '', $locations);
+//        array_reverse($locations);
+//        echo "\n locations: ";
+//        print_object($locations);
+        $parent_path = array();
+        repository_elis_files::get_parent_path($uuid, $parent_path);
+        array_reverse($parent_path);
+        // Check if current path IS the parent! // ELIS Site Files
+        if (empty($parent_path)) {
+            $parent = array('name'=> get_string('repositorysitefiles','repository_elis_files'),
+                            'path'=>$uuid);
+        } else {
+            // first check if the uuid passed in is a location
+            $parent_found = repository_elis_files::search_array($locations, 'path', $uuid);
+            if (empty($parent_found)) {
+                // find the closest location of the locations...
+                foreach ($parent_path as $parent) {
+//                    echo "\n looking for uuid: ".$parent['path']." and name: ".$parent['name'];
+//                    print_object($locations);
+    //                if ($parent['uuid'] is in $locations
+    //                $parent_found = array_search($parent['path'], $locations,true);
+                    $parent_found = repository_elis_files::search_array($locations, 'path', $parent['path']);
+                    if (!empty($parent_found)) {
+//                        echo "\n found it!";
+//                        print_object($parent_found);
+                        $parent = $parent_found[0];
+                        break;
+                    }
+                }
+            } else {
+                $parent = $parent_found[0];
+            }
+        }
+//        echo "\n path returned: ";
+//        print_object($parent['path']);
+        return $parent;
+    }
+    function search_array($array, $key, $value) {
+        $results = array();
+
+        if (is_array($array))
+        {
+
+            if (isset($array[$key]) && $array[$key] == $value)
+                $results[] = $array;
+
+            foreach ($array as $subarray)
+                $results = array_merge($results, repository_elis_files::search_array($subarray, $key, $value));
+        }
+
+        return $results;
+    }
+
 
 }
