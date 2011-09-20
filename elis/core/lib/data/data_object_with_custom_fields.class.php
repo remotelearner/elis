@@ -95,8 +95,8 @@ abstract class data_object_with_custom_fields extends elis_data_object {
                 } else {
                     // field data was unset, so delete values
                     $fielddatatype = "field_data_{$field->data_type()}";
-                    field_data::delete_records($fielddatatype, array(new field_filter('contextid', $this->_context->id),
-                                                                     new field_filter('fieldid', $field->id)));
+                    $fieldatatype::delete_records(array(new field_filter('contextid', $this->_context->id),
+                                                        new field_filter('fieldid', $field->id)));
                 }
             }
             unset($this->_field_changed[$name]);
