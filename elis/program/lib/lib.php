@@ -279,7 +279,7 @@ function pm_synchronize_moodle_class_grades() {
     if ($moodleclasses = moodle_get_classes()) {
         $timenow = time();
         foreach ($moodleclasses as $class) {
-            $pmclass = new pmclass($class->classid);
+            $pmclass = $class->pmclass;
             $context = get_context_instance(CONTEXT_COURSE, $class->moodlecourseid);
             $moodlecourse = $DB->get_record('course', array('id' => $class->moodlecourseid));
 

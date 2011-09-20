@@ -438,15 +438,8 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 }
 
 function moodle_get_classes() {
-    global $DB;
-
-    $select = 'SELECT mc.* ';
-    $from   = 'FROM {'.classmoodlecourse::TABLE.'} mc ';
-    $join   = 'LEFT JOIN {course} c ON c.id = mc.moodlecourseid ';
-    $where  = 'WHERE c.id IS NOT NULL ';
-    $sql = $select.$from.$join.$where;
-
-    return $DB->get_records_sql($sql);
+    return classmoodlecourse::find(array(new join_filter('moodlecourseid', classmoodlecourse::TABLE, 'id'),
+                                         new join_filter('classid', classmoodlecourse::TABLE, 'id')));
 }
 
 /**
