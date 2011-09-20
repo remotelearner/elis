@@ -133,6 +133,7 @@ class cmEngineForm extends cmform {
             $mform =& $this->_form;
 
             $mform->addElement('hidden', 'rid', $this->_customdata['rid']);
+            $mform->addElement('hidden', 'contextid', $this->_customdata['contextid']);
 
             $mform->addElement('html', '<fieldset class="engineform">');
             $mform->addElement('html', '<legend>'. $activationrules .'</legend>');

@@ -127,6 +127,8 @@ $pages = array(
                       'file' => 'taginstancepage.class.php'),
     'clsrole' => array('class' => 'class_rolepage',
                        'file' => 'rolepage.class.php'),
+    'clsengine' => array('class' => 'class_enginepage',
+                         'file' => 'enginepage.class.php'),
 
     // Administration
     'replnk' => array('class' => 'class_reportlinkspage',

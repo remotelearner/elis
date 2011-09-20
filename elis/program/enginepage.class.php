@@ -69,7 +69,7 @@ abstract class enginepage extends pm_page {
      * @return bool True if the user has permission to use the default action
      */
     function can_do_default() {
-        return $this->_has_capability('elis/program:'. $this->type .'_edit', $this->get_context());
+        return has_capability('elis/program:'. $this->type .'_edit', $this->get_context());
     }
 
     /**
@@ -105,6 +105,7 @@ abstract class enginepage extends pm_page {
         $params = $obj->to_array();
         $params['rid'] = $rid;
         $params['courseid'] = $this->get_course_id();
+        $params['contextid'] = $contextid;
 
         $form = new cmEngineForm($target->url, $params);
         $form->set_data($params);
@@ -200,12 +201,13 @@ abstract class enginepage extends pm_page {
         }
 
         $data = $form->get_data();
-
         if ($data) {
             require_sesskey();
             $obj       = $this->get_new_data_object($id);
             $obj->set_from_data($data);
-            if ($obj->id < 1) {
+            if ($data->rid > 0) {
+                $obj->id = $data->rid;
+            } else {
                 unset($obj->id);
             }
             $obj->save();
@@ -327,7 +329,7 @@ class class_enginepage extends enginepage {
         global $DB;
 
         $classid  = $this->required_param('id', PARAM_INT);
-        $courseid = $DB->get_field('courseid', 'crlm_class', array('id' => $classid));
+        $courseid = $DB->get_field('crlm_class', 'courseid', array('id' => $classid));
         return $courseid;
     }
 
