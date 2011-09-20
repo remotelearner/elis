@@ -320,7 +320,7 @@ function cluster_profile_update_handler($userdata) {
                                      ) inf ON inf.fieldid = cp1.fieldid AND inf.data = cp1.value
                                 WHERE cp.clusterid=cp1.clusterid)
                                = (SELECT COUNT(*) FROM {" . userset_profile::TABLE . "} cp1 WHERE cp.clusterid = cp1.clusterid))";
-    $new_assignments_params = array($cuid, $userdata->id, $userdata->id, $userdata->id);
+    $new_assignments_params = array($cuid, $userdata->id, $userdata->id);
 
     // delete existing assignments that should not be there any more
     if ($CFG->dbfamily == 'postgres') {
