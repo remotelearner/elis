@@ -166,7 +166,7 @@ class pmclasspage extends managementpage {
         array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting'),
         array('tab_id' => 'instructorpage', 'page' => 'instructorpage', 'name' => get_string('instructors', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'instructor'),
         array('tab_id' => 'class_rolepage', 'page' => 'class_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
-        array('tab_id' => 'classs_enginepage', 'page' => 'class_enginepage', 'params' => array('action' => 'edit'), 'name' => get_string('engine', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
+        array('tab_id' => 'class_enginepage', 'page' => 'class_enginepage', 'params' => array('action' => 'edit'), 'name' => get_string('engine', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
         array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'report')
