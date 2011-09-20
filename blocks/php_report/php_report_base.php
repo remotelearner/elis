@@ -781,8 +781,12 @@ abstract class php_report {
         $hour     = $start_or_end .'timehour';
         $minute   = $start_or_end .'timeminute';
         $datetime = $pmclass->{$date};
-        $datetime += $pmclass->{$hour} * HOURSECS;
-        $datetime += $pmclass->{$minute} * MINSECS;
+        if ($pmclass->{$hour} < 25) {
+            $datetime += $pmclass->{$hour} * HOURSECS;
+        }
+        if ($pmclass->{$minute} < 61) {
+            $datetime += $pmclass->{$minute} * MINSECS;
+        }
         return $this->userdate($datetime, $fmt);
     }
 
