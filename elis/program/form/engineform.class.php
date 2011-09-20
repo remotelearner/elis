@@ -66,7 +66,7 @@ class cmEngineForm extends cmform {
                         2 => get_string('engineform:before_class_end', self::LANG_FILE),
                         3 => get_string('engineform:after_class_end', self::LANG_FILE));
 
-        $conditions = array('courseid' => $this->_customdata['obj']->courseid);
+        $conditions = array('courseid' => $this->_customdata['courseid']);
 
         $completions = $DB->get_records(coursecompletion::TABLE, $conditions);
 
@@ -94,7 +94,7 @@ class cmEngineForm extends cmform {
             $html[] = '<input type="hidden" name="action" value="edit" />';
             $html[] = '<input type="hidden" name="id" value="'. $this->_customdata['id'] .'" />';
             $html[] = '<input type="hidden" name="contextid" value="'. $this->_customdata['contextid'] .'" />';
-            $html[] = '<input type="hidden" name="s" value="'. $this->_customdata['data'] .'" />';
+            $html[] = '<input type="hidden" name="s" value="'. $this->_customdata['s'] .'" />';
             $html[] = $activaterule .' <input type="checkbox" name="active" value="1" /><br />';
 
             $html[] = '<fieldset class="engineform">';
@@ -132,10 +132,7 @@ class cmEngineForm extends cmform {
         } else {
             $mform =& $this->_form;
 
-            $mform->addElement('hidden', 'action', 'edit');
-            $mform->addElement('hidden', 'id', $this->_customdata['obj']->id);
-            $mform->addElement('hidden', 'contextid', $this->_customdata['obj']->contextid);
-            $mform->addElement('hidden', 's', $this->_customdata['obj']->page);
+            $mform->addElement('hidden', 'rid', $this->_customdata['rid']);
 
             $mform->addElement('html', '<fieldset class="engineform">');
             $mform->addElement('html', '<legend>'. $activationrules .'</legend>');

@@ -77,30 +77,39 @@ abstract class enginepage extends pm_page {
      *
      * @return object The engine form
      */
-    protected function get_engine_form($params = null) {
+    protected function get_engine_form() {
+        $known     = false;
+        $contextid = $this->get_context()->id;
+        $id        = $this->optional_param('id', 0, PARAM_INT);
+        $rid       = $this->optional_param('rid', 0, PARAM_INT);
+        $obj       = $this->get_new_data_object($rid);
 
-        $id     = $this->required_param('id', PARAM_INT);
-        $target = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
-        $s = $this->required_param('s', PARAM_ALPHA);
-
-        if ($params === null) {
-            $action = $this->optional_param('action', 'default', PARAM_ALPHA);
-
-            $fields = array(
-                'action'    => $action,
-                'courseid'  => $this->get_course_id(),
-                'contextid' => $this->get_context()->id,
-                'page'      => $s,
-            );
-            $obj = new object($params);
-            $params = array('obj' => $obj);
-        } else {
-            $params['obj']->courseid  = $this->get_course_id();
-            $params['obj']->contextid = $this->get_context()->id;
-            $params['obj']->page      = $s;
+        if ($rid < 1) {
+            $filter    = new field_filter('contextid', $contextid);
+            $results   = $obj->find($filter);
+            $rid = $results->current()->id;
         }
 
-        return new cmEngineForm($target->url, $params);
+        $filter    = new field_filter('id', $rid);
+
+        if ($obj->exists($filter)) {
+            $obj->id = $rid;
+            $obj->load();
+            $known = true;
+        }
+
+        $target    = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
+
+        $obj->contextid = $contextid;
+
+        $params = $obj->to_array();
+        $params['rid'] = $rid;
+        $params['courseid'] = $this->get_course_id();
+
+        $form = new cmEngineForm($target->url, $params);
+        $form->set_data($params);
+
+        return $form;
     }
 
     function get_tab_page() {
@@ -170,16 +179,7 @@ abstract class enginepage extends pm_page {
      * Set up the editing form before save.
      */
     function do_default() {
-        $id  = $this->optional_param('id', 0, PARAM_INT);
-
-        $obj = $this->get_new_data_object($id);
-        $filter = new field_filter('contextid', $this->get_context()->id);
-
-        if ($obj->exists($filter)) {
-            $obj->load();
-        }
-
-        $form = $this->get_engine_form(array('obj' => $obj->to_object()));
+        $form = $this->get_engine_form();
         $this->_form = $form;
         $this->display('default');
     }
@@ -190,17 +190,8 @@ abstract class enginepage extends pm_page {
     function do_edit() {
         $known = false;
         $id = $this->required_param('id', PARAM_INT);
-        $target = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
 
-        $obj = $this->get_new_data_object($id);
-        $filter = new field_filter('contextid', $this->get_context()->id);
-        if ($obj->exists($filter)) {
-            $obj->load();
-            $known = true;
-        }
-
-
-        $form = $this->get_engine_form(array('obj' => $obj->to_object()));
+        $form = $this->get_engine_form();
 
         if ($form->is_cancelled()) {
             $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
@@ -212,8 +203,9 @@ abstract class enginepage extends pm_page {
 
         if ($data) {
             require_sesskey();
+            $obj       = $this->get_new_data_object($id);
             $obj->set_from_data($data);
-            if (! $known) {
+            if ($obj->id < 1) {
                 unset($obj->id);
             }
             $obj->save();
@@ -227,11 +219,12 @@ abstract class enginepage extends pm_page {
 
     /**
      * Returns a new instance of the data object class this page manages.
-     * @param $id
-     * @return object
+     *
+     * @param mixed $data Usually either the id or parameters for object, false for blank
+     * @return object The data object pulled form the database if an id was passed
      */
-    public function get_new_data_object($id=false) {
-        return new $this->data_class($id);
+    public function get_new_data_object($data=false) {
+        return new $this->data_class($data);
     }
 }
 
