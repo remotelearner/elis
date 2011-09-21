@@ -356,7 +356,6 @@ $string['elis_settings'] = 'ELIS Settings';
 $string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a}';
 $string['email'] = 'Email address';
 $string['email2'] = 'Email address 2';
-$string['engine'] = 'Engine';
 $string['engineform:activate'] = 'Activate';
 $string['engineform:activation_rules'] = 'Activation rules';
 $string['engineform:activate_this_rule'] = 'Activate this rule';

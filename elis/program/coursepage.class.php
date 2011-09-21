@@ -113,7 +113,7 @@ class coursepage extends managementpage {
         array('tab_id' => 'elem', 'page' => get_class($this), 'params' => array('action' => 'lelem'), 'name' => get_string('completion_elements', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'grades'),
         array('tab_id' => 'coursecurriculumpage', 'page' => 'coursecurriculumpage', 'name' => get_string('course_curricula', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
         array('tab_id' => 'course_rolepage', 'page' => 'course_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
-        array('tab_id' => 'course_enginepage', 'page' => 'course_enginepage', 'params' => array('action' => 'edit'), 'name' => get_string('engine', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'tag'),
+        array('tab_id' => 'course_enginepage', 'page' => 'course_enginepage', 'name' => get_string('results_engine', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'calculator'),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
         );
