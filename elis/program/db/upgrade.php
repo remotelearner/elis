@@ -132,6 +132,41 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2011092000, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2011092100) {
+        //migrate data for the completion elements options source in custom field owners
+        //to the new learning objectives source
+
+        //necessary libraries
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elis::lib('data/data_filter.class.php'));
+
+        //create a filter to find all owners whose params contain the old value
+        $filter = new field_filter('params', "%completion_elements%", field_filter::LIKE);
+        $potential_owners = field_owner::find($filter);
+
+        //iterate through possible matching owners (it's theoretically possible that the "completion_elements"
+        //substring belongs to another field
+        foreach ($potential_owners as $potential_owner) {
+
+            //need to check and update the options source parameter
+            if (!empty($potential_owner->params)) {
+                $params = unserialize($potential_owner->params);
+ 
+                //validate that the options source parameter is the old completion elements value
+                if (!empty($params['options_source']) && $params['options_source'] == 'completion_elements') {
+                    //update with the new learning objectives value
+                    $params['options_source'] = 'learning_objectives';
+                    $potential_owner->params = serialize($params);
+                    $potential_owner->save();
+                }
+            }
+        }
+
+        // elis savepoint reached
+        upgrade_plugin_savepoint(true, 2011092100, 'elis', 'program');
+    }
+
     return $result;
 }
 
