@@ -403,8 +403,8 @@ class generalized_filter_userprofilematch {
                     $dbfield = 'roleid';
                     break;
                 case 'lang':
-                    $myoptions['choices'] = get_string_manager()->get_list_of_languages(); // TBD
-                    //$this->err_dump($myoptions['choices'], 'list_of_languages');
+                    $myoptions['choices'] = get_string_manager()->get_list_of_translations(true); // TBD
+                    //$this->err_dump($myoptions['choices'], 'list_of_translations');
                     break;
                 //case 'crscat':
                 //    break;
