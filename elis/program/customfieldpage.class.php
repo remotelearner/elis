@@ -87,15 +87,15 @@ class customfieldpage extends pm_page {
             echo $OUTPUT->heading(get_string('field_no_categories_defined', 'elis_program'));
         }
         foreach ($fieldsbycategory as $categoryid => $fields) {
-            $tmppage = new moodle_url($this->url);
-            $tmppage->params(array('action' => 'deletecategory',
-                                   'id' => $categoryid,
-                                   'level' => $level)
-                            );
-            $deletelink = $tmppage->out();
+            $categorypage = new moodle_url($this->url);
+            $categorypage->params(array('action' => 'deletecategory',
+                                        'id' => $categoryid,
+                                        'level' => $level)
+                                 );
+            $deletelink = $categorypage->out();
 
-            $tmppage->param('action', 'editcategory');
-            $editlink = $tmppage->out();
+            $categorypage->param('action', 'editcategory');
+            $editlink = $categorypage->out();
 
             if (isset($category_names[$categoryid])) {
                 echo "<h2>{$category_names[$categoryid]} <a href=\"$editlink\">";
@@ -146,8 +146,8 @@ class customfieldpage extends pm_page {
                 //popup_form("{$tmppage->url}&amp;id=",
                 //           array_map(create_function('$x', 'return $x->name;'), $moodlefields),
                 //           'frommoodleform', '', 'choose', '', '', false, 'self', get_string('field_from_moodle', 'elis_program'));
-                $actionurl = new moodle_url($tmppage->out(), array('id'=>''));
-                $single_select = new single_select($actionurl, 'frommoodleform', array_map(create_function('$x', 'return $x->name;'), $moodlefields), null, array(''=>get_string('field_from_moodle', 'elis_program')));
+                $actionurl = new moodle_url($tmppage->out());
+                $single_select = new single_select($actionurl, 'id', array_map(create_function('$x', 'return $x->name;'), $moodlefields), null, array(''=>get_string('field_from_moodle', 'elis_program')));
                 echo $OUTPUT->render($single_select);
                 echo '</div>';
 
@@ -358,18 +358,18 @@ class customfieldpage extends pm_page {
                     $data_array['datatype'] = 'text';
                     $data_array['manual_field_control'] = $moodlefield->datatype;
                     switch ($moodlefield->datatype) {
-                    case field::checkbox:
+                    case field::CHECKBOX:
                         $data_array['datatype'] = 'bool';
                         break;
-                    case field::menu:
+                    case field::MENU:
                         $data_array['datatype'] = 'char';
                         $data_array['manual_field_options'] = $moodlefield->param1;
                         break;
-                    case field::textarea:
+                    case field::TEXTAREA:
                         $data_array['manual_field_columns'] = $moodlefield->param1;
                         $data_array['manual_field_rows'] = $moodlefield->param2;
                         break;
-                    case field::text:
+                    case field::TEXT:
                         if ($moodlefield->param3) {
                             $data_array['manual_field_control'] = 'password';
                         }
