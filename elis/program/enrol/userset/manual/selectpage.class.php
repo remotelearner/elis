@@ -83,7 +83,7 @@ class clusteruserselectpage extends selectionpage {
             $allowed_clusters = userset::get_allowed_clusters($id);
 
             if(empty($allowed_clusters)) {
-                $filters[] = 'FALSE';
+                $filters[] = new select_filter('FALSE');
             } else {
                 $filters[] = new join_filter('id', clusterassignment::TABLE, 'userid',
                                              new in_list_filter('clusterid', $allowed_clusters));

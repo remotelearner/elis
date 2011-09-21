@@ -725,7 +725,7 @@ function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = ar
 
                 //use the context path to find parent clusters
                 $path = $DB->sql_concat('parent_context.path', "'/%'");
-                list($IN, $inparams) = $DB->get_in_or_equal($viewable_clusters);
+                list($IN, $inparams) = $DB->get_in_or_equal($viewable_clusters, SQL_PARAMS_NAMED);
 
                 $sql_condition = new select_filter(
                     "id IN (SELECT parent_context.instanceid
@@ -759,40 +759,6 @@ function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = ar
         $field = new field(field::get_for_context_level_with_name($contextlevel, USERSET_CLASSIFICATION_FIELD));
 
         $filters[] = new elis_field_filter($field, 'id', $contextlevel, $extrafilters['classification']);
-    }
-
-    if(!empty($userid)) {
-        //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
-
-        $clusters = cluster_get_user_clusters($userid);
-        $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
-
-        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol', $USER->id);
-        $curriculum_filter = $curriculum_context->get_filter('id');
-
-        if(empty($allowed_clusters)) {
-            $filters[] = $curriculum_filter;
-        } else {
-            $allowed_clusters_list = implode(',', $allowed_clusters);
-
-            $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-            $path = $DB->sql_concat('parentctxt.path', "'/%'");
-
-            //this allows both the indirect capability and the direct curriculum filter to work
-            $subcluster_filter = new select_filter(
-                "id IN (SELECT childctxt.instanceid
-                          FROM {" . userset::TABLE . "} clst
-                          JOIN {context} parentctxt
-                            ON clst.id = parentctxt.instanceid
-                           AND parentctxt.contextlevel = {$cluster_context_level}
-                          JOIN {context} childctxt
-                            ON childctxt.path LIKE {$path}
-                           AND childctxt.contextlevel = {$cluster_context_level}
-                         WHERE parentctxt.instanceid IN ({$allowed_clusters_list}))");
-            $filters[] = new OR_filter(array($subcluster_filter, $curriculum_filter));
-        }
-
     }
 
     return userset::count($filters);
