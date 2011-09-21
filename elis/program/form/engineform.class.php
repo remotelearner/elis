@@ -26,8 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once elispm::file('form/cmform.class.php');
 require_once elispm::lib('lib.php');
+require_once elispm::file('form/cmform.class.php');
+require_once elispm::file('plugins/results_engine/lib.php');
 
 /**
  * the form element for curriculum
@@ -66,9 +67,11 @@ class cmEngineForm extends cmform {
         global $DB;
 
         $grades = array(0 => get_string('engineform:class_grade', self::LANG_FILE));
-        $dates  = array(1 => get_string('engineform:after_class_start', self::LANG_FILE),
-                        2 => get_string('engineform:before_class_end', self::LANG_FILE),
-                        3 => get_string('engineform:after_class_end', self::LANG_FILE));
+        $dates  = array(
+            RESULTS_ENGINE_AFTER_START => get_string('engineform:after_class_start', self::LANG_FILE),
+            RESULTS_ENGINE_BEFORE_END  => get_string('engineform:before_class_end', self::LANG_FILE),
+            RESULTS_ENGINE_AFTER_END   => get_string('engineform:after_class_end', self::LANG_FILE)
+        );
 
         $conditions = array('courseid' => $this->_customdata['courseid']);
 
@@ -148,7 +151,7 @@ class cmEngineForm extends cmform {
             $mform->setType('active', PARAM_BOOL);
 
             $exists = array_key_exists('eventtriggertype', $this->_customdata);
-            if ($exists && ($this->_customdata['eventtriggertype'] == 3)) {
+            if ($exists && ($this->_customdata['eventtriggertype'] == RESULTS_ENGINE_MANUAL)) {
                 $execute = array();
                 $execute[] = $mform->createElement('submit', 'executebutton', $executemanually);
                 $mform->addGroup($execute, '', '', ' ', false);
@@ -158,18 +161,18 @@ class cmEngineForm extends cmform {
             $mform->addElement('html', '<legend>'. $eventtrigger .'</legend>');
 
             $grade = array();
-            $grade[] = $mform->createElement('radio', 'eventtriggertype', '', $gradeset, 1);
+            $grade[] = $mform->createElement('radio', 'eventtriggertype', '', $gradeset, RESULTS_ENGINE_GRADE_SET);
             $grade[] = $mform->createElement('advcheckbox', 'lockedgrade', '', $uselocked);
 
             $date = array();
-            $date[] = $mform->createElement('radio', 'eventtriggertype', '', $on, 2);
+            $date[] = $mform->createElement('radio', 'eventtriggertype', '', $on, RESULTS_ENGINE_SCHEDULED);
             $date[] = $mform->createElement('text', 'days', '', 'size="2"');
             $date[] = $mform->createElement('select', 'triggerstartdate', '', $dates);
 
             $manual = array();
-            $manual[] = $mform->createElement('radio', 'eventtriggertype', '', $manualtrigger, 3);
+            $manual[] = $mform->createElement('radio', 'eventtriggertype', '', $manualtrigger, RESULTS_ENGINE_MANUAL);
 
-            $mform->setDefaults(array('eventtriggertype' => 3));
+            $mform->setDefaults(array('eventtriggertype' => RESULTS_ENGINE_MANUAL));
 
             $mform->addGroup($grade, '', '', ' ', false);
             $mform->addGroup($date, '', '', array(' ', ' '. $days .' '), false);
