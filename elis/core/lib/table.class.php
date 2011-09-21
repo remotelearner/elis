@@ -309,6 +309,19 @@ class display_table {
 
         return isset($languages[$item->$column]) ? $languages[$item->$column] : '?';
     }
+
+    /**
+     * Display a user's full name using Moodle's fullname function
+     */
+    public static function display_user_fullname_item($column, $item) {
+        if (method_exists($item, 'fullname')) {
+            return $item->fullname();
+        }
+        if (method_exists($item, 'to_object')) {
+            $item = $item->to_object();
+        }
+        return fullname($item);
+    }
 }
 
 /**

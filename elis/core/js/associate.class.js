@@ -181,7 +181,7 @@ function associate_link_handler(basepage, divid) {
 	    }
 	    YAHOO.util.Connect.asyncRequest("GET", basepage + "&mode=bare&_showselection="+_selection, set_content_callback, null);
         } else {
-	    YAHOO.util.Connect.asyncRequest("GET", lastrequest + "&mode=bare", set_content_callback, null);
+	    YAHOO.util.Connect.asyncRequest("GET", basepage + "&mode=bare", set_content_callback, null);
         }
     }
 
