@@ -1056,7 +1056,7 @@ class pm_user_filtering extends user_filtering {
         case 'timecreated': return new user_filter_date('timecreated', get_string('timecreated'), $advanced, 'timecreated');
 
         case 'language':
-            return new user_filter_select('language', get_string('preferredlanguage'), $advanced, 'language', get_string_manager()->get_list_of_languages());
+            return new user_filter_select('language', get_string('preferredlanguage'), $advanced, 'language', get_string_manager()->get_list_of_translations(true));
 
             //case 'clusterid':
             //$clusters = pm_get_list_of_clusters();

@@ -179,7 +179,7 @@ class userform extends cmform {
         $radioarray[] = &$mform->createElement('radio', 'gender', '', get_string('female', 'elis_program'), 'F');
         $mform->addGroup($radioarray, 'gender', get_string('usergender', 'elis_program'), ' ', false);
 
-        $language = get_string_manager()->get_list_of_languages();
+        $language = get_string_manager()->get_list_of_languages(); // TBD: get_list_of_translations(true)
         $mform->addElement('select', 'language', get_string('language'), $language);
         $mform->setDefault('language', 'en');
         $mform->addHelpButton('language', 'user_language', 'elis_program');
