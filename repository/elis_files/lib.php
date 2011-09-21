@@ -547,52 +547,45 @@ class repository_elis_files extends repository {
         $ret['showcurrentactions'] = true;
         $ret['list'] = array();
 
-        $search_result = elis_files_search($search_text);
+        if (!empty($search_text)) {
+            $search_result = elis_files_search($search_text);
 
-        $category_uuids = array();
-
-        //$flat = print_r($categories, true);
-        //error_log('Cats:'.$flat);
-
-        // Convert elis category IDs to matching repository category UUIDs
-        if (is_array($categories))
-        {
-            foreach ($categories as $category_id) {
-                $category_result = $DB->get_record('elis_files_categories', array('id'=> $category_id));
-                if (!empty($category_result)) {
-                    $category_uuids[] = $category_result->uuid;
+            // Convert elis category IDs to matching repository category UUIDs
+            $category_uuids = array();
+            if (is_array($categories))
+            {
+                foreach ($categories as $category_id) {
+                    $category_result = $DB->get_record('elis_files_categories', array('id'=> $category_id));
+                    if (!empty($category_result)) {
+                        $category_uuids[] = $category_result->uuid;
+                    }
                 }
             }
-        }
-        if (!empty($search_result->files)) {
-            foreach ($search_result->files as $file_object) {
-                //error_log("DEBUG: search result");
-                //$flat = print_r($file_object,true);
-                //error_log($flat);
 
-                if (!empty($category_uuids)) {
-                    $found_category = false;
-                    $category_result = elis_files_get_node_categories($file_object->noderef, $file_object->uuid);
-                    foreach ($category_uuids as $category_uuid) {
-                        if (!empty($category_result[$category_uuid])) {
-                            $found_category = true;
-                            break;
+            if (!empty($search_result->files)) {
+                foreach ($search_result->files as $file_object) {
+                    // See if we have categories that we need to check against
+                    if (!empty($category_uuids)) {
+                        $found_category = false;
+                        $category_result = elis_files_get_node_categories($file_object->noderef, $file_object->uuid);
+                        foreach ($category_uuids as $category_uuid) {
+                            if (!empty($category_result[$category_uuid])) {
+                                $found_category = true;
+                                break;
+                            }
+                        }
+                        if (!$found_category) {
+                            continue;
                         }
                     }
-                    if (!$found_category) {
-                        continue;
-                    }
-                }
-                //error_log("DEBUG: category result");
-                //$flat = print_r($category_result,true);
-                //error_log($flat);
 
-                $ret['list'][] = array('title'=>$file_object->title,
-                                       'thumbnail' => $OUTPUT->pix_url(file_extension_icon($file_object->filename, 32))->out(false),
-                                       'created'=>date("M. j, Y",$file_object->created),
-                                       'modified'=>date("M. j, Y",$file_object->modified),
-                                       'owner'=>$file_object->owner,
-                                       'source'=>$file_object->uuid);
+                    $ret['list'][] = array('title'=>$file_object->title,
+                                           'thumbnail' => $OUTPUT->pix_url(file_extension_icon($file_object->filename, 32))->out(false),
+                                           'created'=>date("M. j, Y",$file_object->created),
+                                           'modified'=>date("M. j, Y",$file_object->modified),
+                                           'owner'=>$file_object->owner,
+                                           'source'=>$file_object->uuid);
+                }
             }
         }
 
@@ -1142,7 +1135,6 @@ function check_editing_permissions($context, $id, $uuid, $userid = '') {
     function category_tree() {
         global $DB;
 
-        $result = array();
         $tree = $DB->get_records('elis_files_categories');
 
         return $tree;

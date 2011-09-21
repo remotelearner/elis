@@ -165,6 +165,7 @@ $string['myfiles'] = 'My Files';
 $string['myfilesquota'] = 'My Files - {$a} free';
 $string['movefiles'] = 'Move file(s) to:';
 $string['nocategoriesfound'] = 'No categories found';
+$string['onlyincategories'] = 'Only show results from the following selected categories:';
 $string['processingcategories'] = 'Processing categories...';
 $string['quotanotset'] = 'Not Set';
 $string['quotaunlimited'] = 'Unlimited';
