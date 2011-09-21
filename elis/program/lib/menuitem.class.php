@@ -293,7 +293,7 @@ class menuitem {
             $url = $new_page->url->out();
 
             //this prevents the tree from being expanded when clicking on links
-            $stop_propagation_script = 'event.cancelButtle = true;
+            $stop_propagation_script = 'event.cancelBubble = true;
                                         if (event.stopPropagation) {
                                             event.stopPropagation();
                                         }';
