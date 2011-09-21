@@ -326,10 +326,10 @@ class studentcurriculumpage extends associationpage2 {
     }
 
     function get_records_from_selection($record_ids) {
-        global $DB;
+        $sort = $this->optional_param('sort', 'name', PARAM_ACTION);
+        $order = $this->optional_param('dir', 'ASC', PARAM_ACTION);
 
-        $usersstring = implode(',', $record_ids);
-        $records = $DB->get_records_select(curriculum::TABLE, "id in ($usersstring)");
+        $records = curriculum::find(new in_list_filter('id', $record_ids), array($sort => $order));
         return $records;
     }
 
@@ -702,9 +702,10 @@ class curriculumstudentpage extends associationpage2 {
     }
 
     function get_records_from_selection($record_ids) {
-        global $DB;
-        $usersstring = implode(',', $record_ids);
-        $records = $DB->get_records_select(user::TABLE, "id in ($usersstring)");
+        $sort = optional_param('sort', 'name', PARAM_ACTION);
+        $order = optional_param('dir', 'ASC', PARAM_ACTION);
+
+        $records = user::find(new in_list_filter('id', $record_ids), array($sort => $order));
         return $records;
     }
 
@@ -761,7 +762,7 @@ class curriculum_user_selection_table extends selection_table {
     }
 
     function get_item_display_name($column, $item) {
-        return fullname($item);
+        return display_table::display_user_fullname_item($column, $item);
     }
 
     function get_item_display_timecreated($column, $item) {

@@ -387,15 +387,10 @@ abstract class rolepage extends associationpage2 {
     }
 
     function get_records_from_selection($record_ids) {
-        global $DB;
+        $sort = optional_param('sort', 'name', PARAM_ACTION);
+        $order = optional_param('dir', 'ASC', PARAM_ACTION);
 
-        //figure out the body if the equals or in clause
-        list($idtest, $params) = $DB->get_in_or_equal($record_ids);
-
-        //apply the condition to the user id
-        $where = "id {$idtest}";
-
-        $records = $DB->get_records_select(user::TABLE, $where, $params);
+        $records = user::find(new in_list_filter('id', $record_ids), array($sort => $order));
         return $records;
     }
 
@@ -421,9 +416,7 @@ abstract class rolepage extends associationpage2 {
                          'name'       => array('header' => array('firstname' => array('header' => get_string('firstname')),
                                                                  'lastname' => array('header' => get_string('lastname'))
                                                                  ),
-                                               'display_function' => 'user_table_fullname'
-
-                        )
+                                               'display_function' => array('display_table', 'display_user_fullname_item')),
         );
 
         //determine sort order
@@ -803,7 +796,7 @@ class nosort_table extends display_table {
 
 class user_selection_table extends selection_table {
     function get_item_display_name($column, $item) {
-        return fullname($item);
+        return display_table::display_user_fullname_item($column, $item);
     }
 }
 

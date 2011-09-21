@@ -506,10 +506,6 @@ class customfieldtable extends display_table {
 class customuserfieldtable extends customfieldtable {
     var $syncerr = false;
 
-    function get_item_display_name($column, $item) {
-        return $item->name;
-    }
-
     function get_item_display_syncwithmoodle($column, $item) {
         if ($item->syncwithmoodle === NULL) {
             return get_string('field_no_sync', 'elisfields_moodle_profile');

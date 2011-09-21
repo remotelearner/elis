@@ -280,7 +280,7 @@ class clusteruserpage extends userclusterbasepage {
             'name'        => array('header' => array('firstname' => array('header' => get_string('firstname')),
                                                       'lastname' => array('header' => get_string('lastname'))),
                                    'decorator'   => array($decorator, 'decorate'),
-                                   'display_function' => 'user_table_fullname'),
+                                   'display_function' => array('display_table', 'display_user_fullname_item')),
             'email'       => array('header' => get_string('email'))
         );
 
@@ -336,7 +336,7 @@ class clusteruserpage extends userclusterbasepage {
             'name'        => array('header' => array('firstname' => array('header' => get_string('firstname')),
                                                       'lastname' => array('header' => get_string('lastname'))),
                                    'decorator'   => array($decorator, 'decorate'),
-                                   'display_function' => 'user_table_fullname'),
+                                   'display_function' => array('display_table', 'display_user_fullname_item')),
             'email'       => array('header' => get_string('email')),
             'manage'      => array('header' => ''),
         );

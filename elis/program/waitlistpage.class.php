@@ -113,6 +113,10 @@ class waitlistpage extends selectionpage {
         $perpage = $this->optional_param('perpage', 30, PARAM_INT); // how many per page
         $id      = $this->required_param('id', PARAM_INT);
 
+        if ($sort == 'name') {
+            $sort = 'lastname';
+        }
+
         $items = waitlist::get_students($id, $sort, $dir, $page, $perpage, $filter['namesearch'], $filter['alpha']);
         $numitems = waitlist::count_records($id, $filter['namesearch'], $filter['alpha']);
 
@@ -121,13 +125,19 @@ class waitlistpage extends selectionpage {
 
     function get_records_from_selection($selection) {
         global $DB;
-        $id = $this->required_param('id', PARAM_INT); // TBD
+        $id = $this->required_param('id', PARAM_INT);
+        $sort = $this->optional_param('sort', 'timecreated', PARAM_CLEAN);
+        $dir = $this->optional_param('dir', 'ASC', PARAM_CLEAN);
+        if ($sort == 'name') {
+            $sort = 'lastname';
+        }
         $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
         $sql = "SELECT watlst.id, usr.id as uid, $FULLNAME as name, usr.idnumber, usr.country, usr.language, watlst.timecreated
                   FROM {". waitlist::TABLE .'} watlst
                   JOIN {'. user::TABLE .'} usr ON watlst.userid = usr.id
                  WHERE watlst.classid = ?
-                   AND watlst.id IN ('. implode(',',$selection) .')';
+                   AND watlst.id IN ('. implode(',',$selection) .")
+              ORDER BY $sort $dir";
         return $DB->get_records_sql($sql, array($id));
     }
 
@@ -229,6 +239,9 @@ class waitlist_table extends selection_table {
     const LANG_FILE = 'elis_program';
 
     function __construct(&$items, $url) {
+        $sort         = optional_param('sort', 'lastname', PARAM_ALPHA);
+        $dir          = optional_param('dir', 'ASC', PARAM_ALPHA);
+
         $columns = array(
             '_selection'  => array('header' => '', 'sortable' => false,
                                    'display_function' => array(&$this, 'get_item_display__selection')), // TBD
@@ -239,6 +252,17 @@ class waitlist_table extends selection_table {
             'timecreated' => array('header' => get_string('registered_date', self::LANG_FILE),
                                    'display_function' => array(&$this, 'get_item_display_timecreated')), // TBD , ?
         );
+
+        // set sorting
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        } else {
+            $sort = 'timecreated';
+            $columns['name']['sortable'] = $dir;
+        }
 
         // foreach($items as $item) $item->_selection = '';
 

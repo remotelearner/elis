@@ -507,8 +507,7 @@ class studentpage extends associationpage {
             'grade'            => array('header' => get_string('student_grade', self::LANG_FILE)),
             'credits'          => array('header' => get_string('student_credits', self::LANG_FILE)),
             'locked'           => array('header' => get_string('student_locked', self::LANG_FILE)),
-            'buttons'          => array('header' => '', 'sortable' => false,
-                                        'display_function' => 'htmltab_display_function'), // TBD , ?
+            'buttons'          => array('header' => '', 'sortable' => false),
             );
 
         // TBD
@@ -668,27 +667,6 @@ class studentpage extends associationpage {
 
 class student_table extends association_page_table {
     const LANG_FILE = 'elis_program';
-
-    function __construct(&$items, $columns, $page) {
-        $display_functions =
-             array('enrolmenttime'    => 'get_item_display_enrolmenttime',
-                   'completetime'     => 'get_item_display_completetime',
-                   'completestatusid' => 'get_item_display_completestatusid',
-                   'locked'           => 'get_item_display_locked',
-                   'idnumber'         => 'get_item_display_idnumber',
-                   'name'             => 'get_item_display_name',
-                   'buttons'          => 'get_item_display_buttons');
-        // note: get_item_display_buttons() in parent::association_page_table
-        foreach ($display_functions as $key => $val) {
-            //if (!isset($columns[$key]) || !is_array($columns[$key])) {
-            //    $columns[$key] = array('header' => '', 'sortable' => false);
-            //}
-            if (isset($columns[$key]) && is_array($columns[$key])) {
-                $columns[$key]['display_function'] = array(&$this, $val);
-            }
-        }
-        parent::__construct($items, $columns, $page);
-    }
 
     function get_item_display_enrolmenttime($column, $item) {
         return get_date_item_display($column, $item);

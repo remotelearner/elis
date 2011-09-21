@@ -92,12 +92,6 @@ class clusteruserselectpage extends selectionpage {
 
         $count = user::count($filters);
 
-        if ($sort) {
-            if ($sort == 'name') {
-                $sort = 'lastname';
-            }
-        }
-
         $users = user::find($filters, array($sort => $dir), $pagenum*30, 30);
 
         return array($users, $count);
@@ -125,9 +119,10 @@ class clusteruserselectpage extends selectionpage {
     }
 
     function get_records_from_selection($record_ids) {
-        global $CURMAN;
+        $sort         = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
 
-        $users = user::find(new in_list_filter('id', $record_ids));
+        $users = user::find(new in_list_filter('id', $record_ids), array($sort => $dir));
 
         return $users;
     }
@@ -153,7 +148,7 @@ class clusteruserselecttable extends selection_table {
             'idnumber'     => array('header' => get_string('idnumber', 'elis_program')),
             'name'        => array('header' => array('firstname' => array('header' => get_string('firstname')),
                                                       'lastname' => array('header' => get_string('lastname'))),
-                                   'display_function' => 'user_table_fullname'),
+                                   'display_function' => array('display_table', 'display_user_fullname_item')),
             'country'      => array('header' => get_string('country')),
             );
 

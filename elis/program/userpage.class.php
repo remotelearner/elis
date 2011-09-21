@@ -167,7 +167,7 @@ class userpage extends managementpage {
             'idnumber'     => array('header' => get_string('id', 'elis_program')),
             'name'         => array('header' => array('firstname' => array('header' => get_string('firstname')),
                                                       'lastname' => array('header' => get_string('lastname'))),
-                                    'display_function' => 'user_table_fullname'),
+                                    'display_function' => array('display_table', 'display_user_fullname_item')),
             'country'      => array('header' => get_string('country'),
                                     'display_function' => array('display_table', 'display_country_item')),
             'language'     => array('header' => get_string('language'),
@@ -229,13 +229,5 @@ class userpage extends managementpage {
         $form->display();
 
         $this->print_delete_button($obj);
-    }
-}
-
-function user_table_fullname($column, $item) {
-    if (method_exists($item, 'fullname')) {
-        return $item->fullname();
-    } else {
-        return fullname($item);
     }
 }

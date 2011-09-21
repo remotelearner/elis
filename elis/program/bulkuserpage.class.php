@@ -105,9 +105,10 @@ class bulkuserpage extends selectionpage {
     }
 
     function get_records_from_selection($record_ids) {
-        global $DB;
+        $sort         = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
 
-        $users = $DB->get_records_select(user::TABLE, 'id in ('. implode(',', $record_ids) .')');
+        $users = user::find(new in_list_filter('id', $record_ids), array($sort => $dir));
 
         return $users;
     }
@@ -228,28 +229,8 @@ class bulkusertable extends selection_table {
         if (isset($item->name)) {
             return $item->name;
         } else {
-            return fullname($item);
+            return display_table::display_user_fullname_item($column, $item);
         }
-    }
-}
-
-
-/**
- * Table to display the list of selected users.  Same as usertable, but
- * disallows sorting (not implemented), and uses PHP to show the name (since
- * we're just using the raw data from the user table).
- */
-class selectedbulkusertable extends bulkusertable {
-    function __construct(&$items) {
-        parent::__construct($items, '');
-    }
-
-    function is_sortable_default() {
-        return false;
-    }
-
-    function get_item_display_name($column, $item) {
-        return fullname($item);
     }
 }
 
