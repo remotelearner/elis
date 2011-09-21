@@ -85,16 +85,14 @@ switch ($action) {
         $delete_popup['form'] = $repo->print_delete_popup($parentuuid, $files);
         echo json_encode($delete_popup);
         break;
+
     // Delete file(s)
     case 'deletefiles':
         $fileslist = required_param('fileslist', PARAM_ALPHANUMEXT); //string
         $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
         $return = new stdClass();
         $file_array = explode(",",$fileslist);
-// Delete repo file AND delete as a resource too...
-//echo get context instance and all other info from each of the records matching our filename, and
-//                $file = $fs->get_file($user_context->id, 'user', 'draft', $itemid, $filepath, $filename);// followed by
-//               NO, we do NOT delete moodle files...
+
         $alfresco_version = elis_files_get_repository_version();
         if ($alfresco_version == '3.2.1') {
             foreach($file_array as $uuid) {
@@ -105,63 +103,57 @@ switch ($action) {
                 $repo->elis_files->delete($uuid);
             }
         }
-        // Check for permissions? but probably delete checks...
-//        if ($repo->elis_files->dir_exists($newdirname,$parentuuid)) {
-//            $return->error = 'This folder exists';
-//        } else {
-//            $repo->elis_files->create_dir($newdirname,$parentuuid);
         $return->uuid = $parentuuid;
         echo json_encode($return);
         die;
 
+    // Popup to allow the selection of a folder to move selected file(s) to
     case 'movepopup':
-//        echo "\n in move popup";
         $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
-        // Probably take a single location...
-//        $location    = required_param('location', PARAM_RAW);
+        $selected_files = required_param('files', PARAM_NOTAGS);
         $uid = required_param('uid', PARAM_INT);
-//        $location_array = json_decode($location, true);
-//echo "\n locations? ";
-//print_object($locations_array);
-//        echo "\n looking for parent uuid: ".$parentuuid;
 
-        // Get the location parent of our current location
-        // Just use the parentuuid as the location...
+        // Get the default locations...
+        $locations = array();
+        $repo->elis_files->file_browse_options($COURSE->id, '', $locations);
+
+        // Get the location parent of the current parentuuid
         $location_parent = $repo->get_location_parent($parentuuid, $uid);
+
         // Get the tabview appropriate folder listing of the location parent
-        // May have to also pass the parentuuid back as that would be the selected location in the treeview listing
-        $tab_listing = $repo->get_folder_listing($location_parent['path'], $uid);
-//        }
-//        echo "\n tab listings: ";
-//        print_object($tab_listing[0]);
+        $tab_listing = array();
+        foreach ($locations as $key=>$location) {
+            $tab_listing[$location['path']] = $repo->get_folder_listing($location['path'], $uid);
+        }
+
         // Get the form container with an empty div for the tabs
-        $return->form = $repo->print_move_dialog();
+        $return->form = $repo->print_move_dialog($parentuuid,$selected_files);
         $return->listing = $tab_listing;
         $return->location_path = $location_parent['path'];
         $return->location_name = $location_parent['name'];
         echo json_encode($return);
         die;
+
+    // Move the selected file(s) to the targetuuid
     case 'movefiles':
         $targetuuid   = required_param('targetuuid', PARAM_ALPHANUMEXT);
         $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
-        $fileslist = required_param('fileslist', PARAM_NOTAGS); //string
-        $return->uuid = $parentuuid; // or targetuuid???
+        $selected_files = required_param('selected_files', PARAM_NOTAGS);
+
+        $files_array = explode(",",$selected_files);
+        foreach ($files_array as $file) {
+            if (!elis_files_move_node($file, $targetuuid)) {
+                if ($properties = $repo->get_info($file)) {
+                    echo '<p>Error: ' . $properties->title . ' not moved';
+                } else {
+                    echo '<p>Error: File not moved';
+                }
+            }
+        }
+        $return->uuid = $parentuuid;
         echo json_encode($return);
         die;
 
-  /*  case 'generatemovelist':
-
-        $location   = required_param('location', PARAM_ALPHANUMEXT);
-        $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
-        $fileslist = required_param('fileslist', PARAM_ALPHANUMEXT); //array?
-
-        // guess we don't need fileslist I've been passing back and forth... lol...
-        // add a param if possible... for folders only? or can we do that in the move_list function?
-        $listing = $repo->get_listing($parentuuid, $location);
-//        $listing['repo_id'] = $repo_id;
-        echo json_encode($listing);
-        die;
-*/
     case 'uploadpopup':
         $upload_popup = array();
         $upload_popup['form'] = $repo->print_upload_popup();

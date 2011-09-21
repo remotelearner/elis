@@ -141,7 +141,7 @@ class repository_elis_files extends repository {
     public function get_listing($uuid = '', $path = '') {
         // We will be doing a fake file listing for testing
         global $CFG, $COURSE, $DB, $SESSION, $OUTPUT, $USER;
-
+//echo "\n in get_listing...";
         $shared = '';
         // Need to do a context check... somewhere, maybe for each file that is listed, so during directory/file list?
 
@@ -341,17 +341,13 @@ class repository_elis_files extends repository {
     public function get_folder_listing($uuid, $uid) {
         global $OUTPUT, $USER;
 
-//        $uid = $USER->id;
         $children = elis_files_read_dir($uuid);
-//echo "\n uid: ".$uid. " for uuid: ".$uuid;
         $return = array();
 
         foreach ($children->folders as $child) {
             if (!$this->elis_files->permission_check($child->uuid, $uid, false)) {
-                echo "\n failed permission check";
-                break;
+                continue;
             }
-            // Hmmm, what to do here...
             $return[] = array('title'=>$child->title,
                     'path'=>$child->uuid,
                     'name'=>$child->title,
@@ -362,7 +358,6 @@ class repository_elis_files extends repository {
                     'children'=>array());
         }
         return $return;
-        // Also set up a listing of the other, non-selected folders
     }
 
 
@@ -421,12 +416,11 @@ class repository_elis_files extends repository {
             // If file is specified in a resource, then delete that too.
             $node = $this->elis_files->get_info($uuid);
             $clean_name = $node->title;
-//            echo '<br>looking for: '.$clean_name;
             if ($this->elis_files->is_dir($uuid)) {
                 continue;
             }
             if ($DB->record_exists('files', array('filename'=> $clean_name))) {
-                // Warn user that they are deleting a resource that is used... maybe
+                // Warn user that they are deleting a resource that is used...
                 $str.= '<p>' . get_string('warningdeleteresource', 'repository_elis_files', $clean_name);
             }
         }
@@ -443,11 +437,13 @@ class repository_elis_files extends repository {
      * @return  string  $str
      */
     // TODO: turn options into language strings... for all popups
-    public function print_move_dialog() {
+    public function print_move_dialog($parentuuid, $selected_files) {
         global $CFG;
-
         $str = '<div>
                         <div id="repository_tabs"></div>
+                        <input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'">
+                        <input type="hidden" name="selected_files" id="selected_files" value="'.implode(",",$selected_files).'">
+                        <input id="targetfolder" type="hidden" value = "" />
                         <input id="moveButton" type="button" default="default" value="Move" />
                         <input id="cancelButton" type="button" value="Cancel" />
                         </div>';
