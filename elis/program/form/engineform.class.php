@@ -78,16 +78,17 @@ class cmEngineForm extends cmform {
             $grades[$completion->id] = $completion->name;
         }
 
-        $activationrules = get_string('engineform:activation_rules', self::LANG_FILE);
-        $eventtrigger    = get_string('engineform:event_trigger', self::LANG_FILE);
         $activaterule    = get_string('engineform:activate_this_rule', self::LANG_FILE);
-        $uselocked       = get_string('engineform:use_locked_grades',self::LANG_FILE);
+        $activationrules = get_string('engineform:activation_rules', self::LANG_FILE);
+        $criterion       = get_string('engineform:criterion', self::LANG_FILE);
+        $days            = get_string('days');
+        $eventtrigger    = get_string('engineform:event_trigger', self::LANG_FILE);
+        $executemanually = get_string('engineform:execute_manually', self::LANG_FILE);
         $gradeset        = get_string('engineform:when_student_grade_set', self::LANG_FILE);
         $on              = get_string('engineform:on', self::LANG_FILE);
-        $days            = get_string('days');
         $manualtrigger   = get_string('engineform:manual_trigger', self::LANG_FILE);
-        $criterion       = get_string('engineform:criterion', self::LANG_FILE);
         $selectgrade     = get_string('engineform:select_grade', self::LANG_FILE);
+        $uselocked       = get_string('engineform:use_locked_grades',self::LANG_FILE);
 
         if ($this->_layout == 'custom') {
             // Setup an alternate html output so we can make the form user friendly.
@@ -141,8 +142,17 @@ class cmEngineForm extends cmform {
             $mform->addElement('hidden', 'rid', $this->_customdata['rid']);
             $mform->addElement('hidden', 'contextid', $this->_customdata['contextid']);
 
-            $mform->addElement('advcheckbox', 'active', $activaterule);
+            $active= array();
+            $active[] = $mform->createElement('advcheckbox', 'active', '', $activaterule);
+            $mform->addGroup($active, '', '', ' ', false);
             $mform->setType('active', PARAM_BOOL);
+
+            $exists = array_key_exists('eventtriggertype', $this->_customdata);
+            if ($exists && ($this->_customdata['eventtriggertype'] == 3)) {
+                $execute = array();
+                $execute[] = $mform->createElement('submit', 'executebutton', $executemanually);
+                $mform->addGroup($execute, '', '', ' ', false);
+            }
 
             $mform->addElement('html', '<fieldset class="engineform">');
             $mform->addElement('html', '<legend>'. $eventtrigger .'</legend>');
