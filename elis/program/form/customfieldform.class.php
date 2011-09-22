@@ -128,4 +128,13 @@ class customfieldform extends cmform {
         /// No further checks necessary as the form class will take care of it
         return $err;
     }
+
+    /**
+     * Accessor for the inner quickform (needed since _form is now protected)
+     *
+     * @return  object  The inner quickform
+     */
+    function get_quickform() {
+        return $this->_form;
+    }
 }
