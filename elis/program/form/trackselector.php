@@ -11,7 +11,7 @@ require_login(SITEID, false);
 global $CFG, $PAGE, $OUTPUT, $DB;
 
 require_once($CFG->dirroot . '/elis/program/lib/lib.php');
-require_once($CFG->dirroot . '/elis/program/lib/resultsenginelib.class.php');
+require_once($CFG->dirroot . '/elis/program/plugins/results_engine/track_class_selection.class.php');
 require_once($CFG->dirroot . '/lib/weblib.php');
 require_once($CFG->dirroot . '/lib/dml/moodle_database.php');
 
@@ -75,11 +75,15 @@ if (empty($alphawhere) and empty($searchwhere)) {
 
 }
 
+$colheader1 = get_string('track_name_header', 'pmplugins_results_engine');
+$colheader2 = get_string('track_desc_header', 'pmplugins_results_engine');
+
+
 $table->set_sql($columns, "{$CFG->prefix}crlm_track", $where, $params);
 $table->define_baseurl($baseurl);
 $table->collapsible(false);
 $table->define_columns(array('name', 'description'));
-$table->define_headers(array('Name', 'Description'));
+$table->define_headers(array($colheader1, $colheader2));
 $table->out(MAX_NUM_ROWS, false);
 
 echo html_writer::end_tag('center');
