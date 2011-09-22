@@ -26,7 +26,7 @@ $baseurl        = new moodle_url('/elis/program/form/trackselector.php',
                                       'search' => $search,
                                       'id' => $element_update));
 
-$PAGE->requires->js('/elis/program/js/resultsengineselector.js', true);
+$PAGE->requires->js('/elis/program/plugins/results_engine/js/resultsengineselector.js', true);
 $PAGE->set_url($baseurl);
 $PAGE->set_pagelayout('popup');
 

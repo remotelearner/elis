@@ -253,10 +253,11 @@ abstract class enginepage extends pm_page {
 
         //$PAGE->requires->yui2_lib(array('core', 'dom', 'event', 'widget'));
 
-        $PAGE->requires->css('/elis/program/jquery-ui-1.8.16.custom.css', true);
-        $PAGE->requires->js('/elis/program/js/jquery-1.6.2.min.js', true);
-        $PAGE->requires->js('/elis/program/js/jquery-ui-1.8.16.custom.js', true);
-        $PAGE->requires->js('/elis/program/js/resultsengineselector.js', true);
+        $PAGE->requires->css('/elis/program/plugins/results_engine/jquery-ui-1.8.16.custom.css', true);
+        $PAGE->requires->js('/elis/program/plugins/results_engine/js/jquery-1.6.2.min.js', true);
+        $PAGE->requires->js('/elis/program/plugins/results_engine/js/jquery-ui-1.8.16.custom.js', true);
+        $PAGE->requires->js('/elis/program/plugins/results_engine/js/resultsengineselector.js', true);
+        $PAGE->requires->js('/elis/program/plugins/results_engine/js/results_selection.js', true);
 
     }
 

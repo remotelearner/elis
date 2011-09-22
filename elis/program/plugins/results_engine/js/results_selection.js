@@ -29,15 +29,32 @@
  *
  */
 
+/**
+ * This functions opens a new popup window
+ */
 function show_panel( url ) {
     var x = window.open(url, 'newWindow', 'height=500,width=500,resizable,scrollbars');
 }
 
 
+/**
+ * This function updates fields on the results engine results form/table
+ * The first parameter is only part of the element id (the suffix).
+ * 
+ * @param elmid - part of the element id type_randomid 
+ * @param label - the name to display in the label
+ * @param id - the id of the selected track/class/profile
+ */
 function user_selection(elmid, label, id) {
 //    var element = document.getElementById(elmid);
 
-    var locationLabel = window.opener.document.getElementById(elmid);
-    locationLabel.innerHTML = label;
+    var element_label = "label_new_" + elmid;
+    var element_hidden = "id_new_" + elmid
+    
+    var element = window.opener.document.getElementById(element_label);
+    element.innerHTML = label;
+
+    element = window.opener.document.getElementById(element_hidden);
+    element.value = id;
 
 }

@@ -5,6 +5,7 @@ $string['pluginname'] = 'Results Engine';
 $string['activate'] = 'Activate';
 $string['activation_rules'] = 'Activation rules';
 $string['activate_this_rule'] = 'Activate this results engine';
+$string['add_another_score_btn'] = 'Add another score range';
 $string['after_class_end'] = 'after Class Instance end date';
 $string['after_class_start'] = 'after Class Instance start date';
 $string['assign_to_profile'] = 'Update user profile field';
@@ -29,3 +30,5 @@ $string['track_desc_header'] = 'Track Description';
 $string['track_name_header'] = 'Track Name';
 $string['use_locked_grades'] = 'Use locked grades only';
 $string['when_student_grade_set'] = 'When Student grade set';
+
+

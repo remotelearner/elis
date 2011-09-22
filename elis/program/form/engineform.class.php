@@ -96,6 +96,7 @@ class cmEngineForm extends cmform {
         $assigntotrack   = get_string('assign_to_track', self::LANG_FILE);
         $assigntoclass   = get_string('assign_to_class', self::LANG_FILE);
         $assigntoprofile = get_string('assign_to_profile', self::LANG_FILE);
+        $addscorerange   = get_string('add_another_score_btn', self::LANG_FILE);
 
         if ($this->_layout == 'custom') {
             // Setup an alternate html output so we can make the form user friendly.
@@ -208,26 +209,51 @@ class cmEngineForm extends cmform {
             // Accordion implementation
             $mform->addElement('html', '<div id="accordion">');
 
+            // Add track score range
             $mform->addElement('html', '<div>');
             $mform->addElement('html', '<h3>');
             $mform->addElement('html', '<a href="#">'.$assigntotrack.'</a>');
             $mform->addElement('html', '</h3>');
 
 
-            $mform->addElement('html', '<div>' . $this->get_assign_to_table(0, false, false, 'track') . '</div>');
+            // Hidden elemenets to store minimum, maximum and selected track/class/profile field
+            $mform->addElement('hidden', 'range_cache_minimum');
+            $mform->addElement('hidden', 'range_cache_maximum');
+            $mform->addElement('hidden', 'range_cache_selection1');
+            $mform->addElement('hidden', 'range_cache_selection2');
+
+            $mform->addElement('hidden', 'range_minimum');
+            $mform->addElement('hidden', 'range_maximum');
+            $mform->addElement('hidden', 'range_selection1');
+            $mform->addElement('hidden', 'range_selection2');
+
+            $mform->addElement('html', '<div>' . $this->get_assign_to_table(0, false, false, 'track'));
+
+            $attributes = array('onclick' => 'add_range_selection("track");');
+            $mform->addElement('submit', 'track_assignment', $addscorerange, $attributes);
+            $mform->addElement('html', '</div>');
 
             $mform->addElement('html', '</div>');
+
+            // Add class score range
             $mform->addElement('html', '<div>');
             $mform->addElement('html', '<h3>');
             $mform->addElement('html', '<a href="#">'.$assigntoclass.'</a>');
             $mform->addElement('html', '</h3>');
-            $mform->addElement('html', '<div>Some more content in div</div>');
+            $mform->addElement('html', '<div>' . $this->get_assign_to_table(0, false, false, 'class'));
+            $mform->addElement('submit', 'class_assignment', $addscorerange);
             $mform->addElement('html', '</div>');
+
+            $mform->addElement('html', '</div>');
+
+            // Add profile field score range
             $mform->addElement('html', '<div>');
             $mform->addElement('html', '<h3>');
             $mform->addElement('html', '<a href="#">'.$assigntoprofile.'</a>');
             $mform->addElement('html', '</h3>');
-            $mform->addElement('html', '<div>Some more content in div</div>');
+            $mform->addElement('html', '<div>Some more content in div');
+            $mform->addElement('submit', 'profile_assignment', $addscorerange);
+            $mform->addElement('html', '</div>');
             $mform->addElement('html', '</div>');
 
             $mform->addElement('html', '</fieldset>');
@@ -274,6 +300,21 @@ class cmEngineForm extends cmform {
             }
         }
 
+
+print_object($data);
+$errors['timetocomplete'] = 'debugging';
+
+        // Add another track score range button
+        if (array_key_exists('track_assignment', $data)) {
+
+        }
+
+        if (array_key_exists('class_assignment', $data)) {
+        }
+
+        if (array_key_exists('profile_assignment', $data)) {
+        }
+
         return $errors;
     }
 
@@ -310,7 +351,6 @@ class cmEngineForm extends cmform {
             $output .= html_writer::start_tag('tr');
 
             $output .= html_writer::tag('th', $scoreheader);
-            // TODO: evaluate type and return the correct langauge string
             $output .= html_writer::tag('th', $assigntype);
 
             $output .= html_writer::end_tag('tr');
@@ -327,16 +367,18 @@ class cmEngineForm extends cmform {
                 $random_id = html_writer::random_id();
 
                 // Print Minimum
-                $attributes = array('id' => "minimum_new_{$type}_{$random_id}",
+                $attributes = array('id' => "id_minimum_new_{$type}_{$random_id}",
                                     'value' => '',
                                     'type' => 'text',
                                     'size' => '5',
-                                    'maxlength' => '5');
+                                    'maxlength' => '5',
+                                    'name' => "{$type}_minimum");
                 $output .= html_writer::empty_tag('input', $attributes);
                 $output .= '&nbsp;&nbsp;';
 
                 // Print Maximum
                 $attributes['id'] = "maximum_new_{$type}_{$random_id}";
+                $attributes['name'] = "{$type}_maximum";
                 $output .= html_writer::empty_tag('input', $attributes);
                 $output .= '&nbsp;&nbsp;';
 
@@ -353,17 +395,21 @@ class cmEngineForm extends cmform {
                 $output .= html_writer::end_tag('td');
                 $output .= html_writer::start_tag('td');
 
-                // Print Track selection label
+                // Print type selection label
                 $attributes = array('id' => "label_new_{$type}_{$random_id}");
                 $output  .= html_writer::tag('label', '', $attributes);
+
+                // Print hidden type element to store the type id
+                $attributes = array('id' => "id_new_{$type}_{$random_id}");
+                $attributes = array('name' => "{$type}_id");
+                $output  .= html_writer::tag('hidden', '', $attributes);
 
                 $output .= '&nbsp;&nbsp;';
 
                 // Print track selection link
-                $url = "form/{$type}selector.php?id=label_new_{$type}_{$random_id}";
+                $url = "form/{$type}selector.php?id={$type}_{$random_id}";
                 $attributes = array('onClick' => 'show_panel("'.$url.'")');
 
-                // TODO: evaluate type and return the correct langauge string
                 $output .= html_writer::link('#', $selecttype, $attributes);
 
 
@@ -401,12 +447,12 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = "SELECT rea.id, rea.minimum, rea.maximum, rea.trackid, t.name ".
+        $sql = "SELECT rea.id, rea.minimum, rea.maximum, rea.trackid AS typeid, t.name ".
                "FROM {$CFG->prefix}crlm_results_engine_action rea ".
                "RIGHT JOIN {$CFG->prefix}crlm_track t ON rea.trackid = t.id ".
-               "WHERE rea.resultengineid = :resultsactionid ORDER BY minimum ASC";
+               "WHERE rea.resultengineid = :resultsengineid ORDER BY minimum ASC";
 
-        $params = array('resultsactionid' => $resultsid);
+        $params = array('resultsengineid' => $resultsid);
 
         $data = $DB->get_records_sql($sql, $params);
 
@@ -416,4 +462,28 @@ class cmEngineForm extends cmform {
 
         return $data;
     }
+
+    protected function get_assign_to_class_data($resultsid = 0) {
+        global $DB, $CFG;
+
+        if (empty($resultsid)) {
+            return array();
+        }
+
+        $sql = "SELECT rea.id, rea.minimum, rea.maximum, rea.classid AS typeid, cls.idnumber AS name".
+               "FROM {$CFG->prefix}crlm_results_engine_action rea ".
+               "RIGHT JOIN {$CFG->prefix}crlm_class cls ON rea.classid = cls.id ".
+               "WHERE rea.resultengineid = :resultsengineid ORDER BY minimum ASC";
+
+        $params = array('resultsengineid' => $resultsid);
+
+        $data = $DB->get_records_sql($sql, $params);
+
+        if (empty($data)) {
+            return array();
+        }
+
+        return $data;
+    }
+
 }
