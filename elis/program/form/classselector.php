@@ -86,5 +86,3 @@ $table->define_headers(array('Course Description LANGUAGE STRING', 'ID Number LA
 $table->out(MAX_NUM_ROWS, false);
 
 echo html_writer::end_tag('center');
-
-?>

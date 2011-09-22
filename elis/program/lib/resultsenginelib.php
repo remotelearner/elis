@@ -107,5 +107,3 @@ class classselectiontable extends table_sql {
         return $output;
     }
 }
-
-?>

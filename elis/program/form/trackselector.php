@@ -83,5 +83,3 @@ $table->define_headers(array('Name', 'Description'));
 $table->out(MAX_NUM_ROWS, false);
 
 echo html_writer::end_tag('center');
-
-?>

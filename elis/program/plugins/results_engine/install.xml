@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="elis/program/plugins/results_engine" VERSION="20101113" COMMENT="XMLDB file for Moodle ELIS Program Manager Results Engine plug-in"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="crlm_results_engine" COMMENT="results engine settings" PREVIOUS="crlm_wait_list" NEXT="crlm_results_engine_action" >
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="contextid"/>
+        <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="active"/>
+        <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="contextid" NEXT="eventtriggertype"/>
+        <FIELD NAME="eventtriggertype" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="active" NEXT="lockedgrade"/>
+        <FIELD NAME="lockedgrade" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="eventtriggertype" NEXT="triggerstartdate"/>
+        <FIELD NAME="triggerstartdate" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="lockedgrade" NEXT="criteriatype"/>
+        <FIELD NAME="criteriatype" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" ENUM="false" NEXT="" PREVIOUS="triggerstartdate"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="contextid_idx" UNIQUE="true" FIELDS="contextid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="crlm_results_engine_action" COMMENT="results engine action settings" PREVIOUS="crlm_results_engine" NEXT="crlm_results_engine_class_log" >
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="resultengineid"/>
+        <FIELD NAME="resultengineid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="actiontype"/>
+        <FIELD NAME="actiontype" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="resultengineid" NEXT="minimum"/>
+        <FIELD NAME="minimum" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="actiontype" NEXT="maximum"/>
+        <FIELD NAME="maximum" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="minimum" NEXT="trackid"/>
+        <FIELD NAME="trackid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="maximum" NEXT="classid"/>
+        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="trackid" NEXT="fieldid"/>
+        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="classid" NEXT="fieldata"/>
+        <FIELD NAME="fieldata" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="fieldid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="resultengineid_idx" UNIQUE="false" FIELDS="resultengineid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="crlm_results_engine_class_log" COMMENT="results engine class logs" PREVIOUS="crlm_results_engine_action" NEXT="crlm_results_engine_student_log" >
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="classid"/>
+        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="datescheduled"/>
+        <FIELD NAME="datescheduled" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="classid" NEXT="daterun"/>
+        <FIELD NAME="daterun" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="datescheduled"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="classid_idx" UNIQUE="false" FIELDS="classid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="crlm_results_engine_student_log" COMMENT="results engine student logs" PREVIOUS="crlm_results_engine_class_log">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="classlogid"/>
+        <FIELD NAME="classlogid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="classlogid" NEXT="action"/>
+        <FIELD NAME="action" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="userid" NEXT="daterun"/>
+        <FIELD NAME="daterun" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="action"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="classlogid_idx" UNIQUE="false" FIELDS="classlogid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
