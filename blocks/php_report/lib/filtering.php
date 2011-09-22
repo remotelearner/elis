@@ -264,13 +264,12 @@ function php_report_filtering_get_user_preferences($report_shortname) {
                 php_report_filtering_flag_report_as_overridden($report_shortname);
             }
         }
-        $user_prefs = $SESSION->php_report_default_params;
-    }
-
-    if (!empty($SESSION->php_report_default_override[$report_shortname])) {
+        $user_prefs = array_merge($user_prefs, $SESSION->php_report_default_params);
+    } else if (!empty($SESSION->php_report_default_override[$report_shortname])) {
         // using temporary overrides (which contain last known state of form
         $user_prefs = $SESSION->php_report_default_params;
     }
+
     return $user_prefs;
 }
 
@@ -432,10 +431,14 @@ function php_report_filtering_reset_form($form_data, $filter_object, $report_nam
     // Get current filters and reset them
     $reset_array = array();
     $per_filter_data = php_report_filtering_get_per_filter_data($filter_object, $form_data);
-    foreach ($per_filter_data as $filter_data) {
-        foreach ($filter_data as $key => $value) {
-            $reset_array[$key] = '';
-        }
+
+    //loop through the filters, and get them to specify their defaults
+    foreach ($per_filter_data as $filter_name => $filter_data) {
+        //obtain the instance
+        $filter_instance = $filter_object->_fields[$filter_name];
+        //append the default values to our list
+        $default_values = $filter_instance->get_default_values($filter_data);
+        $reset_array = array_merge($reset_array, $default_values);
     }
 
     // start with getting the database preferences
