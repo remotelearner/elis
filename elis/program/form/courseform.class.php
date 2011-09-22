@@ -230,7 +230,10 @@ class completionform extends moodleform {
         $mform->addElement('hidden', 'id');
         $mform->addElement('hidden', 'elemid');
 
-        $options = array();
+        $options = array(
+            'lockcourse' => 1,
+            'nocoursestring' => get_string('selecttemplate', 'elis_program'),
+        );
         if ($course->coursetemplate->valid()) {
             $template = $course->coursetemplate->current();
             $options['courseid'] = $template->location;

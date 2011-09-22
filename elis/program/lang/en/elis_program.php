@@ -773,6 +773,7 @@ $string['search'] = 'Search';
 $string['selectaclass'] = 'Select a class';
 $string['selectacourse'] = 'Select a course';
 $string['selectedonly'] = 'Show selected items only';
+$string['selecttemplate'] = 'No template course selected.  In order to browse ID numbers, you must select a course template in the "Edit" tab.';
 $string['showallitems'] = 'Show all items';
 $string['show_all_users'] = 'Show All Users';
 $string['showcourses'] = 'Show Courses';
