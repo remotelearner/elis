@@ -707,14 +707,30 @@ class waitlisttable extends yui_table {
         return $retval;
     }
 
+    // This method is NOT being used, and doesn't add dates - see formatters above
     function get_item_display_timeofday($column, $item) {
-        if ((!empty($item->starttimehour) || !empty($item->starttimeminute)) &&
-            (!empty($item->endtimehour) || !empty($item->endtimeminute))) {
-                return array($item->starttimehour, $item->starttimeminute,
-                            $item->endtimehour, $item->endtimeminute);
+        $times = array();
+        $show_starttime = !empty($item->starttimehour) && $item->starttimehour < 25 &&
+                          !empty($item->starttimeminute) && $item->starttimeminute < 61;
+        $show_endtime = !empty($item->endtimehour) && $item->endtimehour < 25 &&
+                        !empty($item->endtimeminute) && $item->endtimeminute < 61;
+        if ($show_starttime) {
+            $times[] = $item->starttimehour;
+            $times[] = $item->starttimeminute;
         } else {
-            return array(0,0,0,0);
+            $times[] = 0;
+            $times[] = 0;
         }
+
+        if ($show_endtime) {
+            $times[] = $item->endtimehour;
+            $times[] = $item->endtimeminute;
+        } else {
+            $times[] = 0;
+            $times[] = 0;
+        }
+
+        return $times;
     }
 
     function get_item_display_instructor($column, $item) {
@@ -850,10 +866,10 @@ class currentclasstable extends yui_table {
     function get_item_display_timeofday($column, $item) {
         if (($classdata = $this->get_class($item))) {
             //determine if at least one of the start time hour or minute is set to a valid value
-            $show_starttime = !empty($classdata->starttimehour) && $classdata->starttimehour < 25 ||
+            $show_starttime = !empty($classdata->starttimehour) && $classdata->starttimehour < 25 &&
                               !empty($classdata->starttimeminute) && $classdata->starttimeminute < 61;
             //determine if at least one of the end time hour or minute is set to a valid value
-            $show_endtime =  !empty($classdata->endtimehour) && $classdata->endtimehour < 25 ||
+            $show_endtime =  !empty($classdata->endtimehour) && $classdata->endtimehour < 25 &&
                              !empty($classdata->endtimeminute) && $classdata->endtimeminute < 61;
 
             if ($show_starttime && $show_endtime) {
