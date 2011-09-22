@@ -163,6 +163,7 @@ $string['invalidsite'] = 'Invalid site';
 $string['lockingdownpermissionson'] = 'Locking down permissions on Alfresco folder <b>{$a}->name</b> (<i>{$a}->uuid</i>)';
 $string['myfiles'] = 'My Files';
 $string['myfilesquota'] = 'My Files - {$a} free';
+$string['move'] = 'Move';
 $string['movefiles'] = 'Move file(s) to:';
 $string['nocategoriesfound'] = 'No categories found';
 $string['onlyincategories'] = 'Only show results from the following selected categories:';

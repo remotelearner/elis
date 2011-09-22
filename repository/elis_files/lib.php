@@ -424,10 +424,7 @@ class repository_elis_files extends repository {
                 $str.= '<p>' . get_string('warningdeleteresource', 'repository_elis_files', $clean_name);
             }
         }
-
-        $str .=        '<input id="okButton" type="button" default="default" value="Yes" />
-                        <input id="cancelButton" type="button" value="No" />
-                        </div>';
+        $str .=        ' </div>';
 
         return $str;
     }
@@ -444,10 +441,7 @@ class repository_elis_files extends repository {
                         <input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'">
                         <input type="hidden" name="selected_files" id="selected_files" value="'.implode(",",$selected_files).'">
                         <input id="targetfolder" type="hidden" value = "" />
-                        <input id="moveButton" type="button" default="default" value="Move" />
-                        <input id="cancelButton" type="button" value="Cancel" />
                         </div>';
-
         return $str;
 
     }
@@ -463,9 +457,6 @@ class repository_elis_files extends repository {
         $str = '<div>
                         <input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'">
                         <input type="text" id="newdirname" name="newdirname"/>
-                        <br><br>
-                        <input id="okButton" type="button" default="default" value="OK" />
-                        <input id="cancelButton" type="button" value="Cancel" />
                         </div>';
 
         return $str;

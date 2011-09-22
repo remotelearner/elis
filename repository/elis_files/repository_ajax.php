@@ -88,7 +88,7 @@ switch ($action) {
 
     // Delete file(s)
     case 'deletefiles':
-        $fileslist = required_param('fileslist', PARAM_ALPHANUMEXT); //string
+        $fileslist = required_param('fileslist', PARAM_RAW); //string
         $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
         $return = new stdClass();
         $file_array = explode(",",$fileslist);
@@ -99,7 +99,7 @@ switch ($action) {
                 elis_files_delete($uuid);
             }
         } else { // Alfresco 3.4
-        foreach($file_array as $uuid) {
+            foreach($file_array as $uuid) {
                 $repo->elis_files->delete($uuid);
             }
         }
