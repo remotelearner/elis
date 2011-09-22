@@ -304,6 +304,23 @@ abstract class generalized_filter_type {
     function get_execution_mode() {
         return $this->execution_mode;
     }
+
+    /**
+     * Takes a set of submitted values and retuns this filter's default values
+     * for them in the same structure (used to reset the filtering form)
+     */
+    function get_default_values($filter_data) {
+        //our data map of field shortnames to values
+        $default_values = array();
+
+        //set all fields to an empty value
+        foreach ($filter_data as $key => $value) {
+            $default_values[$key] = '';
+        }
+
+        //return our data mapping
+        return $default_values;
+    }
 }
 
 class generalized_filter_entry {
