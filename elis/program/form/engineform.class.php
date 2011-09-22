@@ -34,7 +34,7 @@ require_once elispm::file('plugins/results_engine/lib.php');
  * the form element for curriculum
  */
 class cmEngineForm extends cmform {
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'pmplugins_results_engine';
 
     // Form html
     protected $_html = array();
@@ -66,11 +66,11 @@ class cmEngineForm extends cmform {
     protected function defineActivation() {
         global $DB;
 
-        $grades = array(0 => get_string('engineform:class_grade', self::LANG_FILE));
+        $grades = array(0 => get_string('class_grade', self::LANG_FILE));
         $dates  = array(
-            RESULTS_ENGINE_AFTER_START => get_string('engineform:after_class_start', self::LANG_FILE),
-            RESULTS_ENGINE_BEFORE_END  => get_string('engineform:before_class_end', self::LANG_FILE),
-            RESULTS_ENGINE_AFTER_END   => get_string('engineform:after_class_end', self::LANG_FILE)
+            RESULTS_ENGINE_AFTER_START => get_string('after_class_start', self::LANG_FILE),
+            RESULTS_ENGINE_BEFORE_END  => get_string('before_class_end', self::LANG_FILE),
+            RESULTS_ENGINE_AFTER_END   => get_string('after_class_end', self::LANG_FILE)
         );
 
         $conditions = array('courseid' => $this->_customdata['courseid']);
@@ -81,17 +81,21 @@ class cmEngineForm extends cmform {
             $grades[$completion->id] = $completion->name;
         }
 
-        $activaterule    = get_string('engineform:activate_this_rule', self::LANG_FILE);
-        $activationrules = get_string('engineform:activation_rules', self::LANG_FILE);
-        $criterion       = get_string('engineform:criterion', self::LANG_FILE);
+        $activaterule    = get_string('activate_this_rule', self::LANG_FILE);
+        $activationrules = get_string('activation_rules', self::LANG_FILE);
+        $criterion       = get_string('criterion', self::LANG_FILE);
         $days            = get_string('days');
-        $eventtrigger    = get_string('engineform:event_trigger', self::LANG_FILE);
-        $executemanually = get_string('engineform:execute_manually', self::LANG_FILE);
-        $gradeset        = get_string('engineform:when_student_grade_set', self::LANG_FILE);
-        $on              = get_string('engineform:on', self::LANG_FILE);
-        $manualtrigger   = get_string('engineform:manual_trigger', self::LANG_FILE);
-        $selectgrade     = get_string('engineform:select_grade', self::LANG_FILE);
-        $uselocked       = get_string('engineform:use_locked_grades',self::LANG_FILE);
+        $eventtrigger    = get_string('event_trigger', self::LANG_FILE);
+        $executemanually = get_string('execute_manually', self::LANG_FILE);
+        $gradeset        = get_string('when_student_grade_set', self::LANG_FILE);
+        $on              = get_string('on', self::LANG_FILE);
+        $manualtrigger   = get_string('manual_trigger', self::LANG_FILE);
+        $selectgrade     = get_string('select_grade', self::LANG_FILE);
+        $uselocked       = get_string('use_locked_grades',self::LANG_FILE);
+        $result          = get_string('result', self::LANG_FILE);
+        $assigntotrack   = get_string('assign_to_track', self::LANG_FILE);
+        $assigntoclass   = get_string('assign_to_class', self::LANG_FILE);
+        $assigntoprofile = get_string('assign_to_profile', self::LANG_FILE);
 
         if ($this->_layout == 'custom') {
             // Setup an alternate html output so we can make the form user friendly.
@@ -198,6 +202,7 @@ class cmEngineForm extends cmform {
             $mform->addElement('html', '</fieldset>');
 
             $mform->addElement('html', '<div id = class="engineform">');
+            $mform->addElement('html', '<fieldset>');
             $mform->addElement('html', '<legend>'.$result.'</lengend>');
 
             // Accordion implementation
@@ -205,7 +210,7 @@ class cmEngineForm extends cmform {
 
             $mform->addElement('html', '<div>');
             $mform->addElement('html', '<h3>');
-            $mform->addElement('html', '<a href="#">Assign to track (LANGUAGE STRING)</a>');
+            $mform->addElement('html', '<a href="#">'.$assigntotrack.'</a>');
             $mform->addElement('html', '</h3>');
 
 
@@ -214,16 +219,18 @@ class cmEngineForm extends cmform {
             $mform->addElement('html', '</div>');
             $mform->addElement('html', '<div>');
             $mform->addElement('html', '<h3>');
-            $mform->addElement('html', '<a href="#">Assign to class instance (LANGUAGE STRING)</a>');
+            $mform->addElement('html', '<a href="#">'.$assigntoclass.'</a>');
             $mform->addElement('html', '</h3>');
             $mform->addElement('html', '<div>Some more content in div</div>');
             $mform->addElement('html', '</div>');
             $mform->addElement('html', '<div>');
             $mform->addElement('html', '<h3>');
-            $mform->addElement('html', '<a href="#">Update user profile field (LANGUAGE STRING)</a>');
+            $mform->addElement('html', '<a href="#">'.$assigntoprofile.'</a>');
             $mform->addElement('html', '</h3>');
             $mform->addElement('html', '<div>Some more content in div</div>');
             $mform->addElement('html', '</div>');
+
+            $mform->addElement('html', '</fieldset>');
 
             $mform->addElement('html', '</div>');
 
@@ -288,6 +295,11 @@ class cmEngineForm extends cmform {
 
             global $CFG, $OUTPUT;
 
+            $scoreheader        = get_string('score', self::LANG_FILE);
+            $assigntype         = get_string("assign_to_{$type}", self::LANG_FILE);
+            $selecttype         = get_string("select_{$type}", self::LANG_FILE);
+            $deletescoretype    = get_string("delete_score", self::LANG_FILE);
+
             $attributes = array('class'     => "datatable {$type}assignment",
                                 'id'        => "assign_{$type}_table",
                                 'border'    => '1');
@@ -297,9 +309,9 @@ class cmEngineForm extends cmform {
             $attributes['id'] = "header_assign_{$type}_table";
             $output .= html_writer::start_tag('tr');
 
-            $output .= html_writer::tag('th', 'Score LANGUAGE STRING');
+            $output .= html_writer::tag('th', $scoreheader);
             // TODO: evaluate type and return the correct langauge string
-            $output .= html_writer::tag('th', 'Assign to selected AAAA LANGUAGE STRING');
+            $output .= html_writer::tag('th', $assigntype);
 
             $output .= html_writer::end_tag('tr');
 
@@ -330,8 +342,8 @@ class cmEngineForm extends cmform {
 
                 // Print Delete icon
                 // TODO: add onclick event to clear minimum, maximum and track selection
-                $attributes = array('title' => 'LANGUAGE STRING',
-                                    'alt' => 'LANGUAGE STRING',
+                $attributes = array('title' => $deletescoretype,
+                                    'alt' => $deletescoretype,
                                     'src' => $OUTPUT->pix_url('delete', 'elis_program'));
 
                 $image  = html_writer::empty_tag('img', $attributes);
@@ -352,7 +364,7 @@ class cmEngineForm extends cmform {
                 $attributes = array('onClick' => 'show_panel("'.$url.'")');
 
                 // TODO: evaluate type and return the correct langauge string
-                $output .= html_writer::link('#', 'Select AAAA LANGUAGE STRING', $attributes);
+                $output .= html_writer::link('#', $selecttype, $attributes);
 
 
                 $output .= html_writer::end_tag('td');
