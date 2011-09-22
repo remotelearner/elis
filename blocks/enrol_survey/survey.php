@@ -40,8 +40,11 @@ $instanceid = required_param('id', PARAM_INT);
 $instance = $DB->get_record('block_instances', array('id' => $instanceid));
 $block = block_instance('enrol_survey', $instance);
 
+//make sure we're logged in one way or another
 if (fnmatch($block->instance->pagetypepattern, 'course-view-') && !empty($COURSE->id)) {
     require_course_login($COURSE->id); // TBD
+} else {
+    require_login();
 }
 
 if ($COURSE->id == SITEID) {
@@ -55,6 +58,9 @@ require_capability('block/enrol_survey:take', $context);
 if (cm_get_crlmuserid($USER->id) === false) { // ***TBD***
     print_error(get_string('noelisuser', 'block_enrol_survey'));
 }
+
+//set the page context to either the system or course context
+$PAGE->set_context($context);
 
 $moodle_user = get_complete_user_data('id', $USER->id);
 $elis_user = new user(cm_get_crlmuserid($USER->id));
