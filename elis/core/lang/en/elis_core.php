@@ -162,6 +162,7 @@ $string['invalidid'] = 'Invalid ID';
 $string['invalidoperator'] = 'Invalid Operator';
 
 $string['noactivities'] = 'No activities found';
+$string['nocourseselected'] = 'No course selected';
 $string['nofieldsselected'] = 'No fields selected';
 $string['nogradeitems'] = 'No grade items found';
 $string['noidnumber'] = 'No ID number';

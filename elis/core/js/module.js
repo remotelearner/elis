@@ -52,9 +52,7 @@ M.elis_core.init_gradebook_popup = function(Y, options) {
 	    var courseselector = Y.Node.create(o.response);
 
 	    courseselectorcontainer.appendChild(courseselector);
-	    if (this.options.lockcourse) {
-		courseselector.set('disabled', 1);
-	    } else {
+	    if (!this.options.lockcourse) {
 		var scope = this;
 		courseselector.on('change', function() {
 		    scope.get_gradebook_items(courseselector.get('value'));
@@ -142,6 +140,9 @@ M.elis_core.init_gradebook_popup = function(Y, options) {
 		    if (scope.options.courseid) {
 			uri += '&course=' + scope.options.courseid;
 		    }
+		    if (scope.options.lockcourse) {
+			uri += '&lockcourse=1';
+		    }
 		    Y.io(uri, cfg);
 		});
 	    });
@@ -174,9 +175,17 @@ M.elis_core.init_gradebook_popup = function(Y, options) {
     var panel = new GradebookPickerHelper(options);
 
     // show the panel when the button is clicked
-    button.on('click', function(e) {
-	panel.show();
-    });
+    if (!options.courseid && options.lockcourse) {
+	// No course ID set, and locked, so user can't do anything.  So display
+	// a message.
+	button.on('click', function(e) {
+	    alert(options.nocoursestring);
+	});
+    } else {
+	button.on('click', function(e) {
+	    panel.show();
+	});
+    }
 };
 
 M.elis_core.init_custom_field_multiselect = function(Y, options) {

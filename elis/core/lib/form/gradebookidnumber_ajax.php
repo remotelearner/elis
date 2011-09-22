@@ -33,6 +33,16 @@ $mode = optional_param('mode', 'course', PARAM_ACTION);
 if ($mode == 'course') {
     require_login();
     $PAGE->set_url('/elis/core/lib/form/gradebookidnumber_ajax.php', array('course' => $course, 'mode' => 'course'));
+    $lockcourse = optional_param('lockcourse', false, PARAM_BOOL);
+    if ($lockcourse) {
+        if (empty($course)) {
+            print_string('nocourseselected', 'elis_core');
+        } else {
+            $rec = $DB->get_record('course', array('id' => $course));
+            echo s($c->fullname) . ' (' . s($c->shortname) . ')';
+        }
+        die;
+    }
     echo html_writer::start_tag('select');
     $attributes = array('value' => '');
     if (empty($course)) {

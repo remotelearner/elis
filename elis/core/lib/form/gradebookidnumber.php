@@ -61,6 +61,7 @@ class elis_gradebook_idnumber_selector extends MoodleQuickForm_text {
         $this->_persistantFreeze = true;
         $this->_appendName = true;
         $this->_type = self::NAME;
+        $this->_options['nocoursestring'] = get_string('nocourseselected', 'elis_core');
         // set the options, do not bother setting bogus ones
         if (is_array($options)) {
             foreach ($options as $name => $value) {
@@ -84,6 +85,7 @@ class elis_gradebook_idnumber_selector extends MoodleQuickForm_text {
             $options = array('textelemid' => $id,
                              'courseid' => $this->_options['courseid'],
                              'lockcourse' => $this->_options['lockcourse'],
+                             'nocoursestring' => $this->_options['nocoursestring'],
             );
             $PAGE->requires->js_init_call("M.elis_core.init_gradebook_popup", array($options), false, elis::$jsmodule);
         }
