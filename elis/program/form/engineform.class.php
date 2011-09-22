@@ -133,6 +133,11 @@ class cmEngineForm extends cmform {
             $html[] = '</select><br />';
 
             $html[] = '</fieldset>';
+
+            $html[] = '<fieldset class="engineform">';
+            $html[] = '<legend>'.$result.'</legend>';
+            // TODO: ADD HTML FOR RESULTS FIELDSET
+            $html[] = '</fieldset>';
             $html[] = '</fieldset>';
 
             $this->_html = $html;
@@ -191,11 +196,38 @@ class cmEngineForm extends cmform {
             $mform->addGroup($grade);
 
             $mform->addElement('html', '</fieldset>');
-            $mform->addElement('html', '</fieldset>');
 
-            // TODO: Find out where the extra </div> that this opens comes from.
-            // Removing this line will prevent the side menu from showing up.
+            $mform->addElement('html', '<div id = class="engineform">');
+            $mform->addElement('html', '<legend>'.$result.'</lengend>');
+
+            // Accordion implementation
+            $mform->addElement('html', '<div id="accordion">');
+
             $mform->addElement('html', '<div>');
+            $mform->addElement('html', '<h3>');
+            $mform->addElement('html', '<a href="#">Assign to track (LANGUAGE STRING)</a>');
+            $mform->addElement('html', '</h3>');
+
+
+            $mform->addElement('html', '<div>' . $this->get_assign_to_table(0, false, false, 'track') . '</div>');
+
+            $mform->addElement('html', '</div>');
+            $mform->addElement('html', '<div>');
+            $mform->addElement('html', '<h3>');
+            $mform->addElement('html', '<a href="#">Assign to class instance (LANGUAGE STRING)</a>');
+            $mform->addElement('html', '</h3>');
+            $mform->addElement('html', '<div>Some more content in div</div>');
+            $mform->addElement('html', '</div>');
+            $mform->addElement('html', '<div>');
+            $mform->addElement('html', '<h3>');
+            $mform->addElement('html', '<a href="#">Update user profile field (LANGUAGE STRING)</a>');
+            $mform->addElement('html', '</h3>');
+            $mform->addElement('html', '<div>Some more content in div</div>');
+            $mform->addElement('html', '</div>');
+
+            $mform->addElement('html', '</div>');
+
+            $mform->addElement('html', '</fieldset>');
         }
     }
 
@@ -250,5 +282,126 @@ class cmEngineForm extends cmform {
         } else {
             parent::display();
         }
+    }
+
+    protected function get_assign_to_table($resultsid = 0, $addrow = false, $cached_data = null, $type = 'track') {
+
+            global $CFG, $OUTPUT;
+
+            $attributes = array('class'     => "datatable {$type}assignment",
+                                'id'        => "assign_{$type}_table",
+                                'border'    => '1');
+            $output = html_writer::start_tag('table', $attributes);
+
+            // Header
+            $attributes['id'] = "header_assign_{$type}_table";
+            $output .= html_writer::start_tag('tr');
+
+            $output .= html_writer::tag('th', 'Score LANGUAGE STRING');
+            // TODO: evaluate type and return the correct langauge string
+            $output .= html_writer::tag('th', 'Assign to selected AAAA LANGUAGE STRING');
+
+            $output .= html_writer::end_tag('tr');
+
+            // data row(s)
+            $function = "get_assign_to_{$type}_data";
+            $data = $this->$function($resultsid);
+
+            if (empty($data)) {
+
+                $output .= html_writer::start_tag('tr');
+                $output .= html_writer::start_tag('td');
+
+                $random_id = html_writer::random_id();
+
+                // Print Minimum
+                $attributes = array('id' => "minimum_new_{$type}_{$random_id}",
+                                    'value' => '',
+                                    'type' => 'text',
+                                    'size' => '5',
+                                    'maxlength' => '5');
+                $output .= html_writer::empty_tag('input', $attributes);
+                $output .= '&nbsp;&nbsp;';
+
+                // Print Maximum
+                $attributes['id'] = "maximum_new_{$type}_{$random_id}";
+                $output .= html_writer::empty_tag('input', $attributes);
+                $output .= '&nbsp;&nbsp;';
+
+                // Print Delete icon
+                // TODO: add onclick event to clear minimum, maximum and track selection
+                $attributes = array('title' => 'LANGUAGE STRING',
+                                    'alt' => 'LANGUAGE STRING',
+                                    'src' => $OUTPUT->pix_url('delete', 'elis_program'));
+
+                $image  = html_writer::empty_tag('img', $attributes);
+                $output .= html_writer::link('#', $image);
+
+
+                $output .= html_writer::end_tag('td');
+                $output .= html_writer::start_tag('td');
+
+                // Print Track selection label
+                $attributes = array('id' => "label_new_{$type}_{$random_id}");
+                $output  .= html_writer::tag('label', '', $attributes);
+
+                $output .= '&nbsp;&nbsp;';
+
+                // Print track selection link
+                $url = "form/{$type}selector.php?id=label_new_{$type}_{$random_id}";
+                $attributes = array('onClick' => 'show_panel("'.$url.'")');
+
+                // TODO: evaluate type and return the correct langauge string
+                $output .= html_writer::link('#', 'Select AAAA LANGUAGE STRING', $attributes);
+
+
+                $output .= html_writer::end_tag('td');
+                $output .= html_writer::end_tag('tr');
+            } else {
+                // print data
+            }
+
+            if ($cached_data) {
+                // Print cached data
+            }
+
+            if ($addrow) {
+                // Add input row
+            }
+
+            $output .= html_writer::start_tag('tr');
+
+            // data column(s)
+            $output .= html_writer::tag('td', 'some input');
+            $output .= html_writer::tag('td', 'some input2');
+
+            $output .= html_writer::end_tag('tr');
+
+            $output .= html_writer::end_tag('table');
+
+            return $output;
+    }
+
+    protected function get_assign_to_track_data($resultsid = 0) {
+        global $DB, $CFG;
+
+        if (empty($resultsid)) {
+            return array();
+        }
+
+        $sql = "SELECT rea.id, rea.minimum, rea.maximum, rea.trackid, t.name ".
+               "FROM {$CFG->prefix}crlm_results_engine_action rea ".
+               "RIGHT JOIN {$CFG->prefix}crlm_track t ON rea.trackid = t.id ".
+               "WHERE rea.resultengineid = :resultsactionid ORDER BY minimum ASC";
+
+        $params = array('resultsactionid' => $resultsid);
+
+        $data = $DB->get_records_sql($sql, $params);
+
+        if (empty($data)) {
+            return array();
+        }
+
+        return $data;
     }
 }

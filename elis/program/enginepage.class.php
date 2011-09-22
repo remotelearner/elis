@@ -78,6 +78,9 @@ abstract class enginepage extends pm_page {
      * @return object The engine form
      */
     protected function get_engine_form() {
+
+        $this->include_js();
+
         $known     = false;
         $contextid = $this->get_context()->id;
         $id        = $this->optional_param('id', 0, PARAM_INT);
@@ -170,6 +173,16 @@ abstract class enginepage extends pm_page {
             throw new ErrorException('Display called before Do');
         }
 
+        echo '
+        <script type="text/javascript">
+            $(function(){
+
+                // Accordion
+                $("#accordion").accordion({ header: "h3" });
+
+            });
+        </script>';
+
         $this->print_tabs();
         $this->_form->display();
     }
@@ -228,6 +241,25 @@ abstract class enginepage extends pm_page {
     public function get_new_data_object($data=false) {
         return new $this->data_class($data);
     }
+
+    /**
+     * Includes the required JavaScript/YUI files for DataTable and the show/hide buttons.
+     * @uses $CFG
+     * @uses $PAGE
+     * @return none
+     */
+    function include_js() {
+        global $CFG, $PAGE;
+
+        //$PAGE->requires->yui2_lib(array('core', 'dom', 'event', 'widget'));
+
+        $PAGE->requires->css('/elis/program/jquery-ui-1.8.16.custom.css', true);
+        $PAGE->requires->js('/elis/program/js/jquery-1.6.2.min.js', true);
+        $PAGE->requires->js('/elis/program/js/jquery-ui-1.8.16.custom.js', true);
+        $PAGE->requires->js('/elis/program/js/resultsengineselector.js', true);
+
+    }
+
 }
 
 /**

@@ -11,7 +11,7 @@ require_login(SITEID, false);
 global $CFG, $PAGE, $OUTPUT, $DB;
 
 require_once($CFG->dirroot . '/elis/program/lib/lib.php');
-require_once($CFG->dirroot . '/elis/program/lib/selectiontable.class.php');
+require_once($CFG->dirroot . '/elis/program/lib/resultsenginelib.php');
 require_once($CFG->dirroot . '/lib/weblib.php');
 require_once($CFG->dirroot . '/lib/dml/moodle_database.php');
 
@@ -82,7 +82,7 @@ $table->set_sql($columns, $from, $where, $params);
 $table->define_baseurl($baseurl);
 $table->collapsible(false);
 $table->define_columns(array('syllabus', 'idnumber'));
-$table->define_headers(array('Course Description', 'ID Number'));
+$table->define_headers(array('Course Description LANGUAGE STRING', 'ID Number LANGUAGE STRING'));
 $table->out(MAX_NUM_ROWS, false);
 
 echo html_writer::end_tag('center');

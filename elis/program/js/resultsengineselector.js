@@ -29,16 +29,15 @@
  *
  */
 
-function show_panel( url, dragable ) {
+function show_panel( url ) {
     var x = window.open(url, 'newWindow', 'height=500,width=500,resizable,scrollbars');
 }
 
 
-function user_selection(elmid, name, id) {
-    alert(name);
+function user_selection(elmid, label, id) {
 //    var element = document.getElementById(elmid);
 
-    var locationLabel = window.opener.document.getElementById('id_version');
-    locationLabel.value = name;
+    var locationLabel = window.opener.document.getElementById(elmid);
+    locationLabel.innerHTML = label;
 
 }
