@@ -36,7 +36,6 @@ function show_panel( url ) {
     var x = window.open(url, 'newWindow', 'height=500,width=500,resizable,scrollbars');
 }
 
-
 /**
  * This function updates fields on the results engine results form/table
  * The first parameter is only part of the element id (the suffix).
@@ -57,4 +56,8 @@ function user_selection(elmid, label, id) {
     element = window.opener.document.getElementById(element_hidden);
     element.value = id;
 
+}
+
+function add_range_selection( type ) {
+    // do nothing for now
 }

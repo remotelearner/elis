@@ -301,9 +301,6 @@ class cmEngineForm extends cmform {
         }
 
 
-print_object($data);
-$errors['timetocomplete'] = 'debugging';
-
         // Add another track score range button
         if (array_key_exists('track_assignment', $data)) {
 
