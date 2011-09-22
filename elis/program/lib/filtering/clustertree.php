@@ -787,5 +787,31 @@ class generalized_filter_clustertree extends generalized_filter_type {
 
         return $merged_array;
     }
+
+
+    /**
+     * Takes a set of submitted values and retuns this filter's default values
+     * for them in the same structure (used to reset the filtering form)
+     */
+    function get_default_values($filter_data) {
+        //our data map of field shortnames to values
+        $default_values = array();
+
+        //dropdown element shortname
+        $dropdown_shortname = $this->_uniqueid.'_usingdropdown';
+
+        //set all fields to the default checkbox value of zero
+        foreach ($filter_data as $key => $value) {
+            if ($key == $dropdown_shortname) {
+                $default_values[$key] = 1;
+            } else {
+                $default_values[$key] = '';
+            }
+        }
+
+        //return our data mapping
+        return $default_values;
+    }
+
 }
 
