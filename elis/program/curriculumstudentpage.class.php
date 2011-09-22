@@ -368,6 +368,7 @@ class user_curriculum_selection_table extends selection_table {
 
     function __construct(&$items, $columns, $pageurl) {
         global $DB;
+        $pageurl->params(array('_assign' => optional_param('_assign', 'unassign', PARAM_CLEAN)));
         parent::__construct($items, $columns, $pageurl);
 
         $this->curriculum_contexts = curriculumpage::get_contexts('elis/program:program_enrol');
@@ -740,7 +741,7 @@ class curriculumstudentpage extends associationpage2 {
 class curriculum_user_selection_table extends selection_table {
     function __construct(&$items, $columns, $pageurl) {
         global $USER;
-
+        $pageurl->params(array('_assign' => optional_param('_assign', 'unassign', PARAM_CLEAN)));
         parent::__construct($items, $columns, $pageurl);
         $id = required_param('id', PARAM_INT);
         if (!curriculumpage::_has_capability('elis/program:program_enrol', $id)) {

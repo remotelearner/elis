@@ -121,7 +121,7 @@ abstract class selectionpage extends pm_page { // TBD
 
     function display_default() { // action_default
         $form = $this->get_selection_form();
-
+        $this->url->remove_params(array('mode')); // TBD
         $baseurl = htmlspecialchars_decode($this->url);
 
         if ($data = $form->get_data()) {
@@ -193,8 +193,9 @@ abstract class selectionpage extends pm_page { // TBD
                  $title .'</legend><div id="list_display">';
         }
 
+        $id      = $this->optional_param('id', -1, PARAM_INT);
         $pagenum = $this->optional_param('page', 0, PARAM_INT);
-        $perpage = 30;
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
 
         if ($filter != null) {
             $this->print_selection_filter($filter);
@@ -202,7 +203,13 @@ abstract class selectionpage extends pm_page { // TBD
 
         // pager
         $action = $this->optional_param('action', '', PARAM_ACTION);
-        $pagingbar = new paging_bar($count, $pagenum, $perpage, $this->get_basepage()->url . ($action ? "&amp;action=$action" : '' )); // TBD: '&amp;'
+        $assign = $this->optional_param('_assign', '', PARAM_CLEAN);
+        $pgurl = $this->get_basepage()->url;
+        $pgurl->remove_params(array('mode'));
+        $pgurl .= ($id >= 0) ? "&amp;id=$id" : '';
+        $pgurl .= $action ? "&amp;action=$action" : '';
+        $pgurl .= $assign ? "&amp;_assign=$assign" : ''; // curstu & associationpage2
+        $pagingbar = new paging_bar($count, $pagenum, $perpage, $pgurl); // TBD: '&amp;'
         echo $OUTPUT->render($pagingbar);
 
         $this->showfilter($count, $filter);

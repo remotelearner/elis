@@ -55,10 +55,11 @@ class clusteruserselectpage extends selectionpage {
     function get_records($filter) {
         global $DB, $USER;
 
-        $id           = $this->required_param('id', PARAM_INT);
-        $sort         = $this->optional_param('sort', 'lastname', PARAM_ALPHA);
-        $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
-        $pagenum      = $this->optional_param('page', 0, PARAM_INT);
+        $id      = $this->required_param('id', PARAM_INT);
+        $sort    = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $dir     = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
+        $pagenum = $this->optional_param('page', 0, PARAM_INT);
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
 
         $filters = array();
 
@@ -74,7 +75,7 @@ class clusteruserselectpage extends selectionpage {
             $filters[] = new select_filter($extrasql, $params);
         }
 
-        if(!usersetpage::_has_capability('elis/program:userset_enrol')) {
+        if (!usersetpage::_has_capability('elis/program:userset_enrol')) {
             //perform SQL filtering for the more "conditional" capability
 
             //get the context for the "indirect" capability
@@ -82,7 +83,7 @@ class clusteruserselectpage extends selectionpage {
 
             $allowed_clusters = userset::get_allowed_clusters($id);
 
-            if(empty($allowed_clusters)) {
+            if (empty($allowed_clusters)) {
                 $filters[] = new select_filter('FALSE');
             } else {
                 $filters[] = new join_filter('id', clusterassignment::TABLE, 'userid',
@@ -92,7 +93,7 @@ class clusteruserselectpage extends selectionpage {
 
         $count = user::count($filters);
 
-        $users = user::find($filters, array($sort => $dir), $pagenum*30, 30);
+        $users = user::find($filters, array($sort => $dir), $pagenum * $perpage, $perpage);
 
         return array($users, $count);
     }
@@ -119,8 +120,8 @@ class clusteruserselectpage extends selectionpage {
     }
 
     function get_records_from_selection($record_ids) {
-        $sort         = $this->optional_param('sort', 'name', PARAM_ALPHA);
-        $dir          = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
+        $sort = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $dir  = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
 
         $users = user::find(new in_list_filter('id', $record_ids), array($sort => $dir));
 
@@ -143,6 +144,8 @@ class clusteruserselectpage extends selectionpage {
 
 class clusteruserselecttable extends selection_table {
     function __construct(&$items, $url) {
+        $url->remove_params(array('mode')); // TBD
+        $url->params(array('id' => required_param('id', PARAM_INT)));
         $columns = array(
             '_selection'   => array('header' => ''),
             'idnumber'     => array('header' => get_string('idnumber', 'elis_program')),
