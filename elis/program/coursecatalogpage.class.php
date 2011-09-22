@@ -824,17 +824,66 @@ class currentclasstable extends yui_table {
         return $this->get_date_item_display('enddate',$this->current_class);
     }
 
+    /**
+     * Converts a 24-hour-mode hour number to a combination of a
+     * 12-hour-mode hour and either 'am' or 'pm'
+     *
+     * @param   int    $hour  An hour number from 0-23
+     * @return  array         An array where the first element is the 12-hour-mode
+     *                        hour and the second is either 'am' or 'pm'
+     */
+    private function format_hour($hour) {
+        //determine if am or pm
+        $ampm = $hour >= 12 ? 'pm' : 'am';
+
+        //convert hour number
+        if ($hour > 12) {
+            $hour -= 12;
+        } else if ($hour == 0) {
+            $hour = 12;
+        }
+
+        //return both pieces of data
+        return array($hour, $ampm);
+    }
+
     function get_item_display_timeofday($column, $item) {
         if (($classdata = $this->get_class($item))) {
-            if ((!empty($classdata->starttimehour) || !empty($classdata->starttimeminute)) &&
-                (!empty($classdata->endtimehour) || !empty($classdata->endtimeminute))) {
-                    return array($classdata->starttimehour, $classdata->starttimeminute,
-                                $classdata->endtimehour, $classdata->endtimeminute);
+            //determine if at least one of the start time hour or minute is set to a valid value
+            $show_starttime = !empty($classdata->starttimehour) && $classdata->starttimehour < 25 ||
+                              !empty($classdata->starttimeminute) && $classdata->starttimeminute < 61;
+            //determine if at least one of the end time hour or minute is set to a valid value
+            $show_endtime =  !empty($classdata->endtimehour) && $classdata->endtimehour < 25 ||
+                             !empty($classdata->endtimeminute) && $classdata->endtimeminute < 61;
+
+            if ($show_starttime && $show_endtime) {
+                //have valid times for both start and end time
+                $starthour = $classdata->starttimehour;
+                $startampm = '';
+                $endhour = $classdata->endtimehour;
+                $endampm = '';
+
+                //perform the 24 to 12-hour conversion if necessary
+                if (elis::$config->elis_program->time_format_12h) {
+                    //calculate start hour and am/pm in 12-hour format
+                    list($starthour, $startampm) = $this->format_hour($starthour);
+
+                    //calculate end hour and am/pm in 12-hour format
+                    list($endhour, $endampm) = $this->format_hour($endhour);
+                }
+
+                //return all the necessary data, which is:
+                //start hour, start minute, start am/pm (or empty string if in 24-hour format),
+                //end hour, end minute, end am/pm (or empty string if in 24-hour format)
+                return array($starthour, $classdata->starttimeminute, $startampm,
+                             $endhour, $classdata->endtimeminute, $endampm);
             } else {
-                return array(0,0,0,0);
+                //default n/a string
+                return get_string('course_catalog_time_na', 'elis_program');
             }
         } else {
-            return array(0,0,0,0);
+            //default n/a string
+            return get_string('course_catalog_time_na', 'elis_program');
         }
     }
 

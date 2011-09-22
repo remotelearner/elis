@@ -232,6 +232,7 @@ $string['courseform:environment_help'] = '<p>Where/how is the course description
 $string['courseform:length_description'] = 'Length Description';
 $string['courseform:length_description_help'] = '<p>Defines the units for duration, such as days, weeks, months, semesters, etc.</p>';
 $string['course_assigncurriculum'] = 'Assign Program';
+$string['course_catalog_time_na'] = 'n/a';
 $string['course_classes'] = 'Class Instances';
 $string['course_curricula'] = 'Programs';
 $string['course_code'] = 'Code';

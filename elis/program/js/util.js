@@ -60,9 +60,23 @@ var cmPadDigit = function(i) {
 	return (i < 10) ? "0" + i : String(i);
 }
 
-// Custom formatter for time range column
+// Custom formatter for time range column - used specifically by the course catelog when showing
+// current classes in a YUI table
+//
+// Desired format is HH:MM(am/pm) - HH:MM(am/pm) if PM setting is in 12-hour mode, or
+// HH:MM - HH::MM if PM setting is in 12-hour mode (or default to provided contant string
+// in error / no data case)
 var cmFormatTimeRange = function(elCell, oRecord, oColumn, oData) {
-    elCell.innerHTML = cmPadDigit(oData[0]) + ":" + cmPadDigit(oData[1]) + " - " + cmPadDigit(oData[2]) + ":" + cmPadDigit(oData[3]);
+	if (oData instanceof Array) {
+	    //in this case, oData is a six-element array, containing:
+	    //start hour, start minute, start am/pm string (or empty string if in 24-hour mode),
+	    //end hour, end minute, end am/pm string (or empty if in 24-hour mode)
+        elCell.innerHTML = cmPadDigit(oData[0]) + ":" + cmPadDigit(oData[1]) + oData[2] + " - " +
+                           cmPadDigit(oData[3]) + ":" + cmPadDigit(oData[4]) + oData[5];
+	} else {
+	    //in this case, oData is a stand-alone constant string, like n/a
+		elCell.innerHTML = oData;
+	}
 };
 
 // Custom sorter for time range column
