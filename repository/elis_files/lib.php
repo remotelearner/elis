@@ -408,7 +408,7 @@ class repository_elis_files extends repository {
         $str .= '<div>'.get_string('deletecheckfiles','repository_elis_files').'</div>';
         $filelist = array();
         $str .= repository_elis_files::printfilelist($files_array, $filelist);
-        $str.='<input type="hidden" name="filelist" id="fileslist" value="'.implode(",",$filelist).'">';
+        $str.='<input type="hidden" name="fileslist" id="fileslist" value="'.implode(",",$filelist).'">';
         $resourcelist = false;
         $fs = get_file_storage();
 
@@ -449,6 +449,7 @@ class repository_elis_files extends repository {
                         </div>';
 
         return $str;
+
     }
 
     /*
