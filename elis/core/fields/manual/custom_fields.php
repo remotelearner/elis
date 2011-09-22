@@ -28,6 +28,12 @@ defined('MOODLE_INTERNAL') || die();
 
 // Form functions
 
+/**
+ * Performs the necessary form setup for editing a "manual" custom field by modifying
+ * the supplied form in-place
+ *
+ * @param  object  $mform  A moodle quickform to add the necessary fields to
+ */
 function manual_field_edit_form_definition($form) {
     global $CFG;
     require_once($CFG->dirroot . '/elis/core/lib/setup.php');
@@ -132,12 +138,16 @@ function manual_field_edit_form_definition($form) {
     $form->disabledIf('manual_field_maxlength', 'manual_field_control', 'eq', 'menu');
     $form->disabledIf('manual_field_maxlength', 'manual_field_control', 'eq', 'textarea');
     $form->disabledIf('manual_field_maxlength', 'datatype', 'eq', 'bool');
-
-    $form->addElement('text', 'manual_field_help_file', get_string('help_file', 'elisfields_manual'));
-    $form->setType('manual_field_help_file', PARAM_PATH);
-    $form->setAdvanced('manual_field_help_file');
 }
 
+/**
+ * Specialization method to determine additional values to set on the form
+ * as defined in the form definition method based on custom field information
+ *
+ * @param   object  $form   The custom field form as defined in the form definition method
+ * @param   object  $field  The field object we are currently editing
+ * @return  array           The values to set on the form
+ */
 function manual_field_get_form_data($form, $field) {
     if (!isset($field->owners['manual'])) {
         return array('manual_field_enabled' => false);
@@ -153,6 +163,18 @@ function manual_field_get_form_data($form, $field) {
             $result["manual_field_$param"] = $manual->$paramname;
         }
     }
+
+    //if a help file is already set for this element, make sure a hidden field
+    //is set up so we can preserve that value
+    if (isset($manual->param_help_file)) {
+        //need to use an accessor because _form is now protected
+        $quickform = $form->get_quickform();
+
+        //add the hidden field and set the appropriate type
+        $quickform->addElement('hidden', 'manual_field_help_file', $manual->param_help_file);
+        $quickform->setType('manual_field_help_file', PARAM_PATH);
+    }
+
     return $result;
 }
 
