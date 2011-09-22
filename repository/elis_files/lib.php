@@ -491,7 +491,7 @@ class repository_elis_files extends repository {
                             <div id="file-uploader"></div>
                         </td>
                         <td>
-                            <a id="closeButton" href="javascript:void(0);"><input type="button" value="Close" /></a>
+                            <a id="uploadCloseButton" href="javascript:void(0);"><input type="button" value="Close" /></a>
                         </td>
                     </tr>
                 </table>';
