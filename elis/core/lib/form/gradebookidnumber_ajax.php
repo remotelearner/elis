@@ -38,7 +38,7 @@ if ($mode == 'course') {
         if (empty($course)) {
             print_string('nocourseselected', 'elis_core');
         } else {
-            $rec = $DB->get_record('course', array('id' => $course));
+            $c = $DB->get_record('course', array('id' => $course));
             echo s($c->fullname) . ' (' . s($c->shortname) . ')';
         }
         die;
