@@ -1003,8 +1003,16 @@ class addclasstable extends yui_table {
 
     // TODO: fix time-of-day display
     function get_item_display_timeofday($column, $class) {
-        if ((!empty($class->starttimehour) || !empty($class->starttimeminute)) &&
-            (!empty($class->endtimehour) || !empty($class->endtimeminute))) {
+        //determine if at least one of the start time hour or minute is set to a valid value
+        $show_starttime = !empty($class->starttimehour) && $class->starttimehour < 25 ||
+                          !empty($class->starttimeminute) && $class->starttimeminute < 61;
+        //determine if at least one of the end time hour or minute is set to a valid value
+        $show_endtime =  !empty($class->endtimehour) && $class->endtimehour < 25 ||
+                         !empty($class->endtimeminute) && $class->endtimeminute < 61;
+
+        //for now, we are only showing the entry if both a start time and end time are
+        //enabled
+        if ($show_starttime && $show_endtime) {
 
             if (elis::$config->elis_program->time_format_12h) {
                 $starthour = $class->starttimehour;
