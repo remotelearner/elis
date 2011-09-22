@@ -11,7 +11,7 @@ require_login(SITEID, false);
 global $CFG, $PAGE, $OUTPUT, $DB;
 
 require_once($CFG->dirroot . '/elis/program/lib/lib.php');
-require_once($CFG->dirroot . '/elis/program/lib/selectiontable.class.php');
+require_once($CFG->dirroot . '/elis/program/lib/resultsenginelib.class.php');
 require_once($CFG->dirroot . '/lib/weblib.php');
 require_once($CFG->dirroot . '/lib/dml/moodle_database.php');
 
