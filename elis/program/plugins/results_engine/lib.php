@@ -28,8 +28,11 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__) .'/../../lib/setup.php');
 
+define('RESULTS_ENGINE_LANG_FILE', 'pmplugins_results_engine');
+
 // max out at 2 minutes (= 120 seconds)
 define('RESULTS_ENGINE_USERACT_TIME_LIMIT', 120);
+
 define('RESULTS_ENGINE_GRADE_SET', 1);
 define('RESULTS_ENGINE_SCHEDULED', 2);
 define('RESULTS_ENGINE_MANUAL',    3);
@@ -40,22 +43,81 @@ define('RESULTS_ENGINE_AFTER_END',   3);
 
 
 /**
- * Process course results
+ * Check if class results are ready to processed and if so process them
  */
 function results_engine_cron() {
     $rununtil = time() + RESULTS_ENGINE_USERACT_TIME_LIMIT;
 
     $actives = results_engine_get_active();
-    print_r($actives);
 
-    while ($active = current($actives) && time() < $rununtil) {
+    foreach ($actives as $active) {
+        $ready = results_engine_check($active);
 
+        if ($ready) {
+            results_engine_process($active);
+        }
+
+        if (time() >= $rununtil) {
+            break;
+        }
     }
+}
+
+/**
+ * Check if this class is ready to be processed
+ *
+ * Class properties:
+ *   id               - id of class
+ *   startdate        - startdate of class (0 means unset)
+ *   enddate          - enddate of class (0 means unset)
+ *   triggerstartdate - the type of start date trigger used (see defines in results_engine plugin)
+ *   days             - number of days to offset triggerstartdate
+ *
+ * @param object $class An object with the important class properties
+ * @return bool Whether the class is ready to be processed
+ */
+function results_engine_check($class) {
+    $proceed = false;
+
+    $offset = $class->days * 86400;
+    $now    = time();
+
+    if ($class->triggerstartdate == RESULTS_ENGINE_AFTER_START) {
+        if ($class->startdate <= 0) {
+            print_string('no_start_date_set', RESULTS_ENGINE_LANG_FILE, $class);
+        }
+        if ($now < $class->startdate + $offset) {
+            $proceed = true;
+        }
+    } else {
+        if ($class->enddate <= 0) {
+            print_string('no_end_date_set', RESULTS_ENGINE_LANG_FILE, $class);
+        }
+
+        if ($class->triggerstartdate == RESULTS_ENGINE_BEFORE_END) {
+            $offset = -$offset;
+        }
+
+        if ($now < $class->startdate + $offset) {
+            $proceed = true;
+        }
+    }
+
+    return $proceed;
 }
 
 /**
  * Get the results engines that are active
  *
+ * Properties of returned objects:
+ *   id               - id of class
+ *   startdate        - startdate of class (0 means unset)
+ *   enddate          - enddate of class (0 means unset)
+ *   triggerstartdate - the type of start date trigger used (see defines in results_engine plugin)
+ *   days             - number of days to offset triggerstartdate
+ *   criteriatype     - what mark to look at, 0 for final mark, anything else is an element id
+ *
+ * @return array An array of class objects
  * @uses $CFG
  * @uses $DB
  */
@@ -65,8 +127,11 @@ function results_engine_get_active() {
     $courselevel = context_level_base::get_custom_context_level('course', 'elis_program');
     $classlevel  = context_level_base::get_custom_context_level('class', 'elis_program');
 
+    $fields = array('cls.id', 'cls.idnumber', 'cls.startdate', 'cls.enddate',  'cre.id as engineid',
+                    'cre.triggerstartdate', 'cre.criteriatype', '0 as days');
+
     // Get course level instances that have not been overriden or already run.
-    $sql = 'SELECT cls.id, cls.startdate, cls.enddate, cre.triggerstartdate, cre.criteriatype'
+    $sql = 'SELECT '. implode(', ', $fields)
          ." FROM {$CFG->prefix}crlm_results_engine cre"
          ." JOIN {$CFG->prefix}context c ON c.id = cre.contextid AND c.contextlevel=?"
          ." JOIN {$CFG->prefix}crlm_course cou ON cou.id = c.instanceid"
@@ -80,7 +145,7 @@ function results_engine_get_active() {
          .  ' AND crecl.daterun IS NULL'
          .' UNION'
     // Get class level instances that have not been already run.
-         .' SELECT cls.id, cls.startdate, cls.enddate, cre.triggerstartdate, cre.criteriatype'
+         .' SELECT '. implode(', ', $fields)
          ." FROM {$CFG->prefix}crlm_results_engine cre"
          ." JOIN {$CFG->prefix}context c ON c.id = cre.contextid AND c.contextlevel=?"
          ." JOIN {$CFG->prefix}crlm_class cls ON cls.id = c.instanceid"
@@ -93,4 +158,20 @@ function results_engine_get_active() {
 
     $actives = $DB->get_records_sql($sql, $params);
     return $actives;
+}
+
+/**
+ * Process all the students in this class
+ *
+ * Class properties:
+ *   id               - id of class
+ *   criteriatype     - what mark to look at, 0 for final mark, anything else is an element id
+ *   engineid         - id of results engine entry
+ *
+ * @param $class object The class object see above for required attributes
+ */
+function results_engine_process($class) {
+    $query = 'SELECT actiontype, minimum, maximum, trackid, fieldid, fieldata'
+           ." FROM {$CFG->prefix}crlm_results_engine_action"
+           .' WHERE resultengineid=?';
 }
