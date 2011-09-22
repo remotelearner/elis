@@ -12,6 +12,7 @@ $string['assign_to_profile'] = 'Update user profile field';
 $string['assign_to_class'] = 'Assign to class instance';
 $string['assign_to_track'] = 'Assign to Track';
 $string['before_class_end'] = 'before Class Instance end date';
+$string['class_average_generated'] = 'Class {$a->idnumber} assigned mark of {$a->average} on {$a->rundate}';
 $string['class_grade'] = 'Class Instance grade';
 $string['course_desc_header'] = 'Course Description';
 $string['criterion'] = 'Criterion';

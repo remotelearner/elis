@@ -51,9 +51,9 @@ function results_engine_cron() {
     $actives = results_engine_get_active();
 
     foreach ($actives as $active) {
-        $ready = results_engine_check($active);
+        $active = results_engine_check($active);
 
-        if ($ready) {
+        if ($active->proceed) {
             results_engine_process($active);
         }
 
@@ -77,18 +77,16 @@ function results_engine_cron() {
  * @return bool Whether the class is ready to be processed
  */
 function results_engine_check($class) {
-    $proceed = false;
+    $class->proceed = false;
+    $class->rundate = time();
 
     $offset = $class->days * 86400;
-    $now    = time();
 
     if ($class->triggerstartdate == RESULTS_ENGINE_AFTER_START) {
         if ($class->startdate <= 0) {
             print_string('no_start_date_set', RESULTS_ENGINE_LANG_FILE, $class);
         }
-        if ($now < $class->startdate + $offset) {
-            $proceed = true;
-        }
+        $class->scheduleddate = $class->startdate + $offset;
     } else {
         if ($class->enddate <= 0) {
             print_string('no_end_date_set', RESULTS_ENGINE_LANG_FILE, $class);
@@ -97,13 +95,13 @@ function results_engine_check($class) {
         if ($class->triggerstartdate == RESULTS_ENGINE_BEFORE_END) {
             $offset = -$offset;
         }
-
-        if ($now < $class->startdate + $offset) {
-            $proceed = true;
-        }
+        $class->scheduleddate = $class->enddate + $offset;
+    }
+    if ($class->rundate > $class->scheduleddate) {
+        $class->proceed = true;
     }
 
-    return $proceed;
+    return $class;
 }
 
 /**
@@ -167,11 +165,67 @@ function results_engine_get_active() {
  *   id               - id of class
  *   criteriatype     - what mark to look at, 0 for final mark, anything else is an element id
  *   engineid         - id of results engine entry
+ *   scheduleddate    - date when it was supposed to run
+ *   rundate          - date when it is being run
  *
  * @param $class object The class object see above for required attributes
+ * @uses $CFG
  */
 function results_engine_process($class) {
-    $query = 'SELECT actiontype, minimum, maximum, trackid, fieldid, fieldata'
-           ." FROM {$CFG->prefix}crlm_results_engine_action"
-           .' WHERE resultengineid=?';
+    global $CFG, $DB;
+
+    $class->average = 0;
+
+    $params = array('classid' => $class->id);
+    $fields = 'userid, grade';
+    $students = $DB->get_records('crlm_class_enrolment', $params, '', $fields);
+
+    if ($class->criteriatype > 0) {
+        $grades = $DB->get_records('crlm_class_graded', $params, '', 'grade');
+    } else {
+        $grades = $students;
+    }
+
+    $count   = 0;
+
+    foreach ($grades as $grade) {
+        $class->average += $grade->grade;
+        $count += 1;
+    }
+
+    if ($count > 0) {
+        $class->average = $class->average / $count;
+    }
+
+    $params = array('resultengineid' => $class->engineid);
+    $fields = 'id, actiontype, minimum, maximum, trackid, fieldid, fieldata';
+    $actions = $DB->get_records('crlm_results_engine_action', $params, '', $fields);
+
+    $do = null;
+
+    foreach ($actions as $action) {
+        if (($average >= $action->minimum) && ($average <= $action->maximum)) {
+            $do = $action;
+        }
+    }
+
+    print_string('class_average_generated', RESULTS_ENGINE_LANG_FILE, $class);
+
+    $obj = new object();
+    $obj->classid = $class->id;
+    $obj->datescheduled = $class->scheduleddate;
+    $obj->daterun = $class->rundate;
+    $classlogid = $DB->insert_record('crlm_results_engine_class_log', $obj);
+
+    if ($do != null) {
+        $obj = new object();
+        $ojb->classlogid = $classlogid;
+        $obj->action     = $do->id;
+        $obj->daterun    = $class->rundate;
+
+        foreach ($students as $student) {
+            $obj->userid = $student->userid;
+            $DB->insert_record('crlm_results_engine_student_log', $obj, false);
+        }
+    }
 }
