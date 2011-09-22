@@ -940,7 +940,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
 
         require_once(elispm::lib('data/customfield.class.php'));
         // make sure all ELIS users have a context
-        update_capabilities('elis/program');
+        update_capabilities('elis_program');
         $ctxlvl = context_level_base::get_custom_context_level('user', 'elis_program');
         $rs = get_recordset('crlm_user');
         foreach ($rs as $rec) {

@@ -88,8 +88,8 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:config',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -101,11 +101,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:managecurricula',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -117,11 +117,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:curriculum:view',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -131,11 +131,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:curriculum:create',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -145,11 +145,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:curriculum:edit',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -159,11 +159,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:curriculum:delete',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -173,11 +173,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:curriculum:enrol',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -188,11 +188,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:track:view',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -201,11 +201,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:track:create',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -214,11 +214,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:track:edit',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -227,11 +227,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:track:delete',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -240,11 +240,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:track:enrol',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -255,11 +255,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:cluster:view',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -268,11 +268,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:cluster:create',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -281,11 +281,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:cluster:edit',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -294,11 +294,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:cluster:delete',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -307,11 +307,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:cluster:enrol',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -323,11 +323,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:course:view',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -337,11 +337,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:course:create',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -351,11 +351,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:course:edit',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -365,11 +365,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:course:delete',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -381,11 +381,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:class:view',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -395,11 +395,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:class:create',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -409,11 +409,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:class:edit',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -423,11 +423,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:class:delete',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -437,11 +437,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:class:enrol',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -453,8 +453,8 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:user:view',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -464,8 +464,8 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:user:create',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -475,8 +475,8 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:user:edit',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -486,8 +486,8 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:user:delete',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -499,11 +499,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:viewreports',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -513,8 +513,8 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:viewgroupreports',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -523,10 +523,10 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:viewownreports',
-        'legacy' => array(
+        'archetypes' => array(
             'user' => CAP_ALLOW,
             //'student' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -538,11 +538,11 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:managefiles',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -554,11 +554,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:notify_trackenrol',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
             //'coursecreator' => CAP_PREVENT,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -568,11 +568,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'clonepermissionsfrom' => 'block/curr_admin:notify_classenrol',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -582,11 +582,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'clonepermissionsfrom' => 'block/curr_admin:notify_classcomplete',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -596,11 +596,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'clonepermissionsfrom' => 'block/curr_admin:notify_classnotstart',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -610,11 +610,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'clonepermissionsfrom' => 'block/curr_admin:notify_classnotcomplete',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_ALLOW,
             //'editingteacher' => CAP_ALLOW,
             //'coursecreator' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -624,11 +624,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:notify_courserecurrence',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
             //'coursecreator' => CAP_PREVENT,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -638,11 +638,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:notify_curriculumrecurrence',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
             //'coursecreator' => CAP_PREVENT,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -652,11 +652,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:notify_curriculumcomplete',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
             //'coursecreator' => CAP_PREVENT,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -666,11 +666,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:notify_curriculumnotcomplete',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
             //'coursecreator' => CAP_PREVENT,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -680,11 +680,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:notify_curriculumdue',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
             //'coursecreator' => CAP_PREVENT,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -694,11 +694,11 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:notify_coursedue',
-        'legacy' => array(
+        'archetypes' => array(
             //'teacher' => CAP_PREVENT,
             //'editingteacher' => CAP_PREVENT,
             //'coursecreator' => CAP_PREVENT,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -710,8 +710,8 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:curriculum:enrol_cluster_user',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -720,8 +720,8 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:track:enrol_cluster_user',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -730,8 +730,8 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:cluster:enrol_cluster_user',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -741,8 +741,8 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:class:enrol_cluster_user',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
     ),
 
@@ -753,7 +753,7 @@ $capabilities = array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:viewcoursecatalog',
-        'legacy' => array(
+        'archetypes' => array(
             'user' => CAP_ALLOW,
             //'student' => CAP_ALLOW
         )
@@ -763,8 +763,8 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:overrideclasslimit',
-        'legacy' => array(
-                'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
      ),
 
@@ -778,8 +778,8 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:associate',
-        'legacy' => array(
-            'admin' => CAP_ALLOW
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
         )
      )
 );

@@ -28,7 +28,14 @@ function xmldb_elis_program_install() {
     global $CFG;
 
     require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
+    require_once($CFG->dirroot.'/elis/program/lib/lib.php');
+
     //make sure the site has exactly one curr admin block instance
     //that is viewable everywhere
     block_curr_admin_create_instance();
+
+    // make sure that the manager role can be assigned to all PM context levels
+    update_capabilities('elis_program'); // load context levels
+    pm_ensure_role_assignable('manager');
+    pm_ensure_role_assignable('curriculumadmin');
 }

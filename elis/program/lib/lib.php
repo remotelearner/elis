@@ -1199,3 +1199,25 @@ function pm_migrate_environments() {
         }
     }
 }
+
+/**
+ * Ensures that a role is assignable to all the PM context levels
+ */
+function pm_ensure_role_assignable($role) {
+    global $DB;
+    if (!is_numeric($role)) {
+        $role = $DB->get_field('role', 'id', array('shortname' => $role));
+    }
+    if ($role) {
+        $sql = "INSERT INTO {role_context_levels}
+                       (roleid, contextlevel)
+                SELECT $role AS roleid, ctxlvl.id + 1000 AS contextlevel
+                  FROM {context_levels} ctxlvl
+             LEFT JOIN {role_context_levels} rcl
+                       ON rcl.contextlevel = ctxlvl.id + 1000
+                       AND rcl.roleid = $role
+                 WHERE ctxlvl.component='elis_program'
+                   AND rcl.id IS NULL";
+        $DB->execute($sql);
+    }
+}
