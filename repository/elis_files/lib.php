@@ -507,7 +507,7 @@ class repository_elis_files extends repository {
      * @return array
      */
     public function search($search_text, $page = 1, $categories = NULL) {
-        global $OUTPUT, $DB;
+        global $OUTPUT, $DB, $COURSE, $USER;
 
         /* old code
         $space = optional_param('space', 'workspace://SpacesStore', PARAM_RAW);
@@ -521,7 +521,50 @@ class repository_elis_files extends repository {
         */
 
         $ret = array();
+        $shared = '';
 
+        // Set id
+        if (!empty($USER->id)) {
+            $id = $USER->id;
+        }
+        if (!empty($COURSE->id)) {
+            $id = $COURSE->id;
+        }
+       // setting userid...
+        if ($this->context->contextlevel === CONTEXT_USER) {
+            $userid = $USER->id;
+        } else {
+            $userid = '';
+        }
+
+        if (empty($uuid)) {
+            if ($ruuid = $this->elis_files->get_repository_location($COURSE->id, $userid, $shared, $this->context)) {
+                $uuid = $ruuid;
+            } else if ($duuid = $this->elis_files->get_default_browsing_location($COURSE->id, $userid, $shared, $this->context)) {
+                $uuid = $duuid;
+            }
+            $uuuid = $this->elis_files->get_user_store($USER->id);
+            if ($uuid == $uuuid) {
+                $uid = $USER->id;
+            } else {
+                $uid = 0;
+            }
+        } else {
+            $uuuid = $this->elis_files->get_user_store($USER->id);
+            if ($uuid == $uuuid) {
+                $uid = $USER->id;
+            } else {
+                $uid = 0;
+            }
+            if ($this->elis_files->permission_check($uuid, $uid, false)) {
+                $this->elis_files->get_repository_location($COURSE->id, $userid, $shared, $this->context);
+            }
+        }
+
+        $canedit = repository_elis_files::check_editing_permissions($this->context, $COURSE->id, $uuid, $uid);
+
+        $ret['canedit'] = $canedit;
+        $ret['uid'] = $uid;
         $ret['detailcols'] = array(array('field'=>'created',
                                          'title'=>get_string('datecreated','repository_elis_files')),
                                    array('field'=>'modified',
@@ -532,7 +575,7 @@ class repository_elis_files extends repository {
         $ret['dynload'] = true;
         $ret['nologin'] = true;
         $ret['showselectedactions'] = true;
-        $ret['showcurrentactions'] = true;
+        $ret['showcurrentactions'] = false;
         $ret['list'] = array();
 
         if (!empty($search_text)) {
