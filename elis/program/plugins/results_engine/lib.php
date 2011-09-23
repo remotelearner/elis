@@ -26,7 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(dirname(__FILE__) .'/../../lib/setup.php');
+require_once elispm::lib('data/usertrack.class.php');
+
 
 define('RESULTS_ENGINE_LANG_FILE', 'pmplugins_results_engine');
 
@@ -41,6 +42,9 @@ define('RESULTS_ENGINE_AFTER_START', 1);
 define('RESULTS_ENGINE_BEFORE_END',  2);
 define('RESULTS_ENGINE_AFTER_END',   3);
 
+define('RESULTS_ENGINE_ASSIGN_TRACK',   1);
+define('RESULTS_ENGINE_ASSIGN_CLASS',   2);
+define('RESULTS_ENGINE_UPDATE_PROFILE', 3);
 
 /**
  * Check if class results are ready to processed and if so process them
@@ -62,6 +66,36 @@ function results_engine_cron() {
         }
     }
 }
+
+/**
+ * Calculate the class average
+ *
+ * Class properties:
+ *   id               - id of class
+ *   criteriatype     - what mark to look at, 0 for final mark, anything else is an element id
+ *   engineid         - id of results engine entry
+ *   scheduleddate    - date when it was supposed to run
+ *   rundate          - date when it is being run
+ *
+ * @param $class object The class object see above for required attributes
+ * @uses $CFG
+ */
+function results_engine_average($grades) {
+    $average = 0;
+    $count   = 0;
+
+    foreach ($grades as $grade) {
+        $average += $grade->grade;
+        $count += 1;
+    }
+
+    if ($count > 0) {
+        $average = $class->average / $count;
+    }
+
+    return $average;
+}
+
 
 /**
  * Check if this class is ready to be processed
@@ -174,8 +208,6 @@ function results_engine_get_active() {
 function results_engine_process($class) {
     global $CFG, $DB;
 
-    $class->average = 0;
-
     $params = array('classid' => $class->id);
     $fields = 'userid, grade';
     $students = $DB->get_records('crlm_class_enrolment', $params, '', $fields);
@@ -186,23 +218,16 @@ function results_engine_process($class) {
         $grades = $students;
     }
 
-    $count   = 0;
-
-    foreach ($grades as $grade) {
-        $class->average += $grade->grade;
-        $count += 1;
-    }
-
-    if ($count > 0) {
-        $class->average = $class->average / $count;
-    }
+    // Calculate the class average
+    $class->average = results_engine_average($grades);
 
     $params = array('resultengineid' => $class->engineid);
-    $fields = 'id, actiontype, minimum, maximum, trackid, fieldid, fieldata';
+    $fields = 'id, actiontype, minimum, maximum, trackid, trackid as classid, fieldid, fieldata';
     $actions = $DB->get_records('crlm_results_engine_action', $params, '', $fields);
 
     $do = null;
 
+    // Find the correct action to take based on class average
     foreach ($actions as $action) {
         if (($average >= $action->minimum) && ($average <= $action->maximum)) {
             $do = $action;
@@ -211,12 +236,57 @@ function results_engine_process($class) {
 
     print_string('class_average_generated', RESULTS_ENGINE_LANG_FILE, $class);
 
+    if ($do != null) {
+
+        switch($do->actiontype) {
+
+            case RESULTS_ENGINE_ASSIGN_TRACK:
+
+                foreach ($students as $student) {
+                    user_track::enrol($student->userid, $do->trackid);
+                }
+                break;
+
+            case RESULTS_ENGINE_ASSIGN_CLASS:
+                $enrol = new student();
+                $enrol->classid = $do->classid;
+
+                foreach ($students as $student) {
+                    $enrol->userid  = $student->userid;
+                    $enrol->save();
+                }
+                break;
+
+            case RESULTS_ENGINE_UPDATE_PROFILE:
+                $fields = $DB->get_records('user_info_field');
+                $field = $fields[$do->fieldid];
+                require_once($CFG->dirroot.'/user/profile/field/'. $field->datatype .'/field.class.php');
+                $newfield = 'profile_field_'. $field->datatype;
+                $profilefield = new $newfield($field->id, 0);
+                $inputname = $profilefield->inputname;
+                $record = new object();
+                $record->$inputname = $do['fielddata'];
+
+                foreach ($students as $student) {
+                    $profilefield->set_userid($student->userid);
+                    $profilefield->edit_save_data($record);
+                }
+                break;
+
+            default:
+                // If we don't know what we're doing, do nothing.
+                break;
+        }
+    }
+
+    // Log that the class has been processed
     $obj = new object();
     $obj->classid = $class->id;
     $obj->datescheduled = $class->scheduleddate;
     $obj->daterun = $class->rundate;
     $classlogid = $DB->insert_record('crlm_results_engine_class_log', $obj);
 
+    // If an action was to be taken, log the action for the students.
     if ($do != null) {
         $obj = new object();
         $ojb->classlogid = $classlogid;
