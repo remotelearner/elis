@@ -27,6 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once elispm::lib('data/usertrack.class.php');
+require_once elis::lib('data/customfield.class.php');
 
 
 define('RESULTS_ENGINE_LANG_FILE', 'pmplugins_results_engine');
@@ -68,36 +69,6 @@ function results_engine_cron() {
 }
 
 /**
- * Calculate the class average
- *
- * Class properties:
- *   id               - id of class
- *   criteriatype     - what mark to look at, 0 for final mark, anything else is an element id
- *   engineid         - id of results engine entry
- *   scheduleddate    - date when it was supposed to run
- *   rundate          - date when it is being run
- *
- * @param $class object The class object see above for required attributes
- * @uses $CFG
- */
-function results_engine_average($grades) {
-    $average = 0;
-    $count   = 0;
-
-    foreach ($grades as $grade) {
-        $average += $grade->grade;
-        $count += 1;
-    }
-
-    if ($count > 0) {
-        $average = $class->average / $count;
-    }
-
-    return $average;
-}
-
-
-/**
  * Check if this class is ready to be processed
  *
  * Class properties:
@@ -118,12 +89,14 @@ function results_engine_check($class) {
 
     if ($class->triggerstartdate == RESULTS_ENGINE_AFTER_START) {
         if ($class->startdate <= 0) {
-            print_string('no_start_date_set', RESULTS_ENGINE_LANG_FILE, $class);
+            print(get_string('no_start_date_set', RESULTS_ENGINE_LANG_FILE, $class));
+            return $class;
         }
         $class->scheduleddate = $class->startdate + $offset;
     } else {
         if ($class->enddate <= 0) {
-            print_string('no_end_date_set', RESULTS_ENGINE_LANG_FILE, $class);
+            print(get_string('no_end_date_set', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
+            return $class;
         }
 
         if ($class->triggerstartdate == RESULTS_ENGINE_BEFORE_END) {
@@ -208,94 +181,96 @@ function results_engine_get_active() {
 function results_engine_process($class) {
     global $CFG, $DB;
 
-    $params = array('classid' => $class->id);
-    $fields = 'userid, grade';
-    $students = $DB->get_records('crlm_class_enrolment', $params, '', $fields);
+    $userlevel = context_level_base::get_custom_context_level('course', 'elis_program');
+    $params    = array('classid' => $class->id);
+    $fields    = 'userid, grade';
+    $students  = $DB->get_records('crlm_class_enrolment', $params, '', $fields);
 
     if ($class->criteriatype > 0) {
         $grades = $DB->get_records('crlm_class_graded', $params, '', 'grade');
-    } else {
-        $grades = $students;
+        foreach ($students as $student) {
+            $student->grade = 0;
+            if (array_key_exists($student->userid, $grades)) {
+                $student->grade = $grades[$student->userid]->grade;
+            }
+        }
     }
-
-    // Calculate the class average
-    $class->average = results_engine_average($grades);
 
     $params = array('resultengineid' => $class->engineid);
-    $fields = 'id, actiontype, minimum, maximum, trackid, trackid as classid, fieldid, fieldata';
+    $fields = 'id, actiontype, minimum, maximum, trackid, classid, fieldid, fieldata';
     $actions = $DB->get_records('crlm_results_engine_action', $params, '', $fields);
 
-    $do = null;
+    $fields= array();
 
-    // Find the correct action to take based on class average
     foreach ($actions as $action) {
-        if (($average >= $action->minimum) && ($average <= $action->maximum)) {
-            $do = $action;
+        if ($action->actiontype == RESULTS_ENGINE_UPDATE_PROFILE) {
+            $fields[] = $action->fieldid;
         }
     }
 
-    print_string('class_average_generated', RESULTS_ENGINE_LANG_FILE, $class);
+    $userfields = $DB->get_records_list('elis_field', 'id', $fields, '', 'id, datatype');
 
-    if ($do != null) {
-
-        switch($do->actiontype) {
-
-            case RESULTS_ENGINE_ASSIGN_TRACK:
-
-                foreach ($students as $student) {
-                    user_track::enrol($student->userid, $do->trackid);
-                }
-                break;
-
-            case RESULTS_ENGINE_ASSIGN_CLASS:
-                $enrol = new student();
-                $enrol->classid = $do->classid;
-
-                foreach ($students as $student) {
-                    $enrol->userid  = $student->userid;
-                    $enrol->save();
-                }
-                break;
-
-            case RESULTS_ENGINE_UPDATE_PROFILE:
-                $fields = $DB->get_records('user_info_field');
-                $field = $fields[$do->fieldid];
-                require_once($CFG->dirroot.'/user/profile/field/'. $field->datatype .'/field.class.php');
-                $newfield = 'profile_field_'. $field->datatype;
-                $profilefield = new $newfield($field->id, 0);
-                $inputname = $profilefield->inputname;
-                $record = new object();
-                $record->$inputname = $do['fielddata'];
-
-                foreach ($students as $student) {
-                    $profilefield->set_userid($student->userid);
-                    $profilefield->edit_save_data($record);
-                }
-                break;
-
-            default:
-                // If we don't know what we're doing, do nothing.
-                break;
-        }
+    foreach ($userfields as $userfield) {
+        $fieldname    = 'field_data_'. $userfield->datatype;
+        $customfields[$userfield->datatype] = new $fieldname($userfield);
     }
 
     // Log that the class has been processed
-    $obj = new object();
-    $obj->classid = $class->id;
-    $obj->datescheduled = $class->scheduleddate;
-    $obj->daterun = $class->rundate;
-    $classlogid = $DB->insert_record('crlm_results_engine_class_log', $obj);
+    $log = new object();
+    $log->classid       = $class->id;
+    $log->datescheduled = $class->scheduleddate;
+    $log->daterun       = $class->rundate;
+    $classlogid = $DB->insert_record('crlm_results_engine_class_log', $log);
 
-    // If an action was to be taken, log the action for the students.
-    if ($do != null) {
-        $obj = new object();
-        $ojb->classlogid = $classlogid;
-        $obj->action     = $do->id;
-        $obj->daterun    = $class->rundate;
+    $log = new object();
+    $log->classlogid = $classlogid;
+    $log->daterun    = $class->rundate;
 
-        foreach ($students as $student) {
-            $obj->userid = $student->userid;
-            $DB->insert_record('crlm_results_engine_student_log', $obj, false);
+    // Find the correct action to take based on student marks
+    foreach ($students as $student) {
+        $do = null;
+
+        foreach ($actions as $action) {
+
+            if (($student->grade >= $action->minimum) && ($student->grade <= $action->maximum)) {
+                $do = $action;
+                break;
+            }
+        }
+
+        if ($do != null) {
+
+            switch($do->actiontype) {
+
+                case RESULTS_ENGINE_ASSIGN_TRACK:
+                    usertrack::enrol($student->userid, $do->trackid);
+                    break;
+
+                case RESULTS_ENGINE_ASSIGN_CLASS:
+                    $enrol = new student();
+                    $enrol->classid = $do->classid;
+                    $enrol->userid  = $student->userid;
+                    $enrol->save();
+                    break;
+
+                case RESULTS_ENGINE_UPDATE_PROFILE:
+                    if (! array_key_exists($do->fieldid, $userfields)) {
+                        print(get_string('field_not_found', RESULTS_ENGINE_LANG_FILE, $do) ."\n");
+                        break;
+                    }
+                    $context = get_context_instance($userlevel, $student->userid);
+                    field_data::set_for_context_and_field($context, $customfields[$userfields[$do->fieldid]->datatype], $do->fieldata);
+                    break;
+
+                default:
+                    // If we don't know what we're doing, do nothing.
+                    break;
+            }
+            $log->action     = $do->id;
+            $log->userid     = $student->userid;
+            $DB->insert_record('crlm_results_engine_student_log', $log, false);
         }
     }
+
+    print(get_string('class_processed', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
 }
