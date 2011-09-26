@@ -35,6 +35,9 @@ require_once elispm::lib('page.class.php');
  *
  */
 class dashboardpage extends pm_page {
+    // Arrays for which components last cron runtimes to include
+    private $blocks = array(); // empty array for none; 'curr_admin' ?
+    private $plugins = array(); // TBD: 'elis_program', 'elis_core' ?
 
     /**
      * Determines whether or not the current user can navigate to the
@@ -60,6 +63,29 @@ class dashboardpage extends pm_page {
         return $url;
     }
 
+    function last_cron_runtimes() {
+        global $DB;
+        $description = '';
+        foreach ($this->blocks as $block) {
+            $a = new stdClass;
+            $a->name = $block;
+            $lastcron = $DB->get_field('block', 'lastcron', array('name' => $block));
+            $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'elis_program');
+            $description .= get_string('health_cron_block', 'elis_program', $a);
+        }
+        foreach ($this->plugins as $plugin) {
+            $a = new stdClass;
+            $a->name = $plugin;
+            $lastcron = $DB->get_field('config_plugins', 'value', array('plugin' => $plugin, 'name' => 'lastcron'));
+            $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'elis_program');
+            $description .= get_string('health_cron_plugin', 'elis_program', $a);
+        }
+        $lasteliscron = $DB->get_field('elis_scheduled_tasks', 'MAX(lastruntime)', array());
+        $lastcron = $lasteliscron ? userdate($lasteliscron) : get_string('cron_notrun', 'elis_program');
+        $description .= get_string('health_cron_elis', 'elis_program', $lastcron);
+        return $description;
+    }
+
     function display_default() {
         global $CFG, $USER, $OUTPUT;
 
@@ -67,6 +93,7 @@ class dashboardpage extends pm_page {
         if (has_capability('elis/program:manage', $context) || has_capability('elis/program:config', $context)) {
             echo $OUTPUT->heading(get_string('admin_dashboard', 'elis_program'));
             echo $OUTPUT->box(html_writer::tag('p', get_string('elis_doc_class_link', 'elis_program')));
+            echo $OUTPUT->box(html_writer::tag('p', $this->last_cron_runtimes()));
             echo $OUTPUT->box(html_writer::tag('p', get_string('health_check_link', 'elis_program', $CFG)));
             echo html_writer::tag('p', get_string('elispmversion', 'elis_program', elispm::$release));
             echo html_writer::tag('p', get_string('elisversion', 'elis_core', elis::$release));

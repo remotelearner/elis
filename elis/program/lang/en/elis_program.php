@@ -430,9 +430,9 @@ $string['health_completiondesc'] = 'The Completion Export block, which conflicts
 $string['health_completionsoln'] = 'The completion export block should be automatically removed when the site is properly upgraded via CVS or git.
 If it is still present, go to the <a href="{$a->wwwroot}/admin/blocks.php">Manage blocks</a> page and delete the completion export block,
 and then remove the <tt>{$a->dirroot}/blocks/completion_export</tt> directory.';
-$string['health_cron_block'] = 'Block \'{$a->name}\' last run: {$a->lastcron}<br/>';
-$string['health_cron_elis'] = 'ELIS scheduled tasks last run: {$a}';
-$string['health_cron_plugin'] = 'Plugin \'{$a->name}\' last run: {$a->lastcron}<br/>';
+$string['health_cron_block'] = '<b>Block \'{$a->name}\' last run:</b> {$a->lastcron}<br/>';
+$string['health_cron_elis'] = '<b>ELIS scheduled tasks last run:</b> {$a}';
+$string['health_cron_plugin'] = '<b>Plugin \'{$a->name}\' last run:</b> {$a->lastcron}<br/>';
 $string['health_cron_title'] = 'Last cron run times';
 $string['health_curriculum'] = 'Stale ELIS Course Description - Moodle Program record';
 $string['health_curriculumdesc'] = 'There are {$a->count} records in the {$a->table} table referencing nonexistent ELIS course descriptions';

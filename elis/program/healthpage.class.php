@@ -535,23 +535,30 @@ class cron_lastruntimes_check extends crlm_health_check_base {
     function description() {
         global $DB;
         $description = '';
+        $threshold = time() - DAYSECS;
         foreach ($this->blocks as $block) {
-            $a = new stdClass;
-            $a->name = $block;
             $lastcron = $DB->get_field('block', 'lastcron', array('name' => $block));
-            $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'elis_program');
-            $description .= get_string('health_cron_block', 'elis_program', $a);
+            if ($lastcron < $threshold) {
+                $a = new stdClass;
+                $a->name = $block;
+                $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'elis_program');
+                $description .= get_string('health_cron_block', 'elis_program', $a);
+            }
         }
         foreach ($this->plugins as $plugin) {
-            $a = new stdClass;
-            $a->name = $plugin;
             $lastcron = $DB->get_field('config_plugins', 'value', array('plugin' => $plugin, 'name' => 'lastcron'));
-            $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'elis_program');
-            $description .= get_string('health_cron_plugin', 'elis_program', $a);
+            if ($lastcron < $threshold) {
+                $a = new stdClass;
+                $a->name = $plugin;
+                $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'elis_program');
+                $description .= get_string('health_cron_plugin', 'elis_program', $a);
+            }
         }
         $lasteliscron = $DB->get_field('elis_scheduled_tasks', 'MAX(lastruntime)', array());
-        $lastcron = $lasteliscron ? userdate($lasteliscron) : get_string('cron_notrun', 'elis_program');
-        $description .= get_string('health_cron_elis', 'elis_program', $lastcron);
+        if ($lasteliscron < $threshold) {
+            $lastcron = $lasteliscron ? userdate($lasteliscron) : get_string('cron_notrun', 'elis_program');
+            $description .= get_string('health_cron_elis', 'elis_program', $lastcron);
+        }
         return $description;
     }
 
