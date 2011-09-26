@@ -33,7 +33,7 @@ require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php');
 require_once elispm::lib('data/pmclass.class.php');
 
-define ('ENGINETABLE', 'crlm_results_engine');
+define ('ENGINETABLE', 'crlm_results');
 
 class resultsengine extends elis_data_object {
     const TABLE = ENGINETABLE;
@@ -49,6 +49,7 @@ class resultsengine extends elis_data_object {
     protected $_dbfield_eventtriggertype;
     protected $_dbfield_lockedgrade;
     protected $_dbfield_triggerstartdate;
+    protected $_dbfield_days;
     protected $_dbfield_criteriatype;
 
     /**

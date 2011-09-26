@@ -35,21 +35,22 @@ function xmldb_pmplugins_results_engine_upgrade($oldversion=0) {
     if ($oldversion < 2011091601) {
 
         /// table
-        $table = new xmldb_table('crlm_results_engine');
+        $table = new xmldb_table('crlm_results');
 
         /// Adding fields
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE);
         $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, true);
-        $table->add_field('active', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
-        $table->add_field('eventtriggertype', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
-        $table->add_field('lockedgrade', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
-        $table->add_field('triggerstartdate', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
-        $table->add_field('criteriatype', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('active', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
+        $table->add_field('eventtriggertype', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
+        $table->add_field('lockedgrade', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
+        $table->add_field('triggerstartdate', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
+        $table->add_field('days', XMLDB_TYPE_INTEGER, '2', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
+        $table->add_field('criteriatype', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
 
 
         /// Adding keys and index
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        //$table->add_index('rs_contextid', XMLDB_INDEX_UNIQUE, array('contextid'));
+        $table->add_index('contextid_idx', XMLDB_INDEX_UNIQUE, array('contextid'));
 
 
         /// Create table
@@ -58,23 +59,23 @@ function xmldb_pmplugins_results_engine_upgrade($oldversion=0) {
         }
 
         /// table
-        $table = new xmldb_table('crlm_results_engine_action');
+        $table = new xmldb_table('crlm_results_action');
 
         if (!$dbman->table_exists($table)) {
             /// Adding fields
-            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', false, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE);
             $table->add_field('resultengineid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
-            $table->add_field('actiontype', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL);
-            $table->add_field('minimum', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
-            $table->add_field('maximum', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
-            $table->add_field('trackid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
-            $table->add_field('classid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
-            $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+            $table->add_field('actiontype', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
+            $table->add_field('minimum', XMLDB_TYPE_INTEGER, '10', XMLDB_SIGNED, XMLDB_NOTNULL);
+            $table->add_field('maximum', XMLDB_TYPE_INTEGER, '10', XMLDB_SIGNED, XMLDB_NOTNULL);
+            $table->add_field('trackid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
+            $table->add_field('classid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
+            $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
             $table->add_field('fieldata', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL);
 
             /// Adding keys and index
             $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-            $table->add_index('rs_resultengineid', XMLDB_INDEX_NOTUNIQUE, array('resultengineid'));
+            $table->add_index('resultengineid_idx', XMLDB_INDEX_NOTUNIQUE, array('resultengineid'));
 
             /// Create table
             $result = $result and $dbman->create_table($table);
@@ -90,7 +91,7 @@ function xmldb_pmplugins_results_engine_upgrade($oldversion=0) {
         }
 
         /// table
-        $table = new xmldb_table('crlm_results_engine_class_log');
+        $table = new xmldb_table('crlm_results_class_log');
 
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', false, XMLDB_NOTNULL, XMLDB_SEQUENCE);
         $table->add_field('classid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
@@ -99,7 +100,7 @@ function xmldb_pmplugins_results_engine_upgrade($oldversion=0) {
 
         /// Adding keys and index
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_index('rs_classid', XMLDB_INDEX_NOTUNIQUE, array('classid'));
+        $table->add_index('classid_idx', XMLDB_INDEX_NOTUNIQUE, array('classid'));
 
         /// Create table
         if (!$dbman->table_exists($table)) {
@@ -107,7 +108,7 @@ function xmldb_pmplugins_results_engine_upgrade($oldversion=0) {
         }
 
         /// table
-        $table = new xmldb_table('crlm_results_engine_student_log');
+        $table = new xmldb_table('crlm_results_student_log');
 
         /// Adding keys and index
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', false, XMLDB_NOTNULL, XMLDB_SEQUENCE);
@@ -118,7 +119,7 @@ function xmldb_pmplugins_results_engine_upgrade($oldversion=0) {
 
         /// Adding keys and index
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_index('rs_classlogid', XMLDB_INDEX_NOTUNIQUE, array('classlogid'));
+        $table->add_index('classlogid_idx', XMLDB_INDEX_NOTUNIQUE, array('classlogid'));
 
         /// Create table
         if (!$dbman->table_exists($table)) {

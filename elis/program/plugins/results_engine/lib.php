@@ -82,11 +82,11 @@ function results_engine_manual($id) {
     $classlevel = context_level_base::get_custom_context_level('class', 'elis_program');
     $params = array($classlevel, $id);
 
-    $sql = 'SELECT cc.id, cc.startdate, cc.enddate, cre.eventtriggertype, cre.criteriatype,'
-         .       ' cre.id as engineid, cre.triggerstartdate, 0 as days'
+    $sql = 'SELECT cc.id, cc.idnumber, cc.startdate, cc.enddate, cr.eventtriggertype,'
+         .       ' cr.criteriatype, cr.id as engineid, cr.triggerstartdate, cr.days'
          .' FROM {crlm_class} cc'
          .' JOIN {context} c ON c.instanceid=cc.id AND c.contextlevel=?'
-         .' JOIN {crlm_results_engine} cre ON cre.contextid=c.id'
+         .' JOIN {crlm_results} cr ON cr.contextid=c.id'
          .' WHERE cc.id=?';
 
     $class = $DB->get_record_sql($sql, $params);
@@ -123,13 +123,17 @@ function results_engine_check($class) {
 
     if ($class->triggerstartdate == RESULTS_ENGINE_AFTER_START) {
         if ($class->startdate <= 0) {
-            print(get_string('no_start_date_set', RESULTS_ENGINE_LANG_FILE, $class));
+            if (isset($class->cron) && $class->cron) {
+                print(get_string('no_start_date_set', RESULTS_ENGINE_LANG_FILE, $class));
+            }
             return $class;
         }
         $class->scheduleddate = $class->startdate + $offset;
     } else {
         if ($class->enddate <= 0) {
-            print(get_string('no_end_date_set', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
+            if (isset($class->cron) && $class->cron) {
+                print(get_string('no_end_date_set', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
+            }
             return $class;
         }
 
@@ -165,31 +169,31 @@ function results_engine_get_active() {
     $courselevel = context_level_base::get_custom_context_level('course', 'elis_program');
     $classlevel  = context_level_base::get_custom_context_level('class', 'elis_program');
 
-    $fields = array('cls.id', 'cls.idnumber', 'cls.startdate', 'cls.enddate',  'cre.id as engineid',
-                    'cre.eventtriggertype', 'cre.triggerstartdate', 'cre.criteriatype',
-                    'cre.lockedgrade', '0 as days');
+    $fields = array('cls.id', 'cls.idnumber', 'cls.startdate', 'cls.enddate',  'cr.id as engineid',
+                    'cr.eventtriggertype', 'cr.triggerstartdate', 'cr.criteriatype',
+                    'cr.lockedgrade', 'cr.days');
 
     // Get course level instances that have not been overriden or already run.
     $sql = 'SELECT '. implode(', ', $fields)
-         .' FROM {crlm_results_engine} cre'
-         .' JOIN {context} c ON c.id = cre.contextid AND c.contextlevel=?'
+         .' FROM {crlm_results} cr'
+         .' JOIN {context} c ON c.id = cr.contextid AND c.contextlevel=?'
          .' JOIN {crlm_course} cou ON cou.id = c.instanceid'
          .' JOIN {crlm_class} cls ON cls.courseid = cou.id'
          .' JOIN {context} c2 on c2.instanceid=cls.id AND c2.contextlevel=?'
-         .' LEFT JOIN {crlm_results_engine} cre2 ON cre2.contextid=c2.id AND cre2.active=1'
-         .' LEFT JOIN {crlm_results_engine_class_log} crecl ON crecl.classid=cls.id'
-         .' WHERE cre.active=1'
-         .  ' AND ((cre.eventtriggertype = ? AND crecl.daterun IS NULL) OR cre.eventtriggertype=?)'
-         .  ' AND cre2.active IS NULL'
+         .' LEFT JOIN {crlm_results} cr2 ON cr2.contextid=c2.id AND cr2.active=1'
+         .' LEFT JOIN {crlm_results_class_log} crcl ON crcl.classid=cls.id'
+         .' WHERE cr.active=1'
+         .  ' AND ((cr.eventtriggertype = ? AND crcl.daterun IS NULL) OR cr.eventtriggertype=?)'
+         .  ' AND cr2.active IS NULL'
          .' UNION'
     // Get class level instances that have not been already run.
          .' SELECT '. implode(', ', $fields)
-         .' FROM {crlm_results_engine} cre'
-         .' JOIN {context} c ON c.id = cre.contextid AND c.contextlevel=?'
+         .' FROM {crlm_results} cr'
+         .' JOIN {context} c ON c.id = cr.contextid AND c.contextlevel=?'
          .' JOIN {crlm_class} cls ON cls.id = c.instanceid'
-         .' LEFT JOIN {crlm_results_engine_class_log} crecl ON crecl.classid=cls.id'
-         .' WHERE cre.active=1'
-         .  ' AND ((cre.eventtriggertype = ? AND crecl.daterun IS NULL) OR cre.eventtriggertype=?)';
+         .' LEFT JOIN {crlm_results_class_log} crcl ON crcl.classid=cls.id'
+         .' WHERE cr.active=1'
+         .  ' AND ((cr.eventtriggertype = ? AND crcl.daterun IS NULL) OR cr.eventtriggertype=?)';
 
     $params = array($courselevel, $classlevel, RESULTS_ENGINE_SCHEDULED, RESULTS_ENGINE_GRADE_SET,
                     $classlevel, RESULTS_ENGINE_SCHEDULED, RESULTS_ENGINE_GRADE_SET);
@@ -238,8 +242,8 @@ function results_engine_get_students($class) {
 
         $sql = 'SELECT '. implode(',', $fields)
              .' FROM {'. $table .'} g'
-             .' LEFT JOIN {crlm_results_engine_class_log} c ON c.classid = g.classid'
-             .' LEFT JOIN {crlm_results_engine_student_log} l ON l.userid=g.userid AND l.classlogid=c.id'
+             .' LEFT JOIN {crlm_results_class_log} c ON c.classid = g.classid'
+             .' LEFT JOIN {crlm_results_student_log} l ON l.userid=g.userid AND l.classlogid=c.id'
              .' WHERE '. implode(' AND ', $criteria) .' AND l.action IS NULL';
         $students = $DB->get_records_sql($sql);
 
@@ -289,7 +293,7 @@ function results_engine_process($class) {
 
     $params = array('resultengineid' => $class->engineid);
     $fields = 'id, actiontype, minimum, maximum, trackid, classid, fieldid, fieldata';
-    $actions = $DB->get_records('crlm_results_engine_action', $params, '', $fields);
+    $actions = $DB->get_records('crlm_results_action', $params, '', $fields);
 
     $fields= array();
 
@@ -308,7 +312,7 @@ function results_engine_process($class) {
     $log->classid       = $class->id;
     $log->datescheduled = $class->scheduleddate;
     $log->daterun       = $class->rundate;
-    $classlogid = $DB->insert_record('crlm_results_engine_class_log', $log);
+    $classlogid = $DB->insert_record('crlm_results_class_log', $log);
 
     $log = new object();
     $log->classlogid = $classlogid;
@@ -356,7 +360,7 @@ function results_engine_process($class) {
             }
             $log->action     = $do->id;
             $log->userid     = $student->userid;
-            $DB->insert_record('crlm_results_engine_student_log', $log, false);
+            $DB->insert_record('crlm_results_student_log', $log, false);
         }
     }
 
