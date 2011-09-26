@@ -135,14 +135,18 @@ class moodlecourseurl {
      *
      * @param int category course category id
      * @param int selected course id of previously selected course
+     * @uses  $CFG
+     * @uses  $ME
+     * @uses  $PAGE
+     * @uses  $OUTPUT
      */
     function displayPage($category = 0, $selected = 0) {
-        global $CFG, $PAGE, $OUTPUT;
+        global $CFG, $ME, $PAGE, $OUTPUT;
 
         $PAGE->requires->js('/elis/program/js/moodlecourseurl.js');
 
         if (!$site = get_site()) {
-            print_error('Site isn\'t defined!');
+            print_error('site_not_defined', 'elis_program');
         }
 
         $strcourses = get_string('courses');
@@ -157,9 +161,15 @@ class moodlecourseurl {
         // Build breadcrumb of course subcategories
         $navigation['navlinks'] .= $this->buildNavLinks($category,'');
 
-        $PAGE->set_pagelayout('popup'); // TBD: embedded ??? to disable blocks
-        $PAGE->set_title($site->fullname);
-        $PAGE->set_heading($site->shortname);
+        /* *** TBD *** */
+        $PAGE->set_url($ME);
+        $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+        //$PAGE->set_title($site->fullname);
+        //$PAGE->set_heading($site->shortname);
+        $PAGE->set_title(get_string('coursetemplate', 'elis_program'));
+        $PAGE->set_heading(get_string('coursetemplate', 'elis_program'));
+        $PAGE->set_pagelayout('popup');
+        $PAGE->set_pagetype('elis');
         $PAGE->set_cacheable(true);
         $PAGE->set_button('');
         echo $OUTPUT->header();
