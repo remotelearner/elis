@@ -521,7 +521,25 @@ class cron_lastruntimes_check extends crlm_health_check_base {
     private $plugins = array(); // TBD: 'elis_program', 'elis_core' ?
 
     function exists() {
-        return true;
+        global $DB;
+        $threshold = time() - DAYSECS;
+        foreach ($this->blocks as $block) {
+            $lastcron = $DB->get_field('block', 'lastcron', array('name' => $block));
+            if ($lastcron < $threshold) {
+                return true;
+            }
+        }
+        foreach ($this->plugins as $plugin) {
+            $lastcron = $DB->get_field('config_plugins', 'value', array('plugin' => $plugin, 'name' => 'lastcron'));
+            if ($lastcron < $threshold) {
+                return true;
+            }
+        }
+        $lasteliscron = $DB->get_field('elis_scheduled_tasks', 'MAX(lastruntime)', array());
+        if ($lasteliscron < $threshold) {
+            return true;
+        }
+        return false;
     }
 
     function title() {
