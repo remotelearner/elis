@@ -48,7 +48,7 @@ define('RESULTS_ENGINE_ASSIGN_CLASS',   2);
 define('RESULTS_ENGINE_UPDATE_PROFILE', 3);
 
 /**
- * Check if class results are ready to processed and if so process them
+ * Check if class results are ready to be processed and if so process them
  */
 function results_engine_cron() {
     $rununtil = time() + RESULTS_ENGINE_USERACT_TIME_LIMIT;
@@ -57,8 +57,8 @@ function results_engine_cron() {
 
     foreach ($actives as $active) {
         $active = results_engine_check($active);
-
         if ($active->proceed) {
+            $active->cron = true;
             results_engine_process($active);
         }
 
@@ -67,6 +67,40 @@ function results_engine_cron() {
         }
     }
 }
+
+/**
+ * Process an entire class manually
+ *
+ * @param int $id The id of the class to process
+ * @return boolean Success/failure
+ * @uses $CFG;
+ * @uses $DB;
+ */
+function results_engine_manual($id) {
+    global $DB;
+
+    $classlevel = context_level_base::get_custom_context_level('class', 'elis_program');
+    $params = array($classlevel, $id);
+
+    $sql = 'SELECT cc.id, cc.startdate, cc.enddate, cre.eventtriggertype, cre.criteriatype,'
+         .       ' cre.id as engineid, cre.triggerstartdate, 0 as days'
+         .' FROM {crlm_class} cc'
+         .' JOIN {context} c ON c.instanceid=cc.id AND c.contextlevel=?'
+         .' JOIN {crlm_results_engine} cre ON cre.contextid=c.id'
+         .' WHERE cc.id=?';
+
+    $class = $DB->get_record_sql($sql, $params);
+
+    if (is_object($class)) {
+        $class->cron = false;
+        // Called to generate scheduled date and rundate
+        $class = results_engine_check($class);
+
+        return results_engine_process($class);
+    }
+    return false;
+}
+
 
 /**
  * Check if this class is ready to be processed
@@ -123,11 +157,10 @@ function results_engine_check($class) {
  *   criteriatype     - what mark to look at, 0 for final mark, anything else is an element id
  *
  * @return array An array of class objects
- * @uses $CFG
  * @uses $DB
  */
 function results_engine_get_active() {
-    global $CFG, $DB;
+    global $DB;
 
     $courselevel = context_level_base::get_custom_context_level('course', 'elis_program');
     $classlevel  = context_level_base::get_custom_context_level('class', 'elis_program');
@@ -138,23 +171,23 @@ function results_engine_get_active() {
 
     // Get course level instances that have not been overriden or already run.
     $sql = 'SELECT '. implode(', ', $fields)
-         ." FROM {$CFG->prefix}crlm_results_engine cre"
-         ." JOIN {$CFG->prefix}context c ON c.id = cre.contextid AND c.contextlevel=?"
-         ." JOIN {$CFG->prefix}crlm_course cou ON cou.id = c.instanceid"
-         ." JOIN {$CFG->prefix}crlm_class cls ON cls.courseid = cou.id"
-         ." JOIN {$CFG->prefix}context c2 on c2.instanceid=cls.id AND c2.contextlevel=?"
-         ." LEFT JOIN {$CFG->prefix}crlm_results_engine cre2 ON cre2.contextid=c2.id AND cre2.active=1"
-         ." LEFT JOIN {$CFG->prefix}crlm_results_engine_class_log crecl ON crecl.classid=cls.id"
+         .' FROM {crlm_results_engine} cre'
+         .' JOIN {context} c ON c.id = cre.contextid AND c.contextlevel=?'
+         .' JOIN {crlm_course} cou ON cou.id = c.instanceid'
+         .' JOIN {crlm_class} cls ON cls.courseid = cou.id'
+         .' JOIN {context} c2 on c2.instanceid=cls.id AND c2.contextlevel=?'
+         .' LEFT JOIN {crlm_results_engine} cre2 ON cre2.contextid=c2.id AND cre2.active=1'
+         .' LEFT JOIN {crlm_results_engine_class_log} crecl ON crecl.classid=cls.id'
          .' WHERE cre.active=1'
          .  ' AND ((cre.eventtriggertype = ? AND crecl.daterun IS NULL) OR cre.eventtriggertype=?)'
          .  ' AND cre2.active IS NULL'
          .' UNION'
     // Get class level instances that have not been already run.
          .' SELECT '. implode(', ', $fields)
-         ." FROM {$CFG->prefix}crlm_results_engine cre"
-         ." JOIN {$CFG->prefix}context c ON c.id = cre.contextid AND c.contextlevel=?"
-         ." JOIN {$CFG->prefix}crlm_class cls ON cls.id = c.instanceid"
-         ." LEFT JOIN {$CFG->prefix}crlm_results_engine_class_log crecl ON crecl.classid=cls.id"
+         .' FROM {crlm_results_engine} cre'
+         .' JOIN {context} c ON c.id = cre.contextid AND c.contextlevel=?'
+         .' JOIN {crlm_class} cls ON cls.id = c.instanceid'
+         .' LEFT JOIN {crlm_results_engine_class_log} crecl ON crecl.classid=cls.id'
          .' WHERE cre.active=1'
          .  ' AND ((cre.eventtriggertype = ? AND crecl.daterun IS NULL) OR cre.eventtriggertype=?)';
 
@@ -179,11 +212,10 @@ function results_engine_get_active() {
  *
  * @param object $class The class object
  * @return array An array of student objects with id and grade
- * @uses $CFG;
  * @uses $DB;
  */
 function results_engine_get_students($class) {
-    global $CFG, $DB;
+    global $DB;
     $params = array('classid' => $class->id);
     $fields = array('userid', 'grade', 'locked');
     $table  = 'crlm_class_enrolment';
@@ -205,10 +237,10 @@ function results_engine_get_students($class) {
         }
 
         $sql = 'SELECT '. implode(',', $fields)
-             ." FROM {$CFG->prefix}$table g"
-             ." LEFT JOIN {$CFG->prefix}crlm_results_engine_class_log c ON c.classid = g.classid"
-             ." LEFT JOIN {$CFG->prefix}crlm_results_engine_student_log l ON l.userid=g.userid AND l.classlogid=c.id"
-             ." WHERE ". implode(' AND ', $criteria) .' AND l.action IS NULL';
+             .' FROM {'. $table .'} g'
+             .' LEFT JOIN {crlm_results_engine_class_log} c ON c.classid = g.classid'
+             .' LEFT JOIN {crlm_results_engine_student_log} l ON l.userid=g.userid AND l.classlogid=c.id'
+             .' WHERE '. implode(' AND ', $criteria) .' AND l.action IS NULL';
         $students = $DB->get_records_sql($sql);
 
         if ($class->lockedgrade) {
@@ -240,6 +272,7 @@ function results_engine_get_students($class) {
  *   lockedgrade     - whether the grade must be locked if "set grade" trigger is used
  *
  * @param $class object The class object see above for required attributes
+ * @return boolean Success/failure
  * @uses $CFG
  */
 function results_engine_process($class) {
@@ -251,7 +284,7 @@ function results_engine_process($class) {
     $students  = results_engine_get_students($class);
 
     if (sizeof($students) == 0) {
-        return;
+        return true;
     }
 
     $params = array('resultengineid' => $class->engineid);
@@ -327,5 +360,8 @@ function results_engine_process($class) {
         }
     }
 
-    print(get_string('class_processed', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
+    if (isset($class->cron) && $class->cron) {
+        print(get_string('class_processed', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
+    }
+    return true;
 }
