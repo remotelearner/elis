@@ -13,14 +13,18 @@ $string['assign_to_class'] = 'Assign to class instance';
 $string['assign_to_track'] = 'Assign to Track';
 $string['before_class_end'] = 'before Class Instance end date';
 $string['class_grade'] = 'Class Instance grade';
+$string['class_processed'] = 'Class {$a->idnumber} processed on {$a->rundate}';
 $string['course_desc_header'] = 'Course Description';
 $string['criterion'] = 'Criterion';
 $string['delete_score'] = 'Delete score range';
 $string['event_trigger'] = 'Event trigger';
 $string['execute_manually'] = 'Execute manually';
+$string['field_not_found'] = 'Field id #{$a->fieldid} not found in database!';
 $string['id_number_header'] = 'ID Number';
 $string['manual_trigger'] = 'Manual trigger only';
 $string['no_class_selected'] = 'No class selected';
+$string['no_end_date_set'] = 'Class {$a->idnumber} set to use an unset end date';
+$string['no_start_date_set'] = 'Class {$a->idnumber} set to use an unset start date';
 $string['no_track_selected'] = 'No track selected';
 $string['on'] = 'On';
 $string['result'] = 'Result';
@@ -32,5 +36,3 @@ $string['track_desc_header'] = 'Track Description';
 $string['track_name_header'] = 'Track Name';
 $string['use_locked_grades'] = 'Use locked grades only';
 $string['when_student_grade_set'] = 'When Student grade set';
-
-

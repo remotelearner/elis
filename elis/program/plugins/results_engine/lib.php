@@ -133,7 +133,8 @@ function results_engine_get_active() {
     $classlevel  = context_level_base::get_custom_context_level('class', 'elis_program');
 
     $fields = array('cls.id', 'cls.idnumber', 'cls.startdate', 'cls.enddate',  'cre.id as engineid',
-                    'cre.triggerstartdate', 'cre.criteriatype', '0 as days');
+                    'cre.eventtriggertype', 'cre.triggerstartdate', 'cre.criteriatype',
+                    'cre.lockedgrade', '0 as days');
 
     // Get course level instances that have not been overriden or already run.
     $sql = 'SELECT '. implode(', ', $fields)
@@ -145,9 +146,8 @@ function results_engine_get_active() {
          ." LEFT JOIN {$CFG->prefix}crlm_results_engine cre2 ON cre2.contextid=c2.id AND cre2.active=1"
          ." LEFT JOIN {$CFG->prefix}crlm_results_engine_class_log crecl ON crecl.classid=cls.id"
          .' WHERE cre.active=1'
-         .  ' AND cre.eventtriggertype=?'
+         .  ' AND ((cre.eventtriggertype = ? AND crecl.daterun IS NULL) OR cre.eventtriggertype=?)'
          .  ' AND cre2.active IS NULL'
-         .  ' AND crecl.daterun IS NULL'
          .' UNION'
     // Get class level instances that have not been already run.
          .' SELECT '. implode(', ', $fields)
@@ -156,24 +156,88 @@ function results_engine_get_active() {
          ." JOIN {$CFG->prefix}crlm_class cls ON cls.id = c.instanceid"
          ." LEFT JOIN {$CFG->prefix}crlm_results_engine_class_log crecl ON crecl.classid=cls.id"
          .' WHERE cre.active=1'
-         .  ' AND cre.eventtriggertype=?'
-         .  ' AND crecl.daterun IS NULL';
+         .  ' AND ((cre.eventtriggertype = ? AND crecl.daterun IS NULL) OR cre.eventtriggertype=?)';
 
-    $params = array($courselevel, $classlevel, RESULTS_ENGINE_SCHEDULED, $classlevel, RESULTS_ENGINE_SCHEDULED);
+    $params = array($courselevel, $classlevel, RESULTS_ENGINE_SCHEDULED, RESULTS_ENGINE_GRADE_SET,
+                    $classlevel, RESULTS_ENGINE_SCHEDULED, RESULTS_ENGINE_GRADE_SET);
 
     $actives = $DB->get_records_sql($sql, $params);
+
     return $actives;
+}
+
+/**
+ * Get the list of students for this class
+ *
+ * Class properties:
+ *   id               - id of class
+ *   criteriatype     - what mark to look at, 0 for final mark, anything else is an element id
+ *   eventtriggertype - what type of trigger the engine uses
+ *   lockedgrade      - whether the grade must be locked if "set grade" trigger is used
+ *
+ * If the trigger is set to "set grade" only return students with recently set grades.
+ *
+ * @param object $class The class object
+ * @return array An array of student objects with id and grade
+ * @uses $CFG;
+ * @uses $DB;
+ */
+function results_engine_get_students($class) {
+    global $CFG, $DB;
+    $params = array('classid' => $class->id);
+    $fields = array('userid', 'grade', 'locked');
+    $table  = 'crlm_class_enrolment';
+
+    if ($class->criteriatype > 0) {
+        $table = 'crlm_class_graded';
+        $params['completionid'] = $class->criteriatype;
+    }
+
+    if ($class->eventtriggertype == RESULTS_ENGINE_GRADE_SET) {
+        $criteria = array();
+
+        foreach ($params as $param => $value) {
+            $criteria[] = "g.$param = $value";
+        }
+
+        foreach ($fields as $key => $value) {
+            $fields[$key] = 'g.'. $value;
+        }
+
+        $sql = 'SELECT '. implode(',', $fields)
+             ." FROM {$CFG->prefix}$table g"
+             ." LEFT JOIN {$CFG->prefix}crlm_results_engine_class_log c ON c.classid = g.classid"
+             ." LEFT JOIN {$CFG->prefix}crlm_results_engine_student_log l ON l.userid=g.userid AND l.classlogid=c.id"
+             ." WHERE ". implode(' AND ', $criteria) .' AND l.action IS NULL';
+        $students = $DB->get_records_sql($sql);
+
+        if ($class->lockedgrade) {
+            foreach ($students as $key => $student) {
+                if (! $student->locked) {
+                    unset($students[$key]);
+                }
+            }
+        }
+    } else {
+        $students = $DB->get_records($table, $params, '', implode(',', $fields));
+    }
+
+    return $students;
 }
 
 /**
  * Process all the students in this class
  *
- * Class properties:
+ * Class properties required:
  *   id               - id of class
  *   criteriatype     - what mark to look at, 0 for final mark, anything else is an element id
  *   engineid         - id of results engine entry
  *   scheduleddate    - date when it was supposed to run
  *   rundate          - date when it is being run
+ *
+ * Class properties required by sub-functions:
+ *   eventtriggertype - what type of trigger the engine uses
+ *   lockedgrade     - whether the grade must be locked if "set grade" trigger is used
  *
  * @param $class object The class object see above for required attributes
  * @uses $CFG
@@ -183,17 +247,11 @@ function results_engine_process($class) {
 
     $userlevel = context_level_base::get_custom_context_level('user', 'elis_program');
     $params    = array('classid' => $class->id);
-    $fields    = 'userid, grade';
-    $students  = $DB->get_records('crlm_class_enrolment', $params, '', $fields);
 
-    if ($class->criteriatype > 0) {
-        $grades = $DB->get_records('crlm_class_graded', $params, '', 'grade');
-        foreach ($students as $student) {
-            $student->grade = 0;
-            if (array_key_exists($student->userid, $grades)) {
-                $student->grade = $grades[$student->userid]->grade;
-            }
-        }
+    $students  = results_engine_get_students($class);
+
+    if (sizeof($students) == 0) {
+        return;
     }
 
     $params = array('resultengineid' => $class->engineid);
