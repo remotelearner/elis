@@ -502,11 +502,13 @@ abstract class managementpage extends pm_page {
         $who->navbar->add(htmlspecialchars($obj), $url, navbar::TYPE_CUSTOM, null, null, new pix_icon('user', '', 'elis_program'));
     }
 
-    public function build_navbar_default($who = null) {
+    public function build_navbar_default($who = null, $addparent = true) {
         if (!$who) {
             $who = $this;
         }
-        parent::build_navbar_default($who);
+        if ($addparent) {
+            parent::build_navbar_default($who);
+        }
 
         $url = $this->get_new_page(array(), true)->url;
         $who->navbar->add(get_string("manage_{$this->data_class}", 'elis_program'), $url);

@@ -210,27 +210,20 @@ class pmclasspage extends managementpage {
     /**
      * Constructs navigational breadcrumbs
      */
-    function build_navigation_default() {
+    function build_navbar_default() {
         //get the parent courseid if possible
         $parent = $this->get_cm_id();
-
         $action = $this->optional_param('action', '', PARAM_CLEAN);
         $cancel = $this->optional_param('cancel', '', PARAM_CLEAN);
-
-        $navigation = parent::build_navigation_default();
-
-        if (empty($parent) || ((!empty($action) && $action!='default') && empty($cancel))) {
-            //viewing the class page directly
-            return $navigation;
+        $lp = true;
+        if (!empty($parent) && (empty($action) || $action == 'default' ||
+                                !empty($cancel))) {
+            //NOT viewing the class page directly
+            $coursepage = new coursepage(array('id' => $parent));
+            $coursepage->build_navbar_view($this);
+            $lp = false;
         }
-
-        $coursepage = new coursepage(array('id' => $parent));
-        $course_navigation = $coursepage->build_navigation_view();
-
-        //combine course and class navigation
-        $combined_nav = array_merge($course_navigation, $navigation);
-
-        $this->navbar->add($combined_nav);
+        parent::build_navbar_default($this, $lp);
     }
 
     /**

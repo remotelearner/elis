@@ -332,42 +332,38 @@ class coursepage extends managementpage {
         return $output;
     }
 
-    public function build_navigation_lelem() {
+    public function build_navbar_lelem($who = null) {
+        if (!$who) {
+            $who = $this;
+        }
         $id = required_param('id', PARAM_INT);
 
         $page = $this->get_new_page(array('action' => 'lelem', 'id' => $id));
-        $navigation = $this->build_navigation_default();
-        $navigation[] = array('name' => get_string('completion_elements', 'elis_program'),
-                              'link' => $page->url);
+        $this->build_navbar_default($who);
 
-        $this->navbar->add($navigation);
+        $who->navbar->add(get_string('completion_elements', 'elis_program'),
+                          $page->url);
     }
 
-    public function build_navigation_delem() {
+    public function build_navbar_delem() {
         $page = $this->get_new_page(array('action' => 'delem'));
-        $navigation = $this->build_navigation_lelem();
-        $navigation[] = array('name' => get_string('deleting_completion_element', 'elis_program'),
-                              'link' => $page->url);
-
-        $this->navbar->add($navigation);
+        $this->build_navbar_lelem($this);
+        $this->navbar->add(get_string('deleting_completion_element', 'elis_program'),
+                           $page->url);
     }
 
-    public function build_navigation_celem() {
+    public function build_navbar_celem() {
         $page = $this->get_new_page(array('action' => 'celem'));
-        $navigation = $this->build_navigation_lelem();
-        $navigation[] = array('name' => get_string('adding_completion_element', 'elis_program'),
-                              'link' => $page->url);
-
-        $this->navbar->add($navigation);
+        $this->build_navbar_lelem($this);
+        $this->navbar->add(get_string('adding_completion_element', 'elis_program'),
+                           $page->url);
     }
 
-    public function build_navigation_eelem() {
+    public function build_navbar_eelem() {
         $page = $this->get_new_page(array('action' => 'eelem'));
-        $navigation = $this->build_navigation_lelem();
-        $navigation[] = array('name' => get_string('editing_completion_element', 'elis_program'),
-                              'link' => $page->url);
-
-        $this->navbar->add($navigation);
+        $this->build_navbar_lelem($this);
+        $this->navbar->add(get_string('editing_completion_element', 'elis_program'),
+                           $page->url);
     }
 
     function get_default_object_for_add() {
