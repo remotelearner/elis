@@ -181,7 +181,7 @@ function results_engine_get_active() {
 function results_engine_process($class) {
     global $CFG, $DB;
 
-    $userlevel = context_level_base::get_custom_context_level('course', 'elis_program');
+    $userlevel = context_level_base::get_custom_context_level('user', 'elis_program');
     $params    = array('classid' => $class->id);
     $fields    = 'userid, grade';
     $students  = $DB->get_records('crlm_class_enrolment', $params, '', $fields);
@@ -208,11 +208,8 @@ function results_engine_process($class) {
         }
     }
 
-    $userfields = $DB->get_records_list('elis_field', 'id', $fields, '', 'id, datatype');
-
-    foreach ($userfields as $userfield) {
-        $fieldname    = 'field_data_'. $userfield->datatype;
-        $customfields[$userfield->datatype] = new $fieldname($userfield);
+    foreach ($fields as $field) {
+        $userfields[$field] = new field($field);
     }
 
     // Log that the class has been processed
@@ -259,7 +256,7 @@ function results_engine_process($class) {
                         break;
                     }
                     $context = get_context_instance($userlevel, $student->userid);
-                    field_data::set_for_context_and_field($context, $customfields[$userfields[$do->fieldid]->datatype], $do->fieldata);
+                    field_data::set_for_context_and_field($context, $userfields[$do->fieldid], $do->fieldata);
                     break;
 
                 default:
