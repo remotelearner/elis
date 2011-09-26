@@ -1,9 +1,5 @@
 /**
- * Generic JavaScript methods for a association/selection page.  Allows
- * multiple items to be selected using checkboxes, and use AJAX to do
- * paging/searching while maintaining the selection.  The selection will be
- * submitted as a form fieled called '_selection', which will be a JSON-encoded
- * array.
+ * Generic JavaScript methods for a results selection relaged page(s).
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
@@ -45,19 +41,42 @@ function show_panel( url ) {
  * @param id - the id of the selected track/class/profile
  */
 function user_selection(elmid, label, id) {
-//    var element = document.getElementById(elmid);
-
-    var element_label = "label_new_" + elmid;
-    var element_hidden = "id_new_" + elmid
-    
-    var element = window.opener.document.getElementById(element_label);
+    var elementid = elmid + '_add_label';
+    var element = window.opener.document.getElementById(elementid);
     element.innerHTML = label;
 
-    element = window.opener.document.getElementById(element_hidden);
+    elementid = elmid + "_add_selected";
+    element = window.opener.document.getElementById(elementid);
     element.value = id;
 
+    window.close();
 }
 
-function add_range_selection( type ) {
-    // do nothing for now
+/**
+ * This function caches the user's inserted data to a hidden HTML
+ * element in a comma separated format
+ * 
+ * @param string type - the type of data to cache track, class or profile
+ */
+function add_range_selection( id, type ) {
+return 0;
+    alert('hey');
+
+    var min_elements_name = type + "_minimum";
+    var min_elements = document.getElementsByName(min_elements_name);
+    var min_cache_el = document.getElementsByName("range_cache_minimum");
+    var min_cache = '';
+    var i = 0;
+    
+    for (i=0; i < i.length; i++) {
+        min_cache = min_cache + ',' + min_elements[i].value;
+    }
+    
+    alert(min_elements.length);
+    alert(min_cache);
+    // Remove the extra comma at the beginning
+    min_cache.substring(1);
+
+    min_cache_el[0].value = min_cache;
 }
+

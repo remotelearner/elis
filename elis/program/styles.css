@@ -108,3 +108,11 @@ fieldset fieldset.engineform {
 .mform #activationrules .fitem .fitemtitle {
 	width: 0px;
 }
+
+table#track_selection_table {
+    width: 50%;
+}
+
+table#class_selection_table {
+    width: 50%;
+}

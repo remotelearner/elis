@@ -37,6 +37,7 @@ abstract class enginepage extends pm_page {
     const LANG_FILE = 'elis_program';
 
     public $data_class = 'resultsengine';
+    public $child_data_class = 'resultsengineaction';
     public $form_class = 'cmEngineForm';
 
     protected $parent_page;
@@ -79,7 +80,7 @@ abstract class enginepage extends pm_page {
      */
     protected function get_engine_form() {
 
-        $this->include_js();
+
 
         $known     = false;
         $contextid = $this->get_context()->id;
@@ -213,8 +214,14 @@ abstract class enginepage extends pm_page {
             return;
         }
 
-        $data = $form->get_data();
+        $data       = $form->get_data();
+        $childdata  = array();
+
         if ($data) {
+
+            if (array_key_exists('track_assignment', $data)) {
+            }
+
             require_sesskey();
             $obj       = $this->get_new_data_object($id);
             $obj->set_from_data($data);
@@ -223,13 +230,118 @@ abstract class enginepage extends pm_page {
             } else {
                 unset($obj->id);
             }
+
+//print_object('SUBMITTED DATA');
+//print_object($data);
+//print_object('SUBMITTED DATA END');
+
+            $childdata = $this->get_existing_data_submitted($data);
+
+            if (empty($childdata)) {
+                // Check for new track data submitted
+            } else {
+
+                foreach ($childdata['ids'] as $recid => $dummy_value) {
+
+                    // Update existing records one by one
+                    $existingrecord = $this->get_new_child_data_object($recid);
+
+                    // TODO: check for an empty $existing record
+
+                    $updatedata->minimum = $childdata['type'] . '_'. $recid . '_minimum';
+                    $updatedata->maximum = $childdata['type'] . '_'. $recid . '_maximum';
+
+                    switch ($childdata['type']) {
+                        case 'track':
+                            $updatedata->trackid = $childdata['type'] . '_'. $recid . '_selected';
+                            break;
+                        case 'class':
+                            $updatedata->classid = $childdata['type'] . '_'. $recid . '_selected';
+                            break;
+                        case 'profile':
+                            // WIP
+                            break;
+                    }
+
+                    $updatedata->save();
+                }
+            }
+
             $obj->save();
-            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), false);
             redirect($target->url);
         } else {
             $this->_form = $form;
             $this->display('edit');
         }
+    }
+
+    /**
+     * This function check to see if existing track/class/profile record data
+     * was submitted with the form; because the use are only submit only submit
+     * track or class or profile data.  And returns an array with the type of
+     * data (track/class/profile) and id values for existing records to be
+     * updated
+     *
+     * @param obj $data - data from the submitted form
+     * @return array - key -- type (either track/class/profile), ids (array
+     * whose keys are existing record ids)
+     */
+    protected function get_existing_data_submitted($data) {
+        $savetype       = '';
+        $savechilddata  = new stdClass();
+        $instance       = array();
+
+        // Check for existing data regarding track/class/profile actions
+        foreach($data as $key => $value) {
+
+            // Check for existing track data in the form of track_<id>_...
+            $type = strpos($key, 'track_');
+
+            if (false !== $type) {
+                $pos = strpos($key, '_');
+                $lpos = strrpos($key, '_');
+
+                if (false !== $pos and
+                    false !== $lpos) {
+
+                    $length = $lpos - $pos;
+                    $instance_key = substr($key, $pos, $length);
+
+                    if (is_int($instance_key)) {
+                        $savetype = 'track';
+                        $instance[$instance_key] = 'track';
+                        continue;
+                    }
+                }
+
+            }
+
+            // Check for existing track data in the form of class_<id>_...
+            $type = strpos($key, 'class_');
+
+            if (false !== $type) {
+                $pos = strpos($key, '_');
+                $lpos = strrpos($key, '_');
+
+                if (false !== $pos and
+                    false !== $lpos) {
+
+                    $length = $lpos - $pos;
+                    $instance_key = substr($key, $pos, $length);
+
+                    if (is_int($instance_key)) {
+                        $savetype = 'class';
+                        $instance[$instance_key] = 'class';
+                        continue;
+                    }
+                }
+
+            }
+
+        }
+
+        return array('type' => $savetype, 'ids' => $instance);
     }
 
     /**
@@ -243,21 +355,13 @@ abstract class enginepage extends pm_page {
     }
 
     /**
-     * Includes the required JavaScript/YUI files for DataTable and the show/hide buttons.
-     * @uses $CFG
-     * @uses $PAGE
-     * @return none
+     * Returns a new instance of the child data object class this page manages.
+     *
+     * @param mixed $data Usually either the id or parameters for object, false for blank
+     * @return object The data object pulled form the database if an id was passed
      */
-    function include_js() {
-        global $CFG, $PAGE;
-
-        //$PAGE->requires->yui2_lib(array('core', 'dom', 'event', 'widget'));
-
-        $PAGE->requires->css('/elis/program/plugins/results_engine/jquery-ui-1.8.16.custom.css', true);
-        $PAGE->requires->js('/elis/program/plugins/results_engine/js/jquery-1.6.2.min.js', true);
-        $PAGE->requires->js('/elis/program/plugins/results_engine/js/jquery-ui-1.8.16.custom.js', true);
-        $PAGE->requires->js('/elis/program/plugins/results_engine/js/results_selection.js', true);
-
+    public function get_new_child_data_object($data=false) {
+        return new $this->child_data_class($data);
     }
 
 }

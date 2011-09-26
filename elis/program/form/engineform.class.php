@@ -46,13 +46,22 @@ class cmEngineForm extends cmform {
      * defines items in the form
      */
     public function definition() {
+
+        global $PAGE;
+
         $configData = array('title');
+
+        $PAGE->requires->css('/elis/program/plugins/results_engine/jquery-ui-1.8.16.custom.css', true);
+        $PAGE->requires->js('/elis/program/plugins/results_engine/js/jquery-1.6.2.min.js', true);
+        $PAGE->requires->js('/elis/program/plugins/results_engine/js/jquery-ui-1.8.16.custom.js', true);
+        $PAGE->requires->js('/elis/program/plugins/results_engine/js/results_selection.js', true);
 
         $this->defineActivation();
         $this->defineResults();
 
         $submitlabel = get_string('savechanges');
         $mform =& $this->_form;
+
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton', $submitlabel);
         $buttonarray[] = &$mform->createElement('cancel');
         $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
@@ -64,7 +73,7 @@ class cmEngineForm extends cmform {
      * @uses $DB
      */
     protected function defineActivation() {
-        global $DB;
+        global $DB, $OUTPUT, $PAGE;
 
         $grades = array(0 => get_string('class_grade', self::LANG_FILE));
         $dates  = array(
@@ -92,11 +101,6 @@ class cmEngineForm extends cmform {
         $manualtrigger   = get_string('manual_trigger', self::LANG_FILE);
         $selectgrade     = get_string('select_grade', self::LANG_FILE);
         $uselocked       = get_string('use_locked_grades',self::LANG_FILE);
-        $result          = get_string('result', self::LANG_FILE);
-        $assigntotrack   = get_string('assign_to_track', self::LANG_FILE);
-        $assigntoclass   = get_string('assign_to_class', self::LANG_FILE);
-        $assigntoprofile = get_string('assign_to_profile', self::LANG_FILE);
-        $addscorerange   = get_string('add_another_score_btn', self::LANG_FILE);
 
         if ($this->_layout == 'custom') {
             // Setup an alternate html output so we can make the form user friendly.
@@ -139,22 +143,14 @@ class cmEngineForm extends cmform {
 
             $html[] = '</fieldset>';
 
-            $html[] = '<fieldset class="engineform">';
-            $html[] = '<legend>'.$result.'</legend>';
-            // TODO: ADD HTML FOR RESULTS FIELDSET
-            $html[] = '</fieldset>';
-            $html[] = '</fieldset>';
-
             $this->_html = $html;
         } else {
             $mform =& $this->_form;
-
 
             $mform->addElement('header', 'activationrules', $activationrules);
 
             $mform->addElement('hidden', 'rid', $this->_customdata['rid']);
             $mform->addElement('hidden', 'contextid', $this->_customdata['contextid']);
-
             $active= array();
             $active[] = $mform->createElement('advcheckbox', 'active', '', $activaterule);
             $mform->addGroup($active, '', '', ' ', false);
@@ -184,12 +180,13 @@ class cmEngineForm extends cmform {
 
             $mform->setDefaults(array('eventtriggertype' => RESULTS_ENGINE_MANUAL));
 
-            $mform->addGroup($grade, '', '', ' ', false);
-            $mform->addGroup($date, '', '', array(' ', ' '. $days .' '), false);
-            $mform->addGroup($manual, '', '', ' ', false);
+            $mform->addGroup($grade, 'gradeevent', '', ' ', false);
+            $mform->addGroup($date, 'dateevent', '', array(' ', ' '. $days .' '), false);
+            $mform->addGroup($manual, 'manualevent', '', ' ', false);
 
             $mform->setType('locked', PARAM_BOOL);
             $mform->addElement('html', '</fieldset>');
+
 
             $mform->addElement('html', '<fieldset class="engineform">');
             $mform->addElement('html', '<legend>'. $criterion .'</legend>');
@@ -202,65 +199,9 @@ class cmEngineForm extends cmform {
 
             $mform->addElement('html', '</fieldset>');
 
-            $mform->addElement('html', '<div id = class="engineform">');
-            $mform->addElement('html', '<fieldset>');
-            $mform->addElement('html', '<legend>'.$result.'</lengend>');
-
-            // Accordion implementation
-            $mform->addElement('html', '<div id="accordion">');
-
-            // Add track score range
-            $mform->addElement('html', '<div>');
-            $mform->addElement('html', '<h3>');
-            $mform->addElement('html', '<a href="#">'.$assigntotrack.'</a>');
-            $mform->addElement('html', '</h3>');
 
 
-            // Hidden elemenets to store minimum, maximum and selected track/class/profile field
-            $mform->addElement('hidden', 'range_cache_minimum');
-            $mform->addElement('hidden', 'range_cache_maximum');
-            $mform->addElement('hidden', 'range_cache_selection1');
-            $mform->addElement('hidden', 'range_cache_selection2');
 
-            $mform->addElement('hidden', 'range_minimum');
-            $mform->addElement('hidden', 'range_maximum');
-            $mform->addElement('hidden', 'range_selection1');
-            $mform->addElement('hidden', 'range_selection2');
-
-            $mform->addElement('html', '<div>' . $this->get_assign_to_table(0, false, false, 'track'));
-
-            $attributes = array('onclick' => 'add_range_selection("track");');
-            $mform->addElement('submit', 'track_assignment', $addscorerange, $attributes);
-            $mform->addElement('html', '</div>');
-
-            $mform->addElement('html', '</div>');
-
-            // Add class score range
-            $mform->addElement('html', '<div>');
-            $mform->addElement('html', '<h3>');
-            $mform->addElement('html', '<a href="#">'.$assigntoclass.'</a>');
-            $mform->addElement('html', '</h3>');
-            $mform->addElement('html', '<div>' . $this->get_assign_to_table(0, false, false, 'class'));
-            $mform->addElement('submit', 'class_assignment', $addscorerange);
-            $mform->addElement('html', '</div>');
-
-            $mform->addElement('html', '</div>');
-
-            // Add profile field score range
-            $mform->addElement('html', '<div>');
-            $mform->addElement('html', '<h3>');
-            $mform->addElement('html', '<a href="#">'.$assigntoprofile.'</a>');
-            $mform->addElement('html', '</h3>');
-            $mform->addElement('html', '<div>Some more content in div');
-            $mform->addElement('submit', 'profile_assignment', $addscorerange);
-            $mform->addElement('html', '</div>');
-            $mform->addElement('html', '</div>');
-
-            $mform->addElement('html', '</fieldset>');
-
-            $mform->addElement('html', '</div>');
-
-            $mform->addElement('html', '</fieldset>');
         }
     }
 
@@ -268,6 +209,72 @@ class cmEngineForm extends cmform {
      * Define the results section of the form.
      */
     protected function defineResults() {
+
+        global $DB, $OUTPUT, $PAGE;
+
+        $result          = get_string('result', self::LANG_FILE);
+        $assigntotrack   = get_string('assign_to_track', self::LANG_FILE);
+        $assigntoclass   = get_string('assign_to_class', self::LANG_FILE);
+        $assigntoprofile = get_string('assign_to_profile', self::LANG_FILE);
+        $addscorerange   = get_string('add_another_score_btn', self::LANG_FILE);
+
+        $mform =& $this->_form;
+
+            $mform->addElement('html', '<fieldset class="engineform">');
+//            $mform->addElement('html', '<legend>'.$result.'</lengend>');
+
+        // Accordion implementation
+        $mform->addElement('html', '<div class="engineform">');
+        $mform->addElement('html', '<div id="accordion">');
+
+        // Add track score range
+        $mform->addElement('html', '<div>');
+        $mform->addElement('html', '<h3>');
+        $mform->addElement('html', '<a href="#">'.$assigntotrack.'</a>');
+        $mform->addElement('html', '</h3>');
+
+        // Create assign to table elements
+        $mform->addElement('html', '<div>');
+
+        $this->setup_table_type($mform, 'track');
+
+        $attributes = array('onclick' => 'add_range_selection("track");');
+        $mform->addElement('submit', 'track_assignment', $addscorerange, $attributes);
+        $mform->addElement('html', '</div>');
+
+        $mform->addElement('html', '</div>');
+
+        // Add class score range
+        $mform->addElement('html', '<div>');
+        $mform->addElement('html', '<h3>');
+        $mform->addElement('html', '<a href="#">'.$assigntoclass.'</a>');
+        $mform->addElement('html', '</h3>');
+        $mform->addElement('html', '<div>');
+
+        $this->setup_table_type($mform, 'class');
+//            $mform->addElement('html', '<div>' . $this->get_assign_to_table(0, false, false, 'class'));
+        $mform->addElement('submit', 'class_assignment', $addscorerange);
+        $mform->addElement('html', '</div>');
+        $mform->addElement('html', '</div>');
+
+        // Add profile field score range
+        $mform->addElement('html', '<div>');
+        $mform->addElement('html', '<h3>');
+        $mform->addElement('html', '<a href="#">'.$assigntoprofile.'</a>');
+        $mform->addElement('html', '</h3>');
+        $mform->addElement('html', '<div>');
+//            $mform->addElement('html', '<div>Some more content in div');
+        $mform->addElement('submit', 'profile_assignment', $addscorerange);
+        $mform->addElement('html', '</div>');
+        $mform->addElement('html', '</div>');
+
+
+
+
+        $mform->addElement('html', '</div>');
+        $mform->addElement('html', '</div>');
+
+        $mform->addElement('html', '</fieldset>');
     }
 
     function check_unique($table, $field, $value, $id) {
@@ -300,13 +307,48 @@ class cmEngineForm extends cmform {
             }
         }
 
-
         // Add another track score range button
         if (array_key_exists('track_assignment', $data)) {
+
+            if (empty($data['track_add_min']) or
+                !is_int($data['track_add_min']) ) {
+
+                $errors['trackscore'] = 'MIN ADD LANGUAGE STRING ';
+            }
+
+            if (empty($data['track_add_max']) or
+                !is_int($data['track_add_max']) ) {
+
+                $errors['trackscore'] .= 'MAX ADD LANGUAGE STRING ';
+            }
+
+            if (empty($data['track_add_selected'])) {
+
+                $errors['trackscore'] .= 'TRACK ADD LANGUAGE STRING';
+            }
 
         }
 
         if (array_key_exists('class_assignment', $data)) {
+
+            if (empty($data['class_add_min']) or
+                !is_int($data['class_add_min']) ) {
+
+                $errors['classscore'] = 'ADD LANGUAGE STRING ';
+            }
+
+            if (empty($data['class_add_max']) or
+                !is_int($data['class_add_max']) ) {
+
+                $errors['classscore'] .= 'ADD LANGUAGE STRING ';
+            }
+
+            if (empty($data['class_add_selected']) or
+                !is_int($data['class_add_selected']) ) {
+
+                $errors['classscore'] .= 'ADD LANGUAGE STRING';
+            }
+
         }
 
         if (array_key_exists('profile_assignment', $data)) {
@@ -329,112 +371,90 @@ class cmEngineForm extends cmform {
         }
     }
 
-    protected function get_assign_to_table($resultsid = 0, $addrow = false, $cached_data = null, $type = 'track') {
+    protected function setup_table_type($mform, $type, $resultsid = 0, $cachedentries = array()) {
+        global $OUTPUT;
 
-            global $CFG, $OUTPUT;
+        $scoreheader        = get_string('score', self::LANG_FILE);
+        $assigntype         = get_string("assign_to_{$type}", self::LANG_FILE);
+        $selecttype         = get_string("select_{$type}", self::LANG_FILE);
+        $deletescoretype    = get_string("delete_score", self::LANG_FILE);
+        $notypeselected     = get_string("no_{$type}_selected", self::LANG_FILE);
 
-            $scoreheader        = get_string('score', self::LANG_FILE);
-            $assigntype         = get_string("assign_to_{$type}", self::LANG_FILE);
-            $selecttype         = get_string("select_{$type}", self::LANG_FILE);
-            $deletescoretype    = get_string("delete_score", self::LANG_FILE);
+        $output = '';
+        $i = 1;
 
-            $attributes = array('class'     => "datatable {$type}assignment",
-                                'id'        => "assign_{$type}_table",
-                                'border'    => '1');
-            $output = html_writer::start_tag('table', $attributes);
-
-            // Header
-            $attributes['id'] = "header_assign_{$type}_table";
-            $output .= html_writer::start_tag('tr');
-
-            $output .= html_writer::tag('th', $scoreheader);
-            $output .= html_writer::tag('th', $assigntype);
-
-            $output .= html_writer::end_tag('tr');
-
-            // data row(s)
-            $function = "get_assign_to_{$type}_data";
-            $data = $this->$function($resultsid);
-
-            if (empty($data)) {
-
-                $output .= html_writer::start_tag('tr');
-                $output .= html_writer::start_tag('td');
-
-                $random_id = html_writer::random_id();
-
-                // Print Minimum
-                $attributes = array('id' => "id_minimum_new_{$type}_{$random_id}",
-                                    'value' => '',
-                                    'type' => 'text',
-                                    'size' => '5',
-                                    'maxlength' => '5',
-                                    'name' => "{$type}_minimum");
-                $output .= html_writer::empty_tag('input', $attributes);
-                $output .= '&nbsp;&nbsp;';
-
-                // Print Maximum
-                $attributes['id'] = "maximum_new_{$type}_{$random_id}";
-                $attributes['name'] = "{$type}_maximum";
-                $output .= html_writer::empty_tag('input', $attributes);
-                $output .= '&nbsp;&nbsp;';
-
-                // Print Delete icon
-                // TODO: add onclick event to clear minimum, maximum and track selection
-                $attributes = array('title' => $deletescoretype,
-                                    'alt' => $deletescoretype,
-                                    'src' => $OUTPUT->pix_url('delete', 'elis_program'));
-
-                $image  = html_writer::empty_tag('img', $attributes);
-                $output .= html_writer::link('#', $image);
+        $attributes = array('border' => '1', 'id' => "{$type}_selection_table");
+        $tablehtml = html_writer::start_tag('table', $attributes);
+        $tablehtml .= html_writer::start_tag('tr');
+        $tablehtml .= html_writer::tag('th', $scoreheader);
+        $tablehtml .= html_writer::tag('th', $assigntype);
 
 
-                $output .= html_writer::end_tag('td');
-                $output .= html_writer::start_tag('td');
+        $tablehtml .= html_writer::end_tag('tr');
 
-                // Print type selection label
-                $attributes = array('id' => "label_new_{$type}_{$random_id}");
-                $output  .= html_writer::tag('label', '', $attributes);
+        $mform->addElement('html', $tablehtml);
 
-                // Print hidden type element to store the type id
-                $attributes = array('id' => "id_new_{$type}_{$random_id}");
-                $attributes = array('name' => "{$type}_id");
-                $output  .= html_writer::tag('hidden', '', $attributes);
+        $functionname = "get_assign_to_{$type}_data";
 
-                $output .= '&nbsp;&nbsp;';
+        $records = $this->$functionname($resultsid);
 
-                // Print track selection link
-                $url = "form/{$type}selector.php?id={$type}_{$random_id}";
-                $attributes = array('onClick' => 'show_panel("'.$url.'")');
+        if (empty($resultsid)) {
 
-                $output .= html_writer::link('#', $selecttype, $attributes);
+            // Start a table row and column
+            $tablehtml = html_writer::start_tag('tr');
+            $tablehtml .= html_writer::start_tag('td');
+
+            $mform->addElement('html', $tablehtml);
+
+            $score = array();
+            $score[] = $mform->createElement('text', "{$type}_add_min", '', 'size="5" maxlength="5"');
+            $mform->setType("{$type}_add_min", PARAM_INT);
+            $score[] = $mform->createElement('text', "{$type}_add_max", '', 'size="5" maxlength="5"');
+            $mform->setType("{$type}_add_max", PARAM_INT);
+
+            $attributes = array('title' => $deletescoretype,
+                                'alt' => $deletescoretype,
+                                'src' => $OUTPUT->pix_url('delete', 'elis_program'));
+
+            $image  = html_writer::empty_tag('img', $attributes);
 
 
-                $output .= html_writer::end_tag('td');
-                $output .= html_writer::end_tag('tr');
-            } else {
-                // print data
-            }
+            $score[] = $mform->createElement('link', 'delete', '', '#', $image);
 
-            if ($cached_data) {
-                // Print cached data
-            }
 
-            if ($addrow) {
-                // Add input row
-            }
+            $mform->addGroup($score, "{$type}score", '', '', false);
 
-            $output .= html_writer::start_tag('tr');
 
-            // data column(s)
-            $output .= html_writer::tag('td', 'some input');
-            $output .= html_writer::tag('td', 'some input2');
+            $tablehtml = html_writer::end_tag('td');
+            $tablehtml .= html_writer::start_tag('td');
+            $mform->addElement('html', $tablehtml);
 
-            $output .= html_writer::end_tag('tr');
+            // Add another column of data
 
-            $output .= html_writer::end_tag('table');
+            $attributes     = array('id' => "{$type}_add_label");
+            $output         .= html_writer::tag('label', $notypeselected, $attributes);
 
-            return $output;
+            $output         .= '&nbsp;&nbsp;';
+
+            $url            = "form/{$type}selector.php?id={$type}";
+            $attributes     = array('onClick' => 'show_panel("'.$url.'")');
+            $output         .= html_writer::link('#', $selecttype, $attributes);
+
+            $mform->addElement('html', $output);
+
+            $attributes     = array('id' => "{$type}_add_selected");
+            $mform->addElement('hidden', "{$type}_add_selected", '', $attributes);
+
+            $tablehtml = html_writer::end_tag('td');
+            $tablehtml .= html_writer::end_tag('tr');
+
+            $mform->addElement('html', $tablehtml);
+        }
+
+        // End a table row and second column
+        $tablehtml = html_writer::end_tag('table');
+        $mform->addElement('html', $tablehtml);
+
     }
 
     protected function get_assign_to_track_data($resultsid = 0) {
