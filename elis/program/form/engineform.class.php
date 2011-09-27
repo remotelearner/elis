@@ -229,7 +229,17 @@ class cmEngineForm extends cmform {
 
         $mform =& $this->_form;
 
-        $mform->addElement('hidden', 'actiontype', $this->_customdata['actiontype']);
+        // ** may not need actiontype **
+        $actiontype = 0;
+        if (isset($this->_customdata['actiontype']) and
+            !empty($this->_customdata['actiontype']) ) {
+
+           $actiontype = $this->_customdata['actiontype'];
+        }
+
+        $mform->addElement('hidden', 'actiontype', $actiontype);
+
+        $mform->addElement('hidden', 'actioncache');
 
         $mform->addElement('html', '<fieldset class="engineform">');
 //            $mform->addElement('html', '<legend>'.$result.'</lengend>');
@@ -247,11 +257,12 @@ class cmEngineForm extends cmform {
         // Create assign to table elements
         $mform->addElement('html', '<div>');
 
-
         // TODO: check for action type and pass custom form values
         $this->setup_table_type($mform, 'track');
 
-        $attributes = array('onclick' => 'add_range_selection("track");');
+        $attributes = array('onclick' => 'pre_submit_processing("track");');
+
+        $mform->registerNoSubmitButton('trk_assignment');
         $mform->addElement('submit', 'trk_assignment', $addscorerange, $attributes);
         $mform->addElement('html', '</div>');
 
@@ -264,7 +275,7 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</h3>');
         $mform->addElement('html', '<div>');
 
-        $this->setup_table_type($mform, 'class');
+//        $this->setup_table_type($mform, 'class');
 
         $mform->addElement('submit', 'cls_assignment', $addscorerange);
         $mform->addElement('html', '</div>');
@@ -280,9 +291,6 @@ class cmEngineForm extends cmform {
         $mform->addElement('submit', 'pro_assignment', $addscorerange);
         $mform->addElement('html', '</div>');
         $mform->addElement('html', '</div>');
-
-
-
 
         $mform->addElement('html', '</div>');
         $mform->addElement('html', '</div>');
@@ -417,8 +425,8 @@ class cmEngineForm extends cmform {
         $output = '';
         $i = 1;
 
-        $functionname = "get_assign_to_{$type}_data";
-        $records = $this->$functionname($resultsid);
+//        $functionname = "get_assign_to_{$type}_data";
+//        $records = $this->$functionname($resultsid);
 
         $attributes = array('border' => '1', 'id' => "{$type}_selection_table");
         $tablehtml = html_writer::start_tag('table', $attributes);
@@ -441,13 +449,15 @@ class cmEngineForm extends cmform {
      * TODO: document
      */
     protected function setup_table_type_row($mform, $type, $dataset = array(), $cached = false) {
-        global $OUTPUT;
+        global $OUTPUT, $DB;
 
         $deletescoretype    = get_string("delete_score", self::LANG_FILE);
         $notypeselected     = get_string("no_{$type}_selected", self::LANG_FILE);
         $selecttype         = get_string("select_{$type}", self::LANG_FILE);
 
+
         $prefix = $type . '_';
+
         if ($cached) {
             $prefix = $type . '_add_';
             $empty_record = new stdClass();
@@ -507,7 +517,12 @@ class cmEngineForm extends cmform {
             // Add label and track/class selection link
             $output         = '';
             $attributes     = array('id' => "{$prefix}{$i}_label");
-            $output         .= html_writer::tag('label', $data->name, $attributes);
+
+            // Retrieve the track name
+            $param = array('id' => $data->selected);
+            $trackname = $DB->get_field(track::TABLE, 'name', $param);
+
+            $output         .= html_writer::tag('label', $trackname, $attributes);
 
             $output         .= '&nbsp;&nbsp;';
 
@@ -531,7 +546,6 @@ class cmEngineForm extends cmform {
     }
 
     protected function format_cache_data() {
-        global $DB;
 
         $data = array();
 
@@ -542,15 +556,12 @@ class cmEngineForm extends cmform {
             $x = 0;
             $i = 0;
 
-            for($i; $i < count($cachedata); $i =+ 3) {
+
+            for($i; $i < count($cachedata); $i = $i + 3) {
                 $data[$x] = new stdClass();
                 $data[$x]->min = $cachedata[$i];
                 $data[$x]->max = $cachedata[$i+1];
                 $data[$x]->selected = $cachedata[$i+2];
-
-                $param = array('id' => $data[$x]->selected);
-                $trackname = $DB->get_field(track::TABLE, 'name', $param);
-                $data[$x]->name = $trackname;
 
                 $x++;
             }

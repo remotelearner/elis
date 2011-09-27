@@ -54,31 +54,53 @@ function track_add_selection(elmid, label, id) {
     window.close();
 }
 
-/**
- * This function caches the user's inserted data to a hidden HTML
- * element in a comma separated format
- * 
- * @param string type - the type of data to cache track, class or profile
- */
-function add_range_selection( id, type ) {
-return 0;
-    alert('hey');
 
-    var min_elements_name = type + "_minimum";
-    var min_elements = document.getElementsByName(min_elements_name);
-    var min_cache_el = document.getElementsByName("range_cache_minimum");
-    var min_cache = '';
+function pre_submit_processing(type) {
+    var max = 99;
     var i = 0;
-    
-    for (i=0; i < i.length; i++) {
-        min_cache = min_cache + ',' + min_elements[i].value;
+    var ele_min = '';
+    var ele_max = '';
+    var ele_sel = '';
+    var temp = '';
+    var cache = document.getElementsByName("actioncache")[0]; 
+
+
+    if ( (typeof cache == 'undefined') ) {
+        return 0;
     }
     
-    alert(min_elements.length);
-    alert(min_cache);
-    // Remove the extra comma at the beginning
-    min_cache.substring(1);
+    for (i=0; i < max; i++) {
 
-    min_cache_el[0].value = min_cache;
+        ele_min = document.getElementsByName(type + '_add_' + i + '_min')[0];
+        ele_max = document.getElementsByName(type + '_add_' + i + '_max')[0];
+        ele_sel = document.getElementsByName(type + '_add_' + i + '_selected')[0];
+        
+        if ( (typeof ele_min == 'undefined') ||
+             (typeof ele_max == 'undefined') ||
+             (typeof ele_sel == 'undefined') ) {
+            // We've gone too far time to exit
+            i = max;
+            continue;
+        }
+
+        if ( ('' != ele_min.value) &&
+             ('' != ele_max.value) &&
+             ('' != ele_sel.value) ) {
+            // Only cache complete rows.  Incomplete rows are discarded for now
+            temp = temp + ele_min.value + ',' + ele_max.value + ',' + ele_sel.value + ',';
+        }
+ 
+        
+        
+    }
+    
+    // Remove the last occuring comma
+    
+    var last_occurance = temp.lastIndexOf(',');
+    last_occurance = parseInt(last_occurance);
+    
+    cache.value = temp.slice(0, last_occurance);
+
+
 }
 

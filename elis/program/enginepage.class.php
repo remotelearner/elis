@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 
 define('TRACK_ACTION_TYPE', 1);
 define('CLASS_ACTION_TYPE', 2);
-define('PROFILE_ACTIONE_TYPE', 3);
+define('PROFILE_ACTION_TYPE', 3);
 
 require_once elispm::lib('data/resultsengine.class.php');
 require_once elispm::lib('lib.php');
@@ -82,13 +82,12 @@ abstract class enginepage extends pm_page {
      *
      * @return object The engine form
      */
-    protected function get_engine_form() {
+    protected function get_engine_form($cache = '') {
 
         $known      = false;
         $contextid  = $this->get_context()->id;
         $id         = $this->optional_param('id', 0, PARAM_INT);
         $rid        = $this->optional_param('rid', 0, PARAM_INT);
-        $cache      = $this->optional_param('cache', 0, PARAM_TEXT);
         $type       = $this->optional_param('type', 0, PARAM_INT);
         $obj        = $this->get_new_data_object($rid);
         $childobj   = $this->get_new_child_data_object($rid);
@@ -98,6 +97,7 @@ abstract class enginepage extends pm_page {
             $results   = $obj->find($filter);
             $rid = $results->current()->id;
         }
+
 
         $filter    = new field_filter('id', $rid);
 
@@ -112,13 +112,13 @@ abstract class enginepage extends pm_page {
         $actioncount    = $childobj->count($filter);
         $actiontype     = 0;
 
-        if (!empty($actioncount)) {
-           $childdata = $childobj->find($filter, array(), 1, 1);
-
-            if (!empty($childdata)) {
-                // TODO: set the action type
-           }
-        }
+//        if (!empty($actioncount)) {
+//           $childdata = $childobj->find($filter, array(), 1, 1);
+//
+//            if (!empty($childdata)) {
+//                // TODO: set the action type
+//           }
+//        }
 
         $target    = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
 
@@ -130,12 +130,6 @@ abstract class enginepage extends pm_page {
         $params['courseid'] = $this->get_course_id();
         $params['contextid'] = $contextid;
         $params['enginetype'] = $this->type;
-
-        if (!empty($cache)) {
-            $actiontype = $type;
-            $cache = urldecode($cache);
-        }
-
 
         $params['actiontype'] = $actiontype;
         $params['cache'] = $cache;
@@ -235,8 +229,9 @@ abstract class enginepage extends pm_page {
 
         $known = false;
         $id = $this->required_param('id', PARAM_INT);
+        $cache = $this->optional_param('actioncache', '', PARAM_SEQUENCE);
 
-        $form = $this->get_engine_form();
+        $form = $this->get_engine_form($cache);
 
         if ($form->is_cancelled()) {
             $target = $this->get_new_page(array('action' => 'default', 'id' => $id), true);
@@ -250,6 +245,24 @@ abstract class enginepage extends pm_page {
         $actiontype     = '';
 
 
+//        if ($form->no_submit_button_pressed()) {
+//
+//            $data = $form->get_submitted_data();
+//
+//            $target = $this->get_new_page(array('action' => 'default',
+//                                                'id' => $id,
+//                                                'cache' => urlencode($cache),
+//                                                'type' => $actiontype), false);
+//            redirect($target->url);
+//
+//            // Adding a new track score range element
+//            if (array_key_exists('trk_assignment', $data)) {
+//            } elseif (array_key_exists('cls_assignment', $data)) {
+//            } elseif (array_key_exists('pro_assignment', $data)) {
+//            } else {
+//            }
+
+//        } elseif ($data) {
         if ($data) {
 
             require_sesskey();
@@ -265,31 +278,50 @@ abstract class enginepage extends pm_page {
             $obj->save();
 
             // Adding a new track score range element
-            if (array_key_exists('trk_assignment', $data)) {
+            foreach ($data as $key => $value) {
 
-                $newchilddata = $this->get_new_data_submited('track', $data);
-
-//                print_object('newdata');
-//                print_object($newchilddata);
-
-                $actiontype = TRACK_ACTION_TYPE;
-
-            } elseif (array_key_exists('cls_assignment', $data)) {
-            } elseif (array_key_exists('pro_assignment', $data)) {
-            } else {
-
-                $childdata = $this->get_existing_data_submitted($data);
-
-                if (empty($childdata)) {
-                    // Check for new track data submitted
+                if (false !== strpos($key, 'track_')) {
+                    if (!empty($data[$key])) {
+                        $actiontype = TRACK_ACTION_TYPE;
+                        break;
+                    }
                 }
 
-                foreach ($childdata['ids'] as $recid => $dummy_value) {
+                if (false !== strpos($key, 'class_')) {
+                    if (!empty($data[$key])) {
+                        $actiontype = CLASS_ACTION_TYPE;
+                        break;
+                    }
+                }
+
+                if (false !== strpos($key, 'profile_')) {
+                    if (!empty($data[$key])) {
+                        $actiontype = PROFILE_ACTION_TYPE;
+                        break;
+                    }
+                }
+
+            }
+
+            // TODO change function.  Do the updating of records inside the function
+            switch ($actiontype) {
+                case TRACK_ACTION_TYPE:
+                    $actiondata = $this->get_new_data_submited('track', $data);
+                    break;
+                case CLASS_ACTION_TYPE:
+                    $actiondata = $this->get_new_data_submited('class', $data);
+                    break;
+                case PROFILE_ACTION_TYPE:
+                    $actiondata = $this->get_new_data_submited('profile', $data);
+                    break;
+            }
+
+                foreach ($actiondata as $recid => $object) {
 
                     // Update existing records one by one
                     $existingrecord = $this->get_new_child_data_object($recid);
 
-                    // TODO: check for an empty $existing record
+                    // TODO: check for an empty $existingrecord
 
                     $existingrecord->minimum = $childdata['type'] . '_'. $recid . '_minimum';
                     $existingrecord->maximum = $childdata['type'] . '_'. $recid . '_maximum';
@@ -308,12 +340,9 @@ abstract class enginepage extends pm_page {
 
                     $existingrecord->save();
                 }
-            }
 
             $target = $this->get_new_page(array('action' => 'default',
-                                                'id' => $id,
-                                                'cache' => urlencode($newchilddata),
-                                                'type' => $actiontype), false);
+                                                'id' => $id), false);
             redirect($target->url);
 
 //print_object('SUBMITTED DATA');
@@ -355,9 +384,11 @@ abstract class enginepage extends pm_page {
      *
      * @param obj $data - data from the submitted form
      * @return array - key -- type (either track/class/profile), ids (array
-     * whose keys are existing record ids)
+     * whose keys are existing record ids)\
+     *
+     * TODO: update documentation
      */
-    protected function get_existing_data_submitted($data) {
+    protected function get_existing_data_submitted($type, $data) {
         $savetype       = '';
         $savechilddata  = new stdClass();
         $instance       = array();
@@ -366,7 +397,7 @@ abstract class enginepage extends pm_page {
         foreach($data as $key => $value) {
 
             // Check for existing track data in the form of track_<id>_...
-            $type = strpos($key, 'track_');
+            $type = strpos($key, "{$type}_");
 
             if (false !== $type) {
                 $pos = strpos($key, '_');
@@ -379,7 +410,7 @@ abstract class enginepage extends pm_page {
                     $instance_key = substr($key, $pos, $length);
 
                     if (is_int($instance_key)) {
-                        $savetype = 'track';
+                        $savetype = $type;
                         $instance[$instance_key] = 'track';
                         continue;
                     }
