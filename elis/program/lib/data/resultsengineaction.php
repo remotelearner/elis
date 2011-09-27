@@ -34,10 +34,10 @@ require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php');
 require_once elispm::lib('data/pmclass.class.php');
 
-define ('ENGINETABLE', 'crlm_results_engine_action');
+define ('ACTIONTABLE', 'crlm_results_action');
 
 class resultsengineaction extends elis_data_object {
-    const TABLE = ENGINETABLE;
+    const TABLE = ACTIONTABLE;
     const LANG_FILE = 'elis_program';
 
     static public $_unset = -1;

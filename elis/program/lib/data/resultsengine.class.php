@@ -72,7 +72,7 @@ class resultsengine extends elis_data_object {
 }
 
 class resultsengineaction extends elis_data_object {
-    const TABLE = 'crlm_results_engine_action';
+    const TABLE = 'crlm_results_action';
     const LANG_FILE = 'elis_program';
 
     static public $_unset = -1;
