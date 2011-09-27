@@ -3,7 +3,7 @@
  * Link to content from elis_files from the HTML editor.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2009 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  * @subpackage File system
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -32,7 +32,6 @@ require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
 
 // Default to alfresco30 for now
 require_once dirname(__FILE__). '/lib/alfresco30/lib.php';
-
 
 class setting_elis_files_root_folder extends admin_setting_configdirectory {
     function write_setting($data) {
@@ -102,7 +101,6 @@ class setting_elis_files_root_folder extends admin_setting_configdirectory {
     }
 }
 
-
 class setting_elis_files_category_select extends admin_setting {
     function admin_setting_elis_files_category_select($name, $heading, $information) {
         parent::admin_setting($name, $heading, $information, '');
@@ -127,5 +125,3 @@ class setting_elis_files_category_select extends admin_setting {
     }
 
 }
-
-?>

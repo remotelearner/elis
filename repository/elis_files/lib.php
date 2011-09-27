@@ -150,9 +150,11 @@ class repository_elis_files extends repository {
 
         // Set up locations shortcuts - need a sort of url... hmmm... to be cross repository...
         // This used to be in file_browse_options - modify that then to work with this?
-        /*$opts = $repo->file_browse_options($course->id, $userid, $ouuid, $shared, $choose, 'file/repository/index.php',
+        /*
+        $opts = $repo->file_browse_options($course->id, $userid, $ouuid, $shared, $choose, 'file/repository/index.php',
                                                'files/index.php', 'file/repository/index.php', $default);
-                             */
+        */
+
         // Set permissible browsing locations
         $ret['locations'] = array();
         $this->elis_files->file_browse_options($COURSE->id, '', $ret['locations']);
@@ -182,7 +184,6 @@ class repository_elis_files extends repository {
             $userid = '';
         }
 
-
         // Find default $uuid
         // If we don't have something explicitly to load and we didn't get here from the drop-down...
         if (empty($uuid)) {
@@ -191,7 +192,7 @@ class repository_elis_files extends repository {
             } else if ($duuid = $this->elis_files->get_default_browsing_location($COURSE->id, $userid, $shared, $this->context)) {
                 $uuid = $duuid;
             }
-             // uid here is actually only set iff current uuid == get_user_store($USER->id)
+            // uid here is actually only set iff current uuid == get_user_store($USER->id)
             $uuuid = $this->elis_files->get_user_store($USER->id);
             if ($uuid == $uuuid) {
                 $uid = $USER->id;
@@ -283,11 +284,13 @@ class repository_elis_files extends repository {
 
         $node = $this->elis_files->get_info($uuid);
 
-        /*if (isloggedin()) {
+        /*
+        if (isloggedin()) {
             $username = $USER->username;
         } else {
             $username = '';
-        }*/
+        }
+        */
         // Test to make sure this works with, say, a teacher or someone non-admin
         $username = '';
 
@@ -358,7 +361,7 @@ class repository_elis_files extends repository {
         return $str;
     }
 
-    /*
+    /**
      * Popup to confirm the list of files to delete
      * @param   string  $parentuuid     parent uuid passed for refreshing page
      * @param   array   $files_array    list of files to be deleted
@@ -374,7 +377,7 @@ class repository_elis_files extends repository {
         $str .= '<div>'.get_string('deletecheckfiles','repository_elis_files').'</div>';
         $filelist = array();
         $str .= repository_elis_files::printfilelist($files_array, $filelist);
-        $str.='<input type="hidden" name="fileslist" id="fileslist" value="'.implode(",",$filelist).'">';
+        $str .= '<input type="hidden" name="fileslist" id="fileslist" value="'.implode(",",$filelist).'">';
         $resourcelist = false;
         $fs = get_file_storage();
 
@@ -387,32 +390,30 @@ class repository_elis_files extends repository {
             }
             if ($DB->record_exists('files', array('filename'=> $clean_name))) {
                 // Warn user that they are deleting a resource that is used...
-                $str.= '<p>' . get_string('warningdeleteresource', 'repository_elis_files', $clean_name);
+                $str .= '<p>'.get_string('warningdeleteresource', 'repository_elis_files', $clean_name).'</p>';
             }
         }
-        $str .=        ' </div>';
+        $str .= '</div>';
 
         return $str;
     }
 
-    /*
+    /**
      * Generate html string to return for popup
      * @return  string  $str
      */
-    // TODO: turn options into language strings... for all popups
     public function print_move_dialog($parentuuid, $selected_files) {
         global $CFG;
         $str = '<div>
-                        <div id="repository_tabs"></div>
-                        <input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'">
-                        <input type="hidden" name="selected_files" id="selected_files" value="'.implode(",",$selected_files).'">
-                        <input id="targetfolder" type="hidden" value = "" />
-                        </div>';
+                    <div id="repository_tabs"></div>
+                    <input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'">
+                    <input type="hidden" name="selected_files" id="selected_files" value="'.implode(",",$selected_files).'">
+                    <input id="targetfolder" type="hidden" value = "" />
+                </div>';
         return $str;
-
     }
 
-    /*
+    /**
      * Generate html string to return for popup
      * @param   string  $parentuuid parent uuid needed for page refresh
      * @return  string  $str
@@ -421,34 +422,34 @@ class repository_elis_files extends repository {
         global $CFG;
 
         $str = '<div>
-                        <input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'">
-                        <input type="text" id="newdirname" name="newdirname"/>
-                        </div>';
+                    <input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'">
+                    <input type="text" id="newdirname" name="newdirname"/>
+                </div>';
 
         return $str;
     }
 
-    /*
+    /**
      * Generate html string to return for popup
      * @return  string  $str
      */
     public function print_upload_popup() {
         global $CFG;
 
-        // TODO These css includes will need to be removed elsewhere
+        // TODO: These css includes will need to be moved elsewhere
         $str = '<link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/fileuploader.css" type="text/css" />
                 <link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" title="no title" charset="utf-8" />
-                <p><b>Uploading Tip</b></p>
-                <p>You can select more than one file for uploading by holding down the control key while clicking on the files.</p>
+                <p><b>'.get_string('uploadingtiptitle', 'repository_elis_files').'</b></p>
+                <p>'.get_string('uploadingtiptitle', 'repository_elis_files').'</p>
                 <div id="progressbar"></div>
                 <table style="border-style:none; padding:5px;">
                     <tr>
                         <td>
-                            <a id="uploadButton" href="javascript:void(0);"><input type="button" value="Select files" /></a>
+                            <a id="uploadButton" href="javascript:void(0);"><input type="button" value="'.get_string('selectfiles', 'repository_elis_files').'" /></a>
                             <div id="file-uploader"></div>
                         </td>
                         <td>
-                            <a id="uploadCloseButton" href="javascript:void(0);"><input type="button" value="Close" /></a>
+                            <a id="uploadCloseButton" href="javascript:void(0);"><input type="button" value="'.get_string('close').'" /></a>
                         </td>
                     </tr>
                 </table>';
@@ -520,7 +521,7 @@ class repository_elis_files extends repository {
         $ret['dynload'] = true;
         $ret['nologin'] = true;
         $ret['showselectedactions'] = true;
-        $ret['showcurrentactions'] = false;
+        $ret['showcurrentactions'] = false; // do not show current actions for search results because we are not in a folder
         $ret['list'] = array();
 
         if (!empty($search_text)) {
@@ -568,7 +569,7 @@ class repository_elis_files extends repository {
         return $ret;
     }
 
-    /*
+    /**
      * Return names of general options for this plugin
      * They can then be accessed in the construct with $this->
      */
@@ -582,11 +583,12 @@ class repository_elis_files extends repository {
                               'root_folder',        // Moodle root folder
                               'user_quota',         // User quota N.B. cache is now pulled from general Repository options
                               'deleteuserdir',      // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
-                              'default_browse'     // Where to start the file browsing session
+                              'default_browse'      // Where to start the file browsing session
                             );
 
         return $option_names;
     }
+
     /**
      * Add Plugin settings input to Moodle form
      * @param object $mform
@@ -657,7 +659,7 @@ class repository_elis_files extends repository {
         $rootfolderarray[] = MoodleQuickForm::createElement('button', 'root_folder_popup', get_string('chooserootfolder', 'repository_elis_files'), $button);
 
         $mform->addGroup($rootfolderarray, 'rootfolderar', get_string('rootfolder', 'repository_elis_files'), array(' '), false);
-         $mform->setDefault('root_folder', '/moodle');
+        $mform->setDefault('root_folder', '/moodle');
 
         // Add checkmark if get root folder works, or whatever...
         $valid = repository_elis_files::root_folder_is_valid($root_folder);
@@ -743,7 +745,6 @@ class repository_elis_files extends repository {
 
         // Only proceed here if the Alfresco plug-in is actually enabled.
         if (repository_elis_files::is_repo_visible('elis_files')) {
-
             if ($repo = repository_factory::factory('elis_files')) {
                 if (elis_files_get_home_directory($adminusername) == false) {
                     $mform->addElement('text', 'admin_username', get_string('configadminusername', 'repository_elis_files'), array('size' => '30'));
@@ -784,7 +785,6 @@ class repository_elis_files extends repository {
     function output_root_folder_html($data, $query = '') {
         global $CFG, $PAGE;
 
-
         $PAGE->requires->js('/repository/elis_files/rootfolder.js');
 
         $repoisup = false;
@@ -797,8 +797,8 @@ class repository_elis_files extends repository {
             $repoisup = $repo->is_configured() && $repo->verify_setup();
         }
 
-        $id="id_root_folder";
-        $name="root_folder";
+        $id = "id_root_folder";
+        $name = "root_folder";
         $inputs = '<div class="form-file defaultsnext"><input type="text" size="48" id="' . $id .
                   '" name="' . $name . '" value="' . s($data) . '" /> <input type="button" ' .
                   'onclick="return chooseRootFolder(document.getElementById(\'mform1\'));" value="' .
@@ -808,11 +808,11 @@ class repository_elis_files extends repository {
         return $inputs;
     }
 
-    /*
+    /**
      * Determine whether the root folder is valid
      * @return  string
      */
-    function root_folder_is_valid ($data) {
+    function root_folder_is_valid($data) {
         $repoisup = false;
 
     /// Validate the path, if we can.
@@ -854,6 +854,7 @@ class repository_elis_files extends repository {
             return true;
         }
     }
+
     public function supported_returntypes() {
         return (FILE_INTERNAL | FILE_EXTERNAL);
     }
@@ -890,7 +891,6 @@ class repository_elis_files extends repository {
         $USER->fileop = "";
     }
 
-
     function printfilelist($file_array, &$filelist= array()) {
         global $CFG;
 
@@ -899,7 +899,7 @@ class repository_elis_files extends repository {
             $file = $this->elis_files->get_info($uuid);
 
             if ($this->elis_files->is_dir($uuid)) {
-                $str.= "<img src=\"{$file->icon}\" height=\"16\" width=\"16\" alt=\"\" /> " .
+                $str .= "<img src=\"{$file->icon}\" height=\"16\" width=\"16\" alt=\"\" /> " .
                      $file->title . "<br />";
 
                 //also add to a hidden form element for each file
@@ -920,13 +920,13 @@ class repository_elis_files extends repository {
                     }
                 }
 
-                $str.= repository_elis_files::printfilelist($subfilelist, $filelist);
+                $str .= repository_elis_files::printfilelist($subfilelist, $filelist);
             } else {
                 $icon     = mimeinfo("icon", $file->filename);
                 $filename = $file->filename;
 
                 $icon = mimeinfo('icon', $file->filename);
-                $str.="<img src=\"{$file->icon}\"  height=\"16\" width=\"16\" alt=\"\" /> " .
+                $str .="<img src=\"{$file->icon}\"  height=\"16\" width=\"16\" alt=\"\" /> " .
                      $file->filename . "<br />";
                 //also add to a hidden form element for each file
                 $filelist[]= $uuid;
@@ -935,108 +935,106 @@ class repository_elis_files extends repository {
         return $str;
     }
 
+    function check_context($id, $uuid, $userid='') {
+        global $USER;
 
-function check_context($id, $uuid, $userid='') {
-    global $USER;
+        // I think that we should just return true/false here
+        /// Get the appropriate context for the site or a course.
+        if ($id == SITEID) {
+            $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        } else {
+            $context = get_context_instance(CONTEXT_COURSE, $id);
+        }
 
-    // I think that we should just return true/false here
-    /// Get the appropriate context for the site or a course.
-    if ($id == SITEID) {
-        $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
-    } else {
-        $context = get_context_instance(CONTEXT_COURSE, $id);
+    /// Make sure that we have the correct 'base' UUID for a course or user storage area as well
+    /// as checking for correct permissions.
+        if (!empty($userid) && !empty($id)) {
+            $personalfiles = false;
+            if (has_capability('repository/elis_files:viewowncontent')) {
+                $personalfiles = true;
+            }
+
+            if (!$personalfiles) {
+                $capabilityname = get_capability_string('repository/elis_files:viewowncontent');
+                print_error('nopermissions', '', '', $capabilityname);
+                exit;
+            }
+
+            if (empty($uuid)) {
+                $uuid = $repo->get_user_store($userid);
+            }
+
+        } else if (empty($userid) && !empty($shared)) {
+            $sharedfiles = false;
+
+            if (has_capability('repository/elis_files:viewsharedcontent')) {
+                $sharedfiles = true;
+            }
+
+            if (!$sharedfiles) {
+                $capabilityname = get_capability_string('repository/elis_files:viewsharedcontent');
+                print_error('nopermissions', '', '', $capabilityname);
+                exit;
+            }
+
+            if (empty($uuid)) {
+                $uuid = $repo->suuid;
+            }
+
+        } else if (!empty($id) && $id != SITEID) {
+            require_capability('repository/elis_files:viewcoursecontent', $context);
+
+            if (empty($uuid)) {
+                $uuid = $repo->get_course_store($id);
+            }
+        } else {
+            require_capability('repository/elis_files:viewsitecontent', $context);
+        }
     }
 
-/// Make sure that we have the correct 'base' UUID for a course or user storage area as well
-/// as checking for correct permissions.
-    if (!empty($userid) && !empty($id)) {
-        $personalfiles = false;
-        if (has_capability('repository/elis_files:viewowncontent')) {
-            $personalfiles = true;
+    function check_editing_permissions($context, $id, $uuid, $userid = '') {
+        global $USER;
+
+    /// Get the context instance for where we originated viewing this browser from.
+        if ($id == SITEID) {
+            $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        } else {
+            $context = get_context_instance(CONTEXT_COURSE, $id);
         }
+    /// Determine whether the current user has editing persmissions.
+        $canedit = false;
 
-        if (!$personalfiles) {
-            $capabilityname = get_capability_string('repository/elis_files:viewowncontent');
-            print_error('nopermissions', '', '', $capabilityname);
-            exit;
-        }
-
-        if (empty($uuid)) {
-            $uuid = $repo->get_user_store($userid);
-        }
-
-    } else if (empty($userid) && !empty($shared)) {
-        $sharedfiles = false;
-
-        if (has_capability('repository/elis_files:viewsharedcontent')) {
-            $sharedfiles = true;
-        }
-
-        if (!$sharedfiles) {
-            $capabilityname = get_capability_string('repository/elis_files:viewsharedcontent');
-            print_error('nopermissions', '', '', $capabilityname);
-            exit;
-        }
-
-        if (empty($uuid)) {
-            $uuid = $repo->suuid;
-        }
-
-    } else if (!empty($id) && $id != SITEID) {
-        require_capability('repository/elis_files:viewcoursecontent', $context);
-
-        if (empty($uuid)) {
-            $uuid = $repo->get_course_store($id);
-        }
-    } else {
-        require_capability('repository/elis_files:viewsitecontent', $context);
-    }
-}
-
-function check_editing_permissions($context, $id, $uuid, $userid = '') {
-    global $USER;
-
-/// Get the context instance for where we originated viewing this browser from.
-    if ($id == SITEID) {
-        $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
-    } else {
-        $context = get_context_instance(CONTEXT_COURSE, $id);
-    }
-/// Determine whether the current user has editing persmissions.
-    $canedit = false;
-
-    if (empty($userid) && empty($shared)) {
-        if (($id == SITEID && has_capability('repository/elis_files:createsitecontent', $context)) ||
-            ($id != SITEID && has_capability('repository/elis_files:createcoursecontent', $context)) ||
-            ($id != SITEID && has_capability('repository/elis_files:createusersetcontent', $context))) {
-            $canedit = true;
-        }
-    } else if (empty($userid) && $shared == 'true') {
-        if (has_capability('repository/elis_files:createsharedcontent', $context, $USER->id)) {
-            $canedit = true;
-        }
-    } else {
-        if ($USER->id == $userid) {
-            if (has_capability('repository/elis_files:viewowncontent', $context, $USER->id)) {
+        if (empty($userid) && empty($shared)) {
+            if (($id == SITEID && has_capability('repository/elis_files:createsitecontent', $context)) ||
+                ($id != SITEID && has_capability('repository/elis_files:createcoursecontent', $context)) ||
+                ($id != SITEID && has_capability('repository/elis_files:createusersetcontent', $context))) {
+                $canedit = true;
+            }
+        } else if (empty($userid) && $shared == 'true') {
+            if (has_capability('repository/elis_files:createsharedcontent', $context, $USER->id)) {
                 $canedit = true;
             }
         } else {
-            if (has_capability('repository/elis_files:createsitecontent', $context, $USER->id)) {
-                $canedit = true;
-            } else if (has_capability('repository/elis_files:createusersetcontent', $context, $USER->id)) {
-                $canedit = true;
+            if ($USER->id == $userid) {
+                if (has_capability('repository/elis_files:viewowncontent', $context, $USER->id)) {
+                    $canedit = true;
+                }
+            } else {
+                if (has_capability('repository/elis_files:createsitecontent', $context, $USER->id)) {
+                    $canedit = true;
+                } else if (has_capability('repository/elis_files:createusersetcontent', $context, $USER->id)) {
+                    $canedit = true;
+                }
             }
         }
+        return $canedit;
     }
-    return $canedit;
-}
 
-    /*
+    /**
      * Calculate parent path for this uuid
      * string   uuid    node uuid
      */
     function get_parent_path($uuid, &$path = array()) {
-
         $parent_node = $this->elis_files->get_parent($uuid);
         if ($parent_node) {
             $path[] = array('name'=>$parent_node->title,'uuid'=>$parent_node->uuid, 'path'=>$parent_node->uuid);
@@ -1058,6 +1056,7 @@ function check_editing_permissions($context, $id, $uuid, $userid = '') {
         $parent_path = array();
         repository_elis_files::get_parent_path($uuid, $parent_path);
         array_reverse($parent_path);
+
         // Check if current path IS the parent! // ELIS Site Files
         if (empty($parent_path)) {
             $parent = array('name'=> get_string('repositorysitefiles','repository_elis_files'),
@@ -1078,19 +1077,21 @@ function check_editing_permissions($context, $id, $uuid, $userid = '') {
                 $parent = $parent_found[0];
             }
         }
+
         return $parent;
     }
+
     function search_array($array, $key, $value) {
         $results = array();
 
-        if (is_array($array))
-        {
-
-            if (isset($array[$key]) && $array[$key] == $value)
+        if (is_array($array)) {
+            if (isset($array[$key]) && $array[$key] == $value) {
                 $results[] = $array;
+            }
 
-            foreach ($array as $subarray)
+            foreach ($array as $subarray) {
                 $results = array_merge($results, repository_elis_files::search_array($subarray, $key, $value));
+            }
         }
 
         return $results;

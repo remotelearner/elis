@@ -1,9 +1,9 @@
 <?php
 /**
- * Alfresco CMIS REST interface API for Alfresco version 3.0
+ * Alfresco CMIS REST interface API for Alfresco version 3.2 / 3.4
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2009 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,14 +22,13 @@
  * @subpackage curriculummanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 require_once dirname(__FILE__). '/ELIS_files.php';
 require_once dirname(dirname(dirname(dirname(__FILE__)))). '/elis/core/lib/setup.php';
 require_once dirname(__FILE__) . '/cmis-php/cmis_repository_wrapper.php';
-
 
 /**
  * Send a GET request to the Alfresco repository.

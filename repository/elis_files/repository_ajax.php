@@ -68,7 +68,7 @@ switch ($action) {
         $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
         $return = new stdClass();
         if ($repo->elis_files->dir_exists($newdirname,$parentuuid)) {
-            $return->error = 'This folder exists';
+            $return->error = get_string('folderalreadyexists', 'repository_elis_files');
         } else {
             $repo->elis_files->create_dir($newdirname,$parentuuid);
         }
@@ -143,9 +143,9 @@ switch ($action) {
         foreach ($files_array as $file) {
             if (!elis_files_move_node($file, $targetuuid)) {
                 if ($properties = $repo->get_info($file)) {
-                    echo '<p>Error: ' . $properties->title . ' not moved';
+                    echo '<p>'.get_string('errortitlenotmoved', 'repository_elis_files', $properties->title).'</p>';
                 } else {
-                    echo '<p>Error: File not moved';
+                    echo '<p>'.get_string('errorfilenotmoved', 'repository_elis_files').'</p>';
                 }
             }
         }

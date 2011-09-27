@@ -6,7 +6,7 @@
  * Note: shamelessly "borrowed" from /enrol/enrol.class.php
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2009 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
  * @subpackage elis_files
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -56,24 +56,23 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
-    class repository_factory {
+class repository_factory {
 
-        function factory() {
-            global $SESSION, $USER;
-            if (file_exists(dirname(__FILE__).'/lib/ELIS_files.php')) {
-                require_once(dirname(__FILE__).'/lib/ELIS_files.php');
+    function factory() {
+        global $SESSION, $USER;
+        if (file_exists(dirname(__FILE__).'/lib/ELIS_files.php')) {
+            require_once(dirname(__FILE__).'/lib/ELIS_files.php');
 
-                $class = "ELIS_files";
-                                if (!(isset($SESSION->repo))) {
-                    $SESSION->repo = new $class;
-                } else {
-                    $SESSION->repo = unserialize(serialize($SESSION->repo));
-                }
-                return $SESSION->repo;
+            $class = "ELIS_files";
+                            if (!(isset($SESSION->repo))) {
+                $SESSION->repo = new $class;
             } else {
-                trigger_error(dirname(__FILE__).'/lib/ELIS_files.php does not exist');
-                error(dirname(__FILE__).'/lib/ELIS_files.php does not exist');
+                $SESSION->repo = unserialize(serialize($SESSION->repo));
             }
+            return $SESSION->repo;
+        } else {
+            trigger_error(dirname(__FILE__).'/lib/ELIS_files.php does not exist');
+            error(dirname(__FILE__).'/lib/ELIS_files.php does not exist');
         }
     }
-
+}

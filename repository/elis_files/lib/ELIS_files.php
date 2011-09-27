@@ -6,7 +6,7 @@
  *       in the /enrol/ directory.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2009 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
  * @subpackage elis files
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -259,7 +259,7 @@ class ELIS_files {
             }
 
             $dir = $this->read_dir($root->uuid, true);
-//print_object($dir);
+
             if (!empty($dir->folders)) {
                 foreach ($dir->folders as $folder) {
                     if ($folder->title == 'moodle') {
@@ -373,7 +373,7 @@ class ELIS_files {
             if (!$root = $this->cmis->getObjectByPath('/')) {
                 return false;
             }
-//print_object($root);
+
             $type = '';
 
             return elis_files_process_node_new($root, $type);
@@ -403,15 +403,17 @@ class ELIS_files {
 
         // Set the config object to what was retrieved from get_config
         $this->config = $config;
-//TODO: for the install issue
-//echo '<br>config:';
-//print_object($config);
+        //TODO: for the install issue
+        //echo '<br>config:';
+        //print_object($config);
 
-       /* set_config('repository_elis_files_server_host', stripslashes(trim($config->server_host)));
+        /*
+        set_config('repository_elis_files_server_host', stripslashes(trim($config->server_host)));
         set_config('repository_elis_files_server_port', stripslashes(trim($config->server_port)));
         set_config('repository_elis_files_server_username', stripslashes(trim($config->server_username)));
         set_config('repository_elis_files_server_password', stripslashes(trim($config->server_password)));
-*/
+        */
+
         return true;
     }
 
@@ -668,7 +670,7 @@ class ELIS_files {
                     $uuid = $root->uuid;
                 }
             }
-//print_object('workspace://SpacesStore/' . $uuid);
+
             if (!$result = $this->cmis->getChildren('workspace://SpacesStore/' . $uuid)) {
                 return false;
             }
@@ -1033,41 +1035,39 @@ class ELIS_files {
 
         if ($alfresco_version == '3.2.1') {
             if ($node = elis_files_upload_file($upload, $path, $uuid)) {
-            if (ELIS_FILES_DEBUG_TIME) {
-                $end  = microtime(true);
-                $time = $end - $start;
-                mtrace("upload_file('$upload', '$path', '$uuid'): $time");
+                if (ELIS_FILES_DEBUG_TIME) {
+                    $end  = microtime(true);
+                    $time = $end - $start;
+                    mtrace("upload_file('$upload', '$path', '$uuid'): $time");
+                }
+                return $node->uuid;
             }
 
-            return $node->uuid;
-        }
-
-        return false;
-        } else { // Alfresco 3.4
-require_once($CFG->libdir . '/filelib.php');
-
-        if (!empty($upload)) {
-            if (!isset($_FILES[$upload]) || !empty($_FILES[$upload]->error)) {
-                return false;
-            }
-
-            $filename = $_FILES[$upload]['name'];
-            $filepath = $_FILES[$upload]['tmp_name'];
-            $filemime = $_FILES[$upload]['type'];
-            $filesize = $_FILES[$upload]['size'];
-
-        } else if (!empty($path)) {
-            if (!is_file($path)) {
-                return false;
-            }
-
-            $filename = basename($path);
-            $filepath = $path;
-            $filemime = mimeinfo('type', $filename);
-            $filesize = filesize($path);
-        } else {
             return false;
-        }
+        } else { // Alfresco 3.4
+            require_once($CFG->libdir . '/filelib.php');
+
+            if (!empty($upload)) {
+                if (!isset($_FILES[$upload]) || !empty($_FILES[$upload]->error)) {
+                    return false;
+                }
+
+                $filename = $_FILES[$upload]['name'];
+                $filepath = $_FILES[$upload]['tmp_name'];
+                $filemime = $_FILES[$upload]['type'];
+                $filesize = $_FILES[$upload]['size'];
+            } else if (!empty($path)) {
+                if (!is_file($path)) {
+                    return false;
+                }
+
+                $filename = basename($path);
+                $filepath = $path;
+                $filemime = mimeinfo('type', $filename);
+                $filesize = filesize($path);
+            } else {
+                return false;
+            }
 
 //        if (!$content = file_get_contents($filepath)) {
 //            return false;
@@ -1084,9 +1084,9 @@ require_once($CFG->libdir . '/filelib.php');
 //        return false;
 //    }
 
-        $chunksize = 8192;
+            $chunksize = 8192;
 
-        $data1 = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            $data1 = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <atom:entry xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
             xmlns:cmism="http://docs.oasis-open.org/ns/cmis/messaging/200908/"
             xmlns:atom="http://www.w3.org/2005/Atom"
@@ -1110,176 +1110,176 @@ require_once($CFG->libdir . '/filelib.php');
     </cmisra:object>
 </atom:entry>';
 
-        $encodedbytes = 0;
+            $encodedbytes = 0;
 
-        // Use a stream filter to base64 encode the file contents to a temporary file.
-        if ($fi = fopen($filepath, 'r')) {
-            if ($fo = tmpfile()) {
-                stream_filter_append($fi, 'convert.base64-encode');
+            // Use a stream filter to base64 encode the file contents to a temporary file.
+            if ($fi = fopen($filepath, 'r')) {
+                if ($fo = tmpfile()) {
+                    stream_filter_append($fi, 'convert.base64-encode');
 
-                // Write the beginning of the XML document to the temporary file.
-                $encodedbytes += fwrite($fo, $data1, strlen($data1));
+                    // Write the beginning of the XML document to the temporary file.
+                    $encodedbytes += fwrite($fo, $data1, strlen($data1));
 
-                // Copy the uploaded file into the temporary file (usng the base64 encode stream filter)
-                // in 8K chunks to conserve memory.
-                while(($encbytes = stream_copy_to_stream($fi, $fo, $chunksize)) !== 0) {
-                    $encodedbytes += $encbytes;
+                    // Copy the uploaded file into the temporary file (usng the base64 encode stream filter)
+                    // in 8K chunks to conserve memory.
+                    while(($encbytes = stream_copy_to_stream($fi, $fo, $chunksize)) !== 0) {
+                        $encodedbytes += $encbytes;
+                    }
+                    fclose($fi);
+
+                    // Write the end of the XML document to the temporary file.
+                    $encodedbytes += fwrite($fo, $data2, strlen($data2));
                 }
-                fclose($fi);
-
-                // Write the end of the XML document to the temporary file.
-                $encodedbytes += fwrite($fo, $data2, strlen($data2));
             }
-        }
 
-        rewind($fo);
+            rewind($fo);
 
-        // Force the usage of the configured Alfresco admin account, if requested.
-        if ($useadmin) {
-            $username = '';
-        } else {
-            $username = $USER->username;
-        }
-
-        $serviceuri = '/cmis/s/workspace://SpacesStore/i/' . $uuid . '/children';
-        $url        = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);
-
-        $uri        = parse_url($url);
-
-        switch ($uri['scheme']) {
-            case 'http':
-                $port = isset($uri['port']) ? $uri['port'] : 80;
-                $host = $uri['host'] . ($port != 80 ? ':'. $port : '');
-                $fp = @fsockopen($uri['host'], $port, $errno, $errstr, 15);
-                break;
-
-            case 'https':
-            /// Note: Only works for PHP 4.3 compiled with OpenSSL.
-                $port = isset($uri['port']) ? $uri['port'] : 443;
-                $host = $uri['host'] . ($port != 443 ? ':'. $port : '');
-                $fp = @fsockopen('ssl://'. $uri['host'], $port, $errno, $errstr, 20);
-                break;
-
-            default:
-                $result->error = 'invalid schema '. $uri['scheme'];
-                return $result;
-        }
-
-        // Make sure the socket opened properly.
-        if (!$fp) {
-            $result->error = trim($errno .' '. $errstr);
-            return $result;
-        }
-
-        // Construct the path to act on.
-        $path = isset($uri['path']) ? $uri['path'] : '/';
-        if (isset($uri['query'])) {
-            $path .= '?'. $uri['query'];
-        }
-
-        // Create HTTP request.
-        $headers = array(
-            // RFC 2616: "non-standard ports MUST, default ports MAY be included".
-            // We don't add the port to prevent from breaking rewrite rules checking
-            // the host that do not take into account the port number.
-            'Host'           => "Host: $host",
-            'Content-type'   => 'Content-type: application/atom+xml;type=entry',
-            'User-Agent'     => 'User-Agent: Moodle (+http://moodle.org/)',
-            'Content-Length' => 'Content-Length: ' . $encodedbytes,
-            'MIME-Version'   => 'MIME-Version: 1.0'
-        );
-
-        $request = 'POST  '. $path . " HTTP/1.0\r\n";
-        $request .= implode("\r\n", $headers);
-        $request .= "\r\n\r\n";
-
-        fwrite($fp, $request);
-
-        // Write the XML request (which contains the base64-encoded uploaded file contents) into the socket.
-        stream_copy_to_stream($fo, $fp);
-
-        fclose($fo);
-
-        fwrite($fp, "\r\n");
-
-        // Fetch response.
-        $response = '';
-        while (!feof($fp) && $chunk = fread($fp, 1024)) {
-            $response .= $chunk;
-        }
-        fclose($fp);
-
-        // Parse response.
-        list($split, $result->data) = explode("\r\n\r\n", $response, 2);
-        $split = preg_split("/\r\n|\n|\r/", $split);
-
-        list($protocol, $code, $text) = explode(' ', trim(array_shift($split)), 3);
-        $result->headers = array();
-
-        // Parse headers.
-        while ($line = trim(array_shift($split))) {
-            list($header, $value) = explode(':', $line, 2);
-            if (isset($result->headers[$header]) && $header == 'Set-Cookie') {
-                // RFC 2109: the Set-Cookie response header comprises the token Set-
-                // Cookie:, followed by a comma-separated list of one or more cookies.
-                $result->headers[$header] .= ','. trim($value);
+            // Force the usage of the configured Alfresco admin account, if requested.
+            if ($useadmin) {
+                $username = '';
             } else {
-                $result->headers[$header] = trim($value);
-            }
-        }
-
-        $responses = array(
-            100 => 'Continue', 101 => 'Switching Protocols',
-            200 => 'OK', 201 => 'Created', 202 => 'Accepted', 203 => 'Non-Authoritative Information', 204 => 'No Content', 205 => 'Reset Content', 206 => 'Partial Content',
-            300 => 'Multiple Choices', 301 => 'Moved Permanently', 302 => 'Found', 303 => 'See Other', 304 => 'Not Modified', 305 => 'Use Proxy', 307 => 'Temporary Redirect',
-            400 => 'Bad Request', 401 => 'Unauthorized', 402 => 'Payment Required', 403 => 'Forbidden', 404 => 'Not Found', 405 => 'Method Not Allowed', 406 => 'Not Acceptable', 407 => 'Proxy Authentication Required', 408 => 'Request Time-out', 409 => 'Conflict', 410 => 'Gone', 411 => 'Length Required', 412 => 'Precondition Failed', 413 => 'Request Entity Too Large', 414 => 'Request-URI Too Large', 415 => 'Unsupported Media Type', 416 => 'Requested range not satisfiable', 417 => 'Expectation Failed',
-            500 => 'Internal Server Error', 501 => 'Not Implemented', 502 => 'Bad Gateway', 503 => 'Service Unavailable', 504 => 'Gateway Time-out', 505 => 'HTTP Version not supported'
-        );
-
-        // RFC 2616 states that all unknown HTTP codes must be treated the same as
-        // the base code in their class.
-        if (!isset($responses[$code])) {
-            $code = floor($code / 100) * 100;
-        }
-    //TODO: check for $code 500 and add menu to replace copy or cancel the uploaded file with the same name as an existing file
-    //        if($code == 500) {
-    //
-    //        } else
-        if ($code != 200 && $code != 201 && $code != 304) {
-            debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $serviceuri), DEBUG_DEVELOPER);
-            return false;
-        }
-
-        $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
-
-        $dom = new DOMDocument();
-        $dom->preserveWhiteSpace = false;
-        $dom->loadXML($result->data);
-
-        $nodes = $dom->getElementsByTagName('entry');
-
-        if (!$nodes->length) {
-            return false;
-        }
-
-        $type       = '';
-        $properties = elis_files_process_node_old($dom, $nodes->item(0), $type);
-
-        // Ensure that we set the current user to be the owner of the newly created directory.
-        if (!empty($properties->uuid)) {
-            // So that we don't conflict with the default Alfresco admin account.
-            $username = $USER->username == 'admin' ? $this->config->admin_username : $USER->username;
-
-            // We must include the tenant portion of the username here.
-            if (($tenantname = strpos($this->config->server_username, '@')) > 0) {
-                $username .= substr($this->config->server_username, $tenantname);
+                $username = $USER->username;
             }
 
-            // We're not going to check the response for this right now.
-            elis_files_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
-        }
+            $serviceuri = '/cmis/s/workspace://SpacesStore/i/' . $uuid . '/children';
+            $url        = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);
 
-        return $properties;
+            $uri        = parse_url($url);
+
+            switch ($uri['scheme']) {
+                case 'http':
+                    $port = isset($uri['port']) ? $uri['port'] : 80;
+                    $host = $uri['host'] . ($port != 80 ? ':'. $port : '');
+                    $fp = @fsockopen($uri['host'], $port, $errno, $errstr, 15);
+                    break;
+
+                case 'https':
+                /// Note: Only works for PHP 4.3 compiled with OpenSSL.
+                    $port = isset($uri['port']) ? $uri['port'] : 443;
+                    $host = $uri['host'] . ($port != 443 ? ':'. $port : '');
+                    $fp = @fsockopen('ssl://'. $uri['host'], $port, $errno, $errstr, 20);
+                    break;
+
+                default:
+                    $result->error = 'invalid schema '. $uri['scheme'];
+                    return $result;
+            }
+
+            // Make sure the socket opened properly.
+            if (!$fp) {
+                $result->error = trim($errno .' '. $errstr);
+                return $result;
+            }
+
+            // Construct the path to act on.
+            $path = isset($uri['path']) ? $uri['path'] : '/';
+            if (isset($uri['query'])) {
+                $path .= '?'. $uri['query'];
+            }
+
+            // Create HTTP request.
+            $headers = array(
+                // RFC 2616: "non-standard ports MUST, default ports MAY be included".
+                // We don't add the port to prevent from breaking rewrite rules checking
+                // the host that do not take into account the port number.
+                'Host'           => "Host: $host",
+                'Content-type'   => 'Content-type: application/atom+xml;type=entry',
+                'User-Agent'     => 'User-Agent: Moodle (+http://moodle.org/)',
+                'Content-Length' => 'Content-Length: ' . $encodedbytes,
+                'MIME-Version'   => 'MIME-Version: 1.0'
+            );
+
+            $request = 'POST  '. $path . " HTTP/1.0\r\n";
+            $request .= implode("\r\n", $headers);
+            $request .= "\r\n\r\n";
+
+            fwrite($fp, $request);
+
+            // Write the XML request (which contains the base64-encoded uploaded file contents) into the socket.
+            stream_copy_to_stream($fo, $fp);
+
+            fclose($fo);
+
+            fwrite($fp, "\r\n");
+
+            // Fetch response.
+            $response = '';
+            while (!feof($fp) && $chunk = fread($fp, 1024)) {
+                $response .= $chunk;
+            }
+            fclose($fp);
+
+            // Parse response.
+            list($split, $result->data) = explode("\r\n\r\n", $response, 2);
+            $split = preg_split("/\r\n|\n|\r/", $split);
+
+            list($protocol, $code, $text) = explode(' ', trim(array_shift($split)), 3);
+            $result->headers = array();
+
+            // Parse headers.
+            while ($line = trim(array_shift($split))) {
+                list($header, $value) = explode(':', $line, 2);
+                if (isset($result->headers[$header]) && $header == 'Set-Cookie') {
+                    // RFC 2109: the Set-Cookie response header comprises the token Set-
+                    // Cookie:, followed by a comma-separated list of one or more cookies.
+                    $result->headers[$header] .= ','. trim($value);
+                } else {
+                    $result->headers[$header] = trim($value);
+                }
+            }
+
+            $responses = array(
+                100 => 'Continue', 101 => 'Switching Protocols',
+                200 => 'OK', 201 => 'Created', 202 => 'Accepted', 203 => 'Non-Authoritative Information', 204 => 'No Content', 205 => 'Reset Content', 206 => 'Partial Content',
+                300 => 'Multiple Choices', 301 => 'Moved Permanently', 302 => 'Found', 303 => 'See Other', 304 => 'Not Modified', 305 => 'Use Proxy', 307 => 'Temporary Redirect',
+                400 => 'Bad Request', 401 => 'Unauthorized', 402 => 'Payment Required', 403 => 'Forbidden', 404 => 'Not Found', 405 => 'Method Not Allowed', 406 => 'Not Acceptable', 407 => 'Proxy Authentication Required', 408 => 'Request Time-out', 409 => 'Conflict', 410 => 'Gone', 411 => 'Length Required', 412 => 'Precondition Failed', 413 => 'Request Entity Too Large', 414 => 'Request-URI Too Large', 415 => 'Unsupported Media Type', 416 => 'Requested range not satisfiable', 417 => 'Expectation Failed',
+                500 => 'Internal Server Error', 501 => 'Not Implemented', 502 => 'Bad Gateway', 503 => 'Service Unavailable', 504 => 'Gateway Time-out', 505 => 'HTTP Version not supported'
+            );
+
+            // RFC 2616 states that all unknown HTTP codes must be treated the same as
+            // the base code in their class.
+            if (!isset($responses[$code])) {
+                $code = floor($code / 100) * 100;
+            }
+            //TODO: check for $code 500 and add menu to replace copy or cancel the uploaded file with the same name as an existing file
+            //        if($code == 500) {
+            //
+            //        } else
+            if ($code != 200 && $code != 201 && $code != 304) {
+                debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $serviceuri), DEBUG_DEVELOPER);
+                return false;
+            }
+
+            $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
+
+            $dom = new DOMDocument();
+            $dom->preserveWhiteSpace = false;
+            $dom->loadXML($result->data);
+
+            $nodes = $dom->getElementsByTagName('entry');
+
+            if (!$nodes->length) {
+                return false;
+            }
+
+            $type       = '';
+            $properties = elis_files_process_node_old($dom, $nodes->item(0), $type);
+
+            // Ensure that we set the current user to be the owner of the newly created directory.
+            if (!empty($properties->uuid)) {
+                // So that we don't conflict with the default Alfresco admin account.
+                $username = $USER->username == 'admin' ? $this->config->admin_username : $USER->username;
+
+                // We must include the tenant portion of the username here.
+                if (($tenantname = strpos($this->config->server_username, '@')) > 0) {
+                    $username .= substr($this->config->server_username, $tenantname);
+                }
+
+                // We're not going to check the response for this right now.
+                elis_files_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
+            }
+
+            return $properties;
         }
     }
 
@@ -2100,8 +2100,7 @@ require_once($CFG->libdir . '/filelib.php');
         }
 
         preg_match('/\\' . $moodleroot . '\/course\/([0-9]+)\//', $path, $matches);
-//echo '<br>moodleroot: '.$moodleroot.' path: '.$path.' matches: ';
-//print_object($matches);
+
     /// Determine, from the node path which area this file is stored in.
         if (count($matches) == 2) {
             $cid     = $matches[1];
@@ -2143,8 +2142,7 @@ require_once($CFG->libdir . '/filelib.php');
         if (!isset($context)) {
             $context = get_context_instance(CONTEXT_SYSTEM);
         }
-//echo '<br>context: ';
-//print_object($context);
+
     /// Attempt to determine where the file open request came from to determine if the current user
     /// has permission to access that file in Moodle (this overrides the current user's Alfresco
     /// permissions.
@@ -2206,7 +2204,8 @@ require_once($CFG->libdir . '/filelib.php');
             /// specific capability anywhere within the user's role assignments.
                 $hascap = false;
 
-                /*if (!empty($USER->access['rdef'])) {
+                /*
+                if (!empty($USER->access['rdef'])) {
                     foreach ($USER->access['rdef'] as $ctx) {
                         if (isset($ctx['repository/elis_files:viewowncontent']) &&
                                   $ctx['repository/elis_files:viewowncontent'] == CAP_ALLOW) {
@@ -2214,7 +2213,8 @@ require_once($CFG->libdir . '/filelib.php');
                         }
 
                     }
-                }*/
+                }
+                */
                 if (has_capability('repository/elis_files:viewowncontent', $context)) {
                     $hascap = true;
                 }
@@ -2235,14 +2235,16 @@ require_once($CFG->libdir . '/filelib.php');
             /// specific capability anywhere within the user's role assignments.
                 $hascap = false;
 
-                /*if (!empty($USER->access['rdef'])) {
+                /*
+                if (!empty($USER->access['rdef'])) {
                     foreach ($USER->access['rdef'] as $ctx) {
                         if (isset($ctx['repository/elis_files:viewsharedcontent'])&&
                                   $ctx['repository/elis_files:viewsharedcontent'] == CAP_ALLOW) {
                             $hascap = true;
                         }
                     }
-                }*/
+                }
+                */
                 if (has_capability('repository/elis_files:viewsharedcontent', $context)) {
                     $hascap = true;
                 }
@@ -2299,7 +2301,7 @@ require_once($CFG->libdir . '/filelib.php');
     function category_get_parent($catid) {
         global $DB;
 
-//        if (ELIS_FILES_DEBUG_TRACE) mtrace('category_get_parent(' . $catid . ')');
+        if (ELIS_FILES_DEBUG_TRACE) mtrace('category_get_parent(' . $catid . ')');
 
         $pid = $DB->get_field('elis_files_categories', 'parent', array('id'=> $catid));
 
@@ -2483,7 +2485,8 @@ require_once($CFG->libdir . '/filelib.php');
         $viewalfuserset = false;
         $editalfuserset = false;
 
-        /*if (!empty($USER->access['rdef'])) {
+        /*
+        if (!empty($USER->access['rdef'])) {
             foreach ($USER->access['rdef'] as $rdef) {
                 if ($viewalfshared && $editalfshared &&
                     $viewalfuserset && $editalfuserset) {
@@ -2512,37 +2515,33 @@ require_once($CFG->libdir . '/filelib.php');
                     $editalfuserset = true;
                 }
             }
-        }*/
+        }
+        */
 
 //        $editalfpersonal           = has_capability('repository/elis_files:createowncontent', $context);
         $viewalfshared             = has_capability('repository/elis_files:viewsharedcontent', $context);
         $editalfshared             = has_capability('repository/elis_files:createsharedcontent', $context);
         $viewalfuserset            = has_capability('repository/elis_files:viewusersetcontent', $context);
         $editalfuserset            = has_capability('repository/elis_files:createusersetcontent', $context);
-//echo '<br>context: ';
-//print_object($context);
 //        $editmoodle            = has_capability('moodle/course:managefiles', $context);
         $editalfsite           = has_capability('repository/elis_files:createsitecontent', $context);
-//        if ($editalfsite) echo 'can edit alf site';
         $viewalfsite           = has_capability('repository/elis_files:viewsitecontent', $context);
-//        if ($viewalfsite) echo 'can view alf site';
         $editalfcourse         = has_capability('repository/elis_files:createcoursecontent', $context);
         $viewalfcourse         = has_capability('repository/elis_files:viewcoursecontent', $context);
-//echo '<br>edit alf site: '.$editalfsite.' view alf site: '.$viewalfsite.' edit alf course: '.$editalfcourse.' view alf course: '.$viewalfcourse;
-//echo '<br>view alf shared: '.$viewalfshared.' edit alf shared: '.$editalfshared.' view alf userset: '.$viewalfuserset.' edit alf userset: '.$editalfuserset;
+
         // Build the option for browsing from the Moodle site files.
-      /*  if ($editmoodle) {
+        /*
+        if ($editmoodle) {
             $surl        = $moodleurl . 'id=' . $cid . '&amp;userid=' . $uid . '&amp;choose=' . $choose;
             $opts[$surl] = ($cid == SITEID) ? get_string('sitefiles') : get_string('coursefiles');
-        }*/
-//if ($viewalfsite) echo '<br>can view alf site';
+        }
+        */
+
         // Build the option for browsing from the repository userset / course / site files.
         if ($viewalfsite) {
 //            $curl        = $alfrescourl . 'id=' . $cid . '&amp;userid=0&amp;choose=' . $choose;
 //            $opts[$curl] = get_string('repositorysitefiles', 'repository');
             $alfroot = $this->get_root();
-//echo '<br>alf root';
-//print_object($alfroot);
             if (!empty($alfroot->uuid)) {
                 $uuid = $alfroot->uuid;
 
@@ -2650,8 +2649,7 @@ require_once($CFG->libdir . '/filelib.php');
 //                   ($editalfpersonal ? $uid : '0') . '&amp;choose=' . $choose;
 
         //NOT sure how to 'select' default... hmmm...
-//echo '<br>opts:';
-//print_object($opts);
+
         return $opts;
     }
 
@@ -2690,11 +2688,8 @@ require_once($CFG->libdir . '/filelib.php');
         // Get cm userid
         $userid = pm_get_crlmuserid($muserid);
         // Get user clusters
-//        echo '<br>muserid: '.$muserid.' cm userid: '.$userid;
         $clusters = cluster_get_user_clusters($userid);
         if ($clusters->valid()) {
-//            echo '<br>clusters for userid: '.$userid.' : ';
-//            print_object($clusters);
 //            $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
             if (!$cluster_info = $this->load_cluster_info($clusters, $userid)) {
                 return false;
@@ -2741,7 +2736,8 @@ require_once($CFG->libdir . '/filelib.php');
     function load_cluster_info($clusterinfo, $muserid) {
         global $DB;
 
-       /* if (is_int($clusterinfo) || is_numeric($clusterinfo)) {
+        /*
+        if (is_int($clusterinfo) || is_numeric($clusterinfo)) {
             if (!isset($cluster_data)) {
                 $cluster_data = array();
             }
@@ -2749,15 +2745,15 @@ require_once($CFG->libdir . '/filelib.php');
                 $ucid = 0;
             }
             $cluster_data[$ucid] = new cluster($clusterinfo);
-        } else */
-//        if (is_array($clusterinfo)) {
+        } elseif (is_array($clusterinfo)) {
+        */
             foreach ($clusterinfo as $ucid => $usercluster) {
                 if (!isset($cluster_data)) {
                     $cluster_data = array();
                 }
                 $cluster_data[$ucid] = new userset($usercluster->clusterid);
             }
-//        }
+        //}
         return $cluster_data;
     }
 /**
@@ -2866,7 +2862,7 @@ require_once($CFG->libdir . '/filelib.php');
                 }
             }
 
-            // Redmove the old-style user storage directory.
+            // Remove the old-style user storage directory.
             if (!elis_files_delete($uuid, true)) {
                 debugging(get_string('couldnotdeletefile', 'repository_elis_files', $user->id));
                 return false;
@@ -3144,7 +3140,6 @@ require_once($CFG->libdir . '/filelib.php');
         }
 
         $location = $USER->elis_files_repository_location;
-//print_object($location);
         // If the previous value comes from within a course that is not the current course, return the root
         // storage value for the current course directory.
         if (!empty($location->uuid) && isset($location->cid) && ($location->cid != $cid) &&
@@ -3178,7 +3173,8 @@ require_once($CFG->libdir . '/filelib.php');
                 // Check for correct permissions
                 $personalfiles = false;
 
-                /*if (!empty($USER->access['rdef'])) {
+                /*
+                if (!empty($USER->access['rdef'])) {
                     foreach ($USER->access['rdef'] as $ucontext) {
                         if (isset($ucontext['repository/elis_files:createowncontent']) &&
                             $ucontext['repository/elis_files:createowncontent'] == CAP_ALLOW) {
@@ -3187,7 +3183,8 @@ require_once($CFG->libdir . '/filelib.php');
                             return $this->get_user_store($uid);
                         }
                     }
-                }*/
+                }
+                */
                 if (has_capability('repository/elis_files:createowncontent', $context)) {
                     $shared = '';
                     return $this->get_user_store($uid);
@@ -3200,7 +3197,8 @@ require_once($CFG->libdir . '/filelib.php');
                 ((isset($location->shared) && ($location->shared != $shared) && ($shared == 'true')) ||
                 (!isset($location->shared) && $shared == 'true'))) {
 
-                /*if (!empty($USER->access['rdef'])) {
+                /*
+                if (!empty($USER->access['rdef'])) {
                     foreach ($USER->access['rdef'] as $ucontext) {
                         if (isset($ucontext['repository/elis_files:viewsharedcontent']) &&
                                   $ucontext['repository/elis_files:viewsharedcontent'] == CAP_ALLOW) {
@@ -3209,7 +3207,8 @@ require_once($CFG->libdir . '/filelib.php');
                             return $this->suuid;
                         }
                     }
-                }*/
+                }
+                */
                 if (has_capability('repository/elis_files:viewsharedcontent', $context)) {
                     $uid = 0;
                     return $this->suuid;
@@ -3248,8 +3247,7 @@ require_once($CFG->libdir . '/filelib.php');
 
         // Or, handle determining if the user can actually access the chosen default location.
         // IGNORE default browsing location for now
-        } else
-        if (isset($this->config->default_browse)) {
+        } elseif (isset($this->config->default_browse)) {
             if ($cid == SITEID && empty($context)) {
                 $context = get_context_instance(CONTEXT_SYSTEM);
             } else {
@@ -3273,7 +3271,8 @@ require_once($CFG->libdir . '/filelib.php');
                     }
 
                 case ELIS_FILES_BROWSE_SHARED_FILES:
-                    /*if (!empty($USER->access['rdef'])) {
+                    /*
+                    if (!empty($USER->access['rdef'])) {
                         foreach ($USER->access['rdef'] as $rdef) {
                             if (isset($rdef['repository/elis_files:viewsharedcontent']) &&
                                       $rdef['repository/elis_files:viewsharedcontent'] == CAP_ALLOW ||
@@ -3286,7 +3285,8 @@ require_once($CFG->libdir . '/filelib.php');
                                 return $this->suuid;
                             }
                         }
-                    }*/
+                    }
+                    */
                     if (has_capability('repository/elis_files:viewsharedcontent', $context) ||
                         has_capability('repository/elis_files:createsharedcontent', $context)) {
                             $shared = 'true';
