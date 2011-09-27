@@ -66,6 +66,7 @@ $string['choosealfrescofile'] = 'Choose ELIS file';
 $string['choosefrommyfiles'] = 'Choose from My Files';
 $string['chooselocalfile'] = 'Choose local file';
 $string['chooserootfolder'] = 'Choose root folder';
+$string['close'] = 'Close';
 $string['configadminusername'] = 'Alfresco has a default username of <b>admin</b>.  Moodle will also use a default ' .
                                  'username of admin for the first account you create.  We will need to re-map that ' .
                                  'value to something else when creating the Alfresco account for that user.<br /><br />' .

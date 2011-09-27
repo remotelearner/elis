@@ -440,7 +440,7 @@ class repository_elis_files extends repository {
         $str = '<link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/fileuploader.css" type="text/css" />
                 <link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" title="no title" charset="utf-8" />
                 <p><b>'.get_string('uploadingtiptitle', 'repository_elis_files').'</b></p>
-                <p>'.get_string('uploadingtiptitle', 'repository_elis_files').'</p>
+                <p>'.get_string('uploadingtiptext', 'repository_elis_files').'</p>
                 <div id="progressbar"></div>
                 <table style="border-style:none; padding:5px;">
                     <tr>
@@ -449,7 +449,7 @@ class repository_elis_files extends repository {
                             <div id="file-uploader"></div>
                         </td>
                         <td>
-                            <a id="uploadCloseButton" href="javascript:void(0);"><input type="button" value="'.get_string('close').'" /></a>
+                            <a id="uploadCloseButton" href="javascript:void(0);"><input type="button" value="'.get_string('close', 'repository_elis_files').'" /></a>
                         </td>
                     </tr>
                 </table>';
