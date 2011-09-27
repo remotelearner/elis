@@ -266,13 +266,16 @@ class usertrack extends elis_data_object {
             'ON usr.id = usrtrk.userid ';
         $where   = 'WHERE usrtrk.trackid = ? ';
         //$group   = 'GROUP BY usrtrk.id ';
-        if ($sort) {
-            if ($dir != 'ASC') {
-                $dir = 'DESC';
-            }
-            $sort = 'ORDER BY '. $sort .' '. $dir .' ';
+        if ($dir != 'ASC') {
+            $dir = 'DESC';
+        }
+        if (empty($sort)) {
+            $sort = 'name';
+        }
+        if ($sort == 'name') { // TBV: ELIS-2772 & above
+           $sort = "ORDER BY usr.lastname {$dir}, usr.firstname {$dir} ";
         } else {
-            $sort = 'ORDER BY name ASC ';
+           $sort = 'ORDER BY '. $sort .' '. $dir .' ';
         }
 
         $params = array($trackid);
