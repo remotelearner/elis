@@ -1367,10 +1367,12 @@ class student extends elis_data_object {
         }
 
         if ($sort) {
-            if ($sort === 'name') {
-                $sort = $FULLNAME;
+            if ($sort == 'name') { // TBV: ELIS-2772
+                //$sort = $FULLNAME;
+                $sort = "ORDER BY usr.lastname {$dir}, usr.firstname {$dir} ";
+            } else {
+                $sort = 'ORDER BY '. $sort .' '. $dir .' ';
             }
-            $sort = 'ORDER BY '.$sort .' '. $dir.' ';
         }
 
         $sql = $select.$tables.$join.$on.$where.$sort;
@@ -1573,10 +1575,12 @@ class student extends elis_data_object {
         }
 
         if ($sort) {
-            if ($sort === 'name') {
-                $sort = $FULLNAME;
+            if ($sort == 'name') { // TBV: ELIS-2772
+                //$sort = $FULLNAME;
+                $sort = "ORDER BY usr.lastname {$dir}, usr.firstname {$dir} ";
+            } else {
+                $sort = 'ORDER BY '. $sort .' '. $dir .' ';
             }
-            $sort = 'ORDER BY '.$sort .' '. $dir.' ';
         }
 
         $sql = $select.$tables.$join.$on.$where.$sort;
@@ -2276,10 +2280,12 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
     }
 
     if ($sort) {
-        if ($sort === 'name') {
-            $sort = $FULLNAME;
+        if ($sort == 'name') { // TBV: ELIS-2772
+            //$sort = $FULLNAME;
+            $sort = "ORDER BY usr.lastname {$dir}, usr.firstname {$dir} ";
+        } else {
+            $sort = 'ORDER BY '. $sort .' '. $dir .' ';
         }
-        $sort = 'ORDER BY '.$sort .' '. $dir.' ';
     }
 
     $sql = $select.$tables.$join.$on.$where.$sort;

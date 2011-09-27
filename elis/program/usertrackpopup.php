@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -39,31 +39,33 @@ $trackid = required_param('track', PARAM_INT);
 $track = new track($trackid);
 $userid = optional_param('userid', 0,  PARAM_INT);
 // get searching/sorting parameters
-$sort = optional_param('sort','name',PARAM_ALPHA);
-$alpha = optional_param('alpha','',PARAM_ALPHA);
-$namesearch = optional_param('namesearch','',PARAM_MULTILANG);
-$dir = optional_param('dir','ASC',PARAM_ALPHA);
+$sort = optional_param('sort', 'lastname', PARAM_CLEAN);
+$alpha = optional_param('alpha', '', PARAM_ALPHA);
+$namesearch = optional_param('namesearch', '', PARAM_MULTILANG);
+$dir = optional_param('dir', 'ASC', PARAM_ALPHA);
 if ($dir != 'ASC' && $dir != 'DESC') {
     $dir = 'ASC';
 }
-$page = optional_param('page',0,PARAM_INT);
-$perpage = optional_param('perpage',30,PARAM_INT);
+$page = optional_param('page', 0, PARAM_INT);
+$perpage = optional_param('perpage', 30, PARAM_INT);
 
-$url = new moodle_url('/elis/program/usertrackpopup.php',array('track'             => $trackid,
-                                                               'userid'            => $userid,
-                                                               'sort'              => $sort,
-                                                               'alpha'      => $alpha,
-                                                               'namesearch' => $namesearch,
-                                                               'dir'               => $dir,
-                                                               'page'              => $page,
-                                                               'perpage'           => $perpage));
+$url = new moodle_url('/elis/program/usertrackpopup.php',
+               array('track'      => $trackid,
+                     'userid'     => $userid,
+                     'sort'       => $sort,
+                     'alpha'      => $alpha,
+                     'namesearch' => $namesearch,
+                     'dir'        => $dir,
+                     'page'       => $page,
+                     'perpage'    => $perpage));
 $PAGE->set_url($url);
 require_login();
 $context = get_context_instance(context_level_base::get_custom_context_level('track', 'elis_program'), $trackid);
 $PAGE->set_context($context);
+
 //todo: integrate this better with user-track page?
 //this checks permissions at the track level
-if(!trackpage::can_enrol_into_track($trackid)) {
+if (!trackpage::can_enrol_into_track($trackid)) {
     //standard failure message
     require_capability('elis/program:track_enrol', $context);
 }
@@ -72,7 +74,7 @@ if(!trackpage::can_enrol_into_track($trackid)) {
 if ($userid) {
     //todo: integrate this better with user-track page?
     //this checks permissions at the user-track association level
-    if(!usertrack::can_manage_assoc($userid, $trackid)) {
+    if (!usertrack::can_manage_assoc($userid, $trackid)) {
         //standard failure message
         require_capability('elis/program:track_enrol', $context);
     }
@@ -94,11 +96,11 @@ $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
 $NAMELIKE = $DB->sql_like($FULLNAME, ':namesearch', FALSE);
 $ALPHA_LIKE = $DB->sql_like($FULLNAME, ':lastname', FALSE);
 
-$select = 'SELECT usr.*, ' . $FULLNAME . ' AS name ';
+$select = 'SELECT usr.*, ' . $FULLNAME . ' AS name, usr.lastname AS lastname ';
 $sql = 'FROM {' . user::TABLE . '} usr '
     . 'LEFT OUTER JOIN {' . usertrack::TABLE . '} ut ON ut.userid = usr.id AND ut.trackid = :trackid '
     . 'WHERE ut.userid IS NULL ';
-$params = array('trackid'=> $trackid);
+$params = array('trackid' => $trackid);
 if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
         $sql .= ' AND '. $NAMELIKE;
@@ -110,7 +112,7 @@ if ($alpha) {
     $params['lastname'] = "{$alpha}%";
 }
 
-if(!trackpage::_has_capability('elis/program:track_enrol', $trackid)) {
+if (!trackpage::_has_capability('elis/program:track_enrol', $trackid)) {
     //perform SQL filtering for the more "conditional" capability
     //get the context for the "indirect" capability
     $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
@@ -119,7 +121,7 @@ if(!trackpage::_has_capability('elis/program:track_enrol', $trackid)) {
     $clusters = clustertrack::get_clusters($trackid);
     $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-    if(empty($allowed_clusters)) {
+    if (empty($allowed_clusters)) {
         $sql .= 'AND 0=1';
     } else {
         $cluster_filter = implode(',', $allowed_clusters);
@@ -135,15 +137,9 @@ $count = $DB->count_records_sql('SELECT COUNT(usr.id) '.$sql, $params);
 if ($sort) {
     $sql .= 'ORDER BY '.$sort.' '.$dir.' ';
 }
-/*if ($perpage) {
-    if ($CURMAN->db->_dbconnection->databaseType == 'postgres7') {
-        $sql .= 'LIMIT ' . $perpage . ' OFFSET ' . $page * $perpage . ' ';
-    } else {
-        $sql .= 'LIMIT ' . $page * $perpage . ', ' . $perpage . ' ';
-    }
-
-}*/
-
+if ($count < ($page * $perpage)) {
+    $page = 0;
+}
 $users = $DB->get_records_sql($select.$sql, $params, $page * $perpage, $perpage);
 
 //print_header($site->shortname . ': Assign users to track "' . $track->name . '"');
@@ -216,12 +212,15 @@ if (empty($users)) {
     //$table = null;
     $headings = array();
     $columns = array(
-        'idnumber'    => get_string('track_idnumber', 'elis_program'),
-        'name'        => get_string('track_name', 'elis_program'),
-        'email'       => get_string('email', 'elis_program'),
+        'idnumber' => get_string('track_idnumber', 'elis_program'),
+        'name'     => get_string('name', 'elis_program'),
+        'email'    => get_string('email', 'elis_program'),
         );
 
     foreach ($columns as $column => $cdesc) {
+        if ($column == 'name') {
+            $column = 'lastname';
+        }
         if ($sort != $column) {
             $columnicon = "";
             $columndir = "ASC";
@@ -231,8 +230,8 @@ if (empty($users)) {
             $columnicon = ' <img src="'.$OUTPUT->pix_url($columnicon).'" alt="" />';
 
         }
-        //$$column        = '<a href="'.make_link($column,$columndir).'">'.$cdesc."</a>$columnicon";
-        $headings[$column] = '<a href="'.make_link($column,$columndir).'">'.$cdesc."</a>$columnicon";
+        //$$column        = '<a href="'. make_link($column, $columndir) .'">'.$cdesc."</a>$columnicon";
+        $headings[$column] = '<a href="'. make_link($column, $columndir) .'">'.$cdesc."</a>$columnicon";
 
     }
     $table = new html_table();
@@ -245,7 +244,7 @@ if (empty($users)) {
     foreach ($users as $user) {
         $newarr = array();
         foreach ($columns as $column => $cdesc) {
-            $newarr[] = '<a href="'.make_link().'&amp;userid='.$user->id.'">'.$user->$column.'</a>';
+            $newarr[] = '<a href="'. make_link() .'&amp;userid='.$user->id.'">'. $user->{$column} .'</a>';
         }
         $table->data[] = $newarr;
     }
@@ -257,4 +256,4 @@ if (empty($users)) {
 echo $OUTPUT->box_end();
 echo $OUTPUT->close_window_button();
 echo $OUTPUT->footer();
-?>
+
