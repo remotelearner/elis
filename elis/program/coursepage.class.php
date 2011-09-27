@@ -114,6 +114,7 @@ class coursepage extends managementpage {
         array('tab_id' => 'coursecurriculumpage', 'page' => 'coursecurriculumpage', 'name' => get_string('course_curricula', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'curriculum'),
         array('tab_id' => 'course_rolepage', 'page' => 'course_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
         array('tab_id' => 'course_enginepage', 'page' => 'course_enginepage', 'name' => get_string('results_engine', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'calculator'),
+        array('tab_id' => 'course_enginestatuspage', 'page' => 'course_enginestatuspage', 'name' => get_string('status_report', 'elis_program'), 'showtab' => false, 'showbutton' => false),
 
         array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
         );

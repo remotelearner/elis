@@ -73,10 +73,11 @@ class cmEngineForm extends cmform {
     /**
      * Define the activation section of the form.
      *
-     * @uses $DB
+     * @uses $CFG Get url root.
+     * @uses $DB Look up course completions.
      */
     protected function defineActivation() {
-        global $DB, $OUTPUT, $PAGE;
+        global $CFG, $DB;
 
         $grades = array(0 => get_string('class_grade', self::LANG_FILE));
         $dates  = array(
@@ -93,6 +94,13 @@ class cmEngineForm extends cmform {
             $grades[$completion->id] = $completion->name;
         }
 
+        $page = 'crsenginestatus';
+        if ($this->_customdata['enginetype'] == 'class') {
+            $page = 'clsenginestatus';
+        }
+
+        $reporturl = $CFG->wwwroot .'/elis/program/index.php?s='. $page .'&amp;id='. $this->_customdata['id'];
+
         $activaterule    = get_string('activate_this_rule', self::LANG_FILE);
         $activationrules = get_string('activation_rules', self::LANG_FILE);
         $criterion       = get_string('criterion', self::LANG_FILE);
@@ -103,6 +111,7 @@ class cmEngineForm extends cmform {
         $on              = get_string('on', self::LANG_FILE);
         $manualtrigger   = get_string('manual_trigger', self::LANG_FILE);
         $selectgrade     = get_string('select_grade', self::LANG_FILE);
+        $statusreport    = get_string('results_engine_status_report', self::LANG_FILE);
         $uselocked       = get_string('use_locked_grades',self::LANG_FILE);
 
         if ($this->_layout == 'custom') {
@@ -150,6 +159,8 @@ class cmEngineForm extends cmform {
         } else {
             $mform =& $this->_form;
 
+            $mform->addElement('header', 'statusreport');
+            $mform->addElement('html', '<a href="'. $reporturl .'">'. $statusreport .'</a>');
             $mform->addElement('header', 'activationrules', $activationrules);
 
             $mform->addElement('hidden', 'rid', $this->_customdata['rid']);
@@ -202,9 +213,6 @@ class cmEngineForm extends cmform {
 
             $mform->addElement('html', '</fieldset>');
 
-
-
-
         }
     }
 
@@ -212,8 +220,6 @@ class cmEngineForm extends cmform {
      * Define the results section of the form.
      */
     protected function defineResults() {
-
-        global $DB, $OUTPUT, $PAGE;
 
         $result          = get_string('result', self::LANG_FILE);
         $assigntotrack   = get_string('assign_to_track', self::LANG_FILE);

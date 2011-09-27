@@ -38,7 +38,7 @@ require_once elispm::lib('page.class.php');
 require_once elispm::file('form/engineform.class.php');
 
 abstract class enginepage extends pm_page {
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'pmplugins_results_engine';
 
     public $data_class = 'resultsengine';
     public $child_data_class = 'resultsengineaction';
@@ -84,8 +84,6 @@ abstract class enginepage extends pm_page {
      */
     protected function get_engine_form() {
 
-
-
         $known      = false;
         $contextid  = $this->get_context()->id;
         $id         = $this->optional_param('id', 0, PARAM_INT);
@@ -127,9 +125,11 @@ abstract class enginepage extends pm_page {
         $obj->contextid = $contextid;
 
         $params = $obj->to_array();
+        $params['id'] = $id;
         $params['rid'] = $rid;
         $params['courseid'] = $this->get_course_id();
         $params['contextid'] = $contextid;
+        $params['enginetype'] = $this->type;
 
         if (!empty($cache)) {
             $actiontype = $type;

@@ -113,6 +113,8 @@ $pages = array(
                        'file' => 'rolepage.class.php'),
     'crsengine' => array('class' => 'course_enginepage',
                          'file' => 'enginepage.class.php'),
+    'crsenginestatus' => array('class' => 'course_enginestatuspage',
+                               'file' => 'enginestatuspage.class.php'),
 
     // Manage Classes
     'cls' => array('class' => 'pmclasspage',
@@ -129,6 +131,8 @@ $pages = array(
                        'file' => 'rolepage.class.php'),
     'clsengine' => array('class' => 'class_enginepage',
                          'file' => 'enginepage.class.php'),
+    'clsenginestatus' => array('class' => 'class_enginestatuspage',
+                               'file' => 'enginestatuspage.class.php'),
 
     // Administration
     'replnk' => array('class' => 'class_reportlinkspage',
