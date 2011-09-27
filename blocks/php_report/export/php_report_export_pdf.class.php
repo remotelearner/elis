@@ -499,6 +499,17 @@ class php_report_export_pdf extends php_report_export {
     }
 
     /**
+     * Sets the font style on the provided PDF object to the provided style
+     * without changing the font or size
+     *
+     * @param  FPDF    $newpdf  The PDF object being created
+     * @param  string  $style   The appropriate style string
+     */
+    function set_font_style(&$newpdf, $style) {
+        $newpdf->SetFont($newpdf->getFontFamily(), $style, 0);
+    }
+
+    /**
      * Adds a grouping row to the table belonging to this report
      *
      * @param  mixed    $data         Row contents
@@ -838,7 +849,7 @@ class php_report_export_pdf extends php_report_export {
         $newpdf->Ln($max_y_offset);
 
         //return the number of inches of vertical offset introduced
-        return $newpdf->getY() - $initial_y;
+        return $max_y_offset;
     }
 
     /**
@@ -855,6 +866,12 @@ class php_report_export_pdf extends php_report_export {
     protected function render_pdf_entry($newpdf, $datum, $widths, $height, $colour = NULL) {
         //do a test render to calculate background height
         $test_pdf = $this->initialize_pdf();
+
+        //set the test PDF to being bolded (or any other style) if our
+        //main PDF is currently outputting bold text
+        $style = $newpdf->getFontStyle();
+        $this->set_font_style($test_pdf, $style);
+
         $result = $this->render_pdf_entry_content($test_pdf, $datum, $widths);
 
         //manually break the page if the height exceeds the remaining space
