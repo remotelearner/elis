@@ -26,6 +26,8 @@
  *
  */
 
+require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+
 /**
  * Helper method for setting up a menu item based on a CM entity
  *
@@ -195,6 +197,11 @@ function block_curr_admin_load_menu_children($type, $id, $parent_cluster_id, $pa
  * @return  menuitem array                         The appropriate child items
  */
 function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
+	global $CFG;
+
+	//page dependencies
+	require_once(elispm::file('coursepage.class.php'));
+
     $result_items = array();
 
     /*****************************************
@@ -240,9 +247,17 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
             $params = array('id' => $curriculum->id,
                             'action' => 'view');
 
-            $course_count = curriculumcourse_count_records($curriculum->id);
-            $track_count = track_count_records('', '', $curriculum->id, $parent_cluster_id);
-            $cluster_count = clustercurriculum::count_clusters($curriculum->id, $parent_cluster_id);
+            //count associated courses
+            $course_filter = array('contexts' => coursepage::get_contexts('elis/program:course_view'));
+            $course_count = curriculumcourse_count_records($curriculum->id, '', '', $course_filter);
+
+            //count associated tracks
+            $track_contexts = trackpage::get_contexts('elis/program:track_view');
+            $track_count = track_count_records('', '', $curriculum->id, $parent_cluster_id, $track_contexts);
+
+            //count associated clusters
+            $cluster_filter = array('contexts' => usersetpage::get_contexts('elis/program:userset_view'));
+            $cluster_count = clustercurriculum::count_clusters($curriculum->id, $parent_cluster_id, $cluster_filter);
 
             $isLeaf = empty($course_count) &&
                       empty($track_count) &&
@@ -273,6 +288,11 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
  * @return  menuitem array                         The appropriate child items
  */
 function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
+	global $CFG;
+
+	//page dependencies
+	require_once(elispm::file('pmclasspage.class.php'));
+
     $result_items = array();
 
     /*****************************************
@@ -288,7 +308,9 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
             $params = array('id'     => $item->id,
                             'action' => 'view');
 
-            $class_count = pmclass_count_records('', '', $item->id, false, null, $parent_cluster_id);
+            //count associated classes
+            $class_contexts = pmclasspage::get_contexts('elis/program:class_view');
+            $class_count = pmclass_count_records('', '', $item->id, false, $class_contexts, $parent_cluster_id);
 
             $isLeaf = empty($class_count);
 
@@ -313,8 +335,13 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
             $params = array('id'     => $track_record->id,
                             'action' => 'view');
 
-            $class_count = track_assignment_count_records($track_record->id);
-            $cluster_count = clustertrack::count_clusters($track_record->id, $parent_cluster_id);
+            //count associated classes
+            $class_contexts = array('contexts' => pmclasspage::get_contexts('elis/program:class_view'));
+            $class_count = track_assignment_count_records($track_record->id, '', '', $class_contexts);
+
+            //count associated clusters
+            $cluster_filter = array('contexts' => usersetpage::get_contexts('elis/program:userset_view'));
+            $cluster_count = clustertrack::count_clusters($track_record->id, $parent_cluster_id, $cluster_filter);
 
             $isLeaf = empty($class_count) &&
                       empty($cluster_count);

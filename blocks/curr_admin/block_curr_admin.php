@@ -96,6 +96,13 @@ class block_curr_admin extends block_base {
         global $CFG, $ADMIN, $USER, $HTTPSPAGEREQUIRED, $PAGE, $DB, $SITE;
 
         require_once($CFG->libdir . '/adminlib.php');
+
+        //dependencies on page classes
+        require_once(elispm::file('usersetpage.class.php'));
+        require_once(elispm::file('curriculumpage.class.php'));
+        require_once(elispm::file('coursepage.class.php'));
+        require_once(elispm::file('trackpage.class.php'));
+
         //require_once($CFG->dirroot . '/my/pagelib.php');
 
     /// Determine the users CM access level.
@@ -149,8 +156,13 @@ class block_curr_admin extends block_base {
                     $params = array('id'     => $cluster->id,
                                     'action' => 'view');
 
-                    $cluster_count = cluster_count_records('', '', array('parent' => $cluster->id));
-                    $curriculum_count = clustercurriculum::count_curricula($cluster->id);
+                    //count sub-clusters
+                    $cluster_filter = array('contexts' => usersetpage::get_contexts('elis/program:userset_view'));
+                    $cluster_count = cluster_count_records('', '', array('parent' => $cluster->id), $cluster_filter);
+
+                    //count associated curricula
+                    $curriculum_filter = array('contexts' => curriculumpage::get_contexts('elis/program:program_view'));
+                    $curriculum_count = clustercurriculum::count_curricula($cluster->id, $curriculum_filter);
 
                     $isLeaf = empty($cluster_count) &&
                               empty($curriculum_count);
@@ -179,9 +191,17 @@ class block_curr_admin extends block_base {
                     $params = array('id'     => $curriculum->id,
                                     'action' => 'view');
 
-                    $course_count = curriculumcourse_count_records($curriculum->id);
-                    $track_count = track_count_records('', '', $curriculum->id);
-                    $cluster_count = clustercurriculum::count_clusters($curriculum->id);
+                    //count associated courses
+                    $course_filter = array('contexts' => coursepage::get_contexts('elis/program:course_view'));
+                    $course_count = curriculumcourse_count_records($curriculum->id, '', '', $course_filter);
+
+                    //count associated tracks
+                    $track_contexts = trackpage::get_contexts('elis/program:track_view');
+                    $track_count = track_count_records('', '', $curriculum->id, 0, $track_contexts);
+
+                    //count associated clusters
+                    $cluster_filter = array('contexts' => usersetpage::get_contexts('elis/program:userset_view'));
+                    $cluster_count = clustercurriculum::count_clusters($curriculum->id, 0, $cluster_filter);
 
                     $isLeaf = empty($course_count) &&
                               empty($track_count) &&

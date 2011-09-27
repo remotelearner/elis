@@ -208,9 +208,10 @@ class clustercurriculum extends elis_data_object {
      * @uses           $CURMAN
      * @param   int    $curriculumid     The cluster id
      * @param   int    $parentclusterid  If non-zero, a required direct-parent cluster
+     * @param   array  $extrafilters     Additional filters to apply to the count
      * @return  int                      The number of appropriate records
      */
-    function count_clusters($curriculumid = 0, $parentclusterid = 0) {
+    function count_clusters($curriculumid = 0, $parentclusterid = 0, $extrafilters = array()) {
         global $DB;
 
         $select  = 'SELECT COUNT(*) ';
@@ -224,6 +225,18 @@ class clustercurriculum extends elis_data_object {
             $where .= " AND clst.parent = :parentclusterid ";
             $params['parentclusterid'] = $parentclusterid;
         }
+
+        if (!empty($extrafilters['contexts'])) {
+            //apply a filter related to filtering on particular PM cluster contexts
+     	    $filter_object = $extrafilters['contexts']->get_filter('id', 'cluster');
+	        $filter_sql = $filter_object->get_sql(false, 'clst', SQL_PARAMS_NAMED);
+
+    	    if (!empty($filter_sql)) {
+                //user does not have access at the system context
+        	    $where .= 'AND '.$filter_sql['where'] . " ";
+            	$params = array_merge($params, $filter_sql['where_parameters']);
+	        }
+    	}
 
         $sort    = 'ORDER BY clst.name ASC ';
 
@@ -267,11 +280,12 @@ class clustercurriculum extends elis_data_object {
     /**
      * Determines the number of curricula assigned to the provided cluster
      *
-     * @uses             $CURMAN
-     * @param   int      $clusterid  The id of the cluster to check associations from
-     * @return  int                  The number of associated curricula
+     * @uses           $CURMAN
+     * @param   int    $clusterid     The id of the cluster to check associations from
+     * @param   array  $extrafilters  Additional filters to apply to the count
+     * @return  int                   The number of associated curricula
      */
-    public static function count_curricula($clusterid = 0) {
+    public static function count_curricula($clusterid = 0, $extrafilters = array()) {
         global $DB;
 
         if (empty($DB)) {
@@ -290,6 +304,18 @@ class clustercurriculum extends elis_data_object {
                         'ON cur.id = clstcur.curriculumid ';
             $where    = 'WHERE clstcur.clusterid = ? ';
             $params[] = $clusterid;
+        }
+
+        if (!empty($extrafilters['contexts'])) {
+            //apply a filter related to filtering on particular PM curriculum contexts
+        	$filter_object = $extrafilters['contexts']->get_filter('id', 'curriculum');
+            $filter_sql = $filter_object->get_sql(false, 'cur');
+
+            if (!empty($filter_sql)) {
+                //user does not have access at the system context
+                $where .= 'AND '.$filter_sql['where'];
+                $params = array_merge($params, $filter_sql['where_parameters']);
+            }
         }
 
         $groupby = '';

@@ -713,7 +713,16 @@ function curriculumcourse_get_listing($curid, $sort='position', $dir='ASC', $sta
     return $DB->get_records_sql($sql, $params, $startrec, $perpage);
 }
 
-function curriculumcourse_count_records($curid, $namesearch = '', $alpha = '') {
+/**
+ * Gets the number of courses assigned to a particular curriculum
+ *
+ * @param   int     $curid         The id of the curriculum to obtain the listing for
+ * @param   string  $namesearch    Search string for course name
+ * @param   string  $alpha         Start initial of course name filter
+ * @param   array   $extrafilters  Additional filters to apply to the count
+ * @return  int                    The number of appropriate records
+ */
+function curriculumcourse_count_records($curid, $namesearch = '', $alpha = '', $extrafilters = array()) {
     global $DB;
 
     $select = '';
@@ -738,6 +747,18 @@ function curriculumcourse_count_records($curid, $namesearch = '', $alpha = '') {
         $name_like = $DB->sql_like('crs.name', '?', FALSE);
         $where .= (!empty($where) ? ' AND ' : '') . "($name_like) ";
         $params[] = "$alpha%";
+    }
+
+    if (!empty($extrafilters['contexts'])) {
+        //apply a filter related to filtering on particular course contexts
+        $filter_object = $extrafilters['contexts']->get_filter('id', 'course');
+        $filter_sql = $filter_object->get_sql(false, 'crs');
+
+        if (!empty($filter_sql)) {
+            //user does not have access at the system context
+            $where .= 'AND '.$filter_sql['where'];
+            $params = array_merge($params, $filter_sql['where_parameters']);
+        }
     }
 
     if (!empty($where)) {

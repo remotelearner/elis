@@ -231,11 +231,12 @@ class clustertrack extends elis_data_object {
     /**
      * Calculates the number of clusters associated to the provided track
      *
-     * @param   int  $trackid            The track to check associations for
-     * @param   int  $parent_cluster_id  Cluster that must be the parent of track's clusters
-     * @return                           The number of associated records
+     * @param   int    $trackid            The track to check associations for
+     * @param   int    $parent_cluster_id  Cluster that must be the parent of track's clusters
+     * @param   array  $extrafilters       Additional filters to apply to the count
+     * @return                             The number of associated records
      */
-    public static function count_clusters($trackid = 0, $parent_cluster_id = 0) {
+    public static function count_clusters($trackid = 0, $parent_cluster_id = 0, $extrafilters = array()) {
         global $DB;
 
         if (empty($DB)) {
@@ -253,6 +254,19 @@ class clustertrack extends elis_data_object {
             $where .= " AND clst.parent = :parent_cluster_id ";
             $params['parent_cluster_id'] = $parent_cluster_id;
         }
+
+        if (!empty($extrafilters['contexts'])) {
+            //apply a filter related to filtering on particular PM cluster contexts
+     	    $filter_object = $extrafilters['contexts']->get_filter('id', 'cluster');
+	        $filter_sql = $filter_object->get_sql(false, 'clst', SQL_PARAMS_NAMED);
+
+    	    if (!empty($filter_sql)) {
+                //user does not have access at the system context
+        	    $where .= 'AND '.$filter_sql['where'].' ';
+            	$params = array_merge($params, $filter_sql['where_parameters']);
+        	}
+    	}
+
         $sort    = 'ORDER BY clst.name ASC ';
 
         $sql = $select.$tables.$join.$where.$sort;

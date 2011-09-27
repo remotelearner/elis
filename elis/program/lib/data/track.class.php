@@ -1062,12 +1062,13 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
 /**
  * Gets the number of items in the track assignment listing
  *
- * @param   int     $trackid     The id of the track to obtain the listing for
- * @param   string  $namesearch  Search string for curriculum name
- * @param   string  $alpha       Start initial of curriculum name filter
- * @return  int                  The number of appropriate records
+ * @param   int     $trackid       The id of the track to obtain the listing for
+ * @param   string  $namesearch    Search string for curriculum name
+ * @param   string  $alpha         Start initial of curriculum name filter
+ * @param   array   $extrafilters  Additional filters to apply to the count
+ * @return  int                    The number of appropriate records
  */
-function track_assignment_count_records($trackid, $namesearch = '', $alpha = '') {
+function track_assignment_count_records($trackid, $namesearch = '', $alpha = '', $extrafilters = array()) {
     global $DB;
 
     //$LIKE = $this->_db->sql_compare();
@@ -1100,6 +1101,18 @@ function track_assignment_count_records($trackid, $namesearch = '', $alpha = '')
     if ($alpha) {
         $where .= (!empty($where) ? ' AND ' : '') . $ALPHA_LIKE;
         $params['search_alpha'] = '$alpha%';
+    }
+
+    if (!empty($extrafilters['contexts'])) {
+        //apply a filter related to filtering on particular PM class contexts
+        $filter_object = $extrafilters['contexts']->get_filter('id', 'class');
+        $filter_sql = $filter_object->get_sql(false, 'cls');
+
+        if (!empty($filter_sql)) {
+            //user does not have access at the system context
+            $where .= 'AND '.$filter_sql['where'];
+            $params = array_merge($params, $filter_sql['where_parameters']);
+        }
     }
 
     if (!empty($where)) {
