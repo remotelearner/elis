@@ -177,6 +177,7 @@ $string['nocategoriesfound'] = 'No categories found';
 $string['onlyincategories'] = 'Only show results from the following selected categories:';
 $string['pleaseenterfoldername'] = 'Please enter a folder name!';
 $string['pleaseselectfilesfirst'] = 'Please select files first!';
+$string['pleaseselectfolder'] = 'Please select a destination folder';
 $string['processingcategories'] = 'Processing categories...';
 $string['quotanotset'] = 'Not Set';
 $string['quotaunlimited'] = 'Unlimited';
