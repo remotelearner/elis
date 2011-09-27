@@ -1,6 +1,6 @@
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2009 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @subpackage File system
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2009 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -41,9 +41,9 @@ function chooseRootFolder(obj) {
     queryString += "&password=" + escape(obj.id_server_password.value);
     queryString += "&choose=id_root_folder";
     urlString = '/repository/elis_files/rootfolder.php?'  + queryString;
-    
-    var myData = { url: urlString, name: "rootfolder", scrollbars: "yes",resizable: "no", width: "640",height: "480" }; 
-    	 
+
+    var myData = { url: urlString, name: "rootfolder", scrollbars: "yes",resizable: "no", width: "640",height: "480" };
+
 //    	var jsonStr = YAHOO.lang.JSON.stringify(myData);
 //    	var jsonStr = JSON.stringify(myData);
 
