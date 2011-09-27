@@ -1,7 +1,6 @@
 <?php
-
 /* ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2009 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +19,7 @@
  * @subpackage elis files
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -51,8 +50,8 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+require_once dirname(__FILE__). '/lib/lib.php';
 
-        require_once dirname(__FILE__). '/lib/lib.php';
 /// These actions all occur on the currently active repository instance
 switch ($action) {
     // Pop to allow entry of new folder name
@@ -154,27 +153,11 @@ switch ($action) {
         echo json_encode($return);
         die;
 
+    // Popup to allow batch uploading of files
     case 'uploadpopup':
         $upload_popup = array();
         $upload_popup['form'] = $repo->print_upload_popup();
         echo json_encode($upload_popup);
-        die;
-    case 'uploadmultiple':
-        try {
-            $repo->upload_multiple();
-            $result = array();
-            $result['form'] = $repo->print_upload_progress();
-            echo json_encode($result);
-        } catch (Exception $e) {
-            $err->error = $e->getMessage();
-            echo json_encode($err);
-            die;
-        }
-        die;
-    case 'uploadprogress':
-        $upload_form = array();
-        $upload_form['form'] = $repo->print_upload_progress();
-        echo json_encode($upload_form);
         die;
 
     case 'overwrite':
