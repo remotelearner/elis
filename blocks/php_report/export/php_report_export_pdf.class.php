@@ -103,6 +103,19 @@ class php_report_export_pdf extends php_report_export {
      * Sizing-related calculations
      * ---------------------------
      */
+    // multi-explode to support many delimiters
+    function m_explode($delims, $str) {
+        $re = array();
+        $init = 0;
+        while (1) {
+            $tok = ($init++) ? strtok($delims) : strtok($str, $delims);
+            if ($tok === false) {
+                break;
+            }
+            $re[] = $tok;
+        }
+        return $re;
+    }
 
      /**
       * Calculates the minimum space needed to render the largest token
@@ -113,7 +126,8 @@ class php_report_export_pdf extends php_report_export {
         $result = self::horizontal_buffer;
 
         //go through tokens and find the largest one
-        $parts = explode(' ', $text);
+        //$parts = explode(' ', $text);
+        $parts = $this->m_explode(" _-\t\n", $text);
         foreach ($parts as $part) {
 
             //update result if necessary
