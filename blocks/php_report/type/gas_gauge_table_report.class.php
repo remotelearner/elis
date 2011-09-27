@@ -670,11 +670,11 @@ abstract class gas_gauge_table_report extends table_report {
     public function print_pdf_header($newpdf) {
         global $CFG;
 
-        //initial y position
-        $initial_y = $newpdf->getY();
-
         //obtain margins
         $margins = $newpdf->getMargins();
+
+        //initial y position
+        $initial_y = $newpdf->getY() + 0.08; // ELIS-3167: + 0.08 bottom-of-line
 
         //determine page with, not including margins
         $effective_page_width = $newpdf->getPageWidth() - $margins['left'] - $margins['right'];
