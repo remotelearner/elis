@@ -36,16 +36,18 @@ function show_panel( url ) {
  * This function updates fields on the results engine results form/table
  * The first parameter is only part of the element id (the suffix).
  * 
- * @param elmid - part of the element id type_randomid 
- * @param label - the name to display in the label
- * @param id - the id of the selected track/class/profile
+ * @param elmid - unique id of element that is to be updated
+ * @param label - name of track
+ * @param id - track id
  */
-function user_selection(elmid, label, id) {
-    var elementid = elmid + '_add_label';
+function track_add_selection(elmid, label, id) {
+    
+    var elementid = "track_add_" + elmid + "_label";
+    
     var element = window.opener.document.getElementById(elementid);
     element.innerHTML = label;
 
-    elementid = elmid + "_add_selected";
+    elementid = "track_add_" + elmid + "_selected";
     element = window.opener.document.getElementById(elementid);
     element.value = id;
 

@@ -29,6 +29,9 @@ defined('MOODLE_INTERNAL') || die();
 require_once elispm::lib('lib.php');
 require_once elispm::file('form/cmform.class.php');
 require_once elispm::file('plugins/results_engine/lib.php');
+require_once elispm::lib('data/track.class.php');
+require_once elispm::lib('data/pmclass.class.php');
+require_once elispm::lib('data/resultsengine.class.php');
 
 /**
  * the form element for curriculum
@@ -220,7 +223,9 @@ class cmEngineForm extends cmform {
 
         $mform =& $this->_form;
 
-            $mform->addElement('html', '<fieldset class="engineform">');
+        $mform->addElement('hidden', 'actiontype', $this->_customdata['actiontype']);
+
+        $mform->addElement('html', '<fieldset class="engineform">');
 //            $mform->addElement('html', '<legend>'.$result.'</lengend>');
 
         // Accordion implementation
@@ -236,10 +241,12 @@ class cmEngineForm extends cmform {
         // Create assign to table elements
         $mform->addElement('html', '<div>');
 
+
+        // TODO: check for action type and pass custom form values
         $this->setup_table_type($mform, 'track');
 
         $attributes = array('onclick' => 'add_range_selection("track");');
-        $mform->addElement('submit', 'track_assignment', $addscorerange, $attributes);
+        $mform->addElement('submit', 'trk_assignment', $addscorerange, $attributes);
         $mform->addElement('html', '</div>');
 
         $mform->addElement('html', '</div>');
@@ -252,8 +259,8 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '<div>');
 
         $this->setup_table_type($mform, 'class');
-//            $mform->addElement('html', '<div>' . $this->get_assign_to_table(0, false, false, 'class'));
-        $mform->addElement('submit', 'class_assignment', $addscorerange);
+
+        $mform->addElement('submit', 'cls_assignment', $addscorerange);
         $mform->addElement('html', '</div>');
         $mform->addElement('html', '</div>');
 
@@ -264,7 +271,7 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</h3>');
         $mform->addElement('html', '<div>');
 //            $mform->addElement('html', '<div>Some more content in div');
-        $mform->addElement('submit', 'profile_assignment', $addscorerange);
+        $mform->addElement('submit', 'pro_assignment', $addscorerange);
         $mform->addElement('html', '</div>');
         $mform->addElement('html', '</div>');
 
@@ -307,48 +314,66 @@ class cmEngineForm extends cmform {
             }
         }
 
-        // Add another track score range button
-        if (array_key_exists('track_assignment', $data)) {
+        // Add another track score range button.  Do not validate form on this button click
+        if (array_key_exists('trk_assignment', $data)) {
+            //$errors['idnumber'] = 'garden';
+            // Some work
+        } else {
 
-            if (empty($data['track_add_min']) or
-                !is_int($data['track_add_min']) ) {
+            $trackkeys = array();
+            $newtrackkeys = array();
 
-                $errors['trackscore'] = 'MIN ADD LANGUAGE STRING ';
+            // Iterate through the submitted values.  Separate the newly submitted
+            // data from the rest of the data.  New track data has the key
+            // track_add_<number>_min/max/etc.  Existing data has the key
+            // track_<number>_min/max/etc.
+            foreach ($data as $key => $value) {
+
+                if (false !== strpos($key, 'track_add_')) {
+                    // Extract the element unique id
+                    $element_instance = explode('_', $key);
+                    $element_instance = $element_instance[2];
+
+                    $newtrackkeys[$element_instance] = '';
+
+                } elseif (false !== strpos($key, 'track_')) {
+                    // Extract the element unique id
+                    $element_instance = explode('_', $key);
+                    $element_instance = $element_instance[1];
+
+                    $trackkeys[$element_instance] = '';
+                }
             }
 
-            if (empty($data['track_add_max']) or
-                !is_int($data['track_add_max']) ) {
+            // Iterate over new and old data and validate whether
+            // minimum is less than maximum and if a track id has bee
+            // selected
+            foreach ($newtrackkeys as $key => $value) {
+                if ((int) $data["track_add_{$key}_min"] >=
+                    (int) $data["track_add_{$key}_max"]) {
 
-                $errors['trackscore'] .= 'MAX ADD LANGUAGE STRING ';
+                    $errors["track_add_{$key}_group"] = 'MIN >= MAX ADD LANGUAGE STRING';
+                }
+
+                if (empty($data["track_add_{$key}_selected"])) {
+                    $errors["track_add_{$key}_group"] = 'No track selected ADD LANGUAGE STRING';
+                }
             }
 
-            if (empty($data['track_add_selected'])) {
+            foreach ($trackkeys as $key => $value) {
+                if ((int) $data["track_{$key}_min"] >=
+                    (int) $data["track_{$key}_max"]) {
+                        $errors["track_{$key}_group"] = 'MIN >= MAX ADD LANGUAGE STRING';
+                }
 
-                $errors['trackscore'] .= 'TRACK ADD LANGUAGE STRING';
+                if (empty($data["track_{$key}_selected"])) {
+                    $errors["track_{$key}_group"] = 'No track selected ADD LANGUAGE STRING';
+                }
+
             }
-
         }
 
-        if (array_key_exists('class_assignment', $data)) {
-
-            if (empty($data['class_add_min']) or
-                !is_int($data['class_add_min']) ) {
-
-                $errors['classscore'] = 'ADD LANGUAGE STRING ';
-            }
-
-            if (empty($data['class_add_max']) or
-                !is_int($data['class_add_max']) ) {
-
-                $errors['classscore'] .= 'ADD LANGUAGE STRING ';
-            }
-
-            if (empty($data['class_add_selected']) or
-                !is_int($data['class_add_selected']) ) {
-
-                $errors['classscore'] .= 'ADD LANGUAGE STRING';
-            }
-
+        if (array_key_exists('cls_assignment', $data)) {
         }
 
         if (array_key_exists('profile_assignment', $data)) {
@@ -371,34 +396,65 @@ class cmEngineForm extends cmform {
         }
     }
 
-    protected function setup_table_type($mform, $type, $resultsid = 0, $cachedentries = array()) {
+    /**
+     * TODO: document
+     */
+    protected function setup_table_type($mform, $type, $resultsid = 0) {
         global $OUTPUT;
+
+        $cache = $this->format_cache_data();
 
         $scoreheader        = get_string('score', self::LANG_FILE);
         $assigntype         = get_string("assign_to_{$type}", self::LANG_FILE);
         $selecttype         = get_string("select_{$type}", self::LANG_FILE);
-        $deletescoretype    = get_string("delete_score", self::LANG_FILE);
-        $notypeselected     = get_string("no_{$type}_selected", self::LANG_FILE);
 
         $output = '';
         $i = 1;
+
+        $functionname = "get_assign_to_{$type}_data";
+        $records = $this->$functionname($resultsid);
 
         $attributes = array('border' => '1', 'id' => "{$type}_selection_table");
         $tablehtml = html_writer::start_tag('table', $attributes);
         $tablehtml .= html_writer::start_tag('tr');
         $tablehtml .= html_writer::tag('th', $scoreheader);
         $tablehtml .= html_writer::tag('th', $assigntype);
-
-
         $tablehtml .= html_writer::end_tag('tr');
 
         $mform->addElement('html', $tablehtml);
 
-        $functionname = "get_assign_to_{$type}_data";
+        $this->setup_table_type_row($mform, $type, $cache, true);
 
-        $records = $this->$functionname($resultsid);
+        // End a table row and second column
+        $tablehtml = html_writer::end_tag('table');
+        $mform->addElement('html', $tablehtml);
 
-        if (empty($resultsid)) {
+    }
+
+    /**
+     * TODO: document
+     */
+    protected function setup_table_type_row($mform, $type, $dataset = array(), $cached = false) {
+        global $OUTPUT;
+
+        $deletescoretype    = get_string("delete_score", self::LANG_FILE);
+        $notypeselected     = get_string("no_{$type}_selected", self::LANG_FILE);
+        $selecttype         = get_string("select_{$type}", self::LANG_FILE);
+
+        $prefix = $type . '_';
+        if ($cached) {
+            $prefix = $type . '_add_';
+            $empty_record = new stdClass();
+            $empty_record->min = '';
+            $empty_record->max = '';
+            $empty_record->selected = '';
+            $empty_record->name = $notypeselected;
+            array_push($dataset, $empty_record);
+        }
+
+        $i = 0;
+
+        foreach ($dataset as $data) {
 
             // Start a table row and column
             $tablehtml = html_writer::start_tag('tr');
@@ -407,54 +463,94 @@ class cmEngineForm extends cmform {
             $mform->addElement('html', $tablehtml);
 
             $score = array();
-            $score[] = $mform->createElement('text', "{$type}_add_min", '', 'size="5" maxlength="5"');
-            $mform->setType("{$type}_add_min", PARAM_INT);
-            $score[] = $mform->createElement('text', "{$type}_add_max", '', 'size="5" maxlength="5"');
-            $mform->setType("{$type}_add_max", PARAM_INT);
 
+            // Add minimum field
+            $attributes = array('size' => 5, 'maxlength' => 5, 'value' => $data->min);
+            $score[] = $mform->createElement('text', "{$prefix}{$i}_min", '', $attributes);
+
+            // Add maximum field
+            $attributes['value'] = $data->max;
+            $score[] = $mform->createElement('text', "{$prefix}{$i}_max", '', $attributes);
+
+            // Add image element
             $attributes = array('title' => $deletescoretype,
                                 'alt' => $deletescoretype,
                                 'src' => $OUTPUT->pix_url('delete', 'elis_program'));
 
             $image  = html_writer::empty_tag('img', $attributes);
 
-
+            // Add link and image field (Delete link)
             $score[] = $mform->createElement('link', 'delete', '', '#', $image);
 
+            // Add minimum, maximum and delete to field group
+            $mform->addGroup($score, "{$prefix}{$i}_group", '', '', false);
 
-            $mform->addGroup($score, "{$type}score", '', '', false);
+            $key = "{$prefix}{$i}_min";
+            $grouprules[$key][] = array('MIN NUMERIC LANGUAGE', 'numeric', null, 'client');
+            $grouprules[$key][] = array('MIN NONZEOR LANGUAGE', 'nonzero', null, 'client');
 
+            $key = "{$prefix}{$i}_max";
+            $grouprules[$key][] = array('MAX NUMERIC LANGUAGE', 'numeric', null, 'client');
+            $grouprules[$key][] = array('MAX NONZEOR LANGUAGE', 'nonzero', null, 'client');
+            $mform->addGroupRule("{$prefix}{$i}_group", $grouprules);
 
             $tablehtml = html_writer::end_tag('td');
             $tablehtml .= html_writer::start_tag('td');
             $mform->addElement('html', $tablehtml);
 
-            // Add another column of data
-
-            $attributes     = array('id' => "{$type}_add_label");
-            $output         .= html_writer::tag('label', $notypeselected, $attributes);
+            // Add label and track/class selection link
+            $output         = '';
+            $attributes     = array('id' => "{$prefix}{$i}_label");
+            $output         .= html_writer::tag('label', $data->name, $attributes);
 
             $output         .= '&nbsp;&nbsp;';
 
-            $url            = "form/{$type}selector.php?id={$type}";
+            $url            = "form/{$type}selector.php?id={$i}&callback=track_add_selection";
             $attributes     = array('onClick' => 'show_panel("'.$url.'")');
             $output         .= html_writer::link('#', $selecttype, $attributes);
 
             $mform->addElement('html', $output);
 
-            $attributes     = array('id' => "{$type}_add_selected");
-            $mform->addElement('hidden', "{$type}_add_selected", '', $attributes);
+            $attributes     = array('id' => "{$prefix}{$i}_selected"); // Needed for javascript call back
+
+            $mform->addElement('hidden', "{$prefix}{$i}_selected", $data->selected, $attributes);
 
             $tablehtml = html_writer::end_tag('td');
             $tablehtml .= html_writer::end_tag('tr');
 
             $mform->addElement('html', $tablehtml);
+
+            $i++;
+        }
+    }
+
+    protected function format_cache_data() {
+        global $DB;
+
+        $data = array();
+
+        if (isset($this->_customdata['cache']) and
+            !empty($this->_customdata['cache'])) {
+
+            $cachedata = explode(',', $this->_customdata['cache']);
+            $x = 0;
+            $i = 0;
+
+            for($i; $i < count($cachedata); $i =+ 3) {
+                $data[$x] = new stdClass();
+                $data[$x]->min = $cachedata[$i];
+                $data[$x]->max = $cachedata[$i+1];
+                $data[$x]->selected = $cachedata[$i+2];
+
+                $param = array('id' => $data[$x]->selected);
+                $trackname = $DB->get_field(track::TABLE, 'name', $param);
+                $data[$x]->name = $trackname;
+
+                $x++;
+            }
         }
 
-        // End a table row and second column
-        $tablehtml = html_writer::end_tag('table');
-        $mform->addElement('html', $tablehtml);
-
+        return $data;
     }
 
     protected function get_assign_to_track_data($resultsid = 0) {
@@ -464,10 +560,10 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = "SELECT rea.id, rea.minimum, rea.maximum, rea.trackid AS typeid, t.name ".
-               "FROM {$CFG->prefix}crlm_results_engine_action rea ".
-               "RIGHT JOIN {$CFG->prefix}crlm_track t ON rea.trackid = t.id ".
-               "WHERE rea.resultengineid = :resultsengineid ORDER BY minimum ASC";
+        $sql = 'SELECT rea.id, rea.minimum, rea.maximum, rea.trackid AS selected, t.name '.
+               'FROM {'.resultsengineaction::TABLE.'} rea '.
+               'RIGHT JOIN {'.track::TABLE.'} t ON rea.trackid = t.id '.
+               'WHERE rea.resultengineid = :resultsengineid ORDER BY minimum ASC';
 
         $params = array('resultsengineid' => $resultsid);
 
@@ -481,16 +577,17 @@ class cmEngineForm extends cmform {
     }
 
     protected function get_assign_to_class_data($resultsid = 0) {
-        global $DB, $CFG;
+        global $DB;
 
         if (empty($resultsid)) {
             return array();
         }
 
-        $sql = "SELECT rea.id, rea.minimum, rea.maximum, rea.classid AS typeid, cls.idnumber AS name".
-               "FROM {$CFG->prefix}crlm_results_engine_action rea ".
-               "RIGHT JOIN {$CFG->prefix}crlm_class cls ON rea.classid = cls.id ".
-               "WHERE rea.resultengineid = :resultsengineid ORDER BY minimum ASC";
+        $sql = 'SELECT rea.id, rea.minimum, rea.maximum, rea.classid AS selected, cls.idnumber AS name '.
+               'FROM {'.resultsengineaction::TABLE.'} rea '.
+               'RIGHT JOIN {'.pmclass::TABLE.'} cls ON rea.classid = cls.id '.
+               'WHERE rea.resultengineid = :resultsengineid '.
+               'ORDER BY minimum ASC';
 
         $params = array('resultsengineid' => $resultsid);
 

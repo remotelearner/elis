@@ -36,7 +36,7 @@ require_once elispm::lib('data/pmclass.class.php');
 
 define ('ENGINETABLE', 'crlm_results_engine_action');
 
-class resultsengine extends elis_data_object {
+class resultsengineaction extends elis_data_object {
     const TABLE = ENGINETABLE;
     const LANG_FILE = 'elis_program';
 

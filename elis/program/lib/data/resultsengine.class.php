@@ -70,3 +70,40 @@ class resultsengine extends elis_data_object {
         $this->_load_data_from_record($data, true);
     }
 }
+
+class resultsengineaction extends elis_data_object {
+    const TABLE = 'crlm_results_engine_action';
+    const LANG_FILE = 'elis_program';
+
+    static public $_unset = -1;
+
+    private $form_url = null;  //moodle_url object
+
+    protected $_dbfield_id;
+    protected $_dbfield_resultengineid;
+    protected $_dbfield_actiontype;
+    protected $_dbfield_minimum;
+    protected $_dbfield_maximum;
+    protected $_dbfield_trackid;
+    protected $_dbfield_classid;
+    protected $_dbfield_fieldid;
+    protected $_dbfield_fieldata;
+
+    /**
+     * Perform parent add
+     */
+    public function save() {
+        parent::save();
+    }
+
+    /**
+     * Perform parent delete
+    */
+    public function delete() {
+        parent::delete();
+    }
+
+    public function set_from_data($data) {
+        $this->_load_data_from_record($data, true);
+    }
+}

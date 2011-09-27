@@ -28,6 +28,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+define('TRACK_ACTION_TYPE', 1);
+define('CLASS_ACTION_TYPE', 2);
+define('PROFILE_ACTIONE_TYPE', 3);
+
 require_once elispm::lib('data/resultsengine.class.php');
 require_once elispm::lib('lib.php');
 require_once elispm::lib('page.class.php');
@@ -82,11 +86,14 @@ abstract class enginepage extends pm_page {
 
 
 
-        $known     = false;
-        $contextid = $this->get_context()->id;
-        $id        = $this->optional_param('id', 0, PARAM_INT);
-        $rid       = $this->optional_param('rid', 0, PARAM_INT);
-        $obj       = $this->get_new_data_object($rid);
+        $known      = false;
+        $contextid  = $this->get_context()->id;
+        $id         = $this->optional_param('id', 0, PARAM_INT);
+        $rid        = $this->optional_param('rid', 0, PARAM_INT);
+        $cache      = $this->optional_param('cache', 0, PARAM_TEXT);
+        $type       = $this->optional_param('type', 0, PARAM_INT);
+        $obj        = $this->get_new_data_object($rid);
+        $childobj   = $this->get_new_child_data_object($rid);
 
         if ($rid < 1) {
             $filter    = new field_filter('contextid', $contextid);
@@ -102,6 +109,19 @@ abstract class enginepage extends pm_page {
             $known = true;
         }
 
+        // Count actions
+        $filter         = new field_filter('resultengineid', $rid);
+        $actioncount    = $childobj->count($filter);
+        $actiontype     = 0;
+
+        if (!empty($actioncount)) {
+           $childdata = $childobj->find($filter, array(), 1, 1);
+
+            if (!empty($childdata)) {
+                // TODO: set the action type
+           }
+        }
+
         $target    = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
 
         $obj->contextid = $contextid;
@@ -110,6 +130,15 @@ abstract class enginepage extends pm_page {
         $params['rid'] = $rid;
         $params['courseid'] = $this->get_course_id();
         $params['contextid'] = $contextid;
+
+        if (!empty($cache)) {
+            $actiontype = $type;
+            $cache = urldecode($cache);
+        }
+
+
+        $params['actiontype'] = $actiontype;
+        $params['cache'] = $cache;
 
         $form = new cmEngineForm($target->url, $params);
         $form->set_data($params);
@@ -203,6 +232,7 @@ abstract class enginepage extends pm_page {
      * Process the edit
      */
     function do_edit() {
+
         $known = false;
         $id = $this->required_param('id', PARAM_INT);
 
@@ -214,15 +244,16 @@ abstract class enginepage extends pm_page {
             return;
         }
 
-        $data       = $form->get_data();
-        $childdata  = array();
+        $data           = $form->get_data();
+        $childdata      = array();
+        $newchilddata   = '';
+        $actiontype     = '';
+
 
         if ($data) {
 
-            if (array_key_exists('track_assignment', $data)) {
-            }
-
             require_sesskey();
+
             $obj       = $this->get_new_data_object($id);
             $obj->set_from_data($data);
             if ($data->rid > 0) {
@@ -231,15 +262,27 @@ abstract class enginepage extends pm_page {
                 unset($obj->id);
             }
 
-//print_object('SUBMITTED DATA');
-//print_object($data);
-//print_object('SUBMITTED DATA END');
+            $obj->save();
 
-            $childdata = $this->get_existing_data_submitted($data);
+            // Adding a new track score range element
+            if (array_key_exists('trk_assignment', $data)) {
 
-            if (empty($childdata)) {
-                // Check for new track data submitted
+                $newchilddata = $this->get_new_data_submited('track', $data);
+
+//                print_object('newdata');
+//                print_object($newchilddata);
+
+                $actiontype = TRACK_ACTION_TYPE;
+
+            } elseif (array_key_exists('cls_assignment', $data)) {
+            } elseif (array_key_exists('pro_assignment', $data)) {
             } else {
+
+                $childdata = $this->get_existing_data_submitted($data);
+
+                if (empty($childdata)) {
+                    // Check for new track data submitted
+                }
 
                 foreach ($childdata['ids'] as $recid => $dummy_value) {
 
@@ -248,32 +291,59 @@ abstract class enginepage extends pm_page {
 
                     // TODO: check for an empty $existing record
 
-                    $updatedata->minimum = $childdata['type'] . '_'. $recid . '_minimum';
-                    $updatedata->maximum = $childdata['type'] . '_'. $recid . '_maximum';
+                    $existingrecord->minimum = $childdata['type'] . '_'. $recid . '_minimum';
+                    $existingrecord->maximum = $childdata['type'] . '_'. $recid . '_maximum';
 
                     switch ($childdata['type']) {
                         case 'track':
-                            $updatedata->trackid = $childdata['type'] . '_'. $recid . '_selected';
+                            $existingrecord->trackid = $childdata['type'] . '_'. $recid . '_selected';
                             break;
                         case 'class':
-                            $updatedata->classid = $childdata['type'] . '_'. $recid . '_selected';
+                            $existingrecord->classid = $childdata['type'] . '_'. $recid . '_selected';
                             break;
                         case 'profile':
                             // WIP
                             break;
                     }
 
-                    $updatedata->save();
+                    $existingrecord->save();
                 }
             }
 
-            $obj->save();
-            $target = $this->get_new_page(array('action' => 'default', 'id' => $id), false);
+            $target = $this->get_new_page(array('action' => 'default',
+                                                'id' => $id,
+                                                'cache' => urlencode($newchilddata),
+                                                'type' => $actiontype), false);
             redirect($target->url);
+
+//print_object('SUBMITTED DATA');
+//print_object($data);
+//print_object('SUBMITTED DATA END');
+
         } else {
             $this->_form = $form;
             $this->display('edit');
         }
+    }
+
+    /**
+     * TODO: document
+     */
+    protected function get_new_data_submited($type, $data) {
+        $newdata = '';
+
+        foreach ($data as $key => $value) {
+
+            $matchkey = "{$type}_add_";
+            if (false !== strpos($key, $matchkey)) {
+                // Lucky that the data array is sorted in the same order taht
+                // fields are added to the form
+                $newdata .= ',' . $value;
+            }
+        }
+
+        $newdata = ltrim($newdata, ',');
+        return $newdata;
     }
 
     /**
