@@ -455,7 +455,7 @@ class individual_user_report extends table_report {
      * @return  stdClass                  The reformatted record
      */
     function transform_record($record, $export_format) {
-
+        static $init_column_width = 0;
         $record->curriculum_name = ($record->curriculum_name == '')
                                  ? get_string('na', $this->lang_file)
                                  : $record->curriculum_name;
@@ -469,7 +469,11 @@ class individual_user_report extends table_report {
                        : $record->score .
                          (($export_format == php_report::$EXPORT_FORMAT_CSV)
                          ? '' :  get_string('percent_symbol', $this->lang_file));
-
+        if (!$init_column_width && $export_format == php_report::$EXPORT_FORMAT_PDF) {
+            // ELIS-2890: make column wide enough for column summary row width
+            $init_column_width = 1;
+            $record->score .= str_repeat("\xc2\xa0", 160);
+        }
         return $record;
     }
 
