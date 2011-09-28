@@ -852,7 +852,7 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
 
     if ($contexts !== null) {
         $filter_object = $contexts->get_filter('id', 'track');
-        $filter_sql = $filter_object->get_sql(false, 'trk');
+        $filter_sql = $filter_object->get_sql(false, 'trk', SQL_PARAMS_NAMED);
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
             $params += $filter_sql['where_parameters'];
@@ -959,7 +959,7 @@ function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $
         $where[] = $filter_object->get_sql();
         */
         $filter_object = $contexts->get_filter('id', 'track');
-        $filter_sql = $filter_object->get_sql();
+        $filter_sql = $filter_object->get_sql(false, null, SQL_PARAMS_NAMED);
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];
             $params += $filter_sql['where_parameters'];
@@ -1005,10 +1005,11 @@ function track_get_list_from_curr($curid) {
  * @param int $perpage Number of records per page.
  * @param string $namesearch Search string for curriculum name.
  * @param string $alpha Start initial of curriculum name filter.
+ * @param array $extrafilters Additional filters to apply to the count
  * @return object array Returned records.
  */
 function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='ASC', $startrec=0, $perpage=0, $namesearch='',
-                                      $alpha='') {
+                                      $alpha='', $extrafilters = array()) {
     global $DB;
 
     $params = array();
@@ -1045,6 +1046,18 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
     if ($alpha) {
         $where .= (!empty($where) ? ' AND ' : '') . $ALPHA_LIKE;
         $params['search_alpha'] = '$alpha%';
+    }
+
+    if (!empty($extrafilters['contexts'])) {
+        //apply a filter related to filtering on particular PM class contexts
+        $filter_object = $extrafilters['contexts']->get_filter('id', 'class');
+        $filter_sql = $filter_object->get_sql(false, 'cls', SQL_PARAMS_NAMED);
+
+        if (!empty($filter_sql)) {
+            //user does not have access at the system context
+            $where .= 'AND '.$filter_sql['where'];
+            $params = array_merge($params, $filter_sql['where_parameters']);
+        }
     }
 
     if (!empty($where)) {
@@ -1106,7 +1119,7 @@ function track_assignment_count_records($trackid, $namesearch = '', $alpha = '',
     if (!empty($extrafilters['contexts'])) {
         //apply a filter related to filtering on particular PM class contexts
         $filter_object = $extrafilters['contexts']->get_filter('id', 'class');
-        $filter_sql = $filter_object->get_sql(false, 'cls');
+        $filter_sql = $filter_object->get_sql(false, 'cls', SQL_PARAMS_NAMED);
 
         if (!empty($filter_sql)) {
             //user does not have access at the system context

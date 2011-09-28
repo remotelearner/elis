@@ -206,7 +206,7 @@ class pm_context_set {
         }
         if (isset($this->contexts['track']) || isset($this->contexts['curriculum'])) {
             $where[] = new join_filter($idfieldname, trackassignment::TABLE, 'classid',
-                                       $this>get_filter('trackid', 'track'),
+                                       $this->get_filter('trackid', 'track'),
                                        false, false);
         }
         return $where;

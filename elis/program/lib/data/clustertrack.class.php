@@ -166,9 +166,10 @@ class clustertrack extends elis_data_object {
      * @param  int      $parent_cluster_id  Cluster that must be the parent of track's clusters
      * @param  int      $startrec           The index of the record to start with
      * @param  int      $perpage            How many records to include
+     * @param  array    $extrafilters       Additional filters to apply to the count
      * @param  array                        The appropriate cluster records
      */
-    public static function get_clusters($trackid = 0, $parent_cluster_id = 0, $sort = 'name', $dir = 'ASC', $startrec = 0, $perpage = 0) {
+    public static function get_clusters($trackid = 0, $parent_cluster_id = 0, $sort = 'name', $dir = 'ASC', $startrec = 0, $perpage = 0, $extrafilters = array()) {
         global $DB;
 
         if (empty($DB)) {
@@ -219,6 +220,20 @@ class clustertrack extends elis_data_object {
             $where .= " AND clst.parent = :parent_cluster_id ";
             $params['parent_cluster_id'] = $parent_cluster_id;
         }
+
+        if (!empty($extrafilters['contexts'])) {
+            //apply a filter related to filtering on particular PM cluster contexts
+     	    $filter_object = $extrafilters['contexts']->get_filter('id', 'cluster');
+	        $filter_sql = $filter_object->get_sql(false, 'clst', SQL_PARAMS_NAMED);
+
+    	    if (!empty($filter_sql)) {
+                //user does not have access at the system context
+        	    $where .= 'AND ('.$filter_sql['where'].') ';
+            	$params = array_merge($params, $filter_sql['where_parameters']);
+        	}
+    	}
+
+
         $group   = 'GROUP BY clsttrk.id ';
 
         $sort_clause = 'ORDER BY ' . implode($sort_clauses, ', ') . ' ';
@@ -262,7 +277,7 @@ class clustertrack extends elis_data_object {
 
     	    if (!empty($filter_sql)) {
                 //user does not have access at the system context
-        	    $where .= 'AND '.$filter_sql['where'].' ';
+        	    $where .= 'AND ('.$filter_sql['where'].') ';
             	$params = array_merge($params, $filter_sql['where_parameters']);
         	}
     	}

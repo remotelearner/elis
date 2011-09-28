@@ -207,6 +207,7 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
     /*****************************************
      * Cluster - Child Cluster Associations
      *****************************************/
+    //note - no need to worry about permissions since there is no prevents/prohibits in ELIS
     $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
     $listing = cluster_get_listing('name', 'ASC', 0, $num_block_icons, '', '', array('parent' => $id));
@@ -239,7 +240,10 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
      *****************************************/
     $curriculum_css_class = block_curr_admin_get_item_css_class('curriculum_instance');
 
-    $curricula = clustercurriculum::get_curricula($id, 0, $num_block_icons, 'cur.priority ASC, cur.name ASC');
+    //permissions filter
+    $curriculum_filter = array('contexts' => curriculumpage::get_contexts('elis/program:program_view'));
+
+    $curricula = clustercurriculum::get_curricula($id, 0, $num_block_icons, 'cur.priority ASC, cur.name ASC', $curriculum_filter);
 
     if (!empty($curricula)) {
         foreach ($curricula as $curriculum) {
@@ -268,7 +272,7 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
     }
 
     //summary item
-    $num_records = clustercurriculum::count_curricula($id);
+    $num_records = clustercurriculum::count_curricula($id, $curriculum_filter);
     if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
         $result_items[] = block_curr_admin_get_menu_summary_item('clustercurriculum', $curriculum_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
@@ -300,7 +304,10 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
      *****************************************/
     $course_css_class = block_curr_admin_get_item_css_class('course_instance');
 
-    $listing = curriculumcourse_get_listing($id, 'position', 'ASC', 0, $num_block_icons);
+    //permissions filter
+    $course_filter = array('contexts' => coursepage::get_contexts('elis/program:course_view'));
+
+    $listing = curriculumcourse_get_listing($id, 'position', 'ASC', 0, $num_block_icons, '', '', $course_filter);
 
     if (!empty($listing)) {
         foreach ($listing as $item) {
@@ -319,7 +326,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
     }
 
     //summary item
-    $num_records = curriculumcourse_count_records($id);
+    $num_records = curriculumcourse_count_records($id, '', '', $course_filter);
     if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
         $result_items[] = block_curr_admin_get_menu_summary_item('curriculumcourse', $course_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
@@ -330,7 +337,10 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
      *****************************************/
     $track_css_class = block_curr_admin_get_item_css_class('track_instance');
 
-    if ($track_records = track_get_listing('name', 'ASC', 0, $num_block_icons, '', '', $id, $parent_cluster_id)) {
+    //permissions filter
+    $track_contexts = trackpage::get_contexts('elis/program:track_view');
+
+    if ($track_records = track_get_listing('name', 'ASC', 0, $num_block_icons, '', '', $id, $parent_cluster_id, $track_contexts)) {
         foreach ($track_records as $track_record) {
             $params = array('id'     => $track_record->id,
                             'action' => 'view');
@@ -351,7 +361,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
     }
 
     //summary item
-    $num_records = track_count_records('', '', $id, $parent_cluster_id);
+    $num_records = track_count_records('', '', $id, $parent_cluster_id, $track_contexts);
     if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
 
@@ -367,7 +377,10 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
      *****************************************/
     $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
-    $clusters = clustercurriculum::get_clusters($id, $parent_cluster_id, 'name', 'ASC', 0, $num_block_icons);
+    //permissions filter
+    $cluster_filter = array('contexts' => usersetpage::get_contexts('elis/program:userset_view'));
+
+    $clusters = clustercurriculum::get_clusters($id, $parent_cluster_id, 'name', 'ASC', 0, $num_block_icons, $cluster_filter);
     //$clusters = clustercurriculum::get_clusters($id, $parent_cluster_id, 'priority, name', 'ASC', 0, $num_block_icons);
 
     if (!empty($clusters)) {
@@ -380,7 +393,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
     }
 
     //summary item
-    $num_records = clustercurriculum::count_clusters($id, $parent_cluster_id);
+    $num_records = clustercurriculum::count_clusters($id, $parent_cluster_id, $cluster_filter);
     if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
 
@@ -406,6 +419,11 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
  * @return  menuitem array                         The appropriate child items
  */
 function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
+	global $CFG;
+
+    //page dependencies
+	require_once(elispm::file('pmclasspage.class.php'));
+
     $result_items = array();
 
     /*****************************************
@@ -413,7 +431,10 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
      *****************************************/
     $class_css_class = block_curr_admin_get_item_css_class('class_instance');
 
-    $listing = track_assignment_get_listing($id, 'cls.idnumber', 'ASC', 0, $num_block_icons);
+    //permissions filter
+    $class_filter = array('contexts' => pmclasspage::get_contexts('elis/program:class_view'));
+
+    $listing = track_assignment_get_listing($id, 'cls.idnumber', 'ASC', 0, $num_block_icons, '', '', $class_filter);
 
     if (!empty($listing)) {
         foreach ($listing as $item) {
@@ -425,7 +446,7 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
     }
 
     //summary item
-    $num_records = track_assignment_count_records($id);
+    $num_records = track_assignment_count_records($id, '', '', $class_filter);
     if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
         $result_items[] = block_curr_admin_get_menu_summary_item('trackassignment', $class_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
@@ -436,7 +457,10 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
      *****************************************/
     $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
-    $clusters = clustertrack::get_clusters($id, 0, 'name', 'ASC', $num_block_icons, $parent_cluster_id);
+    //permissions filter
+    $cluster_filter = array('contexts' => usersetpage::get_contexts('elis/program:userset_view'));
+
+    $clusters = clustertrack::get_clusters($id, $parent_cluster_id, 'name', 'ASC', 0, $num_block_icons, $cluster_filter);
     //$clusters = clustertrack::get_clusters($id, 0, 'priority, name', 'ASC', $num_block_icons, $parent_cluster_id);
 
     if (!empty($clusters)) {
@@ -450,7 +474,7 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
     }
 
     //summary item
-    $num_records = clustertrack::count_clusters($id, $parent_cluster_id);
+    $num_records = clustertrack::count_clusters($id, $parent_cluster_id, $cluster_filter);
     if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
 
@@ -476,6 +500,11 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
  * @return  menuitem array                         The appropriate child items
  */
 function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
+	global $CFG;
+
+	//page dependencies
+	require_once(elispm::file('pmclasspage.class.php'));
+
     $result_items = array();
 
     /*****************************************
@@ -483,7 +512,11 @@ function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $pa
      *****************************************/
     $class_css_class = block_curr_admin_get_item_css_class('class_instance');
 
-    $listing = pmclass_get_listing('crsname', 'asc', 0, $num_block_icons, '', '', $id, false, null, $parent_cluster_id);
+    //permissions filter
+    $class_contexts = pmclasspage::get_contexts('elis/program:class_view');
+
+    $listing = pmclass_get_listing('crsname', 'asc', 0, $num_block_icons, '', '', $id,
+                                   $class_contexts, null, $parent_cluster_id);
 
     if (!empty($listing)) {
         foreach ($listing as $item) {
@@ -495,7 +528,7 @@ function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $pa
     }
 
     //summary item
-    $num_records = pmclass_count_records('', '', $id, false, null, $parent_cluster_id);
+    $num_records = pmclass_count_records('', '', $id, false, $class_contexts, $parent_cluster_id);
     if ($num_block_icons < $num_records) {
         $params = array('action' => 'default',
                         'id'     => $id);

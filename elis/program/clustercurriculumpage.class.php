@@ -267,6 +267,11 @@ class clustercurriculumpage extends clustercurriculumbasepage {
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
 
+        if (usersetpage::_has_capability('elis/program:userset_view', $id)) {
+            //allow viewing but not managing associations
+        	return true;
+        }
+
         return usersetpage::_has_capability('elis/program:associate', $id);
     }
 
@@ -674,6 +679,12 @@ class curriculumclusterpage extends clustercurriculumbasepage {
     }
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
+
+        if (curriculumpage::_has_capability('elis/program:program_view', $id)) {
+            //allow viewing but not managing associations
+        	return true;
+        }
+
         return curriculumpage::_has_capability('elis/program:associate', $id);
     }
 

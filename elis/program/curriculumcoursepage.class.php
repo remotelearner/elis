@@ -112,7 +112,35 @@ class curriculumcoursepage extends curriculumcoursebasepage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
+
+        if (curriculumpage::_has_capability('elis/program:program_view', $id)) {
+            //allow viewing but not managing associations
+        	return true;
+        }
+
         return curriculumpage::_has_capability('elis/program:associate', $id);
+    }
+
+    /**
+     * Specifies whether the current user can edit prerequisites
+     *
+     * @return  boolean  true if allowed, otherwise false
+     */
+    function can_do_prereqedit() {
+    	$id = $this->required_param('id', PARAM_INT);
+
+    	return curriculumpage::_has_capability('elis/program:associate', $id);
+    }
+
+    /**
+     * Specifies whether the current user can edit corequisites
+     *
+     * @return  boolean  true if allowed, otherwise false
+     */
+    function can_do_coreqedit() {
+    	$id = $this->required_param('id', PARAM_INT);
+
+    	return curriculumpage::_has_capability('elis/program:associate', $id);
     }
 
     function display_default() {
@@ -137,7 +165,7 @@ class curriculumcoursepage extends curriculumcoursebasepage {
             'frequency'  => array('header' => get_string('frequency','elis_program')),
             'timeperiod' => array('header' => get_string('time_period','elis_program')),
             'position'   => array('header' => get_string('position','elis_program')),
-            'buttons'    => array('header' => get_string('management','elis_program')),
+            'buttons'    => array('header' => ''),
         );
 
         $items = curriculumcourse_get_listing($id, $sort, $dir, 0, 0, $namesearch, $alpha);
@@ -313,6 +341,12 @@ class coursecurriculumpage extends curriculumcoursebasepage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
+
+        if (coursepage::_has_capability('elis/program:course_view', $id)) {
+            //allow viewing but not managing associations
+        	return true;
+        }
+
         return coursepage::_has_capability('elis/program:associate', $id);
     }
 
@@ -340,12 +374,11 @@ class coursecurriculumpage extends curriculumcoursebasepage {
             'frequency'         => array('header' => get_string('frequency','elis_program')),
             'timeperiod'        => array('header' => get_string('time_period','elis_program')),
             'position'          => array('header' => get_string('position','elis_program')),
-            'buttons'           => array('header' => get_string('management','elis_program')),
+            'buttons'           => array('header' => ''),
         );
 
-        $contexts = curriculumpage::get_contexts('elis/program:associate');
-        $items = curriculumcourse_get_curriculum_listing($id, $sort, $dir, 0, 0, $namesearch, $alpha, $contexts);
-        $numitems = curriculumcourse_count_curriculum_records($id, $namesearch, $alpha, $contexts);
+        $items = curriculumcourse_get_curriculum_listing($id, $sort, $dir, 0, 0, $namesearch, $alpha);
+        $numitems = curriculumcourse_count_curriculum_records($id, $namesearch, $alpha);
 
         $this->print_num_items($numitems);
         $this->print_alpha();

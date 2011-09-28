@@ -138,9 +138,11 @@ class clustercurriculum extends elis_data_object {
      * @param   int    $parentclusterid  If non-zero, a required direct-parent cluster
      * @param   int    $startrecord      The index of the record to start with
      * @param   int    $perpage          The number of records to include
+     * @param   array  $extrafilters     Additional filters to apply to the listing
      * @return  array                    The appropriate cluster records
      */
-    public static function get_clusters($curriculumid = 0, $parentclusterid = 0, $sort = 'name', $dir = 'ASC', $startrec = 0, $perpage = 0) {
+    public static function get_clusters($curriculumid = 0, $parentclusterid = 0, $sort = 'name', $dir = 'ASC', $startrec = 0,
+                                        $perpage = 0, $extrafilters = array()) {
         global $DB;
 
         if (empty($DB)) {
@@ -193,6 +195,18 @@ class clustercurriculum extends elis_data_object {
             $params['parentclusterid'] = $parentclusterid;
         }
 
+        if (!empty($extrafilters['contexts'])) {
+            //apply a filter related to filtering on particular PM cluster contexts
+     	    $filter_object = $extrafilters['contexts']->get_filter('id', 'cluster');
+	        $filter_sql = $filter_object->get_sql(false, 'clst', SQL_PARAMS_NAMED);
+
+    	    if (!empty($filter_sql)) {
+                //user does not have access at the system context
+        	    $where .= 'AND ('.$filter_sql['where'] . ") ";
+            	$params = array_merge($params, $filter_sql['where_parameters']);
+	        }
+    	}
+
         $group   = 'GROUP BY clstcur.id ';
 
         $sort_clause = 'ORDER BY ' . implode($sort_clauses, ', ') . ' ';
@@ -233,7 +247,7 @@ class clustercurriculum extends elis_data_object {
 
     	    if (!empty($filter_sql)) {
                 //user does not have access at the system context
-        	    $where .= 'AND '.$filter_sql['where'] . " ";
+        	    $where .= 'AND ('.$filter_sql['where'] . ") ";
             	$params = array_merge($params, $filter_sql['where_parameters']);
 	        }
     	}
@@ -251,10 +265,11 @@ class clustercurriculum extends elis_data_object {
      * Get a list of the curricula assigned to this cluster.
      *
      * @uses             $CURMAN
-     * @param   int      $clusterid  The cluster id.
-     * @return  array                The associated curriculum records
+     * @param   int      $clusterid     The cluster id.
+     * @param   array    $extrafilters  Additional filters to apply to the listing
+     * @return  array                   The associated curriculum records
      */
-    public static function get_curricula($clusterid = 0, $startrec = 0, $perpage = 0, $sort = 'cur.name ASC') {
+    public static function get_curricula($clusterid = 0, $startrec = 0, $perpage = 0, $sort = 'cur.name ASC', $extrafilters = array()) {
         global $DB;
 
         if (empty($DB)) {
@@ -271,6 +286,18 @@ class clustercurriculum extends elis_data_object {
         $params = array($clusterid);
         $group   = 'GROUP BY clstcur.id ';
         $sort    = "ORDER BY $sort ";
+
+        if (!empty($extrafilters['contexts'])) {
+            //apply a filter related to filtering on particular PM curriculum contexts
+        	$filter_object = $extrafilters['contexts']->get_filter('id', 'curriculum');
+            $filter_sql = $filter_object->get_sql(false, 'cur');
+
+            if (!empty($filter_sql)) {
+                //user does not have access at the system context
+                $where .= 'AND '.$filter_sql['where'];
+                $params = array_merge($params, $filter_sql['where_parameters']);
+            }
+        }
 
         $sql = $select.$tables.$join.$where.$group.$sort;
 

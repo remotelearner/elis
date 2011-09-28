@@ -76,6 +76,12 @@ class trackassignmentpage extends associationpage {
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
+
+        if (trackpage::_has_capability('elis/program:track_view', $id)) {
+            //allow viewing but not managing associations
+        	return true;
+        }
+
         return trackpage::_has_capability('elis/program:associate', $id);
     }
 
