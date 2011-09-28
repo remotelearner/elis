@@ -64,18 +64,18 @@ class cmCourseForm extends cmform {
         $mform->addElement('text', 'name', get_string('course_name', 'elis_program') . ':');
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('required_field', 'elis_program', get_string('course_name', 'elis_program')), 'required', null, 'client');
-        $mform->addRule('name', null, 'maxlength', 255);
+        $mform->addRule('name', null, 'maxlength', 255, 'client');
         $mform->addHelpButton('name', 'courseform:course_name', 'elis_program');
 
         $mform->addElement('text', 'code', get_string('course_code', 'elis_program') . ':');
         $mform->setType('code', PARAM_TEXT);
-        $mform->addRule('code', null, 'maxlength', 100);
+        $mform->addRule('code', null, 'maxlength', 100, 'client');
         $mform->addHelpButton('code', 'courseform:course_code', 'elis_program');
 
         $mform->addElement('text', 'idnumber', get_string('course_idnumber', 'elis_program') . ':');
         $mform->setType('idnumber', PARAM_TEXT);
         $mform->addRule('idnumber', get_string('required_field', 'elis_program', get_string('course_idnumber', 'elis_program')), 'required', null, 'client');
-        $mform->addRule('idnumber', null, 'maxlength', 100);
+        $mform->addRule('idnumber', null, 'maxlength', 100, 'client');
         $mform->addHelpButton('idnumber', 'courseform:course_idnumber', 'elis_program');
 
         $attributes = array('cols'=>40, 'rows'=>2);
@@ -85,7 +85,7 @@ class cmCourseForm extends cmform {
 
         $mform->addElement('text', 'lengthdescription', get_string('length_description', 'elis_program'));
         $mform->setType('lengthdescription', PARAM_TEXT);
-        $mform->addRule('lengthdescription', null, 'maxlength', 100);
+        $mform->addRule('lengthdescription', null, 'maxlength', 100, 'client');
         $mform->addHelpButton('lengthdescription', 'courseform:length_description', 'elis_program');
 
         $mform->addElement('text', 'length', get_string('duration', 'elis_program') . ':');
@@ -94,7 +94,7 @@ class cmCourseForm extends cmform {
 
         $mform->addElement('text', 'credits', get_string('credits', 'elis_program') . ':');
         $mform->setType('credits', PARAM_TEXT);
-        $mform->addRule('credits', null, 'maxlength', 10);
+        $mform->addRule('credits', null, 'maxlength', 10, 'client');
         $mform->addHelpButton('credits', 'courseform:credits', 'elis_program');
 
         $grades = range(0,100,1);
@@ -103,12 +103,12 @@ class cmCourseForm extends cmform {
 
         $mform->addElement('text', 'cost', get_string('cost', 'elis_program') . ':');
         $mform->setType('cost', PARAM_TEXT);
-        $mform->addRule('cost', null, 'maxlength', 10);
+        $mform->addRule('cost', null, 'maxlength', 10, 'client');
         $mform->addHelpButton('cost', 'courseform:cost', 'elis_program');
 
         $mform->addElement('text', 'version', get_string('course_version', 'elis_program') . ':');
         $mform->setType('version', PARAM_TEXT);
-        $mform->addRule('version', null, 'maxlength', 100);
+        $mform->addRule('version', null, 'maxlength', 100, 'client');
         $mform->addHelpButton('version', 'courseform:course_version', 'elis_program');
 
         // Print form items for course template browsing
@@ -240,13 +240,13 @@ class completionform extends moodleform {
         }
         $mform->addElement(elis_gradebook_idnumber_selector::NAME, 'idnumber', get_string('course_idnumber', 'elis_program') . ':', $options);
         $mform->setType('idnumber', PARAM_TEXT);
-        $mform->addRule('idnumber', null, 'maxlength', 100);
+        $mform->addRule('idnumber', null, 'maxlength', 100, 'client');
         $mform->addRule('idnumber', null, 'required', null, 'client');
         $mform->addHelpButton('idnumber', 'completionform:course_idnumber', 'elis_program');
 
         $mform->addElement('text', 'name', get_string('course_name', 'elis_program'));
         $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', null, 'maxlength', 255);
+        $mform->addRule('name', null, 'maxlength', 255, 'client');
         $mform->addHelpButton('name', 'completionform:course_name', 'elis_program');
 
         $attributes = array('rows'=>2, 'cols'=>40);
