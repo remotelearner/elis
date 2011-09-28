@@ -2,6 +2,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Results Engine';
+$string['action_assign_class'] = 'Action {$a->id} - assign class {$a->name}';
+$string['action_assign_track'] = 'Action {$a->id} - assign track {$a->name}';
+$string['action_update_profile'] = 'Action {$a->id} - updated profile field {$a->name} to {$a->value}';
 $string['actions_performed'] = 'Actions performed';
 $string['activate'] = 'Activate';
 $string['activation_rules'] = 'Activation rules';

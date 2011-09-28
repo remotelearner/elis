@@ -199,7 +199,6 @@ function results_engine_get_active() {
                     $classlevel, RESULTS_ENGINE_SCHEDULED, RESULTS_ENGINE_GRADE_SET);
 
     $actives = $DB->get_records_sql($sql, $params);
-
     return $actives;
 }
 
@@ -295,17 +294,27 @@ function results_engine_process($class) {
     $fields = 'id, actiontype, minimum, maximum, trackid, classid, fieldid, fieldata';
     $actions = $DB->get_records('crlm_results_action', $params, '', $fields);
 
-    $fields= array();
+    $fieldids = array();
+    $classids = array();
+    $trackids = array();
 
     foreach ($actions as $action) {
         if ($action->actiontype == RESULTS_ENGINE_UPDATE_PROFILE) {
-            $fields[] = $action->fieldid;
+            $fieldids[$action->fieldid] = $action->fieldid;
+        } else if ($action->actiontype == RESULTS_ENGINE_ASSIGN_CLASS) {
+            $classids[$action->classid] = $action->classid;
+        } else if ($action->actiontype == RESULTS_ENGINE_ASSIGN_TRACK) {
+            $trackids[$action->trackid] = $action->trackid;
         }
     }
 
-    foreach ($fields as $field) {
-        $userfields[$field] = new field($field);
+    foreach ($fieldids as $id) {
+        $record = $DB->get_record('elis_field', array('id' => $id));
+        $userfields[$id] = new field($record, null, array(), true);
     }
+
+    $classes = $DB->get_records_list('crlm_class', 'id', $classids);
+    $tracks  = $DB->get_records_list('crlm_track', 'id', $trackids);
 
     // Log that the class has been processed
     $log = new object();
@@ -331,11 +340,15 @@ function results_engine_process($class) {
         }
 
         if ($do != null) {
+            $obj = new object();
 
             switch($do->actiontype) {
 
                 case RESULTS_ENGINE_ASSIGN_TRACK:
                     usertrack::enrol($student->userid, $do->trackid);
+                    $message = 'action_assign_track';
+                    $track = $tracks[$do->trackid];
+                    $obj->name = $track->name .' ('. $track->idnumber .')';
                     break;
 
                 case RESULTS_ENGINE_ASSIGN_CLASS:
@@ -343,6 +356,8 @@ function results_engine_process($class) {
                     $enrol->classid = $do->classid;
                     $enrol->userid  = $student->userid;
                     $enrol->save();
+                    $message = 'action_assign_class';
+                    $obj->name = $classes[$do->classid]->idnumber;
                     break;
 
                 case RESULTS_ENGINE_UPDATE_PROFILE:
@@ -352,13 +367,17 @@ function results_engine_process($class) {
                     }
                     $context = get_context_instance($userlevel, $student->userid);
                     field_data::set_for_context_and_field($context, $userfields[$do->fieldid], $do->fieldata);
+                    $message = 'action_update_profile';
+                    $obj->name  = $userfields[$do->fieldid]->shortname;
+                    $obj->value = $do->fieldata;
                     break;
 
                 default:
                     // If we don't know what we're doing, do nothing.
                     break;
             }
-            $log->action     = $do->id;
+            $obj->id = $do->id;
+            $log->action     = get_string($message, RESULTS_ENGINE_LANG_FILE, $obj);
             $log->userid     = $student->userid;
             $DB->insert_record('crlm_results_student_log', $log, false);
         }
