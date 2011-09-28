@@ -172,8 +172,15 @@ class cmEngineForm extends cmform {
 
             $exists = array_key_exists('eventtriggertype', $this->_customdata);
             if ($exists && ($this->_customdata['eventtriggertype'] == RESULTS_ENGINE_MANUAL)) {
+                $settings = 'height=500,width=500,top=0,left=0,menubar=0,location=0,scrollbars,'
+                          . 'resizable,toolbar,status,directories=0,fullscreen=0,dependent';
+                $url = $CFG->wwwroot .'/elis/program/plugins/results_engine/pop.php?id='. $this->_customdata['id'];
+                $jsondata = array('url'=>$url,'name'=>'resultspopup','options'=>$settings);
+                $jsondata = json_encode($jsondata);
+                $options  = "onclick='return openpopup(null,$jsondata);'";
+
                 $execute = array();
-                $execute[] = $mform->createElement('submit', 'executebutton', $executemanually);
+                $execute[] = $mform->createElement('button', 'executebutton', $executemanually, $options);
                 $mform->addGroup($execute, '', '', ' ', false);
             }
 

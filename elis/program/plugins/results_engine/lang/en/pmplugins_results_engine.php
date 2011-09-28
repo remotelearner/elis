@@ -37,6 +37,7 @@ $string['no_start_date_set'] = 'Class {$a->idnumber} set to use an unset start d
 $string['no_track_selected'] = 'No track selected';
 $string['not_permitted'] = 'You do not have permissions to do that.';
 $string['on'] = 'On';
+$string['processing_manual'] = 'Processing Results Engine for {$a->idnumber} ...';
 $string['result'] = 'Result';
 $string['results_engine'] = 'Results Engine';
 $string['results_engine_status_report'] = 'Results Engine status report';
