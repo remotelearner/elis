@@ -267,7 +267,7 @@ class track extends data_object_with_custom_fields {
      */
     function get_default_track() {
 
-        $trackid = $this->_db->get_field(TABLE, 'id', array('curid' => $this->curid,
+        $trackid = $this->_db->get_field(track::TABLE, 'id', array('curid' => $this->curid,
                                                             'defaulttrack' => 1));
         return $trackid;
     }
@@ -358,7 +358,7 @@ class track extends data_object_with_custom_fields {
     public static function get_by_idnumber($idnumber) {
         global $DB;
 
-        $retval = $DB->get_record(TABLE, 'idnumber', $idnumber);
+        $retval = $DB->get_record(track::TABLE, 'idnumber', $idnumber);
 
         if (!empty($retval)) {
             $retval = new track($retval->id);
@@ -724,7 +724,7 @@ class trackassignment extends elis_data_object {
 
         // Get the curriculum id
         // check if default track exists
-        $exists = $this->_db->record_exists(TABLE, 'curid', $this->track->curid,
+        $exists = $this->_db->record_exists(track::TABLE, 'curid', $this->track->curid,
                                              array('defaulttrack' => 1));
 
         if (!$exists) {
@@ -732,7 +732,7 @@ class trackassignment extends elis_data_object {
         }
 
         // Retrieve track id
-        $trackid = $this->_db->get_field(TABLE, 'id', array('curid' => $this->track->curid,
+        $trackid = $this->_db->get_field(track::TABLE, 'id', array('curid' => $this->track->curid,
                                                             'defaulttrack' => 1));
         if (false === $trackid) {
             cm_error('Error #1001: selecting field from crlm_track table');
