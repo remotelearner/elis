@@ -406,8 +406,9 @@ class repository_elis_files extends repository {
         global $CFG;
         $str = '<div>
                     <div id="repository_tabs"></div>
-                    <input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'">
-                    <input type="hidden" name="selected_files" id="selected_files" value="'.implode(",",$selected_files).'">
+                    <input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'" />
+                    <input type="hidden" id="tabuuid" name="tabuuid" value="" />
+                    <input type="hidden" name="selected_files" id="selected_files" value="'.implode(",",$selected_files).'" />
                     <input id="targetfolder" type="hidden" value = "" />
                 </div>';
         return $str;

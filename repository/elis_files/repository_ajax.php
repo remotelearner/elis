@@ -111,6 +111,7 @@ switch ($action) {
         $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
         $selected_files = required_param('files', PARAM_NOTAGS);
         $uid = required_param('uid', PARAM_INT);
+        $return = new stdClass();
 
         // Get the default locations...
         $locations = array();
@@ -135,21 +136,29 @@ switch ($action) {
 
     // Move the selected file(s) to the targetuuid
     case 'movefiles':
-        $targetuuid   = required_param('targetuuid', PARAM_ALPHANUMEXT);
-        $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
+        $errormsg = '';
+        $targetuuid = required_param('targetuuid', PARAM_ALPHANUMEXT);
+        $parentuuid = required_param('parentuuid', PARAM_ALPHANUMEXT);
         $selected_files = required_param('selected_files', PARAM_NOTAGS);
+        $return = new stdClass();
 
         $files_array = explode(",",$selected_files);
         foreach ($files_array as $file) {
             if (!elis_files_move_node($file, $targetuuid)) {
                 if ($properties = $repo->get_info($file)) {
-                    echo '<p>'.get_string('errortitlenotmoved', 'repository_elis_files', $properties->title).'</p>';
+                    $errormsg = get_string('errortitlenotmoved', 'repository_elis_files', $properties->title);
                 } else {
-                    echo '<p>'.get_string('errorfilenotmoved', 'repository_elis_files').'</p>';
+                    $errormsg = get_string('errorfilenotmoved', 'repository_elis_files');
                 }
             }
         }
-        $return->uuid = $parentuuid;
+
+        if (!empty($errormsg)) {
+            $return->error = $errormsg;
+        } else {
+            $return->uuid = $parentuuid;
+        }
+
         echo json_encode($return);
         die;
 
