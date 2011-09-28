@@ -689,6 +689,7 @@ $string['postalcode'] = 'Postal code';
 $string['prerequisites'] = 'Prerequisite';
 $string['priority'] = 'Display priority';
 $string['progman'] = 'Program Manager';
+$string['program'] = 'ELIS Program'; // accesslib.php::get_contextlevel_name()
 $string['program:associate'] = 'Associate program management items';
 $string['program:class_create'] = 'Create class instance';
 $string['program:class_delete'] = 'Delete class instance';
