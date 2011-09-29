@@ -108,7 +108,11 @@ class block_curr_admin extends block_base {
     /// Determine the users CM access level.
         $access = cm_determine_access($USER->id);
 
-        if (empty($access) || $this->content !== NULL) {
+        //make sure elis_program / custom contexts set up correctly
+        //to prevent error before the upgrade to ELIS 2
+        $program_context = context_level_base::get_custom_context_level('curriculum', 'elis_program');
+
+        if (empty($access) || $this->content !== NULL || $program_context == null) {
             return $this->content;
         }
 
