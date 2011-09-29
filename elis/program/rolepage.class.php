@@ -33,8 +33,8 @@ require_once elispm::lib('data/user.class.php');
 require_once elispm::file('form/addroleform.class.php');
 
 abstract class rolepage extends associationpage2 {
-    protected $parent_page;
-    protected $section;
+    var $parent_page;
+    var $section;
 
     public function __construct($params = null) {
         parent::__construct($params);
