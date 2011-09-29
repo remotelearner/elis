@@ -280,6 +280,6 @@ class class_enginestatuspage extends enginestatuspage {
 
         $params = array('id' => $this->required_param('id', PARAM_INT));
         $class = $DB->get_record_sql($sql, $params);
-        return $course;
+        return $class;
     }
 }
