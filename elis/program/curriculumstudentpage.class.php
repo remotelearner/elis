@@ -615,7 +615,7 @@ class curriculumstudentpage extends associationpage2 {
             if(!empty($clusters)) {
                 foreach($clusters as $cluster) {
                     if($context->context_allowed($cluster->clusterid, 'cluster')) {
-                        $allowed_clusters[] = $cluster->id;
+                        $allowed_clusters[] = $cluster->clusterid;
                     }
                 }
             }
