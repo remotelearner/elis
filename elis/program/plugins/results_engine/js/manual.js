@@ -1,16 +1,17 @@
-function process(source, pmclass) {
+YUI().use('io-base', 'node', function(Y) {
 
-	var manualProcessor = new Y.DataSource.Get({
-		source: source
-	});
-	
-	manualProcessor.sendRequest({
-	    request: 'id='+pmclass,
-	    callback: {
-	        success: function(e){
-	        },
-	        failure: function(e){
-	        }
-	    }
-	});
+function complete(id, o, args) {
+    var div = Y.one('#results');
+    div.set("innerHTML", M.str.pmplugins_results_engine.done)
 }
+
+M.results_engine = {
+    process: function(properties) {
+        var uri = properties.source +"?id="+properties.pmclass;
+        var request = Y.io(uri);
+    }
+}
+
+Y.on('io:complete', complete, Y, 'process');
+
+});

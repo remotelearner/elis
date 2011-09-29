@@ -24,6 +24,7 @@ $string['criterion'] = 'Criterion';
 $string['date_run'] = 'Date run';
 $string['date_scheduled'] = 'Date scheduled';
 $string['delete_score'] = 'Delete score range';
+$string['done'] = 'Done';
 $string['event_trigger'] = 'Event trigger';
 $string['execute_manually'] = 'Execute manually';
 $string['field_not_found'] = 'Field id #{$a->fieldid} not found in database!';

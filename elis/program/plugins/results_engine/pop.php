@@ -44,10 +44,16 @@ if (! has_capability('elis/program:class_edit', $context)) {
 
 $class = $DB->get_record('crlm_class', array('id' => $id));
 
+$source = $CFG->wwwroot .'/elis/program/plugins/results_engine/manual.php';
+
+$PAGE->requires->string_for_js('done', RESULTS_ENGINE_LANG_FILE);
+$PAGE->requires->yui_module('yui-min', 'M.results_engine.process', array($source, $id));
+$PAGE->requires->js('/elis/program/plugins/results_engine/js/manual.js');
 $PAGE->set_context($context);
 $PAGE->set_url($_SERVER['PHP_SELF']);
 $PAGE->set_pagelayout('popup');
 
 print($OUTPUT->header());
 print_string('processing_manual', RESULTS_ENGINE_LANG_FILE, $class);
+print('<div id="results"></div>');
 print($OUTPUT->footer());
