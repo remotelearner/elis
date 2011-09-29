@@ -19,7 +19,7 @@ define('MAX_NUM_ROWS', 50);
 
 $letterselect   = optional_param('alpha', '', PARAM_TEXT);
 $search         = optional_param('search', '', PARAM_TEXT);
-$element_update = required_param('id', PARAM_INT);
+$element_update = required_param('id', PARAM_TEXT);
 $callback       = required_param('callback', PARAM_TEXT);
 
 $baseurl        = new moodle_url('/elis/program/form/trackselector.php',

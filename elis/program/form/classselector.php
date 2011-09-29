@@ -20,6 +20,8 @@ define('MAX_NUM_ROWS', 50);
 $letterselect   = optional_param('alpha', '', PARAM_TEXT);
 $search         = optional_param('search', '', PARAM_TEXT);
 $element_update = required_param('id', PARAM_TEXT);
+$callback       = required_param('callback', PARAM_TEXT);
+
 
 $baseurl        = new moodle_url('/elis/program/form/classselector.php',
                                 array('alpha' => $letterselect,
@@ -40,7 +42,7 @@ echo html_writer::start_tag('center');
 
 $alpha          = explode(',', get_string('alphabet', 'langconfig'));
 
-$table          = new classselectiontable('classselection', $element_update, 'user_selection');
+$table          = new classselectiontable('classselection', $element_update, $callback);
 $columns        = 'cls.id,cd.syllabus,cls.idnumber';
 $where          = '';
 $alphawhere     = '';

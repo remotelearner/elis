@@ -40,14 +40,14 @@ function show_panel( url ) {
  * @param label - name of track
  * @param id - track id
  */
-function track_add_selection(elmid, label, id) {
-    
-    var elementid = "track_add_" + elmid + "_label";
+function add_selection(elmid, label, id) {
+
+    var elementid = elmid + "_label";
     
     var element = window.opener.document.getElementById(elementid);
     element.innerHTML = label;
 
-    elementid = "track_add_" + elmid + "_selected";
+    elementid = elmid + "_selected";
     element = window.opener.document.getElementById(elementid);
     element.value = id;
 
@@ -55,7 +55,8 @@ function track_add_selection(elmid, label, id) {
 }
 
 
-function pre_submit_processing(type) {
+function pre_submit_processing(type, actiontypeid) {
+
     var max = 99;
     var i = 0;
     var ele_min = '';
@@ -63,9 +64,14 @@ function pre_submit_processing(type) {
     var ele_sel = '';
     var temp = '';
     var cache = document.getElementsByName("actioncache")[0]; 
+    var actiontype = document.getElementsByName("actiontype")[0];
 
 
     if ( (typeof cache == 'undefined') ) {
+        return 0;
+    }
+    
+    if ( (typeof actiontype == 'undefined') ) {
         return 0;
     }
     
@@ -94,12 +100,15 @@ function pre_submit_processing(type) {
         
     }
     
-    // Remove the last occuring comma
+    // Remove the last comma
     
     var last_occurance = temp.lastIndexOf(',');
     last_occurance = parseInt(last_occurance);
     
     cache.value = temp.slice(0, last_occurance);
+    
+    // Update action type hidden field
+    actiontype.value = actiontypeid;
 
 
 }

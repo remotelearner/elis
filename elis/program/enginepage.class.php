@@ -88,7 +88,7 @@ abstract class enginepage extends pm_page {
         $contextid  = $this->get_context()->id;
         $id         = $this->optional_param('id', 0, PARAM_INT);
         $rid        = $this->optional_param('rid', 0, PARAM_INT);
-        $type       = $this->optional_param('type', 0, PARAM_INT);
+        $type       = $this->optional_param('actiontype', 0, PARAM_INT);
         $obj        = $this->get_new_data_object($rid);
         $childobj   = $this->get_new_child_data_object($rid);
 
@@ -107,18 +107,15 @@ abstract class enginepage extends pm_page {
             $known = true;
         }
 
-        // Count actions
+        // Count actions types (if any)
         $filter         = new field_filter('resultengineid', $rid);
         $actioncount    = $childobj->count($filter);
-        $actiontype     = 0;
 
-//        if (!empty($actioncount)) {
-//           $childdata = $childobj->find($filter, array(), 1, 1);
-//
-//            if (!empty($childdata)) {
-//                // TODO: set the action type
-//           }
-//        }
+        $actiontype     = $type;
+        if ($actioncount) {
+            //$actiontype =
+        }
+
 
         $target    = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
 
@@ -244,26 +241,18 @@ abstract class enginepage extends pm_page {
         $newchilddata   = '';
         $actiontype     = '';
 
+        if ($form->no_submit_button_pressed()) {
 
-//        if ($form->no_submit_button_pressed()) {
-//
-//            $data = $form->get_submitted_data();
-//
-//            $target = $this->get_new_page(array('action' => 'default',
-//                                                'id' => $id,
-//                                                'cache' => urlencode($cache),
-//                                                'type' => $actiontype), false);
-//            redirect($target->url);
-//
-//            // Adding a new track score range element
-//            if (array_key_exists('trk_assignment', $data)) {
-//            } elseif (array_key_exists('cls_assignment', $data)) {
-//            } elseif (array_key_exists('pro_assignment', $data)) {
-//            } else {
-//            }
+            $this->_form = $form;
 
-//        } elseif ($data) {
-        if ($data) {
+//$forma = $form->get_submitted_data();
+//print_object('data - begin');
+//print_object($forma);
+//print_object('data - end');
+
+            $this->display('edit');
+
+        } elseif  ($data) {
 
             require_sesskey();
 
@@ -277,12 +266,19 @@ abstract class enginepage extends pm_page {
 
             $obj->save();
 
-            // Adding a new track score range element
+            // Updating existing score ranges
+            // Iterate through the data array until you find either a
+            // track_ or class_ or profile_ prefix, then set the action type
+            // and break out of the loop
+            $type = '';
+            $data = (array) $data;
+
             foreach ($data as $key => $value) {
 
                 if (false !== strpos($key, 'track_')) {
                     if (!empty($data[$key])) {
                         $actiontype = TRACK_ACTION_TYPE;
+                        $type = 'track';
                         break;
                     }
                 }
@@ -290,6 +286,7 @@ abstract class enginepage extends pm_page {
                 if (false !== strpos($key, 'class_')) {
                     if (!empty($data[$key])) {
                         $actiontype = CLASS_ACTION_TYPE;
+                        $type = 'class';
                         break;
                     }
                 }
@@ -297,49 +294,18 @@ abstract class enginepage extends pm_page {
                 if (false !== strpos($key, 'profile_')) {
                     if (!empty($data[$key])) {
                         $actiontype = PROFILE_ACTION_TYPE;
+                        $type = 'profile';
                         break;
                     }
                 }
 
             }
 
-            // TODO change function.  Do the updating of records inside the function
-            switch ($actiontype) {
-                case TRACK_ACTION_TYPE:
-                    $actiondata = $this->get_new_data_submited('track', $data);
-                    break;
-                case CLASS_ACTION_TYPE:
-                    $actiondata = $this->get_new_data_submited('class', $data);
-                    break;
-                case PROFILE_ACTION_TYPE:
-                    $actiondata = $this->get_new_data_submited('profile', $data);
-                    break;
-            }
+            // Iterate through the data array and update the existing score ranges submitted
+            $this->save_existing_data_submitted($data, $type, $actiontype);
 
-                foreach ($actiondata as $recid => $object) {
-
-                    // Update existing records one by one
-                    $existingrecord = $this->get_new_child_data_object($recid);
-
-                    // TODO: check for an empty $existingrecord
-
-                    $existingrecord->minimum = $childdata['type'] . '_'. $recid . '_minimum';
-                    $existingrecord->maximum = $childdata['type'] . '_'. $recid . '_maximum';
-
-                    switch ($childdata['type']) {
-                        case 'track':
-                            $existingrecord->trackid = $childdata['type'] . '_'. $recid . '_selected';
-                            break;
-                        case 'class':
-                            $existingrecord->classid = $childdata['type'] . '_'. $recid . '_selected';
-                            break;
-                        case 'profile':
-                            // WIP
-                            break;
-                    }
-
-                    $existingrecord->save();
-                }
+            // Save new score ranges submitted
+            $this->save_new_data_submitted($data, $type, $actiontype, $obj->id);
 
             $target = $this->get_new_page(array('action' => 'default',
                                                 'id' => $id), false);
@@ -358,21 +324,81 @@ abstract class enginepage extends pm_page {
     /**
      * TODO: document
      */
-    protected function get_new_data_submited($type, $data) {
-        $newdata = '';
+    protected function save_new_data_submitted($data, $type, $actiontype, $results_engine_id) {
 
-        foreach ($data as $key => $value) {
+        $savetype       = '';
+        $instance       = array();
+        $dataobj        = (object) $data;
 
-            $matchkey = "{$type}_add_";
-            if (false !== strpos($key, $matchkey)) {
-                // Lucky that the data array is sorted in the same order taht
-                // fields are added to the form
-                $newdata .= ',' . $value;
+        // Check for existing data regarding track/class/profile actions
+        foreach($data as $key => $value) {
+
+            // Check for existing track data in the form of track_<id>_...
+            $pos = strpos($key, "{$type}_add_");
+            $length = strlen("{$type}_add_");
+
+            if (false !== $pos) {
+                $lpos = strrpos($key, '_');
+                $pos = strpos($key, '_', $length - 1);
+
+                if (false !== $pos and
+                    false !== $lpos) {
+
+                    $length = $lpos - $pos - 1;
+                    $instance_key = substr($key, $pos+1, $length);
+
+                    if (is_numeric($instance_key) and
+                       !array_key_exists($instance_key, $instance)) {
+
+                        $instance[$instance_key] = '';
+                        continue;
+                    }
+                }
             }
         }
 
-        $newdata = ltrim($newdata, ',');
-        return $newdata;
+        $updaterec = new stdClass();
+        $field = '';
+        $fieldvalue = '';
+
+        switch ($actiontype) {
+            case TRACK_ACTION_TYPE:
+                $field = 'trackid';
+                break;
+            case CLASS_ACTION_TYPE:
+                $field = 'classid';
+                break;
+            case PROFILE_ACTION_TYPE:
+                //
+                break;
+        }
+
+        $field_map = array();
+
+
+        foreach ($instance as $recid => $dummy_val) {
+
+            $updaterec = $this->get_new_child_data_object();
+            $updaterec->resultengineid = $results_engine_id;
+
+            $key = "{$type}_add_{$recid}_min";
+            $field_map['minimum'] = $key;
+
+            $key = "{$type}_add_{$recid}_max";
+            $field_map['maximum'] = $key;
+
+            $key = "{$type}_add_{$recid}_selected";
+            $field_map[$field] = $key;
+
+            if (empty($fieldvalue)) {
+                // TODO profile field work
+            }
+
+            $updaterec->set_from_data($dataobj, true, $field_map);
+            $updaterec->save();
+        }
+
+
     }
 
     /**
@@ -388,61 +414,75 @@ abstract class enginepage extends pm_page {
      *
      * TODO: update documentation
      */
-    protected function get_existing_data_submitted($type, $data) {
+    protected function save_existing_data_submitted($data, $type, $actiontype) {
         $savetype       = '';
-        $savechilddata  = new stdClass();
         $instance       = array();
+        $dataobj        = (object) $data;
 
         // Check for existing data regarding track/class/profile actions
         foreach($data as $key => $value) {
 
             // Check for existing track data in the form of track_<id>_...
-            $type = strpos($key, "{$type}_");
+            $pos = strpos($key, "{$type}_");
 
-            if (false !== $type) {
+            if (false !== $pos) {
                 $pos = strpos($key, '_');
                 $lpos = strrpos($key, '_');
 
                 if (false !== $pos and
                     false !== $lpos) {
 
-                    $length = $lpos - $pos;
-                    $instance_key = substr($key, $pos, $length);
+                    $length = $lpos - $pos - 1;
+                    $instance_key = substr($key, $pos+1, $length);
 
-                    if (is_int($instance_key)) {
-                        $savetype = $type;
-                        $instance[$instance_key] = 'track';
+                    if (is_numeric($instance_key) and
+                       !array_key_exists($instance_key, $instance)) {
+
+                        $instance[$instance_key] = '';
                         continue;
                     }
                 }
-
             }
-
-            // Check for existing track data in the form of class_<id>_...
-            $type = strpos($key, 'class_');
-
-            if (false !== $type) {
-                $pos = strpos($key, '_');
-                $lpos = strrpos($key, '_');
-
-                if (false !== $pos and
-                    false !== $lpos) {
-
-                    $length = $lpos - $pos;
-                    $instance_key = substr($key, $pos, $length);
-
-                    if (is_int($instance_key)) {
-                        $savetype = 'class';
-                        $instance[$instance_key] = 'class';
-                        continue;
-                    }
-                }
-
-            }
-
         }
 
-        return array('type' => $savetype, 'ids' => $instance);
+        $updaterec = new stdClass();
+        $field = '';
+        $fieldvalue = '';
+
+        switch ($actiontype) {
+            case TRACK_ACTION_TYPE:
+                $field = 'trackid';
+                break;
+            case CLASS_ACTION_TYPE:
+                $field = 'classid';
+                break;
+            case PROFILE_ACTION_TYPE:
+                //
+                break;
+        }
+
+        $field_map = array();
+
+        foreach ($instance as $recid => $dummy_val) {
+            $updaterec = $this->get_new_child_data_object($recid);
+            $key = "{$type}_{$recid}_min";
+            $field_map['minimum'] = $key;
+
+            $key = "{$type}_{$recid}_max";
+            $field_map['maximum'] = $key;
+
+            $key = "{$type}_{$recid}_selected";
+            $field_map[$field] = $key;
+
+            if (empty($fieldvalue)) {
+                // TODO profile field work
+            }
+
+            $updaterec->set_from_data($dataobj, true, $field_map);
+            $updaterec->save();
+        }
+
+
     }
 
     /**

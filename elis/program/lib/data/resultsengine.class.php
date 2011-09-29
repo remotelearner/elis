@@ -103,7 +103,7 @@ class resultsengineaction extends elis_data_object {
         parent::delete();
     }
 
-    public function set_from_data($data) {
-        $this->_load_data_from_record($data, true);
+    public function set_from_data($data, $override = true, $field_map = null) {
+        $this->_load_data_from_record($data, $override, $field_map);
     }
 }

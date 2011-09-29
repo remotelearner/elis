@@ -244,9 +244,14 @@ class cmEngineForm extends cmform {
            $actiontype = $this->_customdata['actiontype'];
         }
 
-        $mform->addElement('hidden', 'actiontype', $actiontype);
+        $cache = $this->format_cache_data();
+        $resultengid = $this->_customdata['rid'];
 
+
+        $mform->addElement('hidden', 'actiontype', $actiontype);
         $mform->addElement('hidden', 'actioncache');
+
+
 
         $mform->addElement('html', '<fieldset class="engineform">');
 //            $mform->addElement('html', '<legend>'.$result.'</lengend>');
@@ -265,12 +270,20 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '<div>');
 
         // TODO: check for action type and pass custom form values
-        $this->setup_table_type($mform, 'track');
 
-        $attributes = array('onclick' => 'pre_submit_processing("track");');
 
-        $mform->registerNoSubmitButton('trk_assignment');
+
+
+        if (TRACK_ACTION_TYPE == $actiontype) {
+            $this->setup_table_type($mform, 'track', $resultengid, $cache);
+        } else {
+            $this->setup_table_type($mform, 'track', $resultengid, array());
+        }
+
+        $attributes = array('onclick' => 'pre_submit_processing("track","'.TRACK_ACTION_TYPE.'");');
         $mform->addElement('submit', 'trk_assignment', $addscorerange, $attributes);
+        $mform->registerNoSubmitButton('trk_assignment');
+
         $mform->addElement('html', '</div>');
 
         $mform->addElement('html', '</div>');
@@ -282,9 +295,17 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</h3>');
         $mform->addElement('html', '<div>');
 
-//        $this->setup_table_type($mform, 'class');
+        if (CLASS_ACTION_TYPE == $actiontype) {
+            $this->setup_table_type($mform, 'class', $resultengid, $cache);
+        } else {
+            $this->setup_table_type($mform, 'class', $resultengid, array());
+        }
 
-        $mform->addElement('submit', 'cls_assignment', $addscorerange);
+        $attributes = array('onclick' => 'pre_submit_processing("class","'.CLASS_ACTION_TYPE.'");');
+        $mform->registerNoSubmitButton('cls_assignment');
+        $mform->addElement('submit', 'cls_assignment', $addscorerange, $attributes);
+
+
         $mform->addElement('html', '</div>');
         $mform->addElement('html', '</div>');
 
@@ -294,7 +315,15 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '<a href="#">'.$assigntoprofile.'</a>');
         $mform->addElement('html', '</h3>');
         $mform->addElement('html', '<div>');
+
+        if (PROFILE_ACTION_TYPE == $actiontype) {
+//            $this->setup_table_type($mform, 'class', $resultengid, $cache);
+        } else {
+//            $this->setup_table_type($mform, 'class', $resultengid, array());
+        }
+
 //            $mform->addElement('html', '<div>Some more content in div');
+
         $mform->addElement('submit', 'pro_assignment', $addscorerange);
         $mform->addElement('html', '</div>');
         $mform->addElement('html', '</div>');
@@ -337,8 +366,7 @@ class cmEngineForm extends cmform {
 
         // Add another track score range button.  Do not validate form on this button click
         if (array_key_exists('trk_assignment', $data)) {
-            //$errors['idnumber'] = 'garden';
-            // Some work
+            // ignore
         } else {
 
             $trackkeys = array();
@@ -370,6 +398,15 @@ class cmEngineForm extends cmform {
             // minimum is less than maximum and if a track id has bee
             // selected
             foreach ($newtrackkeys as $key => $value) {
+
+                // Skip over empty score ranges.
+                if ( empty($data["track_add_{$key}_min"]) and
+                     empty($data["track_add_{$key}_max"]) and
+                     empty($data["track_add_{$key}_selected"]) ) {
+
+                    continue;
+                }
+
                 if ((int) $data["track_add_{$key}_min"] >=
                     (int) $data["track_add_{$key}_max"]) {
 
@@ -420,10 +457,8 @@ class cmEngineForm extends cmform {
     /**
      * TODO: document
      */
-    protected function setup_table_type($mform, $type, $resultsid = 0) {
+    protected function setup_table_type($mform, $type, $resultsid = 0, $cache = array()) {
         global $OUTPUT;
-
-        $cache = $this->format_cache_data();
 
         $scoreheader        = get_string('score', self::LANG_FILE);
         $assigntype         = get_string("assign_to_{$type}", self::LANG_FILE);
@@ -432,9 +467,6 @@ class cmEngineForm extends cmform {
         $output = '';
         $i = 1;
 
-//        $functionname = "get_assign_to_{$type}_data";
-//        $records = $this->$functionname($resultsid);
-
         $attributes = array('border' => '1', 'id' => "{$type}_selection_table");
         $tablehtml = html_writer::start_tag('table', $attributes);
         $tablehtml .= html_writer::start_tag('tr');
@@ -442,8 +474,15 @@ class cmEngineForm extends cmform {
         $tablehtml .= html_writer::tag('th', $assigntype);
         $tablehtml .= html_writer::end_tag('tr');
 
+        $funcname = "get_assign_to_{$type}_data";
+        $result_action_data = $this->$funcname($resultsid);
+
         $mform->addElement('html', $tablehtml);
 
+        // Add score ranges for existing table records
+        $this->setup_table_type_row($mform, $type, $result_action_data, false);
+
+        // Add score ranges for cached data
         $this->setup_table_type_row($mform, $type, $cache, true);
 
         // End a table row and second column
@@ -455,7 +494,7 @@ class cmEngineForm extends cmform {
     /**
      * TODO: document
      */
-    protected function setup_table_type_row($mform, $type, $dataset = array(), $cached = false) {
+    protected function setup_table_type_row($mform, $type, $dataset = array(), $extrarow = false) {
         global $OUTPUT, $DB;
 
         $deletescoretype    = get_string("delete_score", self::LANG_FILE);
@@ -465,7 +504,7 @@ class cmEngineForm extends cmform {
 
         $prefix = $type . '_';
 
-        if ($cached) {
+        if ($extrarow) {
             $prefix = $type . '_add_';
             $empty_record = new stdClass();
             $empty_record->min = '';
@@ -478,6 +517,10 @@ class cmEngineForm extends cmform {
         $i = 0;
 
         foreach ($dataset as $data) {
+
+            if (isset($data->id)) {
+                $i = $data->id;
+            }
 
             // Start a table row and column
             $tablehtml = html_writer::start_tag('tr');
@@ -521,19 +564,33 @@ class cmEngineForm extends cmform {
             $tablehtml .= html_writer::start_tag('td');
             $mform->addElement('html', $tablehtml);
 
-            // Add label and track/class selection link
+            // Add label and track/class/profile selection link
             $output         = '';
             $attributes     = array('id' => "{$prefix}{$i}_label");
 
             // Retrieve the track name
-            $param = array('id' => $data->selected);
-            $trackname = $DB->get_field(track::TABLE, 'name', $param);
 
-            $output         .= html_writer::tag('label', $trackname, $attributes);
+
+            $name = '';
+            switch ($type) {
+                case 'track':
+                    $param = array('id' => $data->selected);
+                    $name = $DB->get_field(track::TABLE, 'name', $param);
+                    break;
+                case 'class':
+                    $param = array('id' => $data->selected);
+                    $name = $DB->get_field(pmclass::TABLE, 'idnumber', $param);
+                    break;
+                case 'profile':
+                    break;
+            }
+
+
+            $output         .= html_writer::tag('label', $name, $attributes);
 
             $output         .= '&nbsp;&nbsp;';
 
-            $url            = "form/{$type}selector.php?id={$i}&callback=track_add_selection";
+            $url            = "form/{$type}selector.php?id={$prefix}{$i}&callback=add_selection";
             $attributes     = array('onClick' => 'show_panel("'.$url.'")');
             $output         .= html_writer::link('#', $selecttype, $attributes);
 
@@ -584,7 +641,7 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = 'SELECT rea.id, rea.minimum, rea.maximum, rea.trackid AS selected, t.name '.
+        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.trackid AS selected, t.name '.
                'FROM {'.resultsengineaction::TABLE.'} rea '.
                'RIGHT JOIN {'.track::TABLE.'} t ON rea.trackid = t.id '.
                'WHERE rea.resultengineid = :resultsengineid ORDER BY minimum ASC';
@@ -607,7 +664,7 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = 'SELECT rea.id, rea.minimum, rea.maximum, rea.classid AS selected, cls.idnumber AS name '.
+        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.classid AS selected, cls.idnumber AS name '.
                'FROM {'.resultsengineaction::TABLE.'} rea '.
                'RIGHT JOIN {'.pmclass::TABLE.'} cls ON rea.classid = cls.id '.
                'WHERE rea.resultengineid = :resultsengineid '.
@@ -622,6 +679,44 @@ class cmEngineForm extends cmform {
         }
 
         return $data;
+    }
+
+    public function definition_after_data() {
+        global $CFG, $COURSE;
+        $mform =& $this->_form;
+
+//        $data = $this->get_submitted_data();
+//
+//print_object('definition_after_data');
+//print_object($data);
+//print_object('definition_after_data - end');
+//die();
+//TODO: Use this method to disable elements on the field
+/*
+        $name = trim($mform->getElementValue('name'));
+        $description = trim($mform->getElementValue('description'));
+        $url = $mform->getElementValue('url');
+
+        if (empty($name) || empty($description)) {
+            $rss = new moodle_simplepie($url);
+
+            if (empty($name) && $rss->get_title()) {
+                $mform->setDefault('name', $rss->get_title());
+            }
+
+            if (empty($description) && $rss->get_description()) {
+                $mform->setDefault('description', $rss->get_description());
+            }
+        }
+
+        if ($id = $mform->getElementValue('id')) {
+            $mform->setDefault('autotags', implode(',', tag_get_tags_array('blog_external', $id)));
+            $mform->freeze('url');
+            $mform->freeze('filtertags');
+            // TODO change the filtertags element to a multiple select, using the tags of the external blog
+            // Use $rss->get_channel_tags()
+        }
+*/
     }
 
 }
