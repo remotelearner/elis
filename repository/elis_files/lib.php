@@ -580,7 +580,7 @@ class repository_elis_files extends repository {
                               'server_port',        // Alfresco server port
                               'server_username',    // Alfresco server username
                               'server_password',    // Alfresco server password
-                              'alfresco_version',   // Alfresco server version
+                              //'alfresco_version',   // Alfresco server version
                               'root_folder',        // Moodle root folder
                               'user_quota',         // User quota N.B. cache is now pulled from general Repository options
                               'deleteuserdir',      // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
@@ -621,17 +621,17 @@ class repository_elis_files extends repository {
         $mform->addElement('static', 'server_password_intro', '', get_string('elis_files_server_password', 'repository_elis_files'));
         $mform->addRule('server_password', get_string('required'), 'required', null, 'client');
 
-        $alfresco_version = get_config('elis_files', 'alfresco_version');
+        //$alfresco_version = get_config('elis_files', 'alfresco_version');
         // Set site version of Alfresco
-        $options = array(
-            ELIS_FILES_SELECT_ALFRESCO_VERSION => get_string('alfrescoversionselect', 'repository_elis_files'),
-            ELIS_FILES_ALFRESCO_30 => get_string('alfrescoversion30', 'repository_elis_files'),
-            ELIS_FILES_ALFRESCO_34 => get_string('alfrescoversion34', 'repository_elis_files')
-        );
+        //$options = array(
+        //    ELIS_FILES_SELECT_ALFRESCO_VERSION => get_string('alfrescoversionselect', 'repository_elis_files'),
+        //    ELIS_FILES_ALFRESCO_30 => get_string('alfrescoversion30', 'repository_elis_files'),
+        //    ELIS_FILES_ALFRESCO_34 => get_string('alfrescoversion34', 'repository_elis_files')
+        //);
 
-        $mform->addElement('select', 'alfresco_version', get_string('alfrescoversion', 'repository_elis_files'), $options);
-        $mform->setDefault('alfresco_version', ELIS_FILES_SELECT_ALFRESCO_VERSION);
-        $mform->addElement('static', 'default_browse_default', '', get_string('elis_files_default_alfresco_version', 'repository_elis_files'));
+        //$mform->addElement('select', 'alfresco_version', get_string('alfrescoversion', 'repository_elis_files'), $options);
+        //$mform->setDefault('alfresco_version', ELIS_FILES_SELECT_ALFRESCO_VERSION);
+        //$mform->addElement('static', 'default_browse_default', '', get_string('elis_files_default_alfresco_version', 'repository_elis_files'));
 
         // Check for installed categories table or display 'plugin not yet installed'
         if ($DB->get_manager()->table_exists('elis_files_categories')) {
@@ -641,7 +641,7 @@ class repository_elis_files extends repository {
             $jsondata = array('url'=>$url,'name'=>'config-categories','options'=>$popup_settings);
             $jsondata = json_encode($jsondata);
             $title = get_string('configurecategoryfilter', 'repository_elis_files');
-            $disabled = (get_config('elis_files', 'alfresco_version')) == '' ? 'disabled=\'disabled\'': '';
+            //$disabled = (get_config('elis_files', 'alfresco_version')) == '' ? 'disabled=\'disabled\'': '';
             $button = "<input type='button' value='".$title."' alt='".$title."' title='".$title."' onclick='return openpopup(null,$jsondata);'>";
             $mform->addElement('static', 'category_filter', get_string('categoryfilter', 'repository_elis_files'), $button);
             $mform->addElement('static', 'category_filter_intro', '', get_string('elis_files_category_filter', 'repository_elis_files'));
