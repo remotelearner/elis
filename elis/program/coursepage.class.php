@@ -431,6 +431,30 @@ class coursepage extends managementpage {
 
         echo cm_delete_form($url, $message, $optionsyes, $optionsno);
     }
+
+    /**
+     * Specifies a unique shortname for the entity represented by
+     * a page of this type, transforming the supplied value if necessary
+     *
+     * @param   string       $parent_path  Path of all parent elements, or the empty string
+     *                                     if none
+     * @param   string       $name         Initial name provided for the element
+     *
+     * @return  string|NULL                A valid name to identify the item with, or NULL if
+     *                                     not applicable
+     */
+    static function get_entity_name($parent_path, $name) {
+        $parts = explode('_', $name);
+
+        //try to find the entity type and id, and combine them
+        if (count($parts) == 2) {
+            if ($parts[0] == 'course') {
+                return $parts[0] . '-' . $parts[1];
+            }
+        }
+        return NULL;
+    }
+
 }
 
 function count_curricula($column, $item) {

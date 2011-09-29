@@ -544,7 +544,7 @@ class usersetpage extends managementpage {
 
         //try to find the entity type and id, and combine them
         if (count($parts) == 2) {
-            if ($parts[0] == 'cluster') {
+            if ($parts[0] == 'userset') {
                 return $parts[0] . '-' . $parts[1];
             }
         }
