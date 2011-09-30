@@ -120,6 +120,8 @@
   background-image: none;
   background-color: white;
   overflow: auto;
+  overflow-y: hidden;
+  -ms-overflow-y: hidden;
 }
 
 .php_report_block .php_report_title {
