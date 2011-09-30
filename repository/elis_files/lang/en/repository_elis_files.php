@@ -110,6 +110,7 @@ $string['course'] = 'Course';
 $string['createfolder'] = 'Create folder';
 $string['defaultfilebrowsinglocation'] = 'Default file browsing location';
 $string['delete'] = 'Delete';
+$string['strdelete'] = 'Delete';
 $string['deletecheckfiles'] = 'Are you absolutely sure you want to delete these files?';
 $string['deletecheckwarning'] = 'You are about to delete these files';
 $string['deleteuserdir'] = 'Auto-delete Alfresco user directories';
