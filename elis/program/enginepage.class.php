@@ -241,14 +241,16 @@ abstract class enginepage extends pm_page {
         $newchilddata   = '';
         $actiontype     = '';
 
+
+
         if ($form->no_submit_button_pressed()) {
 
             $this->_form = $form;
-
 //$forma = $form->get_submitted_data();
 //print_object('data - begin');
 //print_object($forma);
 //print_object('data - end');
+
 
             $this->display('edit');
 
@@ -256,64 +258,77 @@ abstract class enginepage extends pm_page {
 
             require_sesskey();
 
-            $obj       = $this->get_new_data_object($id);
-            $obj->set_from_data($data);
-            if ($data->rid > 0) {
-                $obj->id = $data->rid;
+            if (array_key_exists('trk_assignment', $data) or
+                array_key_exists('cls_assignment', $data) or
+                array_key_exists('pro_assignment', $data)) {
+
+                $this->_form = $form;
+                $this->display('edit');
+
             } else {
-                unset($obj->id);
+
+
+
+                $obj       = $this->get_new_data_object($id);
+                $obj->set_from_data($data);
+                if ($data->rid > 0) {
+                    $obj->id = $data->rid;
+                } else {
+                    unset($obj->id);
+                }
+
+                $obj->save();
+
+                // Updating existing score ranges
+                // Iterate through the data array until you find either a
+                // track_ or class_ or profile_ prefix, then set the action type
+                // and break out of the loop
+                $type = '';
+                $data = (array) $data;
+
+                foreach ($data as $key => $value) {
+
+                    if (false !== strpos($key, 'track_')) {
+                        if (!empty($data[$key])) {
+                            $actiontype = TRACK_ACTION_TYPE;
+                            $type = 'track';
+                            break;
+                        }
+                    }
+
+                    if (false !== strpos($key, 'class_')) {
+                        if (!empty($data[$key])) {
+                            $actiontype = CLASS_ACTION_TYPE;
+                            $type = 'class';
+                            break;
+                        }
+                    }
+
+                    if (false !== strpos($key, 'profile_')) {
+                        if (!empty($data[$key])) {
+                            $actiontype = PROFILE_ACTION_TYPE;
+                            $type = 'profile';
+                            break;
+                        }
+                    }
+
+                }
+
+//    print_object('SUBMITTED DATA');
+//    print_object($data);
+//    print_object('SUBMITTED DATA END');
+//    die();
+                // Iterate through the data array and update the existing score ranges submitted
+                $this->save_existing_data_submitted($data, $type, $actiontype);
+
+                // Save new score ranges submitted
+                $this->save_new_data_submitted($data, $type, $actiontype, $obj->id);
+
+                $target = $this->get_new_page(array('action' => 'default',
+                                                    'id' => $id), false);
+                redirect($target->url);
             }
 
-            $obj->save();
-
-            // Updating existing score ranges
-            // Iterate through the data array until you find either a
-            // track_ or class_ or profile_ prefix, then set the action type
-            // and break out of the loop
-            $type = '';
-            $data = (array) $data;
-
-            foreach ($data as $key => $value) {
-
-                if (false !== strpos($key, 'track_')) {
-                    if (!empty($data[$key])) {
-                        $actiontype = TRACK_ACTION_TYPE;
-                        $type = 'track';
-                        break;
-                    }
-                }
-
-                if (false !== strpos($key, 'class_')) {
-                    if (!empty($data[$key])) {
-                        $actiontype = CLASS_ACTION_TYPE;
-                        $type = 'class';
-                        break;
-                    }
-                }
-
-                if (false !== strpos($key, 'profile_')) {
-                    if (!empty($data[$key])) {
-                        $actiontype = PROFILE_ACTION_TYPE;
-                        $type = 'profile';
-                        break;
-                    }
-                }
-
-            }
-
-            // Iterate through the data array and update the existing score ranges submitted
-            $this->save_existing_data_submitted($data, $type, $actiontype);
-
-            // Save new score ranges submitted
-            $this->save_new_data_submitted($data, $type, $actiontype, $obj->id);
-
-            $target = $this->get_new_page(array('action' => 'default',
-                                                'id' => $id), false);
-            redirect($target->url);
-
-//print_object('SUBMITTED DATA');
-//print_object($data);
-//print_object('SUBMITTED DATA END');
 
         } else {
             $this->_form = $form;
@@ -332,6 +347,12 @@ abstract class enginepage extends pm_page {
 
         // Check for existing data regarding track/class/profile actions
         foreach($data as $key => $value) {
+
+            if (empty($data[$key])) {
+                // If value is empty then it must be an empyt score range row
+                // because form validation will catch any incomplete rows
+                continue;
+            }
 
             // Check for existing track data in the form of track_<id>_...
             $pos = strpos($key, "{$type}_add_");

@@ -269,11 +269,6 @@ class cmEngineForm extends cmform {
         // Create assign to table elements
         $mform->addElement('html', '<div>');
 
-        // TODO: check for action type and pass custom form values
-
-
-
-
         if (TRACK_ACTION_TYPE == $actiontype) {
             $this->setup_table_type($mform, 'track', $resultengid, $cache);
         } else {
@@ -281,8 +276,8 @@ class cmEngineForm extends cmform {
         }
 
         $attributes = array('onclick' => 'pre_submit_processing("track","'.TRACK_ACTION_TYPE.'");');
+        //$mform->registerNoSubmitButton('trk_assignment');
         $mform->addElement('submit', 'trk_assignment', $addscorerange, $attributes);
-        $mform->registerNoSubmitButton('trk_assignment');
 
         $mform->addElement('html', '</div>');
 
@@ -302,7 +297,7 @@ class cmEngineForm extends cmform {
         }
 
         $attributes = array('onclick' => 'pre_submit_processing("class","'.CLASS_ACTION_TYPE.'");');
-        $mform->registerNoSubmitButton('cls_assignment');
+        //$mform->registerNoSubmitButton('cls_assignment');
         $mform->addElement('submit', 'cls_assignment', $addscorerange, $attributes);
 
 
@@ -332,6 +327,9 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</div>');
 
         $mform->addElement('html', '</fieldset>');
+
+        // TESTING
+        //print_object($mform->_elementIndex);
     }
 
     function check_unique($table, $field, $value, $id) {
@@ -405,6 +403,13 @@ class cmEngineForm extends cmform {
                      empty($data["track_add_{$key}_selected"]) ) {
 
                     continue;
+                }
+
+                if ( empty($data["track_add_{$key}_min"]) or
+                     empty($data["track_add_{$key}_max"]) or
+                     empty($data["track_add_{$key}_selected"]) ) {
+
+                        $errors["track_add_{$key}_group"] = 'INCOMPLETE SCORE RANGE ADD LANGUAGE STRING';
                 }
 
                 if ((int) $data["track_add_{$key}_min"] >=
@@ -494,17 +499,18 @@ class cmEngineForm extends cmform {
     /**
      * TODO: document
      */
-    protected function setup_table_type_row($mform, $type, $dataset = array(), $extrarow = false) {
+    protected function setup_table_type_row($mform, $type, $dataset = array(), $extrarow) {
         global $OUTPUT, $DB;
 
         $deletescoretype    = get_string("delete_score", self::LANG_FILE);
         $notypeselected     = get_string("no_{$type}_selected", self::LANG_FILE);
         $selecttype         = get_string("select_{$type}", self::LANG_FILE);
 
-
+        $setdefault = false;
         $prefix = $type . '_';
 
         if ($extrarow) {
+
             $prefix = $type . '_add_';
             $empty_record = new stdClass();
             $empty_record->min = '';
@@ -512,9 +518,11 @@ class cmEngineForm extends cmform {
             $empty_record->selected = '';
             $empty_record->name = $notypeselected;
             array_push($dataset, $empty_record);
+
         }
 
         $i = 0;
+
 
         foreach ($dataset as $data) {
 
@@ -564,13 +572,8 @@ class cmEngineForm extends cmform {
             $tablehtml .= html_writer::start_tag('td');
             $mform->addElement('html', $tablehtml);
 
-            // Add label and track/class/profile selection link
-            $output         = '';
-            $attributes     = array('id' => "{$prefix}{$i}_label");
 
-            // Retrieve the track name
-
-
+            // Retrieve the track/class name
             $name = '';
             switch ($type) {
                 case 'track':
@@ -585,6 +588,8 @@ class cmEngineForm extends cmform {
                     break;
             }
 
+            $output         = '';
+            $attributes     = array('id' => "{$prefix}{$i}_label");
 
             $output         .= html_writer::tag('label', $name, $attributes);
 
@@ -596,9 +601,11 @@ class cmEngineForm extends cmform {
 
             $mform->addElement('html', $output);
 
+
             $attributes     = array('id' => "{$prefix}{$i}_selected"); // Needed for javascript call back
 
             $mform->addElement('hidden', "{$prefix}{$i}_selected", $data->selected, $attributes);
+
 
             $tablehtml = html_writer::end_tag('td');
             $tablehtml .= html_writer::end_tag('tr');
@@ -685,8 +692,52 @@ class cmEngineForm extends cmform {
         global $CFG, $COURSE;
         $mform =& $this->_form;
 
-//        $data = $this->get_submitted_data();
+        $data = $this->get_submitted_data();
+
+        if (empty($data)) {
+            return;
+        }
+
+print_object($data);
+
+//print_object($mform->getElement('actiontype'));
+//print_object($mform->getElementValue('track_add_0_selected'));
+
+//if ($mform->getElementValue('track_add_0_selected')) {
+    //$mform->freeze('class_add_0_group');
+
+//$mform->disabledIf('class_add_0_group', 'track_add_0_max', 'neq', '');
+//$mform->disabledIf('cls_assignment', 'track_add_0_max', 'neq', '');
+//}
 //
+//        $data = (array) $data;
+//
+//        if (array_key_exists('cls_assignment', $data)) {
+//            foreach ($data as $key => $value) {
+//                if (false !== strpos($key, 'class_add_') and
+//                    false !== strpos($key, '_selected')) {
+
+//                    break;
+//                }
+//            }
+//        }
+//
+//        if (array_key_exists('trk_assignment', $data)) {
+//            foreach ($data as $key => $value) {
+//
+//                if (false !== strpos($key, 'class_')) {
+//
+//                    $mform->getElementValue($key);
+//                }
+//                if (false !== strpos($key, 'track_add_') and
+//                    false !== strpos($key, '_selected')) {
+//
+//                    $mform->setDefault($key, 'actiontype');
+
+//                }
+//            }
+//        }
+
 //print_object('definition_after_data');
 //print_object($data);
 //print_object('definition_after_data - end');
