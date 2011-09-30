@@ -57,7 +57,8 @@ class scheduling_form_step_label extends moodleform {
 
         $mform->addElement('text', 'label', get_string('label', 'block_php_report'));
         $mform->setType('label', PARAM_CLEAN);
-        $mform->addRule('label', get_string('required_field', 'block_php_report', get_string('label', 'block_php_report')), 'required', null, 'client');
+        $mform->addRule('label', get_string('required_field', 'block_php_report', get_string('label', 'block_php_report')), 'required', null, 'server');
+        // ^ELIS-3316: server validation so cancel/submit will work
 
         $options=array('cols'=>'30');
         $mform->addElement('textarea', 'description', get_string('description'),$options);
@@ -449,7 +450,8 @@ class scheduling_form_step_recipients extends moodleform {
 
 
         $mform->addElement('text', 'recipients', get_string('recipientslist'), array('size' => 60));
-        $mform->addRule('recipients', get_string('required_field', 'block_php_report', get_string('recipientslist')), 'required', null, 'client');
+        $mform->addRule('recipients', get_string('required_field', 'block_php_report', get_string('recipientslist')), 'required', null, 'server');
+        // ^ELIS-3316: server validation so cancel/submit will work
 
         $mform->addElement('htmleditor', 'message', '<div class="php_report_bold_header">'.htmlspecialchars(get_string('message', 'block_php_report')).'</div>');
 
