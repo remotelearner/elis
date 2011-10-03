@@ -199,12 +199,14 @@ abstract class enginepage extends pm_page {
             throw new ErrorException('Display called before Do');
         }
 
+        $type = $this->optional_param('actiontype', 1, PARAM_INT);
+
         echo '
         <script type="text/javascript">
             $(function(){
 
                 // Accordion
-                $("#accordion").accordion({ header: "h3" });
+                $("#accordion").accordion({ header: "h3", active: '. intval($type - 1) .' });
 
             });
         </script>';
