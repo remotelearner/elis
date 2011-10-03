@@ -16,17 +16,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'pmplugins_userset_classification', language 'en_us', branch 'ELIS_2.0.0'
+ * Strings for component 'usersetenrol_moodle_profile', language 'en_us', branch 'ELIS_2.0.0'
  *
- * @package   pmplugins_userset_classification
+ * @package   usersetenrol_moodle_profile
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$string['autoenrol_curricula'] = 'Autoenroll users in curricula';
-$string['autoenrol_groupings'] = 'Autoenroll users in groupings';
-$string['autoenrol_groups'] = 'Autoenroll users in groups';
-$string['autoenrol_tracks'] = 'Autoenroll users in tracks';
-$string['usersetclassificationform:autoenrol_groups_help'] = '<p>Enabling this setting allows groups to be automatically created for user population based on cluster enrollment by default.</p><p>For this functionality to work, cluster group auto-assignment must be enabled globally for either the site or course level.</p>';
+$string['autoenrol'] = 'Auto-enroll';
