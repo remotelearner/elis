@@ -25,6 +25,7 @@
  *
  */
 
+
 /**
  * This functions opens a new popup window
  */

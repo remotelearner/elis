@@ -45,6 +45,10 @@ class cmEngineForm extends cmform {
     // Layout switching
     protected $_layout = 'default';
 
+    protected $_submitted_data = '';
+
+    protected $_typenames = array();
+
     /**
      * defines items in the form
      */
@@ -98,6 +102,12 @@ class cmEngineForm extends cmform {
         if ($this->_customdata['enginetype'] == 'class') {
             $page = 'clsenginestatus';
         }
+
+        print_object('streets');
+        print_object($this->get_submitted_data());
+        print_object(' - streets');
+
+        $this->_submitted_data = $this->get_submitted_data();
 
         $reporturl = $CFG->wwwroot .'/elis/program/index.php?s='. $page .'&amp;id='. $this->_customdata['id'];
 
@@ -238,10 +248,12 @@ class cmEngineForm extends cmform {
 
         // ** may not need actiontype **
         $actiontype = 0;
+
         if (isset($this->_customdata['actiontype']) and
             !empty($this->_customdata['actiontype']) ) {
 
-           $actiontype = $this->_customdata['actiontype'];
+            $actiontype = $this->_customdata['actiontype'];
+
         }
 
         $cache = $this->format_cache_data();
@@ -250,8 +262,6 @@ class cmEngineForm extends cmform {
 
         $mform->addElement('hidden', 'actiontype', $actiontype);
         $mform->addElement('hidden', 'actioncache');
-
-
 
         $mform->addElement('html', '<fieldset class="engineform">');
 //            $mform->addElement('html', '<legend>'.$result.'</lengend>');
@@ -271,9 +281,20 @@ class cmEngineForm extends cmform {
 
         if (TRACK_ACTION_TYPE == $actiontype) {
             $this->setup_table_type($mform, 'track', $resultengid, $cache);
+
+            // This is not pretty but we know that <type>_add_0_<name> always exists
+            $mform->disabledIf('class_add_0_group', 'actiontype', 'neq', '');
+            $mform->disabledIf('cls_assignment', 'actiontype', 'neq', '');
+
+            //$mform->disabledIf('class_add_0_group', 'track_add_0_selected', 'neq', '');
+            $mform->disabledIf('pro_assignment', 'actiontype', 'neq', '');
+
         } else {
             $this->setup_table_type($mform, 'track', $resultengid, array());
         }
+
+//        $this->init_javascript_enhancement('actiontype', 'typelabels', array('akin'));
+
 
         $attributes = array('onclick' => 'pre_submit_processing("track","'.TRACK_ACTION_TYPE.'");');
         //$mform->registerNoSubmitButton('trk_assignment');
@@ -292,6 +313,14 @@ class cmEngineForm extends cmform {
 
         if (CLASS_ACTION_TYPE == $actiontype) {
             $this->setup_table_type($mform, 'class', $resultengid, $cache);
+
+            // This is not pretty but we know that <type>_add_0_<name> always exists
+            $mform->disabledIf('track_add_0_group', 'actiontype', 'neq', '');
+            $mform->disabledIf('trk_assignment', 'actiontype', 'neq', '');
+
+            //$mform->disabledIf('class_add_0_group', 'track_add_0_selected', 'neq', '');
+            $mform->disabledIf('pro_assignment', 'actiontype', 'neq', '');
+
         } else {
             $this->setup_table_type($mform, 'class', $resultengid, array());
         }
@@ -312,12 +341,19 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '<div>');
 
         if (PROFILE_ACTION_TYPE == $actiontype) {
-//            $this->setup_table_type($mform, 'class', $resultengid, $cache);
-        } else {
-//            $this->setup_table_type($mform, 'class', $resultengid, array());
-        }
+//            $this->setup_table_type($mform, 'profile', $resultengid, $cache);
 
-//            $mform->addElement('html', '<div>Some more content in div');
+            // This is not pretty but we know that <type>_add_0_<name> always exists
+            $mform->disabledIf('track_add_0_group', 'actiontype', 'neq', '');
+            $mform->disabledIf('trk_assignment', 'actiontype', 'neq', '');
+
+            //$mform->disabledIf('class_add_0_group', 'track_add_0_selected', 'neq', '');
+            $mform->disabledIf('class_add_0_group', 'actiontype', 'neq', '');
+            $mform->disabledIf('cls_assignment', 'actiontype', 'neq', '');
+
+        } else {
+//            $this->setup_table_type($mform, 'profile', $resultengid, array());
+        }
 
         $mform->addElement('submit', 'pro_assignment', $addscorerange);
         $mform->addElement('html', '</div>');
@@ -329,7 +365,8 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</fieldset>');
 
         // TESTING
-        //print_object($mform->_elementIndex);
+        print_object($mform->_elementIndex);
+
     }
 
     function check_unique($table, $field, $value, $id) {
@@ -362,9 +399,20 @@ class cmEngineForm extends cmform {
             }
         }
 
-        // Add another track score range button.  Do not validate form on this button click
+        // Add another track score range button.  Validate and make sure all rows have been filled out
         if (array_key_exists('trk_assignment', $data)) {
-            // ignore
+
+            foreach ($data as $key => $value) {
+                if (false !== strpos($key, 'track_add_')) {
+                    if (empty($data[$key])) {
+                        $element_instance = explode('_', $key);
+                        $element_instance = $element_instance[2];
+
+                        $errors["track_add_{$element_instance}_group"] = 'INCOMPLETE ROW ADD LANGUAGE STRING';
+                    }
+                }
+            }
+
         } else {
 
             $trackkeys = array();
@@ -579,10 +627,12 @@ class cmEngineForm extends cmform {
                 case 'track':
                     $param = array('id' => $data->selected);
                     $name = $DB->get_field(track::TABLE, 'name', $param);
+
                     break;
                 case 'class':
                     $param = array('id' => $data->selected);
                     $name = $DB->get_field(pmclass::TABLE, 'idnumber', $param);
+
                     break;
                 case 'profile':
                     break;
@@ -601,10 +651,15 @@ class cmEngineForm extends cmform {
 
             $mform->addElement('html', $output);
 
-
             $attributes     = array('id' => "{$prefix}{$i}_selected"); // Needed for javascript call back
 
             $mform->addElement('hidden', "{$prefix}{$i}_selected", $data->selected, $attributes);
+
+            // This element is neccessary because when the form is validated and fails or submitted but no
+            // data is saved; the form is redisplayed without access to the unsaved data.  There is magic
+            // with formslib in how it retains the values.  But using a hidden element to store the value is
+            // more fun
+            $mform->addElement('hidden', "{$prefix}{$i}_typename",'');
 
 
             $tablehtml = html_writer::end_tag('td');
@@ -698,76 +753,57 @@ class cmEngineForm extends cmform {
             return;
         }
 
-print_object($data);
 
-//print_object($mform->getElement('actiontype'));
-//print_object($mform->getElementValue('track_add_0_selected'));
+        if ($mform->getElementValue('actiontype')) {
+        }
 
-//if ($mform->getElementValue('track_add_0_selected')) {
-    //$mform->freeze('class_add_0_group');
+        if (array_key_exists('trk_assignment', $data)) {
 
-//$mform->disabledIf('class_add_0_group', 'track_add_0_max', 'neq', '');
-//$mform->disabledIf('cls_assignment', 'track_add_0_max', 'neq', '');
-//}
-//
-//        $data = (array) $data;
-//
-//        if (array_key_exists('cls_assignment', $data)) {
-//            foreach ($data as $key => $value) {
-//                if (false !== strpos($key, 'class_add_') and
-//                    false !== strpos($key, '_selected')) {
-
-//                    break;
-//                }
-//            }
-//        }
-//
-//        if (array_key_exists('trk_assignment', $data)) {
-//            foreach ($data as $key => $value) {
-//
-//                if (false !== strpos($key, 'class_')) {
-//
-//                    $mform->getElementValue($key);
-//                }
+            foreach ($data as $key => $value) {
 //                if (false !== strpos($key, 'track_add_') and
-//                    false !== strpos($key, '_selected')) {
+//                    false !== strpos($key, '_typename')) {
 //
-//                    $mform->setDefault($key, 'actiontype');
-
-//                }
-//            }
-//        }
-
-//print_object('definition_after_data');
-//print_object($data);
-//print_object('definition_after_data - end');
-//die();
-//TODO: Use this method to disable elements on the field
-/*
-        $name = trim($mform->getElementValue('name'));
-        $description = trim($mform->getElementValue('description'));
-        $url = $mform->getElementValue('url');
-
-        if (empty($name) || empty($description)) {
-            $rss = new moodle_simplepie($url);
-
-            if (empty($name) && $rss->get_title()) {
-                $mform->setDefault('name', $rss->get_title());
+//                        $this->_typenames[$key] = $data->$key;
+//                    }
             }
 
-            if (empty($description) && $rss->get_description()) {
-                $mform->setDefault('description', $rss->get_description());
-            }
+
+            //  track_add_0_<name> will always exist on the form
+            if ( !empty($data->track_add_0_min) and
+                 !empty($data->track_add_0_max) and
+                 !empty($data->track_add_0_selected) )  {
+
+                $mform->disabledIf('class_add_0_group', 'track_add_0_selected', 'neq', '');
+                $mform->disabledIf('cls_assignment', 'track_add_0_selected', 'neq', '');
+                $mform->disabledIf('pro_assignment', 'track_add_0_selected', 'neq', '');
+
+               }
         }
 
-        if ($id = $mform->getElementValue('id')) {
-            $mform->setDefault('autotags', implode(',', tag_get_tags_array('blog_external', $id)));
-            $mform->freeze('url');
-            $mform->freeze('filtertags');
-            // TODO change the filtertags element to a multiple select, using the tags of the external blog
-            // Use $rss->get_channel_tags()
+
+        if (array_key_exists('cls_assignment', $data)) {
+
+            foreach ($data as $key => $value) {
+//                if (false !== strpos($key, 'class_add_') and
+//                    false !== strpos($key, '_typename')) {
+//
+//                        $this->_typenames[$key] = $data->$key;
+//                    }
+            }
+
+
+            //  class_add_0_<name> will always exist on the form
+            if ( !empty($data->class_add_0_min) and
+                 !empty($data->class_add_0_max) and
+                 !empty($data->class_add_0_selected) )  {
+
+                $mform->disabledIf('track_add_0_group', 'class_add_0_selected', 'neq', '');
+                $mform->disabledIf('trk_assignment', 'class_add_0_selected', 'neq', '');
+                $mform->disabledIf('pro_assignment', 'class_add_0_selected', 'neq', '');
+
+               }
         }
-*/
+
     }
 
 }

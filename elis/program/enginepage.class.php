@@ -112,8 +112,13 @@ abstract class enginepage extends pm_page {
         $actioncount    = $childobj->count($filter);
 
         $actiontype     = $type;
+        // Action type is needed because it helps to identify which form elements need
+        // to be disabled
         if ($actioncount) {
-            //$actiontype =
+            $actiontype = 1;
+            $data = $childobj->find($filter, array(), 0, 1);
+            $data = $data->current();
+            $actiontype = $data->actiontype;
         }
 
 
@@ -246,11 +251,6 @@ abstract class enginepage extends pm_page {
         if ($form->no_submit_button_pressed()) {
 
             $this->_form = $form;
-//$forma = $form->get_submitted_data();
-//print_object('data - begin');
-//print_object($forma);
-//print_object('data - end');
-
 
             $this->display('edit');
 
@@ -384,18 +384,21 @@ abstract class enginepage extends pm_page {
 
         switch ($actiontype) {
             case TRACK_ACTION_TYPE:
+                $dataobj->actiontype = TRACK_ACTION_TYPE;
                 $field = 'trackid';
                 break;
             case CLASS_ACTION_TYPE:
                 $field = 'classid';
+                $dataobj->actiontype = CLASS_ACTION_TYPE;
                 break;
             case PROFILE_ACTION_TYPE:
                 //
+                $dataobj->actiontype = PROFILE_ACTION_TYPE;
                 break;
         }
 
         $field_map = array();
-
+        $field_map['actiontype'] = 'actiontype';
 
         foreach ($instance as $recid => $dummy_val) {
 
