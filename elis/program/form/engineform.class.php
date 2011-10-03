@@ -365,7 +365,7 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</fieldset>');
 
         // TESTING
-        print_object($mform->_elementIndex);
+//        print_object($mform->_elementIndex);
 
     }
 
@@ -403,12 +403,14 @@ class cmEngineForm extends cmform {
         if (array_key_exists('trk_assignment', $data)) {
 
             foreach ($data as $key => $value) {
-                if (false !== strpos($key, 'track_add_')) {
+
+                if ((false !== strpos($key, 'track_add_')) && (false === strpos($key, '_typename'))) {
+
                     if (empty($data[$key])) {
                         $element_instance = explode('_', $key);
                         $element_instance = $element_instance[2];
 
-                        $errors["track_add_{$element_instance}_group"] = 'INCOMPLETE ROW ADD LANGUAGE STRING';
+                        $errors["track_add_{$element_instance}_group"] = get_string('error_incomplete_row', self::LANG_FILE);
                     }
                 }
             }
@@ -444,7 +446,6 @@ class cmEngineForm extends cmform {
             // minimum is less than maximum and if a track id has bee
             // selected
             foreach ($newtrackkeys as $key => $value) {
-
                 // Skip over empty score ranges.
                 if ( empty($data["track_add_{$key}_min"]) and
                      empty($data["track_add_{$key}_max"]) and
@@ -457,28 +458,32 @@ class cmEngineForm extends cmform {
                      empty($data["track_add_{$key}_max"]) or
                      empty($data["track_add_{$key}_selected"]) ) {
 
-                        $errors["track_add_{$key}_group"] = 'INCOMPLETE SCORE RANGE ADD LANGUAGE STRING';
+                    $errors["track_add_{$key}_group"] = get_string('error_incomplete_score_range', self::LANG_FILE);
                 }
 
                 if ((int) $data["track_add_{$key}_min"] >=
                     (int) $data["track_add_{$key}_max"]) {
 
-                    $errors["track_add_{$key}_group"] = 'MIN >= MAX ADD LANGUAGE STRING';
+                    $errors["track_add_{$key}_group"] = get_string('error_min_larger_than_max', self::LANG_FILE);
                 }
 
                 if (empty($data["track_add_{$key}_selected"])) {
-                    $errors["track_add_{$key}_group"] = 'No track selected ADD LANGUAGE STRING';
+                    $errors["track_add_{$key}_group"] = get_string('error_no_track', self::LANG_FILE);
                 }
             }
 
             foreach ($trackkeys as $key => $value) {
+                if (array_key_exists("track_{$key}_group", $errors)) {
+                    unset($errors["track_{$key}_group"]);
+                }
+
                 if ((int) $data["track_{$key}_min"] >=
                     (int) $data["track_{$key}_max"]) {
-                        $errors["track_{$key}_group"] = 'MIN >= MAX ADD LANGUAGE STRING';
+                        $errors["track_{$key}_group"] = get_string('error_min_larger_than_max', self::LANG_FILE);
                 }
 
                 if (empty($data["track_{$key}_selected"])) {
-                    $errors["track_{$key}_group"] = 'No track selected ADD LANGUAGE STRING';
+                    $errors["track_{$key}_group"] = get_string('error_no_track', self::LANG_FILE);
                 }
 
             }
