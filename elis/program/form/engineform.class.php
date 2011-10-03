@@ -638,18 +638,22 @@ class cmEngineForm extends cmform {
                     break;
             }
 
-            $output         = '';
             $attributes     = array('id' => "{$prefix}{$i}_label");
 
-            $output         .= html_writer::tag('label', $name, $attributes);
+            $output         = html_writer::tag('label', $name, $attributes);
 
-            $output         .= '&nbsp;&nbsp;';
+            $mform->addElement('html', $output);
+
+            $tablehtml = html_writer::end_tag('td');
+            $tablehtml .= html_writer::start_tag('td');
+            $mform->addElement('html', $tablehtml);
 
             $url            = "form/{$type}selector.php?id={$prefix}{$i}&callback=add_selection";
             $attributes     = array('onClick' => 'show_panel("'.$url.'")');
-            $output         .= html_writer::link('#', $selecttype, $attributes);
+            $output         = html_writer::link('#', $selecttype, $attributes);
 
             $mform->addElement('html', $output);
+
 
             $attributes     = array('id' => "{$prefix}{$i}_selected"); // Needed for javascript call back
 
