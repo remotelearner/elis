@@ -52,7 +52,7 @@ if (!isset($this)) {
     $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
     $PAGE->set_pagelayout('embedded'); // TBV: was 'embedded'
     $PAGE->set_pagetype('elis'); // TBV
-    $PAGE->set_title($instance->title);
+    $PAGE->set_title($instance->get_display_name());
     echo $OUTPUT->header();
 }
 

@@ -434,7 +434,7 @@ class course_usage_summary_report extends icon_config_report {
                             ON class.id = enrol2.classid
                           JOIN {'. curriculumcourse::TABLE .'} curcrs
                             ON curcrs.courseid = class.courseid
-                          JOIN {'. curriclumstudent::TABLE ."} curass
+                          JOIN {'. curriculumstudent::TABLE ."} curass
                             ON curcrs.curriculumid = curass.curriculumid
                          WHERE curass.userid = enrol2.userid
                            AND enrol2.id = enrol.id
