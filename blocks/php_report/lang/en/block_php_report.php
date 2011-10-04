@@ -30,7 +30,7 @@ $string['no_cache'] = 'Never Cache Reports';
 $string['no_report_data'] = 'Sorry, no data was found for this report. Please try running again later, or removing filters if applicable.';
 $string['na'] = 'N/A';
 $string['notconfigured'] = 'Please complete this block\'s configuration';
-$string['percent_symbol'] = '%%';
+$string['percent_symbol'] = '%';
 $string['pagetitle'] = 'Create/Modify Schedule for ELIS Report: {$a}';
 $string['pluginname'] = 'ELIS Report';
 
