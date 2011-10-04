@@ -14,8 +14,8 @@ $string['column_transfer_credits'] = 'Transfer Credits';
 $string['displayname'] = 'Curricula Report';
 $string['date_format'] = '%m/%d/%Y';
 
-$string['filter_cluster'] = 'Choose an organization/cluster or all organization/clusters';
-//$string['filter_cluster_name'] = 'Cluster Name';
+$string['filter_cluster'] = 'Choose an organization/User Set or all organization/User Sets';
+//$string['filter_cluster_name'] = 'User Set Name';
 $string['filter_profile_match'] = 'Profile Match filter'; // TBD
 $string['filter_user_match'] = 'User Match filter'; // TBD
 $string['fld_fullname'] = 'View users whose profile contains (<b>leave blank to show all users</b>):';

@@ -24,7 +24,7 @@ $string['date_format'] = '%m/%d/%Y';
 $string['display_order'] = 'Display Order';
 $string['displayname'] = 'Course Progress Summary Report';
 
-$string['filter_cluster'] = 'Select the Organizations/Clusters to show or show all';
+$string['filter_cluster'] = 'Select the Organizations/User Sets to show or show all';
 $string['filter_course_date'] = 'Show courses starting between these dates:';
 $string['filter_custom_fields'] = 'selecting custom course fields';
 $string['filter_curricula'] = 'Select the curricula or all curricula';

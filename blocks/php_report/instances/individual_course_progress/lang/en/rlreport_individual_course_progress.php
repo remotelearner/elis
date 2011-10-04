@@ -28,7 +28,7 @@ $string['grouping_course_complete'] = 'Courses Completed';
 $string['grouping_course_in_progress'] = 'Courses in Progress';
 $string['grouping_progress'] = 'Progress';
 
-$string['header_cluster'] = 'Cluster(s)';
+$string['header_cluster'] = 'User Set(s)';
 $string['header_date'] = 'Date';
 $string['header_email'] = 'Email';
 $string['header_id'] = 'ID';

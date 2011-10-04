@@ -8,7 +8,7 @@ $string['date_format'] = '%m/%d/%Y';
 $string['dbtype_not_supported'] = 'Sorry, your database family ({$a}) is not supported for Sitewide Time Summary report!';
 $string['displayname'] = 'Sitewide Time Summary Report';
 
-$string['filter_cluster'] = 'View users in this organizational cluster: ';
+$string['filter_cluster'] = 'View users in this organizational User Set: ';
 $string['filter_date_range'] = 'Select the Start Date and End Date for the report: ';
 $string['filter_profile_match'] = 'View users who\'s profile contains (leave blank to show all users):';
 $string['filter_user_match'] = 'Use Advanced User Filtering'; // TBD: in filter!
