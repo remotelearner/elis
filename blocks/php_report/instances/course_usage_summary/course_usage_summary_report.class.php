@@ -317,6 +317,57 @@ class course_usage_summary_report extends icon_config_report {
     }
 
     /**
+     * Specifies which values for the log 'module' field count as resources
+     * when tracking resource views
+     *
+     * @return  array  The list of appropriate field values
+     */
+    function get_resource_modules() {
+        global $CFG, $SITE;
+
+        //course API
+        require_once($CFG->dirroot.'/course/lib.php');
+
+        //retrieve information about all modules on the site
+        get_all_mods($SITE->id, $mods, $modnames, $modnamesplural, $modnamesused);
+
+        //make sure to always count 'resource' for legacy reasons
+        $result = array('resource');
+
+        foreach($modnames as $modname => $modnamestr) {
+            //make sure the module is valid
+	        $libfile = "$CFG->dirroot/mod/$modname/lib.php";
+            if (!file_exists($libfile)) {
+                continue;
+            }
+
+            //check to see if the module is considered a resource in a "legacy" way
+            include_once($libfile);
+            $gettypesfunc =  $modname.'_get_types';
+
+            if (function_exists($gettypesfunc)) {
+   	            //look through supported "types" for resource
+                if ($types = $gettypesfunc()) {
+                    foreach($types as $type) {
+                        if ($type->modclass == MOD_CLASS_RESOURCE) {
+                            $result[] = $modname;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                //determine if the the module supports resource functionality
+  	            $archetype = plugin_supports('mod', $modname, FEATURE_MOD_ARCHETYPE, MOD_ARCHETYPE_OTHER);
+                if ($archetype == MOD_ARCHETYPE_RESOURCE) {
+                    $result[] = $modname;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Returns the count of CMS course resources accessed
      *
      * @uses    $DB
@@ -328,8 +379,11 @@ class course_usage_summary_report extends icon_config_report {
         //TODO: verify that this works for flexpage access where:
         //      viewing a resource on a flexpage counts the same as viewing it by clicking a link.
 
-        //tracks resources accessed by this user
-        $module_type = 'resource';
+        //create an IN clause identifying modules that are considered resources
+        //todo: use get_in_or_equal
+        $modules = $this->get_resource_modules();
+        $in = "IN ('".implode("', '", $modules)."')";
+
         $siteid = SITEID;
 
         //main query
@@ -370,12 +424,12 @@ class course_usage_summary_report extends icon_config_report {
                          {$permissions_filter}
                      )
                      AND log.course != {$siteid}
-                     AND log.module = '{$module_type}'
+                     AND log.module {$in}
                      AND log.action = 'view'
                     ";
         } else {
             $sql .= "WHERE log.course != {$siteid}
-                       AND log.module = '{$module_type}'
+                       AND log.module {$in}
                        AND log.action = 'view'
                     ";
         }
