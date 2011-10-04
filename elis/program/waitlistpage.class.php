@@ -32,6 +32,7 @@ require_once elispm::lib('data/student.class.php');
 require_once elispm::lib('data/waitlist.class.php');
 require_once elispm::lib('selectionpage.class.php');
 require_once elispm::file('pmclasspage.class.php');
+require_once elispm::file('studentpage.class.php');
 require_once elispm::file('form/waitlistform.class.php');
 
 class waitlistpage extends selectionpage {

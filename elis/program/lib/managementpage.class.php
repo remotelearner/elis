@@ -323,27 +323,39 @@ abstract class managementpage extends pm_page {
      * record, or creates a new record.
      */
     public function do_add() {
-        $target = $this->get_new_page(array('action' => 'add'), true);
+        $params = array('action' => 'add');
+        if ($curid = $this->optional_param('curid', 0, PARAM_INT)) {
+            $params['curid'] = $curid;
+        }
+        $target = $this->get_new_page($params, true);
 
         $obj = $this->get_default_object_for_add();
         $form = new $this->form_class($target->url, $obj ? array('obj' => $obj) : NULL);
 
         if ($form->is_cancelled()) {
-            $target = $this->get_new_page(array(), true);
+            $params = array();
+            if ($curid) {
+                $params['curid'] = $curid;
+            }
+            $target = $this->get_new_page($params, true);
             redirect($target->url);
             return;
         }
 
         $data = $form->get_data();
-
-        if($data) {
+        if ($data) {
             require_sesskey();
 
             $obj = $this->get_new_data_object();
             $obj->set_from_data($data);
             $obj->save();
             $this->after_cm_entity_add($obj);
-            $target = $this->get_new_page(array('action' => 'view', 'id' => $obj->id), true);
+
+            $params = array('action' => 'view', 'id' => $obj->id);
+            if ($curid) {
+                $params['curid'] = $curid;
+            }
+            $target = $this->get_new_page($params, true);
             redirect($target->url);
         } else {
             $this->_form = $form;
@@ -386,27 +398,33 @@ abstract class managementpage extends pm_page {
     function do_edit() {
         global $PAGE;
         $id = $this->required_param('id', PARAM_INT);
-
-        $target = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
+        $params = array('action' => 'edit', 'id' => $id);
+        if ($curid = $this->optional_param('curid', 0, PARAM_INT)) {
+            $params['curid'] = $curid;
+        }
+        $target = $this->get_new_page($params, true);
         $obj = $this->get_new_data_object($id);
         $obj->load();
 
+        $params = array('action' => 'view', 'id' => $id);
+        if ($curid) {
+            $params['curid'] = $curid;
+        }
         $form = new $this->form_class($target->url, array('obj' => $obj->to_object()));
 
         if ($form->is_cancelled()) {
-            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
+            $target = $this->get_new_page($params, true);
             redirect($target->url);
             return;
         }
 
         $data = $form->get_data();
-
-        if($data) {
+        if ($data) {
             require_sesskey();
 
             $obj->set_from_data($data);
             $obj->save();
-            $target = $this->get_new_page(array('action' => 'view', 'id' => $id), true);
+            $target = $this->get_new_page($params, true);
             redirect($target->url);
         } else {
             $this->_form = $form;
@@ -489,28 +507,32 @@ abstract class managementpage extends pm_page {
         $who->navbar->add(get_string('delete'));
     }
 
-    function build_navbar_view($who = null) {
+    function build_navbar_view($who = null, $id_param = 'id', $extra_params = array()) {
         if (!$who) {
             $who = $this;
         }
         $this->build_navbar_default($who);
 
-        $id = $who->required_param('id', PARAM_INT);
+        if ($id_param == 'id' || !($id = $who->optional_param($id_param, 0, PARAM_INT))) {
+            $id = $who->required_param('id', PARAM_INT);
+        }
+
         $obj = $this->get_new_data_object($id); // TBD: $who-> ???
         $obj->load();
-        $url = $this->get_new_page(array('action' => 'view', 'id' => $id), true)->url;
+        $params = array_merge(array('action' => 'view', 'id' => $id),
+                              $extra_params);
+        $url = $this->get_new_page($params, true)->url; // TBD: who->
         $who->navbar->add(htmlspecialchars($obj), $url, navbar::TYPE_CUSTOM, null, null, new pix_icon('user', '', 'elis_program'));
     }
 
-    public function build_navbar_default($who = null, $addparent = true) {
+    public function build_navbar_default($who = null, $addparent = true, $params = array()) {
         if (!$who) {
             $who = $this;
         }
         if ($addparent) {
             parent::build_navbar_default($who);
         }
-
-        $url = $this->get_new_page(array(), true)->url;
+        $url = $this->get_new_page($params, true)->url; // TBD: who->
         $who->navbar->add(get_string("manage_{$this->data_class}", 'elis_program'), $url);
     }
 
@@ -540,7 +562,6 @@ abstract class managementpage extends pm_page {
      */
     function print_tabs($selected, $params=array()) {
         $row = array();
-
         foreach($this->tabs as $tab) {
             $tab = $this->add_defaults_to_tab($tab);
             if($tab['showtab'] === true) {
@@ -587,7 +608,6 @@ class management_page_table extends display_table {
     function get_item_display__buttons($column, $item) {
         return $this->page->get_buttons(array('id' => $item->id));
     }
-
 
     function get_item_display_envname($column, $item) {
         return html_writer::tag('span', htmlspecialchars($item->envname), array('title' => $item->envdescription));

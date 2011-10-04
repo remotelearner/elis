@@ -38,9 +38,8 @@ class class_reportlinkspage extends pm_page {
 
     function build_navbar_default() {
         global $CFG;
-
-        $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
-        $this->navbar->add(get_string('classreportlinks', 'elis_program'));
+        parent::build_navbar_default();
+        $this->navbar->add($this->get_page_title_default());
     }
 
     function get_page_title_default() {

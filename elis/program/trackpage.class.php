@@ -133,19 +133,20 @@ class trackpage extends managementpage {
     }
 
     public function __construct(array $params=null) {
+        parent::__construct($params);
+        $curid = $this->optional_param('curid', 0, PARAM_INT); // TBD: get_cm_id(empty($action));
+        $curid_param = $curid ? array('curid' => $curid) : array();
+
         $this->tabs = array(
-        array('tab_id' => 'view', 'page' => 'trackpage', 'params' => array('action' => 'view'), 'name' => get_string('detail','elis_program'), 'showtab' => true),
-        array('tab_id' => 'edit', 'page' => 'trackpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
-
-        array('tab_id' => 'trackclusterpage', 'page' => 'trackclusterpage', 'name' => get_string('clusters','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
-        array('tab_id' => 'trackuserpage', 'page' => 'trackuserpage', 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
-        array('tab_id' => 'trackassignmentpage', 'page' => 'trackassignmentpage', 'name' => get_string('track_classes','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class'),
-        array('tab_id' => 'track_rolepage', 'page' => 'track_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
-
-        array('tab_id' => 'delete', 'page' => 'trackpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete','elis_program'), 'showbutton' => true, 'image' => 'delete'),
+        array('tab_id' => 'view', 'page' => 'trackpage', 'params' => array('action' => 'view') + $curid_param, 'name' => get_string('detail','elis_program'), 'showtab' => true),
+        array('tab_id' => 'edit', 'page' => 'trackpage', 'params' => array('action' => 'edit') + $curid_param, 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
+        array('tab_id' => 'trackclusterpage', 'page' => 'trackclusterpage', 'name' => get_string('clusters','elis_program'), 'params' => $curid_param, 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
+        array('tab_id' => 'trackuserpage', 'page' => 'trackuserpage', 'params' => $curid_param, 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
+        array('tab_id' => 'trackassignmentpage', 'page' => 'trackassignmentpage', 'params' => $curid_param, 'name' => get_string('track_classes','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class'),
+        array('tab_id' => 'track_rolepage', 'page' => 'track_rolepage', 'params' => $curid_param, 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
+        array('tab_id' => 'delete', 'page' => 'trackpage', 'params' => array('action' => 'delete') + $curid_param, 'name' => get_string('delete','elis_program'), 'showbutton' => true, 'image' => 'delete'),
         );
 
-        parent::__construct($params);
     }
 
     function can_do_view() {
@@ -192,27 +193,25 @@ class trackpage extends managementpage {
     /**
      * Overrides the default navigation to include curriculum breadcrumbs if appropriate
      */
-    function build_navigation_default() {
-        global $CFG;
-
-        $parent = $this->get_cm_id();
-
+    function build_navbar_default() {
         $action = $this->optional_param('action', '', PARAM_CLEAN);
         $cancel = $this->optional_param('cancel', '', PARAM_CLEAN);
-
-        $navigation = parent::build_navigation_default();
-
-        if (empty($parent) || (!empty($action) && empty($cancel))) {
-            //not viewing from within curriculum
-            return $navigation;
+        $parent = $this->get_cm_id(empty($action));
+        $params = array();
+        $lp_bc = true;
+        if (!empty($parent) /* && (empty($action) ||empty($cancel)) */ ) {
+            //viewing from within curriculum
+            $params['id'] = $parent;
+            $curriculumpage = new curriculumpage($params);
+            $curriculum_navigation = $curriculumpage->build_navbar_view($this, 'curid');
+            $lp_bc = false;
         }
+        parent::build_navbar_default(null, $lp_bc, $params);
+    }
 
-        $curriculumpage = new curriculumpage(array('id' => $parent));
-        $curriculum_navigation = $curriculumpage->get_navigation_view();
-
-        //merge the curriculum and track breadcrumbs
-        $this->navbar->add(array_merge($curriculum_navigation, $navigation));
-
+    function build_navbar_view() {
+        $curid = $this->get_cm_id(false);
+        parent::build_navbar_view(null, 'id', $curid ? array('curid' => $curid): array());
     }
 
     /**
@@ -373,9 +372,9 @@ class trackpage extends managementpage {
      *
      * @return  int  The appropriate id, or zero if none available
      */
-    function get_cm_id() {
+    function get_cm_id($check_id = true) {
         $id  = $this->optional_param('curid', 0, PARAM_INT);
-        if(empty($id)) {
+        if ($check_id && empty($id)) {
             //weirdness from cancel actions
             $id = $this->optional_param('id', 0, PARAM_INT);
         }
@@ -391,12 +390,13 @@ class trackpage extends managementpage {
     function create_table_object($items, $columns) {
 
         $parent_clusterid = $this->optional_param('parent_clusterid', 0, PARAM_INT);
-
         $extra_params = array();
-        if(!empty($parent_clusterid)) {
+        if (!empty($parent_clusterid)) {
             $extra_params['parent_clusterid'] = $parent_clusterid;
         }
-
+        if ($curid = $this->get_cm_id()) {
+            $extra_params['curid'] = $curid;
+        }
         $page_object = $this->get_new_page($extra_params);
 
         return new management_page_table($items, $columns, $page_object);

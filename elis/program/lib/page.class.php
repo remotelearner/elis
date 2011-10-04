@@ -63,7 +63,9 @@ abstract class pm_page extends elis_page {
             $who = $this;
         }
         parent::build_navbar_default();
-
-        $who->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
+        $who->navbar->add( /* is_siteadmin() */ (true)
+                           ? get_string('programmanagement', 'elis_program')
+                           : get_string('learningplan', 'elis_program'),
+                          "{$CFG->wwwroot}/elis/program/");
     }
 }

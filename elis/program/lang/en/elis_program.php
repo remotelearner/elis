@@ -755,6 +755,7 @@ $string['program_info_group'] = 'Program Information';
 $string['program_name'] = 'Name';
 $string['program_numcourses'] = 'Num Course Descriptions';
 $string['program_reqcredits'] = ' Required Credits';
+$string['programmanagement'] = 'Program Management';
 $string['promotesubs'] = 'Promote user subsets to top-level user sets';
 
 $string['record_not_created'] = 'Record not created.';

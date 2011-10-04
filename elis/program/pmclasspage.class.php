@@ -212,19 +212,28 @@ class pmclasspage extends managementpage {
      */
     function build_navbar_default() {
         //get the parent courseid if possible
-        $parent = $this->get_cm_id();
         $action = $this->optional_param('action', '', PARAM_CLEAN);
         $cancel = $this->optional_param('cancel', '', PARAM_CLEAN);
+        $parent = $this->get_cm_id(!empty($cancel)); // TBD: false | empty($action)
+        $params = array();
         $lp = true;
         if (!empty($parent) && (empty($action) || $action == 'default' ||
                                 !empty($cancel))) {
             //NOT viewing the class page directly
-            $coursepage = new coursepage(array('id' => $parent));
-            $coursepage->build_navbar_view($this);
+            $params['id'] = $parent;
+            $coursepage = new coursepage($params);
+            $coursepage->build_navbar_view($this, 'courseid');
             $lp = false;
         }
-        parent::build_navbar_default($this, $lp);
+        parent::build_navbar_default($this, $lp, $params);
     }
+
+   /* *** TBD ***
+    function build_navbar_view($who = null) {
+        $crsid = $this->get_cm_id(false);
+        parent::build_navbar_view($who, 'id', $crsid ? array('courseid' => $crsid): array());
+    }
+   */
 
     /**
      * override parent class, because formslib is picky
@@ -396,13 +405,12 @@ class pmclasspage extends managementpage {
      *
      * @return  int  The appropriate id, or zero if none available
      */
-    function get_cm_id() {
-        $id  = $this->optional_param('courseid', 0, PARAM_INT);
-        if(empty($id)) {
+    function get_cm_id($check_crs = true) {
+        $id = $this->optional_param('courseid', 0, PARAM_INT);
+        if ($check_crs && empty($id)) {
             //weirdness from cancel actions
             $id = $this->optional_param('id', 0, PARAM_INT);
         }
-
         return $id;
     }
 

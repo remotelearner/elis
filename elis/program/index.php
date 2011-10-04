@@ -29,10 +29,6 @@ require_once dirname(__FILE__) . '/lib/setup.php';
 /// This is the main entry point for the program management system. It can be called from anywhere.
 /// By using this, we can manage all application-specific handling easier.
 
-if (!isloggedin()) {
-    redirect ($CFG->wwwroot);
-}
-
 $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 
 $pages = array(
@@ -174,6 +170,11 @@ if (isset($pages[$section])) {
 } else {
     include elispm::file('dashboardpage.class.php');
     $PAGE = new dashboardpage();
+}
+
+// ELIS-3042
+if (empty($PAGE->nologin) && !isloggedin()) {
+    redirect($CFG->wwwroot);
 }
 
 //calculate the path of curriculum entities corresponding to the most recent click
