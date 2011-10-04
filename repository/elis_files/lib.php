@@ -437,10 +437,7 @@ class repository_elis_files extends repository {
     public function print_upload_popup() {
         global $CFG;
 
-        // TODO: These css includes will need to be moved elsewhere
-        $str = '<link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/fileuploader.css" type="text/css" />
-                <link rel="stylesheet" href="'.$CFG->wwwroot.'/repository/elis_files/css/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" title="no title" charset="utf-8" />
-                <p><b>'.get_string('uploadingtiptitle', 'repository_elis_files').'</b></p>
+        $str = '<p><b>'.get_string('uploadingtiptitle', 'repository_elis_files').'</b></p>
                 <p>'.get_string('uploadingtiptext', 'repository_elis_files').'</p>
                 <div id="progressbar"></div>
                 <table style="border-style:none; padding:5px;">
