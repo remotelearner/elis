@@ -27,5 +27,5 @@ For this to work, the associated user set setting must be turned on for each app
 
 Also, be cautious when enabling this setting, as it will cause the Program Management system to immediately search for all appropriate users across all necessary user sets, which may take a long time.';
 $string['grp_pop_userset_setting'] = 'Allow course-level group population from user sets';
-$string['pluginname'] = 'Userset Groups';
+$string['pluginname'] = 'User Set Groups';
 $string['site_course_userset_groups'] = 'Allow front page group population from user sets';
