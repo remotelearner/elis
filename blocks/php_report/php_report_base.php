@@ -781,6 +781,9 @@ abstract class php_report {
         $hour     = $start_or_end .'timehour';
         $minute   = $start_or_end .'timeminute';
         $datetime = $pmclass->{$date};
+        if (empty($datetime)) {
+            $fmt = get_string('strftimetime', 'langconfig');
+        }
         if ($pmclass->{$hour} < 25) {
             $datetime += $pmclass->{$hour} * HOURSECS;
         }
