@@ -34,7 +34,11 @@ require_once('lib/lib.php');
  * Handle file uploads via XMLHttpRequest
  */
 class qqUploadedFileXhr {
-    function save($path) {
+    /**
+     * Save the file to the specified path
+     * @return boolean TRUE on success
+     */
+     function save($path) {
         $input = fopen("php://input", "r");
         $temp = tmpfile();
         $realSize = stream_copy_to_stream($input, $temp);
@@ -75,6 +79,37 @@ class qqUploadedFileXhr {
     }
 }
 
+/**
+ * Handle file uploads via regular form post (uses the $_FILES array)
+ */
+class qqUploadedFileForm {
+    /**
+     * Save the file to the specified path
+     * @return boolean TRUE on success
+     */
+    function save($path) {
+        if(!move_uploaded_file($_FILES['qqfile']['tmp_name'], $path)){
+            return false;
+        }
+
+        // send temporary file to alfresco
+        $result = elis_files_upload_file('',$path,$_GET['uuid']);
+
+        // clean up temporary file
+        if (file_exists($path)) {
+            unlink($path);
+        }
+
+        return true;
+    }
+    function getName() {
+        return $_FILES['qqfile']['name'];
+    }
+    function getSize() {
+        return $_FILES['qqfile']['size'];
+    }
+}
+
 class qqFileUploader {
     private $allowedExtensions = array();
     private $sizeLimit = 20971520;
@@ -90,6 +125,8 @@ class qqFileUploader {
 
         if (isset($_GET['qqfile'])) {
             $this->file = new qqUploadedFileXhr();
+        } elseif (isset($_FILES['qqfile'])) {
+            $this->file = new qqUploadedFileForm();
         } else {
             $this->file = false;
         }
