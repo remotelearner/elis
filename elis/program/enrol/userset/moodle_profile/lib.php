@@ -287,6 +287,8 @@ function userset_moodle_profile_update($cluster) {
             $DB->execute($sql, $params);
         }
     }
+
+    clusterassignment::update_enrolments(0, $cluster->id);
 }
 
 function cluster_profile_update_handler($userdata) {
@@ -346,6 +348,8 @@ function cluster_profile_update_handler($userdata) {
                WHERE a.userid = ? AND b.clusterid IS NULL";
 
     $DB->execute($insert, array_merge($new_assignments_params, array($cuid)));
+
+    clusterassignment::update_enrolments($cuid);
 
     return true;
 }
