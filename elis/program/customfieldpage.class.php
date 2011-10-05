@@ -403,7 +403,10 @@ class customfieldpage extends pm_page {
                             $defaultdata=fgets($fh);
                             fclose($fh);
                         } else {
-                            $defaultdata = current($defaultdata);
+                            foreach ($defaultdata as $defdata) {
+                                $defaultdata = $defdata->data;
+                                break;
+                            }
                         }
                     }
                     $data_array['defaultdata'] = $defaultdata;
