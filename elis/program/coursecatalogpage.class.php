@@ -709,11 +709,15 @@ class waitlisttable extends yui_table {
 
     // This method is NOT being used, and doesn't add dates - see formatters above
     function get_item_display_timeofday($column, $item) {
+        $show_starttime = isset($item->starttimehour) && $item->starttimehour < 25 &&
+                          isset($item->starttimeminute) && $item->starttimeminute < 61;
+        $show_endtime = isset($item->endtimehour) && $item->endtimehour < 25 &&
+                        isset($item->endtimeminute) && $item->endtimeminute < 61;
+        if (!$show_starttime && !$show_endtime) {
+            return get_string('course_catalog_time_na', 'elis_program');
+        }
+
         $times = array();
-        $show_starttime = !empty($item->starttimehour) && $item->starttimehour < 25 &&
-                          !empty($item->starttimeminute) && $item->starttimeminute < 61;
-        $show_endtime = !empty($item->endtimehour) && $item->endtimehour < 25 &&
-                        !empty($item->endtimeminute) && $item->endtimeminute < 61;
         if ($show_starttime) {
             $times[] = $item->starttimehour;
             $times[] = $item->starttimeminute;
@@ -744,9 +748,8 @@ class waitlisttable extends yui_table {
             if (!empty($ins)) {
                 return implode('<br />', $ins);
             }
-        } else {
-            return 'n/a';
         }
+        return get_string('course_catalog_time_na', 'elis_program');
     }
 
     function get_item_display_environment($column, $item) {
@@ -754,9 +757,8 @@ class waitlisttable extends yui_table {
 
         if (!empty($item->environmentid)) {
             return $DB->get_field(ENVTABLE, 'name', 'id', $item->environmentid);
-        } else {
-            return 'n/a';
         }
+        return get_string('course_catalog_time_na', 'elis_program');
     }
 }
 
@@ -866,11 +868,11 @@ class currentclasstable extends yui_table {
     function get_item_display_timeofday($column, $item) {
         if (($classdata = $this->get_class($item))) {
             //determine if at least one of the start time hour or minute is set to a valid value
-            $show_starttime = !empty($classdata->starttimehour) && $classdata->starttimehour < 25 &&
-                              !empty($classdata->starttimeminute) && $classdata->starttimeminute < 61;
+            $show_starttime = isset($classdata->starttimehour) && $classdata->starttimehour < 25 &&
+                              isset($classdata->starttimeminute) && $classdata->starttimeminute < 61;
             //determine if at least one of the end time hour or minute is set to a valid value
-            $show_endtime =  !empty($classdata->endtimehour) && $classdata->endtimehour < 25 &&
-                             !empty($classdata->endtimeminute) && $classdata->endtimeminute < 61;
+            $show_endtime =  isset($classdata->endtimehour) && $classdata->endtimehour < 25 &&
+                             isset($classdata->endtimeminute) && $classdata->endtimeminute < 61;
 
             if ($show_starttime && $show_endtime) {
                 //have valid times for both start and end time
@@ -893,14 +895,10 @@ class currentclasstable extends yui_table {
                 //end hour, end minute, end am/pm (or empty string if in 24-hour format)
                 return array($starthour, $classdata->starttimeminute, $startampm,
                              $endhour, $classdata->endtimeminute, $endampm);
-            } else {
-                //default n/a string
-                return get_string('course_catalog_time_na', 'elis_program');
             }
-        } else {
-            //default n/a string
-            return get_string('course_catalog_time_na', 'elis_program');
         }
+        //default n/a string
+        return get_string('course_catalog_time_na', 'elis_program');
     }
 
     function get_item_display_instructor($column, $item) {
@@ -915,12 +913,9 @@ class currentclasstable extends yui_table {
                 if (!empty($ins)) {
                     return implode('<br />', $ins);
                 }
-            } else {
-                return 'n/a';
             }
-        } else {
-            return 'n/a';
         }
+        return get_string('course_catalog_time_na', 'elis_program');
     }
 
     function get_item_display_environment($column, $item) {
@@ -928,12 +923,9 @@ class currentclasstable extends yui_table {
         if ($this->get_class($item)) {
             if (!empty($this->current_class->environmentid)) {
                 return $DB->get_field(ENVTABLE, 'name', array('id' => $this->current_class->environmentid));
-            } else {
-                return 'n/a';
             }
-        } else {
-            return 'n/a';
         }
+        return get_string('course_catalog_time_na', 'elis_program');
     }
 }
 
@@ -1031,7 +1023,7 @@ class addclasstable extends yui_table {
     }
 
     function get_item_display_classsize($column, $class) {
-        $retval = 'n/a';
+        $retval = get_string('course_catalog_time_na', 'elis_program');
 
         if(!empty($class->maxstudents)) {
             $students = student::count_enroled($class->id);
@@ -1069,11 +1061,11 @@ class addclasstable extends yui_table {
     // TODO: fix time-of-day display
     function get_item_display_timeofday($column, $class) {
         //determine if at least one of the start time hour or minute is set to a valid value
-        $show_starttime = !empty($class->starttimehour) && $class->starttimehour < 25 ||
-                          !empty($class->starttimeminute) && $class->starttimeminute < 61;
+        $show_starttime = isset($class->starttimehour) && $class->starttimehour < 25 &&
+                          isset($class->starttimeminute) && $class->starttimeminute < 61;
         //determine if at least one of the end time hour or minute is set to a valid value
-        $show_endtime =  !empty($class->endtimehour) && $class->endtimehour < 25 ||
-                         !empty($class->endtimeminute) && $class->endtimeminute < 61;
+        $show_endtime =  isset($class->endtimehour) && $class->endtimehour < 25 &&
+                         isset($class->endtimeminute) && $class->endtimeminute < 61;
 
         //for now, we are only showing the entry if both a start time and end time are
         //enabled
@@ -1102,9 +1094,8 @@ class addclasstable extends yui_table {
                                $class->starttimehour, $class->starttimeminute,
                                $class->endtimehour, $class->endtimeminute);
             }
-        } else {
-            return 'n/a';
         }
+        return get_string('course_catalog_time_na', 'elis_program');
     }
 
     function get_item_display_instructor($column, $class) {
@@ -1116,13 +1107,14 @@ class addclasstable extends yui_table {
             }
 
             return implode('<br />', $ins);
-        } else {
-            return 'n/a';
         }
+        return get_string('course_catalog_time_na', 'elis_program');
     }
 
     function get_item_display_environment($column, $class) {
-        return !empty($class->envname) ? $class->envname : 'n/a';
+        return !empty($class->envname)
+               ? $class->envname
+               : get_string('course_catalog_time_na', 'elis_program');
     }
 }
 
