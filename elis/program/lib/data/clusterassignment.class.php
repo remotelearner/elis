@@ -120,7 +120,7 @@ class clusterassignment extends elis_data_object {
      * @param  int  $clusterid  A specific cluster / user set id to filter
      *                          on for consideration, or all users if zero
      */
-	function update_enrolments($userid = 0, $clusterid = 0) {
+	static function update_enrolments($userid = 0, $clusterid = 0) {
 	    global $DB;
 
 	    //convert provided parameters to SQL conditions
