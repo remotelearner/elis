@@ -112,14 +112,18 @@ class repository_elis_files extends repository {
     }
 
     private function get_url($node) {
+        global $CFG;
+
         $result = null;
         if (isset($node->type) && $node->type == "cmis:document") {
             $result = $node->fileurl;
         } else {
-            $result = "index.php?".
-                "&uuid=".$node->uuid.
-                "&name=".$node->filename.
-                "&path=".'Company Home';
+            // external link for accessing file content
+            //$result = "index.php?".
+            //    "&uuid=".$node->uuid.
+            //    "&name=".$node->filename.
+            //    "&path=".'Company Home';
+            $result = $CFG->wwwroot.'/repository/elis_files/openfile.php?uuid='.$node->uuid;
         }
         return $result;
     }
