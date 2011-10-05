@@ -116,3 +116,8 @@ table#track_selection_table {
 table#class_selection_table {
     width: 50%;
 }
+
+.path-elis-program.pagelayout-popup #frametop,
+.path-elis-program.pagelayout-popup #footerframetop {
+	min-width: 200px;
+}

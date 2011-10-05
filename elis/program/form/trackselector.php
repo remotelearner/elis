@@ -31,7 +31,6 @@ $PAGE->requires->js('/elis/program/plugins/results_engine/js/results_selection.j
 $PAGE->set_url($baseurl);
 $PAGE->set_pagelayout('popup');
 
-
 echo $OUTPUT->header();
 
 pmalphabox($baseurl);
@@ -88,3 +87,5 @@ $table->define_headers(array($colheader1, $colheader2));
 $table->out(MAX_NUM_ROWS, false);
 
 echo html_writer::end_tag('center');
+
+echo $OUTPUT->footer();
