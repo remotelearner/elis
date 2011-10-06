@@ -682,6 +682,14 @@ function pm_moodle_user_to_pm($mu) {
     if ($cu->valid()) {
         $cu = $cu->current();
     } else {
+        // if a user with the same username but different idnumber exists,
+        // we can't sync over because it will violate PM user uniqueness
+        // constraints
+        $cu = user::find(new field_filter('username', $mu->username));
+        if ($cu->valid()) {
+            return true;
+        }
+
         // if no such PM user exists, create a new one
         $cu = new user();
         $cu->transfercredits = 0;

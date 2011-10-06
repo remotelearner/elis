@@ -337,6 +337,25 @@ class user extends data_object_with_custom_fields {
                 'city' => 'city',
                 'country' => 'country',
             );
+
+            //try to update the idnumber of a matching Moodle user that
+            //doesn't have an idnumber set yet
+            $exists_params = array('username' => $this->username,
+                                   'mnethostid' => $CFG->mnet_localhost_id);
+            if ($moodle_user = $this->_db->get_record('user', $exists_params)) { 
+                if (empty($moodle_user->idnumber)) {
+                    //potentially old data, so set the idnumber
+                    $moodle_user->idnumber = $this->idnumber;
+                    $this->_db->update_record('user', $moodle_user);
+                    $muserid = $moodle_user->id;
+                } else if ($this->idnumber != $moodle_user->idnumber) {
+                    //the username points to a pre-existing Moodle user
+                    //with a non-matching idnumber, so something horrible
+                    //happened 
+                    return;
+                }
+            }
+
             if ($createnew && !$muserid) {
                 /// Add a new user
                 $record                 = new stdClass();
