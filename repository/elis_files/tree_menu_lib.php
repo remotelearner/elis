@@ -59,6 +59,8 @@ function elis_files_get_category_filter() {
             set_config('catfilter', implode(',', $updated), 'elis_files');
             $catfilter = $updated;
         }
+    } else {
+        $catfilter = array();
     }
 
     return $catfilter;
