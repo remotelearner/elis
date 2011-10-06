@@ -39,11 +39,9 @@
 function elis_files_get_category_filter() {
     global $CFG, $DB;
 
-    if (empty($CFG->repository_elis_files_catfilter)) {
-        return array();
-    }
+    $catfilter_serialized  = get_config('elis_files', 'catfilter');
 
-    if ($catfilter = unserialize($CFG->repository_elis_files_catfilter)) {
+    if ($catfilter = unserialize($catfilter_serialized)) {
         $updated = array();
         $changed = false;
 

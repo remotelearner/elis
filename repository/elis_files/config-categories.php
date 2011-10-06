@@ -57,12 +57,10 @@ if (($data = data_submitted($CFG->wwwroot . '/repository/elis_files/config-categ
         set_config('cron', 0, 'elis_files');
         $DB->delete_records('elis_files_categories');
         $repo->cron();
-
     } else if (isset($data->categories)) {
-        // Change this to elis_files plugin specific...
         set_config('catfilter', serialize($data->categories), 'elis_files');
     } else {
-        set_config('catfilter', '');
+        set_config('catfilter', '', 'elis_files');
     }
 }
 
