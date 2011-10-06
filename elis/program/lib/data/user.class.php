@@ -190,10 +190,7 @@ class user extends data_object_with_custom_fields {
 
         if (!empty($data->newpassword)) {
             $this->change_password($data->newpassword);
-        }
-
-        if (empty($data->password)) {
-            $data->password = '';
+            $data->password = $this->password;
         }
 
         if(!empty($data->id_same_user)) {
@@ -342,7 +339,7 @@ class user extends data_object_with_custom_fields {
             //doesn't have an idnumber set yet
             $exists_params = array('username' => $this->username,
                                    'mnethostid' => $CFG->mnet_localhost_id);
-            if ($moodle_user = $this->_db->get_record('user', $exists_params)) { 
+            if ($moodle_user = $this->_db->get_record('user', $exists_params)) {
                 if (empty($moodle_user->idnumber)) {
                     //potentially old data, so set the idnumber
                     $moodle_user->idnumber = $this->idnumber;
@@ -351,7 +348,7 @@ class user extends data_object_with_custom_fields {
                 } else if ($this->idnumber != $moodle_user->idnumber) {
                     //the username points to a pre-existing Moodle user
                     //with a non-matching idnumber, so something horrible
-                    //happened 
+                    //happened
                     return;
                 }
             }
@@ -377,6 +374,9 @@ class user extends data_object_with_custom_fields {
                     if (isset($this->$pmfield)) {
                         $record->$mdlfield = $this->$pmfield;
                     }
+                }
+                if (!empty($this->password)) {
+                    $record->password = $this->password;
                 }
                 $record->timemodified   = time();
                 $this->_db->update_record('user', $record);
