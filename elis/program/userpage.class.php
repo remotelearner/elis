@@ -163,15 +163,14 @@ class userpage extends managementpage {
         $perpage      = optional_param('perpage', 30, PARAM_INT);        // how many per page
 
         // Define columns
+        // todo: support display values of country and language plus accurate sorting
         $columns = array(
             'idnumber'     => array('header' => get_string('id', 'elis_program')),
             'name'         => array('header' => array('firstname' => array('header' => get_string('firstname')),
                                                       'lastname' => array('header' => get_string('lastname'))),
                                     'display_function' => array('display_table', 'display_user_fullname_item')),
-            'country'      => array('header' => get_string('country'),
-                                    'display_function' => array('display_table', 'display_country_item')),
-            'language'     => array('header' => get_string('language'),
-                                    'display_function' => array('display_table', 'display_language_item')),
+            'country'      => array('header' => get_string('country')),
+            'language'     => array('header' => get_string('language')),
             'timecreated'  => array('header' => get_string('registered_date', 'elis_program'),
                                     'display_function' => array(new display_date_item(), 'display')),
         );
