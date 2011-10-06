@@ -1102,7 +1102,34 @@ class repository_elis_files extends repository {
     function category_tree() {
         global $DB;
 
-        $tree = $DB->get_records('elis_files_categories');
+        $tree = array();
+
+        // fetch all the categories
+        $fulltree = $DB->get_records('elis_files_categories');
+
+        // fetch the selected categories from config
+        $catfilter_serialized = get_config('elis_files', 'catfilter');
+
+        if ($catfilter = unserialize($catfilter_serialized)) {
+            // build the new filtered tree
+            foreach ($fulltree as $branch) {
+                if (in_array($branch->id, $catfilter)) {
+                    $tree[$branch->id] = $branch;
+                }
+            }
+
+            // lets make sure that all remaining branches without parents are set to their top level now
+            foreach ($tree as $branch) {
+                if (!array_key_exists($branch->parent, $tree)) {
+                    // TO-DO: will probably want to figure out the entire parent path from the fulltree
+                    //        and assign the next highest parent that is found to exist in the selected tree
+                    //        instead of just assigning to top level (need to wait until spec is defined)
+                    $tree[$branch->id]->parent = 0;
+                }
+            }
+        } else {
+            $tree = $fulltree;
+        }
 
         return $tree;
     }
