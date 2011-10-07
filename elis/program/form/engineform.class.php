@@ -513,6 +513,37 @@ class cmEngineForm extends cmform {
     }
 
     /**
+     * Get label name
+     *
+     * @param string $type The type of label to retrieve
+     * @param mixed  $id   The id to use to retrieve the label
+     * @return string The name of the label.
+     * @uses $DB;
+     */
+    function get_label_name($type, $id) {
+        global $DB;
+
+        $name = '';
+        switch ($type) {
+            case 'track':
+                $param = array('id' => $id);
+                $name = $DB->get_field(track::TABLE, 'name', $param);
+
+                break;
+            case 'class':
+                $param = array('id' => $id);
+                $name = $DB->get_field(pmclass::TABLE, 'idnumber', $param);
+
+                break;
+            case 'profile':
+            default:
+                break;
+        }
+
+        return $name;
+    }
+
+    /**
      * TODO: document
      */
     protected function setup_table_type($mform, $type, $resultsid = 0, $cache = array()) {
@@ -553,7 +584,7 @@ class cmEngineForm extends cmform {
      * TODO: document
      */
     protected function setup_table_type_row($mform, $type, $dataset = array(), $extrarow) {
-        global $OUTPUT, $DB;
+        global $OUTPUT;
 
         $deletescoretype    = get_string("delete_score", self::LANG_FILE);
         $notypeselected     = get_string("no_{$type}_selected", self::LANG_FILE);
@@ -581,6 +612,9 @@ class cmEngineForm extends cmform {
 
             if (isset($data->id)) {
                 $i = $data->id;
+            } else {
+                $value = optional_param($prefix . $i .'_selected', 0, PARAM_INT);
+                $data->selected = $value;
             }
 
             // Start a table row and column
@@ -626,22 +660,7 @@ class cmEngineForm extends cmform {
             $mform->addElement('html', $tablehtml);
 
 
-            // Retrieve the track/class name
-            $name = '';
-            switch ($type) {
-                case 'track':
-                    $param = array('id' => $data->selected);
-                    $name = $DB->get_field(track::TABLE, 'name', $param);
-
-                    break;
-                case 'class':
-                    $param = array('id' => $data->selected);
-                    $name = $DB->get_field(pmclass::TABLE, 'idnumber', $param);
-
-                    break;
-                case 'profile':
-                    break;
-            }
+            $name = $this->get_label_name($type, $data->selected);
 
             $attributes     = array('id' => "{$prefix}{$i}_label");
 
@@ -654,7 +673,7 @@ class cmEngineForm extends cmform {
             $mform->addElement('html', $tablehtml);
 
             $url            = "form/{$type}selector.php?id={$prefix}{$i}&callback=add_selection";
-            $attributes     = array('onClick' => 'show_panel("'.$url.'")');
+            $attributes     = array('onClick' => 'show_panel("'.$url.'"); return false;');
             $output         = html_writer::link('#', $selecttype, $attributes);
 
             $mform->addElement('html', $output);
