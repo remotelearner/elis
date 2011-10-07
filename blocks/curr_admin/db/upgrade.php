@@ -1837,7 +1837,8 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
                          'crlm_cluster_groups' => 'pmplugins_userset_groups',
                          'crlm_cluster_themes' => 'pmplugins_userset_themes',
                          'crlm_enrolment_role_sync' => 'pmplugins_enrolment_role_sync',
-                         'crlm_pre_post_test' => 'pmplugins_pre_post_test');
+                         'crlm_pre_post_test' => 'pmplugins_pre_post_test',
+                         'crlm_archive' => 'pmplugins_archive');
 
         foreach ($plugins as $oldname => $newname) {
             $rec = new stdClass;
