@@ -781,13 +781,24 @@ abstract class php_report {
         $hour     = $start_or_end .'timehour';
         $minute   = $start_or_end .'timeminute';
         $datetime = $pmclass->{$date};
+
+        //the hour as a number, or 25 if N/A
+        $hour_number = $pmclass->{$hour};
+        //the minute as a number, or 61 if N/A
+        $minute_number = $pmclass->{$minute};
+
+        //deremine whether time is set
+        $time_set = $hour_number < 25 && $minute_number < 61;
+
         if (empty($datetime)) {
             $fmt = get_string('strftimetime', 'langconfig');
+        } else if (!$time_set) {
+            //we don't have a time, so just use the date format
+            $fmt = get_string('strftimedaydate', 'langconfig');
         }
-        if ($pmclass->{$hour} < 25) {
+
+        if ($time_set) {
             $datetime += $pmclass->{$hour} * HOURSECS;
-        }
-        if ($pmclass->{$minute} < 61) {
             $datetime += $pmclass->{$minute} * MINSECS;
         }
         return $this->userdate($datetime, $fmt);
