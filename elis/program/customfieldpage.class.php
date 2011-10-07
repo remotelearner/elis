@@ -313,7 +313,8 @@ class customfieldpage extends pm_page {
                 $fieldcontext->save();
             }
 
-            if (!empty($data->defaultdata)) {
+            //don't use !empty here because we might be storing a 0 or similar value
+            if ($data->defaultdata != '') {
                 // save the default value
                 $defaultdata = $data->defaultdata;
                 if ($field->multivalued) {
