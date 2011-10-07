@@ -103,10 +103,6 @@ class cmEngineForm extends cmform {
             $page = 'clsenginestatus';
         }
 
-        print_object('streets');
-        print_object($this->get_submitted_data());
-        print_object(' - streets');
-
         $this->_submitted_data = $this->get_submitted_data();
 
         $reporturl = $CFG->wwwroot .'/elis/program/index.php?s='. $page .'&amp;id='. $this->_customdata['id'];
@@ -246,21 +242,10 @@ class cmEngineForm extends cmform {
 
         $mform =& $this->_form;
 
-        // ** may not need actiontype **
-        $actiontype = 0;
-
-        if (isset($this->_customdata['actiontype']) and
-            !empty($this->_customdata['actiontype']) ) {
-
-            $actiontype = $this->_customdata['actiontype'];
-
-        }
-
         $cache = $this->format_cache_data();
         $resultengid = $this->_customdata['rid'];
 
 
-        $mform->addElement('hidden', 'actiontype', $actiontype);
         $mform->addElement('hidden', 'actioncache');
 
         $mform->addElement('html', '<fieldset class="engineform">');
@@ -279,25 +264,9 @@ class cmEngineForm extends cmform {
         // Create assign to table elements
         $mform->addElement('html', '<div>');
 
-        if (TRACK_ACTION_TYPE == $actiontype) {
-            $this->setup_table_type($mform, 'track', $resultengid, $cache);
+        $this->setup_table_type($mform, 'track', $resultengid, array());
 
-            // This is not pretty but we know that <type>_add_0_<name> always exists
-            $mform->disabledIf('class_add_0_group', 'actiontype', 'neq', '');
-            $mform->disabledIf('cls_assignment', 'actiontype', 'neq', '');
-
-            //$mform->disabledIf('class_add_0_group', 'track_add_0_selected', 'neq', '');
-            $mform->disabledIf('pro_assignment', 'actiontype', 'neq', '');
-
-        } else {
-            $this->setup_table_type($mform, 'track', $resultengid, array());
-        }
-
-//        $this->init_javascript_enhancement('actiontype', 'typelabels', array('akin'));
-
-
-        $attributes = array('onclick' => 'pre_submit_processing("track","'.TRACK_ACTION_TYPE.'");');
-        //$mform->registerNoSubmitButton('trk_assignment');
+        $attributes = array('onclick' => 'pre_submit_processing("track","'.ACTION_TYPE_TRACK.'");');
         $mform->addElement('submit', 'trk_assignment', $addscorerange, $attributes);
 
         $mform->addElement('html', '</div>');
@@ -311,22 +280,9 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</h3>');
         $mform->addElement('html', '<div>');
 
-        if (CLASS_ACTION_TYPE == $actiontype) {
-            $this->setup_table_type($mform, 'class', $resultengid, $cache);
+        $this->setup_table_type($mform, 'class', $resultengid, array());
 
-            // This is not pretty but we know that <type>_add_0_<name> always exists
-            $mform->disabledIf('track_add_0_group', 'actiontype', 'neq', '');
-            $mform->disabledIf('trk_assignment', 'actiontype', 'neq', '');
-
-            //$mform->disabledIf('class_add_0_group', 'track_add_0_selected', 'neq', '');
-            $mform->disabledIf('pro_assignment', 'actiontype', 'neq', '');
-
-        } else {
-            $this->setup_table_type($mform, 'class', $resultengid, array());
-        }
-
-        $attributes = array('onclick' => 'pre_submit_processing("class","'.CLASS_ACTION_TYPE.'");');
-        //$mform->registerNoSubmitButton('cls_assignment');
+        $attributes = array('onclick' => 'pre_submit_processing("class","'.ACTION_TYPE_CLASS.'");');
         $mform->addElement('submit', 'cls_assignment', $addscorerange, $attributes);
 
 
@@ -340,20 +296,7 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</h3>');
         $mform->addElement('html', '<div>');
 
-        if (PROFILE_ACTION_TYPE == $actiontype) {
-//            $this->setup_table_type($mform, 'profile', $resultengid, $cache);
-
-            // This is not pretty but we know that <type>_add_0_<name> always exists
-            $mform->disabledIf('track_add_0_group', 'actiontype', 'neq', '');
-            $mform->disabledIf('trk_assignment', 'actiontype', 'neq', '');
-
-            //$mform->disabledIf('class_add_0_group', 'track_add_0_selected', 'neq', '');
-            $mform->disabledIf('class_add_0_group', 'actiontype', 'neq', '');
-            $mform->disabledIf('cls_assignment', 'actiontype', 'neq', '');
-
-        } else {
-//            $this->setup_table_type($mform, 'profile', $resultengid, array());
-        }
+        $this->setup_table_type($mform, 'profile', $resultengid, array());
 
         $mform->addElement('submit', 'pro_assignment', $addscorerange);
         $mform->addElement('html', '</div>');
@@ -363,9 +306,6 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</div>');
 
         $mform->addElement('html', '</fieldset>');
-
-        // TESTING
-//        print_object($mform->_elementIndex);
 
     }
 
@@ -724,8 +664,15 @@ class cmEngineForm extends cmform {
         return $data;
     }
 
+    /**
+     * Get results engine actions with track data
+     *
+     * @param int $resultsid The result id
+     * @return array The actions
+     * @uses $DB
+     */
     protected function get_assign_to_track_data($resultsid = 0) {
-        global $DB, $CFG;
+        global $DB;
 
         if (empty($resultsid)) {
             return array();
@@ -747,6 +694,13 @@ class cmEngineForm extends cmform {
         return $data;
     }
 
+    /**
+     * Get results engine actions with class data
+     *
+     * @param int $resultsid The result id
+     * @return array The actions
+     * @uses $DB
+     */
     protected function get_assign_to_class_data($resultsid = 0) {
         global $DB;
 
@@ -771,6 +725,43 @@ class cmEngineForm extends cmform {
         return $data;
     }
 
+    /**
+     * Get results engine actions with profile data
+     *
+     * @param int $resultsid The result id
+     * @return array The actions
+     * @uses $DB
+     */
+    protected function get_assign_to_profile_data($resultsid = 0) {
+        global $DB;
+
+        if (empty($resultsid)) {
+            return array();
+        }
+
+        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.classid AS selected, cls.idnumber AS name '.
+               'FROM {'.resultsengineaction::TABLE.'} rea '.
+               'RIGHT JOIN {'.pmclass::TABLE.'} cls ON rea.classid = cls.id '.
+               'WHERE rea.resultengineid = :resultsengineid '.
+               'ORDER BY minimum ASC';
+
+        $params = array('resultsengineid' => $resultsid);
+
+        $data = $DB->get_records_sql($sql, $params);
+
+        if (empty($data)) {
+            return array();
+        }
+
+        return $data;
+    }
+
+    /**
+     * Definition after data
+     *
+     * @uses $CFG
+     * @uses $COURSE
+     */
     public function definition_after_data() {
         global $CFG, $COURSE;
         $mform =& $this->_form;
@@ -781,9 +772,6 @@ class cmEngineForm extends cmform {
             return;
         }
 
-
-        if ($mform->getElementValue('actiontype')) {
-        }
 
         if (array_key_exists('trk_assignment', $data)) {
 

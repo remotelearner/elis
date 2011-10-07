@@ -28,9 +28,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-define('TRACK_ACTION_TYPE', 1);
-define('CLASS_ACTION_TYPE', 2);
-define('PROFILE_ACTION_TYPE', 3);
+define('ACTION_TYPE_TRACK', 1);
+define('ACTION_TYPE_CLASS', 2);
+define('ACTION_TYPE_PROFILE', 3);
 
 require_once elispm::lib('data/resultsengine.class.php');
 require_once elispm::lib('lib.php');
@@ -78,6 +78,60 @@ abstract class enginepage extends pm_page {
     }
 
     /**
+     * Get the id of this results engine
+     *
+     * @return int The id of the results engine (0 if doesn't exist).
+     */
+    function get_engine_id() {
+        $contextid  = $this->get_context()->id;
+        $rid        = $this->optional_param('rid', 0, PARAM_INT);
+        $obj        = $this->get_new_data_object($rid);
+
+        if ($rid < 1) {
+            $filter    = new field_filter('contextid', $contextid);
+            $results   = $obj->find($filter);
+            $rid = $results->current()->id;
+        }
+        return $rid;
+    }
+
+    /**
+     * Get the action type.
+     *
+     * @param array $data An array of data values
+     * @return int The action type value.
+     * @uses $DB
+     */
+    function get_action_type() {
+        global $DB;
+        $type = false;
+
+        $track   = optional_param('trk_assignment', '', PARAM_TEXT);
+        $class   = optional_param('cls_assignment', '', PARAM_TEXT);
+        $profile = optional_param('pro_assignment', '', PARAM_TEXT);
+
+        if (! empty($track)) {
+            $type = ACTION_TYPE_TRACK;
+
+        } else if (! empty($class)) {
+            $type = ACTION_TYPE_CLASS;
+
+        } else if (! empty($profile)) {
+            $type = ACTION_TYPE_PROFILE;
+        }
+
+        // If a button hasn't been pressed we have to look in the db.
+        if ($type === false) {
+            $params = array('resultengineid' => $this->get_engine_id());
+            if (! $type = $DB->get_field('crlm_results_action', 'actiontype', $params, IGNORE_MULTIPLE)) {
+                $type = ACTION_TYPE_TRACK;
+            }
+        }
+
+        return $type;
+    }
+
+    /**
      * Return the engine form
      *
      * @return object The engine form
@@ -87,17 +141,9 @@ abstract class enginepage extends pm_page {
         $known      = false;
         $contextid  = $this->get_context()->id;
         $id         = $this->optional_param('id', 0, PARAM_INT);
-        $rid        = $this->optional_param('rid', 0, PARAM_INT);
-        $type       = $this->optional_param('actiontype', 0, PARAM_INT);
+        $rid        = $this->get_engine_id();
         $obj        = $this->get_new_data_object($rid);
         $childobj   = $this->get_new_child_data_object($rid);
-
-        if ($rid < 1) {
-            $filter    = new field_filter('contextid', $contextid);
-            $results   = $obj->find($filter);
-            $rid = $results->current()->id;
-        }
-
 
         $filter    = new field_filter('id', $rid);
 
@@ -111,14 +157,11 @@ abstract class enginepage extends pm_page {
         $filter         = new field_filter('resultengineid', $rid);
         $actioncount    = $childobj->count($filter);
 
-        $actiontype     = $type;
         // Action type is needed because it helps to identify which form elements need
         // to be disabled
         if ($actioncount) {
-            $actiontype = 1;
             $data = $childobj->find($filter, array(), 0, 1);
             $data = $data->current();
-            $actiontype = $data->actiontype;
         }
 
 
@@ -133,7 +176,6 @@ abstract class enginepage extends pm_page {
         $params['contextid'] = $contextid;
         $params['enginetype'] = $this->type;
 
-        $params['actiontype'] = $actiontype;
         $params['cache'] = $cache;
 
         $form = new cmEngineForm($target->url, $params);
@@ -142,16 +184,24 @@ abstract class enginepage extends pm_page {
         return $form;
     }
 
+    /**
+     * Get the page with tab definitions
+     */
     function get_tab_page() {
         return $this->get_parent_page();
     }
 
+    /**
+     * Get the default pate title.
+     */
     function get_page_title_default() {
         return print_context_name($this->get_context(), false);
     }
 
+    /**
+     * Build the default navigation bar.
+     */
     function build_navbar_default() {
-        global $DB;
 
         //obtain the base of the navbar from the parent page class
         $parent_template = $this->get_parent_page()->get_new_page();
@@ -164,6 +214,9 @@ abstract class enginepage extends pm_page {
         $this->navbar->add(get_string('results_engine', self::LANG_FILE), $page->url);
     }
 
+    /**
+     * Print the tabs
+     */
     function print_tabs() {
         $id = $this->required_param('id', PARAM_INT);
         $this->get_parent_page()->print_tabs(get_class($this), array('id' => $id));
@@ -199,7 +252,7 @@ abstract class enginepage extends pm_page {
             throw new ErrorException('Display called before Do');
         }
 
-        $type = $this->optional_param('actiontype', 1, PARAM_INT);
+        $type = $this->get_action_type();
 
         echo '
         <script type="text/javascript">
@@ -253,7 +306,6 @@ abstract class enginepage extends pm_page {
         if ($form->no_submit_button_pressed()) {
 
             $this->_form = $form;
-
             $this->display('edit');
 
         } elseif  ($data) {
@@ -285,41 +337,9 @@ abstract class enginepage extends pm_page {
                 // Iterate through the data array until you find either a
                 // track_ or class_ or profile_ prefix, then set the action type
                 // and break out of the loop
-                $type = '';
+                $type = $this->get_action_type();
                 $data = (array) $data;
 
-                foreach ($data as $key => $value) {
-
-                    if (false !== strpos($key, 'track_')) {
-                        if (!empty($data[$key])) {
-                            $actiontype = TRACK_ACTION_TYPE;
-                            $type = 'track';
-                            break;
-                        }
-                    }
-
-                    if (false !== strpos($key, 'class_')) {
-                        if (!empty($data[$key])) {
-                            $actiontype = CLASS_ACTION_TYPE;
-                            $type = 'class';
-                            break;
-                        }
-                    }
-
-                    if (false !== strpos($key, 'profile_')) {
-                        if (!empty($data[$key])) {
-                            $actiontype = PROFILE_ACTION_TYPE;
-                            $type = 'profile';
-                            break;
-                        }
-                    }
-
-                }
-
-//    print_object('SUBMITTED DATA');
-//    print_object($data);
-//    print_object('SUBMITTED DATA END');
-//    die();
                 // Iterate through the data array and update the existing score ranges submitted
                 $this->save_existing_data_submitted($data, $type, $actiontype);
 
@@ -385,17 +405,17 @@ abstract class enginepage extends pm_page {
         $fieldvalue = '';
 
         switch ($actiontype) {
-            case TRACK_ACTION_TYPE:
-                $dataobj->actiontype = TRACK_ACTION_TYPE;
+            case ACTION_TYPE_TRACK:
+                $dataobj->actiontype = ACTION_TYPE_TRACK;
                 $field = 'trackid';
                 break;
-            case CLASS_ACTION_TYPE:
+            case ACTION_TYPE_CLASS:
                 $field = 'classid';
-                $dataobj->actiontype = CLASS_ACTION_TYPE;
+                $dataobj->actiontype = ACTION_TYPE_CLASS;
                 break;
-            case PROFILE_ACTION_TYPE:
+            case ACTION_TYPE_PROFILE:
                 //
-                $dataobj->actiontype = PROFILE_ACTION_TYPE;
+                $dataobj->actiontype = ACTION_TYPE_PROFILE;
                 break;
         }
 
@@ -476,13 +496,13 @@ abstract class enginepage extends pm_page {
         $fieldvalue = '';
 
         switch ($actiontype) {
-            case TRACK_ACTION_TYPE:
+            case ACTION_TYPE_TRACK:
                 $field = 'trackid';
                 break;
-            case CLASS_ACTION_TYPE:
+            case ACTION_TYPE_CLASS:
                 $field = 'classid';
                 break;
-            case PROFILE_ACTION_TYPE:
+            case ACTION_TYPE_PROFILE:
                 //
                 break;
         }
