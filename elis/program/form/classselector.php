@@ -91,3 +91,5 @@ $table->define_headers(array($colheader1, $colheader2));
 $table->out(MAX_NUM_ROWS, false);
 
 echo html_writer::end_tag('center');
+
+echo $OUTPUT->footer();
