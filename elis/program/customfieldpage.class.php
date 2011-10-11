@@ -410,7 +410,9 @@ class customfieldpage extends pm_page {
                             }
                         }
                     }
-                    $data_array['defaultdata'] = $defaultdata;
+                    if (!is_object($defaultdata)) {
+                        $data_array['defaultdata'] = $defaultdata;
+                    }
 
                     $plugins = get_list_of_plugins('elis/core/fields');
                     foreach ($plugins as $plugin) {
