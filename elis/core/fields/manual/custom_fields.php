@@ -246,13 +246,33 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
  * @param  field            $field        The field corresponding to the input control
  */
 function manual_field_add_help_button($mform, $elementname, $field) {
+    global $CFG, $OUTPUT, $PAGE;
     $manual = new field_owner($field->owners['manual']);
-    // TODO: when we have time... convert to M2 help style
-    /*if (!empty($manual->param_help_file)) {
-        list($plugin,$filename) = explode('/', $manual->param_help_file, 2);
-
-//    echo '<br>in add help button for plugin:'.$plugin;
-        $mform->addHelpButton($elementname, 'customfields:'.$elementname,'elis_core');
-//        array($filename, $field->name, $plugin));
-    }*/
+    $filename = '';
+    if (!empty($manual->param_help_file)) {
+        // First check for help_file spec. (now _help identifier in Moodle 2.0)
+        list($plugin, $filename) = explode('/', $manual->param_help_file, 2);
+        //error_log("manual_field_add_help_button()::adding help button for plugin: plugin,identifier(filename) = {$plugin},{$filename}");
+    }
+    if (!empty($filename) && get_string_manager()->string_exists($filename, $plugin)) {
+        $mform->addHelpButton($elementname, $filename, $plugin);
+    } else if (!empty($field->description)) {
+        // No help specified in language files, so we'll use field->description
+        $ajax = ''; // TBD
+        $id = html_writer::random_id('helpicon'); // 'helpicon'. dechex(mt_rand(286331153, 4294967295));
+        $heading = get_string('helpprefix2', '', $field->name);
+        $url = $CFG->wwwroot .'/elis/program/help.php?heading='.
+               urlencode($heading) .'&helptext='.
+               urlencode($field->description) . $ajax;
+        // help using custom_field->description
+        //error_log("manual_field_add_help_button()::adding help button for field: {$field->name}");
+        $mform->addElement('html', '<div class="fitem"><div class="fitemtitle"><label for="id_'.
+            $elementname .'"><span class="helplink"><a href="'. $url
+            .'" title="'. $heading .'" id="'. $id .'"><img src="'.
+            $OUTPUT->pix_url('help') .'" alt="'. $heading .'" title="'.
+            $heading .'" class="iconhelp"></a></span>&nbsp;</label></div></div>'
+        );
+        $PAGE->requires->js_init_call('M.util.help_icon.add',
+                             array(array('id' => $id, 'url' => $url)));
+    }
 }
