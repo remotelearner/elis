@@ -57,7 +57,7 @@ function xmldb_pmplugins_userset_groups_install() {
                            'columns' => 30,
                            'rows' => 10,
                            'maxlength' => 2048,
-                           'help_file' => 'crlm_userset_groups/userset_groups',
+                           'help_file' => 'pmplugins_userset_groups/userset_groups',
                           );
     field_owner::ensure_field_owner_exists($group_field, 'manual', $owner_options);
 
@@ -77,7 +77,7 @@ function xmldb_pmplugins_userset_groups_install() {
                            'columns' => 30,
                            'rows' => 10,
                            'maxlength' => 2048,
-                           'help_file' => 'crlm_userset_groups/userset_groupings');
+                           'help_file' => 'pmplugins_userset_groups/userset_groupings');
     field_owner::ensure_field_owner_exists($field, 'manual', $owner_options);
 
     return true;

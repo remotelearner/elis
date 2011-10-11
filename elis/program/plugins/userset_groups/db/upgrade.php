@@ -41,15 +41,46 @@ function xmldb_pmplugins_userset_groups_upgrade($oldversion = 0) {
         $fieldnames = array('group', 'groupings');
         foreach ($fieldnames as $fieldname) {
             $field = field::find(new field_filter('shortname', 'cluster_'.$fieldname));
-
             if ($field->valid()) {
                 $field = $field->current();
-                $field->shortname = 'userset_'.$fieldname;
+                $field->shortname = 'userset_'. $fieldname;
                 $field->save();
             }
         }
 
         upgrade_plugin_savepoint($result, 2011072600, 'pmplugins', 'userset_groups');
+    }
+
+    if ($result && $oldversion < 2011101100) {
+        // rename field help
+        $fieldmap = array('userset_group'
+                          => 'pmplugins_userset_groups/userset_groups',
+                          'userset_groupings'
+                          => 'pmplugins_userset_groups/userset_groupings');
+        foreach ($fieldmap as $key => $val) {
+            $field = field::find(new field_filter('shortname', $key));
+            if ($field->valid()) {
+                $field = $field->current();
+                if (!isset($field->owners) ||
+                    ($owner = new field_owner(isset($field->owners['manual']) ? $field->owners['manual']: false))) {
+                    error_log("pmplugins_userset_groups::upgrading help_file for '{$key}' to '{$val}'");
+                    $owner->fieldid = $field->id;
+                    $owner->plugin = 'manual';
+                    //$owner->exclude = 0; // TBD
+                    $owner->params = serialize(array('required'    => 0,
+                                                 'edit_capability' => '',
+                                                 'view_capability' => '',
+                                                 'control'         => 'checkbox',
+                                                 'columns'         => 30,
+                                                 'rows'            => 10,
+                                                 'maxlength'       => 2048,
+                                                 'help_file'       => $val));
+                    $owner->save();
+                }
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101100, 'pmplugins', 'userset_groups');
     }
 
     return $result;
