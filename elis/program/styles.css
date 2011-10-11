@@ -121,3 +121,7 @@ table#class_selection_table {
 .path-elis-program.pagelayout-popup #footerframetop {
 	min-width: 200px;
 }
+
+#page-elispm .mform #class_selection_table .fitem fieldset.felement {
+	width: 100%;
+}
