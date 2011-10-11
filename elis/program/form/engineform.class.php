@@ -245,8 +245,8 @@ class cmEngineForm extends cmform {
         $cache = $this->format_cache_data();
         $resultengid = $this->_customdata['rid'];
 
-
         $mform->addElement('hidden', 'actioncache');
+        $mform->addElement('hidden', 'result_type_id', $this->_customdata['actiontype'], 'id="result_type_id"');
 
         $mform->addElement('html', '<fieldset class="engineform">');
 //            $mform->addElement('html', '<legend>'.$result.'</lengend>');
@@ -267,7 +267,7 @@ class cmEngineForm extends cmform {
         $this->setup_table_type($mform, 'track', $resultengid, array());
 
         $attributes = array('onclick' => 'pre_submit_processing("track","'.ACTION_TYPE_TRACK.'");');
-        $mform->addElement('submit', 'trk_assignment', $addscorerange, $attributes);
+        $mform->addElement('submit', 'track_assignment', $addscorerange, $attributes);
 
         $mform->addElement('html', '</div>');
 
@@ -283,7 +283,7 @@ class cmEngineForm extends cmform {
         $this->setup_table_type($mform, 'class', $resultengid, array());
 
         $attributes = array('onclick' => 'pre_submit_processing("class","'.ACTION_TYPE_CLASS.'");');
-        $mform->addElement('submit', 'cls_assignment', $addscorerange, $attributes);
+        $mform->addElement('submit', 'class_assignment', $addscorerange, $attributes);
 
 
         $mform->addElement('html', '</div>');
@@ -298,7 +298,7 @@ class cmEngineForm extends cmform {
 
         $this->setup_table_type($mform, 'profile', $resultengid, array());
 
-        $mform->addElement('submit', 'pro_assignment', $addscorerange);
+        $mform->addElement('submit', 'profile_assignment', $addscorerange);
         $mform->addElement('html', '</div>');
         $mform->addElement('html', '</div>');
 
@@ -314,8 +314,20 @@ class cmEngineForm extends cmform {
         return !$DB->record_exists_select($table, "$field = ? AND id <> ?", array($value, $id));
     }
 
+    /**
+     * Validation function, validates the form.
+     *
+     * @param array $data  The form data
+     * @param array $files The form files
+     * @return array An array of error strings.
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+
+        $actiontype = ACTION_TYPE_TRACK;
+        if (!empty($data['result_type_id'])) {
+            $actiontype = $data['result_type_id'];
+        }
 
         if(!empty($data['timetocomplete'])) {
             $datedelta = new datedelta($data['timetocomplete']);
@@ -339,26 +351,49 @@ class cmEngineForm extends cmform {
             }
         }
 
+        $errors = array_merge($errors, $this->validate_fold($actiontype, $data));
+
+        return $errors;
+    }
+
+    /**
+     * Validate Fold
+     *
+     * @param int   $actiontype The action type of the fold we're validating
+     * @param array $data       The form data in array format
+     * @return array An array of error strings
+     */
+    function validate_fold($actiontype, $data) {
+        $errors = array();
+
+        $prefix = 'track';
+        if ($actiontype == ACTION_TYPE_CLASS) {
+            $prefix = 'class';
+        } else if ($actiontype == ACTION_TYPE_PROFILE) {
+            $prefix = 'profile';
+        }
+
         // Add another track score range button.  Validate and make sure all rows have been filled out
-        if (array_key_exists('trk_assignment', $data)) {
+        if (array_key_exists($prefix .'_assignment', $data)) {
 
             foreach ($data as $key => $value) {
 
-                if ((false !== strpos($key, 'track_add_')) && (false === strpos($key, '_typename'))) {
+                if ((false !== strpos($key, $prefix .'_add_')) && (false === strpos($key, '_typename'))) {
 
                     if (empty($data[$key])) {
                         $element_instance = explode('_', $key);
                         $element_instance = $element_instance[2];
 
-                        $errors["track_add_{$element_instance}_group"] = get_string('error_incomplete_row', self::LANG_FILE);
+                        $errors["{$prefix}_add_{$element_instance}_group"] =
+                            get_string('error_incomplete_row', self::LANG_FILE);
                     }
                 }
             }
 
         } else {
 
-            $trackkeys = array();
-            $newtrackkeys = array();
+            $keys = array();
+            $newkeys = array();
 
             // Iterate through the submitted values.  Separate the newly submitted
             // data from the rest of the data.  New track data has the key
@@ -366,77 +401,75 @@ class cmEngineForm extends cmform {
             // track_<number>_min/max/etc.
             foreach ($data as $key => $value) {
 
-                if (false !== strpos($key, 'track_add_')) {
+                if (false !== strpos($key, $prefix .'_add_')) {
                     // Extract the element unique id
                     $element_instance = explode('_', $key);
                     $element_instance = $element_instance[2];
 
-                    $newtrackkeys[$element_instance] = '';
+                    $newkeys[$element_instance] = '';
 
-                } elseif (false !== strpos($key, 'track_')) {
+                } elseif (false !== strpos($key, $prefix .'_')) {
                     // Extract the element unique id
                     $element_instance = explode('_', $key);
                     $element_instance = $element_instance[1];
 
-                    $trackkeys[$element_instance] = '';
+                    $keys[$element_instance] = '';
                 }
             }
 
-            // Iterate over new and old data and validate whether
-            // minimum is less than maximum and if a track id has bee
-            // selected
-            foreach ($newtrackkeys as $key => $value) {
-                // Skip over empty score ranges.
-                if ( empty($data["track_add_{$key}_min"]) and
-                     empty($data["track_add_{$key}_max"]) and
-                     empty($data["track_add_{$key}_selected"]) ) {
+            // Iterate over new and old data and validate whether minimum is less than maximum
+            // and if a value has been selected
+            foreach ($newkeys as $key => $value) {
+                $keyprefix = $prefix .'_add_'. $key;
+                $keymin    = $keyprefix .'_min';
+                $keymax    = $keyprefix .'_max';
+                $keyselect = $keyprefix .'_selected';
+                $keygroup  = $keyprefix .'_group';
 
+                // Skip over empty score ranges.
+                if (empty($data[$keymin]) && empty($data[$keymax]) && empty($data[$keyselect])) {
                     continue;
                 }
 
-                if ( empty($data["track_add_{$key}_min"]) or
-                     empty($data["track_add_{$key}_max"]) or
-                     empty($data["track_add_{$key}_selected"]) ) {
+                if (empty($data[$keymin]) || empty($data[$keymax]) || empty($data[$keyselect])) {
 
-                    $errors["track_add_{$key}_group"] = get_string('error_incomplete_score_range', self::LANG_FILE);
+                    $errors[$keygroup] = get_string('error_incomplete_score_range', self::LANG_FILE);
                 }
 
-                if ((int) $data["track_add_{$key}_min"] >=
-                    (int) $data["track_add_{$key}_max"]) {
-
-                    $errors["track_add_{$key}_group"] = get_string('error_min_larger_than_max', self::LANG_FILE);
+                if ((int) $data[$keymin] >= (int) $data[$keymax]) {
+                    $errors[$keygroup] = get_string('error_min_larger_than_max', self::LANG_FILE);
                 }
 
-                if (empty($data["track_add_{$key}_selected"])) {
-                    $errors["track_add_{$key}_group"] = get_string('error_no_track', self::LANG_FILE);
+                if (empty($data[$key_selected])) {
+                    $errors[$keygroup] = get_string('error_no_'. $prefix, self::LANG_FILE);
                 }
             }
 
-            foreach ($trackkeys as $key => $value) {
-                if (array_key_exists("track_{$key}_group", $errors)) {
-                    unset($errors["track_{$key}_group"]);
+            foreach ($keys as $key => $value) {
+                $keyprefix = $prefix .'_'. $key;
+                $keymin    = $keyprefix .'_min';
+                $keymax    = $keyprefix .'_max';
+                $keyselect = $keyprefix .'_selected';
+                $keygroup  = $keyprefix .'_group';
+
+                if (array_key_exists($keygroup, $errors)) {
+                    unset($errors[$keygroup]);
                 }
 
-                if ((int) $data["track_{$key}_min"] >=
-                    (int) $data["track_{$key}_max"]) {
-                        $errors["track_{$key}_group"] = get_string('error_min_larger_than_max', self::LANG_FILE);
+                if ((int) $data[$keymin] >= (int) $data[$keymax]) {
+                        $errors[$keygroup] = get_string('error_min_larger_than_max', self::LANG_FILE);
                 }
 
-                if (empty($data["track_{$key}_selected"])) {
-                    $errors["track_{$key}_group"] = get_string('error_no_track', self::LANG_FILE);
+                if (empty($data[$keyselect])) {
+                    $errors[$keygroup] = get_string('error_no_'. $prefix, self::LANG_FILE);
                 }
 
             }
-        }
-
-        if (array_key_exists('cls_assignment', $data)) {
-        }
-
-        if (array_key_exists('profile_assignment', $data)) {
         }
 
         return $errors;
     }
+
 
     /**
      * Display HTML
@@ -759,11 +792,12 @@ class cmEngineForm extends cmform {
     /**
      * Definition after data
      *
+     * This function will probably be used to setup the default track, class and profile result fields
+     *
      * @uses $CFG
      * @uses $COURSE
      */
     public function definition_after_data() {
-        global $CFG, $COURSE;
         $mform =& $this->_form;
 
         $data = $this->get_submitted_data();
@@ -771,55 +805,5 @@ class cmEngineForm extends cmform {
         if (empty($data)) {
             return;
         }
-
-
-        if (array_key_exists('trk_assignment', $data)) {
-
-            foreach ($data as $key => $value) {
-//                if (false !== strpos($key, 'track_add_') and
-//                    false !== strpos($key, '_typename')) {
-//
-//                        $this->_typenames[$key] = $data->$key;
-//                    }
-            }
-
-
-            //  track_add_0_<name> will always exist on the form
-            if ( !empty($data->track_add_0_min) and
-                 !empty($data->track_add_0_max) and
-                 !empty($data->track_add_0_selected) )  {
-
-                $mform->disabledIf('class_add_0_group', 'track_add_0_selected', 'neq', '');
-                $mform->disabledIf('cls_assignment', 'track_add_0_selected', 'neq', '');
-                $mform->disabledIf('pro_assignment', 'track_add_0_selected', 'neq', '');
-
-               }
-        }
-
-
-        if (array_key_exists('cls_assignment', $data)) {
-
-            foreach ($data as $key => $value) {
-//                if (false !== strpos($key, 'class_add_') and
-//                    false !== strpos($key, '_typename')) {
-//
-//                        $this->_typenames[$key] = $data->$key;
-//                    }
-            }
-
-
-            //  class_add_0_<name> will always exist on the form
-            if ( !empty($data->class_add_0_min) and
-                 !empty($data->class_add_0_max) and
-                 !empty($data->class_add_0_selected) )  {
-
-                $mform->disabledIf('track_add_0_group', 'class_add_0_selected', 'neq', '');
-                $mform->disabledIf('trk_assignment', 'class_add_0_selected', 'neq', '');
-                $mform->disabledIf('pro_assignment', 'class_add_0_selected', 'neq', '');
-
-               }
-        }
-
     }
-
 }

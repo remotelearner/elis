@@ -104,24 +104,11 @@ abstract class enginepage extends pm_page {
      */
     function get_action_type() {
         global $DB;
-        $type = false;
 
-        $track   = optional_param('trk_assignment', '', PARAM_TEXT);
-        $class   = optional_param('cls_assignment', '', PARAM_TEXT);
-        $profile = optional_param('pro_assignment', '', PARAM_TEXT);
-
-        if (! empty($track)) {
-            $type = ACTION_TYPE_TRACK;
-
-        } else if (! empty($class)) {
-            $type = ACTION_TYPE_CLASS;
-
-        } else if (! empty($profile)) {
-            $type = ACTION_TYPE_PROFILE;
-        }
+        $type = optional_param('result_type_id', 0, PARAM_INT);
 
         // If a button hasn't been pressed we have to look in the db.
-        if ($type === false) {
+        if ($type == 0) {
             $params = array('resultengineid' => $this->get_engine_id());
             if (! $type = $DB->get_field('crlm_results_action', 'actiontype', $params, IGNORE_MULTIPLE)) {
                 $type = ACTION_TYPE_TRACK;
@@ -175,6 +162,7 @@ abstract class enginepage extends pm_page {
         $params['courseid'] = $this->get_course_id();
         $params['contextid'] = $contextid;
         $params['enginetype'] = $this->type;
+        $params['actiontype'] = $this->get_action_type();
 
         $params['cache'] = $cache;
 
@@ -260,6 +248,11 @@ abstract class enginepage extends pm_page {
 
                 // Accordion
                 $("#accordion").accordion({ header: "h3", active: '. intval($type - 1) .' });
+                $("#accordion").accordion({ change:
+                    function(event, ui) {
+                        document.getElementById("result_type_id").value = (ui.options.active + 1);
+                    }
+                });
 
             });
         </script>';
@@ -312,9 +305,9 @@ abstract class enginepage extends pm_page {
 
             require_sesskey();
 
-            if (array_key_exists('trk_assignment', $data) or
-                array_key_exists('cls_assignment', $data) or
-                array_key_exists('pro_assignment', $data)) {
+            if (array_key_exists('track_assignment', $data) or
+                array_key_exists('class_assignment', $data) or
+                array_key_exists('profile_assignment', $data)) {
 
                 $this->_form = $form;
                 $this->display('edit');
