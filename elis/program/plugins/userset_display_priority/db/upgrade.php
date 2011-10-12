@@ -57,5 +57,22 @@ function xmldb_pmplugins_userset_display_priority_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint($result, 2011071200, 'pmplugins', 'userset_display_priority');
     }
 
+    if ($result && $oldversion < 2011101200) {
+        $field = field::find(new field_filter('shortname', USERSET_DISPLAY_PRIORITY_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                $owner->fieldid = $field->id;
+                $owner->plugin = 'manual';
+                //$owner->exclude = 0; // TBD
+                $owner->param_help_file = 'pmplugins_userset_display_priority/display_priority';
+                $owner->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'userset_display_priority');
+    }
+
     return $result;
 }

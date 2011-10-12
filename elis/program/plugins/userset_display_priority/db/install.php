@@ -61,6 +61,7 @@ function xmldb_pmplugins_userset_display_priority_install() {
         $owner->param_edit_capability = '';
         $owner->param_control = 'text';
         $owner->param_options_source = 'userset_display_priority';
+        $owner->param_help_file = 'pmplugins_userset_display_priority/display_priority';
         $owner->save();
     }
 

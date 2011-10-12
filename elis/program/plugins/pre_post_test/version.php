@@ -2,5 +2,5 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2011071400;
+$plugin->version = 2011101200;
 

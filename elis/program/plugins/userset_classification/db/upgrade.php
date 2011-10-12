@@ -61,5 +61,23 @@ function xmldb_pmplugins_userset_classification_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint($result, 2011071400, 'pmplugins', 'userset_classification');
     }
 
+    if ($result && $oldversion < 2011101200) {
+
+        $field = field::find(new field_filter('shortname', USERSET_CLASSIFICATION_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                $owner->fieldid = $field->id;
+                $owner->plugin = 'manual';
+                //$owner->exclude = 0; // TBD
+                $owner->param_help_file = 'pmplugins_userset_classification/cluster_classification';
+                $owner->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'userset_classification');
+    }
+
     return $result;
 }

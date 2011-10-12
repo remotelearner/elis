@@ -63,16 +63,18 @@ function xmldb_pmplugins_archive_install() {
         $owner->param_edit_capability = '';
         $owner->param_control = 'checkbox';
         $owner->param_options_source = '';
+        $owner->param_help_file = 'pmplugins_archive/archive_program';
         $owner->save();
     }
 
-    $owner_options = array('required' => 0,
+    $owner_options = array('required'        => 0,
                            'edit_capability' => '',
                            'view_capability' => '',
-                           'control' => 'checkbox',
-                           'columns' => 30,
-                           'rows' => 10,
-                           'maxlength' => 2048);
+                           'control'         => 'checkbox',
+                           'columns'         => 30,
+                           'rows'            => 10,
+                           'maxlength'       => 2048,
+                           'help_file'       => 'pmplugins_archive/archive_program');
     field_owner::ensure_field_owner_exists($field, 'manual', $owner_options);
 
     return true;

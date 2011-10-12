@@ -69,6 +69,7 @@ function xmldb_pmplugins_userset_classification_install() {
         $owner->param_edit_capability = 'moodle/user:update';
         $owner->param_control = 'menu';
         $owner->param_options_source = 'userset_classifications';
+        $owner->param_help_file = 'pmplugins_userset_classification/cluster_classification';
         $owner->save();
     }
 

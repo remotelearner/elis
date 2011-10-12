@@ -27,29 +27,15 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot .'/elis/program/lib/setup.php');
 require_once(elis::lib('data/customfield.class.php'));
-require_once(elis::plugin_file('pmplugins_archive', 'lib.php'));
+require_once elispm::file('plugins/pre_post_test/lib.php');
 
-function xmldb_pmplugins_archive_upgrade($oldversion = 0) {
+function xmldb_pmplugins_pre_post_test_upgrade($oldversion = 0) {
     $result = true;
 
-    if ($result && $oldversion < 2011100700) {
-        // rename field
-        $field = field::find(new field_filter('shortname', '_elis_curriculum_archive'));
-
-        if ($field->valid()) {
-            $field = $field->current();
-            $field->shortname = ARCHIVE_FIELD;
-            $field->name = get_string('archive_field_name', 'pmplugins_archive');
-            $field->save();
-        }
-
-        upgrade_plugin_savepoint($result, 2011100700, 'pmplugins', 'archive');
-    }
-
     if ($result && $oldversion < 2011101200) {
-        $field = field::find(new field_filter('shortname', ARCHIVE_FIELD));
+        $field = field::find(new field_filter('shortname', PRE_TEST_FIELD));
 
         if ($field->valid()) {
             $field = $field->current();
@@ -57,13 +43,25 @@ function xmldb_pmplugins_archive_upgrade($oldversion = 0) {
                 $owner->fieldid = $field->id;
                 $owner->plugin = 'manual';
                 //$owner->exclude = 0; // TBD
-                $owner->param_help_file = 'pmplugins_archive/archive_program';
+                $owner->param_help_file = 'pmplugins_pre_post_test/pre_test';
                 $owner->save();
             }
-
         }
 
-        upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'archive');
+        $field = field::find(new field_filter('shortname', POST_TEST_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                $owner->fieldid = $field->id;
+                $owner->plugin = 'manual';
+                //$owner->exclude = 0; // TBD
+                $owner->param_help_file = 'pmplugins_pre_post_test/post_test';
+                $owner->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'pre_post_test');
     }
 
     return $result;

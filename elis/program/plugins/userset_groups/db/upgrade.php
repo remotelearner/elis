@@ -61,9 +61,8 @@ function xmldb_pmplugins_userset_groups_upgrade($oldversion = 0) {
             $field = field::find(new field_filter('shortname', $key));
             if ($field->valid()) {
                 $field = $field->current();
-                if (!isset($field->owners) ||
-                    ($owner = new field_owner(isset($field->owners['manual']) ? $field->owners['manual']: false))) {
-                    error_log("pmplugins_userset_groups::upgrading help_file for '{$key}' to '{$val}'");
+                if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                    //error_log("pmplugins_userset_groups::upgrading help_file for '{$key}' to '{$val}'");
                     $owner->fieldid = $field->id;
                     $owner->plugin = 'manual';
                     //$owner->exclude = 0; // TBD

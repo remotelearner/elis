@@ -62,6 +62,7 @@ function xmldb_pmplugins_pre_post_test_install() {
         $owner->param_edit_capability = '';
         $owner->param_control = 'menu';
         $owner->param_options_source = 'learning_objectives';
+        $owner->param_help_file = 'pmplugins_pre_post_test/pre_test';
         $owner->save();
     }
 
@@ -85,6 +86,7 @@ function xmldb_pmplugins_pre_post_test_install() {
         $owner->param_edit_capability = '';
         $owner->param_control = 'menu';
         $owner->param_options_source = 'learning_objectives';
+        $owner->param_help_file = 'pmplugins_pre_post_test/post_test';
         $owner->save();
     }
 

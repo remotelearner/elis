@@ -13,6 +13,7 @@ $string['child_classification'] = 'Default classification for child User Sets';
 $string['classification_field_name'] = 'User Set classification';
 $string['classification_category_name'] = 'User Set classification';
 $string['cluster_classification'] = 'User Set classification';
+$string['cluster_classification_help'] = '<p>Select the desired classification for this User Set.</p>';
 $string['delete_cluster_classification'] = 'Delete User Set classification';
 $string['elis_files_shared_folder'] = 'Automatically create an ELIS Files User Set shared folder';
 $string['manageclusterclassifications'] = 'User Set classifications';
