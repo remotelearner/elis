@@ -39,6 +39,12 @@ require_once elispm::lib('data/resultsengine.class.php');
 class cmEngineForm extends cmform {
     const LANG_FILE = 'pmplugins_results_engine';
 
+    public $types = array(
+        ACTION_TYPE_TRACK => 'track',
+        ACTION_TYPE_CLASS => 'class',
+        ACTION_TYPE_PROFILE => 'profile'
+    );
+
     // Form html
     protected $_html = array();
 
@@ -262,8 +268,9 @@ class cmEngineForm extends cmform {
                 break;
         }
 
-        $resultengid = $this->_customdata['rid'];
+        $rid = $this->_customdata['rid'];
 
+        $mform->addElement('hidden', 'aid');
         $mform->addElement('hidden', 'actioncache');
         $mform->addElement('hidden', 'result_type_id', $this->_customdata['actiontype'], 'id="result_type_id"');
 
@@ -283,10 +290,11 @@ class cmEngineForm extends cmform {
         // Create assign to table elements
         $mform->addElement('html', '<div>');
 
-        $this->setup_table_type($mform, 'track', $resultengid, $cachetrack);
+        $type = $this->types[ACTION_TYPE_TRACK];
+        $this->setup_table_type($mform, $type, $rid, $cachetrack);
 
-        $attributes = array('onclick' => 'pre_submit_processing("track","'.ACTION_TYPE_TRACK.'");');
-        $mform->addElement('submit', 'track_assignment', $addscorerange, $attributes);
+        $attributes = array('onclick' => 'pre_submit_processing("'. $type .'");');
+        $mform->addElement('submit', $type .'_assignment', $addscorerange, $attributes);
 
         $mform->addElement('html', '</div>');
 
@@ -299,10 +307,11 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</h3>');
         $mform->addElement('html', '<div>');
 
-        $this->setup_table_type($mform, 'class', $resultengid, $cacheclass);
+        $type = $this->types[ACTION_TYPE_CLASS];
+        $this->setup_table_type($mform, $type, $rid, $cacheclass);
 
-        $attributes = array('onclick' => 'pre_submit_processing("class","'.ACTION_TYPE_CLASS.'");');
-        $mform->addElement('submit', 'class_assignment', $addscorerange, $attributes);
+        $attributes = array('onclick' => 'pre_submit_processing("'. $type .'");');
+        $mform->addElement('submit', $type .'_assignment', $addscorerange, $attributes);
 
 
         $mform->addElement('html', '</div>');
@@ -315,9 +324,11 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</h3>');
         $mform->addElement('html', '<div>');
 
-        $this->setup_table_type($mform, 'profile', $resultengid, $cacheprofile);
+        $type = $this->types[ACTION_TYPE_PROFILE];
+        $this->setup_table_type($mform, $type, $rid, $cacheprofile);
 
-        $mform->addElement('submit', 'profile_assignment', $addscorerange);
+        $attributes = array('onclick' => 'pre_submit_processing("'. $type .'");');
+        $mform->addElement('submit', 'profile_assignment', $addscorerange, $attributes);
         $mform->addElement('html', '</div>');
         $mform->addElement('html', '</div>');
 
@@ -385,32 +396,10 @@ class cmEngineForm extends cmform {
     function validate_fold($actiontype, $data) {
         $errors = array();
 
-        $prefix = 'track';
-        if ($actiontype == ACTION_TYPE_CLASS) {
-            $prefix = 'class';
-        } else if ($actiontype == ACTION_TYPE_PROFILE) {
-            $prefix = 'profile';
-        }
+        $prefix = $this->types[$actiontype];
 
         // Add another track score range button.  Validate and make sure all rows have been filled out
-        if (array_key_exists($prefix .'_assignment', $data)) {
-
-            foreach ($data as $key => $value) {
-
-                if ((false !== strpos($key, $prefix .'_add_')) && (false === strpos($key, '_typename'))) {
-
-                    if (empty($data[$key])) {
-                        $element_instance = explode('_', $key);
-                        $element_instance = $element_instance[2];
-
-                        $errors["{$prefix}_add_{$element_instance}_group"] =
-                            get_string('error_incomplete_row', self::LANG_FILE);
-                    }
-                }
-            }
-
-        } else {
-
+        if (! array_key_exists($prefix .'_assignment', $data)) {
             $keys = array();
             $newkeys = array();
 
@@ -459,7 +448,7 @@ class cmEngineForm extends cmform {
                     $errors[$keygroup] = get_string('error_min_larger_than_max', self::LANG_FILE);
                 }
 
-                if (empty($data[$key_selected])) {
+                if (empty($data[$keyselect])) {
                     $errors[$keygroup] = get_string('error_no_'. $prefix, self::LANG_FILE);
                 }
             }
@@ -584,6 +573,7 @@ class cmEngineForm extends cmform {
 
         $setdefault = false;
         $prefix = $type . '_';
+        $cache  = 0;
 
         if ($extrarow) {
 
@@ -594,11 +584,10 @@ class cmEngineForm extends cmform {
             $empty_record->selected = '';
             $empty_record->name = $notypeselected;
             array_push($dataset, $empty_record);
-
+            $cache = 1;
         }
 
         $i = 0;
-
 
         foreach ($dataset as $data) {
 
@@ -633,7 +622,8 @@ class cmEngineForm extends cmform {
             $image  = html_writer::empty_tag('img', $attributes);
 
             // Add link and image field (Delete link)
-            $score[] = $mform->createElement('link', 'delete', '', '#', $image);
+            $attributes     = array('onclick' => "return delete_row($i,$cache,'$type');");
+            $score[] = $mform->createElement('link', 'delete', '', "#", $image, $attributes);
 
             // Add minimum, maximum and delete to field group
             $mform->addGroup($score, "{$prefix}{$i}_group", '', '', false);
@@ -665,7 +655,7 @@ class cmEngineForm extends cmform {
             $mform->addElement('html', $tablehtml);
 
             $url            = "form/{$type}selector.php?id={$prefix}{$i}&callback=add_selection";
-            $attributes     = array('onClick' => 'show_panel("'.$url.'"); return false;');
+            $attributes     = array('onclick' => 'show_panel("'.$url.'"); return false;');
             $output         = html_writer::link('#', $selecttype, $attributes);
 
             $mform->addElement('html', $output);
@@ -701,7 +691,6 @@ class cmEngineForm extends cmform {
             $cachedata = explode(',', $this->_customdata['cache']);
             $x = 0;
             $i = 0;
-
 
             for($i; $i < count($cachedata); $i = $i + 3) {
                 $data[$x] = new stdClass();

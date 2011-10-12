@@ -62,9 +62,27 @@ abstract class enginepage extends pm_page {
     /**
      * Check if the user can edit
      *
-     * @return bool True if the user has permission to use the default action
+     * @return bool True if the user has permission to use the edit action
      */
     function can_do_edit() {
+        return $this->can_do_default();
+    }
+
+    /**
+     * Check if the user can delete from cache
+     *
+     * @return bool True if the user has permission to use the cachedelete action
+     */
+    function can_do_cachedelete() {
+        return $this->can_do_default();
+    }
+
+    /**
+     * Check if the user can delete (from db)
+     *
+     * @return bool True if the user has permission to use the delete action
+     */
+    function can_do_delete() {
         return $this->can_do_default();
     }
 
@@ -294,8 +312,6 @@ abstract class enginepage extends pm_page {
         $newchilddata   = '';
         $actiontype     = '';
 
-
-
         if ($form->no_submit_button_pressed()) {
 
             $this->_form = $form;
@@ -314,9 +330,7 @@ abstract class enginepage extends pm_page {
 
             } else {
 
-
-
-                $obj       = $this->get_new_data_object($id);
+                $obj = $this->get_new_data_object(0);
                 $obj->set_from_data($data);
                 if ($data->rid > 0) {
                     $obj->id = $data->rid;
@@ -327,17 +341,15 @@ abstract class enginepage extends pm_page {
                 $obj->save();
 
                 // Updating existing score ranges
-                // Iterate through the data array until you find either a
-                // track_ or class_ or profile_ prefix, then set the action type
-                // and break out of the loop
-                $type = $this->get_action_type();
+                $actiontype = $this->get_action_type();
+                $typename = $form->types[$actiontype];
                 $data = (array) $data;
 
                 // Iterate through the data array and update the existing score ranges submitted
-                $this->save_existing_data_submitted($data, $type, $actiontype);
+                $this->save_existing_data_submitted($data, $typename, $actiontype);
 
                 // Save new score ranges submitted
-                $this->save_new_data_submitted($data, $type, $actiontype, $obj->id);
+                $this->save_new_data_submitted($data, $typename, $actiontype, $obj->id);
 
                 $target = $this->get_new_page(array('action' => 'default',
                                                     'id' => $id), false);
@@ -352,13 +364,64 @@ abstract class enginepage extends pm_page {
     }
 
     /**
-     * TODO: document
+     * Process the delete
+     */
+    function do_delete() {
+        $id  = $this->required_param('id', PARAM_INT);
+        $aid = $this->optional_param('aid', 0, PARAM_INT);
+        $rid = $this->get_engine_id();
+
+        if ($aid > 0) {
+            $rec = $this->get_new_child_data_object($aid);
+
+            // To prevent "reload" or "double-click" problems
+            if ($rec->exists()) {
+                $rec->load();
+
+                // Confirm it's an action for this page, to prevent capability circumvention
+                if ($rec->resultengineid == $rid) {
+                    $rec->delete();
+                }
+            }
+        }
+
+        $this->do_default();
+    }
+
+    /**
+     * Process the delete for cached items
+     */
+    function do_cachedelete() {
+       $cache = $this->optional_param('actioncache', '', PARAM_SEQUENCE);
+       $aid   = $this->optional_param('aid', 0, PARAM_INT);
+
+       $cachedata = explode(',', $cache);
+       unset($cachedata[3 * $aid+2]);
+       unset($cachedata[3 * $aid+1]);
+       unset($cachedata[3 * $aid]);
+
+       $cache = implode(',', $cachedata);
+
+       $form = $this->get_engine_form($cache);
+       $this->_form = $form;
+       $this->display('edit');
+    }
+
+    /**
+     * Save new submitted data
+     *
+     * @param array  $data              The form data
+     * @param string $type              The name of the action type
+     * @param int    $actiontype        The id of the action type
+     * @param int    $results_engine_id The id of the result engine entry
      */
     protected function save_new_data_submitted($data, $type, $actiontype, $results_engine_id) {
 
-        $savetype       = '';
-        $instance       = array();
-        $dataobj        = (object) $data;
+        $savetype = '';
+        $instance = array();
+        $dataobj  = (object) $data;
+        $prefix   = "${type}_add_";
+        $length   = strlen($prefix);
 
         // Check for existing data regarding track/class/profile actions
         foreach($data as $key => $value) {
@@ -370,21 +433,19 @@ abstract class enginepage extends pm_page {
             }
 
             // Check for existing track data in the form of track_<id>_...
-            $pos = strpos($key, "{$type}_add_");
-            $length = strlen("{$type}_add_");
+            $pos    = strpos($key, $prefix);
+
 
             if (false !== $pos) {
                 $lpos = strrpos($key, '_');
                 $pos = strpos($key, '_', $length - 1);
 
-                if (false !== $pos and
-                    false !== $lpos) {
+                if (false !== $pos && false !== $lpos) {
 
                     $length = $lpos - $pos - 1;
                     $instance_key = substr($key, $pos+1, $length);
 
-                    if (is_numeric($instance_key) and
-                       !array_key_exists($instance_key, $instance)) {
+                    if (is_numeric($instance_key) && !array_key_exists($instance_key, $instance)) {
 
                         $instance[$instance_key] = '';
                         continue;
@@ -399,21 +460,18 @@ abstract class enginepage extends pm_page {
 
         switch ($actiontype) {
             case ACTION_TYPE_TRACK:
-                $dataobj->actiontype = ACTION_TYPE_TRACK;
                 $field = 'trackid';
                 break;
             case ACTION_TYPE_CLASS:
                 $field = 'classid';
-                $dataobj->actiontype = ACTION_TYPE_CLASS;
                 break;
             case ACTION_TYPE_PROFILE:
-                //
-                $dataobj->actiontype = ACTION_TYPE_PROFILE;
+                $field = 'fieldid';
                 break;
         }
 
         $field_map = array();
-        $field_map['actiontype'] = 'actiontype';
+        $field_map['actiontype'] = 'result_type_id';
 
         foreach ($instance as $recid => $dummy_val) {
 
@@ -434,6 +492,7 @@ abstract class enginepage extends pm_page {
             }
 
             $updaterec->set_from_data($dataobj, true, $field_map);
+
             $updaterec->save();
         }
 
@@ -441,17 +500,19 @@ abstract class enginepage extends pm_page {
     }
 
     /**
+     * Save existing data
+     *
      * This function check to see if existing track/class/profile record data
      * was submitted with the form; because the use are only submit only submit
      * track or class or profile data.  And returns an array with the type of
      * data (track/class/profile) and id values for existing records to be
      * updated
      *
-     * @param obj $data - data from the submitted form
+     * @param array  $data       Data from the submitted form
+     * @param string $type       The name of the action type
+     * @param int    $actiontype The action type id
      * @return array - key -- type (either track/class/profile), ids (array
-     * whose keys are existing record ids)\
-     *
-     * TODO: update documentation
+     *                        whose keys are existing record ids)
      */
     protected function save_existing_data_submitted($data, $type, $actiontype) {
         $savetype       = '';
@@ -468,14 +529,12 @@ abstract class enginepage extends pm_page {
                 $pos = strpos($key, '_');
                 $lpos = strrpos($key, '_');
 
-                if (false !== $pos and
-                    false !== $lpos) {
+                if (false !== $pos && false !== $lpos) {
 
                     $length = $lpos - $pos - 1;
                     $instance_key = substr($key, $pos+1, $length);
 
-                    if (is_numeric($instance_key) and
-                       !array_key_exists($instance_key, $instance)) {
+                    if (is_numeric($instance_key) && !array_key_exists($instance_key, $instance)) {
 
                         $instance[$instance_key] = '';
                         continue;
@@ -496,7 +555,7 @@ abstract class enginepage extends pm_page {
                 $field = 'classid';
                 break;
             case ACTION_TYPE_PROFILE:
-                //
+                $field = 'fieldid';
                 break;
         }
 
