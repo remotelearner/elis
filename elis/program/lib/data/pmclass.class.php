@@ -139,8 +139,8 @@ class pmclass extends data_object_with_custom_fields {
     public function get_completion_counts($clsid = null) {
         global $DB;
 
-        if($clsid === null) {
-            if(empty($this->id)) {
+        if ($clsid === null) {
+            if (empty($this->id)) {
                 return array();
             }
             $clsid = $this->id;
@@ -153,12 +153,12 @@ class pmclass extends data_object_with_custom_fields {
         }
 
         $sql = 'SELECT cce.completestatusid status, COUNT(cce.completestatusid) count
-        FROM {'.student::TABLE.'} cce
-        INNER JOIN {'.user::TABLE.'} usr ON cce.userid = usr.id
-        WHERE cce.classid = ? ?
-        GROUP BY cce.completestatusid';
+        FROM {'. student::TABLE .'} cce
+        INNER JOIN {'. user::TABLE ."} usr ON cce.userid = usr.id
+        WHERE cce.classid = ? {$inactive}
+        GROUP BY cce.completestatusid";
 
-        $rows = $DB->get_records_sql($sql, array($clsid, $inactive));
+        $rows = $DB->get_records_sql($sql, array($clsid));
 
         $ret = array(STUSTATUS_NOTCOMPLETE=>0, STUSTATUS_FAILED=>0, STUSTATUS_PASSED=>0);
 
@@ -166,7 +166,7 @@ class pmclass extends data_object_with_custom_fields {
             return $ret;
         }
 
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             $ret[$row->status] = $row->count;
         }
 

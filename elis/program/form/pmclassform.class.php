@@ -440,7 +440,7 @@ class pmclassform extends cmform {
 
     function freeze() {
         // Add completion status information
-        $obj = new course($this->_customdata['obj']);
+        $obj = new pmclass($this->_customdata['obj']);
         $counts = $obj->get_completion_counts();
 
         $counttext = "Passed: {$counts[2]}, Failed: {$counts[1]}, In Progress: {$counts[0]}";

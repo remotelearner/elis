@@ -1341,7 +1341,7 @@ class student extends elis_data_object {
         $select .= ', ' . $FULLNAME . ' as name, usr.idnumber ';
     //    $select .= ', ' . $FULLNAME . ' as name, usr.type as description ';
         $tables  = 'FROM {'. student::TABLE .'} stu ';
-        $join    = 'LEFT JOIN {'. user::TABLE .'} usr ';
+        $join    = 'JOIN {'. user::TABLE .'} usr ';
         $on      = 'ON stu.userid = usr.id ';
         $where   = 'stu.classid = :clsid ';
         $params['clsid'] = $classid;
@@ -1352,19 +1352,17 @@ class student extends elis_data_object {
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
+            $where .= ' AND (('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
             $params['name_like'] = "%{$namesearch}%";
             $params['id_like']   = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $where .= ' AND ('. $LASTNAME_STARTSWITH .') ';
             $params['lastname_startswith'] = "{$alpha}%";
         }
 
-        if (!empty($where)) {
-            $where = 'WHERE '.$where.' ';
-        }
+        $where = 'WHERE '. $where .' ';
 
         if ($sort) {
             if ($sort == 'name') { // TBV: ELIS-2772
@@ -1416,18 +1414,16 @@ class student extends elis_data_object {
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $FULLNAME_LIKE .') ';
+            $where .= ' AND ('. $FULLNAME_LIKE .') ';
             $params['name_like'] = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $where .= ' AND ('. $LASTNAME_STARTSWITH .') ';
             $params['lastname_startswith'] = "{$alpha}%";
         }
 
-        if (!empty($where)) {
-            $where = 'WHERE '.$where.' ';
-        }
+        $where = 'WHERE '. $where .' ';
 
         $sql = $select . $tables . $join . $on . $where;
         return $DB->count_records_sql($sql, $params);
@@ -1476,11 +1472,7 @@ class student extends elis_data_object {
             $where[] = 'usr.inactive = 0';
         }
 
-        if (!empty($where)) {
-            $where = 'WHERE ' . implode(' AND ', $where);
-        } else {
-            $where = '';
-        }
+        $where = 'WHERE ' . implode(' AND ', $where);
 
         $sql = $select . $tables . $join . $on . $where;
         return $this->_db->count_records_sql($sql, $params);
@@ -1518,14 +1510,18 @@ class student extends elis_data_object {
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
+            $where .= ' AND (('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
             $params['name_like'] = "%{$namesearch}%";
             $params['id_like']   = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $where .= ' AND ('. $LASTNAME_STARTSWITH .') ';
             $params['lastname_startswith'] = "{$alpha}%";
+        }
+
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where .= ' AND usr.inactive = 0 ';
         }
 
         $uids = array();
@@ -1535,7 +1531,7 @@ class student extends elis_data_object {
             }
         }
 
-        if($users = $this->get_waiting()) {
+        if ($users = $this->get_waiting()) {
             foreach ($users as $user) {
                 $uids[] = $user->id;
             }
@@ -1549,21 +1545,18 @@ class student extends elis_data_object {
         }
 
         if (!empty($uids)) {
-            $where .= (!empty($where) ? ' AND ' : '') . 'usr.id NOT IN ( ' .
-                      implode(', ', $uids) . ' ) ';
+            $where .= ' AND usr.id NOT IN ( '. implode(', ', $uids) .' ) ';
         }
 
-        if (!empty($where)) {
-            $where = 'WHERE '.$where.' ';
-        }
+        $where = 'WHERE '. $where .' ';
 
         // *** TBD ***
-        if(!pmclasspage::_has_capability('elis/program:class_enrol', $this->classid)) {
+        if (!pmclasspage::_has_capability('elis/program:class_enrol', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
 
-            if(empty($allowed_clusters)) {
+            if (empty($allowed_clusters)) {
                 $where .= 'AND 0=1';
             } else {
                 $cluster_filter = implode(',', $allowed_clusters);
@@ -1610,14 +1603,18 @@ class student extends elis_data_object {
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
+            $where .= ' AND (('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
             $params['name_like'] = "%{$namesearch}%";
             $params['id_like']   = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+            $where .= ' AND ('. $LASTNAME_STARTSWITH .') ';
             $params['lastname_startswith'] = "{$alpha}%";
+        }
+
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where .= ' AND usr.inactive = 0 ';
         }
 
         $uids = array();
@@ -1627,7 +1624,7 @@ class student extends elis_data_object {
             }
         }
 
-        if($users = $this->get_waiting()) {
+        if ($users = $this->get_waiting()) {
             foreach ($users as $user) {
                 $uids[] = $user->id;
             }
@@ -1641,21 +1638,17 @@ class student extends elis_data_object {
         }
 
         if (!empty($uids)) {
-            $where .= (!empty($where) ? ' AND ' : '') . 'usr.id NOT IN ( ' .
-                      implode(', ', $uids) . ' ) ';
+            $where .= ' AND usr.id NOT IN ( '. implode(', ', $uids) .' ) ';
         }
-
-        if (!empty($where)) {
-            $where = 'WHERE '.$where.' ';
-        }
+        $where = 'WHERE '. $where .' ';
 
         // *** TBD ***
-        if(!pmclasspage::_has_capability('elis/program:class_enrol', $this->classid)) {
+        if (!pmclasspage::_has_capability('elis/program:class_enrol', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
 
-            if(empty($allowed_clusters)) {
+            if (empty($allowed_clusters)) {
                 $where .= 'AND 0=1';
             } else {
                 $cluster_filter = implode(',', $allowed_clusters);
@@ -1720,7 +1713,12 @@ class student extends elis_data_object {
             $params['lastname_startswith'] = "{$alpha}%";
         }
 
-        $where .= (!empty($where) ? ' AND ' : '') . "classid = {$this->classid} ";
+        $where .= (!empty($where) ? ' AND ' : '') . 'classid = :clsid ';
+        $params['clsid'] = $this->classid;
+
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where .= ' AND usr.inactive = 0';
+        }
         $where = "WHERE $where ";
 
         if ($sort) {
@@ -1790,8 +1788,11 @@ class student extends elis_data_object {
 //                break;
 //        }
 
-        $where .= (!empty($where) ? ' AND ' : '') . ' classid = :clsid ';
+        $where .= (!empty($where) ? ' AND ' : '') . 'classid = :clsid ';
         $params['clsid'] = $this->classid;
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $where .= 'AND usr.inactive = 0';
+        }
         $where = "WHERE $where ";
 
         $sql = $select.$tables.$join.$on.$where;
@@ -2265,19 +2266,21 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where .= (!empty($where) ? ' AND ' : ' ') .'(('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
+        $where .= ' AND (('. $FULLNAME_LIKE .') OR ('. $IDNUMBER_LIKE .')) ';
         $params['name_like'] = "%{$namesearch}%";
         $params['id_like']   = "%{$namesearch}%";
     }
 
     if ($alpha) {
-        $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+        $where .= ' AND ('. $LASTNAME_STARTSWITH .') ';
         $params['lastname_startswith'] = "{$alpha}%";
     }
 
-    if (!empty($where)) {
-        $where = 'WHERE '.$where.' ';
+    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        $where .= ' AND usr.inactive = 0 ';
     }
+
+    $where = 'WHERE '. $where .' ';
 
     if ($sort) {
         if ($sort == 'name') { // TBV: ELIS-2772
@@ -2314,18 +2317,20 @@ function student_count_records($classid, $namesearch = '', $alpha = '') {
 
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
-        $where .= (!empty($where) ? ' AND ' : ' ') .'('. $FULLNAME_LIKE .') ';
+        $where .= ' AND ('. $FULLNAME_LIKE .') ';
         $params['name_like'] = "%{$namesearch}%";
     }
 
     if ($alpha) {
-        $where .= (!empty($where) ? ' AND ' : ' ') .'('. $LASTNAME_STARTSWITH .') ';
+        $where .= ' AND ('. $LASTNAME_STARTSWITH .') ';
         $params['lastname_startswith'] = "{$alpha}%";
     }
 
-    if (!empty($where)) {
-        $where = "WHERE $where ";
+    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        $where .= ' AND usr.inactive = 0 ';
     }
+
+    $where = "WHERE $where ";
 
     $sql = $select . $tables . $join . $on . $where;
     return $DB->count_records_sql($sql, $params);

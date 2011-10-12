@@ -252,11 +252,16 @@ class course extends data_object_with_custom_fields {
      */
     public function get_completion_counts() {
         $sql = 'SELECT cce.completestatusid status, COUNT(cce.completestatusid) count
-                FROM {'.student::TABLE.'} cce
-                INNER JOIN {'.pmclass::TABLE.'} cc ON cc.id = cce.classid
-                INNER JOIN {'.course::TABLE.'} cco ON cco.id = cc.courseid
-                WHERE cco.id = ?
-                GROUP BY cce.completestatusid';
+                FROM {'. student::TABLE .'} cce
+                JOIN {'. user::TABLE .'} usr ON cce.userid = usr.id
+                INNER JOIN {'. pmclass::TABLE .'} cc ON cc.id = cce.classid
+                INNER JOIN {'. course::TABLE .'} cco ON cco.id = cc.courseid
+                WHERE cco.id = ? ';
+
+        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            $sql .= 'AND usr.inactive = 0 ';
+        }
+        $sql .= 'GROUP BY cce.completestatusid';
 
         $rows = $this->_db->get_records_sql($sql, array($this->id));
 
