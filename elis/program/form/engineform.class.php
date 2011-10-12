@@ -242,7 +242,26 @@ class cmEngineForm extends cmform {
 
         $mform =& $this->_form;
 
+        $cachetrack   = array();
+        $cacheclass   = array();
+        $cacheprofile = array();
+
         $cache = $this->format_cache_data();
+
+        switch ($this->_customdata['actiontype']) {
+            case ACTION_TYPE_PROFILE:
+                $cacheprofile = $cache;
+                break;
+            case ACTION_TYPE_CLASS:
+                $cacheclass   = $cache;
+                break;
+            case ACTION_TYPE_TRACK:
+                $cachetrack   = $cache;
+                break;
+            default:
+                break;
+        }
+
         $resultengid = $this->_customdata['rid'];
 
         $mform->addElement('hidden', 'actioncache');
@@ -264,7 +283,7 @@ class cmEngineForm extends cmform {
         // Create assign to table elements
         $mform->addElement('html', '<div>');
 
-        $this->setup_table_type($mform, 'track', $resultengid, array());
+        $this->setup_table_type($mform, 'track', $resultengid, $cachetrack);
 
         $attributes = array('onclick' => 'pre_submit_processing("track","'.ACTION_TYPE_TRACK.'");');
         $mform->addElement('submit', 'track_assignment', $addscorerange, $attributes);
@@ -280,7 +299,7 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</h3>');
         $mform->addElement('html', '<div>');
 
-        $this->setup_table_type($mform, 'class', $resultengid, array());
+        $this->setup_table_type($mform, 'class', $resultengid, $cacheclass);
 
         $attributes = array('onclick' => 'pre_submit_processing("class","'.ACTION_TYPE_CLASS.'");');
         $mform->addElement('submit', 'class_assignment', $addscorerange, $attributes);
@@ -296,7 +315,7 @@ class cmEngineForm extends cmform {
         $mform->addElement('html', '</h3>');
         $mform->addElement('html', '<div>');
 
-        $this->setup_table_type($mform, 'profile', $resultengid, array());
+        $this->setup_table_type($mform, 'profile', $resultengid, $cacheprofile);
 
         $mform->addElement('submit', 'profile_assignment', $addscorerange);
         $mform->addElement('html', '</div>');

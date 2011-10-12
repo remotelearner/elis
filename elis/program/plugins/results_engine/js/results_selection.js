@@ -57,7 +57,6 @@ function add_selection(elmid, label, id) {
 
 
 function pre_submit_processing(type, actiontypeid) {
-
     var max = 99;
     var i = 0;
     var ele_min = '';
@@ -65,17 +64,12 @@ function pre_submit_processing(type, actiontypeid) {
     var ele_sel = '';
     var temp = '';
     var cache = document.getElementsByName("actioncache")[0]; 
-    var actiontype = document.getElementsByName("actiontype")[0];
 
 
     if ( (typeof cache == 'undefined') ) {
         return 0;
     }
-    
-    if ( (typeof actiontype == 'undefined') ) {
-        return 0;
-    }
-    
+       
     for (i=0; i < max; i++) {
 
         ele_min = document.getElementsByName(type + '_add_' + i + '_min')[0];
@@ -95,22 +89,14 @@ function pre_submit_processing(type, actiontypeid) {
              ('' != ele_sel.value) ) {
             // Only cache complete rows.  Incomplete rows are discarded for now
             temp = temp + ele_min.value + ',' + ele_max.value + ',' + ele_sel.value + ',';
-        }
- 
-        
-        
+        }       
     }
-    
+
     // Remove the last comma
     
     var last_occurance = temp.lastIndexOf(',');
     last_occurance = parseInt(last_occurance);
     
-    cache.value = temp.slice(0, last_occurance);
-    
-    // Update action type hidden field
-    actiontype.value = actiontypeid;
-
-
+    cache.value = temp.slice(0, last_occurance);    
 }
 
