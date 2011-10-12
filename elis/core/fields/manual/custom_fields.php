@@ -252,6 +252,8 @@ function manual_field_add_help_button($mform, $elementname, $field) {
     if (!empty($manual->param_help_file)) {
         // First check for help_file spec. (now _help identifier in Moodle 2.0)
         list($plugin, $filename) = explode('/', $manual->param_help_file, 2);
+        $filename = ltrim($filename, '_');
+        //^Note: language string identifiers CANNOT start with underscore (_)
         //error_log("manual_field_add_help_button()::adding help button for plugin: plugin,identifier(filename) = {$plugin},{$filename}");
     }
     if (!empty($filename) && get_string_manager()->string_exists($filename, $plugin)) {
