@@ -300,9 +300,7 @@ class student extends elis_data_object {
 /////////////////////////////////////////////////////////////////////
 
     function save() {
-        global $CFG;
 
-        $status = true;
         try {
             validation_helper::is_unique_userid_classid($this);
         } catch (Exception $e) {

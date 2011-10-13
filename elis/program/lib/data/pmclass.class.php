@@ -210,17 +210,17 @@ class pmclass extends data_object_with_custom_fields {
     }
 
     public function set_from_data($data) {
-        if(!empty($data->moodleCourses['autocreate'])) {
+        if (!empty($data->moodleCourses['autocreate'])) {
             $this->autocreate = $data->moodleCourses['autocreate'];
         } else {
             $this->autocreate = false;
         }
 
-        if(isset($data->disablestart)) {
+        if (isset($data->disablestart)) {
             $this->startdate = 0;
         }
 
-        if(isset($data->disableend)) {
+        if (isset($data->disableend)) {
             $this->enddate = 0;
         }
 
@@ -892,15 +892,19 @@ class pmclass extends data_object_with_custom_fields {
         }
 
         if (!$isnew) {
-            if(!empty($this->oldmax) && $this->oldmax < $this->maxstudents && waitlist::count_records($this->id) > 0) {
-                for($i = $this->oldmax; $i < $this->maxstudents; $i++) {
+            if (!empty($this->oldmax) &&
+                (!$this->maxstudents || $this->oldmax < $this->maxstudents) &&
+                ($waiting = waitlist::count_records($this->id)) > 0) {
+                $start = student_count_records($this->id);
+                $max = $this->maxstudents ? $this->maxstudents
+                                          : ($start + $waiting + 1);
+                //error_log("pmclass.class.php::save() oldmax = {$this->oldmax}, start = {$start}, newmax = {$this->maxstudents}, waiting = {$waiting} ... max = {$max}");
+                for ($i = $start; $i < $max; $i++) {
                     $next_student = waitlist::get_next($this->id);
-
-                    if(!empty($next_student)) {
-                        $next_student->enrol();
-                    } else {
+                    if (empty($next_student)) {
                         break;
                     }
+                    $next_student->enrol();
                 }
             }
         }
