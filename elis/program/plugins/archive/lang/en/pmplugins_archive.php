@@ -8,6 +8,6 @@ $string['archive_field_name_help'] = 'Enabling this will cause the dashboard to 
 
 // Custom field help
 $string['archive_program'] = 'Archive Program';
-$string['archive_program_help'] = '<p>Check if program is to be archived.</p>';
+$string['archive_program_help'] = '<p>Enabling this will cause the dashboard to only show this program and associated courses when the "Archived Learning Plans" tab is selected.</p>';
 
 $string['pluginname'] = 'Archive Program';

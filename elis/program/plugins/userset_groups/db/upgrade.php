@@ -51,12 +51,12 @@ function xmldb_pmplugins_userset_groups_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint($result, 2011072600, 'pmplugins', 'userset_groups');
     }
 
-    if ($result && $oldversion < 2011101100) {
+    if ($result && $oldversion < 2011101300) {
         // rename field help
         $fieldmap = array('userset_group'
-                          => 'pmplugins_userset_groups/userset_groups',
+                          => 'pmplugins_userset_groups/userset_group',
                           'userset_groupings'
-                          => 'pmplugins_userset_groups/userset_groupings');
+                          => 'pmplugins_userset_groups/autoenrol_groupings');
         foreach ($fieldmap as $key => $val) {
             $field = field::find(new field_filter('shortname', $key));
             if ($field->valid()) {
@@ -79,7 +79,7 @@ function xmldb_pmplugins_userset_groups_upgrade($oldversion = 0) {
             }
         }
 
-        upgrade_plugin_savepoint($result, 2011101100, 'pmplugins', 'userset_groups');
+        upgrade_plugin_savepoint($result, 2011101300, 'pmplugins', 'userset_groups');
     }
 
     return $result;

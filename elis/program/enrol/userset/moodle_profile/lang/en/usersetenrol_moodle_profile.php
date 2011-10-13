@@ -28,17 +28,18 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['autoenrol'] = 'Auto-enrol';
 $string['auto_associate'] = 'Auto-associate users with Moodle profile field';
-$string['auto_associate_help'] = 'If this cluster will be populated from custom profile fields, select the
+$string['auto_associate_help'] = 'If this User Set will be populated from custom profile fields, select the
 custom profile field name from this drop-down menu and the requested value from
-the input control directly below it.  To create a cluster populating based on two
-profile fields or options, use the second set of controls in addition to the first set.
-If clusters will be populated manually, these settings should be left to their defaults.';
+the input control directly below it.</p>
+<p>To create a User Set populating based on two
+profile fields or options, use the second set of controls in addition to the first set.</p>
+<p>If User Sets will be populated manually, these settings should be left to their defaults.</p>';
 
 $string['dont_auto'] = '(don\'t auto-associate)';
 
 $string['option_profile_field'] = '(please select a profile field first)';
 
 
-$string['pluginname'] = 'Moodle profile field-based user set assignments';
+$string['pluginname'] = 'Moodle profile field-based User Set assignments';
 
 $string['set_to'] = 'set to';
