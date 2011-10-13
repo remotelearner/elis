@@ -693,7 +693,7 @@ function pm_notify_track_assign_handler($eventdata){
                   get_string('notifytrackenrolmessagedef', 'elis_program') :
                   elis::$config->elis_program->notify_trackenrol_message;
     $search = array('%%userenrolname%%', '%%trackname%%');
-    $replace = array(fullname($enroluser), $track->name);
+    $replace = array(fullname($enroluser->to_object()), $track->name);
     $text = str_replace($search, $replace, $text);
 
     if ($sendtouser) {
