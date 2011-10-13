@@ -948,6 +948,6 @@ $string['waiting'] = 'Waiting';
 $string['waitinglistform_title'] = 'Class Instance is full';
 $string['waitlist'] = 'waitlist';
 $string['waitlist_size'] = 'Waitlist Size';
-$string['waitlistcourses'] = 'Waitlist Course Descriptions';
+$string['waitlistcourses'] = 'Waitlist';
 $string['waitlistenrol'] = 'Auto enrol from waitlist';
 
