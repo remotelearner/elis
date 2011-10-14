@@ -122,6 +122,18 @@ table#class_selection_table {
 	min-width: 200px;
 }
 
-#page-elispm .mform #class_selection_table .fitem fieldset.felement {
+#page-elispm .mform .ui-accordion-content .fitem fieldset.felement {
 	width: 100%;
+}
+
+#page-elispm #track_selection_table,
+#page-elispm #class_selection_table,
+#page-elispm #profile_selection_table {
+	border: 1px solid black;
+	width: 90%;
+}
+
+#page-elispm #track_selection_table td:last-child,
+#page-elispm #class_selection_table td:last-child {
+	text-align: right;
 }

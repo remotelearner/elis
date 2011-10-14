@@ -45,6 +45,12 @@ class cmEngineForm extends cmform {
         ACTION_TYPE_PROFILE => 'profile'
     );
 
+    public $rowtypes = array(
+        ACTION_TYPE_TRACK => 'picklist',
+        ACTION_TYPE_CLASS => 'picklist',
+        ACTION_TYPE_PROFILE => 'doubleselect',
+    );
+
     // Form html
     protected $_html = array();
 
@@ -52,8 +58,6 @@ class cmEngineForm extends cmform {
     protected $_layout = 'default';
 
     protected $_submitted_data = '';
-
-    protected $_typenames = array();
 
     /**
      * defines items in the form
@@ -241,32 +245,22 @@ class cmEngineForm extends cmform {
     protected function defineResults() {
 
         $result          = get_string('result', self::LANG_FILE);
-        $assigntotrack   = get_string('assign_to_track', self::LANG_FILE);
-        $assigntoclass   = get_string('assign_to_class', self::LANG_FILE);
-        $assigntoprofile = get_string('assign_to_profile', self::LANG_FILE);
         $addscorerange   = get_string('add_another_score_btn', self::LANG_FILE);
 
         $mform =& $this->_form;
 
-        $cachetrack   = array();
-        $cacheclass   = array();
-        $cacheprofile = array();
+        $assign = array(
+            ACTION_TYPE_CLASS   => get_string('assign_to_class', self::LANG_FILE),
+            ACTION_TYPE_PROFILE => get_string('assign_to_profile', self::LANG_FILE),
+            ACTION_TYPE_TRACK   => get_string('assign_to_track', self::LANG_FILE),
+        );
+        $cache = array(
+            ACTION_TYPE_CLASS   => array(),
+            ACTION_TYPE_PROFILE => array(),
+            ACTION_TYPE_TRACK   => array(),
+        );
 
-        $cache = $this->format_cache_data();
-
-        switch ($this->_customdata['actiontype']) {
-            case ACTION_TYPE_PROFILE:
-                $cacheprofile = $cache;
-                break;
-            case ACTION_TYPE_CLASS:
-                $cacheclass   = $cache;
-                break;
-            case ACTION_TYPE_TRACK:
-                $cachetrack   = $cache;
-                break;
-            default:
-                break;
-        }
+        $cache[$this->_customdata['actiontype']] = $this->format_cache_data();
 
         $rid = $this->_customdata['rid'];
 
@@ -275,62 +269,31 @@ class cmEngineForm extends cmform {
         $mform->addElement('hidden', 'result_type_id', $this->_customdata['actiontype'], 'id="result_type_id"');
 
         $mform->addElement('html', '<fieldset class="engineform">');
-//            $mform->addElement('html', '<legend>'.$result.'</lengend>');
 
         // Accordion implementation
         $mform->addElement('html', '<div class="engineform">');
         $mform->addElement('html', '<div id="accordion">');
 
-        // Add track score range
-        $mform->addElement('html', '<div>');
-        $mform->addElement('html', '<h3>');
-        $mform->addElement('html', '<a href="#">'.$assigntotrack.'</a>');
-        $mform->addElement('html', '</h3>');
+        foreach ($this->types as $type => $typename) {
 
-        // Create assign to table elements
-        $mform->addElement('html', '<div>');
+            // Add track score range
+            $mform->addElement('html', '<div>');
+            $mform->addElement('html', '<h3>');
+            $mform->addElement('html', '<a href="#">'.$assign[$type].'</a>');
+            $mform->addElement('html', '</h3>');
 
-        $type = $this->types[ACTION_TYPE_TRACK];
-        $this->setup_table_type($mform, $type, $rid, $cachetrack);
+            // Create assign to table elements
+            $mform->addElement('html', '<div>');
 
-        $attributes = array('onclick' => 'pre_submit_processing("'. $type .'");');
-        $mform->addElement('submit', $type .'_assignment', $addscorerange, $attributes);
+            $this->setup_table_type($mform, $type, $rid, $cache[$type]);
 
-        $mform->addElement('html', '</div>');
+            $attributes = array('onclick' => 'pre_submit_processing("'. $typename .'");');
+            $mform->addElement('submit', $typename .'_assignment', $addscorerange, $attributes);
 
-        $mform->addElement('html', '</div>');
+            $mform->addElement('html', '</div>');
 
-        // Add class score range
-        $mform->addElement('html', '<div>');
-        $mform->addElement('html', '<h3>');
-        $mform->addElement('html', '<a href="#">'.$assigntoclass.'</a>');
-        $mform->addElement('html', '</h3>');
-        $mform->addElement('html', '<div>');
-
-        $type = $this->types[ACTION_TYPE_CLASS];
-        $this->setup_table_type($mform, $type, $rid, $cacheclass);
-
-        $attributes = array('onclick' => 'pre_submit_processing("'. $type .'");');
-        $mform->addElement('submit', $type .'_assignment', $addscorerange, $attributes);
-
-
-        $mform->addElement('html', '</div>');
-        $mform->addElement('html', '</div>');
-
-        // Add profile field score range
-        $mform->addElement('html', '<div>');
-        $mform->addElement('html', '<h3>');
-        $mform->addElement('html', '<a href="#">'.$assigntoprofile.'</a>');
-        $mform->addElement('html', '</h3>');
-        $mform->addElement('html', '<div>');
-
-        $type = $this->types[ACTION_TYPE_PROFILE];
-        $this->setup_table_type($mform, $type, $rid, $cacheprofile);
-
-        $attributes = array('onclick' => 'pre_submit_processing("'. $type .'");');
-        $mform->addElement('submit', 'profile_assignment', $addscorerange, $attributes);
-        $mform->addElement('html', '</div>');
-        $mform->addElement('html', '</div>');
+            $mform->addElement('html', '</div>');
+        }
 
         $mform->addElement('html', '</div>');
         $mform->addElement('html', '</div>');
@@ -518,6 +481,9 @@ class cmEngineForm extends cmform {
                 break;
             case 'profile':
             default:
+                $param = array('id' => $id);
+                $name = $DB->get_field('elis_field', 'name', $param);
+
                 break;
         }
 
@@ -525,28 +491,82 @@ class cmEngineForm extends cmform {
     }
 
     /**
-     * TODO: document
+     * Get profile fields for select
+     *
+     * @return array The options for the user profile field.
+     * @uses $CFG
+     * @uses $DB
+     */
+    function get_profile_fields() {
+        global $CFG, $DB;
+
+        $results   = array('' => get_string('select_profile', self::LANG_FILE));
+        $userlevel = context_level_base::get_custom_context_level('user', 'elis_program');
+
+        $sql = 'SELECT f.id, f.name'
+             .' FROM '. $CFG->prefix . field::TABLE .' f'
+             .' RIGHT JOIN '. $CFG->prefix . field_contextlevel::TABLE .' fc ON fc.fieldid = f.id '
+             .' WHERE fc.contextlevel = '. $userlevel;
+
+        $rows = $DB->get_records_sql($sql);
+
+        foreach ($rows as $row) {
+            $results[$row->id] = $row->name;
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get profile values
+     *
+     * @return array The options for the user profile field.
+     * @uses $DB
+     */
+    function get_profile_config($fieldid) {
+        global $CFG, $DB;
+
+        $criteria = array('fieldid' => $fieldid, 'plugin' => 'manual');
+        $params = $DB->get_field(field_owner::TABLE, 'params', $criteria);
+
+        $config = unserialize($params);
+
+        return $config;
+    }
+    /**
+     * Setup table type
+     *
+     * @param object $mform     The moodle form object
+     * @param int    $type      The type of the table we're setting up
+     * @param int    $resultsid The result id
+     * @param array  $cache     An array of data to be used in the table
+     * @uses $OUTPUT
      */
     protected function setup_table_type($mform, $type, $resultsid = 0, $cache = array()) {
         global $OUTPUT;
 
+        $typename = $this->types[$type];
+
         $scoreheader        = get_string('score', self::LANG_FILE);
-        $assigntype         = get_string("assign_to_{$type}", self::LANG_FILE);
-        $selecttype         = get_string("select_{$type}", self::LANG_FILE);
+        $assigntype         = get_string("assign_to_{$typename}", self::LANG_FILE);
+        $selecttype         = get_string("select_{$typename}", self::LANG_FILE);
+        $valueheader        = get_string('with_selected_value', self::LANG_FILE);
 
         $output = '';
         $i = 1;
 
-        $attributes = array('border' => '1', 'id' => "{$type}_selection_table");
+        $attributes = array('border' => '1', 'id' => "{$typename}_selection_table");
         $tablehtml = html_writer::start_tag('table', $attributes);
         $tablehtml .= html_writer::start_tag('tr');
         $tablehtml .= html_writer::tag('th', $scoreheader);
         $tablehtml .= html_writer::tag('th', $assigntype);
+        if ($type == ACTION_TYPE_PROFILE) {
+            $tablehtml .= html_writer::tag('th', $valueheader);
+        }
         $tablehtml .= html_writer::end_tag('tr');
 
-        $funcname = "get_assign_to_{$type}_data";
+        $funcname = "get_assign_to_{$typename}_data";
         $result_action_data = $this->$funcname($resultsid);
-
         $mform->addElement('html', $tablehtml);
 
         // Add score ranges for existing table records
@@ -562,26 +582,37 @@ class cmEngineForm extends cmform {
     }
 
     /**
-     * TODO: document
+     * Setup a table row
+     *
+     * @param object $mform    The moodle form
+     * @param int    $type     The datatype of the rows
+     * @param array  $dataset  The row data
+     * @param bool   $extrarow Whether an extra row should be added.
+     * @uses $OUTPUT
      */
     protected function setup_table_type_row($mform, $type, $dataset = array(), $extrarow) {
         global $OUTPUT;
 
+        $typename = $this->types[$type];
+
         $deletescoretype    = get_string("delete_score", self::LANG_FILE);
-        $notypeselected     = get_string("no_{$type}_selected", self::LANG_FILE);
-        $selecttype         = get_string("select_{$type}", self::LANG_FILE);
+        $notypeselected     = get_string("no_{$typename}_selected", self::LANG_FILE);
+        $selecttype         = get_string("select_{$typename}", self::LANG_FILE);
 
         $setdefault = false;
-        $prefix = $type . '_';
+        $prefix = $typename . '_';
         $cache  = 0;
+        $defaults = array();
+        $configs  = array();
 
         if ($extrarow) {
 
-            $prefix = $type . '_add_';
+            $prefix = $typename . '_add_';
             $empty_record = new stdClass();
-            $empty_record->min = '';
-            $empty_record->max = '';
+            $empty_record->min      = '';
+            $empty_record->max      = '';
             $empty_record->selected = '';
+            $empty_record->value    = '';
             $empty_record->name = $notypeselected;
             array_push($dataset, $empty_record);
             $cache = 1;
@@ -622,60 +653,89 @@ class cmEngineForm extends cmform {
             $image  = html_writer::empty_tag('img', $attributes);
 
             // Add link and image field (Delete link)
-            $attributes     = array('onclick' => "return delete_row($i,$cache,'$type');");
+            $attributes     = array('onclick' => "return delete_row($i,$cache,'$typename');");
             $score[] = $mform->createElement('link', 'delete', '', "#", $image, $attributes);
 
             // Add minimum, maximum and delete to field group
             $mform->addGroup($score, "{$prefix}{$i}_group", '', '', false);
 
             $key = "{$prefix}{$i}_min";
-            $grouprules[$key][] = array('MIN NUMERIC LANGUAGE', 'numeric', null, 'client');
-            $grouprules[$key][] = array('MIN NONZEOR LANGUAGE', 'nonzero', null, 'client');
+            $grouprules[$key][] = array(get_string('error_min_numeric', self::LANG_FILE), 'numeric', null, 'client');
 
             $key = "{$prefix}{$i}_max";
-            $grouprules[$key][] = array('MAX NUMERIC LANGUAGE', 'numeric', null, 'client');
-            $grouprules[$key][] = array('MAX NONZEOR LANGUAGE', 'nonzero', null, 'client');
+            $grouprules[$key][] = array(get_string('error_max_numeric', self::LANG_FILE), 'numeric', null, 'client');
             $mform->addGroupRule("{$prefix}{$i}_group", $grouprules);
 
             $tablehtml = html_writer::end_tag('td');
             $tablehtml .= html_writer::start_tag('td');
             $mform->addElement('html', $tablehtml);
 
+            if ($this->rowtypes[$type] == 'picklist') {
+                $name = $this->get_label_name($typename, $data->selected);
 
-            $name = $this->get_label_name($type, $data->selected);
+                $attributes     = array('id' => "{$prefix}{$i}_label");
 
-            $attributes     = array('id' => "{$prefix}{$i}_label");
+                $output         = html_writer::tag('label', $name, $attributes);
 
-            $output         = html_writer::tag('label', $name, $attributes);
+                $mform->addElement('html', $output);
 
-            $mform->addElement('html', $output);
+                $tablehtml = html_writer::end_tag('td');
+                $tablehtml .= html_writer::start_tag('td');
+                $mform->addElement('html', $tablehtml);
 
-            $tablehtml = html_writer::end_tag('td');
-            $tablehtml .= html_writer::start_tag('td');
-            $mform->addElement('html', $tablehtml);
+                $url            = "form/{$typename}selector.php?id={$prefix}{$i}&callback=add_selection";
+                $attributes     = array('onclick' => 'show_panel("'.$url.'"); return false;');
+                $output         = html_writer::link('#', $selecttype, $attributes);
 
-            $url            = "form/{$type}selector.php?id={$prefix}{$i}&callback=add_selection";
-            $attributes     = array('onclick' => 'show_panel("'.$url.'"); return false;');
-            $output         = html_writer::link('#', $selecttype, $attributes);
+                $mform->addElement('html', $output);
 
-            $mform->addElement('html', $output);
+                $attributes     = array('id' => "{$prefix}{$i}_selected"); // Needed for javascript call back
 
+                $mform->addElement('hidden', "{$prefix}{$i}_selected", $data->selected, $attributes);
 
-            $attributes     = array('id' => "{$prefix}{$i}_selected"); // Needed for javascript call back
+            } else if ($this->rowtypes[$type] == 'doubleselect') {
+                $options = $this->get_profile_fields();
+                $attributes = array('onchange' => 'document.getElementById("id_profile_assignment").click();');
 
-            $mform->addElement('hidden', "{$prefix}{$i}_selected", $data->selected, $attributes);
+                $mform->addElement('select', "{$prefix}{$i}_selected", '', $options, $attributes);
 
-            // This element is neccessary because when the form is validated and fails or submitted but no
-            // data is saved; the form is redisplayed without access to the unsaved data.  There is magic
-            // with formslib in how it retains the values.  But using a hidden element to store the value is
-            // more fun
-            $mform->addElement('hidden', "{$prefix}{$i}_typename",'');
+                $tablehtml = html_writer::end_tag('td');
+                $tablehtml .= html_writer::start_tag('td');
+                $mform->addElement('html', $tablehtml);
 
+                $selected      = $data->selected;
+                $selected_form = optional_param("{$prefix}{$i}_selected", 0, PARAM_INT);
+
+                if ($selected_form > 0) {
+                    $selected = $selected_form;
+                }
+
+                if ($selected != '') {
+                    $defaults["{$prefix}{$i}_selected"] = $selected;
+
+                    if (! array_key_exists($selected, $configs)) {
+                        $configs[$selected] = $this->get_profile_config($selected);
+                    }
+
+                    if ($configs[$selected]['control'] == 'menu') {
+                        $choices = explode("\r\n", $configs[$selected]['options']);
+                        $options = array_combine($choices, $choices);
+                        $mform->addElement('select', "{$prefix}{$i}_value", '', $options);
+                    } else {
+                        $mform->addElement('text', "{$prefix}{$i}_value", '');
+                    }
+
+                    if ($data->value != '') {
+                        $defaults["{$prefix}{$i}_value"] = $data->value;
+                    }
+                }
+            }
 
             $tablehtml = html_writer::end_tag('td');
             $tablehtml .= html_writer::end_tag('tr');
 
             $mform->addElement('html', $tablehtml);
+            $mform->setDefaults($defaults);
 
             $i++;
         }
@@ -685,18 +745,18 @@ class cmEngineForm extends cmform {
 
         $data = array();
 
-        if (isset($this->_customdata['cache']) and
-            !empty($this->_customdata['cache'])) {
+        if (isset($this->_customdata['cache']) && !empty($this->_customdata['cache'])) {
 
             $cachedata = explode(',', $this->_customdata['cache']);
             $x = 0;
             $i = 0;
 
-            for($i; $i < count($cachedata); $i = $i + 3) {
+            for($i; $i < count($cachedata); $i = $i + 4) {
                 $data[$x] = new stdClass();
-                $data[$x]->min = $cachedata[$i];
-                $data[$x]->max = $cachedata[$i+1];
+                $data[$x]->min      = $cachedata[$i];
+                $data[$x]->max      = $cachedata[$i+1];
                 $data[$x]->selected = $cachedata[$i+2];
+                $data[$x]->value    = $cachedata[$i+3];
 
                 $x++;
             }
@@ -719,7 +779,7 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.trackid AS selected, t.name '.
+        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.trackid AS selected, t.name, rea.fieldata as value '.
                'FROM {'.resultsengineaction::TABLE.'} rea '.
                'RIGHT JOIN {'.track::TABLE.'} t ON rea.trackid = t.id '.
                'WHERE rea.resultengineid = :resultsengineid ORDER BY minimum ASC';
@@ -749,7 +809,7 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.classid AS selected, cls.idnumber AS name '.
+        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.classid AS selected, cls.idnumber AS name, rea.fieldata as value '.
                'FROM {'.resultsengineaction::TABLE.'} rea '.
                'RIGHT JOIN {'.pmclass::TABLE.'} cls ON rea.classid = cls.id '.
                'WHERE rea.resultengineid = :resultsengineid '.
@@ -780,9 +840,9 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.classid AS selected, cls.idnumber AS name '.
+        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.fieldid AS selected, f.name AS name, rea.fieldata as value '.
                'FROM {'.resultsengineaction::TABLE.'} rea '.
-               'RIGHT JOIN {'.pmclass::TABLE.'} cls ON rea.classid = cls.id '.
+               'RIGHT JOIN {elis_field} f ON f.id = rea.fieldid '.
                'WHERE rea.resultengineid = :resultsengineid '.
                'ORDER BY minimum ASC';
 

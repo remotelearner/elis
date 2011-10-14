@@ -108,7 +108,9 @@ abstract class enginepage extends pm_page {
         if ($rid < 1) {
             $filter    = new field_filter('contextid', $contextid);
             $results   = $obj->find($filter);
-            $rid = $results->current()->id;
+            if (! empty($results->current()->id)) {
+                $rid       = $results->current()->id;
+            }
         }
         return $rid;
     }
@@ -298,7 +300,6 @@ abstract class enginepage extends pm_page {
         $known = false;
         $id = $this->required_param('id', PARAM_INT);
         $cache = $this->optional_param('actioncache', '', PARAM_SEQUENCE);
-
         $form = $this->get_engine_form($cache);
 
         if ($form->is_cancelled()) {
@@ -396,9 +397,10 @@ abstract class enginepage extends pm_page {
        $aid   = $this->optional_param('aid', 0, PARAM_INT);
 
        $cachedata = explode(',', $cache);
-       unset($cachedata[3 * $aid+2]);
-       unset($cachedata[3 * $aid+1]);
-       unset($cachedata[3 * $aid]);
+       unset($cachedata[4 * $aid+3]);
+       unset($cachedata[4 * $aid+2]);
+       unset($cachedata[4 * $aid+1]);
+       unset($cachedata[4 * $aid]);
 
        $cache = implode(',', $cachedata);
 
@@ -434,7 +436,6 @@ abstract class enginepage extends pm_page {
 
             // Check for existing track data in the form of track_<id>_...
             $pos    = strpos($key, $prefix);
-
 
             if (false !== $pos) {
                 $lpos = strrpos($key, '_');
@@ -543,9 +544,10 @@ abstract class enginepage extends pm_page {
             }
         }
 
-        $updaterec = new stdClass();
-        $field = '';
-        $fieldvalue = '';
+        $field      = '';
+        $fieldmap   = array();
+        $fieldvalue = false;
+        $updaterec  = new stdClass();
 
         switch ($actiontype) {
             case ACTION_TYPE_TRACK:
@@ -556,31 +558,29 @@ abstract class enginepage extends pm_page {
                 break;
             case ACTION_TYPE_PROFILE:
                 $field = 'fieldid';
+                $fieldvalue = true;
                 break;
         }
-
-        $field_map = array();
 
         foreach ($instance as $recid => $dummy_val) {
             $updaterec = $this->get_new_child_data_object($recid);
             $key = "{$type}_{$recid}_min";
-            $field_map['minimum'] = $key;
+            $fieldmap['minimum'] = $key;
 
             $key = "{$type}_{$recid}_max";
-            $field_map['maximum'] = $key;
+            $fieldmap['maximum'] = $key;
 
             $key = "{$type}_{$recid}_selected";
-            $field_map[$field] = $key;
+            $fieldmap[$field] = $key;
 
-            if (empty($fieldvalue)) {
-                // TODO profile field work
+            if ($fieldvalue) {
+                $key = "{$type}_{$recid}_value";
+                $fieldmap['fieldata'] = $key;
             }
 
-            $updaterec->set_from_data($dataobj, true, $field_map);
+            $updaterec->set_from_data($dataobj, true, $fieldmap);
             $updaterec->save();
         }
-
-
     }
 
     /**

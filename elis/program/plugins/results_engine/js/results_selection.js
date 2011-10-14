@@ -107,11 +107,13 @@ function delete_row(id, cache, type) {
 }
 
 function pre_submit_processing(type) {
-    var max = 99;
-    var i = 0;
+    var max   = 99;
+    var i     = 0;
+    var value = 0;
     var ele_min = '';
     var ele_max = '';
     var ele_sel = '';
+    var ele_val = '';
     var temp = '';
     var cache = document.getElementsByName("actioncache")[0]; 
 
@@ -124,6 +126,7 @@ function pre_submit_processing(type) {
         ele_min = document.getElementsByName(type + '_add_' + i + '_min')[0];
         ele_max = document.getElementsByName(type + '_add_' + i + '_max')[0];
         ele_sel = document.getElementsByName(type + '_add_' + i + '_selected')[0];
+        ele_val = document.getElementsByName(type + '_add_' + i + '_value')[0];
         
         if ( (typeof ele_min == 'undefined') ||
              (typeof ele_max == 'undefined') ||
@@ -137,7 +140,11 @@ function pre_submit_processing(type) {
              ('' != ele_max.value) &&
              ('' != ele_sel.value) ) {
             // Only cache complete rows.  Incomplete rows are discarded for now
-            temp = temp + ele_min.value + ',' + ele_max.value + ',' + ele_sel.value + ',';
+        	value = 0;
+            if ('' != ele_val.value) {
+            	value = ele_val.value;
+            }
+            temp = temp + ele_min.value + ',' + ele_max.value + ',' + ele_sel.value + ',' + value + ',';
         }       
     }
 
@@ -146,6 +153,6 @@ function pre_submit_processing(type) {
     var last_occurance = temp.lastIndexOf(',');
     last_occurance = parseInt(last_occurance);
     
-    cache.value = temp.slice(0, last_occurance);    
+    cache.value = temp.slice(0, last_occurance);
 }
 

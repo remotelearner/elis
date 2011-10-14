@@ -74,8 +74,8 @@ class trackselectiontable extends table_sql {
 class classselectiontable extends table_sql {
 
     /**
-     * A hidden HTML element that gets updated, with the track id, when the
-     * track name is clicked
+     * A hidden HTML element that gets updated, with the class id, when the
+     * class name is clicked
      */
     var $update_element;
 
@@ -102,6 +102,43 @@ class classselectiontable extends table_sql {
             $event = " onclick=\"{$this->onclick_func}('{$this->update_element}', '{$classdata->idnumber}', '{$classdata->id}');\"";
 
             $output = "<a href=\"#\" $id $event > {$classdata->idnumber}</a>";
+        }
+
+        return $output;
+    }
+}
+
+class profileselectiontable extends table_sql {
+
+    /**
+     * A hidden HTML element that gets updated, with the element id, when the
+     * element name is clicked
+     */
+    var $update_element;
+
+    /**
+     * The onclick event handler function.  The function should accept the
+     * following parameters: HTML element to update (see comments on
+     * $update_element), name and id parameters. (ex. function myonclickhandler
+     * (update_element, name, id)
+     */
+    var $onclick_func;
+
+    function __construct($uniqueid, $update_element, $onclick_func) {
+        parent::__construct($uniqueid);
+
+        $this->update_element   = $update_element;
+        $this->onclick_func     = $onclick_func;
+    }
+
+    function col_name($data) {
+        $output = 'n/a';
+
+        if (!empty($data->name)) {
+            $id = ' id="'. $data->id . '" ';
+            $event = " onclick=\"{$this->onclick_func}('{$this->update_element}', '{$data->name}', '{$data->id}');\"";
+
+            $output = "<a href=\"#\" $id $event > {$data->name}</a>";
         }
 
         return $output;
