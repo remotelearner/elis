@@ -270,6 +270,10 @@ class php_report_export_pdf extends php_report_export {
         foreach ($min_widths as $min_width) {
             $D -= $min_width;
         }
+        // ELIS-3367: prevent division by zero error
+        if (!$D) {
+            $D = 0.1; // TBD
+        }
 
         //calculate the difference for each column
         $d = array();
