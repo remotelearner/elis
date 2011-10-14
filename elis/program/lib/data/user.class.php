@@ -435,7 +435,8 @@ class user extends data_object_with_custom_fields {
      */
     static function get_current_classes_in_curriculum($userid, $curid) {
         global $DB;
-        $sql = 'SELECT curcrs.*, crs.name AS coursename, cls.id AS classid
+        $sql = 'SELECT DISTINCT CONCAT(curcrs.id, ".", cls.id),
+                       curcrs.*, crs.name AS coursename, cls.id AS classid
                   FROM {'.curriculumcourse::TABLE.'} curcrs
                   JOIN {'.course::TABLE.'} crs ON curcrs.courseid = crs.id
                        -- Next two are to limit to currently enrolled courses
@@ -484,7 +485,7 @@ class user extends data_object_with_custom_fields {
      */
     static function get_user_course_curriculum($userid, $curid) {
         global $DB;
-        $sql = 'SELECT curcrs.*, crs.name AS coursename, cls.count as classcount, prereq.count as prereqcount, enrol.completestatusid as completionid, waitlist.courseid as waiting
+        $sql = 'SELECT DISTINCT curcrs.*, crs.name AS coursename, cls.count as classcount, prereq.count as prereqcount, enrol.completestatusid as completionid, waitlist.courseid as waiting
                   FROM {'.curriculumcourse::TABLE.'} curcrs
                   JOIN {'.course::TABLE.'} crs ON curcrs.courseid = crs.id
                        -- limit to non-enrolled courses
