@@ -831,7 +831,12 @@ class pmclass extends data_object_with_custom_fields {
                 $moodlecourseid   = course_rollover($cmc->moodlecourseid, $clone->startdate);
                 // Rename the fullname, shortname and idnumber of the restored course
                 $restore->id = $moodlecourseid;
-                $restore->fullname = $clone->course->name . '_' . $clone->idnumber;
+                // ELIS-2941: Don't prepend course name if already present ...
+                if (strpos($clone->idnumber, $clone->course->name) !== 0) {
+                    $restore->fullname = $clone->course->name .'_'. $clone->idnumber;
+                } else {
+                    $restore->fullname = $clone->idnumber;
+                }
                 $restore->shortname = $clone->idnumber;
                 $this->_db->update_record('course', $restore);
                 moodle_attach_class($clone->id, $moodlecourseid);

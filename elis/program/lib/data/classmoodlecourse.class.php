@@ -405,7 +405,12 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
             //set the Moodle course name as expected
             $restoredcourse = new stdClass;
             $restoredcourse->id = $moodlecourseid;
-            $restoredcourse->fullname = $cls->course->name.'_'.$cls->idnumber;
+            // ELIS-2941: Don't prepend course name if already present @ start
+            if (strpos($cls->idnumber, $cls->course->name) !== 0) {
+                $restoredcourse->fullname = $cls->course->name .'_'. $cls->idnumber;
+            } else {
+                $restoredcourse->fullname = $cls->idnumber;
+            }
             $restoredcourse->shortname = $cls->idnumber;
             $DB->update_record('course', $restoredcourse);
         }
