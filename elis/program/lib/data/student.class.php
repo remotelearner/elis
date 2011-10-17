@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -300,6 +300,7 @@ class student extends elis_data_object {
 /////////////////////////////////////////////////////////////////////
 
     function save() {
+        global $DB, $USER;
 
         try {
             validation_helper::is_unique_userid_classid($this);
@@ -343,6 +344,21 @@ class student extends elis_data_object {
                                         $this->endtime ? $this->endtime : 0);
                 }
             }
+        } else {
+            $sturole = get_config('pmplugins_enrolment_role_sync', 'student_role');
+            // ELIS-3397: must still trigger events for notifications
+            $sturole = get_config('pmplugins_enrolment_role_sync', 'student_role');
+            $ra = new stdClass();
+            $ra->roleid       = !empty($sturole)
+                                ? $sturole
+                                : $DB->get_field('role', 'id', array('shortname' => 'student'));
+            $ra->contextid    = context_level_base::get_custom_context_level('class', 'elis_program'); // TBD
+            $ra->userid       = cm_get_moodleuserid($this->userid);
+            $ra->component    = 'enrol_elis';
+            $ra->itemid       = $this->classid; // TBD
+            $ra->timemodified = time();
+            $ra->modifierid   = empty($USER->id) ? 0 : $USER->id;
+            events_trigger('role_assigned', $ra);
         }
 
         // Fire the course complete event

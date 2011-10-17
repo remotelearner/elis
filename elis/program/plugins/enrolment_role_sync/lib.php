@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -44,8 +44,10 @@ class enrolment_role_sync {
         $student_roleid = get_config('pmplugins_enrolment_role_sync', 'student_role');
         $instructor_roleid = get_config('pmplugins_enrolment_role_sync', 'instructor_role');
 
-        $context = get_context_instance_by_id($data->contextid);
-        if ($context->contextlevel == context_level_base::get_custom_context_level('class', 'elis_program')) {
+        if (!($context = get_context_instance_by_id($data->contextid))) {
+            $context = get_context_instance($data->contextid, $data->itemid);
+        }
+        if (!empty($context) && $context->contextlevel == context_level_base::get_custom_context_level('class', 'elis_program')) {
             //assignment is on a PM class instance
 
             //need the PM userid to create an association

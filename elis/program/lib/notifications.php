@@ -21,7 +21,7 @@
  * system only. It is registered in the '/block/cur_admin/events.php' file.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,10 +37,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -447,7 +447,8 @@ function pm_assign_student_from_mdl($eventdata) {
     global $CFG, $DB;
 
     /// We get all context assigns, so check that this is a class. If not, we're done.
-    if (!($context = get_context_instance_by_id($eventdata->contextid))) {
+    if (!($context = get_context_instance_by_id($eventdata->contextid)) &&
+        !($context = get_context_instance($eventdata->contextid, $eventdata->itemid))) {
         print_error('invalidcontext');
         return true;
     } else if ($context->contextlevel != CONTEXT_COURSE) {
@@ -523,16 +524,27 @@ function pm_notify_role_assign_handler($eventdata){
     $sendtosupervisor = !empty(elis::$config->elis_program->notify_classenrol_supervisor) ?
                       elis::$config->elis_program->notify_classenrol_supervisor : 0;
 
+  /*
+    ob_start();
+    var_dump($eventdata);
+    $tmp = ob_get_contents();
+    ob_end_clean();
+    error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(eventdata) => $tmp");
+  */
+
     /// If nobody receives a notification, we're done.
     if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
         return true;
     }
 
     /// We get all context assigns, so check that this is a class. If not, we're done.
-    if (!($context = get_context_instance_by_id($eventdata->contextid))) {
+    if (!($context = get_context_instance_by_id($eventdata->contextid)) &&
+        !($context = get_context_instance($eventdata->contextid, $eventdata->itemid))
+    ) {
         print_error('invalidcontext');
         return true;
-    } else if ($context->contextlevel != CONTEXT_COURSE) {
+    } else if ($context->contextlevel == CONTEXT_SYSTEM) {
+        // TBD: ^above was != CONTEXT_COURSE
         return true;
     }
 
@@ -542,10 +554,23 @@ function pm_notify_role_assign_handler($eventdata){
         return true;
     }
 
+    $course = null;
     /// Get the course record from the context id.
-    if (!($course = $DB->get_record('course', array('id'=> $context->instanceid)))) {
+    if ($context->contextlevel == CONTEXT_COURSE &&
+        !($course = $DB->get_record('course', array('id'=> $context->instanceid)))) {
         print_error('invalidcourse');
         return true;
+    } else {
+        if (empty($course) && $eventdata->contextid != context_level_base::get_custom_context_level('class', 'elis_program')) { // TBD
+            //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(); eventdata->contextid != context_level_base::get_custom_context_level('class', 'elis_program')");
+            return true;
+        }
+        $name = !empty($course) ? $course->fullname
+                                : $DB->get_field(pmclass::TABLE, 'idnumber',
+                                          array('id' => $eventdata->itemid));
+        if (empty($name)) {
+            return true;
+        }
     }
 
     $message = new notification();
@@ -555,7 +580,7 @@ function pm_notify_role_assign_handler($eventdata){
                   get_string('notifyclassenrolmessagedef', 'elis_program') :
                   elis::$config->elis_program->notify_classenrol_message;
     $search = array('%%userenrolname%%', '%%classname%%');
-    $replace = array(fullname($enroluser), $course->fullname);
+    $replace = array(fullname($enroluser), $name);
     $text = str_replace($search, $replace, $text);
 
     if ($sendtouser) {
@@ -580,6 +605,7 @@ function pm_notify_role_assign_handler($eventdata){
     }
 
     foreach ($users as $user) {
+        //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(eventdata); Sending notification to user: {$user->email}");
         $message->send_notification($text, $user, $enroluser);
     }
 
