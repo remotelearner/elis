@@ -156,3 +156,21 @@ function pre_submit_processing(type) {
     cache.value = temp.slice(0, last_occurance);
 }
 
+//Toggle form disabled status.  Disabled if checkbox is not checked
+function toggleform(checkbox) {
+    var state = true;
+    var form  = checkbox.form;
+
+    if (checkbox.checked) {
+        state = false;
+    }
+
+    for(var i=0; i<form.length;i+=1) {
+        element = form.elements[i];
+        if ((element.type != "hidden") && (element.type != "fieldset")
+         && (element.name != "active")
+         && (element.id != "id_submitbutton") && (element.id != "id_cancel")) {
+            element.disabled = state;
+        }
+    }
+}

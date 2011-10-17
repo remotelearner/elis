@@ -130,113 +130,76 @@ class cmEngineForm extends cmform {
         $statusreport    = get_string('results_engine_status_report', self::LANG_FILE);
         $uselocked       = get_string('use_locked_grades',self::LANG_FILE);
 
-        if ($this->_layout == 'custom') {
-            // Setup an alternate html output so we can make the form user friendly.
-            $html = array();
-            $html[] = '<form>';
-            $html[] = '<fieldset class="engineform">';
-            $html[] = '<legend>'. $activationrules .'</legend>';
-            $html[] = '<input type="hidden" name="action" value="edit" />';
-            $html[] = '<input type="hidden" name="id" value="'. $this->_customdata['id'] .'" />';
-            $html[] = '<input type="hidden" name="contextid" value="'. $this->_customdata['contextid'] .'" />';
-            $html[] = '<input type="hidden" name="s" value="'. $this->_customdata['s'] .'" />';
-            $html[] = $activaterule .' <input type="checkbox" name="active" value="1" /><br />';
+        $mform =& $this->_form;
 
-            $html[] = '<fieldset class="engineform">';
-            $html[] = '<legend>'. $eventtrigger .'</legend>';
-            $html[] = '<input type="radio" name="eventtriggertype" value="grade" />'. $gradeset
-                    .' <input type="checkbox" name="lockedgrade" value="1" />'. $uselocked .'<br />';
+        $mform->addElement('header', 'statusreport');
+        $mform->addElement('html', '<a href="'. $reporturl .'">'. $statusreport .'</a>');
+        $mform->addElement('header', 'activationrules', $activationrules);
 
-            $html[] = '<input type="radio" name="eventtriggertype" value="date" />'. $on;
-            $html[] = ' <input type="text" name="days" value="" /> '. $days;
+        $mform->addElement('hidden', 'rid', $this->_customdata['rid']);
+        $mform->addElement('hidden', 'contextid', $this->_customdata['contextid']);
 
-            $html[] = '<select name="triggerstartdate">';
-            foreach ($dates as $id => $string) {
-                $html[] = "<option value=\"{$id}\">{$string}</option>";
-            }
-            $html[] = '</select><br />';
+        $attributes = array('onchange' => 'toggleform(this);');
+        $active= array();
+        $active[] = $mform->createElement('advcheckbox', 'active', '', $activaterule, $attributes);
+        $mform->addGroup($active, '', '', ' ', false);
+        $mform->setType('active', PARAM_BOOL);
 
-            $html[] = '<input type="radio" name="eventtriggertype" value="manual" />'. $manualtrigger;
-            $html[] = '</fieldset>';
-
-            $html[] = '<fieldset class="engineform">';
-            $html[] = '<legend>'. $criterion .'</legend>';
-            $html[] = $selectgrade .':<br />';
-
-            $html[] = '<select name="grade">';
-            foreach ($grades as $id => $string) {
-                $html[] = "<option value=\"{$id}\">{$string}</option>";
-            }
-            $html[] = '</select><br />';
-
-            $html[] = '</fieldset>';
-
-            $this->_html = $html;
-        } else {
-            $mform =& $this->_form;
-
-            $mform->addElement('header', 'statusreport');
-            $mform->addElement('html', '<a href="'. $reporturl .'">'. $statusreport .'</a>');
-            $mform->addElement('header', 'activationrules', $activationrules);
-
-            $mform->addElement('hidden', 'rid', $this->_customdata['rid']);
-            $mform->addElement('hidden', 'contextid', $this->_customdata['contextid']);
-            $active= array();
-            $active[] = $mform->createElement('advcheckbox', 'active', '', $activaterule);
-            $mform->addGroup($active, '', '', ' ', false);
-            $mform->setType('active', PARAM_BOOL);
-
-            $exists = array_key_exists('eventtriggertype', $this->_customdata);
-            if ($exists && ($this->_customdata['eventtriggertype'] == RESULTS_ENGINE_MANUAL)) {
-                $settings = 'height=200,width=500,top=0,left=0,menubar=0,location=0,scrollbars,'
-                          . 'resizable,toolbar,status,directories=0,fullscreen=0,dependent';
-                $url = $CFG->wwwroot .'/elis/program/plugins/results_engine/pop.php?id='. $this->_customdata['id'];
-                $jsondata = array('url'=>$url,'name'=>'resultspopup','options'=>$settings);
-                $jsondata = json_encode($jsondata);
-                $options  = "onclick='return openpopup(null,$jsondata);'";
-
-                $execute = array();
-                $execute[] = $mform->createElement('button', 'executebutton', $executemanually, $options);
-                $mform->addGroup($execute, '', '', ' ', false);
-            }
-
-            $mform->addElement('html', '<fieldset class="engineform">');
-            $mform->addElement('html', '<legend>'. $eventtrigger .'</legend>');
-
-            $grade = array();
-            $grade[] = $mform->createElement('radio', 'eventtriggertype', '', $gradeset, RESULTS_ENGINE_GRADE_SET);
-            $grade[] = $mform->createElement('advcheckbox', 'lockedgrade', '', $uselocked);
-
-            $date = array();
-            $date[] = $mform->createElement('radio', 'eventtriggertype', '', $on, RESULTS_ENGINE_SCHEDULED);
-            $date[] = $mform->createElement('text', 'days', '', 'size="2"');
-            $date[] = $mform->createElement('select', 'triggerstartdate', '', $dates);
-
-            $manual = array();
-            $manual[] = $mform->createElement('radio', 'eventtriggertype', '', $manualtrigger, RESULTS_ENGINE_MANUAL);
-
-            $mform->setDefaults(array('eventtriggertype' => RESULTS_ENGINE_MANUAL));
-
-            $mform->addGroup($grade, 'gradeevent', '', ' ', false);
-            $mform->addGroup($date, 'dateevent', '', array(' ', ' '. $days .' '), false);
-            $mform->addGroup($manual, 'manualevent', '', ' ', false);
-
-            $mform->setType('locked', PARAM_BOOL);
-            $mform->addElement('html', '</fieldset>');
-
-
-            $mform->addElement('html', '<fieldset class="engineform">');
-            $mform->addElement('html', '<legend>'. $criterion .'</legend>');
-
-            $grade = array();
-            $grade[] = $mform->createElement('select', 'criteriatype', '', $grades);
-
-            $mform->addElement('html', $selectgrade .'<br />');
-            $mform->addGroup($grade);
-
-            $mform->addElement('html', '</fieldset>');
-
+        $attributes = array();
+        if (! $this->_customdata['active']) {
+            $attributes = array('disabled' => 'disabled');
         }
+
+        $exists = array_key_exists('eventtriggertype', $this->_customdata);
+        if ($exists && ($this->_customdata['eventtriggertype'] == RESULTS_ENGINE_MANUAL)) {
+            $settings = 'height=200,width=500,top=0,left=0,menubar=0,location=0,scrollbars,'
+                      . 'resizable,toolbar,status,directories=0,fullscreen=0,dependent';
+            $url = $CFG->wwwroot .'/elis/program/plugins/results_engine/pop.php?id='. $this->_customdata['id'];
+            $jsondata = array('url'=>$url,'name'=>'resultspopup','options'=>$settings);
+            $jsondata = json_encode($jsondata);
+            $options  = $attributes;
+            $options['onclick'] = 'return openpopup(null,$jsondata);';
+
+            $execute = array();
+            $execute[] = $mform->createElement('button', 'executebutton', $executemanually, $options);
+            $mform->addGroup($execute, '', '', ' ', false);
+        }
+
+        $mform->addElement('html', '<fieldset class="engineform">');
+        $mform->addElement('html', '<legend>'. $eventtrigger .'</legend>');
+
+        $grade = array();
+        $grade[] = $mform->createElement('radio', 'eventtriggertype', '', $gradeset, RESULTS_ENGINE_GRADE_SET, $attributes);
+        $grade[] = $mform->createElement('advcheckbox', 'lockedgrade', '', $uselocked, $attributes);
+
+        $date = array();
+        $date[] = $mform->createElement('radio', 'eventtriggertype', '', $on, RESULTS_ENGINE_SCHEDULED, $attributes);
+        $date[] = $mform->createElement('text', 'days', '', 'size="2"', $attributes);
+        $date[] = $mform->createElement('select', 'triggerstartdate', '', $dates, $attributes);
+
+        $manual = array();
+        $manual[] = $mform->createElement('radio', 'eventtriggertype', '', $manualtrigger, RESULTS_ENGINE_MANUAL, $attributes);
+
+        $mform->setDefaults(array('eventtriggertype' => RESULTS_ENGINE_MANUAL));
+
+        $mform->addGroup($grade, 'gradeevent', '', ' ', false);
+        $mform->addGroup($date, 'dateevent', '', array(' ', ' '. $days .' '), false);
+        $mform->addGroup($manual, 'manualevent', '', ' ', false);
+
+        $mform->setType('locked', PARAM_BOOL);
+        $mform->addElement('html', '</fieldset>');
+
+
+        $mform->addElement('html', '<fieldset class="engineform">');
+        $mform->addElement('html', '<legend>'. $criterion .'</legend>');
+
+        $grade = array();
+        $grade[] = $mform->createElement('select', 'criteriatype', '', $grades, $attributes);
+
+        $mform->addElement('html', $selectgrade .'<br />');
+        $mform->addGroup($grade);
+
+        $mform->addElement('html', '</fieldset>');
     }
 
     /**
@@ -264,6 +227,11 @@ class cmEngineForm extends cmform {
 
         $rid = $this->_customdata['rid'];
 
+        $attributes = array();
+        if (! $this->_customdata['active']) {
+            $attributes = array('disabled' => 'disabled');
+        }
+
         $mform->addElement('hidden', 'aid');
         $mform->addElement('hidden', 'actioncache');
         $mform->addElement('hidden', 'result_type_id', $this->_customdata['actiontype'], 'id="result_type_id"');
@@ -287,8 +255,9 @@ class cmEngineForm extends cmform {
 
             $this->setup_table_type($mform, $type, $rid, $cache[$type]);
 
-            $attributes = array('onclick' => 'pre_submit_processing("'. $typename .'");');
-            $mform->addElement('submit', $typename .'_assignment', $addscorerange, $attributes);
+            $options = $attributes;
+            $options['onclick'] = 'pre_submit_processing("'. $typename .'");';
+            $mform->addElement('submit', $typename .'_assignment', $addscorerange, $options);
 
             $mform->addElement('html', '</div>');
 
@@ -639,6 +608,9 @@ class cmEngineForm extends cmform {
 
             // Add minimum field
             $attributes = array('size' => 5, 'maxlength' => 5, 'value' => $data->min);
+            if (! $this->_customdata['active']) {
+                $attributes['disabled'] = 'disabled';
+            }
             $score[] = $mform->createElement('text', "{$prefix}{$i}_min", '', $attributes);
 
             // Add maximum field
@@ -695,10 +667,17 @@ class cmEngineForm extends cmform {
 
             } else if ($this->rowtypes[$type] == 'doubleselect') {
                 $options = $this->get_profile_fields();
-                $attributes = array('onchange' => 'document.getElementById("id_profile_assignment").click();');
+
+                if (! $this->_customdata['active']) {
+                    $attributes = array('disabled' => 'disabled');
+                }
+                $attriubtes['onchange'] = 'document.getElementById("id_profile_assignment").click();';
 
                 $mform->addElement('select', "{$prefix}{$i}_selected", '', $options, $attributes);
 
+                if (! $this->_customdata['active']) {
+                    $attributes = array('disabled' => 'disabled');
+                }
                 $tablehtml = html_writer::end_tag('td');
                 $tablehtml .= html_writer::start_tag('td');
                 $mform->addElement('html', $tablehtml);
@@ -720,9 +699,9 @@ class cmEngineForm extends cmform {
                     if ($configs[$selected]['control'] == 'menu') {
                         $choices = explode("\r\n", $configs[$selected]['options']);
                         $options = array_combine($choices, $choices);
-                        $mform->addElement('select', "{$prefix}{$i}_value", '', $options);
+                        $mform->addElement('select', "{$prefix}{$i}_value", '', $options, $attributes);
                     } else {
-                        $mform->addElement('text', "{$prefix}{$i}_value", '');
+                        $mform->addElement('text', "{$prefix}{$i}_value", '', $attributes);
                     }
 
                     if ($data->value != '') {
@@ -779,10 +758,11 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.trackid AS selected, t.name, rea.fieldata as value '.
-               'FROM {'.resultsengineaction::TABLE.'} rea '.
-               'RIGHT JOIN {'.track::TABLE.'} t ON rea.trackid = t.id '.
-               'WHERE rea.resultengineid = :resultsengineid ORDER BY minimum ASC';
+        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.trackid AS selected, t.name, rea.fieldata as value'
+             .' FROM {'.resultsengineaction::TABLE.'} rea'
+             .' RIGHT JOIN {'.track::TABLE.'} t ON rea.trackid = t.id'
+             .' WHERE rea.resultengineid = :resultsengineid AND rea.actiontype=0'
+             .' ORDER BY minimum ASC';
 
         $params = array('resultsengineid' => $resultsid);
 
@@ -809,11 +789,12 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.classid AS selected, cls.idnumber AS name, rea.fieldata as value '.
-               'FROM {'.resultsengineaction::TABLE.'} rea '.
-               'RIGHT JOIN {'.pmclass::TABLE.'} cls ON rea.classid = cls.id '.
-               'WHERE rea.resultengineid = :resultsengineid '.
-               'ORDER BY minimum ASC';
+        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.classid AS selected,'
+             .       ' cls.idnumber AS name, rea.fieldata as value '
+             . 'FROM {'.resultsengineaction::TABLE.'} rea '
+             . 'RIGHT JOIN {'.pmclass::TABLE.'} cls ON rea.classid = cls.id '
+             . 'WHERE rea.resultengineid = :resultsengineid AND rea.actiontype=1 '
+             . 'ORDER BY minimum ASC';
 
         $params = array('resultsengineid' => $resultsid);
 
@@ -840,11 +821,12 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.fieldid AS selected, f.name AS name, rea.fieldata as value '.
-               'FROM {'.resultsengineaction::TABLE.'} rea '.
-               'RIGHT JOIN {elis_field} f ON f.id = rea.fieldid '.
-               'WHERE rea.resultengineid = :resultsengineid '.
-               'ORDER BY minimum ASC';
+        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.fieldid AS selected,'
+             .' f.name AS name, rea.fieldata as value '
+             .' FROM {'.resultsengineaction::TABLE.'} rea'
+             .' RIGHT JOIN {elis_field} f ON f.id = rea.fieldid'
+             .' WHERE rea.resultengineid = :resultsengineid AND rea.actiontype=2'
+             .' ORDER BY minimum ASC';
 
         $params = array('resultsengineid' => $resultsid);
 

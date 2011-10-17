@@ -150,7 +150,6 @@ abstract class enginepage extends pm_page {
         $id         = $this->optional_param('id', 0, PARAM_INT);
         $rid        = $this->get_engine_id();
         $obj        = $this->get_new_data_object($rid);
-        $childobj   = $this->get_new_child_data_object($rid);
 
         $filter    = new field_filter('id', $rid);
 
@@ -159,18 +158,6 @@ abstract class enginepage extends pm_page {
             $obj->load();
             $known = true;
         }
-
-        // Count actions types (if any)
-        $filter         = new field_filter('resultengineid', $rid);
-        $actioncount    = $childobj->count($filter);
-
-        // Action type is needed because it helps to identify which form elements need
-        // to be disabled
-        if ($actioncount) {
-            $data = $childobj->find($filter, array(), 0, 1);
-            $data = $data->current();
-        }
-
 
         $target    = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
 
@@ -267,10 +254,10 @@ abstract class enginepage extends pm_page {
             $(function(){
 
                 // Accordion
-                $("#accordion").accordion({ header: "h3", active: '. intval($type - 1) .' });
+                $("#accordion").accordion({ header: "h3", active: '. $type .' });
                 $("#accordion").accordion({ change:
                     function(event, ui) {
-                        document.getElementById("result_type_id").value = (ui.options.active + 1);
+                        document.getElementById("result_type_id").value = (ui.options.active);
                     }
                 });
 
