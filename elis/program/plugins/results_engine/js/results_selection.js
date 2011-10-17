@@ -140,12 +140,12 @@ function pre_submit_processing(type) {
              ('' != ele_max.value) &&
              ('' != ele_sel.value) ) {
             // Only cache complete rows.  Incomplete rows are discarded for now
-        	value = 0;
-            if ('' != ele_val.value) {
-            	value = ele_val.value;
+            value = 0;
+            if (typeof ele_val != 'undefined') {
+                value = ele_val.value;
             }
             temp = temp + ele_min.value + ',' + ele_max.value + ',' + ele_sel.value + ',' + value + ',';
-        }       
+        }
     }
 
     // Remove the last comma

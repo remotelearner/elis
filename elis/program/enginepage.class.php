@@ -28,9 +28,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-define('ACTION_TYPE_TRACK', 1);
-define('ACTION_TYPE_CLASS', 2);
-define('ACTION_TYPE_PROFILE', 3);
+define('ACTION_TYPE_TRACK', 0);
+define('ACTION_TYPE_CLASS', 1);
+define('ACTION_TYPE_PROFILE', 2);
 
 require_once elispm::lib('data/resultsengine.class.php');
 require_once elispm::lib('lib.php');
@@ -333,6 +333,9 @@ abstract class enginepage extends pm_page {
                 $typename = $form->types[$actiontype];
                 $data = (array) $data;
 
+                // We don't keep the type of action in the parent table so child must be cleared
+                $this->delete_existing_data($actiontype);
+
                 // Iterate through the data array and update the existing score ranges submitted
                 $this->save_existing_data_submitted($data, $typename, $actiontype);
 
@@ -485,6 +488,32 @@ abstract class enginepage extends pm_page {
         }
 
 
+    }
+
+    /**
+     * Save existing data
+     *
+     * This function check to see if existing track/class/profile record data
+     * was submitted with the form; because the use are only submit only submit
+     * track or class or profile data.  And returns an array with the type of
+     * data (track/class/profile) and id values for existing records to be
+     * updated
+     *
+     * @param array  $data       Data from the submitted form
+     * @param string $type       The name of the action type
+     * @param int    $actiontype The action type id
+     * @return array - key -- type (either track/class/profile), ids (array
+     *                        whose keys are existing record ids)
+     */
+    protected function delete_existing_data($actiontype) {
+        $record = $this->get_new_child_data_object();
+
+        $filters = array(
+            new field_filter('resultengineid', $this->get_engine_id()),
+            new field_filter('actiontype', $actiontype, '!=')
+        );
+
+        $record->delete_records($filters);
     }
 
     /**

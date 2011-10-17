@@ -668,13 +668,15 @@ class cmEngineForm extends cmform {
             } else if ($this->rowtypes[$type] == 'doubleselect') {
                 $options = $this->get_profile_fields();
 
+                $attributes = array();
                 if (! $this->_customdata['active']) {
                     $attributes = array('disabled' => 'disabled');
                 }
-                $attriubtes['onchange'] = 'document.getElementById("id_profile_assignment").click();';
+                $attributes['onchange'] = 'document.getElementById("id_profile_assignment").click();';
 
                 $mform->addElement('select', "{$prefix}{$i}_selected", '', $options, $attributes);
 
+                $attributes = array();
                 if (! $this->_customdata['active']) {
                     $attributes = array('disabled' => 'disabled');
                 }
