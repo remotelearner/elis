@@ -78,6 +78,9 @@ class associationpage extends pm_page {
         $id = $this->required_param('id', PARAM_INT);
         $default_tab = !empty($this->default_tab) ? $this->default_tab : get_class($this);
         $action = $this->optional_param('action', $default_tab, PARAM_CLEAN);
+        if ($action == 'default') {
+            $action = $default_tab;
+        }
         $association_id = $this->optional_param('association_id', 0, PARAM_INT);
 
         parent::print_header();
