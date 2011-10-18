@@ -1901,7 +1901,7 @@ class student extends elis_data_object {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_classnotstart')) {
+            if ($supervisors = pm_get_users_by_capability('user', $student->userid, 'elis/program:notify_classnotstart')) {
                 $users = $users + $supervisors;
             }
         }
