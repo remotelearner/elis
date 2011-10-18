@@ -444,6 +444,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 
 function moodle_get_classes() {
     return classmoodlecourse::find(array(new join_filter('moodlecourseid', 'course', 'id'),
+                                         new join_filter('classid', pmclass::TABLE, 'id'),
                                          new field_filter('id', null, field_filter::NEQ)));
 }
 
