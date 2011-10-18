@@ -74,5 +74,21 @@ function xmldb_pmplugins_userset_display_priority_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'userset_display_priority');
     }
 
+    if ($result && $oldversion < 2011101800) {
+        // Userset -> 'User Set'
+        $field = field::find(new field_filter('shortname', USERSET_DISPLAY_PRIORITY_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            $category = $field->category;
+            if (stripos($category->name, 'Userset') !== false) {
+                $category->name = str_ireplace('Userset', 'User Set', $category->name);
+                $category->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101800, 'pmplugins', 'userset_display_priority');
+    }
+
     return $result;
 }

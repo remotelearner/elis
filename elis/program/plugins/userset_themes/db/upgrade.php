@@ -52,5 +52,34 @@ function xmldb_pmplugins_userset_themes_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint($result, 2011071300, 'pmplugins', 'userset_themes');
     }
 
+    if ($result && $oldversion < 2011101800) {
+        // Userset -> 'User Set'
+        $fieldnames = array('theme', 'themepriority');
+        foreach ($fieldnames as $fieldname) {
+            $fname = '_elis_userset_'. $fieldname;
+            $field = field::find(new field_filter('shortname', $fname));
+
+            if ($field->valid()) {
+                $field = $field->current();
+                // Add help file
+                if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                    $owner->fieldid = $field->id;
+                    $owner->plugin = 'manual';
+                    //$owner->exclude = 0; // TBD
+                    $owner->param_help_file = "pmplugins_userset_themes/{$fname}";
+                    $owner->save();
+                }
+
+                $category = $field->category;
+                if (stripos($category->name, 'Userset') !== false) {
+                    $category->name = str_ireplace('Userset', 'User Set', $category->name);
+                    $category->save();
+                }
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101800, 'pmplugins', 'userset_themes');
+    }
+
     return $result;
 }
