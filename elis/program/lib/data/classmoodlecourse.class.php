@@ -443,8 +443,8 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 }
 
 function moodle_get_classes() {
-    return classmoodlecourse::find(array(new join_filter('moodlecourseid', classmoodlecourse::TABLE, 'id'),
-                                         new join_filter('classid', classmoodlecourse::TABLE, 'id')));
+    return classmoodlecourse::find(array(new join_filter('moodlecourseid', 'course', 'id'),
+                                         new field_filter('id', null, field_filter::NEQ)));
 }
 
 /**
