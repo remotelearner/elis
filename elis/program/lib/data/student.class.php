@@ -1907,7 +1907,7 @@ class student extends elis_data_object {
         }
 
         foreach ($users as $user) {
-            $message->send_notification($text, $user, $enroluser); // TBD: where is $enroluser defined!?!
+            $message->send_notification($text, $user, null); // TBD: where is $enroluser defined!?!
         }
 
         return true;
