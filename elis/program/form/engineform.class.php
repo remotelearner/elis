@@ -658,7 +658,6 @@ class cmEngineForm extends cmform {
                 $url            = "form/{$typename}selector.php?id={$prefix}{$i}&callback=add_selection";
                 $attributes     = array('onclick' => 'show_panel("'.$url.'"); return false;');
                 $output         = html_writer::link('#', $selecttype, $attributes);
-
                 $mform->addElement('html', $output);
 
                 $attributes     = array('id' => "{$prefix}{$i}_selected"); // Needed for javascript call back

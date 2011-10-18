@@ -428,8 +428,9 @@ abstract class enginepage extends pm_page {
             $pos    = strpos($key, $prefix);
 
             if (false !== $pos) {
+
                 $lpos = strrpos($key, '_');
-                $pos = strpos($key, '_', $length - 1);
+                $pos  = strlen($prefix)-1;
 
                 if (false !== $pos && false !== $lpos) {
 
@@ -447,7 +448,7 @@ abstract class enginepage extends pm_page {
 
         $updaterec = new stdClass();
         $field = '';
-        $fieldvalue = '';
+        $fieldvalue = false;
 
         switch ($actiontype) {
             case ACTION_TYPE_TRACK:
@@ -458,11 +459,12 @@ abstract class enginepage extends pm_page {
                 break;
             case ACTION_TYPE_PROFILE:
                 $field = 'fieldid';
+                $fieldvalue = true;
                 break;
         }
 
-        $field_map = array();
-        $field_map['actiontype'] = 'result_type_id';
+        $fieldmap = array();
+        $fieldmap['actiontype'] = 'result_type_id';
 
         foreach ($instance as $recid => $dummy_val) {
 
@@ -470,20 +472,20 @@ abstract class enginepage extends pm_page {
             $updaterec->resultengineid = $results_engine_id;
 
             $key = "{$type}_add_{$recid}_min";
-            $field_map['minimum'] = $key;
+            $fieldmap['minimum'] = $key;
 
             $key = "{$type}_add_{$recid}_max";
-            $field_map['maximum'] = $key;
+            $fieldmap['maximum'] = $key;
 
             $key = "{$type}_add_{$recid}_selected";
-            $field_map[$field] = $key;
+            $fieldmap[$field] = $key;
 
-            if (empty($fieldvalue)) {
-                // TODO profile field work
+            if ($fieldvalue) {
+                $key = "{$type}_add_{$recid}_value";
+                $fieldmap['fieldata'] = $key;
             }
 
-            $updaterec->set_from_data($dataobj, true, $field_map);
-
+            $updaterec->set_from_data($dataobj, true, $fieldmap);
             $updaterec->save();
         }
 
@@ -491,19 +493,9 @@ abstract class enginepage extends pm_page {
     }
 
     /**
-     * Save existing data
+     * Delete existing data
      *
-     * This function check to see if existing track/class/profile record data
-     * was submitted with the form; because the use are only submit only submit
-     * track or class or profile data.  And returns an array with the type of
-     * data (track/class/profile) and id values for existing records to be
-     * updated
-     *
-     * @param array  $data       Data from the submitted form
-     * @param string $type       The name of the action type
      * @param int    $actiontype The action type id
-     * @return array - key -- type (either track/class/profile), ids (array
-     *                        whose keys are existing record ids)
      */
     protected function delete_existing_data($actiontype) {
         $record = $this->get_new_child_data_object();
@@ -543,7 +535,7 @@ abstract class enginepage extends pm_page {
             $pos = strpos($key, "{$type}_");
 
             if (false !== $pos) {
-                $pos = strpos($key, '_');
+                $pos  = strpos($key, '_');
                 $lpos = strrpos($key, '_');
 
                 if (false !== $pos && false !== $lpos) {
