@@ -280,6 +280,7 @@ function pm_synchronize_moodle_class_grades() {
         $timenow = time();
         foreach ($moodleclasses as $class) {
             $pmclass = $class->pmclass;
+
             $context = get_context_instance(CONTEXT_COURSE, $class->moodlecourseid);
             $moodlecourse = $DB->get_record('course', array('id' => $class->moodlecourseid));
 
@@ -289,12 +290,13 @@ function pm_synchronize_moodle_class_grades() {
             $relatedcontextsstring = get_related_contexts_string($context);
             $sql = "SELECT DISTINCT u.id AS muid, u.username, cu.id AS cmid, stu.*
                       FROM {user} u
-                      JOIN {role_assignments} ra ON u.id = ra.userid
-                 LEFT JOIN {".user::TABLE."} cu ON cu.idnumber = u.idnumber
-                 LEFT JOIN {".student::TABLE."} stu on stu.userid = cu.id AND stu.classid = :classid
+                INNER JOIN {role_assignments} ra ON u.id = ra.userid
+                INNER JOIN {".user::TABLE."} cu ON cu.idnumber = u.idnumber
+                INNER JOIN {".student::TABLE."} stu on stu.userid = cu.id AND stu.classid = :classid
                      WHERE ra.roleid in (:roles)
                        AND ra.contextid {$relatedcontextsstring}
                   ORDER BY muid ASC";
+
             $causers = $DB->get_recordset_sql($sql, array('classid' => $pmclass->id,
                                                           'roles' => $CFG->gradebookroles));
 
@@ -342,10 +344,11 @@ function pm_synchronize_moodle_class_grades() {
                 //todo: use table constant
                 $sql = "SELECT grades.*, mu.id AS muid
                           FROM {crlm_class_graded} grades
-                          JOIN {".user::TABLE."} cu ON grades.userid = cu.id
-                          JOIN {user} mu ON cu.idnumber = mu.idnumber
+                    INNER JOIN {".user::TABLE."} cu ON grades.userid = cu.id
+                    INNER JOIN {user} mu ON cu.idnumber = mu.idnumber
                          WHERE grades.classid = :classid
-                      ORDER BY mu.id";
+                      ORDER BY mu.id ASC";
+
                 $allcompelemgrades = $DB->get_recordset_sql($sql, array('classid' => $pmclass->id));
                 $last_rec = null; // will be used to store the last completion
                                   // element that we fetched from the
@@ -1122,7 +1125,7 @@ function pm_migrate_tags() {
                         $field = new field($field->id);
 
                         $context = get_context_instance($contextlevel, $record->instanceid);
-                        field_data::set_for_context_and_field($context, $field, $record->data); 
+                        field_data::set_for_context_and_field($context, $field, $record->data);
                     }
                 }
             }
@@ -1138,7 +1141,7 @@ function pm_migrate_tags() {
  * assigned to them, a new category and custom field is created, specific to the
  * appropriate context level. Then, that custom field is populated for each entity
  * that has and environment assigned (custom field is a single-select, where the options
- * are all the different environments on the site). 
+ * are all the different environments on the site).
  */
 function pm_migrate_environments() {
     global $DB;
