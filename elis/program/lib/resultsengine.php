@@ -30,7 +30,7 @@ require_once elispm::lib('data/usertrack.class.php');
 require_once elis::lib('data/customfield.class.php');
 
 
-define('RESULTS_ENGINE_LANG_FILE', 'results_engine');
+define('RESULTS_ENGINE_LANG_FILE', 'elis_program');
 
 // max out at 2 minutes (= 120 seconds)
 define('RESULTS_ENGINE_USERACT_TIME_LIMIT', 120);
@@ -43,9 +43,9 @@ define('RESULTS_ENGINE_AFTER_START', 1);
 define('RESULTS_ENGINE_BEFORE_END',  2);
 define('RESULTS_ENGINE_AFTER_END',   3);
 
-define('RESULTS_ENGINE_ASSIGN_TRACK',   1);
-define('RESULTS_ENGINE_ASSIGN_CLASS',   2);
-define('RESULTS_ENGINE_UPDATE_PROFILE', 3);
+define('RESULTS_ENGINE_ASSIGN_TRACK',   0);
+define('RESULTS_ENGINE_ASSIGN_CLASS',   1);
+define('RESULTS_ENGINE_UPDATE_PROFILE', 2);
 
 /**
  * Check if class results are ready to be processed and if so process them
@@ -54,7 +54,6 @@ function results_engine_cron() {
     $rununtil = time() + RESULTS_ENGINE_USERACT_TIME_LIMIT;
 
     $actives = results_engine_get_active();
-
     foreach ($actives as $active) {
         $active = results_engine_check($active);
         if ($active->proceed) {
@@ -101,7 +100,6 @@ function results_engine_manual($id) {
     return false;
 }
 
-
 /**
  * Check if this class is ready to be processed
  *
@@ -121,10 +119,17 @@ function results_engine_check($class) {
 
     $offset = $class->days * 86400;
 
+    // We always have to check individual students when the trigger is "after grade set"
+    if ($class->eventtriggertype == RESULTS_ENGINE_GRADE_SET) {
+        $class->proceed = true;
+        $class->scheduleddate = 0;
+        return $class;
+    }
+
     if ($class->triggerstartdate == RESULTS_ENGINE_AFTER_START) {
         if ($class->startdate <= 0) {
             if (isset($class->cron) && $class->cron) {
-                print(get_string('no_start_date_set', RESULTS_ENGINE_LANG_FILE, $class));
+                print(get_string('results_no_start_date_set', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
             }
             return $class;
         }
@@ -132,7 +137,7 @@ function results_engine_check($class) {
     } else {
         if ($class->enddate <= 0) {
             if (isset($class->cron) && $class->cron) {
-                print(get_string('no_end_date_set', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
+                print(get_string('results_no_end_date_set', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
             }
             return $class;
         }
@@ -220,7 +225,7 @@ function results_engine_get_active() {
 function results_engine_get_students($class) {
     global $DB;
     $params = array('classid' => $class->id);
-    $fields = array('userid', 'grade', 'locked');
+    $fields = array('id', 'userid', 'grade', 'locked');
     $table  = 'crlm_class_enrolment';
 
     if ($class->criteriatype > 0) {
@@ -239,7 +244,7 @@ function results_engine_get_students($class) {
             $fields[$key] = 'g.'. $value;
         }
 
-        $sql = 'SELECT '. implode(',', $fields)
+        $sql = 'SELECT DISTINCT '. implode(',', $fields)
              .' FROM {'. $table .'} g'
              .' LEFT JOIN {crlm_results_class_log} c ON c.classid = g.classid'
              .' LEFT JOIN {crlm_results_student_log} l ON l.userid=g.userid AND l.classlogid=c.id'
@@ -309,8 +314,9 @@ function results_engine_process($class) {
     }
 
     foreach ($fieldids as $id) {
-        $record = $DB->get_record('elis_field', array('id' => $id));
-        $userfields[$id] = new field($record, null, array(), true);
+        if ($record = $DB->get_record('elis_field', array('id' => $id))) {
+            $userfields[$id] = new field($record, null, array(), true);
+        }
     }
 
     $classes = $DB->get_records_list('crlm_class', 'id', $classids);
@@ -346,7 +352,7 @@ function results_engine_process($class) {
 
                 case RESULTS_ENGINE_ASSIGN_TRACK:
                     usertrack::enrol($student->userid, $do->trackid);
-                    $message = 'action_assign_track';
+                    $message = 'results_action_assign_track';
                     $track = $tracks[$do->trackid];
                     $obj->name = $track->name .' ('. $track->idnumber .')';
                     break;
@@ -356,18 +362,18 @@ function results_engine_process($class) {
                     $enrol->classid = $do->classid;
                     $enrol->userid  = $student->userid;
                     $enrol->save();
-                    $message = 'action_assign_class';
+                    $message = 'results_action_assign_class';
                     $obj->name = $classes[$do->classid]->idnumber;
                     break;
 
                 case RESULTS_ENGINE_UPDATE_PROFILE:
                     if (! array_key_exists($do->fieldid, $userfields)) {
-                        print(get_string('field_not_found', RESULTS_ENGINE_LANG_FILE, $do) ."\n");
+                        print(get_string('results_field_not_found', RESULTS_ENGINE_LANG_FILE, $do) ."\n");
                         break;
                     }
                     $context = get_context_instance($userlevel, $student->userid);
                     field_data::set_for_context_and_field($context, $userfields[$do->fieldid], $do->fielddata);
-                    $message = 'action_update_profile';
+                    $message = 'results_action_update_profile';
                     $obj->name  = $userfields[$do->fieldid]->shortname;
                     $obj->value = $do->fielddata;
                     break;
@@ -384,7 +390,7 @@ function results_engine_process($class) {
     }
 
     if (isset($class->cron) && $class->cron) {
-        print(get_string('class_processed', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
+        print(get_string('results_class_processed', RESULTS_ENGINE_LANG_FILE, $class) ."\n");
     }
     return true;
 }

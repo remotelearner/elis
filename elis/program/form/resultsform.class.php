@@ -146,7 +146,7 @@ class cmEngineForm extends cmform {
         $mform->setType('active', PARAM_BOOL);
 
         $attributes = array();
-        if (! $this->_customdata['active']) {
+        if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
             $attributes = array('disabled' => 'disabled');
         }
 
@@ -228,7 +228,8 @@ class cmEngineForm extends cmform {
         $rid = $this->_customdata['rid'];
 
         $attributes = array();
-        if (! $this->_customdata['active']) {
+        print_r($this->_customdata);
+        if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
             $attributes = array('disabled' => 'disabled');
         }
 
@@ -608,7 +609,7 @@ class cmEngineForm extends cmform {
 
             // Add minimum field
             $attributes = array('size' => 5, 'maxlength' => 5, 'value' => $data->min);
-            if (! $this->_customdata['active']) {
+            if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
                 $attributes['disabled'] = 'disabled';
             }
             $score[] = $mform->createElement('text', "{$prefix}{$i}_min", '', $attributes);
@@ -668,7 +669,7 @@ class cmEngineForm extends cmform {
                 $options = $this->get_profile_fields();
 
                 $attributes = array();
-                if (! $this->_customdata['active']) {
+                if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
                     $attributes = array('disabled' => 'disabled');
                 }
                 $attributes['onchange'] = 'document.getElementById("id_profile_assignment").click();';
@@ -676,7 +677,7 @@ class cmEngineForm extends cmform {
                 $mform->addElement('select', "{$prefix}{$i}_selected", '', $options, $attributes);
 
                 $attributes = array();
-                if (! $this->_customdata['active']) {
+                if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
                     $attributes = array('disabled' => 'disabled');
                 }
                 $tablehtml = html_writer::end_tag('td');
