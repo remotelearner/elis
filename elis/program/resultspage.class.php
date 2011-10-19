@@ -148,6 +148,7 @@ abstract class enginepage extends pm_page {
         $known      = false;
         $contextid  = $this->get_context()->id;
         $id         = $this->optional_param('id', 0, PARAM_INT);
+        $active     = $this->optional_param('active', -1, PARAM_INT);
         $rid        = $this->get_engine_id();
         $obj        = $this->get_new_data_object($rid);
 
@@ -170,6 +171,11 @@ abstract class enginepage extends pm_page {
         $params['contextid'] = $contextid;
         $params['enginetype'] = $this->type;
         $params['actiontype'] = $this->get_action_type();
+
+        // If set on the form use the form value over db value.
+        if ($active > -1) {
+            $params['active'] = $active;
+        }
 
         $params['cache'] = $cache;
 
