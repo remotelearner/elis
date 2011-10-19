@@ -228,7 +228,6 @@ class cmEngineForm extends cmform {
         $rid = $this->_customdata['rid'];
 
         $attributes = array();
-        print_r($this->_customdata);
         if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
             $attributes = array('disabled' => 'disabled');
         }
@@ -517,10 +516,14 @@ class cmEngineForm extends cmform {
 
         $typename = $this->types[$type];
 
-        $scoreheader        = get_string('results_score', self::LANG_FILE);
-        $assigntype         = get_string("results_assign_to_{$typename}", self::LANG_FILE);
-        $selecttype         = get_string("results_select_{$typename}", self::LANG_FILE);
-        $valueheader        = get_string('results_with_selected_value', self::LANG_FILE);
+        $scoreheader = get_string('results_score', self::LANG_FILE);
+        $assigntype  = get_string("results_assign_to_{$typename}", self::LANG_FILE);
+        $selecttype  = get_string("results_select_{$typename}", self::LANG_FILE);
+        $valueheader = '';
+
+        if ($type == ACTION_TYPE_PROFILE) {
+            $valueheader        = get_string('results_with_selected_value', self::LANG_FILE);
+        }
 
         $output = '';
         $i = 1;
@@ -530,9 +533,7 @@ class cmEngineForm extends cmform {
         $tablehtml .= html_writer::start_tag('tr');
         $tablehtml .= html_writer::tag('th', $scoreheader);
         $tablehtml .= html_writer::tag('th', $assigntype);
-        if ($type == ACTION_TYPE_PROFILE) {
-            $tablehtml .= html_writer::tag('th', $valueheader);
-        }
+        $tablehtml .= html_writer::tag('th', $valueheader);
         $tablehtml .= html_writer::end_tag('tr');
 
         $funcname = "get_assign_to_{$typename}_data";
