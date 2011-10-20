@@ -106,25 +106,25 @@ class scheduling_form_step_schedule extends moodleform {
                 if (showHide["0"].checked) {
                     if(showHide["0"].value == \'calendar\')
                     {
-                        simple.className = "accesshide";
-                        calendar.className = "clearfix";
+                        simple.className = "accesshide scheduling_action_schedule_fieldset";
+                        calendar.className = "clearfix scheduling_action_schedule_fieldset";
                     }
                     else
                     {
-                        simple.className = "clearfix";
-                        calendar.className = "accesshide";
+                        simple.className = "clearfix scheduling_action_schedule_fieldset";
+                        calendar.className = "accesshide scheduling_action_schedule_fieldset";
                     }
                 }
                 else
                     if(showHide["0"].value == \'simple\')
                     {
-                        simple.className = "accesshide";
-                        calendar.className = "clearfix";
+                        simple.className = "accesshide scheduling_action_schedule_fieldset";
+                        calendar.className = "clearfix scheduling_action_schedule_fieldset";
                     }
                     else
                     {
-                        simple.className = "clearfix";
-                        calendar.className = "accesshide";
+                        simple.className = "clearfix scheduling_action_schedule_fieldset";
+                        calendar.className = "accesshide scheduling_action_schedule_fieldset";
                     }
             }
         function initCalendar() {

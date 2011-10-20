@@ -586,6 +586,15 @@
    text-align: left;
    width: 80%;
  }
+
+/*
+ Specific fix so that IE knows hidden fieldsets hidden by moving off
+ to the left are not wide enough to hit the viewing area
+ */
+fieldset.accesshide.scheduling_action_schedule_fieldset {
+  width: 100%;
+}
+
 /*
  Styling within the "run jobs now" scheduling popup (based on lesson CSS)
  */
