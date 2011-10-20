@@ -55,32 +55,32 @@ $handlers = array (
          'schedule'         => 'instant'
      ),
     'class_notcompleted' => array (
-         'handlerfile'      => '/elis/program/lib/student.class.php',
+         'handlerfile'      => '/elis/program/lib/data/student.class.php',
          'handlerfunction'  => array('student', 'class_notcompleted_handler'),
          'schedule'         => 'instant'
      ),
     'class_notstarted' => array (
-         'handlerfile'      => '/elis/program/lib/student.class.php',
+         'handlerfile'      => '/elis/program/lib/data/student.class.php',
          'handlerfunction'  => array('student', 'class_notstarted_handler'),
          'schedule'         => 'instant'
      ),
     'course_recurrence' => array (
-         'handlerfile'      => '/elis/program/lib/course.class.php',
+         'handlerfile'      => '/elis/program/lib/data/course.class.php',
          'handlerfunction'  => array('course', 'course_recurrence_handler'),
          'schedule'         => 'instant'
      ),
     'curriculum_completed' => array (
-         'handlerfile'      => '/elis/program/lib/curriculumstudent.class.php',
+         'handlerfile'      => '/elis/program/lib/data/curriculumstudent.class.php',
          'handlerfunction'  => array('curriculumstudent', 'curriculum_completed_handler'),
          'schedule'         => 'instant'
      ),
     'curriculum_notcompleted' => array (
-         'handlerfile'      => '/elis/program/lib/curriculumstudent.class.php',
+         'handlerfile'      => '/elis/program/lib/data/curriculumstudent.class.php',
          'handlerfunction'  => array('curriculumstudent', 'curriculum_notcompleted_handler'),
          'schedule'         => 'instant'
      ),
     'curriculum_recurrence' => array (
-         'handlerfile'      => '/elis/program/lib/curriculum.class.php',
+         'handlerfile'      => '/elis/program/lib/data/curriculum.class.php',
          'handlerfunction'  => array('curriculum', 'curriculum_recurrence_handler'),
          'schedule'         => 'instant'
      ),
@@ -92,8 +92,8 @@ $handlers = array (
      ),
     // triggered when a user is deassigned from a cluster
     'cluster_deassigned' => array (
-         'handlerfile'      => '/elis/program/lib/cluster.class.php',
-         'handlerfunction'  => array('cluster', 'cluster_deassigned_handler'),
+         'handlerfile'      => '/elis/program/lib/data/userset.class.php',
+         'handlerfunction'  => array('userset', 'cluster_deassigned_handler'),
          'schedule'         => 'instant'
      ),
 
