@@ -37,7 +37,7 @@ $classlevel = context_level_base::get_custom_context_level('class', 'elis_progra
 $context = get_context_instance($classlevel, $id);
 
 if (! has_capability('elis/program:class_edit', $context)) {
-    print_string('not_permitted', RESULTS_ENGINE_LANG_FILE);
+    print_string('results_not_permitted', RESULTS_ENGINE_LANG_FILE);
     exit;
 }
 
@@ -45,14 +45,14 @@ $class = $DB->get_record('crlm_class', array('id' => $id));
 
 $source = $CFG->wwwroot .'/elis/program/plugins/results_engine/manual.php';
 
-$PAGE->requires->string_for_js('done', RESULTS_ENGINE_LANG_FILE);
+$PAGE->requires->string_for_js('results_done', RESULTS_ENGINE_LANG_FILE);
 $PAGE->requires->yui_module('yui-min', 'M.results_engine.process', array($source, $id));
-$PAGE->requires->js('/elis/program/plugins/results_engine/js/manual.js');
+$PAGE->requires->js('/elis/program/js/results_engine/manual.js');
 $PAGE->set_context($context);
 $PAGE->set_url($_SERVER['PHP_SELF']);
 $PAGE->set_pagelayout('popup');
 
 print($OUTPUT->header());
-print_string('processing_manual', RESULTS_ENGINE_LANG_FILE, $class);
+print_string('results_processing_manual', RESULTS_ENGINE_LANG_FILE, $class);
 print('<div id="results"></div>');
 print($OUTPUT->footer());

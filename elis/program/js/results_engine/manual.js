@@ -2,7 +2,7 @@ YUI().use('io-base', 'node', function(Y) {
 
 function complete(id, o, args) {
     var div = Y.one('#results');
-    div.set("innerHTML", M.str.pmplugins_results_engine.done)
+    div.set("innerHTML", M.str.elis_program.results_done)
 }
 
 M.results_engine = {
