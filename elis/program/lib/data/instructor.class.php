@@ -480,6 +480,24 @@ class instructor extends elis_data_object {
                       implode(', ', $uids) . ' ) ';
         }
 
+        //if appropriate, limit selection to users belonging to clusters that
+        //the current user can manage instructor assignments for
+        if (!pmclasspage::_has_capability('elis/program:assign_class_instructor', $this->classid)) {
+            //perform SQL filtering for the more "conditional" capability
+
+            $allowed_clusters = instructor::get_allowed_clusters($this->classid);
+
+            if (empty($allowed_clusters)) {
+                $where .= (!empty($where) ? ' AND ' : '') . '0=1 ';
+            } else {
+                $cluster_filter = implode(',', $allowed_clusters);
+
+                $where .= (!empty($where) ? ' AND ' : '') . 'usr.id IN (
+                             SELECT userid FROM {'. clusterassignment::TABLE ."}
+                             WHERE clusterid IN ({$cluster_filter}))";
+            }
+        }
+
         if (!empty($where)) {
             $where = 'WHERE '.$where.' ';
         }
@@ -578,6 +596,93 @@ class instructor extends elis_data_object {
         $this->_load_data_from_record($data, true);
     }
 
+    /**
+     * Determines whether the current user is allowed to create, edit, and delete associations
+     * between a user (instructor) and a class
+     *
+     * @param    int      $userid    The id of the user being associated to the class
+     * @param    int      $classid   The id of the class we are associating the user to
+     * @uses     $DB
+     * @uses     $USER;
+     * @return   boolean             True if the current user has the required permissions, otherwise false
+     */
+    public static function can_manage_assoc($userid, $classid) {
+        global $DB, $USER;
+
+        if(!instructorpage::can_enrol_into_class($classid)) {
+            //the users who satisfty this condition are a superset of those who can manage associations
+            return false;
+        } else if (pmclasspage::_has_capability('elis/program:assign_class_instructor', $classid)) {
+            //current user has the direct capability
+            return true;
+        }
+
+        //get the context for the "indirect" capability
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:assign_userset_user_class_instructor', $USER->id);
+
+        $allowed_clusters = array();
+        $allowed_clusters = instructor::get_allowed_clusters($classid);
+
+        //query to get users associated to at least one enabling cluster
+        $cluster_select = '';
+        if(empty($allowed_clusters)) {
+            $cluster_select = '0=1';
+        } else {
+            $cluster_select = 'clusterid IN (' . implode(',', $allowed_clusters) . ')';
+        }
+        $select = "userid = ? AND {$cluster_select}";
+
+        //user just needs to be in one of the possible clusters
+        if($DB->record_exists_select(clusterassignment::TABLE, $select, array($userid))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns an array of cluster ids that are associated to the supplied class through tracks and
+     * the current user has access to enrol users into
+     *
+     * @param   int        $clsid  The class whose association ids we care about
+     * @return  int array          The array of accessible cluster ids
+     */
+    public static function get_allowed_clusters($clsid) {
+        global $USER;
+
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:assign_userset_user_class_instructor', $USER->id);
+
+        $allowed_clusters = array();
+
+        if (pmclasspage::_has_capability('elis/program:assign_userset_user_class_instructor', $clsid)) {
+            require_once elispm::lib('data/clusterassignment.class.php');
+            $cmuserid = pm_get_crlmuserid($USER->id);
+            $userclusters = clusterassignment::find(new field_filter('userid', $cmuserid));
+            foreach ($userclusters as $usercluster) {
+                $allowed_clusters[] = $usercluster->clusterid;
+            }
+        }
+
+        //we first need to go through tracks to get to clusters
+        $track_listing = new trackassignment(array('classid' => $clsid));
+        $tracks = $track_listing->get_assigned_tracks();
+
+        //iterate over the track ides, which are the keys of the array
+        if(!empty($tracks)) {
+            foreach(array_keys($tracks) as $track) {
+                //get the clusters and check the context against them
+                $clusters = clustertrack::get_clusters($track);
+                $allowed_track_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
+
+                //append all clusters that are allowed by the available clusters contexts
+                foreach($allowed_track_clusters as $allowed_track_cluster) {
+                    $allowed_clusters[] = $allowed_track_cluster;
+                }
+            }
+        }
+
+        return $allowed_clusters;
+    }
 }
 
 /// Non-class supporting functions. (These may be able to replaced by a generic container/listing class)

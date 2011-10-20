@@ -48,8 +48,8 @@ class instructorpage extends associationpage {
 
     function __construct(array $params = null) {
         $this->tabs = array(
-        array('tab_id' => 'currcourse_edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => 'Edit', 'showtab' => true, 'showbutton' => true, 'image' => 'edit.gif'),
-        array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => 'Delete', 'showbutton' => true, 'image' => 'delete.gif'),
+        array('tab_id' => 'currcourse_edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => 'Edit', 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
+        array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => 'Delete', 'showbutton' => true, 'image' => 'delete'),
         );
         parent::__construct($params);
     }
@@ -57,7 +57,89 @@ class instructorpage extends associationpage {
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
         $pmclasspage = new pmclasspage(array('id' => $id)); // cmclasspage
-        return $pmclasspage->can_do('edit');
+        return $pmclasspage->can_do();
+    }
+
+    function can_do_add() {
+        $id = $this->required_param('id');
+        $users = optional_param('users', array(), PARAM_CLEAN);
+
+        foreach($users as $uid => $user) {
+            if(!instructor::can_manage_assoc($uid, $id)) {
+                return false;
+            }
+        }
+
+        return instructorpage::can_enrol_into_class($id);
+    }
+
+    function can_do_savenew() {
+        return $this->can_do_add();
+    }
+
+    function can_do_delete() {
+        global $DB;
+        $association_id = $this->required_param('association_id', PARAM_INT);
+        $instructor = new instructor($association_id);
+
+        //todo: if we set up removing Moodle enrolments as is done for students,
+        //perform extra checks here to make sure no other enrolment plugin was used
+
+        return instructor::can_manage_assoc($instructor->userid, $instructor->classid);
+    }
+
+    function can_do_edit() {
+        $association_id = $this->optional_param('association_id', '', PARAM_INT);
+        if (empty($association_id)) { // TBD
+            error_log('instructorpage.class.php::can_do_edit() - empty association_id! Returning: false');
+            return false;
+        }
+        $instructor = new instructor($association_id);
+        return instructor::can_manage_assoc($instructor->userid, $instructor->classid);
+    }
+
+    /**
+     * Determines whether the current user is allowed to enrol users into the provided class
+     *
+     * @param   int      $classid  The id of the class we are checking permissions on
+     *
+     * @return  boolean            Whether the user is allowed to enrol users into the class
+     *
+     */
+    static function can_enrol_into_class($classid) {
+        global $USER;
+
+        //check the standard capability
+        if(pmclasspage::_has_capability('elis/program:assign_class_instructor', $classid)
+           || pmclasspage::_has_capability('elis/program:assign_userset_user_class_instructor', $classid)) {
+            return true;
+        }
+
+        //get the context for the "indirect" capability
+        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:assign_userset_user_class_instructor', $USER->id);
+
+        //we first need to go through tracks to get to clusters
+        $track_listing = new trackassignment(array('classid' => $classid));
+        $tracks = $track_listing->get_assigned_tracks();
+
+        //iterate over the track ides, which are the keys of the array
+        if(!empty($tracks)) {
+            foreach(array_keys($tracks) as $track) {
+                //get the clusters and check the context against them
+                $clusters = clustertrack::get_clusters($track);
+
+                if(!empty($clusters)) {
+                    foreach($clusters as $cluster) {
+                        if($context->context_allowed($cluster->clusterid, 'cluster')) {
+                            return true;
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return false;
     }
 
     function do_delete() { // action_confirm
@@ -201,17 +283,19 @@ class instructorpage extends associationpage {
 
         $cls = new pmclass($clsid); // cmclass($clsid)
 
+        //using standard buttons column here to get action permission checking for free
+        //(see association_page_table for details)
         $columns = array(
             'idnumber'     => array('header' => get_string('instructor_idnumber', self::LANG_FILE),
                                     'display_function' => 'htmltab_display_function'),
             'name'         => array('header' => get_string('instructor_name', self::LANG_FILE),
                                     'display_function' => 'htmltab_display_function'),
             'assigntime'   => array('header' => get_string('instructor_assignment', self::LANG_FILE),
-                                    'display_function' => 'htmltab_display_function'),
+                                    'display_function' => 'get_item_display_assigntime'),
             'completetime' => array('header' => get_string('instructor_completion', self::LANG_FILE),
-                                    'display_function' => 'htmltab_display_function'),
-            'ins_buttons'  => array('header' => '', 'sortable' => false,
-                                    'display_function' => 'htmltab_display_function')
+                                    'display_function' => 'get_item_display_completetime'),
+            'buttons'  => array('header' => '', 'sortable' => false,
+                                'display_function' => 'get_item_display_buttons')
         );
 
         if ($dir !== 'DESC') {
@@ -250,6 +334,7 @@ class instructorpage extends associationpage {
             //$table->align = array ("left", "left", "center", "center");
             //$table->width = "95%";
 
+            //todo: convert this to use the standard listing function
             $newarr = array();
             foreach ($inss as $ins) {
                 $deletebutton = '<a href="index.php?s=ins&amp;section=curr&amp;id=' . $clsid .
@@ -262,15 +347,7 @@ class instructorpage extends associationpage {
                 $tabobj = new stdClass;
                 $tabobj->id = $ins->id;
                 foreach ($columns as $column => $cdesc) {
-                    if (($column == 'assigntime') || ($column == 'completetime')) {
-                        $tabobj->{$column} = !empty($ins->$column)
-                                    ? date(get_string('pm_date_format',
-                                                      self::LANG_FILE),
-                                           $ins->$column)
-                                    : '-';
-                    } else if ($column == 'ins_buttons') {
-                        $tabobj->ins_buttons = $editbutton . ' ' . $deletebutton;
-                    } else {
+                    if (isset($ins->{$column})) {
                         $tabobj->{$column} = $ins->{$column};
                     }
                 }
@@ -278,7 +355,7 @@ class instructorpage extends associationpage {
                 //$table->data[] = $newarr;
             }
             if (!empty($newarr)) {
-                $table = new association_page_table($newarr, $columns, &$this);
+                $table = new instructor_page_table($newarr, $columns, &$this);
             }
         }
 
@@ -286,17 +363,26 @@ class instructorpage extends associationpage {
                          'id' => $clsid);
         $add_instructor = new single_button(new moodle_url('index.php', $options), get_string('instructor_add','elis_program'), 'get');
             //'<a href="index.php?s=ins&amp;section=curr&amp;action=add&amp;id='. $clsid .'">'. get_string('instructor_add', self::LANG_FILE) .'</a>';
+
+        //determine if current user has permissions to add instructors to this class instance
+        $can_add = $this->can_do('add');
+
         if (!empty($table)) {
-            echo '<div align="center">';
-            echo $OUTPUT->render($add_instructor); // ->heading
-            echo '</div><br/>';
+            if ($can_add) {
+                echo '<div align="center">';
+                echo $OUTPUT->render($add_instructor); // ->heading
+                echo '</div><br/>';
+            }
             echo $table->get_html();
             $pagingbar = new paging_bar($numinss, $page, $perpage, $full_url);
             echo $OUTPUT->render($pagingbar);
         }
-        echo '<div align="center">';
-        echo $OUTPUT->render($add_instructor); // ->heading
-        echo '</div>';
+
+        if ($can_add) {
+            echo '<div align="center">';
+            echo $OUTPUT->render($add_instructor); // ->heading
+            echo '</div>';
+        }
     }
 
     function get_add_form($clsid, $sort, $dir, $page, $perpage, $namesearch, $alpha) {
@@ -349,6 +435,31 @@ class instructorpage extends associationpage {
                            /* 'search' => $ins->pmclass->idnumber */); // TBD???
 
         echo cm_delete_form($url, $message, $optionsyes, $optionsno);
+    }
+}
+
+/**
+ * Class responsible for implementing the display logic for the
+ * instructor listing
+ */
+class instructor_page_table extends association_page_table {
+
+    /**
+     * Convert the assignment time to use the default date format
+     * @param string $column The name of the column being formatted
+     * @param object $item The object containing the row data
+     */
+    function get_item_display_assigntime($column, $item) {
+        return get_date_item_display($column, $item);
+    }
+
+    /**
+     * Convert the completion time to use the default date format
+     * @param string $column The name of the column being formatted
+     * @param object $item The object containing the row data
+     */
+    function get_item_display_completetime($column, $item) {
+        return get_date_item_display($column, $item);
     }
 }
 

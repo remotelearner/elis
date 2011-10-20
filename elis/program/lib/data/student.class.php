@@ -2006,7 +2006,7 @@ class student extends elis_data_object {
         if(!pmclasspage::can_enrol_into_class($classid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if (pmclasspage::_has_capability('elis/program:track_enrol', $classid)) {
+        } else if (pmclasspage::_has_capability('elis/program:class_enrol', $classid)) {
             //current user has the direct capability
             return true;
         }
@@ -2027,7 +2027,7 @@ class student extends elis_data_object {
         $select = "userid = ? AND {$cluster_select}";
 
         //user just needs to be in one of the possible clusters
-        if($DB->record_exists_select(clusteruser::TABLE, $select, array($userid))) {
+        if($DB->record_exists_select(clusterassignment::TABLE, $select, array($userid))) {
             return true;
         }
 

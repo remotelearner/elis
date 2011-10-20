@@ -445,6 +445,19 @@ $capabilities = array(
         )
     ),
 
+    'elis/program:assign_class_instructor' => array(
+
+        'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+            //'teacher' => CAP_ALLOW,
+            //'editingteacher' => CAP_ALLOW,
+            //'coursecreator' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
 // Users:
 
     'elis/program:user_view' => array(
@@ -741,6 +754,16 @@ $capabilities = array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:class:enrol_cluster_user',
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
+
+    'elis/program:assign_userset_user_class_instructor' => array(
+
+        'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => array(
             'manager' => CAP_ALLOW
         )
