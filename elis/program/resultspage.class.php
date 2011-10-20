@@ -125,10 +125,10 @@ abstract class enginepage extends pm_page {
     function get_action_type() {
         global $DB;
 
-        $type = optional_param('result_type_id', 0, PARAM_INT);
+        $type = optional_param('result_type_id', -1, PARAM_INT);
 
         // If a button hasn't been pressed we have to look in the db.
-        if ($type == 0) {
+        if ($type == -1) {
             $params = array('resultsid' => $this->get_engine_id());
             if (! $type = $DB->get_field('crlm_results_action', 'actiontype', $params, IGNORE_MULTIPLE)) {
                 $type = ACTION_TYPE_TRACK;
