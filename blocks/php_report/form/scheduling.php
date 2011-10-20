@@ -444,10 +444,8 @@ class scheduling_form_step_recipients extends moodleform {
         $mform->addElement('hidden', '_step', scheduling_workflow::STEP_RECIPIENTS);
         $mform->addElement('hidden', 'action', 'save');
 
-        $mform->addElement('html', '<h2>'.htmlspecialchars(get_string('recipients_description', 'block_php_report')).'</h2>');
-        $mform->addElement('html', '<div class="php_report_item_header php_report_bold_header">'.htmlspecialchars(get_string('enter_emails', 'block_php_report')).'</div>');
-        $mform->addElement('html', '<div class="php_report_item_header php_report_italic_header">'.htmlspecialchars(get_string('email_instructions', 'block_php_report')).'</div>');
-
+        $mform->addElement('html', '<h2>'. htmlspecialchars(get_string('recipients_description', 'block_php_report')). '</h2>');
+        $mform->addElement('html', '<label for="recipients"><b>'. htmlspecialchars(get_string('enter_emails', 'block_php_report')) .'</b><br/><i>'. htmlspecialchars(get_string('email_instructions', 'block_php_report')) .'</i></label>');
 
         $mform->addElement('text', 'recipients', get_string('recipientslist'), array('size' => 60));
         $mform->addRule('recipients', get_string('required_field', 'block_php_report', get_string('recipientslist')), 'required', null, 'server');
