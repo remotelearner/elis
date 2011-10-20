@@ -222,75 +222,73 @@ class student extends elis_data_object {
             $this->completetime = time();
         }
 
-        if ($this->save()) {
-            /// Does the user receive a notification?
-            $sendtouser       = elis::$config->elis_program->notify_classcompleted_user;
-            $sendtorole       = elis::$config->elis_program->notify_classcompleted_role;
-            $sendtosupervisor = elis::$config->elis_program->notify_classcompleted_supervisor;
+	/// Does the user receive a notification?
+	$sendtouser       = elis::$config->elis_program->notify_classcompleted_user;
+	$sendtorole       = elis::$config->elis_program->notify_classcompleted_role;
+	$sendtosupervisor = elis::$config->elis_program->notify_classcompleted_supervisor;
 
-            /// Make sure this is a valid user.
-            $enroluser = new user($this->userid);
-            // Due to lazy loading, we need to pre-load this object
-            $enroluser->load();
-            if (empty($enroluser->id)) {
-                print_error('nouser', self::LANG_FILE);
-                return true;
-            }
+	/// Make sure this is a valid user.
+	$enroluser = new user($this->userid);
+	// Due to lazy loading, we need to pre-load this object
+	$enroluser->load();
+	if (empty($enroluser->id)) {
+	    print_error('nouser', self::LANG_FILE);
+	    return true;
+	}
 
-            $message = new notification();
+	$message = new notification();
 
-            /// Set up the text of the message
-            $text = empty(elis::$config->elis_program->notify_classcompleted_message) ?
-                        get_string('notifyclasscompletedmessagedef', self::LANG_FILE) :
-                        elis::$config->elis_program->notify_classcompleted_message;
-            $search = array('%%userenrolname%%', '%%classname%%');
+	/// Set up the text of the message
+	$text = empty(elis::$config->elis_program->notify_classcompleted_message) ?
+		    get_string('notifyclasscompletedmessagedef', self::LANG_FILE) :
+		    elis::$config->elis_program->notify_classcompleted_message;
+	$search = array('%%userenrolname%%', '%%classname%%');
 
-            $pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
-            $user = new user($pmuser);
-            if (($clsmdl = $this->_db->get_record(classmoodlecourse::TABLE,
-                                   array('classid' => $this->classid))) &&
-                ($course = $this->_db->get_record('course', array('id' => $clsmdl->moodlecourseid)))) {
-                /// If its a Moodle class...
-                $replace = array(fullname($pmuser), $course->fullname);
-                if (!($context = get_context_instance(CONTEXT_COURSE, $course->id))) {
-                    print_error('invalidcontext');
-                    return true;
-                }
-            } else {
-                $pmclass = new pmclass($this->classid);
-                $replace = array(fullname($pmuser), $pmclass->course->name);
-                if (!($context = get_system_context())) {
-                    print_error('invalidcontext');
-                    return true;
-                }
-            }
+	$pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
+	$user = new user($pmuser);
+	if (($clsmdl = $this->_db->get_record(classmoodlecourse::TABLE,
+				array('classid' => $this->classid))) &&
+	    ($course = $this->_db->get_record('course', array('id' => $clsmdl->moodlecourseid)))) {
+	    /// If its a Moodle class...
+	    $replace = array(fullname($pmuser), $course->fullname);
+	    if (!($context = get_context_instance(CONTEXT_COURSE, $course->id))) {
+		print_error('invalidcontext');
+		return true;
+	    }
+	} else {
+	    $pmclass = new pmclass($this->classid);
+	    $replace = array(fullname($pmuser), $pmclass->course->name);
+	    if (!($context = get_system_context())) {
+		print_error('invalidcontext');
+		return true;
+	    }
+	}
 
-            $text = str_replace($search, $replace, $text);
+	$text = str_replace($search, $replace, $text);
 
-            if ($sendtouser) {
-                $message->send_notification($text, $user);
-            }
+	if ($sendtouser) {
+	    $message->send_notification($text, $user);
+	}
 
-            $users = array();
+	$users = array();
 
-            if ($sendtorole) {
-                /// Get all users with the notify_classcompleted capability.
-                if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classcomplete')) {
-                    $users = $users + $roleusers;
-                }
-            }
+	if ($sendtorole) {
+	    /// Get all users with the notify_classcompleted capability.
+	    if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classcomplete')) {
+		$users = $users + $roleusers;
+	    }
+	}
 
-            if ($sendtosupervisor) {
-                /// Get parent-context users.
-                if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_classcomplete')) {
-                    $users = $users + $supervisors;
-                }
-            }
+	if ($sendtosupervisor) {
+	    /// Get parent-context users.
+	    if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_classcomplete')) {
+		$users = $users + $supervisors;
+	    }
+	}
 
-            foreach ($users as $user) {
-                $message->send_notification($text, $user, $enroluser);
-            }
-        }
+	foreach ($users as $user) {
+	    $message->send_notification($text, $user, $enroluser);
+	}
     }
 
 /////////////////////////////////////////////////////////////////////
