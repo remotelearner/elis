@@ -284,7 +284,7 @@ class curriculumstudent extends elis_data_object {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_programnotcomplete')) {
+            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'elis/program:notify_programnotcomplete')) {
                 $users = $users + $supervisors;
             }
         }
