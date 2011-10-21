@@ -298,7 +298,11 @@
  * http://docs.jquery.com/UI/Progressbar#theming
  */
 .ui-progressbar { height:2em; text-align: left; }
-.ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }
+.ui-progressbar .ui-progressbar-value {
+    margin: -1px;
+    height:100%;
+    background: url(../repository/elis_files/css/images/pbar-ani.gif) repeat scroll 0 0 transparent;
+}
 
 .qq-uploader { position:relative; width: 100%;}
 

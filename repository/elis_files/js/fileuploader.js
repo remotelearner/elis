@@ -993,6 +993,11 @@ qq.extend(qq.UploadHandlerForm.prototype, {
         }
     },
     _upload: function(id, params){
+        //this shows the animated bar at 100% width for browsers that don't allow for
+        //polling of upload progress (treat progress as 1/1 because we don't know what it
+        //actuall is)
+        this._options.onProgress(id, name, 1, 1);
+
         var input = this._inputs[id];
 
         if (!input){
