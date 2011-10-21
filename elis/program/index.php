@@ -139,6 +139,8 @@ $pages = array(
                       'file' => 'reportlinkspage.class.php'),
     'bulkuser' => array('class' => 'bulkuserpage',
                         'file' => 'bulkuserpage.class.php'),
+	'resultsconfig' => array('class' => 'resultsconfigpage',
+                        'file' => 'resultsconfigpage.class.php'),
     'field' => array('class' => 'customfieldpage',
                      'file' => 'customfieldpage.class.php'),
     'health' => array('class' => 'healthpage',
