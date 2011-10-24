@@ -5,7 +5,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once ($CFG->dirroot . '/lib/formslib.php');
 
 class resultsconfigform extends moodleform {
-    private $title='Default Results Engine Score Settings';
 
     function definition() {
         global $OUTPUT, $PAGE;
@@ -15,16 +14,15 @@ class resultsconfigform extends moodleform {
         $mform =& $this->_form;
         $cd=(array)$this->_customdata;
         $cd['nrc']=(isset($cd['nrc']))?$cd['nrc']:1;
-        $mform->addElement('header', 'activationrules', $this->title);
+        $mform->addElement('header', 'activationrules', get_string('results_engine_defaults_config','elis_program'));
         for($i=1;$i<=$cd['nrc'];$i++){
             $this->generate_row($i,$mform);
         }
 
-
         $mform->addElement('hidden', 'rowcount',$cd['nrc'],array('id'=>'rowcount'));
 
-        $mform->addElement('submit','addrange','Add another score range',array('onclick'=>'$(\'#rowcount\').val(parseInt($(\'#rowcount\').val())+1)'));
-        $mform->addElement('submit','finalize','Save');
+        $mform->addElement('submit','addrange',get_string('results_add_another_score_btn', 'elis_program'),array('onclick'=>'$(\'#rowcount\').val(parseInt($(\'#rowcount\').val())+1)'));
+        $mform->addElement('submit','finalize',get_string('savechanges'));
     }
 /*
     function get_raw_dynamic_data() {

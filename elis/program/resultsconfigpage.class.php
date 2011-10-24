@@ -21,11 +21,11 @@ class resultsconfigpage extends pm_page {
         global $CFG;
         $page = $this->get_new_page(array('action' => 'default'), true);
         $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
-        $this->navbar->add('Default Results Engine Score Settings', $page->url);
+        $this->navbar->add(get_string('results_engine_defaults_config','elis_program'), $page->url);
     }
 
     function get_title_default() {
-        return 'Default Results Engine Score Settings';
+        return get_string('results_engine_defaults_config','elis_program');
     }
 
     function normalize_submitted_data($raw_submitted_data) {
@@ -62,7 +62,9 @@ class resultsconfigpage extends pm_page {
             //form being saved
             $data=serialize($this->normalize_submitted_data($data));
             pm_set_config('results_engine_defaults', $data);
-            echo 'Set!';
+            $target = $this->get_new_page(array('action' => 'default'), false);
+            redirect($target->url);
+            return;
         } else {
             $this->display('default');
         }

@@ -820,6 +820,7 @@ $string['results_delete_score'] = 'Delete score range';
 $string['results_done'] = 'Done';
 $string['results_engine'] = 'Results Engine';
 $string['results_engine_status_report'] = 'Results Engine status report';
+$string['results_engine_defaults_config'] = 'Default Results Engine Score Settings';
 $string['results_error_incomplete_row'] = 'Incomplete row, please complete the row before trying to add another.';
 $string['results_error_incomplete_score_range'] = 'Incomplete score range, please enter both a minimum and a maximum value';
 $string['results_error_min_larger_than_max'] = 'Minimum value is larger than the maximum value.';
