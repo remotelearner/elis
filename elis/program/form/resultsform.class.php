@@ -540,11 +540,18 @@ class cmEngineForm extends cmform {
         $result_action_data = $this->$funcname($resultsid);
         $mform->addElement('html', $tablehtml);
 
-        // Add score ranges for existing table records
-        $this->setup_table_type_row($mform, $type, $result_action_data, false);
+        if (empty($result_action_data) && empty($cache) ) {
+            //Pre-populate with default values
+            $defaults = $this->get_default_data();
+            $this->setup_table_type_row($mform, $type, $defaults, true);
+        } else {
 
-        // Add score ranges for cached data
-        $this->setup_table_type_row($mform, $type, $cache, true);
+            // Add score ranges for existing table records
+            $this->setup_table_type_row($mform, $type, $result_action_data, false);
+
+            // Add score ranges for cached data
+            $this->setup_table_type_row($mform, $type, $cache, true);
+        }
 
         // End a table row and second column
         $tablehtml = html_writer::end_tag('table');
@@ -748,6 +755,22 @@ class cmEngineForm extends cmform {
     }
 
     /**
+     * Get default results engine categories
+     *
+     * @return array the default categories
+     */
+    protected function get_default_data() {
+        $defaults=get_config('elis_program','results_engine_defaults');
+        $defaults=(!empty($defaults))?unserialize($defaults):array();
+        foreach ($defaults as $i => $default) {
+            $default=(object)$default;
+            $default->selected = '';
+            $defaults[$i] = $default;
+        }
+        return $defaults;
+    }
+
+    /**
      * Get results engine actions with track data
      *
      * @param int $resultsid The result id
@@ -851,12 +874,6 @@ class cmEngineForm extends cmform {
      * @uses $COURSE
      */
     public function definition_after_data() {
-        $mform =& $this->_form;
-
-        $data = $this->get_submitted_data();
-
-        if (empty($data)) {
-            return;
-        }
+        return;
     }
 }
