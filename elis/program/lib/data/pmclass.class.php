@@ -702,6 +702,12 @@ class pmclass extends data_object_with_custom_fields {
             return false;
         }
 
+        // ELIS-3429: Initialize start/end-time-minute/hour fields to out_of-range
+        $this->starttimeminute = 61;
+        $this->starttimehour   = 25;
+        $this->endtimeminute   = 61;
+        $this->endtimehour     = 25;
+
         if (!empty($params)) {
             foreach($params as $key => $data) {
                 $this->$key = $data;
