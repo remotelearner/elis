@@ -97,3 +97,27 @@ function render_curr_admin_tree(tree_object) {
 	curr_admin_tree.render();
 
 }
+
+/**
+ * Override YUI functionality to not escape HTML tags
+ *
+ * todo: convert menuitem code to user href attribute rather than HTML
+ * content
+ */
+YAHOO.widget.TextNode.prototype.getContentHtml = function() {
+    var sb = [];
+    sb[sb.length] = this.href ? '<a' : '<span';
+    sb[sb.length] = ' id="' + YAHOO.lang.escapeHTML(this.labelElId) + '"';
+    sb[sb.length] = ' class="' + YAHOO.lang.escapeHTML(this.labelStyle) + '"';
+    if (this.href) {
+        sb[sb.length] = ' href="' + YAHOO.lang.escapeHTML(this.href) + '"';
+        sb[sb.length] = ' target="' + YAHOO.lang.escapeHTML(this.target) + '"';
+    }
+    if (this.title) {
+        sb[sb.length] = ' title="' + YAHOO.lang.escapeHTML(this.title) + '"';
+    }
+    sb[sb.length] = ' >';
+    sb[sb.length] = this.label;
+    sb[sb.length] = this.href?'</a>':'</span>';
+    return sb.join("");
+};
