@@ -813,7 +813,12 @@ function pm_notify_instructor_unassigned_handler($eventdata) {
     }
 
     //create the curriculum administration class
-    if(!$pmclass = new pmclass($eventdata->classid)) {
+    try {
+        if(!$pmclass = new pmclass($eventdata->classid)) {
+            return true;
+        }
+    } catch (dml_missing_record_exception $e) {
+        //record does not exists, so no need to sync
         return true;
     }
 
