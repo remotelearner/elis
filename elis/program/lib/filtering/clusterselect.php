@@ -34,6 +34,7 @@ require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
 
 // required for cluster_get_listings()
 require_once($CFG->dirroot .'/elis/program/lib/data/userset.class.php');
+require_once($CFG->dirroot .'/elis/program/lib/data/clusterassignment.class.php');
 
 /**
  * Generic filter based on a list of values.
@@ -174,7 +175,7 @@ class generalized_filter_clusterselect extends generalized_filter_equalityselect
 
         return array("{$full_fieldname} $operator
                      (SELECT inner_usercluster.userid FROM
-                     {crlm_usercluster} inner_usercluster
+                     {". clusterassignment::TABLE ."} inner_usercluster
                      WHERE inner_usercluster.clusterid = :{$param_name})",
                      array($param_name => $data['value']));
     }
