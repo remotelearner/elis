@@ -435,6 +435,28 @@ class curriculumstudent extends elis_data_object {
         return false;
     }
 
+    /**
+     * Updates all students' curriculum expiry times (only call this method if
+     * curriculum expiry is enabled)
+     */
+    static function update_expiration_times() {
+        global $DB;
+
+        if ($rs = $DB->get_recordset(curriculumstudent::TABLE, null, '', 'id, userid, curriculumid')) {
+            $timenow = time();
+
+            foreach ($rs as $curass) {
+                $update = new stdClass;
+                $update->id           = $curass->id;
+                $update->timeexpired  = calculate_curriculum_expiry(false, $curass->curriculumid, $curass->userid);
+                $update->timemodified = $timenow;
+                $DB->update_record(curriculumstudent::TABLE, $update);
+            }
+
+            $rs->close();
+        }
+    }
+
     static $validation_rules = array();
 
     public function save() {
@@ -622,10 +644,10 @@ function calculate_curriculum_expiry($curass, $curid = 0, $userid = 0) {
         if ($curass->timecompleted == 0) {
             // Fall back to basing the expiry date off the curriculum enrolment date.
             $timenow = $curass->timecreated;
+        } else {
+            // Base the expiry date off the curriculum completion date.
+            $timenow = $curass->timecompleted;
         }
-
-        // Base the expiry date off the curriculum completion date.
-        $timenow = $curass->timecompleted;
     } else if (elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_START) {
         // Base the expiry date off the curriculum enrolment date.
         $timenow = $curass->timecreated;

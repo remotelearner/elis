@@ -296,15 +296,19 @@ class curriculum extends data_object_with_custom_fields {
     public static function check_for_recurrence_nags() {
         global $CFG, $DB;
 
-        $sendtouser = elis::$config->elis_program->notify_curriculumrecurrence_user;
-        $sendtorole = elis::$config->elis_program->notify_curriculumrecurrence_role;
+        $sendtouser       = elis::$config->elis_program->notify_curriculumrecurrence_user;
+        $sendtorole       = elis::$config->elis_program->notify_curriculumrecurrence_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_curriculumrecurrence_supervisor;
 
         /// If nobody receives a notification, we're done.
-        if (!$sendtouser && !$sendtorole) {
+        if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
             return true;
         }
 
         $timenow = time();
+
+        // Notification offset from expiry time, in seconds
+        $notification_offset = DAYSECS * elis::$config->elis_program->notify_curriculumrecurrence_days;
 
         $sql = 'SELECT cca.id AS enrolmentid, cc.name AS curriculumname, cc.id as curriculumid,
                        cu.id AS userid, cu.idnumber AS useridnumber, cu.firstname AS firstname, cu.lastname AS lastname,
@@ -315,7 +319,7 @@ class curriculum extends data_object_with_custom_fields {
                   JOIN {user} mu ON cu.idnumber = mu.idnumber
              LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = cca.id AND cnl.event = \'curriculum_recurrence\'
                  WHERE cnl.id IS NULL and cca.timeexpired > 0
-                  AND cca.timeexpired < ? + '.elis::$config->elis_program->notify_curriculumrecurrence_days.'
+                  AND cca.timeexpired < ? + '.$notification_offset.'
                ';
 
         $params = array($timenow);
@@ -395,7 +399,7 @@ class curriculum extends data_object_with_custom_fields {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'elis/program:notify_programrecurrence')) {
+            if ($supervisors = pm_get_users_by_capability('user', $pmuser->id, 'elis/program:notify_programrecurrence')) {
                 $users = $users + $supervisors;
             }
         }
@@ -858,4 +862,46 @@ function curriculum_count_records($namesearch = '', $alpha = '', $contexts = nul
     $where = implode(' AND ',$where).' ';
 
     return $DB->count_records_select(curriculum::TABLE, $where, $params);
+}
+
+/**
+ * Handler that gets called when the curriculum expiration setting
+ * is enabled or disabled
+ *
+ * @param string $name Shortname of the changed setting
+ */
+function curriculum_expiration_enabled_updatedcallback($name) {
+    global $DB, $SESSION;
+
+    //signal that events resulting from updating settings related to curriculum
+    //expiry have been handled for the lifetime of the current script
+    $SESSION->curriculum_expiration_toggled = true;
+
+    $enabled = get_config('elis_program', 'enable_curriculum_expiration');
+
+    if ($enabled) {
+        curriculumstudent::update_expiration_times();
+    }
+}
+
+/**
+ * Handler that gets called when the curriculum expiration time
+ * setting is changed
+ *
+ * @param string $name Shortname of the changed setting
+ */
+function curriculum_expiration_start_updatedcallback($name) {
+    global $DB, $SESSION;
+
+    if (!empty($SESSION->curriculum_expiration_toggled)) {
+        //updating curriculum assignment times has already been handled for the
+        //lifetime of the current script (prevent updating records twice)
+        return;
+    }
+
+    $enabled = get_config('elis_program', 'enable_curriculum_expiration');
+
+    if ($enabled) {
+        curriculumstudent::update_expiration_times();
+    }
 }

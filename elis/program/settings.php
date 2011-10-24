@@ -7,8 +7,13 @@ require_once elispm::lib('data/curriculumstudent.class.php'); // defines
 require_once elispm::lib('certificate.php'); // TBD: cm_certificate_get__()
 
 global $DB; // TBD: roles
+global $SESSION;
 
 if ($ADMIN->fulltree) {
+    //flag that can be overrideen to signal that re-calculating student' curriculum
+    //expiry times has already been done for the current settings change
+    $SESSION->curriculum_expiration_toggled = false;
+
     $ADMIN->add('root', new admin_category('elis_program', get_string('elis_config', 'elis_program'), true));
 
     $settings = new admin_settingpage('elis_program_settings', get_string('elis_settings', 'elis_program'));
@@ -32,19 +37,25 @@ if ($ADMIN->fulltree) {
                            '' /* get_string('auto_collapse_help', 'elis_program') */, 4, PARAM_INT)); // TBD
 
     // Enable curriculum expiration
-    $settings->add(new admin_setting_configcheckbox('elis_program/enable_curriculum_expiration',
+    $setting = new admin_setting_configcheckbox('elis_program/enable_curriculum_expiration',
                            get_string('crlm_expire_setting', 'elis_program'),
-                           '' /* get_string('crlm_expire_help', 'elis_program') */, 0));
+                           '' /* get_string('crlm_expire_help', 'elis_program') */, 0);
+    //callback to handle updating curriculum assignment expiry times
+    $setting->set_updatedcallback('curriculum_expiration_enabled_updatedcallback');
+    $settings->add($setting);
 
     // Calculate curriculum expiration based on the time a student
     $opts = array(
                 CURR_EXPIRE_ENROL_START    => get_string('curriculum_expire_enrol_start', 'elis_program'),
                 CURR_EXPIRE_ENROL_COMPLETE => get_string('curriculum_expire_enrol_complete', 'elis_program')
             );
-    $settings->add(new admin_setting_configselect('elis_program/curriculum_expiration_start',
+    $setting = new admin_setting_configselect('elis_program/curriculum_expiration_start',
                            get_string('expire_basis_setting', 'elis_program'),
                            '' /* get_string('expire_basis_help', 'elis_program') */,
-                           CURR_EXPIRE_ENROL_START, $opts)); // TBD
+                           CURR_EXPIRE_ENROL_START, $opts);
+    //callback to handle updating curriculum assignment expiry times
+    $setting->set_updatedcallback('curriculum_expiration_start_updatedcallback');
+    $settings->add($setting); // TBD
 
     // ***Certificates
     $settings->add(new admin_setting_heading('certificates', get_string('certificates', 'elis_program'), '' /* get_string('certificate_info', 'elis_program') */));
