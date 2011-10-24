@@ -795,17 +795,17 @@ class sitewide_time_summary_report extends table_report {
         $this->columnfields[] = 'cls.idnumber AS classid';
         if ($this->segment == 'weeks') {
             foreach ($this->wkdays as $day) {
-                $columns[] = new table_report_column("SUM(etlua.duration) AS $day", get_string($day, $this->langfile), $day, 'center', true);
+                $columns[] = new table_report_column("SUM(etlua.duration) AS $day", get_string($day, $this->langfile), $day, 'center', false);
                 $this->columnfields[] = "SUM(etlua.duration) AS $day";
             }
         } else if ($this->segment == 'months') {
             foreach ($this->weeks as $wk) {
-                $columns[] = new table_report_column("SUM(etlua.duration) AS $wk", get_string($wk, $this->langfile), $wk, 'center', true);
+                $columns[] = new table_report_column("SUM(etlua.duration) AS $wk", get_string($wk, $this->langfile), $wk, 'center', false);
                 $this->columnfields[] = "SUM(etlua.duration) AS $wk";
             }
         } else if ($this->segment == 'years') {
             foreach ($this->months as $month) {
-                $columns[] = new table_report_column("SUM(etlua.duration) AS $month", get_string($month, $this->langfile), $month, 'center', true);
+                $columns[] = new table_report_column("SUM(etlua.duration) AS $month", get_string($month, $this->langfile), $month, 'center', false);
                 $this->columnfields[] = "SUM(etlua.duration) AS $month";
             }
         } else {
@@ -816,7 +816,7 @@ class sitewide_time_summary_report extends table_report {
 
         $columns[] = new table_report_column('0 AS totaltime',
                          get_string('column_totaltime', $this->langfile),
-                         'totaltime', 'left', true);
+                         'totaltime', 'left', false);
         $this->columnfields[] = '0 AS totaltime';
 
         return $columns;
