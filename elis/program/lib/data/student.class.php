@@ -1576,13 +1576,13 @@ class student extends elis_data_object {
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
 
             if (empty($allowed_clusters)) {
-                $where .= 'AND 0=1';
+                $where .= 'AND 0=1 ';
             } else {
                 $cluster_filter = implode(',', $allowed_clusters);
                 // *** TBD ***
                 $where .= 'AND usr.id IN (
-                             SELECT userid FROM {'. clusteruser::TABLE ."}
-                             WHERE clusterid IN ({$cluster_filter}))";
+                             SELECT userid FROM {'. clusterassignment::TABLE ."}
+                             WHERE clusterid IN ({$cluster_filter})) ";
             }
         }
 
@@ -1673,7 +1673,7 @@ class student extends elis_data_object {
                 $cluster_filter = implode(',', $allowed_clusters);
                 // *** TBD ***
                 $where .= 'AND usr.id IN (
-                             SELECT userid FROM {'. clusteruser::TABLE ."}
+                             SELECT userid FROM {'. clusterassignment::TABLE ."}
                              WHERE clusterid IN ({$cluster_filter}))";
             }
         }
