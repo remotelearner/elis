@@ -293,8 +293,9 @@ class student extends elis_data_object {
             }
         }
 
-        foreach ($users as $user) {
-            $message->send_notification($text, $user, $enroluser);
+        // Send notifications to any users who need to receive them.
+        foreach ($users as $touser) {
+            $message->send_notification($text, $touser, $user);
         }
     }
 
@@ -1911,8 +1912,9 @@ class student extends elis_data_object {
             }
         }
 
-        foreach ($users as $user) {
-            $message->send_notification($text, $user, null); // TBD: where is $enroluser defined!?!
+        // Send notifications to any users who need to receive them.
+        foreach ($users as $touser) {
+            $message->send_notification($text, $touser, $user);
         }
 
         return true;
@@ -1988,8 +1990,9 @@ class student extends elis_data_object {
             }
         }
 
-        foreach ($users as $user) {
-            $message->send_notification($text, $user, $enroluser); // TBD: where is $enroluser defined!?!
+        // Send notifications to any users who need to receive them.
+        foreach ($users as $touser) {
+            $message->send_notification($text, $touser, $user);
         }
 
         return true;
