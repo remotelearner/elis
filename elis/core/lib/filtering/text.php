@@ -41,7 +41,9 @@ class generalized_filter_text extends generalized_filter_type {
     static $OPERATOR_IS_EMPTY = 5;
 
     var $_field;
-    var $_casesensitive = true; // override with $options['casesensitive']
+    //by default, make text filtering case-insensitive (at least until ELIS
+    //works outside of MySQL)
+    var $_casesensitive = false; // override with $options['casesensitive']
 
     /**
      * Constructor
