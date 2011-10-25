@@ -63,7 +63,7 @@ class waitlistaddform extends cmform {
 
                 $user = $DB->get_record(user::TABLE, array('id' => $student->userid));
                 $user->name = fullname($user);
-                $mform->addGroup($enrol_options, 'options[' . $student->userid . ']', get_string('add_to_waitinglist', 'elis_program', $user), '', false);
+                $mform->addGroup($enrol_options, 'options[' . $student->userid . ']', get_string('add_to_waitinglist', 'elis_program', $user), array('&nbsp;&nbsp;&nbsp;'), false);
             }
         } else if(!empty($this->_customdata['student_ids'])) {
             $student_id = $this->_customdata['student_ids'];
