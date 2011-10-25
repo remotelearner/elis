@@ -114,12 +114,12 @@ class elis_data_object {
     /**
      * Whether missing fields should be loaded from the database.
      */
-    private $_is_loaded = false;
+    protected $_is_loaded = false;
 
     /**
      * Whether the data has not been changed since loading from the database.
      */
-    private $_is_saved = false;
+    protected $_is_saved = false;
 
     /**
      * Magic constant for marking a field as not set.
