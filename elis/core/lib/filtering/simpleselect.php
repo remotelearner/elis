@@ -35,18 +35,27 @@ class generalized_filter_simpleselect extends generalized_filter_type {
     /**
      * options for the list values
      */
-    var $_options;
-
     var $_field;
 
-    var $_numeric; // TBD: obsolete
+    var $_options  = array();
+    var $_numeric  = false; // TBD: obsolete
+    var $_anyvalue = null;
+    var $_noany    = false;
+    var $_onchange = '';
+    var $_multiple = '';
+    var $_class    = '';
+    var $_nofilter = false; // boolean - true makes get_sql_filter() always return null
+                            // set with $options['nofilter']
 
-    var $_anyvalue;
-
-    var $_noany;
-
-    var $_nofilter; // boolean - true makes get_sql_filter() always return null
-                    // set with $options['nofilter']
+    var $_extrafields = array(
+        '_options'  => 'choices',
+        '_numeric'  => 'numeric',
+        '_anyvalue' => 'anyvalue',
+        '_noany'    => 'noany',
+        '_onchange' => 'onchange',
+        '_multiple' => 'multiple',
+        '_class'    => 'class'
+    );
 
     /**
      * Constructor
@@ -61,12 +70,16 @@ class generalized_filter_simpleselect extends generalized_filter_type {
                     !empty($options['help'])
                     ? $options['help']
                     : array('simpleselect', $label, 'elis_core'));
-        $this->_field    = $field;
-        $this->_options  = $options['choices'];
-        $this->_numeric  = $options['numeric'];
-        $this->_anyvalue = (isset($options['anyvalue'])) ? $options['anyvalue'] : NULL;
-        $this->_noany = (isset($options['noany'])) ? $options['noany'] : false;
-        $this->_nofilter = !empty($options['nofilter']);
+
+        if (! is_array($options)) {
+            $options = array($options);
+        }
+
+        foreach ($this->_extrafields as $var => $extra) {
+            if (array_key_exists($extra, $options)) {
+                $this->$var = $options[$extra];
+            }
+        }
     }
 
     /**
@@ -83,7 +96,16 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         } else {
             $choices = $this->_options;
         }
-        $mform->addElement('select', $this->_uniqueid, $this->_label, $choices);
+
+        $options = array();
+        if (! empty($this->_onchange)) {
+            $options['onchange'] = $this->_onchange;
+        }
+        if (! empty($this->_multiple)) {
+            $options['multiple'] = $this->_multiple;
+        }
+
+        $mform->addElement('select', $this->_uniqueid, $this->_label, $choices, $options);
         $mform->addHelpButton($this->_uniqueid, $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */ ); // TBV
         if ($this->_advanced) {
             $mform->setAdvanced($this->_uniqueid);
@@ -98,8 +120,18 @@ class generalized_filter_simpleselect extends generalized_filter_type {
     function check_data($formdata) {
         $field = $this->_uniqueid;
 
-        if (array_key_exists($field, $formdata) and $formdata->$field !== '') {
-            return array('value' => (string)$formdata->$field);
+        if (array_key_exists($field, $formdata)) {
+            $value = $formdata->$field;
+            if ($this->_multiple && is_array($value)) {
+                foreach ($value as $val) {
+                    if ($val === '') {
+                        return false;
+                    }
+                }
+                return array('value' => $value);
+            } else if ($value !== '') {
+                return array('value' => (string)$value);
+            }
         }
 
         return false;
@@ -143,10 +175,28 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         }
 
         $value = $data['value'];
-        $value = addslashes($value);
 
-        return array("{$full_fieldname} = :{$param_name}",
-                     array($param_name => $value));
+        if (is_array($value) && (sizeof($value) == 1)) {
+            $value = reset($value);
+        }
+
+        if ($this->_multiple && is_array($value)) {
+            $places = array();
+            $values = array();
+
+            foreach ($value as $key => $val) {
+                $name = $param_name .'_'. $key;
+                $values[$name] = addslashes($val);
+                $places[$key]  = ':'. $name;
+            }
+
+
+            return array("{$full_fieldname} IN (". implode(',', $places) .')', $values);
+        } else {
+            $value = addslashes($value);
+
+            return array("{$full_fieldname} = :{$param_name}", array($param_name => $value));
+        }
     }
 
 }
