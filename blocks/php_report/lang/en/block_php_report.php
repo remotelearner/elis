@@ -42,7 +42,7 @@ $string['php_report:manageschedules'] = 'Manage ELIS report schedules';
 
 // Report categories
 $string['admin_reports'] = 'Administrative Reports';
-$string['curriculum_reports'] = 'Curriculum Reports';
+$string['curriculum_reports'] = 'Program Reports';
 $string['course_reports'] = 'Course Reports';
 $string['class_reports'] = 'Class Reports';
 $string['cluster_reports'] = 'Organization/User Set Reports';
