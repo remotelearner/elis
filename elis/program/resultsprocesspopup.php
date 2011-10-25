@@ -26,16 +26,12 @@
  *
  */
 
-// Delete this file when test harness is no longer needed.
-require_once(dirname(__FILE__) .'/../../lib/setup.php');
-require_once(dirname(__FILE__) .'/lib.php');
+require_once dirname(__FILE__) . '/lib/setup.php';
+require_once elispm::lib('resultsengine.php');
 
 $id = required_param('id', PARAM_INT);
 
-if (! isloggedin()) {
-    print_string('loggedinnot');
-    exit;
-}
+require_login();
 
 $classlevel = context_level_base::get_custom_context_level('class', 'elis_program');
 $context = get_context_instance($classlevel, $id);
@@ -45,8 +41,18 @@ if (! has_capability('elis/program:class_edit', $context)) {
     exit;
 }
 
-if (results_engine_manual($id)) {
-    print_string('manual_success', RESULTS_ENGINE_LANG_FILE);
-} else {
-    print_string('manual_failure', RESULTS_ENGINE_LANG_FILE);
-}
+$class = $DB->get_record('crlm_class', array('id' => $id));
+
+$source = $CFG->wwwroot .'/elis/program/plugins/results_engine/manual.php';
+
+$PAGE->requires->string_for_js('done', RESULTS_ENGINE_LANG_FILE);
+$PAGE->requires->yui_module('yui-min', 'M.results_engine.process', array($source, $id));
+$PAGE->requires->js('/elis/program/plugins/results_engine/js/manual.js');
+$PAGE->set_context($context);
+$PAGE->set_url($_SERVER['PHP_SELF']);
+$PAGE->set_pagelayout('popup');
+
+print($OUTPUT->header());
+print_string('processing_manual', RESULTS_ENGINE_LANG_FILE, $class);
+print('<div id="results"></div>');
+print($OUTPUT->footer());

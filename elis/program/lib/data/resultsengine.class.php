@@ -80,14 +80,14 @@ class resultsengineaction extends elis_data_object {
     private $form_url = null;  //moodle_url object
 
     protected $_dbfield_id;
-    protected $_dbfield_resultengineid;
+    protected $_dbfield_resultsid;
     protected $_dbfield_actiontype;
     protected $_dbfield_minimum;
     protected $_dbfield_maximum;
     protected $_dbfield_trackid;
     protected $_dbfield_classid;
     protected $_dbfield_fieldid;
-    protected $_dbfield_fieldata;
+    protected $_dbfield_fielddata;
 
     /**
      * Perform parent add

@@ -23,14 +23,13 @@
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
- *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once elispm::lib('lib.php');
 require_once elispm::lib('page.class.php');
-require_once elispm::file('enginepage.class.php');
+require_once elispm::file('resultspage.class.php');
 require_once($CFG->libdir .'/tablelib.php');
 
 
@@ -42,7 +41,7 @@ abstract class enginestatuspage extends enginepage {
 
         $id = $this->required_param('id', PARAM_INT);
         $page = $this->get_new_page(array('id' => $id), true);
-        $this->navbar->add(get_string('status_report', self::LANG_FILE), $page->url);
+        $this->navbar->add(get_string('results_status_report', self::LANG_FILE), $page->url);
     }
 
     /**
@@ -55,7 +54,7 @@ abstract class enginestatuspage extends enginepage {
 
         $id   = required_param('id', PARAM_INT);
 
-        $title = get_string('status_report', self::LANG_FILE);
+        $title = get_string('results_status_report', self::LANG_FILE);
 
         $params = array($id);
 
@@ -106,9 +105,9 @@ class course_enginestatuspage extends enginestatuspage {
      * @param array $params Parameters for parent classes
      */
     function __construct($params = null) {
-        $daterun       = get_string('date_run', self::LANG_FILE);
-        $classinstance = get_string('class_instance', self::LANG_FILE);
-        $datescheduled = get_string('date_scheduled', self::LANG_FILE);
+        $daterun       = get_string('results_date_run', self::LANG_FILE);
+        $classinstance = get_string('results_class_instance', self::LANG_FILE);
+        $datescheduled = get_string('results_date_scheduled', self::LANG_FILE);
         $this->headers = array($classinstance, $datescheduled, $daterun);
 
 
@@ -209,9 +208,9 @@ class class_enginestatuspage extends enginestatuspage {
      * @param array $params Parameters for parent classes
      */
     function __construct($params = null) {
-        $daterun = get_string('date_run', self::LANG_FILE);
+        $daterun = get_string('results_date_run', self::LANG_FILE);
         $student = get_string('defaultcoursestudent');
-        $actions = get_string('actions_performed', self::LANG_FILE);
+        $actions = get_string('results_actions_performed', self::LANG_FILE);
         $this->headers = array($student, $actions, $daterun);
 
         parent::__construct($params);

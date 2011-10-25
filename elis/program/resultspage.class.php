@@ -35,10 +35,10 @@ define('ACTION_TYPE_PROFILE', 2);
 require_once elispm::lib('data/resultsengine.class.php');
 require_once elispm::lib('lib.php');
 require_once elispm::lib('page.class.php');
-require_once elispm::file('form/engineform.class.php');
+require_once elispm::file('form/resultsform.class.php');
 
 abstract class enginepage extends pm_page {
-    const LANG_FILE = 'pmplugins_results_engine';
+    const LANG_FILE = 'elis_program';
 
     public $data_class = 'resultsengine';
     public $child_data_class = 'resultsengineaction';
@@ -129,7 +129,7 @@ abstract class enginepage extends pm_page {
 
         // If a button hasn't been pressed we have to look in the db.
         if ($type == 0) {
-            $params = array('resultengineid' => $this->get_engine_id());
+            $params = array('resultsid' => $this->get_engine_id());
             if (! $type = $DB->get_field('crlm_results_action', 'actiontype', $params, IGNORE_MULTIPLE)) {
                 $type = ACTION_TYPE_TRACK;
             }
@@ -370,7 +370,7 @@ abstract class enginepage extends pm_page {
                 $rec->load();
 
                 // Confirm it's an action for this page, to prevent capability circumvention
-                if ($rec->resultengineid == $rid) {
+                if ($rec->resultsid == $rid) {
                     $rec->delete();
                 }
             }
@@ -469,7 +469,7 @@ abstract class enginepage extends pm_page {
         foreach ($instance as $recid => $dummy_val) {
 
             $updaterec = $this->get_new_child_data_object();
-            $updaterec->resultengineid = $results_engine_id;
+            $updaterec->resultsid = $results_engine_id;
 
             $key = "{$type}_add_{$recid}_min";
             $fieldmap['minimum'] = $key;
@@ -482,7 +482,7 @@ abstract class enginepage extends pm_page {
 
             if ($fieldvalue) {
                 $key = "{$type}_add_{$recid}_value";
-                $fieldmap['fieldata'] = $key;
+                $fieldmap['fielddata'] = $key;
             }
 
             $updaterec->set_from_data($dataobj, true, $fieldmap);
@@ -501,7 +501,7 @@ abstract class enginepage extends pm_page {
         $record = $this->get_new_child_data_object();
 
         $filters = array(
-            new field_filter('resultengineid', $this->get_engine_id()),
+            new field_filter('resultsid', $this->get_engine_id()),
             new field_filter('actiontype', $actiontype, '!=')
         );
 
@@ -583,7 +583,7 @@ abstract class enginepage extends pm_page {
 
             if ($fieldvalue) {
                 $key = "{$type}_{$recid}_value";
-                $fieldmap['fieldata'] = $key;
+                $fieldmap['fielddata'] = $key;
             }
 
             $updaterec->set_from_data($dataobj, true, $fieldmap);

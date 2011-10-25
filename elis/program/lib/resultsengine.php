@@ -30,7 +30,7 @@ require_once elispm::lib('data/usertrack.class.php');
 require_once elis::lib('data/customfield.class.php');
 
 
-define('RESULTS_ENGINE_LANG_FILE', 'pmplugins_results_engine');
+define('RESULTS_ENGINE_LANG_FILE', 'results_engine');
 
 // max out at 2 minutes (= 120 seconds)
 define('RESULTS_ENGINE_USERACT_TIME_LIMIT', 120);
@@ -290,8 +290,8 @@ function results_engine_process($class) {
         return true;
     }
 
-    $params = array('resultengineid' => $class->engineid);
-    $fields = 'id, actiontype, minimum, maximum, trackid, classid, fieldid, fieldata';
+    $params = array('resultsid' => $class->engineid);
+    $fields = 'id, actiontype, minimum, maximum, trackid, classid, fieldid, fielddata';
     $actions = $DB->get_records('crlm_results_action', $params, '', $fields);
 
     $fieldids = array();
@@ -366,10 +366,10 @@ function results_engine_process($class) {
                         break;
                     }
                     $context = get_context_instance($userlevel, $student->userid);
-                    field_data::set_for_context_and_field($context, $userfields[$do->fieldid], $do->fieldata);
+                    field_data::set_for_context_and_field($context, $userfields[$do->fieldid], $do->fielddata);
                     $message = 'action_update_profile';
                     $obj->name  = $userfields[$do->fieldid]->shortname;
-                    $obj->value = $do->fieldata;
+                    $obj->value = $do->fielddata;
                     break;
 
                 default:

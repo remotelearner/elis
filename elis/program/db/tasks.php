@@ -35,6 +35,14 @@ $tasks = array(
         'day'          => '*',
         'month'        => '*',
         'dayofweek'    => '*'
+    ),
+    array(
+        'callfile'     => '/elis/program/plugins/results_engine/lib.php',
+        'callfunction' => 'results_engine_cron',
+        'minute'       => '*',
+        'hour'         => '2-6',
+        'day'          => '*',
+        'month'        => '*',
+        'dayofweek'    => '*'
     )
 );
-

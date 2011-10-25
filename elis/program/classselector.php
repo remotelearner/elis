@@ -28,14 +28,14 @@
  * This script is used to return a track selection form
  */
 
-require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 
 require_login(SITEID, false);
 
 global $CFG, $PAGE, $OUTPUT, $DB;
 
 require_once($CFG->dirroot . '/elis/program/lib/lib.php');
-require_once($CFG->dirroot . '/elis/program/plugins/results_engine/track_class_selection.class.php');
+require_once($CFG->dirroot . '/elis/program/lib/selectionpopup.class.php');
 require_once($CFG->dirroot . '/lib/weblib.php');
 require_once($CFG->dirroot . '/lib/dml/moodle_database.php');
 
@@ -46,42 +46,46 @@ $search         = optional_param('search', '', PARAM_TEXT);
 $element_update = required_param('id', PARAM_TEXT);
 $callback       = required_param('callback', PARAM_TEXT);
 
-$baseurl        = new moodle_url('/elis/program/form/trackselector.php',
+
+$baseurl        = new moodle_url('/elis/program/classselector.php',
                                 array('alpha' => $letterselect,
                                       'search' => $search,
                                       'id' => $element_update));
 
-$PAGE->requires->js('/elis/program/plugins/results_engine/js/results_selection.js', true);
+$PAGE->requires->js('/elis/program/js/results_engine/results_selection.js', true);
 $PAGE->set_url($baseurl);
 $PAGE->set_pagelayout('popup');
+
 
 echo $OUTPUT->header();
 
 pmalphabox($baseurl);
-pmsearchbox('/elis/program/form/trackselector.php');
+pmsearchbox('/elis/program/classselector.php');
 
 echo html_writer::start_tag('center');
 
 $alpha          = explode(',', get_string('alphabet', 'langconfig'));
 
-$table          = new trackselectiontable('trackselection', $element_update, $callback);
-$columns        = 'id,name,description';
+$table          = new classselectiontable('classselection', $element_update, $callback);
+$columns        = 'cls.id,cd.syllabus,cls.idnumber';
 $where          = '';
 $alphawhere     = '';
 $searchwhere    = '';
 $params         = array();
 
 if (!empty($letterselect)) {
-    $alphawhere = $DB->sql_like('name', ':alphaname', false, false);
-    $params['alphaname'] = $letterselect.'%';
+    $alphawhere = $DB->sql_like('cd.syllabus', ':alphasyllabus', false);
+    $params['alphasyllabus'] = $letterselect.'%';
 }
 
 if (!empty($search)) {
-    $searchwhere = $DB->sql_like('name', ':searchname', false, false) . ' OR ' .
-             $DB->sql_like('description', ':searchdescription', false, false);
+    $searchwhere = $DB->sql_like('cls.idnumber', ':searchclsidnumber' , false, false) . ' OR ' .
+             $DB->sql_like('cd.syllabus', ':searchsyllabus', false, false);
 
-    $params['searchname']           = '%'.$search.'%';
-    $params['searchdescription']    = '%'.$search.'%';
+    $params['searchclsidnumber']    = '%'.$search.'%';
+    $params['searchsyllabus']       = '%'.$search.'%';
+
+
 }
 
 if (empty($alphawhere) and empty($searchwhere)) {
@@ -99,14 +103,14 @@ if (empty($alphawhere) and empty($searchwhere)) {
 
 }
 
-$colheader1 = get_string('track_name_header', 'pmplugins_results_engine');
-$colheader2 = get_string('track_desc_header', 'pmplugins_results_engine');
+$colheader1 = get_string('results_course_desc_header', 'elis_program');
+$colheader2 = get_string('results_id_number_header', 'elis_program');
 
-
-$table->set_sql($columns, "{$CFG->prefix}crlm_track", $where, $params);
+$from = "{$CFG->prefix}crlm_course cd RIGHT JOIN {$CFG->prefix}crlm_class cls ON cd.id = cls.courseid ";
+$table->set_sql($columns, $from, $where, $params);
 $table->define_baseurl($baseurl);
 $table->collapsible(false);
-$table->define_columns(array('name', 'description'));
+$table->define_columns(array('syllabus', 'idnumber'));
 $table->define_headers(array($colheader1, $colheader2));
 $table->out(MAX_NUM_ROWS, false);
 

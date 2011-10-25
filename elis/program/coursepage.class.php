@@ -35,7 +35,7 @@ require_once elispm::file('curriculumcoursepage.class.php');
 require_once elispm::file('form/courseform.class.php');
 require_once elispm::file('pmclasspage.class.php');
 require_once elispm::file('rolepage.class.php');
-require_once elispm::file('enginepage.class.php');
+require_once elispm::file('resultspage.class.php');
 
 class coursepage extends managementpage {
     var $data_class = 'course';

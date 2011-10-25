@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once elispm::lib('lib.php');
 require_once elispm::file('form/cmform.class.php');
-require_once elispm::file('plugins/results_engine/lib.php');
+require_once elispm::lib('resultsengine.php');
 require_once elispm::lib('data/track.class.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/resultsengine.class.php');
@@ -37,7 +37,7 @@ require_once elispm::lib('data/resultsengine.class.php');
  * the form element for curriculum
  */
 class cmEngineForm extends cmform {
-    const LANG_FILE = 'pmplugins_results_engine';
+    const LANG_FILE = 'elis_program';
 
     public $types = array(
         ACTION_TYPE_TRACK => 'track',
@@ -68,10 +68,10 @@ class cmEngineForm extends cmform {
 
         $configData = array('title');
 
-        $PAGE->requires->css('/elis/program/plugins/results_engine/jquery-ui-1.8.16.custom.css', true);
-        $PAGE->requires->js('/elis/program/plugins/results_engine/js/jquery-1.6.2.min.js', true);
-        $PAGE->requires->js('/elis/program/plugins/results_engine/js/jquery-ui-1.8.16.custom.js', true);
-        $PAGE->requires->js('/elis/program/plugins/results_engine/js/results_selection.js', true);
+        $PAGE->requires->css('/elis/program/js/results_engine/jquery-ui-1.8.16.custom.css', true);
+        $PAGE->requires->js('/elis/program/js/results_engine/jquery-1.6.2.min.js', true);
+        $PAGE->requires->js('/elis/program/js/results_engine/jquery-ui-1.8.16.custom.js', true);
+        $PAGE->requires->js('/elis/program/js/results_engine/results_selection.js', true);
 
         $this->defineActivation();
         $this->defineResults();
@@ -93,11 +93,11 @@ class cmEngineForm extends cmform {
     protected function defineActivation() {
         global $CFG, $DB;
 
-        $grades = array(0 => get_string('class_grade', self::LANG_FILE));
+        $grades = array(0 => get_string('results_class_grade', self::LANG_FILE));
         $dates  = array(
-            RESULTS_ENGINE_AFTER_START => get_string('after_class_start', self::LANG_FILE),
-            RESULTS_ENGINE_BEFORE_END  => get_string('before_class_end', self::LANG_FILE),
-            RESULTS_ENGINE_AFTER_END   => get_string('after_class_end', self::LANG_FILE)
+            RESULTS_ENGINE_AFTER_START => get_string('results_after_class_start', self::LANG_FILE),
+            RESULTS_ENGINE_BEFORE_END  => get_string('results_before_class_end', self::LANG_FILE),
+            RESULTS_ENGINE_AFTER_END   => get_string('results_after_class_end', self::LANG_FILE)
         );
 
         $conditions = array('courseid' => $this->_customdata['courseid']);
@@ -117,18 +117,18 @@ class cmEngineForm extends cmform {
 
         $reporturl = $CFG->wwwroot .'/elis/program/index.php?s='. $page .'&amp;id='. $this->_customdata['id'];
 
-        $activaterule    = get_string('activate_this_rule', self::LANG_FILE);
-        $activationrules = get_string('activation_rules', self::LANG_FILE);
-        $criterion       = get_string('criterion', self::LANG_FILE);
+        $activaterule    = get_string('results_activate_this_rule', self::LANG_FILE);
+        $activationrules = get_string('results_activation_rules', self::LANG_FILE);
+        $criterion       = get_string('results_criterion', self::LANG_FILE);
         $days            = get_string('days');
-        $eventtrigger    = get_string('event_trigger', self::LANG_FILE);
-        $executemanually = get_string('execute_manually', self::LANG_FILE);
-        $gradeset        = get_string('when_student_grade_set', self::LANG_FILE);
-        $on              = get_string('on', self::LANG_FILE);
-        $manualtrigger   = get_string('manual_trigger', self::LANG_FILE);
-        $selectgrade     = get_string('select_grade', self::LANG_FILE);
+        $eventtrigger    = get_string('results_event_trigger', self::LANG_FILE);
+        $executemanually = get_string('results_execute_manually', self::LANG_FILE);
+        $gradeset        = get_string('results_when_student_grade_set', self::LANG_FILE);
+        $on              = get_string('results_on', self::LANG_FILE);
+        $manualtrigger   = get_string('results_manual_trigger', self::LANG_FILE);
+        $selectgrade     = get_string('results_select_grade', self::LANG_FILE);
         $statusreport    = get_string('results_engine_status_report', self::LANG_FILE);
-        $uselocked       = get_string('use_locked_grades',self::LANG_FILE);
+        $uselocked       = get_string('results_use_locked_grades',self::LANG_FILE);
 
         $mform =& $this->_form;
 
@@ -154,7 +154,7 @@ class cmEngineForm extends cmform {
         if ($exists && ($this->_customdata['eventtriggertype'] == RESULTS_ENGINE_MANUAL)) {
             $settings = 'height=200,width=500,top=0,left=0,menubar=0,location=0,scrollbars,'
                       . 'resizable,toolbar,status,directories=0,fullscreen=0,dependent';
-            $url = $CFG->wwwroot .'/elis/program/plugins/results_engine/pop.php?id='. $this->_customdata['id'];
+            $url = $CFG->wwwroot .'/elis/program/engineprocesspopup.php?id='. $this->_customdata['id'];
             $jsondata = array('url'=>$url,'name'=>'resultspopup','options'=>$settings);
             $jsondata = json_encode($jsondata);
             $options  = $attributes;
@@ -207,15 +207,15 @@ class cmEngineForm extends cmform {
      */
     protected function defineResults() {
 
-        $result          = get_string('result', self::LANG_FILE);
-        $addscorerange   = get_string('add_another_score_btn', self::LANG_FILE);
+        $result          = get_string('results_result', self::LANG_FILE);
+        $addscorerange   = get_string('results_add_another_score_btn', self::LANG_FILE);
 
         $mform =& $this->_form;
 
         $assign = array(
-            ACTION_TYPE_CLASS   => get_string('assign_to_class', self::LANG_FILE),
-            ACTION_TYPE_PROFILE => get_string('assign_to_profile', self::LANG_FILE),
-            ACTION_TYPE_TRACK   => get_string('assign_to_track', self::LANG_FILE),
+            ACTION_TYPE_CLASS   => get_string('results_assign_to_class', self::LANG_FILE),
+            ACTION_TYPE_PROFILE => get_string('results_assign_to_profile', self::LANG_FILE),
+            ACTION_TYPE_TRACK   => get_string('results_assign_to_track', self::LANG_FILE),
         );
         $cache = array(
             ACTION_TYPE_CLASS   => array(),
@@ -295,7 +295,7 @@ class cmEngineForm extends cmform {
             $datedelta = new datedelta($data['timetocomplete']);
 
             if(!$datedelta->getDateString()) {
-                $errors['timetocomplete'] = get_string('error_not_timeformat', 'elis_program');
+                $errors['timetocomplete'] = get_string('results_error_not_timeformat', 'elis_program');
             }
         }
 
@@ -303,13 +303,13 @@ class cmEngineForm extends cmform {
             $datedelta = new datedelta($data['frequency']);
 
             if(!$datedelta->getDateString()) {
-                $errors['frequency'] = get_string('error_not_durrationformat', 'elis_program');
+                $errors['frequency'] = get_string('results_error_not_durrationformat', 'elis_program');
             }
         }
 
         if (!empty($data['idnumber'])) {
             if (!$this->check_unique(curriculum::TABLE, 'idnumber', $data['idnumber'], $data['id'])) {
-                $errors['idnumber'] = get_string('badidnumber', 'elis_program');
+                $errors['idnumber'] = get_string('results_badidnumber', 'elis_program');
             }
         }
 
@@ -373,15 +373,15 @@ class cmEngineForm extends cmform {
 
                 if (empty($data[$keymin]) || empty($data[$keymax]) || empty($data[$keyselect])) {
 
-                    $errors[$keygroup] = get_string('error_incomplete_score_range', self::LANG_FILE);
+                    $errors[$keygroup] = get_string('results_error_incomplete_score_range', self::LANG_FILE);
                 }
 
                 if ((int) $data[$keymin] >= (int) $data[$keymax]) {
-                    $errors[$keygroup] = get_string('error_min_larger_than_max', self::LANG_FILE);
+                    $errors[$keygroup] = get_string('results_error_min_larger_than_max', self::LANG_FILE);
                 }
 
                 if (empty($data[$keyselect])) {
-                    $errors[$keygroup] = get_string('error_no_'. $prefix, self::LANG_FILE);
+                    $errors[$keygroup] = get_string('results_error_no_'. $prefix, self::LANG_FILE);
                 }
             }
 
@@ -397,11 +397,11 @@ class cmEngineForm extends cmform {
                 }
 
                 if ((int) $data[$keymin] >= (int) $data[$keymax]) {
-                        $errors[$keygroup] = get_string('error_min_larger_than_max', self::LANG_FILE);
+                        $errors[$keygroup] = get_string('results_error_min_larger_than_max', self::LANG_FILE);
                 }
 
                 if (empty($data[$keyselect])) {
-                    $errors[$keygroup] = get_string('error_no_'. $prefix, self::LANG_FILE);
+                    $errors[$keygroup] = get_string('results_error_no_'. $prefix, self::LANG_FILE);
                 }
 
             }
@@ -469,7 +469,7 @@ class cmEngineForm extends cmform {
     function get_profile_fields() {
         global $CFG, $DB;
 
-        $results   = array('' => get_string('select_profile', self::LANG_FILE));
+        $results   = array('' => get_string('results_select_profile', self::LANG_FILE));
         $userlevel = context_level_base::get_custom_context_level('user', 'elis_program');
 
         $sql = 'SELECT f.id, f.name'
@@ -516,10 +516,10 @@ class cmEngineForm extends cmform {
 
         $typename = $this->types[$type];
 
-        $scoreheader        = get_string('score', self::LANG_FILE);
-        $assigntype         = get_string("assign_to_{$typename}", self::LANG_FILE);
-        $selecttype         = get_string("select_{$typename}", self::LANG_FILE);
-        $valueheader        = get_string('with_selected_value', self::LANG_FILE);
+        $scoreheader        = get_string('results_score', self::LANG_FILE);
+        $assigntype         = get_string("results_assign_to_{$typename}", self::LANG_FILE);
+        $selecttype         = get_string("results_select_{$typename}", self::LANG_FILE);
+        $valueheader        = get_string('results_with_selected_value', self::LANG_FILE);
 
         $output = '';
         $i = 1;
@@ -564,9 +564,9 @@ class cmEngineForm extends cmform {
 
         $typename = $this->types[$type];
 
-        $deletescoretype    = get_string("delete_score", self::LANG_FILE);
-        $notypeselected     = get_string("no_{$typename}_selected", self::LANG_FILE);
-        $selecttype         = get_string("select_{$typename}", self::LANG_FILE);
+        $deletescoretype    = get_string('results_delete_score', self::LANG_FILE);
+        $notypeselected     = get_string("results_no_{$typename}_selected", self::LANG_FILE);
+        $selecttype         = get_string("results_select_{$typename}", self::LANG_FILE);
 
         $setdefault = false;
         $prefix = $typename . '_';
@@ -632,10 +632,10 @@ class cmEngineForm extends cmform {
             $mform->addGroup($score, "{$prefix}{$i}_group", '', '', false);
 
             $key = "{$prefix}{$i}_min";
-            $grouprules[$key][] = array(get_string('error_min_numeric', self::LANG_FILE), 'numeric', null, 'client');
+            $grouprules[$key][] = array(get_string('results_error_min_numeric', self::LANG_FILE), 'numeric', null, 'client');
 
             $key = "{$prefix}{$i}_max";
-            $grouprules[$key][] = array(get_string('error_max_numeric', self::LANG_FILE), 'numeric', null, 'client');
+            $grouprules[$key][] = array(get_string('results_error_max_numeric', self::LANG_FILE), 'numeric', null, 'client');
             $mform->addGroupRule("{$prefix}{$i}_group", $grouprules);
 
             $tablehtml = html_writer::end_tag('td');
@@ -655,7 +655,7 @@ class cmEngineForm extends cmform {
                 $tablehtml .= html_writer::start_tag('td');
                 $mform->addElement('html', $tablehtml);
 
-                $url            = "form/{$typename}selector.php?id={$prefix}{$i}&callback=add_selection";
+                $url            = "{$typename}selector.php?id={$prefix}{$i}&callback=add_selection";
                 $attributes     = array('onclick' => 'show_panel("'.$url.'"); return false;');
                 $output         = html_writer::link('#', $selecttype, $attributes);
                 $mform->addElement('html', $output);
@@ -759,10 +759,10 @@ class cmEngineForm extends cmform {
             return array();
         }
 
-        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.trackid AS selected, t.name, rea.fieldata as value'
+        $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.trackid AS selected, t.name, rea.fielddata as value'
              .' FROM {'.resultsengineaction::TABLE.'} rea'
              .' RIGHT JOIN {'.track::TABLE.'} t ON rea.trackid = t.id'
-             .' WHERE rea.resultengineid = :resultsengineid AND rea.actiontype=0'
+             .' WHERE rea.resultsid = :resultsengineid AND rea.actiontype=0'
              .' ORDER BY minimum ASC';
 
         $params = array('resultsengineid' => $resultsid);
@@ -791,10 +791,10 @@ class cmEngineForm extends cmform {
         }
 
         $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.classid AS selected,'
-             .       ' cls.idnumber AS name, rea.fieldata as value '
+             .       ' cls.idnumber AS name, rea.fielddata as value '
              . 'FROM {'.resultsengineaction::TABLE.'} rea '
              . 'RIGHT JOIN {'.pmclass::TABLE.'} cls ON rea.classid = cls.id '
-             . 'WHERE rea.resultengineid = :resultsengineid AND rea.actiontype=1 '
+             . 'WHERE rea.resultsid = :resultsengineid AND rea.actiontype=1 '
              . 'ORDER BY minimum ASC';
 
         $params = array('resultsengineid' => $resultsid);
@@ -823,10 +823,10 @@ class cmEngineForm extends cmform {
         }
 
         $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.fieldid AS selected,'
-             .' f.name AS name, rea.fieldata as value '
+             .' f.name AS name, rea.fielddata as value '
              .' FROM {'.resultsengineaction::TABLE.'} rea'
              .' RIGHT JOIN {elis_field} f ON f.id = rea.fieldid'
-             .' WHERE rea.resultengineid = :resultsengineid AND rea.actiontype=2'
+             .' WHERE rea.resultsid = :resultsengineid AND rea.actiontype=2'
              .' ORDER BY minimum ASC';
 
         $params = array('resultsengineid' => $resultsid);
