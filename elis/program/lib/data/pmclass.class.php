@@ -749,7 +749,7 @@ class pmclass extends data_object_with_custom_fields {
         $allowed_clusters = array();
 
         if (pmclasspage::_has_capability('elis/program:class_enrol_userset_user', $clsid)) {
-            require_once elispm::lib('data/usercluster.class.php');
+            require_once elispm::lib('data/clusterassignment.class.php');
             $cmuserid = pm_get_crlmuserid($USER->id);
             $userclusters = clusterassignment::find(new field_filter('userid', $cmuserid));
             foreach ($userclusters as $usercluster) {
