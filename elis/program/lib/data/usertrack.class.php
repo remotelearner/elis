@@ -164,6 +164,14 @@ class usertrack extends elis_data_object {
         $classes = $DB->get_records_sql($sql, $params);
         if (!empty($classes)) {
             foreach ($classes as $class) {
+                // ELIS-3460: check pre-requisites ...
+                $curcrs = new curriculumcourse(
+                                  array('courseid' => $class->courseid,
+                                        'curriculumid' => $track->curid));
+                if (!$curcrs->prerequisites_satisfied($userid)) {
+                    //error_log("/elis/program/lib/data/usertrack.class.php::enrol({$userid}); pre-requisites NOT satisfied for course: {$class->courseid}, curriculum: {$track->curid}");
+                    continue;
+                }
                 $now = time();
                 // enrol user in each autoenrolable class
                 $stu_record = new object();
@@ -287,7 +295,6 @@ class usertrack extends elis_data_object {
         $sql = $select.$tables.$join.$where./*$group.*/$sort;
         return $DB->get_records_sql($sql, $params, $page * $perpage, $perpage);
     }
-
 
     /**
      * Get a list of the tracks assigned to this user.

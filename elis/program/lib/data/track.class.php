@@ -662,7 +662,7 @@ class trackassignment extends elis_data_object {
         // Determine whether class is required
         $curcrsobj = new curriculumcourse(
             array('curriculumid' => $this->track->curid,
-                  'courseid'     => $this->classid));
+                  'courseid'     => $this->courseid)); // TBV: was $this->classid
 
         // insert assignment record
         parent::save(); //updated for ELIS2 from $this->data_insert_record()
@@ -671,15 +671,36 @@ class trackassignment extends elis_data_object {
             // autoenrol all users in the track
             $users = usertrack::get_users($this->trackid);
             foreach ($users as $user) {
+                // ELIS-3460: Must check pre-requisites ...
+                if (!$curcrsobj->prerequisites_satisfied($user->userid)) {
+                    //error_log("/elis/program/lib/data/track.class.php:trackassignment::save(); pre-requisites NOT satisfied for course: {$this->courseid}, curriculum: {$this->track->curid}");
+                    continue;
+                }
+                $now = time();
                 $stu_record = new object();
                 $stu_record->userid = $user->userid;
                 $stu_record->user_idnumber = $user->idnumber;
                 $stu_record->classid = $this->classid;
-                $stu_record->enrolmenttime = time();
+                $stu_record->enrolmenttime = $now;
 
                 $enrolment = new student($stu_record);
-                // check prerequisites and enrolment limits
-                $enrolment->save(array('prereq' => 1, 'waitlist' => 1));
+                // check enrolment limits
+                try {
+                    $enrolment->save();
+                } catch (pmclass_enrolment_limit_validation_exception $e) {
+                    // autoenrol into waitlist
+                    $wait_record = new object();
+                    $wait_record->userid = $user->userid;
+                    $wait_record->classid = $this->classid;
+                    $wait_record->enrolmenttime = $now;
+                    $wait_record->timecreated = $now;
+                    $wait_record->position = 0;
+                    $wait_list = new waitlist($wait_record);
+                    $wait_list->save();
+                } catch (Exception $e) {
+                    echo cm_error(get_string('record_not_created_reason',
+                                             'elis_program', $e));
+                }
             }
         }
 
