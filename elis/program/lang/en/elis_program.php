@@ -347,9 +347,8 @@ $string['edit_course_prerequisites'] = 'Edit Course Description Prerequisites';
 $string['edit_student_attendance'] = 'Edit Student Attendance';
 $string['elis_config'] = 'ELIS Configuration';
 $string['elis_doc_class_link'] = '<strong>Documentation for ELIS</strong> &mdash; we have over 200
-pages of documentation for ELIS in our <a href="http://training.remote-learner.net/course/view.php?id=1090">ELIS Support Course</a>.
-You can access this course by logging in as a guest.  If you have problems
-accessing this course, please contact your sales representative.';
+pages of documentation for ELIS in our <a href="http://rlcommunity.remote-learner.net">ELIS Support Course</a>.
+If you have problems accessing this course, please contact your sales representative.';
 $string['elis_settings'] = 'ELIS Settings';
 $string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a}';
 $string['email'] = 'Email address';
