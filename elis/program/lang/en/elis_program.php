@@ -306,7 +306,7 @@ This type of role assignment will not take place for a particular program if tha
 To disable this functionality, select "N/A" from the list.';
 $string['curriculum_role_setting'] = 'Default Program Role';
 $string['curriculum_shortdescription'] = 'Short description';
-$string['curriculum_userid_mismatch'] = 'Your current user ID does not match the user ID for this curriculum completion.';
+$string['curriculum_userid_mismatch'] = 'Your current user ID does not match the user ID for this program completion.';
 $string['customfields'] = 'Custom fields';
 
 $string['dashboard'] = 'Dashboard';
@@ -367,7 +367,7 @@ $string['enrolstudents'] = 'Enrol Student'; // TBD (s) ?
 $string['environment'] = 'Environment';
 $string['error_bulk_delete'] = 'Error deleting users.';
 $string['error_bulk_inactive'] = 'Error marking users as inactive.';
-$string['error_curriculum_incomplete'] = 'Error: curriculum not completed.';
+$string['error_curriculum_incomplete'] = 'Error: program not completed.';
 $string['error_date_range'] = 'Start date must be before the end date.';
 $string['error_duration'] = 'Start time must be before the end time.';
 $string['error_n_overenrol'] = 'The over enrol capability is required for this';
@@ -485,7 +485,7 @@ $string['instructors'] = 'Instructors';
 $string['interface_settings'] = 'Interface Settings';
 $string['invalid_category_id'] = 'Invalid category ID';
 $string['invalid_context_level'] = 'Invalid context level';
-$string['invalid_curriculum_completion'] = 'Invalid curriculum completion.';
+$string['invalid_curriculum_completion'] = 'Invalid program completion.';
 $string['invalid_field_id'] = 'Invalid field ID';
 $string['invalid_objectid'] = 'Invalid object id: {$a->id}';
 $string['invalidconfirm'] = 'Invalid confirmation code!';
@@ -503,7 +503,7 @@ $string['legacy_show_inactive_users_help'] = 'If this setting is enabled, inacti
 $string['length_description'] = 'Length Description';
 $string['lp_class_instructions'] = 'This listing indicates all programs you have been assigned to, as well as all class instances within those programs that you are currently enrolled in (automatically or manually).<br/><br/>
                                     This listing also includes class instances you are currently enrolled in that are not included in any programs, if applicable.';
-$string['lp_curriculum_instructions'] = 'This listing indicates all curricula you have been assigned to, as well as all courses within those curricula, whether or not you are enrolled in them through classes.<br/><br/>
+$string['lp_curriculum_instructions'] = 'This listing indicates all programs you have been assigned to, as well as all courses within those programs, whether or not you are enrolled in them through classes.<br/><br/>
                                          This listing also includes the classes that you are enrolled in for the applicable courses.';
 $string['lp_waitlist_instructions'] = 'This listing indicates all programs you have been assigned to, as well as all class instances tied to course descriptions in those programs that you are on the waiting list for.';
 
