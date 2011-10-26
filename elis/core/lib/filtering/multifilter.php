@@ -61,6 +61,8 @@ class generalized_filter_multifilter {
     const filtertype_custom_field_select = 'custom_field_select';
     const filtertype_custom_field_text   = 'custom_field_text';
 
+    const languagefile = 'elis_core';
+
     // This array should map each field to a filter type
     protected $fieldtofiltermap = array();
 
@@ -84,17 +86,17 @@ class generalized_filter_multifilter {
         self::filtertypeselect               => 1,
     );
 
+    // to store custom choices
+    protected $_choices = array();
+
+    // to store the field list
+    protected $_fields = array();
+
     // The field-based filters, the field id keyes the array, and the value is a filter object
     protected $_filters = array();
 
     // to store/check truncated field names used for filterids
     protected $_shortfields = array();
-
-    // to store custom choices
-    protected $_choices = array();
-
-    // to store custom choices
-    protected $_fields = array();
 
     // This is the field to be returned by the custom profile fields.
     protected $_innerfield = array('default' => 'id');
@@ -270,6 +272,59 @@ class generalized_filter_multifilter {
             }
         }
         $this->sections[$group]['custom'] = $options;
+    }
+
+    /**
+     * Make field list
+     *
+     * @param array $groups A two dimensional array of groups => choices => values
+     */
+    function make_field_list($groups) {
+
+        // Force $options['choices'] to be an associative array
+        foreach ($groups as $key => $choices) {
+            if (!$this->is_assoc_array($choices)) {
+                $groups[$key] = array_fill_keys($choices, '');
+            }
+        }
+
+        // Generate a list of custom fields
+        foreach ($this->sections as $group => $section) {
+            $ctxtlvl = context_level_base::get_custom_context_level(
+                    $section['name'], 'block_curr_admin');
+
+            $this->sections[$group]['contextlevel'] = $ctxtlvl;
+
+            // Add custom fields to array
+            $extrafields = field::get_for_context_level($ctxtlvl);
+            $this->get_custom_fields($group, $extrafields);
+        }
+
+        // Generate the standard fields
+        foreach ($groups as $group => $choices) {
+            $this->_fields[$group] = array();
+            foreach ($choices as $name => $alias) {
+                $label = $name;
+
+                if (! empty($alias)) {
+                    $label = get_string($alias, self::languagefile);
+                } else if (array_key_exists($name, $this->labels[$group])) {
+                    $label = get_string($this->labels[$group][$name], self::languagefile);
+                } else {
+                    foreach ($this->sections as $section) {
+
+                        if (array_key_exists($name, $section['custom'])) {
+                            $label = $section['custom'][$name];
+                        }
+                    }
+                }
+                $this->_fields[$group][$name] = $label;
+            }
+
+            if (!empty($this->sections[$group]['custom'])) {
+                $this->_fields[$group] = array_merge($this->fields[$group], $this->sections[$group]['custom']);
+            }
+        }
     }
 
     /**
