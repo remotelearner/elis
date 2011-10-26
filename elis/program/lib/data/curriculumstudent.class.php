@@ -164,7 +164,7 @@ class curriculumstudent extends elis_data_object {
         // Get course info
         $program = $this->_db->get_record(curriculum::TABLE, array('id' => $this->curriculumid));
 
-        $replace = array(fullname($user), $program->name);
+        $replace = array(fullname($pmuser), $program->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
