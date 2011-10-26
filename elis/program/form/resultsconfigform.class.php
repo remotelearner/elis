@@ -30,8 +30,10 @@ class resultsconfigform extends moodleform {
         }
 
         $mform->addElement('hidden', 'rowcount',$cd['nrc'],array('id'=>'rowcount'));
-
         $mform->addElement('submit','addrange',get_string('results_add_another_score_btn', 'elis_program'),array('onclick'=>'$(\'#rowcount\').val(parseInt($(\'#rowcount\').val())+1)'));
+
+        $this->add_additional_form_elements();
+
         $mform->addElement('submit','finalize',get_string('savechanges'));
     }
 /*
@@ -43,6 +45,10 @@ class resultsconfigform extends moodleform {
         return $this->normalize_submitted_data($this->get_raw_dynamic_data());
     }
 */
+    protected function add_additional_form_elements() {
+        return true;
+    }
+
     protected function generate_row_additional_elements(&$group,$i) {
         return true;
     }
