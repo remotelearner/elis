@@ -781,10 +781,13 @@ function block_curr_admin_create_instance() {
     $dummy_page->blocks->set_default_region('side-pre');
     $dummy_page->blocks->add_block_at_end_of_default_region('curr_admin');
 
-    // Update the block instanceso that it shows up in subcontexts
+    // Update the block instance so that it shows up in subcontexts
     $params = array('blockname' => 'curr_admin');
     if ($block_instance_record = $DB->get_record('block_instances', $params)) {
         $block_instance_record->showinsubcontexts = 1;
+        // Force location
+        $block_instance_record->defaultregion = 'side-pre'; // ELIS-3452: TBD
+        $block_instance_record->defaultweight = -1; // ELIS-3452: TBD
         $DB->update_record('block_instances', $block_instance_record);
     }
 }

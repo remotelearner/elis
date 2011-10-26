@@ -176,6 +176,16 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2011092101, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2011102600) {
+        require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
+        //make sure the site has exactly one curr admin block instance
+        //that is viewable everywhere
+        // w/ defaultweight = -1, defaultregion = 'side-pre'
+        block_curr_admin_create_instance();
+
+        upgrade_plugin_savepoint(true, 2011102600, 'elis', 'program');
+    }
+
     return $result;
 }
 
