@@ -56,6 +56,7 @@ class generalized_filter_radiobuttons extends generalized_filter_type {
      *     keys are radio button 'values' numbers or strings (eg DB field vals)
      *     values are radio button label strings
      * 'checked'  => single key (from 'choices') to be intially checked
+     * 'default'  => single key (from 'choices') to be used as default.
      * 'advanced' => boolean - true if radio buttons are advanced form elements
      * 'prelabels' => array
      *     keys are same as 'choices' keys
@@ -179,6 +180,16 @@ class generalized_filter_radiobuttons extends generalized_filter_type {
 
     function get_report_parameters($data) {
         return array('value' => $data['value']);
+    }
+
+    function get_default_values($filter_data) {
+        if (isset($this->_options['default'])) {
+            foreach($filter_data as $key => $val) {
+                // Should be only the one key ...
+                return array($key => $this->_options['default']);
+            }
+        }
+        return parent::get_default_values($filter_data);
     }
 
 }
