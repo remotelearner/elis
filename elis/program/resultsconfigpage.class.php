@@ -54,15 +54,14 @@ class resultsconfigpage extends pm_page {
 
         $this->customdata=array('nrc'=>optional_param('rowcount',$saved_row_count,PARAM_INT),'defaults'=>$defaults);
 
-        $target = $this->get_new_page(array('action' => 'default'));
-        $form = new $this->form_class($target->url,$this->customdata);
+        $form = $this->get_form();
         $data = (array)$form->get_data();
 
         if (!empty($data) && isset($data['finalize'])) {
             //form being saved
             $data=serialize($this->normalize_submitted_data($data));
             pm_set_config('results_engine_defaults', $data);
-            $target = $this->get_new_page(array('action' => 'default'), false);
+            $target = $this->get_new_page(array('s'=>'resultsconfig','action' => 'default'), false);
             redirect($target->url);
             return;
         } else {
@@ -71,9 +70,14 @@ class resultsconfigpage extends pm_page {
     }
 
     function display_default() {
-        $target = $this->get_new_page(array('action' => 'default'));
-        $form = new $this->form_class($target->url,$this->customdata);
 
+        $form = $this->get_form();
         $form->display();
+    }
+
+    function get_form() {
+        $target = $this->get_new_page(array('s'=>'resultsconfig','action' => 'default'));
+        $form = new $this->form_class($target->url,$this->customdata);
+        return $form;
     }
 }

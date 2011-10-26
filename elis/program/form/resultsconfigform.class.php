@@ -5,8 +5,18 @@ defined('MOODLE_INTERNAL') || die();
 require_once ($CFG->dirroot . '/lib/formslib.php');
 
 class resultsconfigform extends moodleform {
+    public $title;
 
-    function definition() {
+    public function __construct($action=null, $customdata=null) {
+        $this->populate_title();
+        parent::__construct($action, $customdata);
+    }
+
+    public function populate_title() {
+        $this->title=get_string('results_engine_defaults_config','elis_program');
+    }
+
+    public function definition() {
         global $OUTPUT, $PAGE;
         $PAGE->requires->js('/elis/program/js/results_engine/jquery-1.6.2.min.js', true);
         $PAGE->requires->js('/elis/program/js/results_engine/results_config.js', true);
@@ -14,7 +24,7 @@ class resultsconfigform extends moodleform {
         $mform =& $this->_form;
         $cd=(array)$this->_customdata;
         $cd['nrc']=(isset($cd['nrc']))?$cd['nrc']:1;
-        $mform->addElement('header', 'activationrules', get_string('results_engine_defaults_config','elis_program'));
+        $mform->addElement('header', 'activationrules',$this->title);
         for($i=1;$i<=$cd['nrc'];$i++){
             $this->generate_row($i,$mform);
         }
@@ -33,7 +43,11 @@ class resultsconfigform extends moodleform {
         return $this->normalize_submitted_data($this->get_raw_dynamic_data());
     }
 */
-    function generate_row($i,&$mform,$id='d') {
+    protected function generate_row_additional_elements(&$group,$i) {
+        return true;
+    }
+
+    protected function generate_row($i,&$mform,$id='d') {
         global $OUTPUT;
 
         $textgroup=array();
@@ -44,8 +58,8 @@ class resultsconfigform extends moodleform {
         $textgroup[]=&$mform->createElement('text','maxinput','Max',array('size'=>5));
         $textgroup[]=&$mform->createElement('static','namelabel','','Name');
         $textgroup[]=&$mform->createElement('text','nameinput','Name');
-
         $textgroup[]=&$mform->createElement('static','deleteLink','','<img src="'.$OUTPUT->pix_url('delete','elis_program').'" onclick="delete_row('.$i.',$(this))" alt="Delete" style="cursor:pointer" title="Delete" /></a>');
+        $this->generate_row_additional_elements($textgroup,$i);
 
         $mform->addGroup($textgroup,'textgroup_'.$i);
         if (!empty($this->_customdata['defaults'][$i]))
