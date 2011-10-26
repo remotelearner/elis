@@ -33,6 +33,9 @@ $string['data_object_validation_unique'] = '{$a->tablename} record must have uni
 $string['date'] = 'Date filter';
 $string['date_help'] = '<h1>Date filter</h1>
 <p>This filter allows you to filter information from before and/or after selected dates.</p>';
+$string['displaytext'] = 'Display text';
+$string['displaytext_help'] = '<h1>Display text</h1>
+<p>This filter allows you to display custom text in the report header, there are usually predefined fields, but this report has neglected to define them.</p>';
 $string['elis'] = 'ELIS';
 $string['elisversion'] = '<strong>ELIS Version:</strong> {$a}';
 $string['finish'] = 'Finish';
@@ -202,7 +205,7 @@ $string['subplugintype_eliscoreplugins_plural'] = 'General plugins';
 $string['subplugintype_elisfields_plural'] = 'Custom field types';
 $string['text'] = 'Text filter';
 $string['text_help'] = '<h1>Text filter</h1>
-<p>This filter allows you to filter information based on a free form text. 
+<p>This filter allows you to filter information based on a free form text.
 The filter has the following options:</p>
 <ul>
 <li>contains - this option allows only information that contains the text entered (if no text is entered, then the filter is disabled)</li>
