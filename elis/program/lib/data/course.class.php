@@ -548,7 +548,7 @@ class course extends data_object_with_custom_fields {
         $context = get_system_context();
 
         /// Make sure this is a valid user.
-        $enroluser = new user($user->id);
+        $enroluser = new user($user->userid);
         // Due to lazy loading, we need to pre-load this object
         $enroluser->load();
         if (empty($enroluser->id)) {
