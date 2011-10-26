@@ -46,8 +46,15 @@ class coursetemplate extends elis_data_object {
         return context_level_base::get_custom_context_level('course', 'elis_program');
     }
 
-    // overriding method, parameter is now the course id
-    function data_load_record($id) {
+    /**
+     * Deprecated: this method should no longer be used!
+     * Instead use:
+     *     coursetemplate::find(new field_filter('courseid', $id));
+     *
+     * @param  $id parameter is the course id
+     * @return boolean true on successful loading, false otherwise.
+     */
+    public function load_data_from_record($id) {
         if (is_string($id) && !is_numeric($id)) {
             /// $id can be a select string...
             $select = $id;
@@ -68,7 +75,8 @@ class coursetemplate extends elis_data_object {
             }
         }
 
-        $this->_dbloaded = true;
+        $this->_is_loaded = true;
+        $this->_is_saved  = true; // TBD???
 
         return true;
     }
