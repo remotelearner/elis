@@ -140,23 +140,23 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
     protected $fieldtofiltermap = array(
         'up' => array(
             // fullname_field must be added later, requires user table alias
-            'lastname'     => generalized_filter_userprofilematch::filtertypetext,
-            'firstname'    => generalized_filter_userprofilematch::filtertypetext,
-            'idnumber'     => generalized_filter_userprofilematch::filtertypetext,
-            'email'        => generalized_filter_userprofilematch::filtertypetext,
-            'city'         => generalized_filter_userprofilematch::filtertypetext,
-            'country'      => generalized_filter_userprofilematch::filtertypecountry,
-            'username'     => generalized_filter_userprofilematch::filtertypetext,
-            'lang'         => generalized_filter_userprofilematch::filtertypeselect,
-            'confirmed'    => generalized_filter_userprofilematch::filtertypetristate,
-            'crsrole'      => generalized_filter_userprofilematch::filtertypeselect,
-            'crscat'       => generalized_filter_userprofilematch::filtertypeselect,
-            'sysrole'      => generalized_filter_userprofilematch::filtertypeselect,
-            'firstaccess'  => generalized_filter_userprofilematch::filtertypedate,
-            'lastaccess'   => generalized_filter_userprofilematch::filtertypedate,
-            'lastlogin'    => generalized_filter_userprofilematch::filtertypedate,
-            'timemodified' => generalized_filter_userprofilematch::filtertypedate,
-            'auth'         => generalized_filter_userprofilematch::filtertypeselect
+            'lastname'     => self::filtertypetext,
+            'firstname'    => self::filtertypetext,
+            'idnumber'     => self::filtertypetext,
+            'email'        => self::filtertypetext,
+            'city'         => self::filtertypetext,
+            'country'      => self::filtertypecountry,
+            'username'     => self::filtertypetext,
+            'lang'         => self::filtertypeselect,
+            'confirmed'    => self::filtertypetristate,
+            'crsrole'      => self::filtertypeselect,
+            'crscat'       => self::filtertypeselect,
+            'sysrole'      => self::filtertypeselect,
+            'firstaccess'  => self::filtertypedate,
+            'lastaccess'   => self::filtertypedate,
+            'lastlogin'    => self::filtertypedate,
+            'timemodified' => self::filtertypedate,
+            'auth'         => self::filtertypeselect
         )
     );
 
@@ -214,7 +214,7 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
      * @return array of sub-filters
      * @uses $DB
      */
-    function generalized_filter_userprofilematch($uniqueid, $label, $options = array()) {
+    function __construct($uniqueid, $label, $options = array()) {
         global $DB;
 
         parent::multifilter($uniqueid, $label, $options);
@@ -247,8 +247,7 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
             }
         }
 
-        $this->fieldtofiltermap['up']['fullname'] =
-                    generalized_filter_userprofilematch::filtertypetext;
+        $this->fieldtofiltermap['up']['fullname'] = self::filtertypetext;
 
         if (array_key_exists('choices', $options)) {
             $this->make_field_list($options['choices']);
@@ -356,8 +355,7 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
                 $lastname  = $this->tables[$group]['user'] .'.lastname';
                 $options['dbfield'] = $DB->sql_concat($firstname, "' '", $lastname);
                 $options['talias'] = '';
-                $this->fieldtofiltermap[$group][$options['dbfield']] =
-                        generalized_filter_userprofilematch::filtertypetext;
+                $this->fieldtofiltermap[$group][$options['dbfield']] = self::filtertypetext;
                 break;
             case 'country': // TBD: new 'country' filter spec???
                 $countries = $manager->get_list_of_countries();
