@@ -186,6 +186,27 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2011102600, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2011102700) {
+        $table = new XMLDBTable('crlm_user_moodle');
+        $table->comment = 'Association between Moodle and CM users';
+
+        //fields
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('cuserid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('muserid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('idnumber', XMLDB_TYPE_CHAR, '100', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+
+        // PK and indexes
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('cuserid_fk', XMLDB_KEY_FOREIGN, array('cuserid'), 'crlm_user', array('id'));
+        $table->add_key('muserid_fk', XMLDB_KEY_FOREIGN, array('muserid'), 'user', array('id'));
+        $table->add_index('idnumber_idx', XMLDB_INDEX_UNIQUE, array('idnumber'));
+
+        $dbman->create_table($table);
+
+        upgrade_plugin_savepoint(true, 2011102700, 'elis', 'program');
+    }
+
     return $result;
 }
 

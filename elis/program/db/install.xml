@@ -500,7 +500,7 @@
         <INDEX NAME="cluster_idx" UNIQUE="false" FIELDS="clusterid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_wait_list" COMMENT="Wait list for classes" PREVIOUS="crlm_cluster_track">
+    <TABLE NAME="crlm_wait_list" COMMENT="Wait list for classes" PREVIOUS="crlm_cluster_track" NEXT="crlm_user_moodle">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
         <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
@@ -512,6 +512,22 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+    </TABLE>
+    <TABLE NAME="crlm_user_moodle" COMMENT="Association between Moodle and CM users" PREVIOUS="crlm_wait_list">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="cuserid"/>
+        <FIELD NAME="cuserid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" PREVIOUS="id" NEXT="muserid"/>
+        <FIELD NAME="muserid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" PREVIOUS="cuserid" NEXT="idnumber"/>
+        <FIELD NAME="idnumber" TYPE="char" LENGTH="255" NOTNULL="true" PREVIOUS="muserid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="cuserid_fk"/>
+        <KEY NAME="cuserid_fk" TYPE="foreign" FIELDS="cuserid" REFTABLE="crlm_user" REFFIELDS="id" PREVIOUS="primary" NEXT="muserid_fk"/>
+        <KEY NAME="muserid_fk" TYPE="foreign" FIELDS="muserid" REFTABLE="user" REFFIELDS="id" PREVIOUS="cuserid_fk"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="idnumber_idx" UNIQUE="true" FIELDS="idnumber"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>
