@@ -186,7 +186,9 @@ abstract class managementpage extends pm_page {
             echo html_writer::empty_tag('br', array('clear' => 'all'));
 
             $table = $this->create_table_object($items, $columns);
+            echo html_writer::start_tag('div', array('style' => 'overflow-x:auto;overflow-y:hidden;-ms-overflow-y:hidden;'));
             echo $table->get_html();
+            echo html_writer::end_tag('div');
         }
     }
 
@@ -275,7 +277,7 @@ abstract class managementpage extends pm_page {
     public function print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=false, $searchflag=false) {
         $sparam = new stdClass;
         $sparam->num = $numitems;
-        echo html_writer::tag('div', get_string("num_{$this->data_class}_found", 'elis_program', $sparam), array('style', 'float: right'));
+        echo html_writer::tag('div', get_string("num_{$this->data_class}_found", 'elis_program', $sparam) /*, array('style' => 'float: right;') */);
 
         if($alphaflag) {
             $this->print_alpha();
