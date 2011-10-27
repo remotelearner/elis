@@ -315,6 +315,8 @@ class user extends data_object_with_custom_fields {
     function synchronize_moodle_user($tomoodle = true, $createnew = false) {
         global $CFG;
 
+        require_once(elispm::lib('data/usermoodle.class.php'));
+
         static $mu_loop_detect = array();
 
         // Create a new Moodle user record to update with.
@@ -420,6 +422,13 @@ class user extends data_object_with_custom_fields {
                     events_trigger('user_updated', $record);
                 }
             } else {
+                // if no user association record exists, create one
+                $um = new usermoodle();
+                $um->cuserid  = $this->id;
+                $um->muserid  = $record->id;
+                $um->idnumber = $this->idnumber;
+                $um->save();
+
                 events_trigger('user_created', $record);
             }
 
