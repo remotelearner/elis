@@ -225,6 +225,8 @@ class user extends data_object_with_custom_fields {
     }
 
     public function get_moodleuser() {
+        //note: we can't change this check to use the crlm_user_moodle table because when syncing
+        //Moodle users to the PM system, the PM user is inserted before the association record is
         return $this->_db->get_record('user', array('idnumber' => $this->idnumber, 'deleted' => 0));
     }
 

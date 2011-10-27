@@ -667,6 +667,7 @@ function pm_moodle_user_to_pm($mu) {
     global $CFG, $DB;
     require_once(elis::lib('data/customfield.class.php'));
     require_once(elispm::lib('data/user.class.php'));
+    require_once(elispm::lib('data/usermoodle.class.php'));
     require_once($CFG->dirroot . '/user/profile/lib.php');
     // re-fetch, in case this is from a stale event
     $mu = $DB->get_record('user', array('id' => $mu->id));
@@ -678,6 +679,37 @@ function pm_moodle_user_to_pm($mu) {
     // skip user if no ID number set
     if (empty($mu->idnumber)) {
         return true;
+    }
+
+    // track whether we're syncing an idnumber change over to the PM system
+    $idnumber_updated = false;
+    // track whether an associated Moodle user is linked to the current PM user
+    $moodle_user_exists = false;
+
+    // determine if the user is already noted as having been associated to a PM user
+    if ($um = usermoodle::find(new field_filter('muserid', $mu->id))) {
+        if ($um->valid()) {
+            $um = $um->current();
+
+            //signal that an associated user already exists
+	        $moodle_user_exists = true;
+
+	        // determine if the Moodle user idnumber was updated
+	        if ($um->idnumber != $mu->idnumber) {
+                //signal that the idnumber was synced over
+	            $idnumber_updated = true;
+
+	            // update the PM user with the new idnumber
+	            $cmuser = new user();
+	            $cmuser->id = $um->cuserid;
+	            $cmuser->idnumber = $mu->idnumber;
+	            $cmuser->save();
+
+	            // update the association table with the new idnumber
+	            $um->idnumber = $mu->idnumber;
+	            $um->save();
+	        }
+        }
     }
 
     // find the PM user with the same idnumber
@@ -702,7 +734,12 @@ function pm_moodle_user_to_pm($mu) {
     // synchronize standard fields
     $cu->username = $mu->username;
     $cu->password = $mu->password;
-    $cu->idnumber = $mu->idnumber;
+
+    // only need to update the idnumber if it wasn't handled above
+    if (!$idnumber_updated) {
+        $cu->idnumber = $mu->idnumber;
+    }
+
     $cu->firstname = $mu->firstname;
     $cu->lastname = $mu->lastname;
     $cu->email = $mu->email;
@@ -734,6 +771,15 @@ function pm_moodle_user_to_pm($mu) {
     }
 
     $cu->save();
+
+    // if no user association record exists, create one
+    if (!$moodle_user_exists) {
+        $um = new usermoodle();
+        $um->cuserid  = $cu->id;
+        $um->muserid  = $mu->id;
+        $um->idnumber = $mu->idnumber;
+        $um->save();
+    } 
 
     return true;
 }
