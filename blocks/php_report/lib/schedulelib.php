@@ -1130,7 +1130,8 @@ class scheduling_page extends workflowpage {
         if (isset($workflowdata['timezone'])) {
             $data->timezone = $workflowdata['timezone'];
         }
-        if (isset($workflowdata['startdate'])) {
+        if (isset($workflowdata['startdate']) &&
+            !(from_gmt($workflowdata['startdate'], $data->timezone) % DAYSECS)) {
             $data->starttype = 1;
             $data->startdate = $workflowdata['startdate'];
             $data->startdate = from_gmt($data->startdate, $data->timezone);
