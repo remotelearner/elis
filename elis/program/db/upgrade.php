@@ -187,6 +187,7 @@ function xmldb_elis_program_upgrade($oldversion=0) {
     }
 
     if ($result && $oldversion < 2011102700) {
+        //create table for storing the association between Moodle and PM users
         $table = new XMLDBTable('crlm_user_moodle');
         $table->comment = 'Association between Moodle and CM users';
 
@@ -203,6 +204,15 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $table->add_index('idnumber_idx', XMLDB_INDEX_UNIQUE, array('idnumber'));
 
         $dbman->create_table($table);
+
+        // populate data from existing Moodle and PM user tables
+        $sql = "INSERT
+                INTO {crlm_user_moodle} (cuserid, muserid, idnumber)
+                SELECT cu.id, mu.id, cu.idnumber
+                FROM {crlm_user} cu
+                JOIN {user} mu ON cu.idnumber = mu.idnumber";
+
+        $DB->execute($sql);
 
         upgrade_plugin_savepoint(true, 2011102700, 'elis', 'program');
     }
