@@ -101,14 +101,19 @@ class generalized_filter_text extends generalized_filter_type {
         $field    = $this->_uniqueid;
         $operator = $field.'_op';
 
-        if (property_exists($formdata, $operator) &&
-            property_exists($formdata, $field)) {
-            if ($formdata->$operator != 5 and $formdata->$field == '') {
+        if (property_exists($formdata, $operator)) {
+            $value = (property_exists($formdata, $field) && !empty($formdata->$field))
+                     ? $formdata->$field : '';
+            //ELIS-3478: Fixed problems with 'is_empty' operator
+          /*
+            if ($formdata->$operator != 5 and $value == '') {
                 // no data - no change except for empty filter
                 return false;
             }
-            $value = empty($formdata->$field) ? '' : $formdata->$field;
-            return array('operator'=>(int)$formdata->$operator, 'value'=>$value);
+            //$value = empty($formdata->$field) ? '' : $formdata->$field;
+          */
+            return array('operator' => (int)$formdata->$operator,
+                            'value' => $value);
         }
 
         return false;
