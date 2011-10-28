@@ -342,22 +342,33 @@ abstract class workflowpage extends elis_page {
      * method.
      * @param string $nextlabel the label for the Next button.  If null,
      * default to the language string for "Next" (or "Finish").
+     * @uses $CFG
+     * @uses $FULLME
      */
     public static function add_navigation_buttons(MoodleQuickForm $mform, $prevstep = null, $nextstep = null, $nextlabel = null) {
-        global $CFG;
+        global $CFG, $FULLME;
         require_once ($CFG->dirroot.'/elis/core/lib/form/xbutton.php');
-        $buttonarray=array();
+        // ELIS-3501: Previous button was broken in IE7, changed to onclick
+        $target = null;
+        if ($prevstep && ($workflow_id = optional_param('_wfid', 0, PARAM_INT))) {
+            $target = new moodle_url($FULLME, array('_wfid' => $workflow_id,
+                                                    '_step' => $prevstep));
+            $target = $target->out(false);
+        }
+        $buttonarray = array();
         $cancelbutton = $mform->createElement('xbutton', 'action', get_string('cancel'), array('value' => 'cancel', 'type' => 'submit'));
         $buttonarray[] = $cancelbutton;
         if ($nextstep === workflow::STEP_FINISH) {
-            if ($prevstep) {
-                $prevbutton = $mform->createElement('xbutton', '_step', get_string('previous'), array('value' => $prevstep, 'type' => 'submit'));
+            if ($target) {
+                $prevbutton = $mform->createElement('xbutton', 'previous', get_string('previous'), array('value' => $prevstep, 'type' => 'button',
+                         'onclick' => "window.location = '{$target}';"));
                 $buttonarray[] = $prevbutton;
             }
             $nextbutton = $mform->createElement('xbutton', 'action', $nextlabel === null ? get_string('finish', 'elis_core') : $nextlabel, array('value' => 'finish', 'type' => 'submit'));
         } else {
-            if ($prevstep) {
-                $prevbutton = $mform->createElement('xbutton', '_next_step', get_string('previous'), array('value' => $prevstep, 'type' => 'submit'));
+            if ($target) {
+                $prevbutton = $mform->createElement('xbutton', 'previous', get_string('previous'), array('value' => $prevstep, 'type' => 'button',
+                         'onclick' => "window.location = '{$target}';"));
                 $buttonarray[] = $prevbutton;
             }
             $nextbutton = $mform->createElement('xbutton', $nextstep === null ? '' : '_next_step', $nextlabel === null ? get_string('next') : $nextlabel, array('value' => $nextstep, 'type' => 'submit'));
