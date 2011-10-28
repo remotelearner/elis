@@ -770,7 +770,9 @@ function pm_moodle_user_to_pm($mu) {
         }
     }
 
-    $cu->save();
+    //specifically tell the user save not to use the crlm_user_moodle for syncing
+    //because the record hasn't been inserted yet (see below)
+    $cu->save(false);
 
     // if no user association record exists, create one
     if (!$moodle_user_exists) {
