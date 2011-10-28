@@ -1,5 +1,22 @@
 <?php
 /**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
  * userprofilematch.php - PHP Report filter
  *
  * Group of filters for matching user profile fields
@@ -93,8 +110,8 @@
  * }
  *
  * @author Brent Boghosian <brent.boghosian@remote-learner.net>
- * @version $Id$
- * @package curriculum/lib/filtering
+ * @package elis-core
+ * @subpackage filtering
  * @license  http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
  */
@@ -198,8 +215,6 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
     protected $_heading;
     protected $_footer;
 
-    protected $languagefile = 'elis_core';
-
     protected $sections = array('up' => array('name' => 'user'));
 
     //specify that we use the "data" column to filter user profile data
@@ -217,12 +232,11 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
     function __construct($uniqueid, $label, $options = array()) {
         global $DB;
 
-        parent::multifilter($uniqueid, $label, $options);
+        parent::__construct($uniqueid, $label, $options);
 
         if (empty($options['help'])) {
             $options['help'] = array();
         }
-        $langfile = $this->languagefile;
 
         // Get table aliases
         if (empty($options['tables'])) {
@@ -405,5 +419,3 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
     }
 
 }
-
-?>

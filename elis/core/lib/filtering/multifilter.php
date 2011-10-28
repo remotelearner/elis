@@ -16,8 +16,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ *
+ * multifilter - Base class for handling groups of filters
+ *
+ * Configuration options include:
+ *  ['choices'] => array, defines included DB user fields [as key],
+ *                 *optional* value (string) as form field label
+ *                 language string key for options['langfile'].
+ *   --- filters displayed in the order of this array!
+ *
+ * ['advanced']    => array, DB user feilds which are advanced form elements.
+ *   or
+ * ['notadvanced'] => array, DB user fields which are NOT advanced form elements
+ *   --- (use only one of keys 'advanced' or 'notadvanced')
+ *
+ * ['langfile'] => string optional language file, default: 'elis_core'
+ *
+ *   ['tables'] => optional array of tables as key, table alias as value
+ *
+ *    ['extra'] => boolean : true includes all extra profile fields,
+ *                 false (default) does not auto include them.
+ *
+ *     ['help'] => optional array of arrays:
+ *                  keys are user fields (above, or extra profile fields shortnames)
+ *                 values are arrays to pass to setHelpButton($helpbuttonargs)
+ *  --- not implemented in all sub-filters!
+ *
+ * @package    elis-core
+ * @subpackage filtering
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
@@ -60,8 +86,6 @@ class generalized_filter_multifilter {
 
     const filtertype_custom_field_select = 'custom_field_select';
     const filtertype_custom_field_text   = 'custom_field_text';
-
-    const languagefile = 'elis_core';
 
     // This array should map each field to a filter type
     protected $fieldtofiltermap = array();
@@ -116,6 +140,12 @@ class generalized_filter_multifilter {
         '_wrapper'     => 'wrapper',
     );
 
+    // Language file (can't be constant because it's an optional parameter)
+    protected $languagefile = 'elis_core';
+
+    // Wether to display empty selects - useful for cascading/dependent selects
+    protected $allowempty = false;
+
     // Stores section related data
     protected $sections = array();
 
@@ -126,7 +156,7 @@ class generalized_filter_multifilter {
      * @param string $label    Filter label
      * @param array  $options  Filter options (see above)
      */
-    function multifilter($uniqueid, $label, $options) {
+    function __construct($uniqueid, $label, $options) {
         $this->_uniqueid = $uniqueid;
         $this->_label = $label;
 
@@ -307,9 +337,9 @@ class generalized_filter_multifilter {
                 $label = $name;
 
                 if (! empty($alias)) {
-                    $label = get_string($alias, self::languagefile);
+                    $label = get_string($alias, $this->languagefile);
                 } else if (array_key_exists($name, $this->labels[$group])) {
-                    $label = get_string($this->labels[$group][$name], self::languagefile);
+                    $label = get_string($this->labels[$group][$name], $this->languagefile);
                 } else {
                     foreach ($this->sections as $section) {
 
@@ -376,10 +406,9 @@ class generalized_filter_multifilter {
 
         $options = $this->make_filter_options_custom($options, $group, $name);
 
-        $field = $is_xfield ? $name : $options['dbfield'];
-        $filtertype = $this->fieldtofiltermap[$group][$field];
+        $filtertype = $this->fieldtofiltermap[$group][$name];
 
-        if (array_key_exists($filtertype, $this->selects) && empty($options['choices'])) {
+        if ((! $this->allowempty) && array_key_exists($filtertype, $this->selects) && empty($options['choices'])) {
             $this->err_dump($options, '$options');
             error_log("multifilter.php: empty options['choices'] - requested for field: $name");
             return false;
@@ -406,5 +435,3 @@ class generalized_filter_multifilter {
         return $options;
     }
 }
-
- ?>

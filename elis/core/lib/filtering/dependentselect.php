@@ -1,4 +1,4 @@
-<?php //$Id$
+<?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
@@ -18,7 +18,6 @@
  *
  * @author     Remote-Learner.net Inc
  * @author     Brent Boghosian <brent.boghosian@remote-learner.net>
- * @version    $Id$
  * @package    elis-core
  * @subpackage filtering
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
@@ -42,11 +41,13 @@ class generalized_filter_dependentselect extends generalized_filter_type {
 
     var $_field;
 
-    var $_default;
+    var $_default = 0;
 
-    var $_numeric;
+    var $_numeric = false;
 
-    var $_report_path;
+    var $_report_path = '';
+
+    var $_filename = 'childoptions.php';
 
     var $_isrequired = false;
 
@@ -56,6 +57,7 @@ class generalized_filter_dependentselect extends generalized_filter_type {
         '_numeric'     => 'numeric',
         '_report_path' => 'report_parth',
         '_isrequired'  => 'isrequired',
+        '_filename'    => 'filename',
     );
 
     /**
@@ -97,7 +99,10 @@ class generalized_filter_dependentselect extends generalized_filter_type {
 
         $options_array = $this->get_main_options();
 
-        $js = "dependentselect_updateoptions('{$this->_uniqueid}','{$this->_report_path}');";
+        $fullpath = $this->_report_path . $this->_filename;
+        $parent   = $this->_uniqueid .'_parent';
+
+        $js = "dependentselect_updateoptions('{$parent}', '{$this->_uniqueid}','{$fullpath}');";
 
         $objs = array();
         $objs[] =& $mform->createElement('select', $this->_uniqueid.'_parent', null, $options_array,
@@ -115,8 +120,8 @@ class generalized_filter_dependentselect extends generalized_filter_type {
         }
 
         // Always refresh the child pulldown
-        $mform->addElement('html','<script>'.$js.'</script>');
-
+        $params = array($parent, $this->_uniqueid, $fullpath);
+        $PAGE->requires->js_init_code($js);
     }
 
     /**

@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    elis-core
+ * @subpackage filtering
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
@@ -53,7 +53,7 @@ class generalized_filter_display_text extends generalized_filter_type {
      * @return string the filtering condition or null if the filter is disabled
      */
     function get_sql_filter($data) {
-        return 'TRUE';
+        return array('TRUE', array());
     }
 
     /**
@@ -107,5 +107,3 @@ class generalized_filter_display_text extends generalized_filter_type {
         return false;
     }
 }
-
-?>
