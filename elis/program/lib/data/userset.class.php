@@ -35,7 +35,7 @@ require_once(elis::plugin_file('usersetenrol_moodle_profile', 'userset_profile.c
 class userset extends data_object_with_custom_fields {
     const TABLE = 'crlm_cluster';
 
-    public $verbose_name = 'cluster';
+    public $verbose_name = 'user set';
 
     protected $_dbfield_name;
     protected $_dbfield_display;

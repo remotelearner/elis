@@ -37,7 +37,7 @@ require_once elispm::lib('datedelta.class.php');
 class curriculum extends data_object_with_custom_fields {
     const TABLE = 'crlm_curriculum';
 
-    var $verbose_name = 'curriculum';
+    var $verbose_name = 'program';
 
     static $associations = array(
         'clustercurriculum' => array(
