@@ -719,8 +719,16 @@ function pm_moodle_user_to_pm($mu) {
         }
     }
 
-    // find the PM user with the same idnumber
-    $cu = user::find(new field_filter('idnumber', $mu->idnumber));
+    // find the linked PM user
+
+    //filter for the basic condition on the Moodle user id
+    $condition_filter = new field_filter('id', $mu->id);
+    //filter for joining the association table
+    $association_filter = new join_filter('muserid', 'user', 'id', $condition_filter);
+    //outermost filter
+    $filter = new join_filter('id', usermoodle::TABLE, 'cuserid', $association_filter);
+
+    $cu = user::find($filter);
     if ($cu->valid()) {
         $cu = $cu->current();
     } else {
