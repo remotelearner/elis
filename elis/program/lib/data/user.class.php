@@ -1000,6 +1000,72 @@ class pm_custom_field_filter extends user_filter_type {
 }
 
 /**
+ * Checks a text filter against several fields
+ */
+class pm_user_filter_text_OR extends user_filter_text {
+    var $_fields;
+
+    /**
+     * Constructor
+     * @param string $name the name of the filter instance
+     * @param string $label the label of the filter instance
+     * @param boolean $advanced advanced form element flag
+     * @param string $alias an alias to use for the form elements
+     * @param array $fields an array of user table field names
+     */
+    function pm_user_filter_text_OR($name, $label, $advanced, $alias, $fields) {
+        parent::user_filter_text($name, $label, $advanced, $alias);
+        $this->_fields = $fields;
+    }
+
+    /**
+     * Returns the condition to be used with SQL where
+     * @param array $data filter settings
+     * @uses $DB
+     * @return string the filtering condition or null if the filter is disabled
+     */
+    function get_sql_filter($data) {
+        global  $DB;
+        static $counter = 0;
+
+        $operator = $data['operator'];
+        $value    = addslashes($data['value']);
+        $params   = array();
+        $conditions = array();
+
+        foreach ($this->_fields as $field) {
+            $param = 'pmufto'. $counter++;
+            switch($operator) {
+                case 0: // contains
+                    $conditions[] = $DB->sql_like($field, ":{$param}", FALSE);
+                    $params[$param] = "%{$value}%";
+                    break;
+                case 1: // does not contain
+                    $conditions[] = $DB->sql_like($field, ":{$param}", FALSE, true, true);
+                    $params[$param] = "%{$value}%";
+                    break;
+                case 2: // equal to
+                    $conditions[] = $DB->sql_like($field, ":{$param}", FALSE);
+                    $params[$param] = $value;
+                    break;
+                case 3: // starts with
+                    $conditions[] = $DB->sql_like($field, ":{$param}", FALSE);
+                    $params[$param] = "{$value}%";
+                    break;
+                case 4: // ends with
+                    $conditions[] = $DB->sql_like($field, ":{$param}", FALSE);
+                    $params[$param] = "%{$value}";
+                    break;
+                case 5: // empty
+                    $conditions[] = "{$field} = ''";
+                    break;
+            }
+        }
+        return array('(' . implode(' OR ', $conditions) . ')', $params);
+    }
+}
+
+/**
  * User filtering wrapper class.
  */
 class pm_user_filtering extends user_filtering {
@@ -1061,11 +1127,13 @@ class pm_user_filtering extends user_filtering {
         $IFNULL = "COALESCE(mi, '')";
 
         $FULLNAME = $DB->sql_concat_join("' '", array('firstname', $IFNULL, 'lastname'));
+        $FIRSTLASTNAME = $DB->sql_concat('firstname', "' '", 'lastname');
 
         switch ($fieldname) {
         case 'username':    return new user_filter_text('username', get_string('username'), $advanced, 'username');
-        case 'realname':    return new user_filter_text('realname', get_string('fullname'),
-                                                        $advanced, $FULLNAME);
+        case 'realname':    return new pm_user_filter_text_OR('realname', get_string('fullname'),
+                                           $advanced, 'fullname',
+                                           array($FULLNAME, $FIRSTLASTNAME));
         case 'lastname':    return new user_filter_text('lastname', get_string('lastname'), $advanced, 'lastname');
         case 'firstname':   return new user_filter_text('firstname', get_string('firstname'), $advanced, 'firstname');
         case 'idnumber':    return new user_filter_text('idnumber', get_string('idnumber'), $advanced, 'idnumber');
