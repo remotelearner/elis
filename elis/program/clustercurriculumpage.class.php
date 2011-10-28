@@ -336,6 +336,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         } else {
             echo '<p align="center"><center>';
             echo get_string('userset_addcurr_instruction','elis_program');
+            echo $OUTPUT->help_icon('program_link','elis_program');
             $this->print_dropdown($curricula, $items, 'clusterid', 'curriculumid');
             echo '</center></p><br/>';
         }
@@ -349,6 +350,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
 
         echo '<p align="center"><center>';
         echo get_string('userset_cpycurr_instruction','elis_program');
+        echo $OUTPUT->help_icon('program_copy','elis_program');
         echo '</p><p align="center"><center>';
         echo $OUTPUT->render($button);
         echo '</center></p>';

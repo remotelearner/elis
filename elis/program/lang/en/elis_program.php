@@ -952,3 +952,9 @@ $string['waitlist_size'] = 'Waitlist Size';
 $string['waitlistcourses'] = 'Waitlist';
 $string['waitlistenrol'] = 'Auto enrol from waitlist';
 
+$string['program_link'] = 'Program Linking';
+$string['program_link_help'] = '<p>Linking to the program means that any changes to the Program (Classes instances added, modified, etc.) will be visible by all User Sets that are linked to the Program.</p>';
+
+$string['program_copy'] = 'Program Copying';
+$string['program_copy_help'] = '<p>If a Program is copied to this User Set, then a duplicate of the Program is made, and added to the User Set. This is a new Program that is only linked to this user Set, and changes made to this Program will only be available to this User Set (unless other User Sets are linked to it using the link option above).</p>';
+
