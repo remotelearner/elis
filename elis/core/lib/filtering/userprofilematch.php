@@ -263,10 +263,6 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
 
         $this->fieldtofiltermap['up']['fullname'] = self::filtertypetext;
 
-        if (array_key_exists('choices', $options)) {
-            $this->make_field_list($options['choices']);
-        }
-
         $this->_filters['up'] = array();
         foreach ($this->_fields as $group => $fields) {
             foreach ($fields as $userfield => $fieldlabel) {

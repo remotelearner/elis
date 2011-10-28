@@ -47,7 +47,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
     var $_nofilter = false; // boolean - true makes get_sql_filter() always return null
                             // set with $options['nofilter']
 
-    var $_extrafields = array(
+    var $_optionfields = array(
         '_options'  => 'choices',
         '_numeric'  => 'numeric',
         '_anyvalue' => 'anyvalue',
@@ -75,9 +75,9 @@ class generalized_filter_simpleselect extends generalized_filter_type {
             $options = array($options);
         }
 
-        foreach ($this->_extrafields as $var => $extra) {
-            if (array_key_exists($extra, $options)) {
-                $this->$var = $options[$extra];
+        foreach ($this->_optionfields as $var => $option) {
+            if (array_key_exists($option, $options)) {
+                $this->$var = $options[$option];
             }
         }
     }
@@ -103,6 +103,9 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         }
         if (! empty($this->_multiple)) {
             $options['multiple'] = $this->_multiple;
+        }
+        if (! empty($this->_class)) {
+            $options['class'] = $this->_class;
         }
 
         $mform->addElement('select', $this->_uniqueid, $this->_label, $choices, $options);
@@ -167,6 +170,11 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         static $counter = 0;
         $param_name = 'ex_simpleselect'. $counter++;
         $params = array();
+
+        // For dummy filters
+        if (empty($this->_name)) {
+            return array('TRUE', array());
+        }
 
         $full_fieldname = $this->get_full_fieldname();
         if (empty($full_fieldname) || $this->_nofilter) {

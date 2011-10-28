@@ -160,12 +160,23 @@ class generalized_filter_multifilter {
         $this->_uniqueid = $uniqueid;
         $this->_label = $label;
 
+        // Import option fields
         foreach ($this->_optionals as $field => $option) {
 
             if (!empty($options[$option])) {
                 $this->$field = $options[$option];
             }
         }
+
+        // Make list of filters to display
+        if (array_key_exists('choices', $options)) {
+            $this->make_field_list($options['choices']);
+        } else {
+            $this->make_field_list($this->labels);
+        }
+
+        // Get necesary data
+        $this->load_data();
     }
 
 
@@ -302,6 +313,15 @@ class generalized_filter_multifilter {
             }
         }
         $this->sections[$group]['custom'] = $options;
+    }
+
+    /**
+     * Load data
+     *
+     * Load data and stick it into class variables for later use.
+     * To be overriden by child classes.
+     */
+    function load_data() {
     }
 
     /**
