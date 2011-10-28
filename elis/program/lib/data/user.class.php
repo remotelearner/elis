@@ -154,6 +154,11 @@ class user extends data_object_with_custom_fields {
             usertrack::delete_records($filter, $this->_db);
             clusterassignment::delete_records($filter, $this->_db);
 
+            //delete association to Moodle user, if applicable
+            require_once(elispm::lib('data/usermoodle.class.php'));
+            $filter = new field_filter('cuserid', $this->id);
+            usermoodle::delete_records($filter, $this->_db);
+
             // Delete Moodle user.
             if (!empty($muser)) {
                 delete_user($muser);
@@ -886,6 +891,21 @@ class user extends data_object_with_custom_fields {
         }
 
         return $content;
+    }
+
+    /**
+     * Function to handle Moodle user deletion events
+     *
+     * @param object $user  The Moodle user that was deleted
+     * @return boolean true is successful, otherwise FALSE
+     */
+    static function user_deleted_handler($user) {
+        global $DB;
+
+        require_once(elis::lib('data/data_filter.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
+
+        usermoodle::delete_records(new field_filter('muserid', $user->id), $DB);
     }
 }
 

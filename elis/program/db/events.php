@@ -120,4 +120,10 @@ $handlers = array (
         'handlerfunction'   => 'pm_notify_instructor_unassigned_handler',
         'schedule'          => 'instant'
      ),
+
+     'user_deleted' => array (
+         'handlerfile' => '/elis/program/lib/data/user.class.php',
+         'handlerfunction' => array('user', 'user_deleted_handler'),
+         'schedule' => 'instant'
+     ),
 );
