@@ -687,7 +687,13 @@ function pm_moodle_user_to_pm($mu) {
     $moodle_user_exists = false;
 
     // determine if the user is already noted as having been associated to a PM user
-    if ($um = usermoodle::find(new field_filter('muserid', $mu->id))) {
+    // this will join to Moodle user and PM user table to ensure data correctness
+    $filters = array();
+    $filters[] = new join_filter('muserid', 'user', 'id');
+    $filters[] = new join_filter('cuserid', user::TABLE, 'id');
+    $filters[] = new field_filter('muserid', $mu->id);
+
+    if ($um = usermoodle::find($filters)) {
         if ($um->valid()) {
             $um = $um->current();
 
