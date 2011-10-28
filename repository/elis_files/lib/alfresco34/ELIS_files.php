@@ -203,7 +203,6 @@ class ELIS_files {
         if ($root == false || !isset($root->uuid)) {
             return false;
         }
-    }
 //print_object($root);
         // If there is no root folder saved or its set to default,
         // make sure there is a default '/moodle' folder.
