@@ -142,7 +142,7 @@ class coursepage extends managementpage {
     }
 
     function display_default() {
-        global $DB;
+        global $DB, $USER;
 
         // Get parameters
         $sort         = optional_param('sort', 'name', PARAM_ALPHA);
@@ -171,20 +171,13 @@ class coursepage extends managementpage {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        //handle name search and first letter ("alpha")
-        $filter = array();
-        if (!empty($namesearch)) {
-            $namesearch = trim($namesearch);
-            $filter[] = new field_filter('name', "%{$DB->sql_like_escape($namesearch)}%", field_filter::LIKE);
-        }
-
-        if (!empty($alpha)) {
-            $filter[] = new field_filter('name', "{$DB->sql_like_escape($alpha)}%", field_filter::LIKE);
-        }
+        // TBD: get context set ...
+        $contextset = coursepage::get_contexts('elis/program:course_view');
+        //$contextset = pm_context_set::for_user_with_capability('course','elis/program:course_view', $USER->id);
 
         // Get list of courses
-        $items    = course::find($filter, array($sort => $dir), $page*$perpage, $perpage);
-        $numitems = course::count($filter);
+        $items    = course_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $contextset);
+        $numitems = course_count_records($namesearch, $alpha, $contextset);
 
         // Cache the context capabilities
         coursepage::get_contexts('elis/program:course_edit');
@@ -458,5 +451,5 @@ class coursepage extends managementpage {
 }
 
 function count_curricula($column, $item) {
-    return $item->count_curriculumcourse();
+    return curriculumcourse_count_curriculum_records($item->id);
 }
