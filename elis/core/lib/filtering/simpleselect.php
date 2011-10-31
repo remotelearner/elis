@@ -174,7 +174,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
 
         // For dummy filters
         if (empty($this->_name)) {
-            return array('TRUE', array());
+            return null;
         }
 
         $full_fieldname = $this->get_full_fieldname();
