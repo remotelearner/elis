@@ -673,8 +673,12 @@ function pm_moodle_user_to_pm($mu) {
     // re-fetch, in case this is from a stale event
     $mu = $DB->get_record('user', array('id' => $mu->id));
     if (empty($mu->idnumber) && elis::$config->elis_program->auto_assign_user_idnumber) {
-        $mu->idnumber = $mu->username;
-        $DB->update_record('user', $mu);
+        //make sure the current user's username does not match up with some other user's
+        //idnumber (necessary since usernames and idnumbers aren't bound to one another)
+        if (!$DB->record_exists('user', array('idnumber' => $mu->username))) {
+            $mu->idnumber = $mu->username;
+            $DB->update_record('user', $mu);
+        }
     }
 
     // skip user if no ID number set
