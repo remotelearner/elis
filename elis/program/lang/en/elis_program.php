@@ -532,6 +532,13 @@ $string['mark_inactive'] = 'Mark as inactive';
 $string['message_nodestinationuser'] = 'No destination user specified for message system.';
 $string['messageprovider:notify_pm'] = 'Program Management notifications';
 $string['misc_category'] = 'Miscellaneous';
+$string['moodle_duplicate_idnumber_changed'] = 'Generated new idnumber for user with username {$a->username} as shown here: {$a->url}.
+';
+$string['moodle_duplicate_idnumber_fail'] = 'Could not change the idnumber of one or more duplicate Moodle users with idnumber of {$a}.';
+$string['moodle_duplicate_idnumber_unchanged'] = 'Found multiple Moodle users with idnumber of {$a->idnumber}.
+
+Left idnumber unchanged on least recently modified user with username {$a->username} as shown here: {$a->url}.
+';
 $string['moodle_field_sync_warning'] = '* <strong>Warning:</strong> this field is set to synchronize with Moodle user profile fields, but there is no Moodle profile field with the same short name.';
 $string['moodlecourse'] = 'Moodle course';
 $string['moodlecourseurl'] = 'Mooodle Course URL';
@@ -665,6 +672,13 @@ $string['passed'] = 'Passed';
 $string['phone2'] = 'Phone 2';
 $string['pluginname'] = 'ELIS Program';
 $string['pm_date_format'] = 'M j, Y';
+$string['pm_duplicate_idnumber_changed'] = 'Generated new idnumber for user with username {$a->username} as shown here: {$a->url}.
+';
+$string['pm_duplicate_idnumber_fail'] = 'Could not change the idnumber of one or more duplicate Program Management users with idnumber of {$a}.';
+$string['pm_duplicate_idnumber_unchanged'] = 'Found multiple Program Management users with idnumber of {$a->idnumber}.
+
+Left idnumber unchanged on least recently modified user with username {$a->username} as shown here: {$a->url}.
+';
 $string['pmclassform:class_idnumber'] = 'ID Number';
 $string['pmclassform:class_idnumber_help'] = '<p>Class Instance ID number.</p>';
 $string['pmclassform:class_startdate'] = 'Start Date';

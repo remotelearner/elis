@@ -187,6 +187,16 @@ function xmldb_elis_program_upgrade($oldversion=0) {
     }
 
     if ($result && $oldversion < 2011102700) {
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('lib.php'));
+
+        //fix duplicate enrolment data
+        $result = $result && pm_fix_duplicate_class_enrolments();
+        //fix duplicate Moodle idnumber values
+        $result = $result && pm_fix_duplicate_moodle_users();
+        //fix duplicate Program Management idnumber values
+        $result = $result && pm_fix_duplicate_pm_users();
+
         //create table for storing the association between Moodle and PM users
         $table = new XMLDBTable('crlm_user_moodle');
         $table->comment = 'Association between Moodle and CM users';
@@ -210,7 +220,9 @@ function xmldb_elis_program_upgrade($oldversion=0) {
                 INTO {crlm_user_moodle} (cuserid, muserid, idnumber)
                 SELECT cu.id, mu.id, cu.idnumber
                 FROM {crlm_user} cu
-                JOIN {user} mu ON cu.idnumber = mu.idnumber";
+                JOIN {user} mu
+                  ON cu.idnumber = mu.idnumber
+                  AND cu.idnumber != ''";
 
         $DB->execute($sql);
 

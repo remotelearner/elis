@@ -1295,3 +1295,376 @@ function pm_ensure_role_assignable($role) {
         $DB->execute($sql);
     }
 }
+
+/**
+ * Fixes duplicate data relating to class enrolments (specifically duplicate class_graded records)
+ * @return boolean true on success, otherwise false
+ */
+function pm_fix_duplicate_class_enrolments() {
+    global $CFG, $DB;
+
+    require_once($CFG->dirroot.'/lib/ddllib.php');
+
+    $dbman = $DB->get_manager();
+
+    // Delete duplicate class completion element grades
+    $xmldbtable = new XMLDBTable('crlm_class_graded_temp');
+
+    if ($dbman->table_exists($xmldbtable)) {
+        $dbman->drop_table($xmldbtable);
+    }
+
+    $result = true;
+
+    // Create a temporary table
+    $result = $result && $DB->execute("CREATE TABLE {$CFG->prefix}crlm_class_graded_temp LIKE {$CFG->prefix}crlm_class_graded");
+
+    // Store the unique values in the temporary table
+    $sql = "INSERT INTO {$CFG->prefix}crlm_class_graded_temp
+            SELECT MAX(id) AS id, classid, userid, completionid, grade, locked, timegraded, timemodified
+            FROM {$CFG->prefix}crlm_class_graded
+            GROUP BY classid, userid, completionid, locked";
+
+    $result = $result && $DB->execute($sql);
+
+    // Detect if there are still duplicates in the temporary table
+    $sql = "SELECT COUNT(*) AS count, classid, userid, completionid, grade, locked, timegraded, timemodified
+            FROM {$CFG->prefix}crlm_class_graded_temp
+            GROUP BY classid, userid, completionid
+            ORDER BY count DESC, classid ASC, userid ASC, completionid ASC";
+
+    if ($dupcount = $DB->get_record_sql($sql, null, IGNORE_MULTIPLE)) {
+        if ($dupcount->count > 1) {
+            if ($rs = $DB->get_recordset_sql($sql)) {
+                foreach ($rs as $dupe) {
+                    if ($dupe->count <= 1) {
+                        continue;
+                    }
+
+                    $classid = $dupe->classid;
+                    $userid  = $dupe->userid;
+                    $goodid  = 0; // The ID of the record we will keep
+
+                    // Look for the earliest locked grade record for this user and keep that (if any are locked)
+                    $sql2 = "SELECT id, grade, locked, timegraded
+                             FROM mdl_crlm_class_graded
+                             WHERE classid = $classid
+                             AND userid = $userid
+                             ORDER BY timegraded ASC";
+
+                    if ($rs2 = $DB->get_recordset_sql($sql2)) {
+                        foreach ($rs2 as $rec) {
+                            // Store the last record ID just in case we need it for cleanup
+                            $lastid = $rec->id;
+
+                            // Don't bother looking at remaining records if we have found a record to keep
+                            if (!empty($goodid)) {
+                                continue;
+                            }
+
+                            if ($rec->locked = 1) {
+                                $goodid = $rec->id;
+                            }
+                        }
+
+                        $rs2->close();
+
+                        // We need to make sure we have a record ID to keep, if we found no "complete" and locked
+                        // records, let's just keep the last record we saw
+                        if (empty($goodid)) {
+                            $goodid = $lastid;
+                        }
+
+                        $select = 'classid = ? AND userid = ? AND id != ?';
+                        $params = array($classid, $userid, $goodid);
+                    }
+
+                    if (!empty($select)) {
+                        $result = $result && $DB->delete_records_select('crlm_class_graded_temp', $select, $params);
+                    }
+                }
+            }
+        }
+    }
+
+    // Drop the real table
+    $result = $result && $DB->execute("DROP TABLE {$CFG->prefix}crlm_class_graded");
+
+    // Replace the real table with the temporary table that now only contains unique values.
+    $result = $result && $DB->execute("ALTER TABLE {$CFG->prefix}crlm_class_graded_temp RENAME TO {$CFG->prefix}crlm_class_graded");
+
+    return $result;
+}
+
+/**
+ * Fixes idnumbers for Moodle users to remove duplicates
+ * @return boolean true on success, otherwise false
+ */
+function pm_fix_duplicate_moodle_users() {
+    global $CFG, $DB;
+
+    require_once($CFG->dirroot.'/lib/ddllib.php');
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('notifications.php'));
+    require_once(elispm::lib('data/user.class.php'));
+
+    $dbman = $DB->get_manager();
+
+    // Delete duplicate class completion element grades
+    $xmldbtable = new XMLDBTable('user_idnumber_temp');
+
+    if ($dbman->table_exists($xmldbtable)) {
+        $dbman->drop_table($xmldbtable);
+    }
+
+    $result = true;
+
+    // Create temporary table for storing qualifying idnumbers
+    $table = new XMLDBTable('user_idnumber_temp');
+    $table->add_field('idnumber', XMLDB_TYPE_CHAR, '255', NULL, XMLDB_NOTNULL);
+    $dbman->create_table($table);
+
+    $sql = "INSERT INTO {user_idnumber_temp}
+            SELECT idnumber
+            FROM {user}
+            GROUP BY idnumber
+              HAVING idnumber != ''
+              AND COUNT(*) > 1";
+
+    $result = $result && $DB->execute($sql);
+
+    $admin = get_admin();
+
+    // Look up the list of duplicate idnumbers
+    if ($rs = $DB->get_recordset('user_idnumber_temp')) {
+        foreach ($rs as $record) {
+
+            // Store whether we're currently on the first user record, whose idnumber
+            // will not change
+            $first = true;
+
+            // Store the userids and usernames of the appropriate users
+            $userids = array();
+            $usernames = array();
+
+            // Store whether there was some failure generating an idnumber
+            $idnumber_generation_failure = false;
+
+            // Get records in order by timemodified, so that more recently modified users are considered
+            // the duplicates
+            if ($rs2 = $DB->get_recordset('user', array('idnumber' => $record->idnumber), 'timemodified')) {
+                foreach ($rs2 as $record2) {
+
+                    // Store information about the current user
+                    $userids[] = $record2->id;
+                    $usernames[] = $record2->username;
+
+                    // Store whether some idnumber generation attempt was successful
+                    $generated = false;
+
+                    if (!$first) {
+                        // Use this flag to determine if a unique random string was generated
+
+                        // Attempt to generate a unique random idnumber
+                        for ($i = 0; $i < 10; $i++) {
+                            $record2->idnumber = random_string(15);
+                            if (!$DB->record_exists('user', array('idnumber' => $record2->idnumber)) &&
+                                !$DB->record_exists(user::TABLE, array('idnumber' => $record2->idnumber))) {
+                                $DB->update_record('user', $record2);
+                                $generated = true;
+                                break;
+                            }
+                        }
+
+                    } else {
+                        // Send messages from the first user, whose idnumber is not changing
+                        $userfrom = $DB->get_record('user', array('id' => $record2->id));
+                    }
+
+                    if (!$first && !$generated) {
+                        // Send a failure message
+                        $message = new notification();
+                        $message->fullmessageformat = FORMAT_MOODLE;
+
+                        $messagetext = get_string('moodle_duplicate_idnumber_fail', 'elis_program', $record->idnumber);
+
+                        $message->send_notification($messagetext, $admin, $userfrom);
+
+                        $idnumber_generation_failure = true;
+                    }
+
+                    $first = false;
+                }
+            }
+
+            if (!$idnumber_generation_failure) {
+	            // Send a success message
+	            $message = new notification();
+	            $message->fullmessageformat = FORMAT_MOODLE;
+	
+	            // Main body of the message
+	            $a = new stdClass;
+	            $a->idnumber = $record->idnumber;
+	            $a->username = $usernames[0];
+	            $a->url = $CFG->wwwroot.'/user/editadvanced.php?id='.$userids[0].'&course='.SITEID;
+	            $messagetext = get_string('moodle_duplicate_idnumber_unchanged', 'elis_program', $a);
+	
+	            // Info regarding users whose idnumbers have been changed
+	            for ($i = 1; $i < count($userids); $i++) {
+	                $a = new stdClass;
+	                $a->username = $usernames[$i];
+	                $a->url = $CFG->wwwroot.'/user/editadvanced.php?id='.$userids[$i].'&course='.SITEID; 
+	                $messagetext .= get_string('moodle_duplicate_idnumber_changed', 'elis_program', $a);
+	            }
+
+                $message->send_notification($messagetext, $admin, $userfrom);
+            }
+        }
+    }
+
+    // Drop the temp table
+    $result = $result && $DB->execute("DROP TABLE {user_idnumber_temp}");
+
+    return $result;
+}
+
+/**
+ * Fixes idnumbers for Program Management users to remove duplicates
+ * @return boolean true on success, otherwise false
+ */
+function pm_fix_duplicate_pm_users() {
+    global $CFG, $DB;
+
+    require_once($CFG->dirroot.'/lib/ddllib.php');
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('notifications.php'));
+    require_once(elispm::lib('data/user.class.php'));
+    require_once(elispm::file('userpage.class.php'));
+
+    $dbman = $DB->get_manager();
+
+    // Delete duplicate class completion element grades
+    $xmldbtable = new XMLDBTable('crlm_user_idnumber_temp');
+
+    if ($dbman->table_exists($xmldbtable)) {
+        $dbman->drop_table($xmldbtable);
+    }
+
+    $result = true;
+
+    // Create temporary table for storing qualifying idnumbers
+    $table = new XMLDBTable('crlm_user_idnumber_temp');
+    $table->add_field('idnumber', XMLDB_TYPE_CHAR, '255', NULL, XMLDB_NOTNULL);
+    $dbman->create_table($table);
+
+    $sql = "INSERT INTO {crlm_user_idnumber_temp}
+            SELECT idnumber
+            FROM {".user::TABLE."}
+            GROUP BY idnumber
+              HAVING idnumber != ''
+              AND COUNT(*) > 1";
+
+    $result = $result && $DB->execute($sql);
+
+    $admin = get_admin();
+
+    // Look up the list of duplicate idnumbers
+    if ($rs = $DB->get_recordset('crlm_user_idnumber_temp')) {
+        foreach ($rs as $record) {
+
+            // Store whether we're currently on the first user record, whose idnumber
+            // will not change
+            $first = true;
+
+            // Store the userids and usernames of the appropriate users
+            $userids = array();
+            $usernames = array();
+
+            // Store whether there was some failure generating an idnumber
+            $idnumber_generation_failure = false;
+
+            // Get records in order by timemodified, so that more recently modified users are considered
+            // the duplicates
+            if ($rs2 = $DB->get_recordset(user::TABLE, array('idnumber' => $record->idnumber), 'timemodified')) {
+                foreach ($rs2 as $record2) {
+
+                    // Store information about the current user
+                    $userids[] = $record2->id;
+                    $usernames[] = $record2->username;
+
+                    // Store whether some idnumber generation attempt was successful
+                    $generated = false;
+
+                    if (!$first) {
+                        // Use this flag to determine if a unique random string was generated
+
+                        // Attempt to generate a unique random idnumber
+                        for ($i = 0; $i < 10; $i++) {
+                            $record2->idnumber = random_string(15);
+                            if (!$DB->record_exists('user', array('idnumber' => $record2->idnumber)) &&
+                                !$DB->record_exists(user::TABLE, array('idnumber' => $record2->idnumber))) {
+                                $DB->update_record(user::TABLE, $record2);
+                                $generated = true;
+                                break;
+                            }
+                        }
+
+                    } else {
+                        // Send messages from the first user, whose idnumber is not changing
+                        // (need the Moodle user since this is called during upgrade before association
+                        // table is populated)
+                        $userfrom = $DB->get_record('user', array('idnumber' => $record2->idnumber), '*', IGNORE_MULTIPLE);
+                        if (!$userfrom) {
+                            //fall back to admin
+                            $userfrom = NULL;
+                        }
+                    }
+
+                    if (!$first && !$generated) {
+                        // Send a failure message
+                        $message = new notification();
+                        $message->fullmessageformat = FORMAT_MOODLE;
+
+                        $messagetext = get_string('pm_duplicate_idnumber_fail', 'elis_program', $record->idnumber);
+
+                        $message->send_notification($messagetext, $admin, $userfrom);
+
+                        $idnumber_generation_failure = true;
+                    }
+
+                    $first = false;
+                }
+            }
+
+            if (!$idnumber_generation_failure) {
+	            // Send a success message
+	            $message = new notification();
+	            $message->fullmessageformat = FORMAT_MOODLE;
+	
+	            // Main body of the message
+	            $a = new stdClass;
+	            $a->idnumber = $record->idnumber;
+	            $a->username = $usernames[0];
+	            $page = new userpage(array('id' => $userids[0], 'action' => 'view'));
+	            $a->url = $page->url->out(false);
+	            $messagetext = get_string('pm_duplicate_idnumber_unchanged', 'elis_program', $a);
+	
+	            // Info regarding users whose idnumbers have been changed
+	            for ($i = 1; $i < count($userids); $i++) {
+	                $a = new stdClass;
+	                $a->username = $usernames[$i];
+	                $page = new userpage(array('id' => $userids[$i], 'action' => 'view'));
+	                $a->url = $page->url->out(false);
+	                $messagetext .= get_string('pm_duplicate_idnumber_changed', 'elis_program', $a);
+	            }
+
+                $message->send_notification($messagetext, $admin, $userfrom);
+            }
+        }
+    }
+
+    // Drop the temp table
+    $result = $result && $DB->execute("DROP TABLE {crlm_user_idnumber_temp}");
+
+    return $result;
+}
