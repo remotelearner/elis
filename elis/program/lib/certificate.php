@@ -26,9 +26,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-//use the TCPDF library
-require_once($CFG->libdir .'/pdflib.php');
-
 /**
  * Outputs a certificate for some sort of completion element
  *
@@ -39,6 +36,9 @@ require_once($CFG->libdir .'/pdflib.php');
  */
 function certificate_output_completion($person_fullname, $entity_name, $date_string, $expirydate = '', $border = '', $seal = '') {
     global $CFG, $COURSE;
+
+    //use the TCPDF library
+    require_once($CFG->libdir.'/pdflib.php');
 
     //error_log("/elis/program/lib/certificate.php::certificate_output_completion('{$person_fullname}', '{$entity_name}', '{$date_string}', '{$expirydate}', {$border}, {$seal})");
 
