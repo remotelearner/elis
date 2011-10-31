@@ -54,7 +54,8 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         '_noany'    => 'noany',
         '_onchange' => 'onchange',
         '_multiple' => 'multiple',
-        '_class'    => 'class'
+        '_class'    => 'class',
+        '_nofilter' => 'nofilter',
     );
 
     /**
