@@ -38,8 +38,11 @@ function dependentselect_updateoptions(id, path) {
     var option_success = function(o) {
         var data = YAHOO.lang.JSON.parse(o.responseText);
         child.options.length = 0;
-        for (var key in data) {
-            addOption(child,childId,key,data[key]);
+
+        for (i = 0; i < data.length; i++) {
+            //response text is an array of arrays, where each sub-array's
+            //first element is the element id and the second is the name
+            addOption(child,childId,data[i][0],data[i][1]);
         }
     };
 
