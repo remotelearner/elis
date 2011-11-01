@@ -251,6 +251,15 @@ class userform extends cmform {
         if (!empty($data['idnumber'])) {
             if (!$this->check_unique(user::TABLE, 'idnumber', $data['idnumber'], $data['id'])) {
                 $errors['idnumber'] = get_string('badidnumber', 'elis_program');
+            } else {
+                //make sure we don't set up an idnumber that is related to a non-linked Moodle user
+                require_once(elispm::lib('data/usermoodle.class.php'));
+                if (!$muserid = $DB->get_field(usermoodle::TABLE, 'muserid', array('cuserid' => $data['id']))) {
+                    $muserid = 0;
+                }
+                if (!$this->check_unique('user', 'idnumber', $data['idnumber'], $muserid)) {
+                    $errors['idnumber'] = get_string('badidnumbermoodle', 'elis_program');
+                }
             }
         }
 
