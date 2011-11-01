@@ -37,25 +37,26 @@ class generalized_filter_simpleselect extends generalized_filter_type {
      */
     var $_field;
 
-    var $_options  = array();
-    var $_numeric  = false; // TBD: obsolete
-    var $_anyvalue = null;
-    var $_noany    = false;
-    var $_onchange = '';
-    var $_multiple = '';
-    var $_class    = '';
-    var $_nofilter = false; // boolean - true makes get_sql_filter() always return null
-                            // set with $options['nofilter']
+    var $_options  = array();  // Select options
+    var $_numeric  = false;    // TBD: obsolete
+    var $_anyvalue = null;     // The "any value" entry
+    var $_noany    = false;    // Whether to hide the "any value" entry
+    var $_onchange = '';       // On change javascript
+    var $_multiple = '';       // Whether this select is a multi-select
+    var $_class    = '';       // CSS class attribute
+    var $_nofilter = false;    // boolean - true makes get_sql_filter() always return null
+    var $_nooptions = false;   // If true, hide all select options
 
     var $_optionfields = array(
-        '_options'  => 'choices',
-        '_numeric'  => 'numeric',
-        '_anyvalue' => 'anyvalue',
-        '_noany'    => 'noany',
-        '_onchange' => 'onchange',
-        '_multiple' => 'multiple',
-        '_class'    => 'class',
-        '_nofilter' => 'nofilter',
+        '_options'   => 'choices',   // The options to be displayed
+        '_numeric'   => 'numeric',   // No longer used (used to be for numeric values)
+        '_anyvalue'  => 'anyvalue',  // The "any value" string
+        '_noany'     => 'noany',     // Used to hide the "any value" entry
+        '_onchange'  => 'onchange',  // Often used to alter dependent fields
+        '_multiple'  => 'multiple',  // Used to make this select into a multi-select
+        '_class'     => 'class',     // Used to add a CSS class attribute for display
+        '_nofilter'  => 'nofilter',  // Used for filters that change report behaviour
+        '_nooptions' => 'nochoices'  // Used for filters that start blank
     );
 
     /**
@@ -88,14 +89,18 @@ class generalized_filter_simpleselect extends generalized_filter_type {
      * @param object $mform a MoodleForm object to setup
      */
     function setupForm(&$mform) {
-        if (!$this->_noany) {
-            if (!empty($this->_anyvalue)) {
-                $choices = array('' => $this->_anyvalue) + $this->_options;
-            } else {
-                $choices = array('' => get_string('anyvalue', 'filters')) + $this->_options;
-            }
-        } else {
+        $choices = array();
+
+        if (!$this->_nooptions) {
             $choices = $this->_options;
+
+            if (!$this->_noany) {
+                $choices[''] = $this->_anyvalue;
+
+                if (empty($this->_anyvalue)) {
+                    $choices[''] = get_string('anyvalue', 'filters');
+                }
+            }
         }
 
         $options = array();
@@ -123,7 +128,6 @@ class generalized_filter_simpleselect extends generalized_filter_type {
      */
     function check_data($formdata) {
         $field = $this->_uniqueid;
-
         if (array_key_exists($field, $formdata)) {
             $value = $formdata->$field;
             if ($this->_multiple && is_array($value)) {
