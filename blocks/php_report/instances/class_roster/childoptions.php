@@ -44,13 +44,13 @@ if (!isloggedin() || isguestuser()) {
 
 $id = optional_param('id', 0, PARAM_INT);
 
-$choices_array = array('' => get_string('selectclass', 'rlreport_class_roster'));
+$choices_array = array(array('', get_string('selectclass', 'rlreport_class_roster')));
 
 if ($id > 0) {
     $contexts = get_contexts_by_capability_for_user('class', 'block/php_report:view', $USER->id);
-    if ($records = pmclass_get_listing('crsname', 'ASC', 0, 0, '', '', $id, false, $contexts)) {
+    if ($records = pmclass_get_listing('idnumber', 'ASC', 0, 0, '', '', $id, false, $contexts)) {
         foreach ($records as $record) {
-            $choices_array[$record->id] = $record->idnumber;
+            $choices_array[] = array($record->id, $record->idnumber);
         }
     }
 }
