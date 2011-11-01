@@ -624,13 +624,17 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
     $result = $result && $DB->execute($sql, array('timenow' => $timenow));
 
     if ($setidnumber || elis::$config->elis_program->auto_assign_user_idnumber) {
+        //make sure we only set idnumbers if users' usernames doint point to existing
+        //idnumbers
         $sql = "UPDATE {user}
                    SET idnumber = username
                  WHERE idnumber=''
                    AND username != 'guest'
                    AND deleted = 0
                    AND confirmed = 1
-                   AND mnethostid = :hostid";
+                   AND mnethostid = :hostid
+                   AND username NOT IN (SELECT idnumber FROM (SELECT idnumber
+                                                              FROM {user} inneru) innertable)";
         $result = $result && $DB->execute($sql, array('hostid' => $CFG->mnet_localhost_id));
     }
 
