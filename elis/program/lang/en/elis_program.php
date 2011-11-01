@@ -907,6 +907,7 @@ $string['update_grade'] = 'Update Grade';
 $string['user'] = 'User';
 $string['useridnumberduplicate'] = 'Duplicate idnumber';
 $string['useridnumberduplicatepm'] = 'Duplicate idnumber in Program Management';
+$string['useridnumberunset'] = 'Unsetting idnumbers is not supported';
 $string['user_comments'] = 'Comments';
 $string['user_comments_help'] = 'Any free-form comments you would like to record about yourself, and comments about any other appropriate subject matter.';
 $string['user_inactive'] = 'Inactive';
