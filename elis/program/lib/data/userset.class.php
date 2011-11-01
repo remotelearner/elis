@@ -765,11 +765,11 @@ function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = ar
 }
 
 /**
- * Specifies a mapping of cluster ids to names for display purposes
+ * Specifies a mapping of userset ids to names for display purposes
  *
  * @param  string  $orderby  Sort order and direction, if sorting is desired
  */
-function cluster_get_cluster_names($orderby = 'name ASC') {
+function userset_get_menu($orderby = 'name ASC') {
     global $DB;
 
     $select = 'SELECT c.id, c.name ';

@@ -822,13 +822,13 @@ function curriculum_get_listing_recordset($sort = 'name', $dir = 'ASC',
 }
 
 /**
- * Gets a curriculum listing suitable for a select box.
+ * Gets a program listing suitable for a select box.
  *
  * @return array Returned records.
  */
-function curriculum_get_menu() {
+function program_get_menu() {
     global $DB;
-    return $DB->get_records_menu(curriculum::TABLE, NULL, NULL, 'name', 'id,name');
+    return $DB->get_records_menu(curriculum::TABLE, NULL, 'name', 'id,name');
 }
 
 function curriculum_count_records($namesearch = '', $alpha = '', $contexts = null) {

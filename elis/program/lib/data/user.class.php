@@ -1149,6 +1149,92 @@ class pm_user_filter_text_OR extends user_filter_text {
 }
 
 /**
+ * Class that filters users based on an operation and a userset id
+ */
+class pm_user_userset_filter extends user_filter_select {
+    /**
+     * Returns the condition to be used with SQL where
+     * @param array $data filter settings
+     * @return string the filtering condition or null if the filter is disabled
+     */
+    function get_sql_filter($data) {
+        static $counter = 0;
+        $name = 'pmuuf'.$counter++;
+
+        $operator = $data['operator'];
+        $value    = addslashes($data['value']);
+        //reference to the CM user id field
+        $field    = $this->_field;
+
+        //determine the necessary operation
+        $sql_operator = '';
+        switch($operator) {
+            case 1: // equal to
+                $sql_operator = "IN";
+                break;
+            case 2: // not equal to
+                $sql_operator = "NOT IN";
+                break;
+            default:
+                return '';
+        }
+
+        //make sure the main query's user id field belongs to /
+        //does not belong to the set of users in the appropriate cluster
+        $sql = "$field $sql_operator (
+                  SELECT userid
+                  FROM {".clusterassignment::TABLE."}
+                  WHERE clusterid = :$name
+                )";
+        $params = array($name => $data['value']);
+        return array($sql, $params);
+    }
+}
+
+/**
+ * Class that filters users based on an operation and a program id
+ */
+class pm_user_program_filter extends user_filter_select {
+    /**
+     * Returns the condition to be used with SQL where
+     * @param array $data filter settings
+     * @return string the filtering condition or null if the filter is disabled
+     */
+    function get_sql_filter($data) {
+        static $counter = 0;
+        $name = 'pmupf'.$counter++;
+
+        $operator = $data['operator'];
+        $value    = addslashes($data['value']);
+        //reference to the CM user id field
+        $field    = $this->_field;
+
+        //determine the necessary operation
+        $sql_operator = '';
+        switch($operator) {
+            case 1: // equal to
+                $sql_operator = "IN";
+                break;
+            case 2: // not equal to
+                $sql_operator = "NOT IN";
+                break;
+            default:
+                return '';
+        }
+
+        //make sure the main query's user id field belongs to /
+        //does not belong to the set of users in the appropriate curriculum
+        $sql = "$field $sql_operator (
+                  SELECT userid
+                  FROM {".curriculumstudent::TABLE."}
+                  WHERE curriculumid = :$name
+                )";
+        $params = array($name => $data['value']);
+        return array($sql, $params);
+    }
+}
+
+/**
  * User filtering wrapper class.
  */
 class pm_user_filtering extends user_filtering {
@@ -1226,13 +1312,13 @@ class pm_user_filtering extends user_filtering {
         case 'language':
             return new user_filter_select('language', get_string('preferredlanguage'), $advanced, 'language', get_string_manager()->get_list_of_translations(true));
 
-            //case 'clusterid':
-            //$clusters = pm_get_list_of_clusters();
-            //return new user_filter_select('clusterid', get_string('usercluster', 'elis_program'), $advanced, 'clusterid', $clusters);
+        case 'clusterid':
+            $clusters = userset_get_menu();
+            return new pm_user_userset_filter('clusterid', get_string('usercluster', 'elis_program'), $advanced, 'id', $clusters);
 
-            //case 'curriculumid':
-            //$choices = curriculum_get_menu();
-            //return new user_filter_select('curriculumid', get_string('usercurricula', 'elis_program'), $advanced, 'curass.curriculumid', $choices);
+        case 'curriculumid':
+            $choices = program_get_menu();
+            return new pm_user_program_filter('curriculumid', get_string('usercurricula', 'elis_program'), $advanced, 'id', $choices);
 
         case 'inactive':
             $inactive_options = array(get_string('o_active', 'elis_program'), get_string('all'), get_string('o_inactive', 'elis_program'));
