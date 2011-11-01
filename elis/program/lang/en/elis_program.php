@@ -86,6 +86,7 @@ $string['availablecourses'] = 'Program Overview';
 
 $string['badusername'] = 'Specified username already exists, or must be specified or generated.';
 $string['badidnumber'] = 'Specified ID number already exists.';
+$string['badidnumbermoodle'] = 'Specified ID number already exists in Moodle.';
 // TBD: associationpage.class.php::get_title_default()
 $string['breadcrumb_trackassignmentpage'] = 'Assign Class Instances';
 $string['breadcrumb_usertrackpage'] = 'Assign Tracks';
@@ -463,6 +464,9 @@ $string['icon_collapse_setting'] = 'Number of entity icons to display before col
 $string['id'] = 'ID';
 $string['idnumber'] = 'ID Number';
 $string['idnumber_already_used'] = 'ID Number is already in use';
+$string['idnumberexists'] = 'This idnumber is already registered.';
+$string['idnumberexistspm'] = 'This idnumber is already registered in the Program Management system.';
+$string['idnumberunset'] = 'Unsetting idnumbers is not supported.';
 $string['id_same_as_user'] = 'Same as username';
 $string['if_class_full'] = 'note: if the class you wish to join is full you may still be placed on the waiting list';
 $string['inactive'] = 'Inactive';
@@ -530,6 +534,13 @@ $string['mark_inactive'] = 'Mark as inactive';
 $string['message_nodestinationuser'] = 'No destination user specified for message system.';
 $string['messageprovider:notify_pm'] = 'Program Management notifications';
 $string['misc_category'] = 'Miscellaneous';
+$string['moodle_duplicate_idnumber_changed'] = 'Generated new idnumber for user with username {$a->username} as shown here: {$a->url}.
+';
+$string['moodle_duplicate_idnumber_fail'] = 'Could not change the idnumber of one or more duplicate Moodle users with idnumber of {$a}.';
+$string['moodle_duplicate_idnumber_unchanged'] = 'Found multiple Moodle users with idnumber of {$a->idnumber}.
+
+Left idnumber unchanged on least recently modified user with username {$a->username} as shown here: {$a->url}.
+';
 $string['moodle_field_sync_warning'] = '* <strong>Warning:</strong> this field is set to synchronize with Moodle user profile fields, but there is no Moodle profile field with the same short name.';
 $string['moodlecourse'] = 'Moodle course';
 $string['moodlecourseurl'] = 'Mooodle Course URL';
@@ -663,6 +674,13 @@ $string['passed'] = 'Passed';
 $string['phone2'] = 'Phone 2';
 $string['pluginname'] = 'ELIS Program';
 $string['pm_date_format'] = 'M j, Y';
+$string['pm_duplicate_idnumber_changed'] = 'Generated new idnumber for user with username {$a->username} as shown here: {$a->url}.
+';
+$string['pm_duplicate_idnumber_fail'] = 'Could not change the idnumber of one or more duplicate Program Management users with idnumber of {$a}.';
+$string['pm_duplicate_idnumber_unchanged'] = 'Found multiple Program Management users with idnumber of {$a->idnumber}.
+
+Left idnumber unchanged on least recently modified user with username {$a->username} as shown here: {$a->url}.
+';
 $string['pmclassform:class_idnumber'] = 'ID Number';
 $string['pmclassform:class_idnumber_help'] = '<p>Class Instance ID number.</p>';
 $string['pmclassform:class_startdate'] = 'Start Date';
@@ -887,6 +905,9 @@ $string['update_assignment'] = 'Update Assignment';
 $string['update_enrolment'] = 'Update Enrolment';
 $string['update_grade'] = 'Update Grade';
 $string['user'] = 'User';
+$string['useridnumberduplicate'] = 'Duplicate idnumber';
+$string['useridnumberduplicatepm'] = 'Duplicate idnumber in Program Management';
+$string['useridnumberunset'] = 'Unsetting idnumbers is not supported';
 $string['user_comments'] = 'Comments';
 $string['user_comments_help'] = 'Any free-form comments you would like to record about yourself, and comments about any other appropriate subject matter.';
 $string['user_inactive'] = 'Inactive';

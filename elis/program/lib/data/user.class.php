@@ -154,6 +154,11 @@ class user extends data_object_with_custom_fields {
             usertrack::delete_records($filter, $this->_db);
             clusterassignment::delete_records($filter, $this->_db);
 
+            //delete association to Moodle user, if applicable
+            require_once(elispm::lib('data/usermoodle.class.php'));
+            $filter = new field_filter('cuserid', $this->id);
+            usermoodle::delete_records($filter, $this->_db);
+
             // Delete Moodle user.
             if (!empty($muser)) {
                 delete_user($muser);
@@ -224,8 +229,33 @@ class user extends data_object_with_custom_fields {
         return $this->fullname();
     }
 
-    public function get_moodleuser() {
-        return $this->_db->get_record('user', array('idnumber' => $this->idnumber, 'deleted' => 0));
+    /**
+     * Retrieves the Moodle user object associated to this PM user if applicable
+     *
+     * @param boolean $strict_match Whether we should use the association table rather
+     *                              than just check idnumbers
+     */
+    public function get_moodleuser($strict_match = true) {
+        require_once(elispm::lib('data/usermoodle.class.php'));
+
+        if ($strict_match && isset($this->id)) {
+            //check against the association table
+            $sql = "SELECT mu.*
+                    FROM
+                    {user} mu
+                    JOIN {".usermoodle::TABLE."} um
+                      ON mu.id = um.muserid
+                    JOIN {".user::TABLE."} cu
+                      ON um.cuserid = cu.id
+                    WHERE cu.id = ? 
+                      AND mu.deleted = 0";
+
+            return $this->_db->get_record_sql($sql, array($this->id));
+        } else {
+            //note: we need this case because when syncing Moodle users to the PM system, the PM user is inserted
+            //before the association record is
+            return $this->_db->get_record('user', array('idnumber' => $this->idnumber, 'deleted' => 0));
+        }
     }
 
     public function get_country() {
@@ -264,13 +294,20 @@ class user extends data_object_with_custom_fields {
         array('validation_helper', 'not_empty_country'),
     );
 
-    public function save() {
+    /**
+     * Save the record to the database.  This method is used to both create a
+     * new record, and to update an existing record.
+     *
+     * @param boolean $strict_match Whether we should use the association table rather
+     *                              than just check idnumbers when comparing to Moodle users
+     */
+    public function save($strict_match = true) {
         $isnew = empty($this->id);
 
         parent::save();
 
         /// Synchronize Moodle data with this data.
-        $this->synchronize_moodle_user(true, $isnew);
+        $this->synchronize_moodle_user(true, $isnew, $strict_match);
     }
 
     function save_field_data() {
@@ -308,16 +345,20 @@ class user extends data_object_with_custom_fields {
      * Function to synchronize the curriculum data with the Moodle data.
      *
      * @param boolean $tomoodle Optional direction to synchronize the data.
+     * @param boolean $strict_match Whether we should use the association table rather
+     *                               than just check idnumbers when comparing to Moodle users
      *
      */
-    function synchronize_moodle_user($tomoodle = true, $createnew = false) {
+    function synchronize_moodle_user($tomoodle = true, $createnew = false, $strict_match = true) {
         global $CFG;
+
+        require_once(elispm::lib('data/usermoodle.class.php'));
 
         static $mu_loop_detect = array();
 
         // Create a new Moodle user record to update with.
 
-        if (!($muser = $this->get_moodleuser()) && !$createnew) {
+        if (!($muser = $this->get_moodleuser($strict_match)) && !$createnew) {
             return false;
         }
         $muserid = $muser ? $muser->id : false;
@@ -334,6 +375,27 @@ class user extends data_object_with_custom_fields {
                 'city' => 'city',
                 'country' => 'country',
             );
+
+            // determine if the user is already noted as having been associated to a PM user
+            if ($um = usermoodle::find(new field_filter('cuserid', $this->id))) {
+                if ($um->valid()) {
+                    $um = $um->current();
+
+           	        // determine if the PM user idnumber was updated
+                    if ($um->idnumber != $this->idnumber) {
+
+                        // update the Moodle user with the new idnumber
+                        $muser = new stdClass;
+                        $muser->id = $um->muserid;
+                        $muser->idnumber = $this->idnumber;
+                        $this->_db->update_record('user', $muser);
+
+                        // update the association table with the new idnumber
+                        $um->idnumber = $this->idnumber;
+                        $um->save();
+                    }
+                }
+            }
 
             //try to update the idnumber of a matching Moodle user that
             //doesn't have an idnumber set yet
@@ -418,6 +480,13 @@ class user extends data_object_with_custom_fields {
                     events_trigger('user_updated', $record);
                 }
             } else {
+                // if no user association record exists, create one
+                $um = new usermoodle();
+                $um->cuserid  = $this->id;
+                $um->muserid  = $record->id;
+                $um->idnumber = $this->idnumber;
+                $um->save();
+
                 events_trigger('user_created', $record);
             }
 
@@ -822,6 +891,21 @@ class user extends data_object_with_custom_fields {
         }
 
         return $content;
+    }
+
+    /**
+     * Function to handle Moodle user deletion events
+     *
+     * @param object $user  The Moodle user that was deleted
+     * @return boolean true is successful, otherwise FALSE
+     */
+    static function user_deleted_handler($user) {
+        global $DB;
+
+        require_once(elis::lib('data/data_filter.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
+
+        usermoodle::delete_records(new field_filter('muserid', $user->id), $DB);
     }
 }
 

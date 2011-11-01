@@ -214,6 +214,7 @@ class userpage extends managementpage {
         $id       = required_param('id', PARAM_INT);
 
         $obj = new $this->data_class($id);
+        $obj->load();
 
         $muser = $obj->get_moodleuser();
 

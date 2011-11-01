@@ -35,12 +35,15 @@ class userform extends cmform {
     public function definition() {
         global $USER, $CFG, $COURSE;
 
+        //determine if this is a create or a view / edit
         if ($this->_customdata['obj']) {
+            //view / edit
             $disabled = true;
             if (!empty($this->_customdata['obj']->birthdate)) {
                 list($this->_customdata['obj']->birthyear, $this->_customdata['obj']->birthmonth, $this->_customdata['obj']->birthday) = sscanf($this->_customdata['obj']->birthdate, '%d/%d/%d');
             }
         } else {
+            //create
             $disabled = false;
         }
         parent::definition();
@@ -59,14 +62,14 @@ class userform extends cmform {
 
         $mform->addElement('text', 'idnumber', get_string('idnumber'));
         $mform->setType('idnumber', PARAM_TEXT);
+        $mform->addRule('idnumber', null, 'required', null, 'client');
         $mform->addRule('idnumber', null, 'maxlength', 255);
         $mform->addHelpButton('idnumber', 'useridnumber', 'elis_program');
 
         $username_group = array();
 
-        if(empty($disabled)){
-            $mform->addRule('idnumber', null, 'required', null, 'client');
-
+        if(empty($disabled)) {
+            //create
             $username_group[] =& $mform->createElement('text', 'username', get_string('username'));
             $username_group[] =& $mform->createElement('checkbox', 'id_same_user', null, get_string('id_same_as_user', 'elis_program'));
 
@@ -76,7 +79,7 @@ class userform extends cmform {
 
             $mform->addRule('username_group', $strrequired, 'required', null, 'client');
         } else {
-            $mform->freeze('idnumber');
+            //view / edit
             $username_group[] =& $mform->createElement('static', 'username');
 
             $mform->addGroup($username_group, 'username_group', get_string('username'), ' ', false);
@@ -248,6 +251,15 @@ class userform extends cmform {
         if (!empty($data['idnumber'])) {
             if (!$this->check_unique(user::TABLE, 'idnumber', $data['idnumber'], $data['id'])) {
                 $errors['idnumber'] = get_string('badidnumber', 'elis_program');
+            } else {
+                //make sure we don't set up an idnumber that is related to a non-linked Moodle user
+                require_once(elispm::lib('data/usermoodle.class.php'));
+                if (!$muserid = $DB->get_field(usermoodle::TABLE, 'muserid', array('cuserid' => $data['id']))) {
+                    $muserid = 0;
+                }
+                if (!$this->check_unique('user', 'idnumber', $data['idnumber'], $muserid)) {
+                    $errors['idnumber'] = get_string('badidnumbermoodle', 'elis_program');
+                }
             }
         }
 
