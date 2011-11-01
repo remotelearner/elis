@@ -959,8 +959,8 @@ class pm_show_inactive_filter extends user_filter_type {
         $field = $this->_name;
 
         if (array_key_exists($field, $formdata)) {
-            if($formdata->$field != 0) {
-                return array('value'=>(string)$formdata->$field);
+            if ($formdata->$field != 0) {
+                return array('value' => (string)$formdata->$field);
             }
         }
 
@@ -1033,8 +1033,8 @@ class pm_custom_field_filter extends user_filter_type {
         if (!isset($control)) {
             $control = 'text';
         }
-        require_once elis::plugin_file('elisfields_manual', 'field_controls/{$control}.php');
-        call_user_func("{$control}_control_display", $mform, $this->_field, true);
+        require_once elis::plugin_file('elisfields_manual', "field_controls/{$control}.php");
+        call_user_func("{$control}_control_display", $mform, $mform, null, $this->_field, true);
 
         $mform->setAdvanced($fieldname);
     }
@@ -1043,7 +1043,7 @@ class pm_custom_field_filter extends user_filter_type {
         $field = "field_{$this->_field->shortname}";
 
         if (!empty($formdata->$field)) {
-            return array('value'=>(string)$formdata->$field);
+            return array('value' => (string)$formdata->$field);
         }
 
         return false;
@@ -1054,23 +1054,22 @@ class pm_custom_field_filter extends user_filter_type {
 
         static $counter = 0;
         $name = 'ex_elisfield'.$counter++;
-        $ilike = sql_ilike();
         $level = context_level_base::get_custom_context_level('user', 'elis_program');
-        $sql = 'EXISTS (SELECT * FROM {'.$this->_field->data_table()."} data
+        $sql = 'EXISTS (SELECT * FROM {'. $this->_field->data_table() ."} data
                         JOIN {context} ctx ON ctx.id = data.contextid
                         WHERE ctx.instanceid = {crlm_user}.id
-                          AND ctx.contextlevel = $level
-                          AND data.fieldid = $this->_field->id
-                          AND {".$DB->sql_like('data.data', ":$name", false).'}';
+                          AND ctx.contextlevel = {$level}
+                          AND data.fieldid = {$this->_field->id}
+                          AND ". $DB->sql_like('data.data', ":{$name}", false) .')';
         $params = array($name => "%{$DB->sql_like_escape($data['value'])}%");
 
-        return array($sql,$params);
+        return array($sql, $params);
     }
 
     function get_label($data) {
         $retval = '';
 
-        if(!empty($data['value'])) {
+        if (!empty($data['value'])) {
             $a = new stdClass;
             $a->label = $this->_field->name;
             $a->value = "\"{$data['value']}\"";
@@ -1176,14 +1175,11 @@ class pm_user_filtering extends user_filtering {
             	'inactive' => 1,
                 );
 
-            /*
-              FIXME:
             $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'elis_program'));
             $fields = $fields ? $fields : array();
             foreach ($fields as $field) {
                 $fieldnames["field_{$field->shortname}"] = 1;
             }
-            */
         }
 
         /// Remove filters if missing capability...
@@ -1246,8 +1242,9 @@ class pm_user_filtering extends user_filtering {
         default:
             if (strncmp($fieldname, 'field_', 6) === 0) {
                 $f = substr($fieldname, 6);
-                $rec = new field($DB->get_record(FIELDTABLE, 'shortname', $f));
-                return new pm_custom_field_filter($fieldname, $rec->shortname, $advanced, $rec);
+                if ($rec = new field($DB->get_record(field::TABLE, array('shortname' => $f)))) {
+                    return new pm_custom_field_filter($fieldname, $rec->shortname, $advanced, $rec);
+                }
             }
             return null;
         }
