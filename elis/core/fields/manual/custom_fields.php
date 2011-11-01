@@ -247,7 +247,8 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
  */
 function manual_field_add_help_button($mform, $elementname, $field) {
     global $CFG, $OUTPUT, $PAGE;
-    $manual = new field_owner($field->owners['manual']);
+    $manual = isset($field->owners['manual'])
+              ? new field_owner($field->owners['manual']) : new stdClass;
     $filename = '';
     if (!empty($manual->param_help_file)) {
         // First check for help_file spec. (now _help identifier in Moodle 2.0)

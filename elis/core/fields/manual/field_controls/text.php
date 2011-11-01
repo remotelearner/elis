@@ -17,7 +17,7 @@ function text_control_display($form, $mform, $customdata, $field) {
     }
 
     $param = '';
-    if ($field->owners['manual']) {
+    if (isset($field->owners['manual'])) {
         $manual = new field_owner($field->owners['manual']);
         if (isset($manual->param_maxlength) && isset($manual->param_columns)) {
             $param = "maxlength=\"{$manual->param_maxlength}\" size=\"{$manual->param_columns}\"";
