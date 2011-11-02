@@ -364,7 +364,6 @@ class health_user_sync extends crlm_health_check_base {
     }
     function solution() {
         global $CFG;
-        // TODO: migrate_moodle_users script needs to be ported to ELIS2
         $msg = get_string('health_user_syncsoln', 'elis_program', $CFG->wwwroot);
         return $msg;
     }
@@ -509,7 +508,7 @@ class completion_export_check extends crlm_health_check_base {
 
     function solution() {
         global $CFG;
-        return get_string('health_completionsoln', 'elis_program', array('wwwroot'=>$CFG->wwwroot, 'dirroot'=>$CFG->dirroot));
+        return get_string('health_completionsoln', 'elis_program', $CFG);
     }
 }
 
@@ -602,14 +601,14 @@ class duplicate_moodle_profile extends crlm_health_check_base {
         return healthpage::SEVERITY_ANNOYANCE;
     }
     function title() {
-        return 'Duplicate Moodle profile field records';
+        return get_string('health_dupmoodleprofile', 'elis_program');
     }
     function description() {
         $count = array_reduce($this->counts, create_function('$a,$b', 'return $a + $b->dup;'), $null);
-        return "There were {$count} duplicate Moodle profile field records.";
+        return get_string('health_dupmoodleprofiledesc', 'elis_program', $count);
     }
     function solution() {
-        $msg = 'Run the script fix_duplicate_moodle_profile.php to remove all duplicate profile field records.';
-        return $msg;
+        global $CFG;
+        return get_string('health_dupmoodleprofilesoln', 'elis_program', $CFG->dirroot);
     }
 }

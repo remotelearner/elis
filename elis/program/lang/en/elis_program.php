@@ -442,6 +442,9 @@ $string['health_duplicate'] = 'Duplicate enrolment records';
 $string['health_duplicatedesc'] = 'There were {$a} duplicate enrolments records in the ELIS enrolments table.';
 $string['health_duplicatesoln'] = 'The duplicate enrolments need to be removed directly from the database.  <b>DO NOT</b> try to remove them via the UI.<br/><br/>
 Recommended to escalate to development for solution.';
+$string['health_dupmoodleprofile'] = 'Duplicate Moodle profile field records';
+$string['health_dupmoodleprofiledesc'] = 'There were {$a} duplicate Moodle profile field records.';
+$string['health_dupmoodleprofilesoln'] = 'Run the script {$a}/fix_duplicate_moodle_profile.php to remove all duplicate profile field records.';
 $string['health_stale'] = 'Stale PM Class Instance - Moodle course description record';
 $string['health_staledesc'] = 'There were {$a} records in the crlm_class_moodle table referencing nonexistent ELIS class instances.';
 $string['health_stalesoln'] = 'These records need to be removed from the database.<br/>Suggested SQL:';
