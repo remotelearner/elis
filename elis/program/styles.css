@@ -66,3 +66,12 @@ dd.solution li {
     width: 95%;
     margin-left: 2.5%;
 }
+
+/* Make sure assigned / unassigned tabs are flush with the left of the page in IE7 */
+.elis_page .tabrow1 {
+    left: 0px;
+}
+/* Hide weird horizontal bar in IE7 */
+.elis_page .tabtree .tabrow1 LI.here .empty {
+    display: none;
+}
