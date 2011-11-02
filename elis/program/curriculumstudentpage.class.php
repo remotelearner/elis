@@ -653,10 +653,10 @@ class curriculumstudentpage extends associationpage2 {
         }
 
         static $sortfields = array(
-            'name' => array('usr.lastname', 'usr.firstname'),
-            'idnumber' => 'usr.idnumber',
-            'country' => 'usr.country',
-            'language' => 'usr.language',
+            'name' => array('lastname', 'firstname'),
+            'idnumber' => 'idnumber',
+            'country' => 'country',
+            'language' => 'language',
             'timecreated' => 'curass.timecreated'
             );
         if (!array_key_exists($sort, $sortfields)) {
@@ -668,9 +668,10 @@ class curriculumstudentpage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
-        $sql = 'SELECT curass.id, usr.id AS userid, usr.firstname, usr.lastname, usr.idnumber, usr.country, usr.language, curass.timecreated
+        //do not use a user table alias because user-based filters operate on the user table directly
+        $sql = 'SELECT curass.id, {'.user::TABLE.'}.id AS userid, firstname, lastname, idnumber, country, language, curass.timecreated
                 FROM {'.curriculumstudent::TABLE.'} curass
-                JOIN {'.user::TABLE.'} usr on curass.userid = usr.id
+                JOIN {'.user::TABLE.'} on curass.userid = {'.user::TABLE.'}.id
                 WHERE curass.curriculumid=:id';
         $where = 'id IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid=:id)';
 
@@ -684,7 +685,7 @@ class curriculumstudentpage extends associationpage2 {
 
         if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
             $where .= ' AND inactive = 0';
-            $sql .= ' AND usr.inactive = 0';
+            $sql .= ' AND inactive = 0';
         }
 
         if ($extrasql[1]) {

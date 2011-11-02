@@ -1314,11 +1314,15 @@ class pm_user_filtering extends user_filtering {
 
         case 'clusterid':
             $clusters = userset_get_menu();
-            return new pm_user_userset_filter('clusterid', get_string('usercluster', 'elis_program'), $advanced, 'id', $clusters);
+            //need to reference the user table directly to allow use of filters in DB calls that do not
+            //require the full SQL query with table aliases
+            return new pm_user_userset_filter('clusterid', get_string('usercluster', 'elis_program'), $advanced, '{'.user::TABLE.'}.id', $clusters);
 
         case 'curriculumid':
             $choices = program_get_menu();
-            return new pm_user_program_filter('curriculumid', get_string('usercurricula', 'elis_program'), $advanced, 'id', $choices);
+            //need to reference the user table directly to allow use of filters in DB calls that do not
+            //require the full SQL query with table aliases
+            return new pm_user_program_filter('curriculumid', get_string('usercurricula', 'elis_program'), $advanced, '{'.user::TABLE.'}.id', $choices);
 
         case 'inactive':
             $inactive_options = array(get_string('o_active', 'elis_program'), get_string('all'), get_string('o_inactive', 'elis_program'));

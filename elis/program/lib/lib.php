@@ -946,10 +946,11 @@ function usermanagement_get_users($sort = 'name', $dir = 'ASC', $startrec = 0,
     global $DB;
     require_once(elispm::lib('data/user.class.php'));
 
-    $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-    $select   = 'SELECT usr.id, usr.idnumber as idnumber, usr.country, usr.language, usr.timecreated, '.
+    $FULLNAME = $DB->sql_concat('firstname', "' '", 'lastname');
+    $select   = 'SELECT id, idnumber, country, language, timecreated, '.
                $FULLNAME . ' as name ';
-    $tables   = 'FROM {'. user::TABLE .'} usr ';
+    //do not use a user table alias because user-based filters operate on the user table directly               
+    $tables   = 'FROM {'. user::TABLE .'} ';
     $where    = array();
     $params   = array();
 
@@ -996,8 +997,9 @@ function usermanagement_count_users($extrasql = array(), $contexts = null) {
     global $DB;
     require_once(elispm::lib('data/user.class.php'));
 
-    $select  = 'SELECT COUNT(usr.id) ';
-    $tables  = 'FROM {'. user::TABLE .'} usr ';
+    $select  = 'SELECT COUNT(id) ';
+    //do not use a user table alias because user-based filters operate on the user table directly
+    $tables  = 'FROM {'. user::TABLE .'} ';
     $join    = '';
     $on      = '';
     $where   = array();
