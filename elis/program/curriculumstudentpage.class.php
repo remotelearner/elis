@@ -604,7 +604,7 @@ class curriculumstudentpage extends associationpage2 {
             $params = array_merge($params,$extrasql[1]);
         }
 
-        if(!curriculumpage::_has_capability('elis/program:program_enrol', $id)) {
+        if (!curriculumpage::_has_capability('elis/program:program_enrol', $id)) {
             //perform SQL filtering for the more "conditional" capability
             $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
 
@@ -612,15 +612,15 @@ class curriculumstudentpage extends associationpage2 {
 
             //get the clusters assigned to this curriculum
             $clusters = clustercurriculum::get_clusters($id);
-            if(!empty($clusters)) {
-                foreach($clusters as $cluster) {
-                    if($context->context_allowed($cluster->clusterid, 'cluster')) {
+            if (!empty($clusters)) {
+                foreach ($clusters as $cluster) {
+                    if ($context->context_allowed($cluster->clusterid, 'cluster')) {
                         $allowed_clusters[] = $cluster->clusterid;
                     }
                 }
             }
 
-            if(empty($allowed_clusters)) {
+            if (empty($allowed_clusters)) {
                 return array(array(), 0);
             } else {
                 $cluster_filter = implode(',', $allowed_clusters);
@@ -740,6 +740,8 @@ class curriculumstudentpage extends associationpage2 {
 }
 
 class curriculum_user_selection_table extends selection_table {
+    var $allowed_clusters = null;
+
     function __construct(&$items, $columns, $pageurl) {
         global $USER;
         $pageurl->params(array('_assign' => optional_param('_assign', 'unassign', PARAM_CLEAN)));
@@ -752,10 +754,10 @@ class curriculum_user_selection_table extends selection_table {
 
             //get the clusters assigned to this curriculum
             $clusters = clustercurriculum::get_clusters($id);
-            if(!empty($clusters)) {
-                foreach($clusters as $cluster) {
-                    if($context->context_allowed($cluster->clusterid, 'cluster')) {
-                        $allowed_clusters[] = $cluster->id;
+            if (!empty($clusters)) {
+                foreach ($clusters as $cluster) {
+                    if ($context->context_allowed($cluster->clusterid, 'cluster')) {
+                        $allowed_clusters[] = $cluster->clusterid;
                     }
                 }
             }
