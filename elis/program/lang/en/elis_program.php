@@ -55,6 +55,7 @@ $string['all_users_already_enrolled'] = 'All users in track already enrolled.';
 $string['and_all_children'] = '(and all children)';
 $string['assign'] = 'Assign';
 $string['assign_selected'] = 'Assign Selected';
+$string['assign_user_track'] = 'Assign users to track ';
 $string['assigned'] = 'Assigned';
 $string['assigntime'] = 'Assigned Time';
 $string['association_clustercurriculum'] = 'Associate User Set';
@@ -454,7 +455,7 @@ $string['health_user_syncdesc'] = 'There are {$a} extra user records for Moodle 
 $string['health_user_syncsoln'] = 'Users need to be synchronized by running the script which is linked below.<br/><br/>
                 This process can take a long time, we recommend you run it during non-peak hours, and leave this window open until you see a success message.
                 If the script times out (stops loading before indicating success), please open a support ticket to have this run for you.<br/><br/>
-                <a href="{$a->wwwroot}/elis/program/scripts/migrate_moodle_users.php">Fix this now</a>';
+                <a href="{$a}/elis/program/scripts/migrate_moodle_users.php">Fix this now</a>';
 $string['hidecourses'] = 'Hide Courses';
 
 $string['icon_collapse_help'] = 'This setting determines the number of icons of each type to display in the Program Administration block.

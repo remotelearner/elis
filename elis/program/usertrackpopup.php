@@ -142,9 +142,8 @@ if ($count < ($page * $perpage)) {
 }
 $users = $DB->get_records_sql($select.$sql, $params, $page * $perpage, $perpage);
 
-//print_header($site->shortname . ': Assign users to track "' . $track->name . '"');
-$PAGE->set_title($site->shortname . ': Assign users to track "' . $track->name . '"');
-$PAGE->set_heading($site->shortname . ': Assign users to track "' . $track->name . '"');
+$PAGE->set_title($site->shortname .': '. get_string('assign_user_track', 'elis_program') .'"'. $track->name .'"');
+$PAGE->set_heading($site->shortname .': '. get_string('assign_user_track', 'elis_program') .'"'. $track->name . '"');
 $PAGE->set_pagelayout('popup');
 echo $OUTPUT->header();
 echo $OUTPUT->box_start();
