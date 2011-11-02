@@ -130,8 +130,9 @@ class pmclassform extends cmform {
         }
 
         $mform->addElement('text', 'idnumber', get_string('class_idnumber', 'elis_program') . ':');
-        $mform->addRule('idnumber', get_string('required'), 'required', NULL, 'client');
         $mform->setType('idnumber', PARAM_TEXT);
+        $mform->addRule('idnumber', get_string('required'), 'required', NULL, 'client');
+        $mform->addRule('idnumber', null, 'maxlength', 100, 'client');
         $mform->addHelpButton('idnumber', 'pmclassform:class_idnumber', 'elis_program');
 
         $mform->addElement('date_selector', 'startdate', get_string('class_startdate', 'elis_program') . ':', array('optional'=>true, 'disabled'=>'disabled'));
