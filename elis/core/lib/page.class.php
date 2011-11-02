@@ -60,6 +60,8 @@ abstract class elis_page extends moodle_page {
         $this->params = $params;
         $this->set_context($this->_get_page_context());
         $this->set_url($this->_get_page_url(), $this->_get_page_params());
+        //set up a CSS hook for styling all ELIS pages
+        $this->add_body_class('elis_page');
     }
 
     /**
