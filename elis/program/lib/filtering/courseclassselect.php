@@ -56,7 +56,7 @@ class generalized_filter_courseclassselect extends generalized_filter_dependents
         $choices_array = array('0' => get_string('selectaclass', 'elis_program'));
 
         $contexts = get_contexts_by_capability_for_user('class', 'block/php_report:view', $USER->id);
-        if ($records = pmclass_get_listing('crsname', 'ASC', 0, 0, '', '', 0, false, $contexts)) {
+        if ($records = pmclass_get_listing('idnumber', 'ASC', 0, 0, '', '', 0, false, $contexts)) {
             foreach ($records as $record) {
                 $choices_array[$record->id] = $record->idnumber;
             }
