@@ -152,7 +152,7 @@ function xmldb_elis_program_upgrade($oldversion=0) {
             //need to check and update the options source parameter
             if (!empty($potential_owner->params)) {
                 $params = unserialize($potential_owner->params);
- 
+
                 //validate that the options source parameter is the old completion elements value
                 if (!empty($params['options_source']) && $params['options_source'] == 'completion_elements') {
                     //update with the new learning objectives value
@@ -220,11 +220,11 @@ function xmldb_elis_program_upgrade($oldversion=0) {
                 INTO {crlm_user_moodle} (cuserid, muserid, idnumber)
                 SELECT cu.id, mu.id, cu.idnumber
                 FROM {crlm_user} cu
-                JOIN {user} mu
-                  ON cu.idnumber = mu.idnumber
-                  AND cu.idnumber != ''";
+                JOIN {user} mu ON cu.idnumber = mu.idnumber AND cu.idnumber != ''
+                WHERE mu.deleted = 0
+                AND mu.mnethostid = :mnethostid";
 
-        $DB->execute($sql);
+        $DB->execute($sql, array('mnethostid' => $CFG->mnet_localhost_id));
 
         upgrade_plugin_savepoint(true, 2011102700, 'elis', 'program');
     }
