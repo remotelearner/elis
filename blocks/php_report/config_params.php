@@ -46,15 +46,7 @@ $instance = php_report::get_default_instance($report_shortname);
 //NOTE: this is slow because it populates filter values
 $filters = $instance->get_filters();
 
-if (!isset($this)) {
-    // only edit the page, and show the header/footer if we are called directly
-    $PAGE->set_url($ME);
-    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
-    $PAGE->set_pagelayout('embedded'); // TBV: was 'embedded'
-    $PAGE->set_pagetype('elis'); // TBV
-    $PAGE->set_title($instance->get_display_name());
-    echo $OUTPUT->header();
-}
+$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 
 //obtain any necessary information regarding secondary filterings
 $dynamic_report_filter_url = $CFG->wwwroot .'/blocks/php_report/dynamicreport.php?id='. $report_shortname;
@@ -101,9 +93,6 @@ if (!empty($reset_form)) {
     if ($parameter_form->is_cancelled()) {
         //just re-display the report
         $instance->main('', '', 0, 20, '', $report_shortname);
-        if (!isset($this)) {
-            echo $OUTPUT->footer();
-        }
         die;
     } else if (isset($data->save_defaults)) {
         //store form settings as report-specific user preferences
@@ -114,9 +103,6 @@ if (!empty($reset_form)) {
 
         //re-display the report
         $instance->main('', '', 0, 20, '', $report_shortname);
-        if (!isset($this)) {
-            echo $OUTPUT->footer();
-        }
         die;
     }
 }
@@ -125,7 +111,3 @@ if (!empty($reset_form)) {
  * Displaying the form
  */
 $parameter_form->display();
-
-if (!isset($this)) {
-    echo $OUTPUT->footer();
-}
