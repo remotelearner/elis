@@ -71,22 +71,6 @@ abstract class selectionpage extends pm_page { // TBD
     function print_footer() {
         if (!$this->is_bare()) {
             return parent::print_footer();
-        } else {
-            //this case handles flushing out of Javascript code when
-            //we are using AJAX to re-populate page content, but the footer is not printed
-
-            //unset cached form variables because the form has likely changed
-            //during an AJAX reload
-            $jsclear = "M.form.showAdvanced = null;
-                        M.form.dependencyManager = null;";
-
-            //make sure the onclick is set up on the advanced button
-            $jsinit = $this->requires->get_javascript_init_code();
-
-            // there is no global Y, make sure it is available in your scope
-            $js = "YUI(M.yui.loader).use('node', function(Y) {\n{$jsclear}{$jsinit}\n});";
-
-            echo html_writer::script($js);
         }
     }
 
