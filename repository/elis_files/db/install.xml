@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="repository/elis_files/db" VERSION="20100903" COMMENT="XMLDB file for Moodle repository/elis_files"
+<XMLDB PATH="repository/elis_files/db" VERSION="20110906" COMMENT="XMLDB file for Moodle repository/elis_files"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
