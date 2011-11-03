@@ -271,7 +271,7 @@ class course_progress_summary_report extends table_report {
 
         //make sure we only include curricula within those contexts
         //$permissions_filter = $contexts->sql_filter_for_context_level('crs.id', 'course');
-        $filter_obj = $contexts->get_filter('crs.id', 'course');
+        $filter_obj = $contexts->get_filter('id', 'course');
         $filter_sql = $filter_obj->get_sql(false, 'crs'); // TBV
         $where = array();
         if (isset($filter_sql['where'])) {

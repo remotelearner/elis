@@ -387,7 +387,7 @@ class individual_user_report extends table_report {
             // obtain all course contexts where this user can view reports
             $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
             //$permissions_filter = $contexts->sql_filter_for_context_level('usr.id', 'user');
-            $filter_obj = $contexts->get_filter('usr.id', 'user');
+            $filter_obj = $contexts->get_filter('id', 'user');
             $filter_sql = $filter_obj->get_sql(false, 'usr'); // TBV
             if (isset($filter_sql['where'])) {
                 $permissions_filter = ' WHERE '. $filter_sql['where'];

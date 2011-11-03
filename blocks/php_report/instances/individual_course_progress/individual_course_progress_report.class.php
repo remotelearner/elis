@@ -315,7 +315,7 @@ class individual_course_progress_report extends table_report {
                 $view_field_contexts = get_contexts_by_capability_for_user('course', $view_field_capability, $this->userid);
 
                 //$view_field_filter = $view_field_contexts->sql_filter_for_context_level('ctxt.instanceid', 'course');
-                $filter_obj = $view_field_contexts->get_filter('ctxt.instanceid', 'course');
+                $filter_obj = $view_field_contexts->get_filter('instanceid', 'course');
                 $filter_sql = $filter_obj->get_sql(false, 'ctxt'); // TBV
                 $view_field_filter = 'TRUE';
                 $params = array();

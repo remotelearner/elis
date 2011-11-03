@@ -714,7 +714,7 @@ class sitewide_time_summary_report extends table_report {
 
         //make sure we only count courses within those contexts
         //$permissions_filter = $contexts->sql_filter_for_context_level('crlmu.id', 'user');
-        $filter_obj = $contexts->get_filter('crlmu.id', 'user');
+        $filter_obj = $contexts->get_filter('id', 'user');
         $filter_sql = $filter_obj->get_sql(false, 'crlmu'); // TBV
         $params = array();
         $permissions_filter = 'TRUE';

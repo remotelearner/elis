@@ -290,7 +290,7 @@ class registrants_by_student_report extends table_report {
         //make sure we only count courses within those contexts
         $where = array();
         $params = array();
-        $filter_obj = $contexts->get_filter('usr.id', 'user');
+        $filter_obj = $contexts->get_filter('id', 'user');
         $filter_sql = $filter_obj->get_sql(false, 'usr'); // TBV
         $params = array();
         if (isset($filter_sql['where'])) {
