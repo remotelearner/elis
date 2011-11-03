@@ -435,7 +435,10 @@ function php_report_filtering_reset_form($form_data, $filter_object, $report_nam
     //loop through the filters, and get them to specify their defaults
     foreach ($per_filter_data as $filter_name => $filter_data) {
         //obtain the instance
-        $filter_instance = $filter_object->_fields[$filter_name];
+        // Checking with isset() should not be necessary. This is a workaround.
+        if(isset($filter_object->_fields[$filter_name])) {
+            $filter_instance = $filter_object->_fields[$filter_name];
+        }
         //append the default values to our list
         $default_values = $filter_instance->get_default_values($filter_data);
         $reset_array = array_merge($reset_array, $default_values);
