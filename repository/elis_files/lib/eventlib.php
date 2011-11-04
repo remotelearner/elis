@@ -146,8 +146,8 @@ function elis_files_role_unassigned($ra) {
         // If the role this user was just unassigned had the view capability for the root of the
         // Alfresco repository space associated with it.
         $params = array(
-    		'roleid'     => $ra->roleid,
-    		'permission' => CAP_ALLOW,
+    	    'roleid'     => $ra->roleid,
+    	    'permission' => CAP_ALLOW,
             'capability' => 'repository/elis_files:viewsitecontent'
         );
 
