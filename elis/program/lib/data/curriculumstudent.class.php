@@ -343,7 +343,7 @@ class curriculumstudent extends elis_data_object {
 
         $sql = $select.$tables.$join.$where.$group.$sort;
 
-        return $DB->get_records_sql($sql, $params);
+        return $DB->get_recordset_sql($sql, $params);
     }
 
     /**

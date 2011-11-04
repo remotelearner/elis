@@ -516,7 +516,7 @@ class user extends data_object_with_custom_fields {
                    AND clsenrol.completestatusid = ?
               ORDER BY curcrs.position';
 
-        return $DB->get_records_sql($sql,
+        return $DB->get_recordset_sql($sql,
                         array($curid, $userid, student::STUSTATUS_NOTCOMPLETE));
     }
 
@@ -540,7 +540,7 @@ class user extends data_object_with_custom_fields {
                        ON curcrs.courseid = crs.id
                  WHERE clsenrol.userid = ? AND curcrs.courseid IS NULL';
 
-        return $DB->get_records_sql($sql, array($userid, $userid));
+        return $DB->get_recordset_sql($sql, array($userid, $userid));
     }
 
     /**
@@ -598,7 +598,7 @@ class user extends data_object_with_custom_fields {
             'currtimeb' => $time_now,
             'curid'     => $curid,
         );
-        return $DB->get_records_sql($sql, $params);
+        return $DB->get_recordset_sql($sql, $params);
     }
 
     /**
@@ -615,7 +615,7 @@ class user extends data_object_with_custom_fields {
                   JOIN {'.instructor::TABLE.'} clsinstr ON cls.id = clsinstr.classid
                  WHERE clsinstr.userid = ?
               GROUP BY cls.id ';
-        return $DB->get_records_sql($sql, array($userid));
+        return $DB->get_recordset_sql($sql, array($userid));
     }
 
     /**
@@ -835,7 +835,7 @@ class user extends data_object_with_custom_fields {
                         ORDER BY crs.name ASC, stu.completetime ASC';
             }
 
-            if ($classes = $DB->get_records_sql($sql)) {
+            if ($classes = $DB->get_recordset_sql($sql)) {
                 $table = new html_table();
                 $table->head = array(
                     get_string('class', 'elis_program'),
