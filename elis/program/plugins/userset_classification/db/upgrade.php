@@ -105,33 +105,41 @@ function xmldb_pmplugins_userset_classification_upgrade($oldversion = 0) {
         // Make sure to rename the default classification name from "Cluster" to "User set"
         require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
 
-        $default = usersetclassification::find(new field_filter('shortname', 'regular'));
+        $field = field::find(new field_filter('shortname', USERSET_CLASSIFICATION_FIELD));
 
-        if ($default->valid()) {
-            $default = $default->current();
-            $default->name = get_string('cluster', 'elis_program');
-            $default->save();
+        if ($field->valid()) {
+            $field = $field->current();
+
+            $category = $field->category;
+
+	        $default = usersetclassification::find(new field_filter('shortname', 'regular'));
+
+	        if ($default->valid()) {
+	            $default = $default->current();
+	            $default->name = get_string('cluster', 'elis_program');
+	            $default->save();
+	        }
+
+	        // Upgrade field owner data for the default User Set field
+	        $field = field::ensure_field_exists_for_context_level($field, 'cluster', $category);
+
+	        $owners = field_owner::find(new field_filter('fieldid', $field->id));
+
+	        if ($owners->valid()) {
+	            foreach ($owners as $owner) {
+	                if ($owner->plugin == 'cluster_classification') {
+	                    $owner->plugin = 'userset_classification';
+	                    $owner->save();
+	                } else if ($owner->plugin == 'manual') {
+	                    $owner->param_options_source = 'userset_classifications';
+	                    $owner->param_help_file = 'pmplugins_userset_classification/cluster_classification';
+	                    $owner->save();
+	                }
+	            }
+	        }
+
+	        upgrade_plugin_savepoint($result, 2011110300, 'pmplugins', 'userset_classification');
         }
-
-        // Upgrade field owner data for the default User Set field
-        $field = field::ensure_field_exists_for_context_level($field, 'cluster', $category);
-
-        $owners = field_owner::find(new field_filter('fieldid', $field->id));
-
-        if ($owners->valid()) {
-            foreach ($owners as $owner) {
-                if ($owner->plugin == 'cluster_classification') {
-                    $owner->plugin = 'userset_classification';
-                    $owner->save();
-                } else if ($owner->plugin == 'manual') {
-                    $owner->param_options_source = 'userset_classifications';
-                    $owner->param_help_file = 'pmplugins_userset_classification/cluster_classification';
-                    $owner->save();
-                }
-            }
-        }
-
-        upgrade_plugin_savepoint($result, 2011110300, 'pmplugins', 'userset_classification');
     }
 
     return $result;
