@@ -171,7 +171,7 @@ class registrants_by_course_report extends table_report {
                                                   array('choices'  => $cms,
                                                         'numeric'  => true,
                                                         'anyvalue' => get_string('allprograms', $this->lang_file),
-                                                        'help'     => array('registrants_by_course_curriculum',
+                                                        'help'     => array('registrants_by_course_program',
                                                                   get_string('filter_program', $this->lang_file),
                                                                   $this->lang_file)
                                                        )
