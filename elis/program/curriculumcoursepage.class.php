@@ -168,6 +168,13 @@ class curriculumcoursepage extends curriculumcoursebasepage {
             'buttons'    => array('header' => ''),
         );
 
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        }
+
         $items = curriculumcourse_get_listing($id, $sort, $dir, 0, 0, $namesearch, $alpha);
         $numitems = curriculumcourse_count_records($id, $namesearch, $alpha);
 
