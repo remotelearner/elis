@@ -65,7 +65,7 @@ class clusterassignment extends elis_data_object {
 
 	public function delete() {
         $status = parent::delete();
-
+        events_trigger('cluster_deassigned', $this->to_object());
         return $status;
 	}
 
