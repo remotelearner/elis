@@ -12,6 +12,7 @@ $string['helpfileslink'] = '<a href=\"$a\">Alfresco documentation</a>';
 $string['helplink'] = 'Link to help documents';
 $string['norepositorypluginsystem'] = 'Your system is missing the repository plug-in system. This block requires that ' .
                                       'to be present with the Alfresco plug-in enabled in order to work.';
+$string['pluginname'] = 'Alfresco Repository';
 $string['usernameinfo'] = 'Use the same username and password that you use to access Moodle to login to Alfresco.';
 $string['usernametenantinfo'] = 'Your username on Alfresco is:<br /><p><center><b>$a</b></center></p><br />' .
                                 'Use the same password that you use to login to Moodle with.';
