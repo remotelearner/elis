@@ -60,15 +60,18 @@ class repository_factory {
 
     function factory() {
         global $SESSION, $USER;
+
         if (file_exists(dirname(__FILE__).'/lib/ELIS_files.php')) {
             require_once(dirname(__FILE__).'/lib/ELIS_files.php');
 
             $class = "ELIS_files";
-                            if (!(isset($SESSION->repo))) {
+
+            if (!(isset($SESSION->repo))) {
                 $SESSION->repo = new $class;
             } else {
                 $SESSION->repo = unserialize(serialize($SESSION->repo));
             }
+
             return $SESSION->repo;
         } else {
             trigger_error(dirname(__FILE__).'/lib/ELIS_files.php does not exist');
