@@ -166,13 +166,13 @@ class registrants_by_course_report extends table_report {
         }
 
         return array(new generalized_filter_entry('showc', 'cur', 'id',
-                                                  get_string('filter_curriculum', $this->lang_file),
+                                                  get_string('filter_program', $this->lang_file),
                                                   false, 'simpleselect',
                                                   array('choices'  => $cms,
                                                         'numeric'  => true,
-                                                        'anyvalue' => get_string('allcurricula', $this->lang_file),
+                                                        'anyvalue' => get_string('allprograms', $this->lang_file),
                                                         'help'     => array('registrants_by_course_curriculum',
-                                                                  get_string('filter_curriculum', $this->lang_file),
+                                                                  get_string('filter_program', $this->lang_file),
                                                                   $this->lang_file)
                                                        )
                                                  ),

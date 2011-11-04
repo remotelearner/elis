@@ -27,7 +27,7 @@ $string['displayname'] = 'Course Progress Summary Report';
 $string['filter_cluster'] = 'Select the Organizations/User Sets to show or show all';
 $string['filter_course_date'] = 'Show courses starting between these dates:';
 $string['filter_custom_fields'] = 'selecting custom course fields';
-$string['filter_curricula'] = 'Select the curricula or all curricula';
+$string['filter_program'] = 'Select the program or all programs';
 $string['filter_field'] = 'Choose Custom Course Fields to show on report';
 
 $string['grouping_course_complete'] = 'Courses Completed';

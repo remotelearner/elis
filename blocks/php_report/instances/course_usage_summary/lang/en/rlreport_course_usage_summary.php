@@ -17,7 +17,7 @@ $string['date_format'] = '%m/%d/%Y';
 $string['displayname'] = 'Site Usage Summary Report';
 
 $string['filter_course_date'] = 'Show courses starting between these dates:';
-$string['filter_curricula'] = 'Select the curricula or all curricula:';
+$string['filter_program'] = 'Select the program or all programs:';
 $string['filter_date_range'] = 'Select a date range:';
 $string['filter_options_header'] = 'Decide what the report should show:';
 

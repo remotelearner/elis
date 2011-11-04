@@ -125,7 +125,7 @@ class course_progress_summary_report extends table_report {
                                     'rlreport_course_progress_summary');
 
         $filter_entries = array();
-        $filter_entries[] = new generalized_filter_entry('curr', 'curcrs', 'curriculumid', get_string('filter_curricula', 'rlreport_course_progress_summary'), false, 'selectany', $curricula_options);
+        $filter_entries[] = new generalized_filter_entry('curr', 'curcrs', 'curriculumid', get_string('filter_program', 'rlreport_course_progress_summary'), false, 'selectany', $curricula_options);
 
         $filter_entries[] = new generalized_filter_entry('cluster', 'enrol', 'userid', get_string('filter_cluster', 'rlreport_course_progress_summary'), false, 'clusterselect', array('default' => null));
 

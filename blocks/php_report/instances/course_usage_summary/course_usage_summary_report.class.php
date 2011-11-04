@@ -141,7 +141,7 @@ class course_usage_summary_report extends icon_config_report {
                             );
 
         $filter_entries = array();
-        $filter_entries[] = new generalized_filter_entry('cc', 'cc', 'id', get_string('filter_curricula', 'rlreport_course_usage_summary'), false, 'selectany', $curricula_options);
+        $filter_entries[] = new generalized_filter_entry('cc', 'cc', 'id', get_string('filter_program', 'rlreport_course_usage_summary'), false, 'selectany', $curricula_options);
         $this->checkboxes_filter = new generalized_filter_entry('oe', 'oe', 'id', '', false, 'checkboxes', $option_options);
         $filter_entries[] = $this->checkboxes_filter;
         $filter_entries[] = new generalized_filter_entry('enrol', 'enrol', 'enrolmenttime', get_string('filter_course_date', 'rlreport_course_usage_summary'), false, 'date');
