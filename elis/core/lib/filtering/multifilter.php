@@ -131,6 +131,10 @@ class generalized_filter_multifilter {
     // This wrapper is an SQL fragment to relate the custom profile to a specific table.
     protected $_wrapper    = array('default' => '');
 
+    // This field stores limits for generating limited select fields
+    protected $_limits     = array();
+
+    // The are optional fields which can be passed to multifilter objects
     protected $_optionals = array(
         '_heading'     => 'heading',
         '_footer'      => 'footer',
@@ -138,6 +142,7 @@ class generalized_filter_multifilter {
         '_innerfield'  => 'innerfield',
         '_outerfield'  => 'outerfield',
         '_wrapper'     => 'wrapper',
+        '_limits'      => 'limits',
     );
 
     // Language file (can't be constant because it's an optional parameter)
@@ -173,6 +178,32 @@ class generalized_filter_multifilter {
             $this->make_field_list($options['choices']);
         } else {
             $this->make_field_list($this->labels);
+        }
+
+        // Record aliases
+        foreach ($this->labels as $group => $labels) {
+
+            foreach ($labels as $key => $val) {
+                $this->record_short_field_name($group .'-'. $key);
+            }
+        }
+
+        // Check for and assign table aliases
+        if (array_key_exists('tables', $options)) {
+            foreach ($this->tables as $group => $tables) {
+
+                if (! array_key_exists($group, $options['tables'])) {
+                    continue;
+                }
+
+                foreach ($tables as $key => $val) {
+
+                    if (! empty($options['tables'][$group][$key])) {
+                        // If an alias has peen specified, us that instead of default
+                        $this->tables[$group][$key] = $options['tables'][$group][$key];
+                    }
+                }
+            }
         }
 
         // Get necesary data
@@ -331,7 +362,7 @@ class generalized_filter_multifilter {
      */
     function make_field_list($groups) {
 
-        // Force $options['choices'] to be an associative array
+        // Force $groups to be an associative array
         foreach ($groups as $key => $choices) {
             if (!$this->is_assoc_array($choices)) {
                 $groups[$key] = array_fill_keys($choices, '');

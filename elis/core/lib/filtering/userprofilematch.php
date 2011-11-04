@@ -243,24 +243,6 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
             $options['tables'] = array();
         }
 
-        $shortfields = array(); // to store/check truncated field names used for filterids
-        foreach ($this->labels as $key => $val) {
-            $shortfieldname = substr($key, 0, MAX_FILTER_SUFFIX_LEN);
-            if (in_array($shortfieldname, $shortfields)) {
-                error_log("generalized_filter_userprofilematch::non-unique field name: '{$shortfieldname}' in main user profile - modify code!");
-            } else {
-                $shortfields[] = $shortfieldname;
-            }
-        }
-
-        // Check for & assign table aliases
-        foreach ($this->tables['up'] as $key => $val) {
-            if (! empty($options['tables']['up'][$key])) {
-                // use defaults table aliases if not specified
-                $this->tables['up'][$key] = $options['tables']['up'][$key];
-            }
-        }
-
         $this->fieldtofiltermap['up']['fullname'] = self::filtertypetext;
 
         $this->_filters['up'] = array();
