@@ -1141,7 +1141,7 @@ class course_usage_summary_report extends icon_config_report {
             //make sure we only include curricula within those contexts
             //$this->permissions_filter = $contexts->sql_filter_for_context_level('curass.curriculumid', 'curriculum');
             $filter_obj = $contexts->get_filter('curriculumid', 'curriculum');
-            $filter_sql = $filter_obj->get_sql(false, 'curass'); // TBV
+            $filter_sql = $filter_obj->get_sql(false, 'curass', SQL_PARAMS_NAMED);
 
             $this->permissions_filter = null;
             $this->permissions_array = array();

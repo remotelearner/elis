@@ -316,7 +316,7 @@ class individual_course_progress_report extends table_report {
 
                 //$view_field_filter = $view_field_contexts->sql_filter_for_context_level('ctxt.instanceid', 'course');
                 $filter_obj = $view_field_contexts->get_filter('instanceid', 'course');
-                $filter_sql = $filter_obj->get_sql(false, 'ctxt'); // TBV
+                $filter_sql = $filter_obj->get_sql(false, 'ctxt', SQL_PARAMS_NAMED);
                 $view_field_filter = 'TRUE';
                 $params = array();
                 if (isset($filter_sql['where'])) {
@@ -483,7 +483,7 @@ class individual_course_progress_report extends table_report {
             $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
             //$permissions_filter = $contexts->sql_filter_for_context_level('crlmuser.id', 'user');
             $filter_obj = $contexts->get_filter('crlmuser.id', 'user');
-            $filter_sql = $filter_obj->get_sql(false, 'crlmuser'); // TBV
+            $filter_sql = $filter_obj->get_sql(false, 'crlmuser', SQL_PARAMS_NAMED);
             if (isset($filter_sql['where'])) {
                 $permissions_filter = $filter_sql['where'];
                 $params = $filter_sql['where_parameters'];

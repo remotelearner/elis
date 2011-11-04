@@ -182,7 +182,7 @@ class course_progress_summary_report extends table_report {
 
                 //$view_field_filter = $view_field_contexts->sql_filter_for_context_level('ctxt.instanceid', 'course');
                 $filter_obj = $view_field_contexts->get_filter('ctxt.instanceid', 'course');
-                $filter_sql = $filter_obj->get_sql(false, 'ctxt'); // TBV
+                $filter_sql = $filter_obj->get_sql(false, 'ctxt', SQL_PARAMS_NAMED);
                 $view_field_filter = 'TRUE';
                 $params = array();
                 if (isset($filter_sql['where'])) {
@@ -272,7 +272,7 @@ class course_progress_summary_report extends table_report {
         //make sure we only include curricula within those contexts
         //$permissions_filter = $contexts->sql_filter_for_context_level('crs.id', 'course');
         $filter_obj = $contexts->get_filter('id', 'course');
-        $filter_sql = $filter_obj->get_sql(false, 'crs'); // TBV
+        $filter_sql = $filter_obj->get_sql(false, 'crs', SQL_PARAMS_NAMED);
         $where = array();
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];

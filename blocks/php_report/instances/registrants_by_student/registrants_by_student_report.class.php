@@ -291,7 +291,7 @@ class registrants_by_student_report extends table_report {
         $where = array();
         $params = array();
         $filter_obj = $contexts->get_filter('id', 'user');
-        $filter_sql = $filter_obj->get_sql(false, 'usr'); // TBV
+        $filter_sql = $filter_obj->get_sql(false, 'usr', SQL_PARAMS_NAMED);
         $params = array();
         if (isset($filter_sql['where'])) {
             $where[] = $filter_sql['where'];

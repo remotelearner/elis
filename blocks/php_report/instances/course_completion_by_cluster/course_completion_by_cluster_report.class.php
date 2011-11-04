@@ -377,7 +377,7 @@ class course_completion_by_cluster_report extends table_report {
         $contexts = get_contexts_by_capability_for_user('cluster', $this->access_capability, $this->userid);
         //$permissions_filter = $contexts->sql_filter_for_context_level('clusterid', 'cluster');
         $filter_obj = $contexts->get_filter('clusterid', 'cluster');
-        $filter_sql = $filter_obj->get_sql(); // TBV
+        $filter_sql = $filter_obj->get_sql(false, null, SQL_PARAMS_NAMED);
         $filter_params = array();
         $permissions_filter = '';
         if (isset($filter_sql['where'])) {

@@ -288,7 +288,7 @@ class class_roster_report extends table_report {
         //make sure we only count classes within those contexts
         //$permissions_filter = $contexts->sql_filter_for_context_level('cls.id', 'class');
         $filter_obj = $contexts->get_filter('id', 'class');
-        $filter_sql = $filter_obj->get_sql(false, 'cls'); // TBV
+        $filter_sql = $filter_obj->get_sql(false, 'cls', SQL_PARAMS_NAMED);
         $where = array();
         $params = array();
         if (isset($filter_sql['where'])) {

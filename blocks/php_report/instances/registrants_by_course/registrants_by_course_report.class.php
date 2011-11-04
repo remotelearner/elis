@@ -296,7 +296,7 @@ class registrants_by_course_report extends table_report {
         $contexts = get_contexts_by_capability_for_user('curriculum', $this->access_capability, $this->userid);
         //$permissions_filter = $contexts->sql_filter_for_context_level('cur.id', 'curriculum');
         $filter_obj = $contexts->get_filter('id', 'curriculum');
-        $filter_sql = $filter_obj->get_sql(false, 'cur'); // TBV
+        $filter_sql = $filter_obj->get_sql(false, 'cur', SQL_PARAMS_NAMED);
         $where = array();
         $params = array();
         if (isset($filter_sql['where'])) {

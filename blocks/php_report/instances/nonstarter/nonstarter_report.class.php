@@ -280,7 +280,7 @@ class nonstarter_report extends table_report {
         //make sure we only count courses within those contexts
         //$permissions_filter = $contexts->sql_filter_for_context_level('crlmusr.id', 'user');
         $filter_obj = $contexts->get_filter('id', 'user');
-        $filter_sql = $filter_obj->get_sql(false, 'crlmusr'); // TBV
+        $filter_sql = $filter_obj->get_sql(false, 'crlmusr', SQL_PARAMS_NAMED);
         $where = array();
         $params = array();
         if (isset($filter_sql['where'])) {
