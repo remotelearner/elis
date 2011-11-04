@@ -39,62 +39,67 @@ class block_repository extends block_base {
             return $this->content;
         }
 
+        $this->content = new stdClass;
+        $this->content->text   = '';
+        $this->content->footer = '';
+
         $content = '';
         $footer  = '';
 
-        if (isloggedin() && file_exists($CFG->dirroot . '/file/repository/alfresco/repository.php')) {
-            require_once($CFG->dirroot . '/file/repository/repository.class.php');
+        // Only proceed here if the Alfresco plug-in is actually enabled.
+        if (!isloggedin() || !file_exists($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php')) {
+            return $this->content;
+        }
 
-            if (isset($CFG->repository_plugins_enabled) && strstr($CFG->repository_plugins_enabled, 'alfresco')) {
-                if ($repo = repository_factory::factory('alfresco')) {
-                    if ($repo->alfresco_userdir($USER->username) !== false) {
-                        // So that we don't conflict with the default Alfresco admin account.
-                        $username = $USER->username == 'admin' ? $CFG->repository_alfresco_admin_username : $USER->username;
+        require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
 
-                        $hastenant = false;
+        if (!$repo = repository_factory::factory('elis_files')) {
+            return $this->content;
+        }
 
-                        // We must include the tenant portion of the username here.
-                        if (($tenantname = strpos($CFG->repository_alfresco_server_username, '@')) > 0) {
-                            $username .= substr($CFG->repository_alfresco_server_username, $tenantname);
-                            $hastenant = true;
-                        }
+        // Get the ELIS Files plugin configuration values
+        $pcfg = get_config('elis_files');
 
-                        // Display a link to access the Alfresco repository directly.
-                        $content .= get_string('webappaccess', 'block_repository', $repo->get_webapp_url()) . '<br /><br />';
+        if ($repo->elis_files_userdir($USER->username) !== false) {
+            // So that we don't conflict with the default Alfresco admin account.
+            $username = $USER->username == 'admin' ? $pcfg->admin_username : $USER->username;
 
-                        // Display a link to the configured embedded WebDAV client (if defined).
-                        if (!empty($CFG->block_course_repository_webdav_client)) {
-                            $content .= get_string('embeddedwebdavlink', 'block_repository',
-                                                   $CFG->block_course_repository_webdav_client) . '<br /><br />';
-                        }
+            $hastenant = false;
 
-                        if ($hastenant || ($username != $USER->username)) {
-                            $content .= get_string('usernametenantinfo', 'block_repository', $username);
-                        } else {
-                            $content .= get_string('usernameinfo', 'block_repository', $username);
-                        }
+            // We must include the tenant portion of the username here.
+            if (($tenantname = strpos($pcfg->server_username, '@')) > 0) {
+                $username .= substr($pcfg->server_username, $tenantname);
+                $hastenant = true;
+            }
 
-                        // Display a link to defined help files
-                        if (!empty($CFG->block_course_repository_help_link)) {
-                            $footer = get_string('helpfileslink', 'block_repository', $CFG->block_course_repository_help_link);
-                        }
-                    }
-                }
+            // Display a link to access the Alfresco repository directly.
+            $content .= get_string('webappaccess', 'block_repository', $repo->get_webapp_url()) . '<br /><br />';
+
+            // Display a link to the configured embedded WebDAV client (if defined).
+            if (!empty($CFG->block_course_repository_webdav_client)) {
+                $content .= get_string('embeddedwebdavlink', 'block_repository',
+                                       $CFG->block_course_repository_webdav_client) . '<br /><br />';
+            }
+
+            if ($hastenant || ($username != $USER->username)) {
+                $content .= get_string('usernametenantinfo', 'block_repository', $username);
+            } else {
+                $content .= get_string('usernameinfo', 'block_repository', $username);
+            }
+
+            // Display a link to defined help files
+            if (!empty($CFG->block_course_repository_help_link)) {
+                $footer = get_string('helpfileslink', 'block_repository', $CFG->block_course_repository_help_link);
             }
         }
 
         // If there is no content and the current user can actually modify the site settings, display some text
         // in the block explaining what is happening.
         if (empty($content) && has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
-            if (file_exists($CFG->dirroot . '/admin/file/repositories.php')) {
-                $content = get_string('alfresconotconfigured', 'block_repository', $CFG->wwwroot . '/admin/file/' .
-                                      'repositories.php');
-            } else {
-                $content = get_string('norepositorypluginsystem', 'block_repository');
-            }
+            $url     = $CFG->wwwroot.'/admin/repository.php?action=edit&amp;repos=elis_files';
+            $content = get_string('alfresconotconfigured', 'block_repository', $url);
         }
 
-        $this->content = new stdClass;
         $this->content->text   = $content;
         $this->content->footer = $footer;
 
@@ -104,7 +109,7 @@ class block_repository extends block_base {
 
     function applicable_formats() {
         return array(
-            'site' => true,
+            'site'   => true,
             'course' => true
         );
     }
