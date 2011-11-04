@@ -36,6 +36,8 @@ require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
  * Handle duplicate records in the mdl_grade_letters table.
  */
 
+$status = true;
+
 // Detect if we have any duplicate records before we try to remove duplicates
 $sql = "SELECT contextid, lowerboundary, letter, COUNT(*) count
         FROM {grade_letters}
@@ -48,8 +50,6 @@ if ($rec = $DB->get_records_sql($sql, array(), 0, 1)) {
     if ($count->count <= 1) {
         break;
     }
-
-    $status = true;
 
     try {
         $DB->execute('CREATE TABLE {grade_letters_temp} LIKE {grade_letters}');
