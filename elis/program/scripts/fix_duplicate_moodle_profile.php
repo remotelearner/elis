@@ -66,7 +66,7 @@ $sql = 'INSERT INTO {user_info_data_temp}
           FROM {user_info_data} d
          WHERE id = (SELECT MAX(id)
                        FROM {user_info_data} d2
-                      WHERE d2.userid = d.userid AND d2.fieldid = d.fieldid)";
+                      WHERE d2.userid = d.userid AND d2.fieldid = d.fieldid)';
 $result = $result && $DB->execute($sql);
 
 echo "Moving temp table to real table\n";
