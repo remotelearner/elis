@@ -157,6 +157,10 @@ class ELIS_files {
             return false;
         }
 
+        if (!$this->is_running()) {
+            return false;
+        }
+
         return $this->verify_setup();
     }
 
@@ -174,6 +178,56 @@ class ELIS_files {
                 !empty($this->config->server_port) &&
                 !empty($this->config->server_username) &&
                 !empty($this->config->server_password));
+    }
+
+
+    /**
+     * Detect whether or not the remove Alfreco repository is currently running.
+     *
+     * @param none
+     * @return bool True if the remote system is running, False otherwise.
+     */
+    function is_running() {
+        $repourl = elis::$config->elis_files->server_host;
+
+        if ($repourl[strlen($repourl) - 1] == '/') {
+            $repourl = substr($repourl, 0, strlen($repourl) - 1);
+        }
+
+        if (!empty(elis::$config->elis_files->server_port)) {
+            $repourl .= ':' . elis::$config->elis_files->server_port;
+        }
+
+        $repourl .= '/alfresco';
+
+        // A list of valid HTTP response codes
+        $validresponse = array(
+            200,
+            201,
+            204,
+            302,
+            401,
+            505
+        );
+
+        // Initialize the cURL session
+        $session = curl_init($repourl);
+        curl_setopt($session, CURLOPT_CONNECTTIMEOUT, 3);
+
+        // Execute the cURL call
+        curl_exec($session);
+
+        // Get the HTTP response code from our request
+        $httpcode = curl_getinfo($session, CURLINFO_HTTP_CODE);
+
+        curl_close($session);
+
+        // Make sure the code is in the list of valid, acceptible codes
+        if (array_search($httpcode, $validresponse)) {
+            return true;
+        }
+
+		return false;
     }
 
 
