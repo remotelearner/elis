@@ -110,7 +110,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         $filter_sql = $filter_obj->get_sql(false, null, SQL_PARAMS_NAMED);
         $params = array();
         if (isset($filter_sql['where'])) {
-            $sql .= 'WHERE  '. $filter_sql['where'];
+            $sql .= 'WHERE ('. $filter_sql['where'] .')';
             $params = $filter_sql['where_parameters'];
         }
 
@@ -140,7 +140,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         $filter_sql = $filter_obj->get_sql(false, null, SQL_PARAMS_NAMED);
         $params = array();
         if (isset($filter_sql['where'])) {
-            $sql .= 'WHERE  '. $filter_sql['where'];
+            $sql .= 'WHERE ('. $filter_sql['where'] .')';
             $params = $filter_sql['where_parameters'];
         }
 
@@ -173,7 +173,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         $filter_sql = $filter_obj->get_sql(false, null, SQL_PARAMS_NAMED);
         $params = array();
         if (isset($filter_sql['where'])) {
-            $sql .= 'WHERE  '. $filter_sql['where'];
+            $sql .= 'WHERE ('. $filter_sql['where'] .')';
             $params = $filter_sql['where_parameters'];
         }
 
