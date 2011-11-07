@@ -29,6 +29,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/lib/setup.php');
+
 /**
  * Run scheduled tasks according to a cron spec.
  *
