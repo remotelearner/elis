@@ -57,6 +57,7 @@ switch ($action) {
     // Pop to allow entry of new folder name
     case 'newfolderpopup':
         $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
+//        echo "\n newfolderpopup and parentuuid: ".$parentuuid;
         $newfolder_popup = array();
         $newfolder_popup['form'] = $repo->print_newdir_popup($parentuuid);
         echo json_encode($newfolder_popup);
@@ -65,14 +66,19 @@ switch ($action) {
     // Creates new folder
     case 'createnewfolder':
         $newdirname = required_param('newdirname', PARAM_ALPHANUMEXT);
-        $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
-        $return = new stdClass();
+        $encodedparentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
+//        echo "\n createnewfolder and parentuuid: ".$parentuuid;
+//        echo "\n newdirname: ".$newdirname;
+//        $return = new stdClass();
+        // Decode parentuuid to get uuid for dir_exists and create_dir
+        $params = unserialize(base64_decode($encodedparentuuid));
+        $parentuuid = $params['path'];
         if ($repo->elis_files->dir_exists($newdirname,$parentuuid)) {
             $return->error = get_string('folderalreadyexists', 'repository_elis_files');
         } else {
             $repo->elis_files->create_dir($newdirname,$parentuuid);
         }
-        $return->uuid = $parentuuid;
+        $return->uuid = $encodedparentuuid;
         echo json_encode($return);
         die;
 
@@ -80,6 +86,8 @@ switch ($action) {
     case 'deletepopup':
         $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
         $files   = required_param('files', PARAM_ALPHANUMEXT); //array
+//echo "\n files in deletepopup: ";
+//print_object($files);
         $delete_popup = array();
         $delete_popup['form'] = $repo->print_delete_popup($parentuuid, $files);
         echo json_encode($delete_popup);
@@ -88,7 +96,38 @@ switch ($action) {
     // Delete file(s)
     case 'deletefiles':
         $fileslist = required_param('fileslist', PARAM_RAW); //string
-        $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
+        $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT); //encoded
+
+        // Check for empty parentuuid - coming from search results which have no parents
+        if (empty($parentuuid) || $parentuuid == 'undefined') {
+            // setting userid...
+            if ($repo->context->contextlevel === CONTEXT_USER) {
+                $userid = $USER->id;
+            } else {
+                $userid = 0;
+            }
+
+            if ($ruuid = $repo->elis_files->get_repository_location($COURSE->id, $userid, $shared, $oid)) {
+                $parentuuid = $ruuid;
+            } else if ($duuid = $repo->elis_files->get_default_browsing_location($COURSE->id, $userid, $shared, $oid)) {
+                $parentuuid = $duuid;
+            }
+            $uuuid = $repo->elis_files->get_user_store($USER->id);
+            if ($parentuuid == $uuuid) {
+                $uid = $USER->id;
+            } else {
+                $uid = 0;
+            }
+            // Set other variables
+            $oid = 0;
+            $shared = (boolean)0;
+            if (empty($uid)) {
+                $cid = $COURSE->id;
+            } else {
+                $cid = 0;
+            }
+        }
+
         $return = new stdClass();
         $file_array = explode(",",$fileslist);
 
@@ -108,26 +147,69 @@ switch ($action) {
 
     // Popup to allow the selection of a folder to move selected file(s) to
     case 'movepopup':
-        $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
+        $parentuuid     = required_param('parentuuid', PARAM_ALPHANUMEXT);
+        $oid            = required_param('oid', PARAM_INT);
+        $shared         = required_param('shared', PARAM_BOOL);
+        $uid            = required_param('uid', PARAM_INT);
+        $cid            = required_param('cid', PARAM_INT);
         $selected_files = required_param('files', PARAM_NOTAGS);
-        $uid = required_param('uid', PARAM_INT);
+        $shared         = (boolean)$shared;
         $return = new stdClass();
 
+        // Check for empty parentuuid - coming from search results which have no parents
+        if (empty($parentuuid) || $parentuuid == 'undefined') {
+            // setting userid...
+            if ($repo->context->contextlevel === CONTEXT_USER) {
+                $userid = $USER->id;
+            } else {
+                $userid = 0;
+            }
+
+            if ($ruuid = $repo->elis_files->get_repository_location($COURSE->id, $userid, $shared, $oid)) {
+                $parentuuid = $ruuid;
+            } else if ($duuid = $repo->elis_files->get_default_browsing_location($COURSE->id, $userid, $shared, $oid)) {
+                $parentuuid = $duuid;
+            }
+            $uuuid = $repo->elis_files->get_user_store($USER->id);
+            if ($parentuuid == $uuuid) {
+                $uid = $USER->id;
+            } else {
+                $uid = 0;
+            }
+            // Set other variables
+            $oid = 0;
+            $shared = (boolean)0;
+            if (empty($uid)) {
+                $cid = $COURSE->id;
+            } else {
+                $cid = 0;
+            }
+        }
+//echo " MOVEPOPUP current parent?$parentuuid**";
+//print_object($parentuuid);
         // Get the default locations...
         $locations = array();
-        $repo->elis_files->file_browse_options($COURSE->id, '', $locations);
+        $repo->elis_files->file_browse_options($cid, $uid, $shared, $oid, $locations);
 
-        // Get the location parent of the current parentuuid
-        $location_parent = $repo->get_location_parent($parentuuid, $uid);
+//echo "\n locations found:";
+//print_object($locations);
+//echo "\n before calling get_location_parent with oid: $oid shared: $shared cid: $cid and uid: $uid";
 
+        // Get the encoded location parent of the current parentuuid
+        $location_parent = $repo->get_location_parent($parentuuid, $cid, $uid, $shared, $oid);
+//echo " MOVEPOPUP encoded location parent:";
+//print_object($location_parent);
         // Get the tabview appropriate folder listing of the location parent
         $tab_listing = array();
         foreach ($locations as $key=>$location) {
-            $tab_listing[$location['path']] = $repo->get_folder_listing($location['path'], $uid);
+            $tab_listing[$location['path']] = $repo->get_folder_listing($location['path'], $cid, $uid, $shared, $oid);
         }
 
+//            echo " in MOVEPOPUP and tab listing: ";
+//            print_object($tab_listing);
         // Get the form container with an empty div for the tabs
-        $return->form = $repo->print_move_dialog($parentuuid,$selected_files);
+//        $return->form = $repo->print_move_dialog($parentuuid, $shared, $oid,$selected_files);
+        $return->form = $repo->print_move_dialog($parentuuid, $location_parent['path'], $cid, $uid, $shared, $oid, $selected_files);
         $return->listing = $tab_listing;
         $return->location_path = $location_parent['path'];
         $return->location_name = $location_parent['name'];
@@ -137,14 +219,27 @@ switch ($action) {
     // Move the selected file(s) to the targetuuid
     case 'movefiles':
         $errormsg = '';
-        $targetuuid = required_param('targetuuid', PARAM_ALPHANUMEXT);
-        $parentuuid = required_param('parentuuid', PARAM_ALPHANUMEXT);
+        $encodedtargetuuid = required_param('targetuuid', PARAM_ALPHANUMEXT);
+        $encodedparentuuid = required_param('parentuuid', PARAM_ALPHANUMEXT);
         $selected_files = required_param('selected_files', PARAM_NOTAGS);
+
+        $targetparams = unserialize(base64_decode($encodedtargetuuid));
+        if (is_array($targetparams)) {
+            $targetuuid    = empty($targetparams['path']) ? NULL : clean_param($targetparams['path'], PARAM_PATH);
+        } else {
+            $targetuuid   = NULL;
+        }
         $return = new stdClass();
 
         $files_array = explode(",",$selected_files);
         foreach ($files_array as $file) {
-            if (!elis_files_move_node($file, $targetuuid)) {
+            $sourceparams = unserialize(base64_decode($file));
+            if (is_array($sourceparams)) {
+                $sourceuuid    = empty($sourceparams['path']) ? NULL : clean_param($sourceparams['path'], PARAM_PATH);
+            } else {
+                $sourceuuid   = NULL;
+            }
+            if (!elis_files_move_node($sourceuuid, $targetuuid)) {
                 if ($properties = $repo->get_info($file)) {
                     $errormsg = get_string('errortitlenotmoved', 'repository_elis_files', $properties->title);
                 } else {
@@ -156,7 +251,7 @@ switch ($action) {
         if (!empty($errormsg)) {
             $return->error = $errormsg;
         } else {
-            $return->uuid = $parentuuid;
+            $return->uuid = $encodedparentuuid;
         }
 
         echo json_encode($return);
@@ -184,6 +279,9 @@ switch ($action) {
         // delete tmp file
         $newfilepath = required_param('newfilepath', PARAM_PATH);
         $newfilename = required_param('newfilename', PARAM_FILE);
+        echo "\n deletetmpfile and newfilename: ".$newfilename;
+        echo "\nnewfilepath: ";
+        print_object($newfilepath);
         echo json_encode(repository::delete_tempfile_from_draft($itemid, $newfilepath, $newfilename));
         die;
 }

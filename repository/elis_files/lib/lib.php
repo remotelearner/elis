@@ -682,7 +682,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     $response = elis_files_utils_invoke_service($uri, 'basic', $header, 'CUSTOM-POST', $data, $username);
 
     if ($response === false) {
-        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
+//        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
         return false;
     }
 
@@ -2522,7 +2522,7 @@ function elis_files_install_web_script($files, $uuid) {
             return false;
         }
 
-        $staus = $status && elis_files_upload_file('', $file, $uuid);
+        $status = $status && elis_files_upload_file('', $file, $uuid);
     }
 
     if ($status) {
