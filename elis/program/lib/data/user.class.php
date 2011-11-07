@@ -639,6 +639,7 @@ class user extends data_object_with_custom_fields {
         $content         = '';
         $archive_var     = '_elis_program_archive';
         $totalcourses    = 0;
+        $totalcurricula  = 0;
         $completecourses = 0;
         $curriculas      = array();
         $classids        = array();
@@ -651,7 +652,15 @@ class user extends data_object_with_custom_fields {
             $show_archived = 0;
         }
 
-        if ($usercurs = curriculumstudent::get_curricula($this->id)) {
+        $sql = 'SELECT curstu.id, curstu.curriculumid as curid, cur.name as name
+                  FROM {'. curriculumstudent::TABLE .'} curstu
+                  JOIN {'. curriculum::TABLE .'} cur
+                    ON cur.id = curstu.curriculumid
+                 WHERE curstu.userid = ?
+              ORDER BY cur.priority ASC, cur.name ASC';
+
+        if ($usercurs = $DB->get_records_sql($sql, array($this->id))) {
+            //^pre-ELIS-3615 WAS: if ($usercurs = curriculumstudent::get_curricula($this->id)) {
             foreach ($usercurs as $usercur) {
                 // Check if this curricula is set as archived and whether we want to display it
                 $crlm_context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $usercur->curid);
@@ -662,7 +671,7 @@ class user extends data_object_with_custom_fields {
                 }
 
                 if ($show_archived == $crlm_archived) {
-
+                    $totalcurricula++;
                     $curriculas[$usercur->curid]['id'] = $usercur->curid;
                     $curriculas[$usercur->curid]['name'] = $usercur->name;
                     $data = array();
@@ -756,7 +765,7 @@ class user extends data_object_with_custom_fields {
 
         $content .= $OUTPUT->heading(get_string('learningplanwelcome', 'elis_program', fullname($this)));
 
-        if ($totalcourses === 0) {
+        if ($totalcurricula === 0) { // ELIS-3615 was: if ($totalcourses === 0)
             $blank_lang = ($tab == 'archivedlp') ? 'noarchivedplan' : 'nolearningplan';
             $content .= '<br /><center>' . get_string($blank_lang, 'elis_program') . '</center>';
         }
@@ -771,8 +780,12 @@ class user extends data_object_with_custom_fields {
 
         $content .= '<input type="hidden" name="collapsed" id="collapsed" value="' . $collapsed . '">';
 
-        if (!empty($curriculas)) {
-            foreach ($curriculas as $curricula) {
+        if (!empty($usercurs)) {
+            foreach ($usercurs as $usercur) {
+                if (!isset($curriculas[$usercur->curid])) {
+                    continue;
+                }
+                $curricula = $curriculas[$usercur->curid];
                 $table = new html_table();
                 $table->head = array(
                     get_string('class', 'elis_program'),
@@ -809,7 +822,7 @@ class user extends data_object_with_custom_fields {
                 $content .= '<div class="dashboard_curricula_block">';
                 $content .= $OUTPUT->heading($heading);
                 $content .= '<div id="curriculum-' . $curricula['id'] . '" class="yui-skin-sam ' . $extra_class . '">';
-                if(empty($curricula['data'])) {
+                if (empty($curricula['data'])) {
                     $content .= get_string('nocoursedescassoc','elis_program');
                 } else {
                     $content .= html_writer::table($table);
