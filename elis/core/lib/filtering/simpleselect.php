@@ -92,7 +92,6 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         $choices = array();
 
         if (!$this->_nooptions) {
-            $choices = $this->_options;
 
             if (!$this->_noany) {
                 $choices[''] = $this->_anyvalue;
@@ -101,6 +100,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
                     $choices[''] = get_string('anyvalue', 'filters');
                 }
             }
+            $choices = array_merge($choices, $this->_options);
         }
 
         $options = array();
