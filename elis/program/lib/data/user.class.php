@@ -657,7 +657,7 @@ class user extends data_object_with_custom_fields {
                 $crlm_context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $usercur->curid);
                 $data_array = field_data::get_for_context_and_field($crlm_context, $archive_var);
                 $crlm_archived = 0;
-                if (is_object($data_array->rs) && !empty($data_array->rs)) {
+                if (!empty($data_array) && is_object($data_array->rs) && !empty($data_array->rs)) {
                     $crlm_archived = !empty($data_array->rs->current()->data) ? 1 : 0;
                 }
 
