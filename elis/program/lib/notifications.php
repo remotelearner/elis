@@ -212,11 +212,21 @@ class notification extends message {
                 debugging(get_string('nomoodleuser', 'elis_program'));
             }
         }
+        if (empty($this->userto)) {
+            // ELIS-3632: prevent DB errors downstream
+            print_error('message_nodestinationuser', 'elis_program');
+            return false;
+        }
+
         if (get_class($this->userfrom) == 'user') {
 //            if (!($this->userfrom = cm_get_moodleuser($this->userfrom->id))) {
             if (!($this->userfrom = $this->userfrom->get_moodleuser())) {
                 debugging(get_string('nomoodleuser', 'elis_program'));
             }
+        }
+        if (empty($this->userfrom)) {
+            // ELIS-3632: prevent DB errors downstream
+            $this->userfrom = $USER; // TBD
         }
 
         /// Handle unset variables:
