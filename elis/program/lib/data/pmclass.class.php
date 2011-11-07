@@ -516,7 +516,7 @@ class pmclass extends data_object_with_custom_fields {
                    INNER JOIN {'.user::TABLE.'} cu ON cu.id = cce.userid
                     LEFT JOIN {user} u ON u.idnumber = cu.idnumber
                     LEFT JOIN {user_lastaccess} ul ON ul.userid = u.id AND ul.courseid = ccm.moodlecourseid
-                    LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = ccl.id AND cnl.event = \'class_notstarted\' ';
+                    LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.fromuserid = cu.id AND cnl.instance = ccl.id AND cnl.event = \'class_notstarted\' ';
         $where  = 'WHERE cce.completestatusid = '.STUSTATUS_NOTCOMPLETE.'
                      AND cnl.id IS NULL
                      AND ul.id IS NULL
@@ -596,7 +596,7 @@ class pmclass extends data_object_with_custom_fields {
                     LEFT JOIN {'.classmoodlecourse::TABLE.'} ccm ON ccm.classid = ccl.id
                    INNER JOIN {'.user::TABLE.'} cu ON cu.id = cce.userid
                     LEFT JOIN {user} u ON u.idnumber = cu.idnumber
-                    LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = ccl.id AND cnl.event = \'class_notcompleted\' ';
+                    LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.fromuserid = cu.id AND cnl.instance = ccl.id AND cnl.event = \'class_notcompleted\' ';
         $where  = 'WHERE cce.completestatusid = '.STUSTATUS_NOTCOMPLETE.'
                      AND cnl.id IS NULL
                      AND ccl.enddate <= :enddate ';

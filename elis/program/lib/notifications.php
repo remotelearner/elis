@@ -179,7 +179,8 @@ class notification extends message {
      * @param char $message The text of the message.
      * @param object $userto A Moodle generic user object, or a PM user class object that the message is to.
      * @param object $userfrom A Moodle generic user object, or a PM user class object that the message is from.
-     * @param object $logevent Information to log to 'crlm_notification_log'.
+     * @param object $logevent Information to log to 'crlm_notification_log' (can include fields userto, fromuserid,
+     *                         instance, data, timecreated).
      *
      */
     public function send_notification($message='', $userto=null, $userfrom=null, $logevent=false) {
@@ -204,6 +205,7 @@ class notification extends message {
         }
 
         /// Check for the user object type. If a PM User was sent in, need to get the Moodle object.
+        //todo: convert this code to use "is_a"
         $topmuserid = false;
         if (get_class($this->userto) == 'user') {
             $topmuserid = $this->userto->id;
@@ -238,6 +240,15 @@ class notification extends message {
                 } else {
                     $newlog->userid = $topmuserid;
                 }
+
+                //if the log entry specifies which user triggered the event,
+                //store that info
+                //NOTE: Do not use $userfrom because that is the message sender
+                //but not necessarily the user whose criteria triggered the event
+                if (isset($logevent->fromuserid)) {
+                    $newlog->fromuserid = $logevent->fromuserid;
+                }
+
                 if (isset($logevent->instance)) {
                     $newlog->instance = $logevent->instance;
                 }

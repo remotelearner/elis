@@ -229,6 +229,25 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2011102700, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2011110700) {
+        //create a new column in the notification log table
+        //to store the user who triggered the notification
+        $table = new xmldb_table('crlm_notification_log');
+        $field = new xmldb_field('fromuserid');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'userid');
+        $field->comment = 'PM user id that triggered the notification.';
+        $dbman->add_field($table, $field);
+
+        //populate data, assuming that the user who received the notification is the one whose
+        //criteria spawned it
+        //NOTE: this fudges data and the side-effect implies that if someone had received a notification
+        //for another user and satisfy the same criteria for the same instance for themself, they will not
+        //receive a similar notification
+        $sql = "UPDATE {crlm_notification_log}
+                SET fromuserid = userid";
+        $DB->execute($sql);
+    }
+
     return $result;
 }
 

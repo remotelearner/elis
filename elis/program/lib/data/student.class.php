@@ -1891,6 +1891,7 @@ class student extends elis_data_object {
         $eventlog = new Object();
         $eventlog->event = 'class_notstarted';
         $eventlog->instance = $student->classid;
+        $eventlog->fromuserid = $user->id;
 
         if ($sendtouser) {
             $message->send_notification($text, $user, null, $eventlog);
@@ -1914,7 +1915,7 @@ class student extends elis_data_object {
 
         // Send notifications to any users who need to receive them.
         foreach ($users as $touser) {
-            $message->send_notification($text, $touser, $user);
+            $message->send_notification($text, $touser, $user, $eventlog);
         }
 
         return true;
@@ -1970,6 +1971,7 @@ class student extends elis_data_object {
         $eventlog = new Object();
         $eventlog->event = 'class_notcompleted';
         $eventlog->instance = $student->classid;
+        $eventlog->fromuserid = $user->id;
         if ($sendtouser) {
             $message->send_notification($text, $user, null, $eventlog);
         }
@@ -1992,7 +1994,7 @@ class student extends elis_data_object {
 
         // Send notifications to any users who need to receive them.
         foreach ($users as $touser) {
-            $message->send_notification($text, $touser, $user);
+            $message->send_notification($text, $touser, $user, $eventlog);
         }
 
         return true;
