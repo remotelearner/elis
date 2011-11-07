@@ -192,7 +192,7 @@ class ELIS_files {
 
         $alfresco_version = elis_files_get_repository_version();
 
-        if ($alfresco_version == '3.2.1') {
+//         if ($alfresco_version == '3.2.1') {
         // Ensure that the current user is already setup on the
 /*
         if (isloggedin()) {
@@ -229,13 +229,13 @@ class ELIS_files {
             //    if (empty($root->uuid)) {
              //       return false;
             //    }
-        } else { // Alfresco 3.4
-            if (empty($this->cmis)) {
-                $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
-                                          $this->config->server_username,
-                                          $this->config->server_password);
-            }
-        }
+//         } else { // Alfresco 3.4
+//             if (empty($this->cmis)) {
+//                 $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
+//                                           $this->config->server_username,
+//                                           $this->config->server_password);
+//             }
+//         }
 
         $root = $this->get_root();
         if ($root == false || !isset($root->uuid)) {
