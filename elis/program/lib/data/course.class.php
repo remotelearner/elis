@@ -588,7 +588,7 @@ class course extends data_object_with_custom_fields {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'elis/program:notify_courserecurrence')) {
+            if ($supervisors = pm_get_users_by_capability('user', $student->id, 'elis/program:notify_courserecurrence')) {
                 $users = $users + $supervisors;
             }
         }
