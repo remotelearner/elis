@@ -985,3 +985,5 @@ $string['program_link_help'] = '<p>Linking to the program means that any changes
 $string['program_copy'] = 'Program Copying';
 $string['program_copy_help'] = '<p>If a Program is copied to this User Set, then a duplicate of the Program is made, and added to the User Set. This is a new Program that is only linked to this user Set, and changes made to this Program will only be available to this User Set (unless other User Sets are linked to it using the link option above).</p>';
 
+$string['nocoursedescassoc'] = "There is no course description associated with this program.";
+

@@ -809,7 +809,11 @@ class user extends data_object_with_custom_fields {
                 $content .= '<div class="dashboard_curricula_block">';
                 $content .= $OUTPUT->heading($heading);
                 $content .= '<div id="curriculum-' . $curricula['id'] . '" class="yui-skin-sam ' . $extra_class . '">';
-                $content .= html_writer::table($table);
+                if(empty($curricula['data'])) {
+                    $content .= get_string('nocoursedescassoc','elis_program');
+                } else {
+                    $content .= html_writer::table($table);
+                }
                 $content .= '</div>';
                 $content .= '</div>';
             }
