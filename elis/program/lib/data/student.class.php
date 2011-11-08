@@ -1878,14 +1878,15 @@ class student extends elis_data_object {
         $text = empty(elis::$config->elis_program->notify_classnotstarted_message) ?
                     get_string('notifyclassnotstartedmessagedef', self::LANG_FILE) :
                     elis::$config->elis_program->notify_classnotstarted_message;
-        $search = array('%%userenrolname%%', '%%classname%%');
+        $search = array('%%userenrolname%%', '%%classname%%', '%%coursename%%');
         $pmuser = $DB->get_record(user::TABLE, array('id' => $student->userid));
         $user = new user($pmuser);
         // Get course info
         $pmcourse = $DB->get_record(course::TABLE, array('id' => $student->courseid));
+        $pmclass = $DB->get_record(pmclass::TABLE, array('id' => $student->classid));
 
-//        $replace = array(fullname($pmuser), $student->pmclass->course->name);
-        $replace = array(fullname($pmuser), $pmcourse->name);
+        //$replace = array(fullname($pmuser), $student->pmclass->course->name);
+        $replace = array(fullname($pmuser), $pmclass->idnumber, $pmcourse->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
@@ -1959,13 +1960,14 @@ class student extends elis_data_object {
         $text = empty(elis::$config->elis_program->notify_classnotcompleted_message) ?
                     get_string('notifyclassnotcompletedmessagedef', self::LANG_FILE) :
                     elis::$config->elis_program->notify_classnotcompleted_message;
-        $search = array('%%userenrolname%%', '%%classname%%');
+        $search = array('%%userenrolname%%', '%%classname%%', '%%coursename%%');
         $pmuser = $DB->get_record(user::TABLE, array('id' => $student->userid));
         $user = new user($pmuser);
         // Get course info
         $pmcourse = $DB->get_record(course::TABLE, array('id' => $student->courseid));
+        $pmclass = $DB->get_record(pmclass::TABLE, array('id' => $student->classid));
 
-        $replace = array(fullname($pmuser), $pmcourse->name);
+        $replace = array(fullname($pmuser), $pmclass->idnumber, $pmcourse->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
