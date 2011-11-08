@@ -234,11 +234,12 @@ class curriculum extends data_object_with_custom_fields {
             $currstudent->complete($timenow, $numcredits, 1);
         }
 
-        $sendtouser = elis::$config->elis_program->notify_curriculumnotcompleted_user;
-        $sendtorole = elis::$config->elis_program->notify_curriculumnotcompleted_role;
+        $sendtouser       = elis::$config->elis_program->notify_curriculumnotcompleted_user;
+        $sendtorole       = elis::$config->elis_program->notify_curriculumnotcompleted_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_curriculumnotcompleted_supervisor;
 
         /// If nobody receives a notification, we're done.
-        if (!$sendtouser && !$sendtorole) {
+        if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
             return true;
         }
 
@@ -250,7 +251,7 @@ class curriculum extends data_object_with_custom_fields {
         $from    = 'FROM {'.curriculumstudent::TABLE.'} cca ';
         $join    = 'INNER JOIN {'.user::TABLE.'} cu ON cu.id = cca.userid
                     INNER JOIN {'.curriculum::TABLE.'} cur ON cca.curriculumid = cur.id
-                    LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = cca.id AND
+                    LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.fromuserid = cu.id AND cnl.instance = cca.id AND
                     cnl.event = \'curriculum_notcompleted\' ';
         $where   = 'WHERE (cca.completed = 0) AND (cur.timetocomplete != \'\') AND (cur.timetocomplete NOT LIKE \'0h, 0d, 0w, 0m, 0y%\') AND cnl.id IS NULL ';
         $order   = 'ORDER BY cur.id, cca.id ASC ';
@@ -317,7 +318,7 @@ class curriculum extends data_object_with_custom_fields {
                   JOIN {'.curriculum::TABLE.'} cc ON cca.curriculumid = cc.id
                   JOIN {'.user::TABLE.'} cu ON cu.id = cca.userid
                   JOIN {user} mu ON cu.idnumber = mu.idnumber
-             LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.userid = cu.id AND cnl.instance = cca.id AND cnl.event = \'curriculum_recurrence\'
+             LEFT JOIN {'.notificationlog::TABLE.'} cnl ON cnl.fromuserid = cu.id AND cnl.instance = cca.id AND cnl.event = \'curriculum_recurrence\'
                  WHERE cnl.id IS NULL and cca.timeexpired > 0
                   AND cca.timeexpired < ? + '.$notification_offset.'
                ';
@@ -384,6 +385,7 @@ class curriculum extends data_object_with_custom_fields {
         $eventlog = new Object();
         $eventlog->event = 'curriculum_recurrence';
         $eventlog->instance = $user->enrolmentid;
+        $eventlog->fromuserid = $student->id;
         if ($sendtouser) {
             $message->send_notification($text, $student, null, $eventlog);
         }

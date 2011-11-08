@@ -171,6 +171,7 @@ class curriculumstudent extends elis_data_object {
         $eventlog->event = 'curriculum_completed';
         $eventlog->instance = $this->id;    /// Store the assignment id.
         if ($sendtouser) {
+            //todo: figure out why a log object is passed in here
             $message->send_notification($text, $user, null, $eventlog);
         }
 
@@ -269,6 +270,7 @@ class curriculumstudent extends elis_data_object {
         $eventlog = new Object();
         $eventlog->event = 'curriculum_notcompleted';
         $eventlog->instance = $curstudent->id;    /// Store the assignment id.
+        $eventlog->fromuserid = $user->id;
         if ($sendtouser) {
             $message->send_notification($text, $user, null, $eventlog);
         }
@@ -290,7 +292,7 @@ class curriculumstudent extends elis_data_object {
         }
 
         foreach ($users as $u) {
-            $message->send_notification($text, $u, $user);
+            $message->send_notification($text, $u, $user, $eventlog);
         }
 
         return true;

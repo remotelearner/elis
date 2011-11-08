@@ -389,8 +389,9 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="event"/>
         <FIELD NAME="event" TYPE="char" LENGTH="166" NOTNULL="false" SEQUENCE="false" COMMENT="The event used." PREVIOUS="id" NEXT="instance"/>
         <FIELD NAME="instance" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="An id of an element instance that the event was generated for." PREVIOUS="event" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="CM user id that the notification was sent to." PREVIOUS="instance" NEXT="data"/>
-        <FIELD NAME="data" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Any other data needed for the notification log." PREVIOUS="userid" NEXT="timecreated"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="CM user id that the notification was sent to." PREVIOUS="instance" NEXT="fromuserid"/>
+        <FIELD NAME="fromuserid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="PM user id that triggered the notification." PREVIOUS="userid" NEXT="data"/>
+        <FIELD NAME="data" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Any other data needed for the notification log." PREVIOUS="fromuserid" NEXT="timecreated"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The timestamp for the notification." PREVIOUS="data"/>
       </FIELDS>
       <KEYS>
