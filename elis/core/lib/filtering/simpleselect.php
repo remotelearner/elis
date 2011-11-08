@@ -100,7 +100,11 @@ class generalized_filter_simpleselect extends generalized_filter_type {
                     $choices[''] = get_string('anyvalue', 'filters');
                 }
             }
-            $choices = array_merge($choices, $this->_options);
+
+            // Have to do this manually because php function renumber numeric indexes.
+            foreach ($this->_options as $key => $value) {
+                $choices[$key] = $value;
+            }
         }
 
         $options = array();
