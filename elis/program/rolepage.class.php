@@ -292,14 +292,15 @@ abstract class rolepage extends associationpage2 {
         $pagenum = optional_param('page', 0, PARAM_INT);
         $perpage = 30;
 
-        $sort = optional_param('sort', 'name', PARAM_ACTION);
+        $sort = optional_param('sort', 'lastname', PARAM_ACTION);
         $order = optional_param('dir', 'ASC', PARAM_ACTION);
         if ($order != 'DESC') {
             $order = 'ASC';
         }
 
         static $sortfields = array(
-            'name' => array('lastname', 'firstname'),
+            'lastname' => 'lastname',
+            'firstname' => 'firstname',
             'idnumber' => 'idnumber',
             );
         if (!array_key_exists($sort, $sortfields)) {
