@@ -571,6 +571,10 @@ class trackassignment extends elis_data_object {
         ),
     );
 
+    static $validation_rules = array(
+        array('validation_helper', 'is_unique_trackid_classid')
+    );
+
     public static function delete_for_class($id) {
         global $DB;
 
@@ -652,11 +656,6 @@ class trackassignment extends elis_data_object {
                    empty($this->classid)) and
                   elis::$config->elis_program->userdefinedtrack) {
             cm_error('courseid has not been properly initialized');
-        }
-
-        if (!isset($this->id) && $this->is_class_assigned_to_track()) {
-            //trying to re-add an existing association
-            return;
         }
 
         // Determine whether class is required

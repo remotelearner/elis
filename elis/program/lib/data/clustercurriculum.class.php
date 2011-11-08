@@ -69,7 +69,7 @@ class clustercurriculum extends elis_data_object {
     static $validation_rules = array(
         'validate_clusterid_not_empty',
         'validate_curriculumid_not_empty',
-        'validate_unique_clusterid_curriculumid'
+        array('validation_helper', 'is_unique_clusterid_curriculumid')
     );
 
     function validate_clusterid_not_empty() {
@@ -78,10 +78,6 @@ class clustercurriculum extends elis_data_object {
 
     function validate_curriculumid_not_empty() {
         return validate_not_empty($this, 'curriculumid');
-    }
-
-    function validate_unique_clusterid_curriculumid() {
-        return validate_is_unique($this, array('clusterid','curriculumid'));
     }
 
     /**

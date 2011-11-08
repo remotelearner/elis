@@ -215,7 +215,7 @@ class usertrack extends elis_data_object {
     static $validation_rules = array(
         'validate_userid_not_empty',
         'validate_trackid_not_empty',
-        'validate_unique_userid_trackid'
+        array('validation_helper', 'is_unique_userid_trackid')
     );
 
     function validate_userid_not_empty() {

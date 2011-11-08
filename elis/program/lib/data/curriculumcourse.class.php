@@ -647,7 +647,9 @@ class curriculumcourse extends elis_data_object {
         return $required;
     }
 
-    static $validation_rules = array();
+    static $validation_rules = array(
+        array('validation_helper', 'is_unique_curriculumid_courseid')
+    );
 
     public function save() {
         parent::save();

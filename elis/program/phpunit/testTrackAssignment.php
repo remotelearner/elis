@@ -164,4 +164,18 @@ class trackassignmentTest extends elis_database_test {
         }
     }
 
+    /**
+     * Test validation of duplicates
+     *
+     * @expectedException data_object_validation_exception
+     */
+    public function testTrackAssignmentValidationPreventsDuplicates() {
+        $this->load_csv_data();
+
+        $trackassignment = new trackassignment(array('trackid' => 1,
+                                                     'classid' => 100,
+                                                     'courseid' => 99999999));
+
+        $trackassignment->save();
+    }
 }

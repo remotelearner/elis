@@ -459,7 +459,9 @@ class curriculumstudent extends elis_data_object {
         }
     }
 
-    static $validation_rules = array();
+    static $validation_rules = array(
+        array('validation_helper', 'is_unique_curriculumid_userid')
+    );
 
     public function save() {
         $isnew = empty($this->id);

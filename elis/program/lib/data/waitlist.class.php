@@ -324,12 +324,6 @@ class waitlist extends elis_data_object {
      */
     public function save() {
         $new = false;
-        try {
-            validation_helper::is_unique_userid_classid($this);
-        } catch (Exception $e) {
-            // already on waitlist
-            return true;
-        }
 
         if (!isset($this->id)) {
             $new = true;

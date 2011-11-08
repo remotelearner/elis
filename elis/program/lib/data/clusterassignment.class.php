@@ -63,6 +63,10 @@ class clusterassignment extends elis_data_object {
         )
     );
 
+    static $validation_rules = array(
+        array('validation_helper', 'is_unique_clusterid_userid_plugin')
+    );
+
 	public function delete() {
         $status = parent::delete();
         events_trigger('cluster_deassigned', $this->to_object());

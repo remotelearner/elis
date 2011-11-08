@@ -49,6 +49,10 @@ class classmoodlecourse extends data_object_with_custom_fields {
         )
     );
 
+    static $validation_rules = array(
+        array('validation_helper', 'is_unique_classid_moodlecourseid')
+    );
+
     protected $_dbfield_classid;
     protected $_dbfield_moodlecourseid;
     //protected $_dbfield_siteconfig;

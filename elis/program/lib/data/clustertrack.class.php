@@ -66,6 +66,10 @@ class clustertrack extends elis_data_object {
         )
     );
 
+    static $validation_rules = array(
+        array('validation_helper', 'is_unique_clusterid_trackid')
+    );
+
     function get_verbose_name() {
         return $this->verbose_name;
     }
