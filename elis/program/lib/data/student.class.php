@@ -1937,10 +1937,10 @@ class student extends elis_data_object {
         /// Does the user receive a notification?
         $sendtouser = elis::$config->elis_program->notify_classnotcompleted_user;
         $sendtorole = elis::$config->elis_program->notify_classnotcompleted_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_classnotstarted_supervisor;
+        $sendtosupervisor = elis::$config->elis_program->notify_classnotcompleted_supervisor;
 
         /// If nobody receives a notification, we're done.
-        if (!$sendtouser && !$sendtorole) {
+        if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
             return true;
         }
 
@@ -1987,7 +1987,7 @@ class student extends elis_data_object {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_classnotcomplete')) {
+            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'elis/program:notify_classnotcomplete')) {
                 $users = $users + $supervisors;
             }
         }

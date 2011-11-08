@@ -467,15 +467,17 @@ class pmclass extends data_object_with_custom_fields {
         global $CFG;
         $result = true;
 
-        $sendtouser = elis::$config->elis_program->notify_classnotstarted_user;
-        $sendtorole = elis::$config->elis_program->notify_classnotstarted_role;
-        if ($sendtouser || $sendtorole) {
+        $sendtouser       = elis::$config->elis_program->notify_classnotstarted_user;
+        $sendtorole       = elis::$config->elis_program->notify_classnotstarted_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_classnotstarted_supervisor;
+        if ($sendtouser || $sendtorole || $sendtosupervisor) {
             $result = self::check_for_nags_notstarted() && $result;
         }
 
-        $sendtouser = elis::$config->elis_program->notify_classnotcompleted_user;
-        $sendtorole = elis::$config->elis_program->notify_classnotcompleted_role;
-        if ($sendtouser || $sendtorole) {
+        $sendtouser       = elis::$config->elis_program->notify_classnotcompleted_user;
+        $sendtorole       = elis::$config->elis_program->notify_classnotcompleted_role;
+        $sendtosupervisor = elis::$config->elis_program->notify_classnotcompleted_supervisor;
+        if ($sendtouser || $sendtorole || $sendtosupervisor) {
             $result = self::check_for_nags_notcompleted() && $result;
         }
 
