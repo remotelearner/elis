@@ -344,9 +344,8 @@ class course_completion_by_cluster_report extends table_report {
         $params[$param_cluster_context .'2'] = $cluster_context_level;
 
         //starting point for both cases
-        //TBD: define/const for {crlm_usercluster} TABLE
         $core_tables_fmt = '{'. user::TABLE .'} user
-                        JOIN {crlm_usercluster} user_cluster
+                        JOIN {'. clusterassignment::TABLE .'} user_cluster
                           ON user.id = user_cluster.userid
                         JOIN {'. userset::TABLE ."} cluster
                           ON user_cluster.clusterid = cluster.id
@@ -391,7 +390,7 @@ class course_completion_by_cluster_report extends table_report {
         }
         //the master query
         $sql = "SELECT * FROM (
-                  SELECT {$columns},
+                  SELECT DISTINCT {$columns},
                          {$extra_curriculum_columns}
                   FROM ". sprintf($core_tables_fmt, 1) .'
                   JOIN {'. curriculumstudent::TABLE .'} curriculum_assignment
@@ -414,7 +413,7 @@ class course_completion_by_cluster_report extends table_report {
 
                   UNION
 
-                  SELECT {$noncurriculum_columns},
+                  SELECT DISTINCT {$noncurriculum_columns},
                          {$extra_noncurriculum_columns}
                   FROM ". sprintf($core_tables_fmt, 2) .'
                   JOIN {'. student::TABLE .'} enrol
