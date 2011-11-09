@@ -29,21 +29,18 @@ global $CFG;
 require_once($CFG->dirroot . '/elis/program/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
-require_once(elispm::lib('data/pmclass.class.php'));
-require_once(elispm::lib('data/waitlist.class.php'));
+require_once(elispm::lib('data/usermoodle.class.php'));
 
-class waitlistTest extends elis_database_test {
+class usermoodleTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
 	protected static function get_overlay_tables() {
-		return array(pmclass::TABLE => 'elis_program',
-		             waitlist::TABLE => 'elis_program');
+		return array(usermoodle::TABLE => 'elis_program');
 	}
 
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(pmclass::TABLE, elis::component_file('program', 'phpunit/pmclass.csv'));
-        $dataset->addTable(waitlist::TABLE, elis::component_file('program', 'phpunit/waitlist.csv'));
+        $dataset->addTable(usermoodle::TABLE, elis::component_file('program', 'phpunit/user_moodle.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
@@ -52,13 +49,28 @@ class waitlistTest extends elis_database_test {
      *
      * @expectedException data_object_validation_exception
      */
-    public function testWaitlistValidationPreventsDuplicates() {
+    public function testUserMoodlePreventsDuplicates() {
         $this->load_csv_data();
 
-        $waitlist = new waitlist(array('classid' => 100,
-                                       'userid' => 1,
-                                       'position' => 1));
+        $usermoodle = new usermoodle(array('cuserid' => 1,
+                                           'muserid' => 1,
+                                           'idnumber' => 'anotheridnumber'));
 
-        $waitlist->save();
+        $usermoodle->save();
+    }
+
+    /**
+     * Test validation of duplicates
+     *
+     * @expectedException data_object_validation_exception
+     */
+    public function testUserMoodlePreventsDuplicateIdnumber() {
+        $this->load_csv_data();
+
+        $usermoodle = new usermoodle(array('cuserid' => 2,
+                                           'muserid' => 2,
+                                           'idnumber' => 'idnumber'));
+
+        $usermoodle->save();
     }
 }

@@ -34,6 +34,11 @@ require_once elis::lib('data/data_object.class.php');
 class usermoodle extends elis_data_object {
     const TABLE = 'crlm_user_moodle';
 
+    static $validation_rules = array(
+        array('validation_helper', 'is_unique_cuserid_muserid'),
+        array('validation_helper', 'is_unique_idnumber')
+    );
+
     var $verbosename = 'usermoodle';
 
     //database fields
