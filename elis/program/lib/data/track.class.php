@@ -658,6 +658,11 @@ class trackassignment extends elis_data_object {
             cm_error('courseid has not been properly initialized');
         }
 
+        if (!isset($this->id) && $this->is_class_assigned_to_track()) {
+            //trying to re-add an existing association
+            return;
+        }
+
         // Determine whether class is required
         $curcrsobj = new curriculumcourse(
             array('curriculumid' => $this->track->curid,

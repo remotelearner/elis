@@ -167,9 +167,10 @@ class trackassignmentTest extends elis_database_test {
     /**
      * Test validation of duplicates
      *
-     * @expectedException data_object_validation_exception
+     * Note: no exception thrown from trackassignment.class.php for dup.
      */
     public function testTrackAssignmentValidationPreventsDuplicates() {
+        global $DB;
         $this->load_csv_data();
 
         $trackassignment = new trackassignment(array('trackid' => 1,
@@ -177,5 +178,7 @@ class trackassignmentTest extends elis_database_test {
                                                      'courseid' => 99999999));
 
         $trackassignment->save();
+        $trackassignments = $DB->get_records(trackassignment::TABLE, array('trackid' => 1, 'classid' => 100));
+        $this->assertEquals(count($trackassignments), 1);
     }
 }

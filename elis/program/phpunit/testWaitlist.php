@@ -50,9 +50,11 @@ class waitlistTest extends elis_database_test {
     /**
      * Test validation of duplicates
      *
-     * @expectedException data_object_validation_exception
+     * Note: no exception thrown from waitlist.class.php for dup.
      */
     public function testWaitlistValidationPreventsDuplicates() {
+        global $DB;
+
         $this->load_csv_data();
 
         $waitlist = new waitlist(array('classid' => 100,
@@ -60,5 +62,7 @@ class waitlistTest extends elis_database_test {
                                        'position' => 1));
 
         $waitlist->save();
+        $waitlistentries = $DB->get_records(waitlist::TABLE, array('classid' => 100, 'userid' => 1));
+        $this->assertEquals(count($waitlistentries), 1);
     }
 }

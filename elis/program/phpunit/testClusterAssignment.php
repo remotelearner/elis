@@ -30,12 +30,21 @@ require_once($CFG->dirroot . '/elis/program/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 require_once(elispm::lib('data/clusterassignment.class.php'));
+require_once(elispm::lib('data/usertrack.class.php'));
+require_once(elispm::lib('data/curriculumstudent.class.php'));
+require_once(elispm::lib('data/student.class.php'));
 
 class clusterassignmentTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
 	protected static function get_overlay_tables() {
 		return array(clusterassignment::TABLE => 'elis_program');
+	}
+
+	protected static function get_ignored_tables() {
+        return array(usertrack::TABLE => 'elis_program',
+                     curriculumstudent::TABLE => 'elis_program',
+                     student::TABLE => 'elis_program');
 	}
 
     protected function load_csv_data() {
