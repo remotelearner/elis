@@ -103,16 +103,17 @@ defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_
 
 class ELIS_files {
 
-    var $errormsg = '';  // Standard error message varible.
-    var $log      = '';  // Cron task log messages.
-    var $cmis     = null;  // CMIS service connection object.
-    var $muuid    = '';  // Moodle root folder UUID
-    var $suuid    = '';  // Shared folder UUID
-    var $cuuid    = '';  // Course folder UUID
-    var $uuuid    = '';  // User folder UUID
-    var $ouuid    = '';  // usersets folder UUID
-    var $root     = '';  // Root folder UUID
-    var $config   = '';  // Config object setting variables for Alfresco
+    var $errormsg  = '';  // Standard error message varible.
+    var $log       = '';  // Cron task log messages.
+    var $cmis      = null;  // CMIS service connection object.
+    var $muuid     = '';  // Moodle root folder UUID
+    var $suuid     = '';  // Shared folder UUID
+    var $cuuid     = '';  // Course folder UUID
+    var $uuuid     = '';  // User folder UUID
+    var $ouuid     = '';  // usersets folder UUID
+    var $root      = '';  // Root folder UUID
+    var $config    = '';  // Config object setting variables for Alfresco
+    var $isrunning = false;
 
     function ELIS_files() {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('ELIS_files()');
@@ -224,9 +225,11 @@ class ELIS_files {
 
         // Make sure the code is in the list of valid, acceptible codes
         if (array_search($httpcode, $validresponse)) {
+            $this->isrunning = true;
             return true;
         }
 
+        $this->isrunning = false;
 		return false;
     }
 
@@ -2916,7 +2919,8 @@ class ELIS_files {
 /**
  * Migrate a user account from the old style of personal file storage to the new, SSO-based, approach.
  *
- * @param $CFG
+ * @uses $CFG
+ * @uses $DB
  * @param object|string $userorusername The Moodle DB user record object or username.
  * @param string        $password       Optionally specify a password for the Alfresco account.
  * @return bool True on success, False otherwise.
@@ -3170,13 +3174,18 @@ class ELIS_files {
         $root = $this->get_root();
 
         foreach ($capabilities as $capability) {
-            $sql = "SELECT ra.id
-                    FROM {$CFG->prefix}role_assignments ra
-                    INNER JOIN {$CFG->prefix}role_capabilities rc ON rc.roleid = ra.roleid
+            $sql = 'SELECT ra.id
+                    FROM {role_assignments} ra
+                    INNER JOIN {role_capabilities} rc ON rc.roleid = ra.roleid
                     WHERE ra.userid = :userid
                     AND rc.capability = :capability
-                    AND rc.permission = " . CAP_ALLOW;
-            $params = array('userid'=>$user->id, 'capability'=>$capability);
+                    AND rc.permission = :perm';
+
+            $params = array(
+                'userid'     => $user->id,
+                'capability' => $capability,
+                'perm'       => CAP_ALLOW
+            );
 
             if ($DB->record_exists_sql($sql, $params)) {
                 if ($capability == 'repository/elis_files:createsitecontent') {

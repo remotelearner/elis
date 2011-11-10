@@ -904,6 +904,20 @@ print_object($params);
         }
     }
 
+    /**
+     * We want to make sure that not only is this plugin enabled and visible but also that the remote Alfresco
+     * repository is currently up and running also.
+     *
+     * @return boolean
+     */
+    public function is_visible() {
+        if (!parent::is_visible()) {
+            return false;
+        }
+
+        return (isset($this->elis_files) && !empty($this->elis_files->isrunning));
+    }
+
     public function supported_returntypes() {
         return (FILE_INTERNAL | FILE_EXTERNAL);
     }
