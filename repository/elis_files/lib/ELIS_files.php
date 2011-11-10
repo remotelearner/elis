@@ -57,9 +57,9 @@
 ///////////////////////////////////////////////////////////////////////////
 
 /// Alfresco API v3.0
-require_once dirname(__FILE__). '/lib.php';
+require_once dirname(__FILE__).'/lib.php';
 // Alfresco 3.4
-require_once(dirname(__FILE__). '/cmis-php/cmis_repository_wrapper.php');
+require_once(dirname(__FILE__).'/cmis-php/cmis_repository_wrapper.php');
 
 define('ELIS_FILES_CRON_VALUE',  HOURSECS); // Run the cron job every hour.
 define('ELIS_FILES_LOGIN_RESET', 5 * MINSECS);      // Reset a login after 5 minutes.
@@ -83,14 +83,6 @@ define('ELIS_FILES_CAPABILITY_ALLOWED', 'ALLOWED');
 define('ELIS_FILES_CAPABILITY_DENIED',  'DENIED');
 
 // Define constants for the default file browsing location.
-//WAS from file/repository/alfresco/repository.php - as set up in default ALFRESCO install
-/*// Define constants for the default file browsing location.
-define('ALFRESCO_BROWSE_MOODLE_FILES',          10);
-define('ALFRESCO_BROWSE_ALFRESCO_SITE_FILES',   20);
-define('ALFRESCO_BROWSE_ALFRESCO_SHARED_FILES', 30);
-define('ALFRESCO_BROWSE_ALFRESCO_COURSE_FILES', 40);
-define('ALFRESCO_BROWSE_ALFRESCO_USER_FILES',   50);
-*/
 //define('ELIS_FILES_BROWSE_MOODLE_FILES',          10);
 defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
 // Was shared, now called server files
@@ -113,45 +105,11 @@ class ELIS_files {
     var $ouuid     = '';  // usersets folder UUID
     var $root      = '';  // Root folder UUID
     var $config    = '';  // Config object setting variables for Alfresco
-    var $isrunning = false;
+    var $isrunning = null;
 
     function ELIS_files() {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('ELIS_files()');
 
-
-        // Check for the USER->repo and the array elements
-       /* if (isset($USER->elis_repo)) {
-            $USER->elis_repo = unserialize(serialize($USER->elis_repo));
-            if (isset($USER->elis_repo['root'])) {
-                $this->root = $USER->elis_repo['root'];
-            }
-            if (isset($USER->elis_repo['cmis'])) {
-                $this->cmis = $USER->elis_repo['cmis'];
-            }
-            if (isset($USER->elis_repo['muuid'])) {
-                $this->muuid = $USER->elis_repo['muuid'];
-            }
-            if (isset($USER->elis_repo['suuid'])) {
-                $this->suuid = $USER->elis_repo['suuid'];
-            }
-            if (isset($USER->elis_repo['cuuid'])) {
-                $this->cuuid = $USER->elis_repo['cuuid'];
-            }
-            if (isset($USER->elis_repo['uuuid'])) {
-                $this->uuuid = $USER->elis_repo['uuuid'];
-            }
-            if (isset($USER->elis_repo['ouuid'])) {
-                $this->ouuid = $USER->elis_repo['ouuid'];
-            }
-            if (isset($USER->elis_repo->config)) {
-                $this->config = $USER->elis_repo->config;
-            } else {
-                // Get config field object
-                $this->config = get_config('elis_files');
-            }
-        } else {
-            $USER->elis_repo = new me?
-        }*/
         $this->process_config(get_config('elis_files'));
 
         if (!$this->is_configured()) {
@@ -173,8 +131,6 @@ class ELIS_files {
  * @return bool True if the plug-in has the minimum setup done, False otherwise.
  */
     function is_configured() {
-//        global $CFG;
-
         return (!empty($this->config->server_host) &&
                 !empty($this->config->server_port) &&
                 !empty($this->config->server_username) &&
@@ -189,6 +145,15 @@ class ELIS_files {
      * @return bool True if the remote system is running, False otherwise.
      */
     function is_running() {
+        // TODO: This means that if Alfresco comes up during a user's login session, this won't be refelcted until they
+        // log back into Moodle again. We probably want to add somethign here that will check after a certain amount of
+        // time since the last check for an individual user.
+
+        // Don't check if Alfresco is running if we have already checked once.
+        if ($this->isrunning !== null) {
+            return $this->isrunning;
+        }
+
         $repourl = elis::$config->elis_files->server_host;
 
         if ($repourl[strlen($repourl) - 1] == '/') {

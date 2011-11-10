@@ -39,7 +39,7 @@ require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php'
 function elis_files_user_deleted($user) {
     // Only proceed here if the Alfresco plug-in is actually enabled.
     if (!$repo = repository_factory::factory('elis_files')) {
-        return;
+        return true;
     }
 
     $repo->delete_user($user->username);
@@ -59,8 +59,8 @@ function elis_files_role_unassigned($ra) {
     global $DB;
 
     // Only proceed here if the Alfresco plug-in is actually enabled.
-    if (!$repo = repository_factory::factory('elis_files')) {
-        return;
+    if (!($repo = repository_factory::factory('elis_files'))) {
+        return true;
     }
 
     if (!$username = $DB->get_field('user', 'username', array('id' => $ra->userid))) {
@@ -255,7 +255,7 @@ function elis_files_userset_assigned($usersetinfo) {
 
     // Only proceed here if the Alfresco plug-in is actually enabled.
     if (!$repo = repository_factory::factory('elis_files')) {
-        return;
+        return true;
     }
 
     $user = new user($usersetinfo->userid);
@@ -358,7 +358,7 @@ function elis_files_userset_deassigned($usersetinfo) {
 
     // Only proceed here if the Alfresco plug-in is actually enabled.
     if (!$repo = repository_factory::factory('elis_files')) {
-        return;
+        return true;
     }
 
     $user = new user($usersetinfo->userid);

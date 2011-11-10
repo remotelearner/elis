@@ -68,8 +68,20 @@ class repository_factory {
 
             if (!(isset($SESSION->repo))) {
                 $SESSION->repo = new $class;
+
+                // Make sure it's running before we return it.
+                if (!$SESSION->repo->is_running()) {
+                    return false;
+                }
             } else {
                 $SESSION->repo = unserialize(serialize($SESSION->repo));
+
+                // If this is a valid ELIS_files object, make sure it's running before we return it.
+                if (is_a($SESSION->repo, 'ELIS_files')) {
+                    if (!$SESSION->repo->is_running()) {
+                        return false;
+                    }
+                }
             }
 
             return $SESSION->repo;
