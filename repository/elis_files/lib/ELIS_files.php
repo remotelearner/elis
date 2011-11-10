@@ -230,7 +230,7 @@ class ELIS_files {
         }
 
         $this->isrunning = false;
-		return false;
+        return false;
     }
 
 
