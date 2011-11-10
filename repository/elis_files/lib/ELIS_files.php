@@ -154,6 +154,11 @@ class ELIS_files {
             return $this->isrunning;
         }
 
+        if (empty(elis::$config->elis_files->server_host)) {
+            $this->isrunning = false;
+            return false;
+        }
+
         $repourl = elis::$config->elis_files->server_host;
 
         if ($repourl[strlen($repourl) - 1] == '/') {
