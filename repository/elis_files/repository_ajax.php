@@ -264,24 +264,4 @@ switch ($action) {
         echo json_encode($upload_popup);
         die;
 
-    case 'overwrite':
-        // existing file
-        $filepath    = required_param('existingfilepath', PARAM_PATH);
-        $filename    = required_param('existingfilename', PARAM_FILE);
-        // user added file which needs to replace the existing file
-        $newfilepath = required_param('newfilepath', PARAM_PATH);
-        $newfilename = required_param('newfilename', PARAM_FILE);
-
-        echo json_encode(repository::overwrite_existing_draftfile($itemid, $filepath, $filename, $newfilepath, $newfilename));
-        die;
-
-    case 'deletetmpfile':
-        // delete tmp file
-        $newfilepath = required_param('newfilepath', PARAM_PATH);
-        $newfilename = required_param('newfilename', PARAM_FILE);
-        echo "\n deletetmpfile and newfilename: ".$newfilename;
-        echo "\nnewfilepath: ";
-        print_object($newfilepath);
-        echo json_encode(repository::delete_tempfile_from_draft($itemid, $newfilepath, $newfilename));
-        die;
 }

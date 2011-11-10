@@ -193,7 +193,7 @@ echo "\n after decoding etc, at beginning of get_listing, cid: $cid uid: $uid oi
         $ret['path'] = array(array('name'=>get_string('pluginname', 'repository_elis_files'), 'path'=>''));
 
         // Get editing privileges - set canedit flag...
-        $canedit = repository_elis_files::check_editing_permissions($COURSE->id, $shared, $oid, $uuid, $USER->id);
+        $canedit = repository_elis_files::check_editing_permissions($COURSE->id, $shared, $oid, $uuid, $uid);
         $ret['canedit'] = $canedit;
         $return_path = array();
 
@@ -203,8 +203,9 @@ echo "\n after decoding etc, at beginning of get_listing, cid: $cid uid: $uid oi
         $ret['path'] = array_reverse($return_path);
 
         $this->current_node = $this->elis_files->get_info($uuid);
-
-echo "\n in get_listing and setting path and thisuuid, cid: $cid, title: ".$this->current_node->title." oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
+//echo " current node? *****";
+//print_object($this->current_node);
+//echo "\n in get_listing and setting path and thisuuid, cid: $cid, title: ".$this->current_node->title." oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
         // Add current node to the return path
         // Include shared and oid parameters
         $params = array('path'=>$uuid,
@@ -997,44 +998,47 @@ print_object($params);
      * @param int       $userid user id related to uuid
      * @return boolean  $canedit    Return true or false
      */
-    function check_editing_permissions($id, $shared, $oid, $uuid, $userid = 0) {
+    function check_editing_permissions($id, $shared, $oid, $uuid, $userid) {
         global $USER;
 
     /// Get the context instance for where we originated viewing this browser from.
         if (!empty($oid)) {
-            $userset_context = context_level_base::get_custom_context_level('cluster', 'elis_program');
+            $userset_context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $oid);
         }
         if ($id == SITEID) {
             $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
         } else {
             $context = get_context_instance(CONTEXT_COURSE, $id);
         }
-    /// Determine whether the current user has editing persmissions.
-        $canedit = false;
+        // Get the non context based permissions
+        $capabilities = array('repository/elis_files:createowncontent'=> false,
+                              'repository/elis_files:createsharedcontent'=> false);
+        $this->elis_files->get_other_capabilities($USER, $capabilities);
 
-        if (empty($userid) && empty($shared)) {
+        $canedit = false;
+//echo "\n *** capabilities for canedit: ";
+//var_dump($capabilities);
+//echo "=========> userid: $userid shared: $shared oid:$oid <=====";
+//print_object($context);
+        if (empty($userid) && empty($shared) && empty($oid)) {
             if (($id == SITEID && has_capability('repository/elis_files:createsitecontent', $context)) ||
-                ($id != SITEID && has_capability('repository/elis_files:createcoursecontent', $context)) ||
-                (!empty($oid) && has_capability('repository/elis_files:createusersetcontent', $userset_context))) {
+                ($id != SITEID && has_capability('repository/elis_files:createcoursecontent', $context))) {
                 $canedit = true;
             }
         } else if (empty($userid) && $shared == true) {
-            if (has_capability('repository/elis_files:createsharedcontent', $context, $USER->id)) {
-                $canedit = true;
-            }
+            $canedit = $capabilities['repository/elis_files:createsharedcontent'];
         } else {
-            if ($USER->id == $userid) {
-                if (has_capability('repository/elis_files:viewowncontent', $context, $USER->id)) {
-                    $canedit = true;
-                }
+            if (($USER->id == $userid) && empty($oid)) {
+                $canedit = $capabilities['repository/elis_files:createowncontent'];
             } else {
-                if (has_capability('repository/elis_files:createsitecontent', $context, $USER->id)) {
+                if (empty($oid) && has_capability('repository/elis_files:createsitecontent', $context, $USER->id)) {
                     $canedit = true;
-                } else if (has_capability('repository/elis_files:createusersetcontent', $context, $USER->id)) {
+                } else if (!empty($oid) && has_capability('repository/elis_files:createusersetcontent', $userset_context, $USER->id)) {
                     $canedit = true;
                 }
             }
         }
+        echo "\n returning canedit: $canedit";
         return $canedit;
     }
 

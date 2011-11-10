@@ -30,6 +30,7 @@ require_once dirname(dirname(dirname(__FILE__))) . '/config.php';
 require_once('lib/lib.php');
 require_once('ELIS_files_factory.class.php');
 
+global $USER;
 $uuid = required_param('uuid', PARAM_CLEAN);
 
 if (!$repo = repository_factory::factory('elis_files')) {
@@ -37,6 +38,7 @@ if (!$repo = repository_factory::factory('elis_files')) {
 }
 
 if (!$repo->permission_check($uuid, $USER->id)) {
+    echo '<br>permission check failed for uuid: '.$uuid.' and userid: '.$USER->id.'**';
     print_error('youdonothaveaccesstothisfunctionality', 'repository_alfresco');
 }
 

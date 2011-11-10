@@ -1003,7 +1003,7 @@ class ELIS_files {
 
             /// Attempt to get the UUID value for the node based on it's full path.
                 if (($uuid = $this->get_uuid_from_path($npath)) !== false) {
-                    $changes[$osrc] = $CFG->wwwroot . '/file/repository/alfresco/' .
+                    $changes[$osrc] = $CFG->wwwroot . '/repository/elis_files/' .
                                       'openfile.php?uuid=' . $uuid;
                 }
             }
@@ -2189,7 +2189,6 @@ class ELIS_files {
             preg_match('/\\' . $moodleroot . '\/shared\//', $path, $matches);
 
             if (count($matches) == 1) {
-                $context = get_context_instance(CONTEXT_SYSTEM);
                 $shfile  = true;
             }
         }
@@ -2200,7 +2199,6 @@ class ELIS_files {
 
             if (count($matches) == 2) {
                 $username  = $matches[1];
-                $context = get_context_instance(CONTEXT_SYSTEM);
                 $ufile   = true;
             }
         }
@@ -2275,8 +2273,13 @@ class ELIS_files {
     /// This file didn't come from somewhere within Moodle that we know about so access has
     /// to be determined based on the Alfresco capabilities the current user has.
         } else {
+            // Get the non context based permissions
+            $capabilities = array('repository/elis_files:viewowncontent'=> false,
+                                  'repository/elis_files:viewsharedcontent'=> false);
+            $this->get_other_capabilities($USER, $capabilities);
+
             if ($ufile) {
-            /// If the current user is not the user who owns this file and we can't access anyting in the
+            /// If the current user is not the user who owns this file and we can't access anything in the
             /// repository, don't allow access.
                 if ($USER->username != $username && !has_capability('repository/elis_files:viewsitecontent', $context)) {
                     return false;
@@ -2286,18 +2289,7 @@ class ELIS_files {
             /// specific capability anywhere within the user's role assignments.
                 $hascap = false;
 
-                /*
-                if (!empty($USER->access['rdef'])) {
-                    foreach ($USER->access['rdef'] as $ctx) {
-                        if (isset($ctx['repository/elis_files:viewowncontent']) &&
-                                  $ctx['repository/elis_files:viewowncontent'] == CAP_ALLOW) {
-                            $hascap = true;
-                        }
-
-                    }
-                }
-                */
-                if (has_capability('repository/elis_files:viewowncontent', $context)) {
+                if ($capabilities['repository/elis_files:viewowncontent']) {
                     $hascap = true;
                 }
                 if (!$hascap) {
@@ -2322,7 +2314,7 @@ class ELIS_files {
             /// This repository location is not tied to a specific Moodle context, so we need to look for the
             /// specific capability anywhere within the user's role assignments.
                 $hascap = false;
-                if (has_capability('repository/elis_files:viewsharedcontent', $context)) {
+                if ($capabilities['repository/elis_files:viewsharedcontent']) {
                     $hascap = true;
                 }
 
@@ -2526,12 +2518,13 @@ class ELIS_files {
  * function call in order to display a drop-down list of places from which to browse files using any Moodle
  * file browsing interface anywhere in the system.
  *
- * @uses $USER
+ * @uses $USER, $COURSE
  * @param int    $cid         A course record ID.
  * @param int    $uid         A user record ID.
  * @param bool   $shared      Shared/server flag set to TRUE if browsing in this area.
  * @param int    $oid         A cluster record ID.
  * @param array  $opts        Array of available options.
+ * @param bool   $createonly  Flag that, if set to true, only returns a list of options with create capability
  * @return array An array of options meant to be used in a popup_form() function call.
  */
     function file_browse_options($cid, $uid, $shared, $oid, &$opts=array()) {
@@ -2552,16 +2545,20 @@ class ELIS_files {
         }
 
         // Determine if the user has access to their own personal file storage area.
-        $editalfpersonal       = has_capability('repository/elis_files:createowncontent', $context);
-        $viewalfpersonal       = has_capability('repository/elis_files:viewowncontent', $context);
-        $editalfshared         = has_capability('repository/elis_files:createsharedcontent', $context);
-        $viewalfshared         = has_capability('repository/elis_files:viewsharedcontent', $context);
         $editalfsite           = has_capability('repository/elis_files:createsitecontent', $context);
         $viewalfsite           = has_capability('repository/elis_files:viewsitecontent', $context);
         $editalfcourse         = has_capability('repository/elis_files:createcoursecontent', $context);
         $viewalfcourse         = has_capability('repository/elis_files:viewcoursecontent', $context);
 
+        // Get the non context based permissions
+        $capabilities = array('repository/elis_files:viewowncontent'=> false,
+                              'repository/elis_files:createowncontent'=> false,
+                              'repository/elis_files:viewsharedcontent'=> false,
+                              'repository/elis_files:createsharedcontent'=> false);
+        $this->get_other_capabilities($USER, $capabilities);
+
         // Build the option for browsing from the repository userset / course / site files.
+//        echo "\n in file browse options siteid: ".SITEID." cid: $cid viewalfsite: $viewalfsite";
         if ($cid == SITEID && $viewalfsite) {
             $alfroot = $this->get_root();
             if (!empty($alfroot->uuid)) {
@@ -2626,13 +2623,13 @@ class ELIS_files {
         }
 
         // Build the option for browsing from the repository shared files.
-        if ($viewalfshared == true) {
+        if ($capabilities['repository/elis_files:viewsharedcontent'] == true) {
 
             if (!elis_files_has_permission($this->suuid, $USER->username)) {
                 $this->allow_read($USER->username, $this->suuid);
             }
 
-            if ($editalfshared) {
+            if ($capabilities['repository/elis_files:createsharedcontent'] == true) {
                 if (!elis_files_has_permission($this->suuid, $USER->username, true)) {
                     $this->allow_edit($USER->username, $this->suuid);
                 }
@@ -2652,7 +2649,7 @@ class ELIS_files {
         }
 
         // Build the option for browsing from the repository personal / user files.
-        if ($editalfpersonal || $viewalfpersonal) {
+        if ($capabilities['repository/elis_files:viewowncontent'] || $capabilities['repository/elis_files:createowncontent']) {
             $params = array('path'=>$this->get_user_store($USER->id),
                             'shared'=>(boolean)0,
                             'oid'=>(int)0,
@@ -3118,6 +3115,52 @@ class ELIS_files {
         return ($sxml->uuid == $uuid && ($inherit && $sxml->enabled == 'true' || !$inherit && $sxml->enabled == 'false'));
     }
 
+  /**
+ * Find personal and shared repository capabilities
+ *
+ * @uses $CFG, $DB
+ * @param object $user
+ * @param array  $capabilities
+ * @param int    $editalfpersonal
+ * @param int    $viewalfshared
+ * @param int    $editalfshared
+ * @return none
+ */
+    function get_other_capabilities($user,&$capabilities) {
+        global $CFG, $DB;
+//echo "\n ******* capabilities array: ";
+//print_object($capabilities);
+//        $root = $this->get_root();
+
+        foreach ($capabilities as $capability=>$value) {
+            $sql = "SELECT DISTINCT ra.id
+                    FROM {$CFG->prefix}role_assignments ra
+                    INNER JOIN {$CFG->prefix}role_capabilities rc ON rc.roleid = ra.roleid
+                    WHERE ra.userid = :userid
+                    AND rc.capability = :capability
+                    AND rc.permission = " . CAP_ALLOW;
+            $params = array('userid'=>$user->id, 'capability'=> $capability);
+//echo "\n SQL: $sql params:";
+//var_dump($params);
+            if ($DB->record_exists_sql($sql, $params)) {
+                if ($capability == 'repository/elis_files:createowncontent') {
+                    $capabilities['repository/elis_files:createowncontent'] = true;
+
+                } else if ($capability == 'repository/elis_files:viewowncontent') {
+                    $capabilities['repository/elis_files:viewowncontent'] = true;
+
+                } else if ($capability == 'repository/elis_files:createsharedcontent') {
+                    $capabilities['repository/elis_files:createsharedcontent'] = true;
+
+                } else if ($capability == 'repository/elis_files:viewsharedcontent') {
+                    $capabilities['repository/elis_files:viewsharedcontent'] = true;
+                }
+            }
+        }
+//        echo "\n returning capabilities from get other capabilities:";
+//        print_object($capabilities);
+    }
+
 
 /**
  * Synchronize a Moodle user's permissions to Alfresco to ensure that the can access Moodle-specific
@@ -3144,12 +3187,12 @@ class ELIS_files {
         $root = $this->get_root();
 
         foreach ($capabilities as $capability) {
-            $sql = 'SELECT ra.id
+            $sql = "SELECT ra.id
                     FROM {role_assignments} ra
                     INNER JOIN {role_capabilities} rc ON rc.roleid = ra.roleid
                     WHERE ra.userid = :userid
                     AND rc.capability = :capability
-                    AND rc.permission = :perm';
+                    AND rc.permission = :perm";
 
             $params = array(
                 'userid'     => $user->id,
@@ -3209,7 +3252,7 @@ class ELIS_files {
 
 
 /**
- * Get the previous UUID value that the user was browsing inside of and return it so long their current
+ * Get the previous UUID value that the user was browsing inside of and return it so long as their current
  * context relates to the context of where that UUID is located.
  *
  * @uses $USER
@@ -3232,6 +3275,11 @@ class ELIS_files {
         }
 
         $location = $USER->elis_files_repository_location;
+
+        // Get the non context based permissions
+        $capabilities = array('repository/elis_files:viewowncontent'=> false,
+                              'repository/elis_files:viewsharedcontent'=> false);
+        $this->get_other_capabilities($USER, $capabilities);
 
 //echo "\n location: ";
 //print_object($location);
@@ -3284,9 +3332,9 @@ class ELIS_files {
                 empty($location->uuid)) {
 
                 // Check for correct permissions
-                $personalfiles = false;
+//                $personalfiles = false;
 
-                if (has_capability('repository/elis_files:createowncontent', $context)) {
+                if ($capabilities['repository/elis_files:viewowncontent']) {
                     $shared = (boolean)0;
                     return $this->get_user_store($uid);
                 }
@@ -3299,7 +3347,7 @@ class ELIS_files {
                 ((isset($location->shared) && ($location->shared != $shared) && ($shared == true)) ||
                 (!isset($location->shared) && $shared == true))) {
 
-                if (has_capability('repository/elis_files:viewsharedcontent', $context)) {
+                if ($capabilities['repository/elis_files:viewsharedcontent']) {
                     $uid = 0;
                     return $this->suuid;
                 }
@@ -3322,15 +3370,14 @@ class ELIS_files {
 /**
  * Get the default repository location.
  *
- * @uses $CFG
- * @uses $USER
+ * @uses $CFG, $COURSE, $USER
  * @param int  $cid      A course record ID.
  * @param int  $uid      A user record ID.
  * @param bool $shared   A flag to indicate whether the user is currently located in the shared repository area.
  * @return string The UUID of the last location the user was browsing files in.
  */
     function get_default_browsing_location(&$cid, &$uid, &$shared) {
-        global $CFG, $USER;
+        global $CFG, $COURSE, $USER;
 
 
 echo "\n in get_default_browsing_location and cid: $cid and uid: $uid";
