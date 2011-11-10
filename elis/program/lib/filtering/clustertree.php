@@ -323,7 +323,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
         }
 
         //needed in query to join context table
-        $cluster_context_level = context_level_base::get_custom_context_level('userset', 'elis_program'); // TBV
+        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
         //$params = array();
         $param_cpath = 'clustree_cpath_a'. $counter;
@@ -331,13 +331,13 @@ class generalized_filter_clustertree extends generalized_filter_type {
         $param_cpath2 = 'clustree_cpath_b'. $counter;
 
         $cpath_like = $DB->sql_like('context.path', ":{$param_cpath}",
-                                    true); // TBV: case insensitive? 
+                                    false); // TBV: case insensitive?
         $params[$param_cpath] = $DB->sql_concat('parent_context.path', "'/%'");
         $pcpath_like = $DB->sql_like('parent_context.path', ":{$param_pcpath}",
-                                     true); // TBV: case insensitive? 
+                                     false); // TBV: case insensitive?
         $params[$param_pcpath] = $DB->sql_concat('grandparent_context.path', "'/%'");
         $cpath2_like = $DB->sql_like('context.path', ":{$param_cpath2}",
-                                     true); // TBV: case insensitive? 
+                                     false); // TBV: case insensitive?
         $params[$param_cpath2] = $DB->sql_concat('eclipse_context.path', "'/%'");
 
         $param_ccl1 = 'clustree_context_a'. $counter;
@@ -413,7 +413,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
         if (array_key_exists($listing, $formdata) && $formdata->$listing !== '') {
             $parts = explode(',', $formdata->$listing);
             foreach ($parts as $part) {
-                if (strpos($part, 'cluster_') === 0) {
+                if (strpos($part, 'userset_') === 0) {
                     $inner_parts = explode('_', $part);
                     if (isset($inner_parts[1])) {
                         $cluster_ids[] = $inner_parts[1];
@@ -430,7 +430,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
         if (array_key_exists($selected_unexpanded, $formdata) && $formdata->$selected_unexpanded !== '') {
             $parts = explode(',', $formdata->$selected_unexpanded);
             foreach ($parts as $part) {
-                if (strpos($part, 'cluster_') === 0) {
+                if (strpos($part, 'userset_') === 0) {
                     $inner_parts = explode('_', $part);
                     if (isset($inner_parts[1])) {
                         $unexpanded_ids[] = $inner_parts[1];
@@ -447,7 +447,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
         if (array_key_exists($selected_clrunexpanded, $formdata) && $formdata->$selected_clrunexpanded !== '') {
             $parts = explode(',', $formdata->$selected_clrunexpanded);
             foreach ($parts as $part) {
-                if (strpos($part, 'cluster_') === 0) {
+                if (strpos($part, 'userset_') === 0) {
                     $inner_parts = explode('_', $part);
                     if (isset($inner_parts[1])) {
                         $clrunexpanded_ids[] = $inner_parts[1];
@@ -503,7 +503,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
             $capability = 'block/php_report:view';
         }
 
-        $context_result = pm_context_set::for_user_with_capability('userset', $capability, $USER->id);
+        $context_result = pm_context_set::for_user_with_capability('cluster', $capability, $USER->id);
         $extrafilters = array('contexts' => $context_result, 'parent' => 0);
         $num_records = cluster_count_records('', '', $extrafilters);
 
