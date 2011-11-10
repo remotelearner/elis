@@ -105,13 +105,14 @@ class generalized_filter_text extends generalized_filter_type {
             $value = (property_exists($formdata, $field) && !empty($formdata->$field))
                      ? $formdata->$field : '';
             //ELIS-3478: Fixed problems with 'is_empty' operator
-          /*
+
             if ($formdata->$operator != 5 and $value == '') {
-                // no data - no change except for empty filter
+                //do not apply a filter here because no data was entered into the text
+                //box - this is only valid for the "is_empty" operator
                 return false;
             }
             //$value = empty($formdata->$field) ? '' : $formdata->$field;
-          */
+
             return array('operator' => (int)$formdata->$operator,
                             'value' => $value);
         }
