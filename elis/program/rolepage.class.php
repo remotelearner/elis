@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once elispm::lib('associationpage2.class.php');
 require_once elispm::lib('data/user.class.php');
+require_once elispm::lib('data/usermoodle.class.php');
 require_once elispm::file('form/addroleform.class.php');
 
 abstract class rolepage extends associationpage2 {
@@ -366,14 +367,15 @@ abstract class rolepage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
-        $where = "idnumber NOT IN (SELECT mu.idnumber
+        $sql = 'SELECT usr.* FROM {'. user::TABLE .'} usr
+                JOIN {'. usermoodle::TABLE .'} um ON usr.id = um.cuserid';
+        $where = "um.idnumber NOT IN (SELECT mu.idnumber
                                      FROM {user} mu
                                 LEFT JOIN {role_assignments} ra
                                           ON ra.userid = mu.id
                                     WHERE ra.contextid = :contextid
                                       AND ra.roleid = :roleid
                                       AND mu.mnethostid = :mnethostid)";
-
         $params = array('contextid' => $context->id,
                         'roleid' => $roleid,
                         'mnethostid' => $CFG->mnet_localhost_id);
@@ -384,9 +386,9 @@ abstract class rolepage extends associationpage2 {
             $where .= " AND $extrasql";
             $params = array_merge($params, $extraparams);
         }
-
-        $count = $DB->count_records_select(user::TABLE, $where, $params);
-        $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
+        $sql .= ' WHERE '. $where .' ORDER BY '. $sortclause;
+        $count = $DB->count_records_sql("SELECT COUNT('x') FROM ({$sql}) cnt", $params);
+        $users = $DB->get_records_sql($sql, $params, $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
@@ -441,6 +443,13 @@ abstract class rolepage extends associationpage2 {
         }
 
         return new user_selection_table($records, $columns, new moodle_url($baseurl));
+    }
+
+    protected function get_table_footer() {
+        if ($this->is_assigning()) {
+            return get_string('onlyvalidmoodleusers', 'elis_program');
+        }
+        return parent::get_table_footer();
     }
 }
 
@@ -701,14 +710,16 @@ class cluster_rolepage extends rolepage {
                 $sortclause = "{$sortfields[$sort]} $order";
             }
 
-            $where = "idnumber NOT IN (SELECT mu.idnumber
+            $sql = 'SELECT usr.* FROM {'. user::TABLE .'} usr
+                    JOIN {'. usermoodle::TABLE .'} um ON usr.id = um.cuserid';
+            $where = "um.idnumber NOT IN (SELECT mu.idnumber
                                          FROM {user} mu
                                     LEFT JOIN {role_assignments} ra
                                               ON ra.userid = mu.id
                                         WHERE ra.contextid = :contextid
                                           AND ra.roleid = :roleid
                                           AND mu.mnethostid = :mnethostid)
-                            AND id IN (SELECT userid
+                            AND usr.id IN (SELECT userid
                                          FROM {".clusterassignment::TABLE."} uc
                                         WHERE uc.clusterid = :clusterid)";
 
@@ -723,9 +734,9 @@ class cluster_rolepage extends rolepage {
                 $where .= " AND $extrasql";
                 $params = array_merge($params, $extraparams);
             }
-
-            $count = $DB->count_records_select(user::TABLE, $where, $params);
-            $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
+            $sql .= ' WHERE '. $where .' ORDER BY '. $sortclause;
+            $count = $DB->count_records_sql("SELECT COUNT('x') FROM ({$sql}) cnt", $params);
+            $users = $DB->get_records_sql($sql, $params, $pagenum*$perpage, $perpage);
 
             return array($users, $count);
         } else {

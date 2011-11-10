@@ -669,6 +669,7 @@ $string['o_active'] = 'Only active';
 $string['o_inactive'] = 'Only inactive';
 $string['onenroledlist'] = 'You are currently enrolled';
 $string['onfailed'] = 'You failed this course';
+$string['onlyvalidmoodleusers'] = '<p>Note: Users with no Moodle account are not shown in this listing.</p>';
 $string['onpassed'] = 'You passed this course';
 $string['onwaitlist'] = 'You are on the waiting list';
 $string['othercourses'] = 'Other Class Instances';

@@ -250,6 +250,7 @@ abstract class selectionpage extends pm_page { // TBD
                 _print_checkbox('selectedonly', '', false, get_string('selectedonly', self::LANG_FILE), '', 'change_selected_display()');
                 echo '</div>';
             }
+            echo $this->get_table_footer();
             echo '</fieldset></div>'; // from above
 
             //if ($count)
@@ -259,6 +260,14 @@ abstract class selectionpage extends pm_page { // TBD
         }
     }
 
+    /**
+     * Default table footer method, defaults to none
+     * overload in child pages requiring table footer, i.e. rolepages
+     * @return string
+     */
+    protected function get_table_footer() {
+        return '';
+    }
 
     /**
      * Get the base parameters for the association page
