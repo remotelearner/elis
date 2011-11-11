@@ -106,6 +106,7 @@ class ELIS_files {
     var $root      = '';  // Root folder UUID
     var $config    = '';  // Config object setting variables for Alfresco
     var $isrunning = null;
+    var $alfresco_username_fix = ''; // The fixed username for Alfresco where @ is replaced with _AT_
 
     function ELIS_files() {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('ELIS_files()');
@@ -2895,17 +2896,23 @@ class ELIS_files {
     function migrate_user($userorusername, $password = '') {
         global $CFG, $DB;
 
-        if (ELIS_FILES_DEBUG_TRACE) mtrace('migrate_user(' . (is_object($userorusername) ? 'object' : $userorusername) . ')');
+        // Prevent modifying Moodle's user name
+        $cloned_userorusername = clone $userorusername;
 
-        if (is_string($userorusername)) {
-            if (!$user = $DB->get_record('user', array('username'=> $userorusername, 'mnethostid'=> $CFG->mnet_localhost_id))) {
+        if (ELIS_FILES_DEBUG_TRACE) mtrace('migrate_user(' . (is_object($cloned_userorusername) ? 'object' : $cloned_userorusername) . ')');
+
+        if (is_string($cloned_userorusername)) {
+            if (!$user = $DB->get_record('user', array('username'=> $cloned_userorusername, 'mnethostid'=> $CFG->mnet_localhost_id))) {
                 return false;
             }
-        } else if (is_object($userorusername)) {
-            $user = $userorusername;
+        } else if (is_object($cloned_userorusername)) {
+            $user = $cloned_userorusername;
         } else {
             return false;
         }
+
+        $user->username = $this->alfresco_username_fix($user->username);
+        $this->set_alfresco_username($user->username);
 
         // Create the user's Alfresco account (if one does not already exist).
         if (!elis_files_create_user($user, $password)) {
@@ -3503,5 +3510,25 @@ echo "\n about to get context...";
             $time = $end - $start;
             mtrace("cron(): $time");
         }
+    }
+
+    /**
+    * User names with an @ symbol in Alfresco have a special meaning, referring to tenants/organizations.
+    * The @ symbol in a Moodle user name must be replaced for Alfresco compatibility when creating Alfresco accounts.
+    *
+    * @param string The Moodle user's user name.
+    * @return string The modified user name.
+    */
+    function alfresco_username_fix($username) {
+        $modified_username = str_replace('@','_AT_', $username);
+        return $modified_username;
+    }
+
+    function set_alfresco_username($username) {
+        $this->alfresco_username_fix = $username;
+    }
+
+    function get_alfresco_username_fix() {
+        return $this->alfresco_username_fix;
     }
 }

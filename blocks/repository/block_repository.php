@@ -60,15 +60,15 @@ class block_repository extends block_base {
         // Get the ELIS Files plugin configuration values
         $pcfg = get_config('elis_files');
 
-        if ($repo->elis_files_userdir($USER->username) !== false) {
+        if ($repo->elis_files_userdir($repo->get_alfresco_username_fix()) !== false) {
             // So that we don't conflict with the default Alfresco admin account.
             $username = $USER->username == 'admin' ? $pcfg->admin_username : $USER->username;
 
             $hastenant = false;
 
-            // We must include the tenant portion of the username here.
-            if (($tenantname = strpos($pcfg->server_username, '@')) > 0) {
-                $username .= substr($pcfg->server_username, $tenantname);
+            // If the Moodle user's user name has an '@' symbol, then replace it with '_AT_' for Alfresco compatibility
+            if (($tenantname = strpos($USER->username, '@')) > 0) {
+                $username = $repo->get_alfresco_username_fix();
                 $hastenant = true;
             }
 
