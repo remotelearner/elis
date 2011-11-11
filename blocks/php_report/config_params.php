@@ -111,3 +111,10 @@ if (!empty($reset_form)) {
  * Displaying the form
  */
 $parameter_form->display();
+if (empty($this)) {
+    // called from AJAX ...
+    $jscode = $PAGE->requires->get_end_code();
+    // Must re-init help_icons onclick ...
+    echo $jscode;
+    //error_log('config_params.php (AJAX): '. $jscode);
+}
