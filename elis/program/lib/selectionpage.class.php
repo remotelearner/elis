@@ -197,8 +197,10 @@ abstract class selectionpage extends pm_page { // TBD
         $pagenum = $this->optional_param('page', 0, PARAM_INT);
         $perpage = $this->optional_param('perpage', 30, PARAM_INT);
 
-        if ($filter != null &&  !$this->is_bare()) {
-            $this->print_selection_filter($filter);
+        if (!$this->is_bare()) {
+            if ($filter != null) {
+                $this->print_selection_filter($filter);
+            }
             // ELIS-3643: cannot load filter form internally with AJAX
             // breaks form dependencies!!! E.g. is_empty greying-out selection
             echo '<div id="list_display">';
