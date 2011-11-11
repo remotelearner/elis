@@ -63,7 +63,7 @@ class qqUploadedFileXhr {
             unlink($path);
         }
 
-        return true;
+        return $result !== false;
     }
 
     function getName() {
@@ -154,9 +154,43 @@ class qqFileUploader {
     }
 
     /**
+     * Validates that a filename is unique within the specified folder in Alfresco
+     *
+     * @param string $filename The filename we are checking, without the path included
+     * @return mixed true if unique, otherwise a string error message
+     */
+    function validate_unique_filename($filename) {
+        require_once('ELIS_files_factory.class.php');
+
+        $uuid = required_param('uuid', PARAM_TEXT);
+
+        if ($repo = repository_factory::factory('elis_files')) {
+            // look through the files in the current directory
+            if ($dir = $repo->read_dir($uuid)) {
+                if (!empty($dir->files)) {
+                    foreach ($dir->files as $file) {
+                        if ($file->title == $filename) {
+                            // found an existing file with the same name
+                            return get_string('erroruploadduplicatefilename', 'repository_elis_files', $filename);
+                        }
+                    }
+                }
+            }
+        } else {
+            // this is unlikely but possible
+            return get_string('errorupload', 'repository_elis_files');
+        }
+
+        // file not already found, so ok to upload
+        return true;
+    }
+
+    /**
      * Returns array('success'=>true) or array('error'=>'error message')
      */
     function handleUpload($uploadDirectory, $replaceOldFile = FALSE){
+        global $USER;
+
         if (!is_writable($uploadDirectory)){
             return array('error' => "Server error. Upload directory isn't writable.");
         }
@@ -177,7 +211,14 @@ class qqFileUploader {
 
         $pathinfo = pathinfo($this->file->getName());
         $filename = $pathinfo['filename'];
-        $ext = $pathinfo['extension'];
+        // logic for handling file extensions
+        if (isset($pathinfo['extension'])) {
+            $ext = $pathinfo['extension'];
+            $filename .= '.'.$ext;
+        } else {
+            $ext = NULL;
+        }
+
 
         if($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions)){
             $these = implode(', ', $this->allowedExtensions);
@@ -186,16 +227,37 @@ class qqFileUploader {
 
         if(!$replaceOldFile){
             /// don't overwrite previous files that were uploaded
+            /// this just handles temporary files - consider forcing uniqueness here in the future?
             while (file_exists($uploadDirectory . $filename . '.' . $ext)) {
                 $filename .= rand(10, 99);
             }
         }
 
-        if ($this->file->save($uploadDirectory . $filename . '.' . $ext)){
+        // make sure we're not going over the user's quota
+        if (!elis_files_quota_check($size, $USER)) {
+            if ($quotadata = elis_files_quota_info($USER->username)) {
+                //specific error message, if possible
+                $a = new stdClass;
+                $a->current = round($quotadata->current / 1048576 * 10, 1) / 10 . get_string('sizemb');
+                $a->max     = round($quotadata->quota / 1048576 * 10, 1) / 10 . get_string('sizemb');
+
+                return array('error' => get_string('erroruploadquotasize', 'repository_elis_files', $a));
+            } else {
+                //non-specific error message
+                return array('error' => get_string('erroruploadquota', 'repository_elis_files'));
+            }
+        }
+
+        // make sure we're not uploading a duplicate filename
+        $test = $this->validate_unique_filename($filename);
+        if ($test !== true) {
+            return array('error' => $test);
+        }
+
+        if ($this->file->save($uploadDirectory . $filename)) {
             return array('success'=>true);
         } else {
-            return array('error'=> 'Could not save uploaded file.' .
-                'The upload was cancelled, or server error encountered');
+            return array('error'=>get_string('errorupload', 'repository_elis_files'));
         }
 
     }

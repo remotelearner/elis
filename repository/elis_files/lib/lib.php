@@ -850,14 +850,12 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
             break;
 
         default:
-            $result->error = 'invalid schema '. $uri['scheme'];
-            return $result;
+            return false;
     }
 
 /// Make sure the socket opened properly.
     if (!$fp) {
-        $result->error = trim($errno .' '. $errstr);
-        return $result;
+        return false;
     }
 
 /// Construct the path to act on.
@@ -2414,6 +2412,8 @@ function elis_files_quota_info($username = '') {
  * @return bool True if the size will not run over the user's quota, False otherwise.
  */
 function elis_files_quota_check($filesize, $user = null) {
+	global $USER;
+
     if ($user == null) {
         $user = $USER;
     }
@@ -2569,7 +2569,6 @@ function elis_files_install_web_script($files, $uuid) {
 function elis_files_json_parse($json) {
     global $CFG;
 
-    require_once($CFG->libdir . '/pear/HTML/AJAX/JSON.php'); // for PHP <5.2.0
     if (($return = json_decode($json)) == null) {
         return false;
     }
