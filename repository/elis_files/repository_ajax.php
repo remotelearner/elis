@@ -189,7 +189,8 @@ switch ($action) {
 //print_object($parentuuid);
         // Get the default locations...
         $locations = array();
-        $repo->elis_files->file_browse_options($cid, $uid, $shared, $oid, $locations);
+        $createonly = true;
+        $repo->elis_files->file_browse_options($cid, $uid, $shared, $oid, $locations, $createonly);
 
 //echo "\n locations found:";
 //print_object($locations);
@@ -211,6 +212,7 @@ switch ($action) {
 //        $return->form = $repo->print_move_dialog($parentuuid, $shared, $oid,$selected_files);
         $return->form = $repo->print_move_dialog($parentuuid, $location_parent['path'], $cid, $uid, $shared, $oid, $selected_files);
         $return->listing = $tab_listing;
+        $return->locations = $locations;
         $return->location_path = $location_parent['path'];
         $return->location_name = $location_parent['name'];
         echo json_encode($return);

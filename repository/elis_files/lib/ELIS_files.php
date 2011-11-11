@@ -2528,7 +2528,7 @@ class ELIS_files {
  * @param bool   $createonly  Flag that, if set to true, only returns a list of options with create capability
  * @return array An array of options meant to be used in a popup_form() function call.
  */
-    function file_browse_options($cid, $uid, $shared, $oid, &$opts=array()) {
+    function file_browse_options($cid, $uid, $shared, $oid, &$opts=array(), $createonly = false) {
         global $USER, $COURSE;
 
 //echo " in file_browse_option cid: $cid from COURSE: $COURSE->id uid: $uid";
@@ -2576,14 +2576,16 @@ class ELIS_files {
                    }
                 }
             }
-            $params = array('path'=>$uuid,
-                            'shared'=>(boolean)0,
-                            'oid'=>0,
-                            'cid'=>(int)$cid,
-                            'uid'=>0);
-            $encodedpath = base64_encode(serialize($params));
-            $opts[] = array('name'=> get_string('repositorysitefiles','repository_elis_files'),
+            if (!$createonly || ($createonly && $editalfsite)) {
+                $params = array('path'=>$uuid,
+                                'shared'=>(boolean)0,
+                                'oid'=>0,
+                                'cid'=>(int)$cid,
+                                'uid'=>0);
+                $encodedpath = base64_encode(serialize($params));
+                $opts[] = array('name'=> get_string('repositorysitefiles','repository_elis_files'),
                             'path'=> $encodedpath);
+            }
 
         } else if ($cid != SITEID && $viewalfcourse) {
 //            $curl        = $alfrescourl . 'id=' . $cid . '&amp;userid=0&amp;choose=' . $choose;
@@ -2613,19 +2615,21 @@ class ELIS_files {
                 $uuid = $this->cuuid;
             }
 
-            $params = array('path'=>$uuid,
-                            'shared'=>(boolean)0,
-                            'oid'=>0,
-                            'cid'=>(int)$cid,
-                            'uid'=>0);
-            $encodedpath = base64_encode(serialize($params));
-            $opts[] = array('name'=> get_string('repositorycoursefiles','repository_elis_files'),
-                            'path'=> $encodedpath);
+            if (!$createonly || ($createonly && $editalfcourse)) {
+                $params = array('path'=>$uuid,
+                                'shared'=>(boolean)0,
+                                'oid'=>0,
+                                'cid'=>(int)$cid,
+                                'uid'=>0);
+                $encodedpath = base64_encode(serialize($params));
+                $opts[] = array('name'=> get_string('repositorycoursefiles','repository_elis_files'),
+                                'path'=> $encodedpath);
+            }
         }
 
         // Build the option for browsing from the repository shared files.
         if ($capabilities['repository/elis_files:viewsharedcontent'] == true) {
-
+echo "\n checking for file browse options and have viewsharedcontend and createonly: $createonly";
             if (!elis_files_has_permission($this->suuid, $USER->username)) {
                 $this->allow_read($USER->username, $this->suuid);
             }
@@ -2639,30 +2643,34 @@ class ELIS_files {
                     $this->allow_read($USER->username, $this->suuid);
                 }
             }
-            $params = array('path'=>$this->suuid,
-                            'shared'=>true,
-                            'oid'=>(int)0,
-                            'cid'=>(int)0,
-                            'uid'=>(int)0);
-            $encodedpath = base64_encode(serialize($params));
-            $opts[] = array('name'=> get_string('repositoryserverfiles','repository_elis_files'),
-                            'path'=> $encodedpath);
+            if (!$createonly || ($createonly && ($capabilities['repository/elis_files:createsharedcontent'] == true))) {
+                $params = array('path'=>$this->suuid,
+                                'shared'=>true,
+                                'oid'=>(int)0,
+                                'cid'=>(int)0,
+                                'uid'=>(int)0);
+                $encodedpath = base64_encode(serialize($params));
+                $opts[] = array('name'=> get_string('repositoryserverfiles','repository_elis_files'),
+                                'path'=> $encodedpath);
+            }
         }
 
         // Build the option for browsing from the repository personal / user files.
         if ($capabilities['repository/elis_files:viewowncontent'] || $capabilities['repository/elis_files:createowncontent']) {
-            $params = array('path'=>$this->get_user_store($USER->id),
-                            'shared'=>(boolean)0,
-                            'oid'=>(int)0,
-                            'cid'=>(int)0,
-                            'uid'=>(int)$USER->id);
-            $encodedpath = base64_encode(serialize($params));
-            $opts[] = array('name'=> get_string('repositoryuserfiles','repository_elis_files'),
-                            'path'=> $encodedpath);
+            if (!$createonly || ($createonly && $capabilities['repository/elis_files:createowncontent'])) {
+                $params = array('path'=>$this->get_user_store($USER->id),
+                                'shared'=>(boolean)0,
+                                'oid'=>(int)0,
+                                'cid'=>(int)0,
+                                'uid'=>(int)$USER->id);
+                $encodedpath = base64_encode(serialize($params));
+                $opts[] = array('name'=> get_string('repositoryuserfiles','repository_elis_files'),
+                                'path'=> $encodedpath);
+            }
         }
 
         // Get usersets folders to which the users belongs
-        $this->find_userset_folders($opts);
+        $this->find_userset_folders($opts, $createonly);
 
         // Assemble the default menu selection based on the information given to this method.
 //        $default = $origurl . 'id=' . $cid . (!empty($oid) ? '&amp;oid='.$oid : '') . (!empty($shared) ? '&amp;shared=true' : '') . '&amp;userid=' .
@@ -2680,9 +2688,9 @@ class ELIS_files {
  * @param array $opts      The current drop down list to which to add userset folders
  * @return array Alfresco repository folder names.
  */
-    function find_userset_folders(&$opts) {
+    function find_userset_folders(&$opts, $createonly) {
         global $CFG, $DB, $USER;
-
+//echo "\n create only? $createonly";
         require_once($CFG->libdir . '/ddllib.php');
 //        require_once($CFG->dirroot.'/elis/program/lib/lib.php');
 
@@ -2784,15 +2792,17 @@ class ELIS_files {
                     $this->allow_read($USER->username, $uuid);
                 }
             }
-            $params = array('path'=>$uuid,
-                            'shared'=>(boolean)0,
-                            'oid'=>(int)$cluster->id,
-                            'cid'=>0,
-                            'uid'=>0);
-            $encodedpath = base64_encode(serialize($params));
-            $opts[] = array('name'=> $cluster->name,
-                            'path'=> $encodedpath
-                            );
+            if (!$createonly || ($createonly && $editalfuserset)) {
+                $params = array('path'=>$uuid,
+                                'shared'=>(boolean)0,
+                                'oid'=>(int)$cluster->id,
+                                'cid'=>0,
+                                'uid'=>0);
+                $encodedpath = base64_encode(serialize($params));
+                $opts[] = array('name'=> $cluster->name,
+                                'path'=> $encodedpath
+                                );
+            }
 //echo "\n in find_userset_folders for ".$cluster->name." encoded path: ".$encodedpath." for uuid: ".$uuid." with oid: ".$cluster->id;
 //echo "\n just serialized: ".serialize($params);
 // lets decode and see what we have... this is frustrating!!!
@@ -3152,20 +3162,15 @@ class ELIS_files {
             if ($DB->record_exists_sql($sql, $params)) {
                 if ($capability == 'repository/elis_files:createowncontent') {
                     $capabilities['repository/elis_files:createowncontent'] = true;
-
                 } else if ($capability == 'repository/elis_files:viewowncontent') {
                     $capabilities['repository/elis_files:viewowncontent'] = true;
-
                 } else if ($capability == 'repository/elis_files:createsharedcontent') {
                     $capabilities['repository/elis_files:createsharedcontent'] = true;
-
                 } else if ($capability == 'repository/elis_files:viewsharedcontent') {
                     $capabilities['repository/elis_files:viewsharedcontent'] = true;
                 }
             }
         }
-//        echo "\n returning capabilities from get other capabilities:";
-//        print_object($capabilities);
     }
 
 
@@ -3287,7 +3292,8 @@ class ELIS_files {
         $capabilities = array('repository/elis_files:viewowncontent'=> false,
                               'repository/elis_files:viewsharedcontent'=> false);
         $this->get_other_capabilities($USER, $capabilities);
-
+echo "\n in get_repository_location and capabilities: ";
+print_object($capabilities);
 //echo "\n location: ";
 //print_object($location);
         // If the previous value comes from within a cluster that is not the current cluster, return the root

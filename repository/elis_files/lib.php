@@ -1016,10 +1016,7 @@ print_object($params);
         $this->elis_files->get_other_capabilities($USER, $capabilities);
 
         $canedit = false;
-//echo "\n *** capabilities for canedit: ";
-//var_dump($capabilities);
-//echo "=========> userid: $userid shared: $shared oid:$oid <=====";
-//print_object($context);
+
         if (empty($userid) && empty($shared) && empty($oid)) {
             if (($id == SITEID && has_capability('repository/elis_files:createsitecontent', $context)) ||
                 ($id != SITEID && has_capability('repository/elis_files:createcoursecontent', $context))) {
@@ -1038,7 +1035,7 @@ print_object($params);
                 }
             }
         }
-        echo "\n returning canedit: $canedit";
+
         return $canedit;
     }
 
@@ -1118,7 +1115,8 @@ print_object($params);
 
         // Set permissible browsing locations
         $locations = array();
-        $this->elis_files->file_browse_options($cid, $uid, $shared, $oid, $locations);
+        $createonly = true;
+        $this->elis_files->file_browse_options($cid, $uid, $shared, $oid, $locations, $createonly);
         $parent_path = array();
         // Get encoded parent path
         $result = repository_elis_files::get_parent_path($uuid, $parent_path, $cid, $uid, $shared, $oid);
