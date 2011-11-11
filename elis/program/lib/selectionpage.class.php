@@ -190,15 +190,18 @@ abstract class selectionpage extends pm_page { // TBD
             $PAGE->requires->js('/elis/core/js/associate.class.js');
             $PAGE->requires->js('/elis/core/js/associate.js');
             echo '<div class="mform" style="width: 100%"><fieldset><legend>'.
-                 $title .'</legend><div id="list_display">';
+                 $title .'</legend>';
         }
 
         $id      = $this->optional_param('id', -1, PARAM_INT);
         $pagenum = $this->optional_param('page', 0, PARAM_INT);
         $perpage = $this->optional_param('perpage', 30, PARAM_INT);
 
-        if ($filter != null) {
+        if ($filter != null &&  !$this->is_bare()) {
             $this->print_selection_filter($filter);
+            // ELIS-3643: cannot load filter form internally with AJAX
+            // breaks form dependencies!!! E.g. is_empty greying-out selection
+            echo '<div id="list_display">';
         }
 
         // pager
