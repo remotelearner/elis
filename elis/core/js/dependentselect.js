@@ -36,13 +36,33 @@ function dependentselect_updateoptions(pid, id, path) {
 
     var option_success = function(o) {
         var data = YAHOO.lang.JSON.parse(o.responseText);
+        var selectCache = [];
+        var selected    = false;
+
+        for (i = 0; i < child.options.length; i++) {
+            if (child.options[i].select == true) {
+                selectCache.push(child.options[i].value);
+            }
+        }
+        
         child.options.length = 0;
         for (i = 0; i < data.length; i++) {
             //response text is an array of arrays, where each sub-array's
             //first element is the element id and the second is the name
             addOption(child,childId,data[i][0],data[i][1]);
         }
-        if (typeof child.options[0] !== 'undefined') {
+        
+        for (i = 0; i < selectCache.length; i++) {
+            for (h = 0; h < child.options.length; h++) {
+                if (selectCache[i].value == child.options[h].value) {
+                    child.options[h].selected = true;
+                    selected = true;
+                }
+            }
+        }
+        
+        if ((! selected) && (typeof child.options[0] !== 'undefined')
+                && ((child.options[0].value == 0) || (child.options[0].value == '')) ) {
             child.options[0].selected = true;
         }
 
