@@ -728,7 +728,7 @@ print_object($params);
 
         $sizelist = array(
             -1,
-            0,
+            '',
             $bytes_1mb * 10,
             $bytes_1mb * 20,
             $bytes_1mb * 30,
@@ -740,7 +740,7 @@ print_object($params);
         );
 
         foreach ($sizelist as $sizebytes) {
-            if ($sizebytes == 0) {
+            if ($sizebytes == '') {
                 $filesize[$sizebytes] = get_string('quotanotset', 'repository_elis_files');;
             } else if ($sizebytes == -1 ) {
                 $filesize[$sizebytes] = get_string('quotaunlimited', 'repository_elis_files');
@@ -752,15 +752,15 @@ print_object($params);
         krsort($filesize, SORT_NUMERIC);
 
         $mform->addElement('select', 'user_quota', get_string('userquota', 'repository_elis_files'), $filesize);
-        $mform->setDefault('user_quota', '0');
+        $mform->setDefault('user_quota', '');
         $mform->addElement('static', 'user_quota_default', '', get_string('elis_files_default_user_quota', 'repository_elis_files'));
         $mform->addElement('static', 'user_quota_intro', '', get_string('configuserquota', 'repository_elis_files'));
 
         // Add a toggle to control whether we will delete a user's home directory in Alfresco when their account is deleted.
-        $options = array(1 => get_string('yes'), 0 => get_string('no'));
+        $options = array(1 => get_string('yes'), '' => get_string('no'));
 
         $mform->addElement('select', 'deleteuserdir', get_string('deleteuserdir', 'repository_elis_files'), $options);
-        $mform->setDefault('deleteuserdir', '0');
+        $mform->setDefault('deleteuserdir', '');
         $mform->addElement('static', 'deleteuserdir_default', '', get_string('elis_files_default_deleteuserdir', 'repository_elis_files'));
         $mform->addElement('static', 'deleteuserdir_intro', '', get_string('configdeleteuserdir', 'repository_elis_files'));
 
