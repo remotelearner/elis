@@ -190,20 +190,18 @@ abstract class selectionpage extends pm_page { // TBD
             $PAGE->requires->js('/elis/core/js/associate.class.js');
             $PAGE->requires->js('/elis/core/js/associate.js');
             echo '<div class="mform" style="width: 100%"><fieldset><legend>'.
-                 $title .'</legend>';
+                 $title .'</legend><div id="list_display">';
+        } else {
+            // ELIS-3643: see reporting changes for ELIS-3679 ...
+            $PAGE->set_pagelayout('embedded');
         }
 
         $id      = $this->optional_param('id', -1, PARAM_INT);
         $pagenum = $this->optional_param('page', 0, PARAM_INT);
         $perpage = $this->optional_param('perpage', 30, PARAM_INT);
 
-        if (!$this->is_bare()) {
-            if ($filter != null) {
-                $this->print_selection_filter($filter);
-            }
-            // ELIS-3643: cannot load filter form internally with AJAX
-            // breaks form dependencies!!! E.g. is_empty greying-out selection
-            echo '<div id="list_display">';
+        if ($filter != null) {
+            $this->print_selection_filter($filter);
         }
 
         // pager
@@ -262,6 +260,17 @@ abstract class selectionpage extends pm_page { // TBD
             {
                 $form->display();
             }
+        } else {
+            // ELIS-3643: see reporting changes for ELIS-3679 ...
+            $jscall = '
+<script type="text/javascript">
+//<![CDATA[
+M.form.dependencyManager = null;
+//]]>
+</script>
+'
+                      . $this->requires->get_end_code();
+            echo $jscall;
         }
     }
 
