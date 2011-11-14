@@ -24,6 +24,8 @@
  *
  */
 
+//define('DEBUG_BROWSER_EMBEDDED_JS', 1);
+
 require_once(dirname(__FILE__) .'/../../config.php');
 require_once($CFG->dirroot .'/blocks/php_report/parameter_form.class.php');
 require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
@@ -38,6 +40,12 @@ $report_shortname = required_param('id', PARAM_CLEAN);
 //optional action url for form
 $action = optional_param('url', null, PARAM_CLEAN);
 
+$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+if (empty($this)) {
+    // Called from AJAX, set emebeddded to force formslib formcounter to 999
+    $PAGE->set_pagelayout('embedded');
+}
+
 //require dependencies for filters
 php_report_filtering_require_dependencies();
 
@@ -45,8 +53,6 @@ php_report_filtering_require_dependencies();
 $instance = php_report::get_default_instance($report_shortname);
 //NOTE: this is slow because it populates filter values
 $filters = $instance->get_filters();
-
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 
 //obtain any necessary information regarding secondary filterings
 $dynamic_report_filter_url = $CFG->wwwroot .'/blocks/php_report/dynamicreport.php?id='. $report_shortname;
@@ -113,8 +119,26 @@ if (!empty($reset_form)) {
 $parameter_form->display();
 if (empty($this)) {
     // called from AJAX ...
-    $jscode = $PAGE->requires->get_end_code();
-    // Must re-init help_icons onclick ...
+    $jscode = '
+<script type="text/javascript">
+//<![CDATA[
+M.form.dependencyManager = null;
+//]]>
+</script>
+'
+              . $PAGE->requires->get_end_code();
+
+    if (defined('DEBUG_BROWSER_EMBEDDED_JS')) {
+        // Enable to test if browsers runs this Javascript code!
+        $jscode .=  '
+<script type="text/javascript">
+//<![CDATA[
+    alert("In outer form javascript re-init code");
+//]]>
+</script>
+';
+    }
+    // Must re-init help_icons onclick and form dependencies ...
     echo $jscode;
     //error_log('config_params.php (AJAX): '. $jscode);
 }
