@@ -330,15 +330,21 @@ class generalized_filter_clustertree extends generalized_filter_type {
         $param_pcpath = 'clustree_pcpath'. $counter;
         $param_cpath2 = 'clustree_cpath_b'. $counter;
 
-        $cpath_like = $DB->sql_like('context.path', ":{$param_cpath}",
+        /** NOTE:
+         * ELIS-3685: We cannot seem to use sql_concat() in parameter array ...
+         * query fails (perhaps quoting the "CONCAT( ...)" parameter?),
+         * unfortunely this causes warnings from sql_like() ...
+         * "Potential SQL injection detected, sql_ilike() expects bound parameters (? or :named)
+         */
+        $cpath_like = $DB->sql_like('context.path', $DB->sql_concat('parent_context.path', "'/%'"),
                                     false); // TBV: case insensitive?
-        $params[$param_cpath] = $DB->sql_concat('parent_context.path', "'/%'");
-        $pcpath_like = $DB->sql_like('parent_context.path', ":{$param_pcpath}",
+        //$params[$param_cpath] = $DB->sql_concat('parent_context.path', "'/%'");
+        $pcpath_like = $DB->sql_like('parent_context.path', $DB->sql_concat('grandparent_context.path', "'/%'"),
                                      false); // TBV: case insensitive?
-        $params[$param_pcpath] = $DB->sql_concat('grandparent_context.path', "'/%'");
-        $cpath2_like = $DB->sql_like('context.path', ":{$param_cpath2}",
+        //$params[$param_pcpath] = $DB->sql_concat('grandparent_context.path', "'/%'");
+        $cpath2_like = $DB->sql_like('context.path', $DB->sql_concat('eclipse_context.path', "'/%'"),
                                      false); // TBV: case insensitive?
-        $params[$param_cpath2] = $DB->sql_concat('eclipse_context.path', "'/%'");
+        //$params[$param_cpath2] = $DB->sql_concat('eclipse_context.path', "'/%'");
 
         $param_ccl1 = 'clustree_context_a'. $counter;
         $param_ccl2 = 'clustree_context_b'. $counter;
@@ -668,11 +674,11 @@ class generalized_filter_clustertree extends generalized_filter_type {
             $unselect_group_condition = "parent_ctxt.instanceid IN (" . implode(',', $data['clrunexpanded_ids']) . ")";
         }
 
-        $ctxtpath_like1 = $DB->sql_like('ctxt.path', ':ctxtpath1', false); // TBV: case insensitive
-        $ctxtpath_like2 = $DB->sql_like('ctxt.path', ':ctxtpath2', false); // TBV: case insensitive
+        $ctxtpath_like1 = $DB->sql_like('ctxt.path', $DB->sql_concat('parent_ctxt.path', "'/%'"), false); // TBV: case insensitive
+        $ctxtpath_like2 = $DB->sql_like('ctxt.path', $DB->sql_concat('parent_ctxt.path', "'/%'"), false); // TBV: case insensitive
         $params = array();
-        $params['ctxtpath1'] = $DB->sql_concat('parent_ctxt.path', "'/%'");
-        $params['ctxtpath2'] = $DB->sql_concat('parent_ctxt.path', "'/%'");
+        //$params['ctxtpath1'] = $DB->sql_concat('parent_ctxt.path', "'/%'");
+        //$params['ctxtpath2'] = $DB->sql_concat('parent_ctxt.path', "'/%'");
 
         //handle individually selected clusters with child elements
         if (!empty($data['unexpanded_ids'])) {
