@@ -615,6 +615,9 @@ function pm_notify_role_assign_handler($eventdata){
         if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classenrol')) {
             $users = $users + $roleusers;
         }
+        if ($roleusers = get_users_by_capability(get_system_context(), 'elis/program:notify_classenrol')) {
+            $users = $users + $roleusers;
+        }
     }
 
     if ($sendtosupervisor) {
@@ -625,9 +628,13 @@ function pm_notify_role_assign_handler($eventdata){
         }
     }
 
-    foreach ($users as $user) {
-        //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(eventdata); Sending notification to user: {$user->email}");
-        $message->send_notification($text, $user, $enroluser);
+    $alreaysent = array();
+    foreach ($users as $key => $user) {
+        if (!in_array($key, $alreaysent)) {
+            //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(eventdata); Sending notification to user[{$key}]: {$user->email}");
+            $message->send_notification($text, $user, $enroluser);
+            $alreadysent[] = $key;
+        }
     }
 
     /// If you don't return true, the message queue will clog and no more will be sent.
