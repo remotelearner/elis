@@ -2629,7 +2629,7 @@ class ELIS_files {
 
         // Build the option for browsing from the repository shared files.
         if ($capabilities['repository/elis_files:viewsharedcontent'] == true) {
-echo "\n checking for file browse options and have viewsharedcontend and createonly: $createonly";
+//echo "\n checking for file browse options and have viewsharedcontend and createonly: $createonly";
             if (!elis_files_has_permission($this->suuid, $USER->username)) {
                 $this->allow_read($USER->username, $this->suuid);
             }

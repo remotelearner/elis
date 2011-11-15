@@ -58,57 +58,26 @@ class repository_elis_files extends repository {
 
         require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
 
+        if (is_object($context)) {
+            $this->context = $context;
+        } else {
+            $this->context = get_context_instance_by_id($context);
+        }
+//        echo " after parent construct, this context: ";
+//        print_object($this->context);
+
         /// ELIS files class
         $this->elis_files = repository_factory::factory('elis_files');
         $this->config = get_config('elis_files');
         $this->current_node = null;
+//         echo "\n in construct, page params: ";
+//        print_object($PAGE->url->params());
 
         // jQuery files required for file picker - just for this repository
         $PAGE->requires->js('/repository/elis_files/js/jquery-1.6.2.min.js');
         $PAGE->requires->js('/repository/elis_files/js/jquery-ui-1.8.16.custom.min.js');
         $PAGE->requires->js('/repository/elis_files/js/fileuploader.js');
         $PAGE->requires->js('/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.js', true);
-    }
-
-    public function print_login() {
-        if ($this->options['ajax']) {
-            $user_field = new stdClass();
-            $user_field->label = get_string('username', 'repository_elis_files').': ';
-            $user_field->id    = 'elis_files_username';
-            $user_field->type  = 'text';
-            $user_field->name  = 'al_username';
-
-            $passwd_field = new stdClass();
-            $passwd_field->label = get_string('password', 'repository_elis_files').': ';
-            $passwd_field->id    = 'elis_files_password';
-            $passwd_field->type  = 'password';
-            $passwd_field->name  = 'al_password';
-
-            $ret = array();
-            $ret['login'] = array($user_field, $passwd_field);
-            return $ret;
-        } else {
-            echo '<table>';
-            echo '<tr><td><label>'.get_string('username', 'repository_elis_files').'</label></td>';
-            echo '<td><input type="text" name="al_username" /></td></tr>';
-            echo '<tr><td><label>'.get_string('password', 'repository_elis_files').'</label></td>';
-            echo '<td><input type="password" name="al_password" /></td></tr>';
-            echo '</table>';
-            echo '<input type="submit" value="Enter" />';
-        }
-    }
-
-    public function logout() {
-        global $SESSION;
-        unset($SESSION->{$this->sessname});
-        return $this->print_login();
-    }
-
-    public function check_login() {
-        // TODO: for ELIS2 for now
-        return true;
-        global $SESSION;
-        return !empty($SESSION->{$this->sessname});
     }
 
     private function get_url($node) {
@@ -132,14 +101,29 @@ class repository_elis_files extends repository {
      */
     public function get_listing($encodedpath = '', $path = '') {
         global $CFG, $COURSE, $DB, $SESSION, $OUTPUT, $USER;
+
 ob_start();
 echo "encoded path: ";
 print_object($encodedpath);
+
+
         // Check for a TRUE value in the encodedpath and retrieve the location
         // If we don't have something explicitly to load and we didn't get here from the drop-down...
         if ($encodedpath === true || empty($encodedpath)) {
+
+            // Get optional course param from url to make ELIS Files page work properly
+            echo "\n this context id: ".$this->context->id;
+            list($context, $course, $cm) = get_context_info_array($this->context->id);
+            $id = is_object($course) ? $course->id : 0;
+//            $context = get_context_instance(CONTEXT_COURSE, $courseid);
+//                    echo "\n in get_listing what is PAGE: ";
+//        print_object($PAGE->url->params());
+//         Need contectid from page url
+//        $pageparams = $PAGE->url->params();
+//        $cid = isset($pageparams['course']) ? $pageparams['course']:0;
+//            $cid = $this->course;
+echo "\n empty encoded path and cid: $cid";
             // Set defaults
-            $cid = 0;
             $uid = 0;
             $oid = 0;
             $shared = (boolean)0;
@@ -151,6 +135,8 @@ print_object($encodedpath);
         } else if (!empty($encodedpath)) {
         // Decode path and retrieve parameters
             $params = unserialize(base64_decode($encodedpath));
+echo "\n NOT empty encoded path, params: ";
+print_object($params);
             if (is_array($params)) {
                 $uuid    = empty($params['path']) ? NULL : clean_param($params['path'], PARAM_PATH);
                 $shared  = empty($params['shared']) ? 0 : clean_param($params['shared'], PARAM_BOOL);
@@ -220,14 +206,16 @@ echo "\n after decoding etc, at beginning of get_listing, cid: $cid uid: $uid oi
         // Unserialized array of path/shared/oid
         $ret['thisuuid'] = $params;
         $ret['thisuuid']['encodedpath'] = $encodedpath;
-echo "\n thisuuid: ";
-print_object($params);
+//echo "\n thisuuid: ";
+//print_object($params);
         // Store the UUID value that we are currently browsing.
         $this->elis_files->set_repository_location($uuid, $cid, $uid, $shared, $oid);
-
+echo "\n checking the following uuid: ".$this->current_node->uuid;
         $children = elis_files_read_dir($this->current_node->uuid);
         $ret['list'] = array();
 //echo "\n and now, near end of get_listing, oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
+//echo "\n in get_listing have children: ";
+//print_object($children);
         foreach ($children->folders as $child) {
             if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
                 break;
@@ -254,7 +242,7 @@ print_object($params);
             if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
                 break;
             }
-
+echo "\n adding $child->title";
             $params = array('path'=>$child->uuid,
                             'shared'=>(boolean)$shared,
                             'oid'=>(int)$oid,
@@ -1014,7 +1002,8 @@ print_object($params);
         $capabilities = array('repository/elis_files:createowncontent'=> false,
                               'repository/elis_files:createsharedcontent'=> false);
         $this->elis_files->get_other_capabilities($USER, $capabilities);
-
+echo "\n in check editing permissions and have capabilities: ";
+print_object($capabilities);
         $canedit = false;
 
         if (empty($userid) && empty($shared) && empty($oid)) {
@@ -1035,7 +1024,7 @@ print_object($params);
                 }
             }
         }
-
+//echo "\n so can I edit? $canedit";
         return $canedit;
     }
 
