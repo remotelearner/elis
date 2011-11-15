@@ -75,7 +75,7 @@ class block_enrol_survey extends block_base {
             }
 
             $takepage = get_string('takepage', 'block_enrol_survey');
-            $this->content->text .= "<a href=\"{$CFG->wwwroot}/blocks/enrol_survey/survey.php?id={$this->instance->id}\">$takepage</a><br />";
+            $this->content->text .= "<a href=\"{$CFG->wwwroot}/blocks/enrol_survey/survey.php?id={$this->instance->id}&courseid={$COURSE->id}\">$takepage</a><br />";
         }
 
         return $this->content;

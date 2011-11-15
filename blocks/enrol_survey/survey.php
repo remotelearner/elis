@@ -40,6 +40,11 @@ $instanceid = required_param('id', PARAM_INT);
 $instance = $DB->get_record('block_instances', array('id' => $instanceid));
 $block = block_instance('enrol_survey', $instance);
 
+$courseid = optional_param('courseid', 1, PARAM_INT);
+if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
+    print_error('invalidcourseid');
+}
+
 //make sure we're logged in one way or another
 if (fnmatch($block->instance->pagetypepattern, 'course-view-') && !empty($COURSE->id)) {
     require_course_login($COURSE->id); // TBD
@@ -66,10 +71,12 @@ $moodle_user = get_complete_user_data('id', $USER->id);
 $elis_user = new user(cm_get_crlmuserid($USER->id));
 $elis_user->load();
 
-$survey_form = new survey_form($CFG->wwwroot .'/blocks/enrol_survey/survey.php?id='. $instanceid);
+$courseobj = new stdClass();
+$courseobj->courseid = $course->id;
+$survey_form = new survey_form($CFG->wwwroot .'/blocks/enrol_survey/survey.php?id='. $instanceid, $courseobj);
 
 if ($survey_form->is_cancelled()) {
-    redirect($CFG->wwwroot .'/course/view.php?id='. $COURSE->id);
+    redirect($CFG->wwwroot .'/course/view.php?id=' . $course->id);
 } else if ($formdata = $survey_form->get_data()) {
     $customfields = get_customfields();
     $profilefields = get_profilefields();

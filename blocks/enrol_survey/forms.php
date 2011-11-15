@@ -160,6 +160,7 @@ class survey_form extends moodleform {
         $group[] =& $mform->createElement('submit', 'save_exit', get_string('save_exit', 'block_enrol_survey'));
         $group[] =& $mform->createElement('submit', 'update', get_string('update', 'block_enrol_survey'));
         $group[] =& $mform->createElement('cancel');
+        $mform->addElement('hidden', 'courseid', $this->_customdata->courseid);
         $mform->addGroup($group, 'form_buttons', '', array('&nbsp;'), false);
     }
 }
