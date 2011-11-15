@@ -114,7 +114,7 @@ print_object($encodedpath);
             // Get optional course param from url to make ELIS Files page work properly
             echo "\n this context id: ".$this->context->id;
             list($context, $course, $cm) = get_context_info_array($this->context->id);
-            $id = is_object($course) ? $course->id : 0;
+            $cid = is_object($course) ? $course->id : 0;
 //            $context = get_context_instance(CONTEXT_COURSE, $courseid);
 //                    echo "\n in get_listing what is PAGE: ";
 //        print_object($PAGE->url->params());
