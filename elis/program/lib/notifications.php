@@ -628,13 +628,9 @@ function pm_notify_role_assign_handler($eventdata){
         }
     }
 
-    $alreaysent = array();
-    foreach ($users as $key => $user) {
-        if (!in_array($key, $alreaysent)) {
-            //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(eventdata); Sending notification to user[{$key}]: {$user->email}");
-            $message->send_notification($text, $user, $enroluser);
-            $alreadysent[] = $key;
-        }
+    foreach ($users as $user) {
+        //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(eventdata); Sending notification to user[{$user->id}]: {$user->email}");
+        $message->send_notification($text, $user, $enroluser);
     }
 
     /// If you don't return true, the message queue will clog and no more will be sent.
