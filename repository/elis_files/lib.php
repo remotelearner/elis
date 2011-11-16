@@ -122,7 +122,7 @@ print_object($encodedpath);
 //        $pageparams = $PAGE->url->params();
 //        $cid = isset($pageparams['course']) ? $pageparams['course']:0;
 //            $cid = $this->course;
-echo "\n empty encoded path and cid: $cid";
+//echo "\n empty encoded path and cid: $cid";
             // Set defaults
             $uid = 0;
             $oid = 0;
@@ -135,8 +135,8 @@ echo "\n empty encoded path and cid: $cid";
         } else if (!empty($encodedpath)) {
         // Decode path and retrieve parameters
             $params = unserialize(base64_decode($encodedpath));
-echo "\n NOT empty encoded path, params: ";
-print_object($params);
+//echo "\n NOT empty encoded path, params: ";
+//print_object($params);
             if (is_array($params)) {
                 $uuid    = empty($params['path']) ? NULL : clean_param($params['path'], PARAM_PATH);
                 $shared  = empty($params['shared']) ? 0 : clean_param($params['shared'], PARAM_BOOL);
@@ -155,7 +155,7 @@ print_object($params);
                 }
             }
         }
-echo "\n after decoding etc, at beginning of get_listing, cid: $cid uid: $uid oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
+//echo "\n after decoding etc, at beginning of get_listing, cid: $cid uid: $uid oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
         $ret = array();
         // Return an array of optional columns from file list to include in the details view
         // Icon and filename are always displayed
@@ -210,7 +210,7 @@ echo "\n after decoding etc, at beginning of get_listing, cid: $cid uid: $uid oi
 //print_object($params);
         // Store the UUID value that we are currently browsing.
         $this->elis_files->set_repository_location($uuid, $cid, $uid, $shared, $oid);
-echo "\n checking the following uuid: ".$this->current_node->uuid;
+//echo "\n checking the following uuid: ".$this->current_node->uuid;
         $children = elis_files_read_dir($this->current_node->uuid);
         $ret['list'] = array();
 //echo "\n and now, near end of get_listing, oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
@@ -242,7 +242,7 @@ echo "\n checking the following uuid: ".$this->current_node->uuid;
             if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
                 break;
             }
-echo "\n adding $child->title";
+
             $params = array('path'=>$child->uuid,
                             'shared'=>(boolean)$shared,
                             'oid'=>(int)$oid,
@@ -1002,8 +1002,6 @@ echo "\n adding $child->title";
         $capabilities = array('repository/elis_files:createowncontent'=> false,
                               'repository/elis_files:createsharedcontent'=> false);
         $this->elis_files->get_other_capabilities($USER, $capabilities);
-echo "\n in check editing permissions and have capabilities: ";
-print_object($capabilities);
         $canedit = false;
 
         if (empty($userid) && empty($shared) && empty($oid)) {

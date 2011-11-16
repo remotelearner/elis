@@ -3292,8 +3292,8 @@ class ELIS_files {
         $capabilities = array('repository/elis_files:viewowncontent'=> false,
                               'repository/elis_files:viewsharedcontent'=> false);
         $this->get_other_capabilities($USER, $capabilities);
-echo "\n in get_repository_location and capabilities: ";
-print_object($capabilities);
+//echo "\n in get_repository_location and capabilities: ";
+//print_object($capabilities);
 //echo "\n location: ";
 //print_object($location);
         // If the previous value comes from within a cluster that is not the current cluster, return the root
@@ -3392,15 +3392,13 @@ print_object($capabilities);
     function get_default_browsing_location(&$cid, &$uid, &$shared) {
         global $CFG, $COURSE, $USER;
 
-
-echo "\n in get_default_browsing_location and cid: $cid and uid: $uid";
         // If the default location is not set at all, just return nothing now.
         if (!isset($this->config->default_browse)) {
             return '';
         // Or, handle determining if the user can actually access the chosen default location.
         // IGNORE default browsing location for now
         } elseif (isset($this->config->default_browse)) {
-echo "\n about to get context...";
+
             if (empty($cid)) {
                 $cid = $COURSE->id;
             }
@@ -3408,6 +3406,19 @@ echo "\n about to get context...";
                 $context = get_context_instance(CONTEXT_SYSTEM);
             } else {
                 $context = get_context_instance(CONTEXT_COURSE, $cid);
+            }
+
+            // Check referer - if on ELIS Files page - default to course page if we have access to it
+            $referer = get_referer(false);
+
+            if ($referer !== false) {
+                $fromelisfilescoursepage  = stristr($referer, $CFG->wwwroot . '/repository/filemanager.php') !== false;
+                if ($fromelisfilescoursepage && $cid != SITEID && (has_capability('repository/elis_files:viewcoursecontent', $context) ||
+                    has_capability('repository/elis_files:createcoursecontent', $context))) {
+                        $shared = 0;
+                        $uid    = 0;
+                        return $this->get_course_store($cid);
+                }
             }
 
             // If a user does not have permission to access the default location, fall through to the next
