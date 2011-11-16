@@ -42,7 +42,7 @@ require_once($CFG->dirroot.'/group/lib.php');
  *
  */
 function userset_groups_userset_assigned_handler($cluster_assignment) {
-    $attributes = array('usr.id' =>  $cluster_assignment->userid,
+    $attributes = array('mdlusr.cuserid' =>  $cluster_assignment->userid,
                         'clst.id' => $cluster_assignment->clusterid);
 
     $result = userset_groups_update_groups($attributes);
@@ -141,7 +141,7 @@ function userset_groups_pm_userset_created_handler($cluster) {
 function userset_groups_role_assigned_handler($role_assignment) {
 
     //update non-site courses for that user
-    $result = userset_groups_update_groups(array('mdlusr.id' => $role_assignment->userid));
+    $result = userset_groups_update_groups(array('mdlusr.muserid' => $role_assignment->userid));
     //update site course for that user
     $result = $result && userset_groups_update_site_course(0, true, $role_assignment->userid);
 
@@ -188,6 +188,7 @@ function userset_groups_pm_userset_groupings_enabled() {
 function userset_groups_update_site_course($clusterid = 0, $add_members = false, $userid = 0) {
     global $CFG, $DB;
 
+    require_once elispm::lib('data/usermoodle.class.php');
     $enabled = get_config('pmplugins_userset_groups', 'site_course_userset_groups');
 
     //make sure this functionality is even enabled
@@ -202,7 +203,7 @@ function userset_groups_update_site_course($clusterid = 0, $add_members = false,
         }
 
         if(!empty($userid)) {
-            $select_parts[] = "(mdluser.id = :userid)";
+            $select_parts[] = "(mdluser.muserid = :userid)";
             $params['userid'] = $userid;
         }
 
@@ -211,20 +212,20 @@ function userset_groups_update_site_course($clusterid = 0, $add_members = false,
         $siteid = SITEID;
 
         //query to get clusters, groups, and possibly users
-        $sql = "SELECT DISTINCT grp.id AS groupid, clst.id AS clusterid, clst.name AS clustername, mdluser.id AS userid FROM
+        $sql = "SELECT DISTINCT grp.id AS groupid, clst.id AS clusterid, clst.name AS clustername, mdluser.muserid AS userid FROM
                 {".userset::TABLE."} clst
                 LEFT JOIN {groups} grp
                 ON clst.name = grp.name
                 AND grp.courseid = {$siteid}
                 LEFT JOIN
                     ({".clusterassignment::TABLE."} usrclst
-                     JOIN {".user::TABLE."} crlmuser
-                     ON usrclst.userid = crlmuser.id
-                     JOIN {user} mdluser
-                     ON crlmuser.idnumber = mdluser.idnumber)
+                     JOIN {". usermoodle::TABLE ."} mdluser
+                     ON usrclst.userid = mdluser.cuserid)
                 ON clst.id = usrclst.clusterid
                 $select
                 ORDER BY clst.id";
+
+        //error_log("userset_groups_update_site_course({$clusterid}, {$add_members}, {$userid})");
 
         if($recordset = $DB->get_recordset_sql($sql, $params)) {
 
@@ -406,6 +407,7 @@ function userset_groups_update_user_site_course($userid, $clusterid) {
 function userset_groups_update_groups($attributes = array()) {
     global $DB;
 
+    require_once elispm::lib('data/usermoodle.class.php');
     $enabled = get_config('pmplugins_userset_groups', 'userset_groups');
 
     //nothing to do if global setting is off
@@ -439,7 +441,7 @@ function userset_groups_update_groups($attributes = array()) {
 
             $sql = "SELECT DISTINCT crs.id AS courseid,
                                     clst.name AS clustername,
-                                    mdlusr.id AS userid,
+                                    mdlusr.muserid AS userid,
                                     clst.id AS clusterid,
                                     trk.id AS trackid
                     FROM {".pmclass::TABLE."} cls
@@ -461,13 +463,12 @@ function userset_groups_update_groups($attributes = array()) {
                     ON clsttrk.clusterid = clst.id
                     JOIN {".clusterassignment::TABLE."} usrclst
                     ON clst.id = usrclst.clusterid
-                    JOIN {".user::TABLE."} usr
-                    ON usrclst.userid = usr.id
-                    JOIN {user} mdlusr
-                    ON usr.idnumber = mdlusr.idnumber
+                    JOIN {". usermoodle::TABLE ."} mdlusr
+                    ON usrclst.userid = mdlusr.cuserid
                     {$condition}
                     ORDER BY clst.id";
 
+            //error_log("userset_groups_update_groups()");
             $records = $DB->get_recordset_sql($sql, $params);
 
             if($records->valid()) {
