@@ -27,6 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
+global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elispm::lib('contexts.php');
 
