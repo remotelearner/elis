@@ -260,8 +260,13 @@ class clusterassignment extends elis_data_object {
                         $wait_list = new waitlist($wait_record);
                         $wait_list->save();
                     } catch (Exception $e) {
-                        echo cm_error(get_string('record_not_created_reason',
-                                                 'elis_program', $e));
+                        if (in_cron()) {
+                            mtrace(get_string('record_not_created_reason',
+                                                     'elis_program', $e));
+                        } else {
+                            echo cm_error(get_string('record_not_created_reason',
+                                                     'elis_program', $e));
+                        }
                     }
                 }
             }

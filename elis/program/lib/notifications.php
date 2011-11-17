@@ -190,7 +190,11 @@ class notification extends message {
         if (!empty($userto)) {
             $this->userto = $userto;
         } else if (empty($this->userto)) {
-            print_error('message_nodestinationuser', 'elis_program');
+            if (in_cron()) {
+                mtrace(get_string('message_nodestinationuser', 'elis_program'));
+            } else {
+                print_error('message_nodestinationuser', 'elis_program');
+            }
             return false;
         }
 
@@ -211,19 +215,31 @@ class notification extends message {
             $topmuserid = $this->userto->id;
 //            if (!($this->userto = cm_get_moodleuser($this->userto->id))) {
             if (!($this->userto = $this->userto->get_moodleuser())) {
-                debugging(get_string('nomoodleuser', 'elis_program'));
+                if (in_cron()) {
+                    mtrace(get_string('nomoodleuser', 'elis_program'));
+                } else {
+                    debugging(get_string('nomoodleuser', 'elis_program'));
+                }
             }
         }
         if (empty($this->userto)) {
             // ELIS-3632: prevent DB errors downstream
-            mtrace(get_string('message_nodestinationuser', 'elis_program'));
+            if (in_cron()) {
+                mtrace(get_string('message_nodestinationuser', 'elis_program'));
+            } else {
+                print_error('message_nodestinationuser', 'elis_program');
+            }
             return false;
         }
 
         if (get_class($this->userfrom) == 'user') {
 //            if (!($this->userfrom = cm_get_moodleuser($this->userfrom->id))) {
             if (!($this->userfrom = $this->userfrom->get_moodleuser())) {
-                debugging(get_string('nomoodleuser', 'elis_program'));
+                if (in_cron()) {
+                    mtrace(get_string('nomoodleuser', 'elis_program'));
+                } else {
+                    debugging(get_string('nomoodleuser', 'elis_program'));
+                }
             }
         }
         if (empty($this->userfrom)) {
@@ -470,7 +486,11 @@ function pm_assign_student_from_mdl($eventdata) {
     /// We get all context assigns, so check that this is a class. If not, we're done.
     if (!($context = get_context_instance_by_id($eventdata->contextid)) &&
         !($context = get_context_instance($eventdata->contextid, $eventdata->itemid))) {
-        print_error('invalidcontext');
+        if (in_cron()) {
+            mtrace(get_string('invalidcontext'));
+        } else {
+            print_error('invalidcontext');
+        }
         return true;
     } else if ($context->contextlevel != CONTEXT_COURSE) {
         return true;
@@ -562,7 +582,11 @@ function pm_notify_role_assign_handler($eventdata){
     if (!($context = get_context_instance_by_id($eventdata->contextid)) &&
         !($context = get_context_instance($eventdata->contextid, $eventdata->itemid))
     ) {
-        mtrace(getstring('invalidcontext'));
+       if (in_cron()) {
+           mtrace(getstring('invalidcontext'));
+       } else {
+           print_error('invalidcontext');
+       }
         return true;
     } else if ($context->contextlevel == CONTEXT_SYSTEM) {
         // TBD: ^above was != CONTEXT_COURSE
@@ -571,7 +595,11 @@ function pm_notify_role_assign_handler($eventdata){
 
     /// Make sure this is a valid user.
     if (!($enroluser = $DB->get_record('user', array('id'=> $eventdata->userid)))) {
-        debugging(get_string('nomoodleuser', 'elis_program'));
+        if (in_cron()) {
+           mtrace(get_string('nomoodleuser', 'elis_program'));
+        } else {
+           debugging(get_string('nomoodleuser', 'elis_program'));
+        }
         return true;
     }
 
@@ -579,7 +607,11 @@ function pm_notify_role_assign_handler($eventdata){
     /// Get the course record from the context id.
     if ($context->contextlevel == CONTEXT_COURSE &&
         !($course = $DB->get_record('course', array('id'=> $context->instanceid)))) {
-        mtrace(getstring('invalidcourse'));
+        if (in_cron()) {
+           mtrace(getstring('invalidcourse'));
+        } else {
+           print_error('invalidcourse');
+        }
         return true;
     } else {
         if (empty($course) && $eventdata->contextid != context_level_base::get_custom_context_level('class', 'elis_program')) { // TBD
@@ -726,13 +758,21 @@ function pm_notify_track_assign_handler($eventdata){
     // Due to lazy loading, we need to pre-load this object
     $enroluser->load();
     if (empty($enroluser->id)) {
-        mtrace(getstring('nouser','elis_program'));
+        if (in_cron()) {
+            mtrace(getstring('nouser','elis_program'));
+        } else {
+            print_error('nouser','elis_program');
+        }
         return true;
     }
 
     /// Get the track record from the track id.
     if (!($track = $DB->get_record('crlm_track', array('id'=> $eventdata->trackid)))) {
-        mtrace(get_string('notrack', 'elis_program'));
+        if (in_cron()) {
+            mtrace(get_string('notrack', 'elis_program'));
+        } else {
+            print_error('notrack', 'elis_program');
+        }
         return true;
     }
 

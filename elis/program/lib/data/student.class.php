@@ -1865,7 +1865,11 @@ class student extends elis_data_object {
 
         if (!empty($student->moodlecourseid)) {
             if (!($context = get_context_instance(CONTEXT_COURSE, $student->moodlecourseid))) {
-                debugging(get_string('invalidcontext'));
+                if (in_cron()) {
+                    mtrace(get_string('invalidcontext'));
+                } else {
+                    debugging(get_string('invalidcontext'));
+                }
                 return true;
             }
         } else {
@@ -1947,7 +1951,11 @@ class student extends elis_data_object {
 
         if (!empty($student->moodlecourseid)) {
             if (!($context = get_context_instance(CONTEXT_COURSE, $student->moodlecourseid))) {
-                debugging(get_string('invalidcontext'));
+                if (in_cron()) {
+                    mtrace(get_string('invalidcontext'));
+                } else {
+                    debugging(get_string('invalidcontext'));
+                }
                 return true;
             }
         } else {
