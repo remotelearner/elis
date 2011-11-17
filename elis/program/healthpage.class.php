@@ -49,7 +49,10 @@ class healthpage extends pm_page {
         global $CFG, $PAGE;
 
         $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
-        $this->navbar->add(get_string('healthcenter'), $this->url);
+        $baseurl = $this->url;
+        $baseurl->remove_all_params();
+        $this->navbar->add(get_string('healthcenter'),
+                           $baseurl->out(true, array('s' => $this->pagename)));
     }
 
     /**
