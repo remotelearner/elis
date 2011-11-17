@@ -552,7 +552,7 @@ class course extends data_object_with_custom_fields {
         // Due to lazy loading, we need to pre-load this object
         $enroluser->load();
         if (empty($enroluser->id)) {
-            print_error('nouser', 'elis_program');
+            mtrace(get_string('nouser', 'elis_program'));
             return true;
         }
 

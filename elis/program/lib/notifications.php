@@ -216,7 +216,7 @@ class notification extends message {
         }
         if (empty($this->userto)) {
             // ELIS-3632: prevent DB errors downstream
-            print_error('message_nodestinationuser', 'elis_program');
+            mtrace(get_string('message_nodestinationuser', 'elis_program'));
             return false;
         }
 
@@ -562,7 +562,7 @@ function pm_notify_role_assign_handler($eventdata){
     if (!($context = get_context_instance_by_id($eventdata->contextid)) &&
         !($context = get_context_instance($eventdata->contextid, $eventdata->itemid))
     ) {
-        print_error('invalidcontext');
+        mtrace(getstring('invalidcontext'));
         return true;
     } else if ($context->contextlevel == CONTEXT_SYSTEM) {
         // TBD: ^above was != CONTEXT_COURSE
@@ -579,7 +579,7 @@ function pm_notify_role_assign_handler($eventdata){
     /// Get the course record from the context id.
     if ($context->contextlevel == CONTEXT_COURSE &&
         !($course = $DB->get_record('course', array('id'=> $context->instanceid)))) {
-        print_error('invalidcourse');
+        mtrace(getstring('invalidcourse'));
         return true;
     } else {
         if (empty($course) && $eventdata->contextid != context_level_base::get_custom_context_level('class', 'elis_program')) { // TBD
@@ -726,13 +726,13 @@ function pm_notify_track_assign_handler($eventdata){
     // Due to lazy loading, we need to pre-load this object
     $enroluser->load();
     if (empty($enroluser->id)) {
-        print_error('nouser', 'elis_program');
+        mtrace(getstring('nouser','elis_program'));
         return true;
     }
 
     /// Get the track record from the track id.
     if (!($track = $DB->get_record('crlm_track', array('id'=> $eventdata->trackid)))) {
-        print_error('notrack', 'elis_program');
+        mtrace(get_string('notrack', 'elis_program'));
         return true;
     }
 
