@@ -374,8 +374,22 @@ class health_user_sync extends crlm_health_check_base {
         return get_string('health_user_syncdesc', 'elis_program', $this->count);
     }
     function solution() {
-        global $CFG;
-        $msg = get_string('health_user_syncsoln', 'elis_program', $CFG->wwwroot);
+        global $CFG, $DB;
+
+        $dupids = $DB->count_records_sql('
+SELECT COUNT(*) FROM {user} usr
+ WHERE idnumber IN (
+                    SELECT idnumber FROM {user}
+                     WHERE username != \'guest\' AND deleted = 0
+                       AND confirmed = 1 AND mnethostid = ? AND id != usr.id)',
+                                         array($CFG->mnet_localhost_id));
+        $msg = '';
+        if ($this->count > $dupids) {
+            $msg = get_string('health_user_syncsoln', 'elis_program', $CFG->wwwroot);
+        }
+        if ($dupids > 0) {
+            $msg .= get_string('health_user_dupidsoln', 'elis_program');
+        }
         return $msg;
     }
 }

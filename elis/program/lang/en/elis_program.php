@@ -453,6 +453,7 @@ $string['health_trackcheckdesc'] = 'Found {$a} class instances that are attached
 $string['health_trackcheckdescnone'] = 'There were no issues found.';
 $string['health_trackchecksoln'] = 'Need to remove all class instances in tracks that do not have an associated course descriptions in its associated program by running the script linked below.<br/><br/>' .
                '<a href="{$a}/elis/program/scripts/fix_track_classes.php">Fix this now</a>';
+$string['health_user_dupidsoln'] = '<p>The Moodle user table contains users with duplicate and/or empty idnumbers. Please open a support ticket to have these fixed.</p>';
 $string['health_user_sync'] = 'User Records Mismatch - Synchronize Users';
 $string['health_user_syncdesc'] = 'There are {$a} extra user records for Moodle which don\'t exist for ELIS.';
 $string['health_user_syncsoln'] = 'Users need to be synchronized by running the script which is linked below.<br/><br/>
