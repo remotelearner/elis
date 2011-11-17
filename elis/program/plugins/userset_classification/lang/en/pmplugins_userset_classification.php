@@ -5,7 +5,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'User Set Classification';
 $string['add_cluster_classification'] = 'Add User Set classification';
 $string['alfresco_shared_folder'] = 'Automatically create an Alfresco shared organization folder';
-$string['autoenrol_curricula'] = 'Autoenrol users in program';
+$string['autoenrol_curricula'] = 'Autoenrol users in programs';
 $string['autoenrol_groups'] = 'Autoenrol users in groups';
 $string['autoenrol_groupings'] = 'Autoenrol users in groupings';
 $string['autoenrol_tracks'] = 'Autoenrol users in tracks';
