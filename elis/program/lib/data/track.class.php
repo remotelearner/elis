@@ -1065,12 +1065,12 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
         $where .= (!empty($where) ? ' AND ' : '') . $NAMESEARCH_LIKE;
-        $params['serch_namesearch'] = '%$namesearch%';
+        $params['search_namesearch'] = '%'.$namesearch.'%';
     }
 
     if ($alpha) {
         $where .= (!empty($where) ? ' AND ' : '') . $ALPHA_LIKE;
-        $params['search_alpha'] = '$alpha%';
+        $params['search_alpha'] = $alpha.'%';
     }
 
     if (!empty($extrafilters['contexts'])) {
