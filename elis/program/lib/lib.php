@@ -898,6 +898,15 @@ function pm_get_crlmuserid($userid) {
 }
 
 /**
+ * Function to determine if running in cron
+ *
+ */
+function in_cron() {
+    global $SCRIPT;
+    return(strpos(strrev($SCRIPT), 'php.norc') === 0);
+}
+
+/**
  * Call all cron jobs needed for the ELIS system.
  *
  */
