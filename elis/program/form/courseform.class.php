@@ -245,7 +245,7 @@ class completionform extends moodleform {
         $mform->addHelpButton('idnumber', 'completionform:course_idnumber', 'elis_program');
 
         $mform->addElement('text', 'name', get_string('course_name', 'elis_program'));
-        $mform->setType('name', PARAM_TEXT);
+        $mform->setType('name', PARAM_CLEAN);
         $mform->addRule('name', null, 'maxlength', 255, 'client');
         $mform->addHelpButton('name', 'completionform:course_name', 'elis_program');
 
