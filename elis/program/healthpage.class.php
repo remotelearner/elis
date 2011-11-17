@@ -283,14 +283,18 @@ class health_stale_cm_class_moodle extends crlm_health_check_base {
         return get_string('health_stale', 'elis_program');
     }
     function description() {
-        return get_string('health_staledesc', 'elis_program', $this->count);
+        global $CFG;
+        return get_string('health_staledesc', 'elis_program',
+                   array('count' => $this->count,
+                         'table' => $CFG->prefix . classmoodlecourse::TABLE));
     }
     function solution() {
         global $CFG;
 
         $msg = get_string('health_stalesoln', 'elis_program').
-                " DELETE FROM {". classmoodlecourse::TABLE ."} WHERE classid NOT IN (
-                SELECT id FROM {". pmclass::TABLE ."} )";
+                "<br/> USE {$CFG->dbname}; <br/>".
+                " DELETE FROM {$CFG->prefix}". classmoodlecourse::TABLE ." WHERE classid NOT IN (
+                SELECT id FROM {$CFG->prefix}". pmclass::TABLE ." );";
         return $msg;
     }
 }
@@ -320,14 +324,18 @@ class health_curriculum_course extends crlm_health_check_base {
         return get_string('health_curriculum', 'elis_program');
     }
     function description() {
-        return get_string('health_curriculumdesc', 'elis_program', array('count'=>$this->count, 'table'=>curriculumcourse::TABLE));
+        global $CFG;
+        return get_string('health_curriculumdesc', 'elis_program',
+                   array('count' => $this->count,
+                         'table' => $CFG->prefix . curriculumcourse::TABLE));
     }
     function solution() {
         global $CFG;
 
         $msg = get_string('health_curriculumsoln', 'elis_program').
-                "DELETE FROM {". curriculumcourse::TABLE ."} WHERE courseid NOT IN (
-                 SELECT id FROM {". course::TABLE ."} )";
+                "<br/> USE {$CFG->dbname}; <br/>".
+                "DELETE FROM {$CFG->prefix}". curriculumcourse::TABLE ." WHERE courseid NOT IN (
+                 SELECT id FROM {$CFG->prefix}". course::TABLE ." );";
         return $msg;
 
     }
