@@ -191,7 +191,7 @@ function clustertree_loadNodeData(node, fnLoadComplete, uniqueid, tree_view, ins
             clustertree_remove_selected_unexpanded(instanceid, node, uniqueid);
 
             //remove from node from the listing of selected by unexpanded nodes, if appropriate
-            clustertree_remove_from_list(instanceid, uniqueid + '_crlunexpanded', node.contentElId);
+            clustertree_remove_from_list(instanceid, uniqueid + '_clrunexpanded', node.contentElId);
 
             //indicate that loading is complete
             fnLoadComplete();

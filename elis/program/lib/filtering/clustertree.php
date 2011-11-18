@@ -304,12 +304,12 @@ class generalized_filter_clustertree extends generalized_filter_type {
         $clusterid_condition = $this->get_list_condition('c.id', $data['clusterids']);
 
         //full list of hierarchically selected entries
-        $full_hierarchical_condition = $this->get_list_condition('grandparent_c.id', $data['clrunexpanded_ids']);
+        $full_hierarchical_condition = $this->get_list_condition('grandparent_context.instanceid', $data['clrunexpanded_ids']);
 
         //full unexpanded list
         if (count($data['unexpanded_ids']) > 0) {
             $list = implode(',', $data['unexpanded_ids']);
-            $full_unexpanded_condition = "parent_c.id IN ({$list})";
+            $full_unexpanded_condition = "parent_context.instanceid IN ({$list})";
         }  else {
             $full_unexpanded_condition = 'FALSE';
         }
@@ -317,7 +317,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
         //full unexpanded and unselected list
         if (count($data['clrunexpanded_ids']) > 0) {
             $list = implode(',', $data['clrunexpanded_ids']);
-            $full_clrunexpanded_condition = "eclipse_c.id IN ({$list})";
+            $full_clrunexpanded_condition = "eclipse_context.instanceid IN ({$list})";
         } else {
             $full_clrunexpanded_condition = 'FALSE';
         }
@@ -356,7 +356,13 @@ class generalized_filter_clustertree extends generalized_filter_type {
         $params[$param_ccl4] = $cluster_context_level;
         $counter++;
 
-        //this query gives up exactly the clusters we want
+        //this query gives us exactly the user sets we want
+
+        //it essentially consists of two parts
+        //part 1: include all the user sets directly selected that have not been
+        //cleared out at a parent context
+        //part 2: include all user sets selected recursively through an unexpanded
+        //parent that have not been cleared out at a parent context
         $sql = 'SELECT c.id FROM {'. userset::TABLE ."} c
                 JOIN {context} context
                   ON c.id = context.instanceid
@@ -364,23 +370,17 @@ class generalized_filter_clustertree extends generalized_filter_type {
                 LEFT JOIN {context} parent_context
                   ON {$cpath_like}
                   AND parent_context.contextlevel = :{$param_ccl2}
-                LEFT JOIN {". userset::TABLE ."} parent_c
-                  ON parent_context.instanceid = parent_c.id
                   AND {$full_unexpanded_condition}
                 LEFT JOIN {context} grandparent_context
                   ON {$pcpath_like}
                   AND grandparent_context.contextlevel = :{$param_ccl3}
-                LEFT JOIN {". userset::TABLE ."} grandparent_c
-                  ON grandparent_context.instanceid = grandparent_c.id
                   AND {$full_hierarchical_condition}
                 LEFT JOIN {context} eclipse_context
                   ON {$cpath2_like}
                   AND eclipse_context.contextlevel = :{$param_ccl4}
-                LEFT JOIN {". userset::TABLE ."} eclipse_c
-                  ON eclipse_context.instanceid = eclipse_c.id
                   AND {$full_clrunexpanded_condition}
-                WHERE ({$clusterid_condition} AND eclipse_c.id IS NULL)
-                  OR  (parent_c.id IS NOT NULL AND grandparent_c.id IS NULL)
+                WHERE ({$clusterid_condition} AND eclipse_context.id IS NULL)
+                  OR  (parent_context.instanceid IS NOT NULL AND grandparent_context.id IS NULL)
                 ";
 
         return array("{$full_fieldname} IN ({$sql})", $params);
