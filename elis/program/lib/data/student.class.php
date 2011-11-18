@@ -2105,9 +2105,19 @@ class student_grade extends elis_data_object {
 
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
-//  STANDARD FUNCTIONS:                                                //
+//  STANDARD FUNCTIONS:                                            //
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
+
+    function save() {
+        // ELIS-3722 -- We need to prevent duplicate records when adding new student LO grade records
+        if (!empty($this->_dbfield_id) || ($this->_dbfield_id == parent::$_unset && !$this->duplicate_check())) {
+            parent::save();
+        } else {
+            //debugging('student_grade::save() - LO grade already saved!', DEBUG_DEVELOPER);
+        }
+
+    }
 
     public static function delete_for_class($id) {
         global $DB;
@@ -2248,7 +2258,6 @@ class student_grade extends elis_data_object {
      * @param object $record The record we want to insert.
      */
     function duplicate_check($record=null) {
-
         if(empty($record)) {
             $record = $this;
         }
