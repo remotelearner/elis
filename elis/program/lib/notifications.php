@@ -88,7 +88,7 @@ class message {
         $this->userto = '';
         $this->subject = '';
         $this->fullmessage = '';
-        $this->fullmessageformat = FORMAT_PLAIN;
+        $this->fullmessageformat = FORMAT_HTML;
         $this->fullmessagehtml = '';
         $this->smallmessage = '';
     }
@@ -387,7 +387,7 @@ function pm_notify_send_handler($eventdata){
     }
 
     //store the message unfiltered. Clean up on output.
-    $eventdata->smallmessage = $message;
+    $eventdata->smallmessage = nl2br($message);
 
     //add the email tag line
     $s = new stdClass();
