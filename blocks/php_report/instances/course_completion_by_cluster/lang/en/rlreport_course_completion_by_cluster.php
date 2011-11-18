@@ -1,19 +1,18 @@
 <?php
 
 $string['cluster_leaders'] = 'User Set Leader(s):';
-$string['column_class'] = 'Class';
+$string['column_class'] = 'Class Instance';
 $string['column_cluster'] = 'User Set';
 $string['column_completed'] = 'Completed';
-$string['column_course'] = 'Course';
-$string['column_curriculum'] = 'Curriculum';
+$string['column_course'] = 'Course Description';
 $string['column_curriculum_completed'] = 'Completed';
 $string['column_firstname'] = 'Firstname';
 $string['column_grade'] = 'Current Grade';
 $string['column_idnumber'] = 'User ID';
 $string['column_lastname'] = 'Lastname';
-$string['column_numcomplete'] = 'Completion Elements Completed';
+$string['column_numcomplete'] = 'Learning Objectives Completed';
 $string['column_option_completion'] = 'Completion';
-$string['column_option_curriculum'] = 'Curriculum';
+$string['column_option_curriculum'] = 'Program';
 $string['column_option_status'] = 'Status';
 $string['column_required'] = 'Required';
 $string['column_user_name'] = 'User Name';
@@ -49,7 +48,7 @@ $string['formatted_grade_csv'] = '{$a}';
 
 $string['grouping_cluster'] = 'User Set: ';
 $string['grouping_completed'] = 'Completed';
-$string['grouping_curriculum'] = 'Curriculum: ';
+$string['grouping_curriculum'] = 'Program: ';
 $string['grouping_not_completed'] = 'Not Completed';
 $string['grouping_userid'] = 'User ID';
 $string['grouping_username'] = 'User Name';
@@ -58,7 +57,7 @@ $string['header_cluster'] = 'Organization/User Set';
 
 $string['na'] = 'N/A';
 $string['no'] = 'No';
-$string['non_curriculum_courses'] = 'Non-Curriculum Courses';
+$string['non_curriculum_courses'] = 'Non-Program Course Descriptions';
 $string['numcomplete_tally'] = '{$a->numcomplete} / {$a->numtotal}';
 
 $string['passed'] = 'Passed';
@@ -68,8 +67,8 @@ $string['pluginname'] = 'Course Completion By User Set Report';
 $string['required_no'] = 'No';
 $string['required_yes'] = 'Yes';
 
-$string['show_completed_courses'] = 'Show completed courses';
-$string['show_incomplete_courses'] = 'Show incomplete courses';
+$string['show_completed_courses'] = 'Show completed course descriptions';
+$string['show_incomplete_courses'] = 'Show incomplete course descriptions';
 $string['stustatus_notcomplete'] = 'Not Completed';
 $string['stustatus_notenrolled'] = 'Not Enrolled';
 $string['stustatus_passed'] = 'Passed - {$a}';
