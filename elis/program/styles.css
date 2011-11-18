@@ -67,6 +67,25 @@ dd.solution li {
     margin-left: 2.5%;
 }
 
+/* Clustertree in filter area IE7 fix*/
+.phpreport_block #php_report_body_course_completion_by_cluster .ygtvfocus {
+    background-color: transparent;
+    border: none;
+}
+.phpreport_block #php_report_body_course_completion_by_cluster .ygtvfocus .ygtvlabel, .ygtvfocus .ygtvlabel:link, .ygtvfocus .ygtvlabel:visited, .ygtvfocus .ygtvlabel:hover {
+    background-color: transparent;
+}
+.phpreport_block #php_report_body_course_completion_by_cluster .ygtv-highlight .ygtv-highlight0 .ygtvfocus .ygtvlabel,
+.phpreport_block #php_report_body_course_completion_by_cluster .ygtv-highlight .ygtv-highlight1 .ygtvfocus .ygtvlabel,
+.phpreport_block #php_report_body_course_completion_by_cluster .ygtv-highlight .ygtv-highlight2 .ygtvfocus .ygtvlabel {
+    background-color: transparent;
+}
+.phpreport_block #php_report_body_course_completion_by_cluster .ygtv-checkbox .ygtv-highlight0 .ygtvfocus.ygtvcontent,
+.phpreport_block #php_report_body_course_completion_by_cluster .ygtv-checkbox .ygtv-highlight1 .ygtvfocus.ygtvcontent ,
+.phpreport_block #php_report_body_course_completion_by_cluster .ygtv-checkbox .ygtv-highlight2 .ygtvfocus.ygtvcontent  {
+    background-color: transparent;
+}
+
 /* Make sure assigned / unassigned tabs are flush with the left of the page in IE7 */
 .elis_page .tabrow1 {
     left: 0px;
