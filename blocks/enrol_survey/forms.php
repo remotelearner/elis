@@ -31,14 +31,16 @@ require_once($CFG->dirroot .'/blocks/enrol_survey/lib.php');
 
 class edit_survey_form {
     private $action_url;
+    private $courseobj;
 
     /**
      * set the form's action url on creation
      * 
      * @param string $url the form's action url
      */
-    public function __construct($url) {
+    public function __construct($url, $courseobj) {
         $this->action_url = $url;
+        $this->courseobj = $courseobj;
     }
 
     /**
@@ -99,6 +101,8 @@ class edit_survey_form {
         print '<div style="margin-top:10px">';
         print '<input type="submit" name="update" value="' . get_string('update', 'block_enrol_survey') . '" />';
         print '<input type="submit" name="exit" value="' . get_string('exit', 'block_enrol_survey') . '" />';
+        print '<input type="hidden" name="courseid" value="' . $this->courseobj->courseid . '" />';
+        print '<input type="hidden" name="mymoodle" value="' . $this->courseobj->mymoodle . '" />';
         print '</div>';
 
         print '</fieldset>';
@@ -161,6 +165,7 @@ class survey_form extends moodleform {
         $group[] =& $mform->createElement('submit', 'update', get_string('update', 'block_enrol_survey'));
         $group[] =& $mform->createElement('cancel');
         $mform->addElement('hidden', 'courseid', $this->_customdata->courseid);
+        $mform->addElement('hidden', 'mymoodle', $this->_customdata->mymoodle);
         $mform->addGroup($group, 'form_buttons', '', array('&nbsp;'), false);
     }
 }

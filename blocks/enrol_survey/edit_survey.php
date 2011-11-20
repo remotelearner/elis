@@ -29,7 +29,13 @@ require_once($CFG->dirroot .'/blocks/enrol_survey/forms.php');
 require_once($CFG->dirroot .'/blocks/enrol_survey/lib.php');
 
 global $COURSE, $DB, $ME, $OUTPUT, $PAGE, $block;
-    
+
+$mymoodle = optional_param('mymoodle', 0, PARAM_INT);
+$courseid = optional_param('courseid', 1, PARAM_INT);
+if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
+  print_error('invalidcourseid');
+}
+
 $instanceid        = required_param('id', PARAM_INT);
 
 $add_profilefield  = optional_param('add_profilefield', '', PARAM_CLEAN);
@@ -96,12 +102,19 @@ if ($update) {
 }
 
 if (!empty($exit)) {
-    redirect($CFG->wwwroot .'/course/view.php?id=' . $COURSE->id);
+  if ($mymoodle == 1) {
+    redirect($CFG->wwwroot .'/my');
+  } else {
+    redirect($CFG->wwwroot .'/course/view.php?id=' . $course->id);
+  }
 }
 
 require_capability('block/enrol_survey:edit', $context);
-    
-$edit_form = new edit_survey_form($CFG->wwwroot .'/blocks/enrol_survey/edit_survey.php?id='. $instanceid);
+   
+$courseobj = new stdClass();
+$courseobj->courseid = $course->id;
+$courseobj->mymoodle = $mymoodle;
+$edit_form = new edit_survey_form($CFG->wwwroot .'/blocks/enrol_survey/edit_survey.php?id='. $instanceid, $courseobj);
 
 $blockname = get_string('blockname', 'block_enrol_survey');
 $PAGE->set_pagelayout('standard'); // TBV

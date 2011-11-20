@@ -45,7 +45,7 @@ class block_enrol_survey extends block_base {
      * @return object
      */
     public function get_content() {
-        global $CFG, $COURSE, $USER;
+        global $CFG, $COURSE, $USER, $PAGE;
 
         if ($this->content !== NULL) {
             return $this->content;
@@ -61,10 +61,17 @@ class block_enrol_survey extends block_base {
         $this->content->text = '';
         $this->content->footer = '';
 
+        $mymoodle = 0;
+        if(strcmp('my-index',$PAGE->pagetype) == 0) {
+          $mymoodle = 1;
+        }
+
         if (has_capability('block/enrol_survey:edit', $context)) {
             $editpage = get_string('editpage', 'block_enrol_survey');
 
-            $this->content->text .= "<a href=\"{$CFG->wwwroot}/blocks/enrol_survey/edit_survey.php?id={$this->instance->id}\">$editpage</a><br />";
+            $this->content->text .= "<a 
+href=\"{$CFG->wwwroot}/blocks/enrol_survey/edit_survey.php?id={$this->instance->id}&courseid={$COURSE->id}&mymoodle={$mymoodle}\">$editpage</a><br 
+/>";
         }
 
         if (has_capability('block/enrol_survey:take', $context) &&
@@ -75,7 +82,9 @@ class block_enrol_survey extends block_base {
             }
 
             $takepage = get_string('takepage', 'block_enrol_survey');
-            $this->content->text .= "<a href=\"{$CFG->wwwroot}/blocks/enrol_survey/survey.php?id={$this->instance->id}&courseid={$COURSE->id}\">$takepage</a><br />";
+            $this->content->text .= "<a 
+href=\"{$CFG->wwwroot}/blocks/enrol_survey/survey.php?id={$this->instance->id}&courseid={$COURSE->id}&mymoodle={$mymoodle}\">$takepage</a><br 
+/>";
         }
 
         return $this->content;

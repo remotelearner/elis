@@ -40,6 +40,7 @@ $instanceid = required_param('id', PARAM_INT);
 $instance = $DB->get_record('block_instances', array('id' => $instanceid));
 $block = block_instance('enrol_survey', $instance);
 
+$mymoodle = optional_param('mymoodle', 0, PARAM_INT);
 $courseid = optional_param('courseid', 1, PARAM_INT);
 if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
     print_error('invalidcourseid');
@@ -73,10 +74,15 @@ $elis_user->load();
 
 $courseobj = new stdClass();
 $courseobj->courseid = $course->id;
+$courseobj->mymoodle = $mymoodle;
 $survey_form = new survey_form($CFG->wwwroot .'/blocks/enrol_survey/survey.php?id='. $instanceid, $courseobj);
 
 if ($survey_form->is_cancelled()) {
+  if ($mymoodle == 1) {
+    redirect($CFG->wwwroot .'/my');
+  } else {
     redirect($CFG->wwwroot .'/course/view.php?id=' . $course->id);
+  }
 } else if ($formdata = $survey_form->get_data()) {
     $customfields = get_customfields();
     $profilefields = get_profilefields();
@@ -143,7 +149,11 @@ if ($survey_form->is_cancelled()) {
     }
 
     if (!empty($formdata->save_exit)) {
-        redirect($CFG->wwwroot . '/course/view.php?id=' . $COURSE->id);
+      if ($mymoodle == 1) {
+        redirect($CFG->wwwroot .'/my');
+      } else {
+        redirect($CFG->wwwroot .'/course/view.php?id=' . $course->id);
+      }
     }
 }
 
