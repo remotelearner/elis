@@ -2,7 +2,7 @@
 
 $string['anyvalue'] = 'Select...';
 
-$string['column_completion_element'] = 'Completion Element';
+$string['column_completion_element'] = 'Learning Objective';
 $string['column_score'] = 'Score';
 
 $string['displayname'] = 'Individual User Report';

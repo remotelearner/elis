@@ -3,7 +3,7 @@
 $string['allcourses'] = 'All courses';
 
 $string['column_num_complete'] = '# Complete';
-$string['column_num_elements'] = '# Required Completion Elements';
+$string['column_num_elements'] = '# Required Learning Objectives';
 $string['column_num_graded'] = '# Graded';
 $string['column_percent_complete'] = '% Complete';
 $string['column_status'] = 'Status';
@@ -11,7 +11,7 @@ $string['column_student'] = 'Student';
 $string['column_student_firstname'] = 'Firstname';
 $string['column_student_lastname'] = 'Lastname';
 $string['column_time_spent'] = 'Time Spent';
-$string['column_total_elements'] = 'Total # of Completion Elements';
+$string['column_total_elements'] = 'Total # of Learning Objectives';
 $string['column_total_grade'] = 'Total Grade';
 $string['complete'] = 'Complete';
 
