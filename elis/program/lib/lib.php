@@ -795,7 +795,17 @@ function pm_moodle_user_to_pm($mu) {
 
     //specifically tell the user save not to use the crlm_user_moodle for syncing
     //because the record hasn't been inserted yet (see below)
-    $cu->save(false);
+    try {
+        $cu->save(false);
+    } catch (Exception $ex) {
+        if (in_cron()) {
+            mtrace(get_string('record_not_created_reason', 'elis_program',
+                        array('message' => $ex->getMessage() ." [{$mu->id}]")));
+            return false;
+        } else {
+            throw new Exception($ex->getMessage());
+        }
+    }
 
     // if no user association record exists, create one
     if (!$moodle_user_exists) {
