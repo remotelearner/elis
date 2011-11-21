@@ -107,11 +107,35 @@ class parameter_form extends moodleform {
         $mform->addElement('html',"
 <script type=\"text/javascript\">
 //<![CDATA[
+var submitname = null;
 if ((reportdiv = document.getElementById('php_report_block')) &&
     (reportforms = reportdiv.getElementsByTagName('form')) )
 {
+    buttons = document.getElementsByTagName('input');
+    for (i = 0; i < buttons.length; ++i) {
+        if (buttons[i].type == 'submit') {
+            if (buttons[i].name == 'mform_showadvanced') {
+                //alert('Found Hide/Show Advanced button ... adding onclick!');
+                buttons[i].onclick = function () {
+                                       window.submitname = 'mform_showadvanced';
+                                       return true;
+                                     };
+            } else {
+                //alert('Found non-advanced button ... adding onclick!');
+                buttons[i].onclick = function () {
+                                       window.submitname = '';
+                                       return true;
+                                     };
+            }
+        }
+    }
     for (i = 0; i < reportforms.length; ++i) {
-        reportforms[i].onsubmit = function() { start_throbber(); return true; };
+        reportforms[i].onsubmit = function() {
+                                  if (window.submitname != 'mform_showadvanced') {
+                                      start_throbber();
+                                  //} else { alert('NO THROBBER!');
+                                  }
+                                  return true; };
     }
 }
 //]]>
