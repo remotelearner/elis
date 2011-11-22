@@ -581,6 +581,7 @@ $string['nomoodleuser'] = 'No moodle user found for specified user id.';
 $string['nomoodleuser_filt'] = 'Does not have an associated Moodle user';
 $string['noncurriculacourses'] = 'Non-program Course Descriptions';
 $string['none'] = 'None';
+$string['nononcurriculumcourses'] = 'You are not assigned to any non-program course descriptions.';
 $string['noroleselected'] = 'N/A';
 $string['norolesexist'] = 'There are currently no roles that users can be assigned on this entity.';
 $string['norolespermitted'] = 'There are currently no roles you have sufficient permissions to assign users on this entity. For further details, contact a site administrator.';
