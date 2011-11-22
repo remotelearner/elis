@@ -852,7 +852,7 @@ class user extends data_object_with_custom_fields {
                         ORDER BY crs.name ASC, stu.completetime ASC';
             }
 
-            if ($classes = $DB->get_recordset_sql($sql)) {
+            if ($classes = $DB->get_recordset_sql($sql) and $classes->valid()) {
                 $table = new html_table();
                 $table->head = array(
                     get_string('class', 'elis_program'),
