@@ -669,6 +669,7 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
  */
 function pm_moodle_user_to_pm($mu) {
     global $CFG, $DB;
+    require_once($CFG->dirroot.'/lib/moodlelib.php');
     require_once(elis::lib('data/customfield.class.php'));
     require_once(elispm::lib('data/user.class.php'));
     require_once(elispm::lib('data/usermoodle.class.php'));
@@ -676,6 +677,13 @@ function pm_moodle_user_to_pm($mu) {
     require_once($CFG->dirroot . '/user/profile/lib.php');
     // re-fetch, in case this is from a stale event
     $mu = $DB->get_record('user', array('id' => $mu->id));
+
+    if (user_not_fully_set_up($mu)) {
+        //prevent the sync if a bare-bones user record is being created
+        //by create_user_record
+        return true;
+    }
+
     if (empty($mu->idnumber) && elis::$config->elis_program->auto_assign_user_idnumber) {
         //make sure the current user's username does not match up with some other user's
         //idnumber (necessary since usernames and idnumbers aren't bound to one another)
