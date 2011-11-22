@@ -834,15 +834,12 @@ class user extends data_object_with_custom_fields {
 
         /// Completed non-curricula course data
         if ($tab != 'archivedlp') {
-            //user id parameter
-            $params = array($this->id);
-
             if (!empty($classids)) {
                 $sql = 'SELECT stu.id, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
                         FROM {'.student::TABLE.'} stu
                         INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
                         INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
-                        WHERE userid = ?
+                        WHERE userid = '.$this->id.'
                         AND classid '.(count($classids) == 1 ? '!= ' . current($classids) :
                         'NOT IN (' . implode(', ', $classids) . ')').'
                         ORDER BY crs.name ASC, stu.completetime ASC';
@@ -851,11 +848,11 @@ class user extends data_object_with_custom_fields {
                         FROM {'.student::TABLE.'} stu
                         INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
                         INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
-                        WHERE userid = ?
+                        WHERE userid = '.$this->id.'
                         ORDER BY crs.name ASC, stu.completetime ASC';
             }
 
-            if ($classes = $DB->get_recordset_sql($sql, $params)) {
+            if ($classes = $DB->get_recordset_sql($sql)) {
                 $table = new html_table();
                 $table->head = array(
                     get_string('class', 'elis_program'),
@@ -865,10 +862,6 @@ class user extends data_object_with_custom_fields {
                 );
 
                 $table->data = array();
-
-                //determine if any classes instances were found, so we can display a message
-                //instead of the standard table
-                $classes_found = $classes->valid();
 
                 foreach ($classes as $class) {
                     if ($mdlcrs = moodle_get_course($class->id)) {
@@ -908,15 +901,7 @@ class user extends data_object_with_custom_fields {
                 $content .= '<div class="dashboard_curricula_block">';
                 $content .= $OUTPUT->heading($heading);
                 $content .= '<div id="curriculum-na" class="yui-skin-sam ' . $extra_class . '">';
-
-                if ($classes_found) {
-                    //user is assigned to non-program class instances, so list them
-                    $content .= html_writer::table($table);
-                } else {
-                    //no non-program class instances, so display an appropriate message
-                    $content .= get_string('nononcurriculumcourses', 'elis_program');
-                }
-
+                $content .= html_writer::table($table);
                 $content .= '</div>';
                 $content .= '</div>';
             }
