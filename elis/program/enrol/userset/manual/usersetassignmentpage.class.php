@@ -357,17 +357,23 @@ class clusteruserpage extends userclusterbasepage {
         $AND_filter_array = array(new field_filter('plugin', 'manual'),
                                   new field_filter('clusterid', $id));
 
-        $filter = new join_filter('id', clusterassignment::TABLE, 'userid',
-                                  new AND_filter($AND_filter_array),
-                                  false, false);
+        $filter = new AND_filter($AND_filter_array);
+
+        $filtersql = $filter->get_sql(false, 'ca');
 
         if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
-            $filter = new AND_filter(array($filter, new field_filter('inactive', 0)));
+            if (!empty($filtersql['where'])) {
+                $filtersql['where'] .= ' AND u.inactive = 0 ';
+            }
         }
 
-        $items = user::find($filter, array($sort => $dir));
+        $sql = 'SELECT ca.id, u.id AS userid, u.idnumber, u.firstname, u.lastname, u.email
+                  FROM {' . clusterassignment::TABLE . '} ca
+                  JOIN {' . user::TABLE . "} u ON ca.userid = u.id
+                 WHERE {$filtersql['where']}";
+        $items = $DB->get_recordset_sql($sql, $filtersql['where_parameters']);
 
-        $count = user::count($filter);
+        $count = clusterassignment::count($filter);
 
         echo html_writer::tag('h2', get_string('manually_assigned_users', 'usersetenrol_manual'));
 
