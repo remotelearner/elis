@@ -367,13 +367,23 @@ class clusteruserpage extends userclusterbasepage {
             }
         }
 
+        //todo: find a more elegant way to implement this - currently have to use
+        //queries instead of find and count methods because we don't have a good way to
+        //select specific fields across two tables
+
+        //NOTE: can't just user user::find and user::count here because we need the assignment
+        //id for permissions checking
         $sql = 'SELECT ca.id, u.id AS userid, u.idnumber, u.firstname, u.lastname, u.email
                   FROM {' . clusterassignment::TABLE . '} ca
                   JOIN {' . user::TABLE . "} u ON ca.userid = u.id
                  WHERE {$filtersql['where']}";
         $items = $DB->get_recordset_sql($sql, $filtersql['where_parameters']);
 
-        $count = clusterassignment::count($filter);
+        $sql = 'SELECT COUNT(*)
+                  FROM {' . clusterassignment::TABLE . '} ca
+                  JOIN {' . user::TABLE . "} u ON ca.userid = u.id
+                 WHERE {$filtersql['where']}";
+        $count = $DB->count_records_sql($sql, $filtersql['where_parameters']);
 
         echo html_writer::tag('h2', get_string('manually_assigned_users', 'usersetenrol_manual'));
 
