@@ -188,6 +188,39 @@ M.elis_core.init_gradebook_popup = function(Y, options) {
     }
 };
 
+var customfieldpickerinstance = null;
+var cf_debug = 0; // TBD: BJB - set for debugging only!
+
+function cf_show_values() {
+    var values = window.customfieldpickerinstance.values;
+    var tmp    = '';
+    for (var val in values) {
+        tmp += ' ' + val;
+    }
+    alert('update_values::values =' + tmp);
+}
+
+function cf_up(index) {
+    var tmp = window.customfieldpickerinstance.values[index];
+    window.customfieldpickerinstance.values[index] = window.customfieldpickerinstance.values[index-1];
+    window.customfieldpickerinstance.values[index-1] = tmp;
+    window.customfieldpickerinstance.update_values();
+}
+
+function cf_down(index) {
+    var tmp = window.customfieldpickerinstance.values[index];
+    window.customfieldpickerinstance.values[index] = window.customfieldpickerinstance.values[index+1];
+    window.customfieldpickerinstance.values[index+1] = tmp;
+    window.customfieldpickerinstance.update_values();
+}
+
+function cf_delete(index) {
+    window.customfieldpickerinstance.values.splice(index, 1);
+    window.customfieldpickerinstance.update_values();
+    window.customfieldpickerinstance.refresh_picker();
+    //cf_show_values();
+}
+
 M.elis_core.init_custom_field_multiselect = function(Y, options) {
     var container = Y.one('#'+options.id+'_container');
 
@@ -228,6 +261,13 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 	    } else {
 		this.values = [];
 	    }
+            if (window.cf_debug) {
+                var tmp = '';
+                for (var myfield in fieldsbyid) {
+                    tmp += ' ' + myfield;
+                }
+                alert('initializer::value = ' + value + '; fields =' + tmp);
+            }
 	    this.update_values();
 	},
 
@@ -237,12 +277,17 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 	 * Update the display and hidden element for the values.
 	 */
 	update_values: function() {
+            if (window.customfieldpickerinstance) {
+                this.values = window.customfieldpickerinstance.values;
+            }
 	    var values = this.values;
-
+            window.customfieldpickerinstance = this; // init global required for IE7
 	    // set the value of the hidden element
 	    var valueelem = Y.one('#'+this.options.id+'_value');
 	    valueelem.set('value', values.join(','));
-
+            if (window.cf_debug) {
+                cf_show_values();
+            }
 	    if (values.length) {
 		// create a table with the selected fields
 		var table = document.createElement('table');
@@ -255,7 +300,7 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 		    cell = document.createElement('td');
 		    if (i != values.length-1) {
 			var link = document.createElement('a');
-			link.href = '';
+			link.href = 'javascript: cf_down(' + i + ');';
 			var img = document.createElement('img');
 			img.src = this.options.down;
 			img.alt = 'down';
@@ -267,7 +312,7 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 			    this.values[index] = this.values[index+1];
 			    this.values[index+1] = tmp;
 			    this.update_values();
-			    //this.refresh_picker();
+			    //this.refresh_picker(); // BJB was commented-out
 			    e.preventDefault();
 			}, this, i);
 			cell.appendChild(link);
@@ -277,7 +322,7 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 		    cell = document.createElement('td');
 		    if (i != 0) {
 			var link = document.createElement('a');
-			link.href = '';
+			link.href = 'javascript: cf_up(' + i + ');';
 			var img = document.createElement('img');
 			img.src = this.options.up;
 			img.alt = 'up';
@@ -289,7 +334,7 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 			    this.values[index] = this.values[index-1];
 			    this.values[index-1] = tmp;
 			    this.update_values();
-			    //this.refresh_picker();
+			    //this.refresh_picker(); // BJB: was commented-out
 			    e.preventDefault();
 			}, this, i);
 			cell.appendChild(link);
@@ -298,7 +343,7 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 		    // delete button
 		    cell = document.createElement('td');
 		    var link = document.createElement('a');
-		    link.href = '';
+                    link.href = 'javascript: cf_delete(' + i + ');';
 		    var img = document.createElement('img');
 		    img.src = this.options.del;
 		    img.alt = 'delete';
@@ -316,7 +361,11 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 
 		    table.appendChild(row);
 		}
-		tablecontainer.setContent(table);
+                if (YAHOO.env.ua.ie > 0) { // IE (7)
+                    tablecontainer.setContent('<table>' + table.innerHTML + '</table>');
+                } else { // properly working browsers!
+		    tablecontainer.setContent(table);
+                }
 	    } else {
 		tablecontainer.setContent(document.createTextNode(M.str.elis_core.nofieldsselected));
 	    }
@@ -327,12 +376,18 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 	 */
 	refresh_picker: function() {
 	    if (!this.rendered) {
-		return;
+                return;
 	    }
 
+            window.customfieldpickerinstance = this; // init global required for IE7
 	    var pickerid = this.options.id + '_picker';
 	    var listing = Y.one('#layout-'+pickerid);
-
+            if (!listing) { // TBD: BJB
+                if (window.cf_debug) {
+                    alert('Error cannot locate layout listing!');
+                }
+                return;
+            }
 	    var values = this.values;
 	    var selected = {};
 	    for (var i=0; i < values.length; i++) {
@@ -350,13 +405,26 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 	    table.appendChild(row);
 	    var firstincategory = true;
 	    var empty = true;
+            if (window.cf_debug) {
+                var tmp = '';
+                for (var cats in options.fields) {
+                    for (var catfield in options.fields[cats]) {
+                        tmp += ' ' + options.fields[cats][catfield];
+                        if (selected[catfield]) {
+                            tmp += '(1)';
+                        }
+                    }
+                }
+                alert('refresh_picker: listing = ' + listing + '; fields =' + tmp);
+            }
 	    for (var category in options.fields) {
 		firstincategory = true;
-		for (var fieldid in options.fields[category]) {
-		    if (selected[fieldid]) {
-			// don't show fields that have been selected
-			continue;
-		    }
+                var catfields = options.fields[category];
+                for (var fieldid in catfields) {
+                    if (selected[fieldid]) {
+                        // don't show fields that have been selected
+                        continue;
+                    }
 		    empty = false;
 		    row = document.createElement('tr');
 		    cell = document.createElement('td');
@@ -368,7 +436,8 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 
 		    cell = document.createElement('td');
 		    var link = document.createElement('a');
-		    link.href = '';
+                    link.id = fieldid;
+		    link.href = 'javascript:window.customfieldpickerinstance.values.push(' + fieldid + ');window.customfieldpickerinstance.update_values();window.customfieldpickerinstance.refresh_picker();';
 		    link.appendChild(document.createTextNode(options.fields[category][fieldid]));
 		    var linkNode = Y.one(link);
 		    linkNode.on('click', function(e, fieldid) {
@@ -385,9 +454,11 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 	    }
 
 	    if (empty) {
-		listing.setContent(document.createTextNode(M.str.elis_core.allitemsselected));
+	        listing.setContent(document.createTextNode(M.str.elis_core.allitemsselected));
 	    } else {
-		listing.setContent(table);
+                //Y.DOM.addHTML(listing, table);
+		//listing.setContent(table);
+	        this.panel.setBody('<div id="layout-'+pickerid+'"><table>' + table.innerHTML + '</table></div>');
 	    }
 
 	    this.panel.moveTo(button.getX(), button.getY());
@@ -412,6 +483,7 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 	    var scope = this;
 	    panel.beforeRenderEvent.subscribe(function() {
 		YAHOO.util.Event.onAvailable('layout-'+pickerid, function() {
+                    //alert('Event.onAvailable(layout-'+ pickerid +')');
 		    scope.refresh_picker();
 		});
 	    });
@@ -424,7 +496,9 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 	},
 
 	hide: function() {
-	    this.panel.hide();
+            if (this.rendered) {
+                this.panel.hide();
+            }
 	},
 
 	show: function() {
