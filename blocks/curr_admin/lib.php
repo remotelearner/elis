@@ -689,7 +689,8 @@ function block_curr_admin_get_report_tree_items() {
         require_once($schedulelib_path);
 
         //schedule report entry
-        $test_permissions_page = new scheduling_page();
+        //make sure we are using a "clean" page to check global permissions
+        $test_permissions_page = new scheduling_page(array());
 
         //make sure we can access the report listing
         if ($test_permissions_page->can_do('list')) {
