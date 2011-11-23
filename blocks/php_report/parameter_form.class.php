@@ -123,6 +123,9 @@ if ((reportdiv = document.getElementById('php_report_block')) &&
             } else {
                 //alert('Found non-advanced button ... adding onclick!');
                 buttons[i].onclick = function () {
+                                       if (window.customfieldpickerinstance) {
+                                           window.customfieldpickerinstance.hide();
+                                       }
                                        window.submitname = '';
                                        return true;
                                      };

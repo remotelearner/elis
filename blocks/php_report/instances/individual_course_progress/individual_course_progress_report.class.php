@@ -377,6 +377,7 @@ class individual_course_progress_report extends table_report {
                              get_string('column_end_date', $this->lang_file),
                              'cssend_date', 'center', true);
 
+      /* *** Pre-test & Post-test are now custom fields ***
         $columns[] = new table_report_column('pretest.score AS pretestscore',
                              get_string('column_pretest_score', $this->lang_file),
                              'csspretest_score', 'center', true);
@@ -384,6 +385,7 @@ class individual_course_progress_report extends table_report {
         $columns[] = new table_report_column('posttest.score AS posttestscore',
                              get_string('column_posttest_score', $this->lang_file),
                              'cssposttest_score', 'center', true);
+      *** */
 
         // discussion posts
         $columns[] = new table_report_column(
@@ -507,11 +509,13 @@ class individual_course_progress_report extends table_report {
             GROUP BY cls.id, stu.userid
              ';
 
+      /* *** Pre-test & Post-test are now custom fields ***
         //gets the pretest score for this user
         $pretest_query = $this->get_max_test_score_sql('_elis_course_pretest');
 
         //gets the posttest score for this user
         $posttest_query = $this->get_max_test_score_sql('_elis_course_posttest');
+      *** */
 
         //main query
         $sql = "SELECT {$columns}, crs.id AS courseid,
@@ -530,6 +534,8 @@ class individual_course_progress_report extends table_report {
                    ON clsmdl.classid = cls.id
             LEFT JOIN {'. course::TABLE ."} crs
                    ON crs.id = cls.courseid
+               ";
+      /* *** Pre-test & Post-test are now custom fields ***
             LEFT JOIN ({$pretest_query}) pretest
                    ON pretest.classid = cls.id
                   AND pretest.userid = crlmuser.id
@@ -537,6 +543,7 @@ class individual_course_progress_report extends table_report {
                    ON posttest.classid = cls.id
                   AND posttest.userid = crlmuser.id
                ";
+      *** */
 
         // add custom field joins if they exist
         if (!empty($this->custom_joins)) {
@@ -637,6 +644,7 @@ class individual_course_progress_report extends table_report {
            $record->numresources = 0;
         }
 
+      /* *** Pre-test & Post-test are now custom fields ***
         if (!empty($record->pretestscore)) {
             $record->pretestscore .= get_string('percent_symbol', $this->lang_file);
         } else {
@@ -648,6 +656,7 @@ class individual_course_progress_report extends table_report {
         } else {
             $record->posttestscore = get_string('no_test_symbol', $this->lang_file);
         }
+      *** */
 
         if (empty($record->numposts)) {
             $record->numposts = 0;
