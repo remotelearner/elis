@@ -367,15 +367,19 @@ abstract class rolepage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
-        $sql = 'SELECT usr.* FROM {'. user::TABLE .'} usr
-                JOIN {'. usermoodle::TABLE .'} um ON usr.id = um.cuserid';
-        $where = "um.idnumber NOT IN (SELECT mu.idnumber
-                                     FROM {user} mu
-                                LEFT JOIN {role_assignments} ra
-                                          ON ra.userid = mu.id
-                                    WHERE ra.contextid = :contextid
-                                      AND ra.roleid = :roleid
-                                      AND mu.mnethostid = :mnethostid)";
+        $where = "NOT EXISTS (SELECT 'x'
+                              FROM {".usermoodle::TABLE."} um
+                              JOIN {user} mu
+                                ON um.muserid = mu.id
+                              JOIN {role_assignments} ra
+                                ON mu.id = ra.userid
+                              WHERE ra.contextid = :contextid
+                                AND ra.roleid = :roleid
+                                AND mu.mnethostid = :mnethostid
+                                AND {".user::TABLE."}.id = um.cuserid)
+                  AND EXISTS (SELECT 'x'
+                              FROM {".usermoodle::TABLE."} um
+                              WHERE {".user::TABLE."}.id = um.cuserid)";
         $params = array('contextid' => $context->id,
                         'roleid' => $roleid,
                         'mnethostid' => $CFG->mnet_localhost_id);
@@ -386,9 +390,9 @@ abstract class rolepage extends associationpage2 {
             $where .= " AND $extrasql";
             $params = array_merge($params, $extraparams);
         }
-        $sql .= ' WHERE '. $where .' ORDER BY '. $sortclause;
-        $count = $DB->count_records_sql("SELECT COUNT('x') FROM ({$sql}) cnt", $params);
-        $users = $DB->get_records_sql($sql, $params, $pagenum*$perpage, $perpage);
+
+        $count = $DB->count_records_select(user::TABLE, $where, $params);
+        $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
 
         return array($users, $count);
     }
@@ -710,18 +714,19 @@ class cluster_rolepage extends rolepage {
                 $sortclause = "{$sortfields[$sort]} $order";
             }
 
-            $sql = 'SELECT usr.* FROM {'. user::TABLE .'} usr
-                    JOIN {'. usermoodle::TABLE .'} um ON usr.id = um.cuserid';
-            $where = "um.idnumber NOT IN (SELECT mu.idnumber
-                                         FROM {user} mu
-                                    LEFT JOIN {role_assignments} ra
-                                              ON ra.userid = mu.id
-                                        WHERE ra.contextid = :contextid
-                                          AND ra.roleid = :roleid
-                                          AND mu.mnethostid = :mnethostid)
-                            AND usr.id IN (SELECT userid
-                                         FROM {".clusterassignment::TABLE."} uc
-                                        WHERE uc.clusterid = :clusterid)";
+            $where = "NOT EXISTS (SELECT 'x'
+                                  FROM {".usermoodle::TABLE."} um
+                                  JOIN {user} mu
+                                    ON um.muserid = mu.id
+                                  JOIN {role_assignments} ra
+                                    ON mu.id = ra.userid
+                                  WHERE ra.contextid = :contextid
+                                    AND ra.roleid = :roleid
+                                    AND mu.mnethostid = :mnethostid
+                                    AND {".user::TABLE."}.id = um.cuserid)
+                      AND EXISTS (SELECT 'x'
+                                  FROM {".usermoodle::TABLE."} um
+                                  WHERE {".user::TABLE."}.id = um.cuserid)";
 
             $params = array('contextid' => $context->id,
                             'roleid' => $roleid,
@@ -734,9 +739,9 @@ class cluster_rolepage extends rolepage {
                 $where .= " AND $extrasql";
                 $params = array_merge($params, $extraparams);
             }
-            $sql .= ' WHERE '. $where .' ORDER BY '. $sortclause;
-            $count = $DB->count_records_sql("SELECT COUNT('x') FROM ({$sql}) cnt", $params);
-            $users = $DB->get_records_sql($sql, $params, $pagenum*$perpage, $perpage);
+
+            $count = $DB->count_records_select(user::TABLE, $where, $params);
+            $users = $DB->get_records_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
 
             return array($users, $count);
         } else {
