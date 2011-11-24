@@ -210,6 +210,8 @@ class individual_course_progress_report extends table_report {
         // Add block id to field list array
         $field_list['block_instance'] = $this->id;
         $field_list['reportname'] = $this->get_report_shortname();
+        $field_list['field_exceptions'] = array('_elis_course_pretest',
+                                                '_elis_course_posttest');
         // Need help text
         $field_list['help'] = array('individual_course_progress_field',
                                     get_string('displayname', $this->lang_file),
@@ -377,7 +379,6 @@ class individual_course_progress_report extends table_report {
                              get_string('column_end_date', $this->lang_file),
                              'cssend_date', 'center', true);
 
-      /* *** Pre-test & Post-test are now custom fields ***
         $columns[] = new table_report_column('pretest.score AS pretestscore',
                              get_string('column_pretest_score', $this->lang_file),
                              'csspretest_score', 'center', true);
@@ -385,7 +386,6 @@ class individual_course_progress_report extends table_report {
         $columns[] = new table_report_column('posttest.score AS posttestscore',
                              get_string('column_posttest_score', $this->lang_file),
                              'cssposttest_score', 'center', true);
-      *** */
 
         // discussion posts
         $columns[] = new table_report_column(
@@ -509,13 +509,11 @@ class individual_course_progress_report extends table_report {
             GROUP BY cls.id, stu.userid
              ';
 
-      /* *** Pre-test & Post-test are now custom fields ***
         //gets the pretest score for this user
         $pretest_query = $this->get_max_test_score_sql('_elis_course_pretest');
 
         //gets the posttest score for this user
         $posttest_query = $this->get_max_test_score_sql('_elis_course_posttest');
-      *** */
 
         //main query
         $sql = "SELECT {$columns}, crs.id AS courseid,
@@ -534,8 +532,6 @@ class individual_course_progress_report extends table_report {
                    ON clsmdl.classid = cls.id
             LEFT JOIN {'. course::TABLE ."} crs
                    ON crs.id = cls.courseid
-               ";
-      /* *** Pre-test & Post-test are now custom fields ***
             LEFT JOIN ({$pretest_query}) pretest
                    ON pretest.classid = cls.id
                   AND pretest.userid = crlmuser.id
@@ -543,7 +539,6 @@ class individual_course_progress_report extends table_report {
                    ON posttest.classid = cls.id
                   AND posttest.userid = crlmuser.id
                ";
-      *** */
 
         // add custom field joins if they exist
         if (!empty($this->custom_joins)) {
