@@ -270,16 +270,17 @@ class curriculumforcoursepage extends curriculumpage {
 
     /**
      * Prints the form for adding a new record.
+     *
+     * @param object $data Data to set on the form
      */
-    function print_add_form() {
+    function print_add_form($data) {
         $target = $this->get_new_page(array('action' => 'savenew'));
 
         $form = new $this->form_class($target->url);
 
-        if(!empty($this->data)) {
-            $data = $this->data;
-            $data->idnumber .= ' -C';
-            $data->name .= '-Curriculum';
+        if (!empty($data)) {
+            $data->idnumber .= ' -P';
+            $data->name .= '-Program';
             $form->set_data($data);
         }
 
@@ -287,13 +288,25 @@ class curriculumforcoursepage extends curriculumpage {
     }
 
     function display_default() {
+        //obtain a non-zero courseid if we are hitting this page for the first time
+        //otherwise form data will submit back into itself
         $courseid = $this->required_param('id', PARAM_INT);
-        $data = new course($courseid);
-        $data->courseid = $data->id;
-        unset($data->id);
-        $this->data = $data;
+        $data = null;
 
-        $this->print_add_form();
+        if ($courseid != 0) {
+            //fetch the course record
+	        $course = new course($courseid);
+	        $course->load();
+
+	        //set up the form data
+	        $data = new stdClass;
+	        $data->idnumber = $course->idnumber;
+	        $data->name = $course->name;
+	        //used to link the program to the course description
+	        $data->courseid = $courseid;
+        }
+
+        $this->print_add_form($data);
     }
 
     function display_savenew() {
