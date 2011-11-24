@@ -47,6 +47,11 @@ class generalized_filter_custom_field_multiselect_values extends generalized_fil
     var $_block_instance;
 
     /**
+     * List of custom field shortnames to exclude from selection
+     */
+    var $_field_exceptions;
+
+    /**
      * Constructor
      * @param string $uniqueid the name of the column
      * @param string $alias an alias for the column name
@@ -62,6 +67,8 @@ class generalized_filter_custom_field_multiselect_values extends generalized_fil
         // Initialize class variables
         $this->_field = $field;
         $this->_block_instance = $options['block_instance'];
+        $this->_field_exceptions = !empty($options['field_exceptions'])
+                                   ? $options['field_exceptions'] : array();
         $this->_fieldidlist = $fieldidlist;
         $this->_reportname = (isset($options['reportname'])) ? $options['reportname'] : '';
 
@@ -95,7 +102,7 @@ class generalized_filter_custom_field_multiselect_values extends generalized_fil
 
         $options = array(
             'contextlevel' => context_level_base::get_custom_context_level('course', 'elis_program'),
-            'fieldfilter' => array('generalized_filter_custom_field_multiselect_values', 'field_accessible')
+            'fieldfilter' => array(&$this, 'field_accessible')
         );
         $mform->addElement(elis_custom_field_multiselect::NAME, $this->_uniqueid, $this->_label, $options);
         if (!empty($this->_filterhelp)) {
@@ -173,7 +180,7 @@ class generalized_filter_custom_field_multiselect_values extends generalized_fil
         foreach ($fields as $field) {
             //make sure the current user can access this field in at least one
             //course context
-            if (!self::field_accessible($field)) {
+            if (!$this->field_accessible($field)) {
                 continue;
             }
 
@@ -225,13 +232,14 @@ class generalized_filter_custom_field_multiselect_values extends generalized_fil
      *
      * @return  boolean           true if accessible, otherwise false
      */
-    public static function field_accessible($field) {
+    public function field_accessible($field) {
         global $CFG, $USER;
         $owners = $field->owners;
 
         require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
 
-        if ($view_capability = self::field_capability($owners)) {
+        if (!in_array($field->shortname, $this->_field_exceptions) &&
+            ($view_capability = self::field_capability($owners))) {
             //make sure the user has the view capability in some course
             $contexts = get_contexts_by_capability_for_user('course', $view_capability, $USER->id);
             return !$contexts->is_empty();
