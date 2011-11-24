@@ -49,5 +49,22 @@ function xmldb_repository_elis_files_install() {
         $DB->delete_records_select('config', "(name = 'repository' OR name = 'repository_plugins_enabled')");
     }
 
+    // ELIS-3677, ELIS-3802 Moodle files is no longer valid, so change to default of ELIS User Files
+    $select = "plugin = 'elis_files' AND name = 'default_browse'";
+
+    if ($record = $DB->get_record_select('config_plugins', $select)) {
+        require_once($CFG->dirroot.'/repository/elis_files/lib/ELIS_files.php');
+        $int_value = (int)$record->value;
+        $valid_values = array(ELIS_FILES_BROWSE_SITE_FILES,
+                              ELIS_FILES_BROWSE_SHARED_FILES,
+                              ELIS_FILES_BROWSE_COURSE_FILES,
+                              ELIS_FILES_BROWSE_USER_FILES,
+                              ELIS_FILES_BROWSE_USERSET_FILES);
+        if (!in_array($int_value, $valid_values)) {
+            $record->value = ELIS_FILES_BROWSE_USER_FILES;
+            $DB->update_record('config_plugins', $record);
+        }
+    }
+
     return $result;
 }
