@@ -639,7 +639,6 @@ class individual_course_progress_report extends table_report {
            $record->numresources = 0;
         }
 
-      /* *** Pre-test & Post-test are now custom fields ***
         if (!empty($record->pretestscore)) {
             $record->pretestscore .= get_string('percent_symbol', $this->lang_file);
         } else {
@@ -651,7 +650,6 @@ class individual_course_progress_report extends table_report {
         } else {
             $record->posttestscore = get_string('no_test_symbol', $this->lang_file);
         }
-      *** */
 
         if (empty($record->numposts)) {
             $record->numposts = 0;
