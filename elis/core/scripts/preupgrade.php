@@ -47,43 +47,97 @@ $sql = "SELECT contextid, lowerboundary, letter, COUNT(*) count
 if ($rec = $DB->get_records_sql($sql, array(), 0, 1)) {
     $count = current($rec);
 
-    if ($count->count <= 1) {
-        break;
-    }
+    if ($count->count > 1) {
+        try {
+            $DB->execute('CREATE TABLE {grade_letters_temp} LIKE {grade_letters}');
+        } catch (Excpetion $e) {
+            $status = false;
+        }
 
-    try {
-        $DB->execute('CREATE TABLE {grade_letters_temp} LIKE {grade_letters}');
-    } catch (Excpetion $e) {
-        $status = false;
+        if ($status) {
+            $tx = $DB->start_delegated_transaction();
+
+            $sql = 'INSERT INTO {grade_letters_temp} (contextid, lowerboundary, letter)
+                    SELECT contextid, lowerboundary, letter
+                    FROM {grade_letters}
+                    GROUP BY contextid, lowerboundary, letter';
+
+            try {
+                $DB->execute($sql);
+            } catch (Exception $e) {
+                $status = false;
+                $tx->rollback($e);
+                $tx->dispose();
+                break;
+            }
+
+            $tx->allow_commit();
+            $tx->dispose();
+        }
+
+        if ($status) {
+            try {
+                $DB->execute('DROP TABLE {grade_letters}');
+                $DB->execute('RENAME TABLE {grade_letters_temp} TO {grade_letters}');
+            } catch (Exception $e) {
+                $status = false;
+            }
+        }
     }
+}
+
+
+/*
+* Handle duplicate records in the mdl_user_preferences table.
+*/
+
+$status = true;
+
+// Detect if we have any duplicate records before we try to remove duplicates
+$sql = "SELECT userid, name, value, COUNT(*) count
+        FROM {user_preferences}
+        GROUP BY userid, name, value
+        ORDER BY count DESC";
+
+if ($rec = $DB->get_records_sql($sql, array(), 0, 1)) {
+    $count = current($rec);
+
+    if ($count->count > 1) {
+        try {
+            $DB->execute('CREATE TABLE {user_preferences_temp} LIKE {user_preferences}');
+        } catch (Excpetion $e) {
+            $status = false;
+        }
 
     if ($status) {
         $tx = $DB->start_delegated_transaction();
 
-        $sql = 'INSERT INTO {grade_letters_temp} (contextid, lowerboundary, letter)
-                SELECT contextid, lowerboundary, letter
-                FROM {grade_letters}
-                GROUP BY contextid, lowerboundary, letter';
+        $sql = 'INSERT INTO {user_preferences_temp} (userid, name, value)
+                SELECT userid, name, value
+                FROM {user_preferences}
+                GROUP BY userid, name, value';
 
-        try {
-            $DB->execute($sql);
-        } catch (Exception $e) {
-            $status = false;
-            $tx->rollback($e);
-            $tx->dispose();
-            break;
+            try {
+                $DB->execute($sql);
+            } catch (Exception $e) {
+                $status = false;
+                $tx->rollback($e);
+                $tx->dispose();
+            }
+
+            if ($status) {
+                $tx->allow_commit();
+                $tx->dispose();
+            }
         }
 
-        $tx->allow_commit();
-        $tx->dispose();
-    }
-
-    if ($status) {
-        try {
-            $DB->execute('DROP TABLE {grade_letters}');
-            $DB->execute('RENAME TABLE {grade_letters_temp} TO {grade_letters}');
-        } catch (Exception $e) {
-            $status = false;
+        if ($status) {
+            try {
+                $DB->execute('DROP TABLE {user_preferences}');
+                $DB->execute('RENAME TABLE {user_preferences_temp} TO {user_preferences}');
+            } catch (Exception $e) {
+                $status = false;
+            }
         }
     }
 }
