@@ -78,8 +78,9 @@ class _workflow_instance extends elis_data_object {
      * Clean up stale (> 1 week old) workflow instances.
      */
     static public function cleanup() {
+        global $DB;
         $oneweekago = time() - (7*DAYSECS);
-        delete_records_select(self::TABLE, "timemodified < $oneweekago");
+        $DB->delete_records_select(self::TABLE, "timemodified < $oneweekago");
     }
 }
 
