@@ -156,20 +156,6 @@ if ($status) {
                     $pcfg->value = '';
                 }
 
-                // ELIS-3677 Moodle files is no longer valid, so change to default of ELIS User Files
-                require_once($CFG->dirroot.'/repository/elis_files/lib/ELIS_files.php');
-                if ($pcfg->name == 'default_browse') {
-                    $int_value = (int)$pcfg->value;
-                    $valid_values = array(ELIS_FILES_BROWSE_SITE_FILES,
-                                          ELIS_FILES_BROWSE_SHARED_FILES,
-                                          ELIS_FILES_BROWSE_COURSE_FILES,
-                                          ELIS_FILES_BROWSE_USER_FILES,
-                                          ELIS_FILES_BROWSE_USERSET_FILES);
-                    if (!in_array($int_value, $valid_values)) {
-                        $pcfg->value = ELIS_FILES_BROWSE_USER_FILES;
-                    }
-                }
-
                 $DB->insert_record_raw('config_plugins', $pcfg, false, true);
             }
 
