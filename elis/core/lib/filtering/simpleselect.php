@@ -164,7 +164,15 @@ class generalized_filter_simpleselect extends generalized_filter_type {
 
         $a = new object();
         $a->label    = $this->_label;
-        $a->value    = '"'.s($this->_options[$value]).'"';
+
+        if (is_array($value)) {
+            foreach ($value as $key => $subvalue) {
+                $value[$key] = '"'. s($subvalue) .'"';
+            }
+            $a->value    = implode(get_string('or', 'elis_core'), $value);
+        } else {
+            $a->value    = '"'.s($this->_options[$value]).'"';
+        }
         $a->operator = get_string('isequalto', 'filters');
 
         return get_string('selectlabel', 'filters', $a);
