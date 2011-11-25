@@ -260,7 +260,7 @@ class course_completion_by_cluster_report extends table_report {
         $name_column = new table_report_column('user.firstname', $name_heading, 'user_name', 'left', false, true, true, array(php_report::$EXPORT_FORMAT_PDF, php_report::$EXPORT_FORMAT_HTML));
         $lastname_heading = get_string('column_lastname', 'rlreport_course_completion_by_cluster');
         $lastname_column = new table_report_column('user.lastname', $lastname_heading, 'user_name', 'left', false, true, true, array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL));
-        $firstname_heading = get_string('column_lastname', 'rlreport_course_completion_by_cluster');
+        $firstname_heading = get_string('column_firstname', 'rlreport_course_completion_by_cluster');
         $firstname_column = new table_report_column('user.firstname AS userfirstname', $firstname_heading, 'user_name', 'left', false, true, true, array(php_report::$EXPORT_FORMAT_CSV, php_report::$EXPORT_FORMAT_EXCEL));
 
         //CM course name
