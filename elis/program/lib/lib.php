@@ -1519,13 +1519,7 @@ function pm_fix_duplicate_moodle_users() {
                     }
 
                     if (!$first && !$generated) {
-                        // Send a failure message
-                        $message = new notification();
-                        $message->fullmessageformat = FORMAT_MOODLE;
-
-                        $messagetext = get_string('moodle_duplicate_idnumber_fail', 'elis_program', $record->idnumber);
-
-                        $message->send_notification($messagetext, $admin, $userfrom);
+                        //this is where we would ideally send a failure message
 
                         $idnumber_generation_failure = true;
                     }
@@ -1534,28 +1528,9 @@ function pm_fix_duplicate_moodle_users() {
                 }
             }
 
-            if (!$idnumber_generation_failure) {
-	            // Send a success message
-	            $message = new notification();
-	            $message->fullmessageformat = FORMAT_MOODLE;
-	
-	            // Main body of the message
-	            $a = new stdClass;
-	            $a->idnumber = $record->idnumber;
-	            $a->username = $usernames[0];
-	            $a->url = $CFG->wwwroot.'/user/editadvanced.php?id='.$userids[0].'&course='.SITEID;
-	            $messagetext = get_string('moodle_duplicate_idnumber_unchanged', 'elis_program', $a);
-	
-	            // Info regarding users whose idnumbers have been changed
-	            for ($i = 1; $i < count($userids); $i++) {
-	                $a = new stdClass;
-	                $a->username = $usernames[$i];
-	                $a->url = $CFG->wwwroot.'/user/editadvanced.php?id='.$userids[$i].'&course='.SITEID; 
-	                $messagetext .= get_string('moodle_duplicate_idnumber_changed', 'elis_program', $a);
-	            }
-
-                $message->send_notification($messagetext, $admin, $userfrom);
-            }
+            //this is where we would ideally send a success message but it's current
+            //not possible because this is called during the upgrade before the messages
+            //setup happens
         }
     }
 
