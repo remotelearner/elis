@@ -114,7 +114,8 @@ class individual_course_progress_report extends table_report {
                     FROM {".userset::TABLE."} clst
                     JOIN {".clusterassignment::TABLE."} usrclst
                       ON clst.id = usrclst.clusterid
-                    WHERE usrclst.userid = ?";
+                    WHERE usrclst.userid = ?
+                    ORDER BY clst.name";
             $params = array($userid);
             if ($clusters = $DB->get_recordset_sql($sql, $params)) {
                 foreach ($clusters as $cluster) {
