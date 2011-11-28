@@ -38,6 +38,8 @@ class course_progress_summary_report extends table_report {
     var $startdate = 0;
     var $enddate = 0;
 
+    var $field_default = array();
+
     /**
      * Specifies whether the current report is available
      *
@@ -167,6 +169,15 @@ class course_progress_summary_report extends table_report {
 
             foreach ($filter_params as $custom_course_id) {
                 $custom_course_field = new field($custom_course_id);
+
+                // Obtain custom field default values IFF set
+                if (($default_value = $custom_course_field->get_default())
+                    !== false) {
+                    // save in array { record_field => default_value }
+                    $this->field_default['custom_data_'. $custom_course_id] =
+                              $default_value;
+                }
+
                 //Find matching course field
                 $course_field_title = $fields[$custom_course_id]->name;
 
@@ -389,6 +400,14 @@ class course_progress_summary_report extends table_report {
         // Check for unset fields for N/A display of progress or students passing
         if (!isset($record->studentspassing)) {
             $record->studentspassing = get_string('na','rlreport_course_progress_summary');
+        }
+
+        // Default values for custom fields IF not set
+        foreach ($this->field_default as $key => $value) {
+            //error_log("CPSR:transform_record(), checking default for {$key} => {$value}");
+            if (!isset($record->$key)) {
+                $record->$key = $value;
+            }
         }
 
         return $record;

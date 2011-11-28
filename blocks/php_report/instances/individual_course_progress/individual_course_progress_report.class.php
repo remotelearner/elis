@@ -33,6 +33,8 @@ class individual_course_progress_report extends table_report {
     var $custom_joins = array();
     var $lang_file = 'rlreport_individual_course_progress';
 
+    var $field_default = array();
+
     /**
      * Gets the report category.
      *
@@ -312,6 +314,15 @@ class individual_course_progress_report extends table_report {
 
             foreach ($filter_params as $custom_course_id) {
                 $custom_course_field = new field($custom_course_id);
+
+                // Obtain custom field default values IFF set
+                if (($default_value = $custom_course_field->get_default())
+                    !== false) {
+                    // save in array { record_field => default_value }
+                    $this->field_default['custom_data_'. $custom_course_id] =
+                              $default_value;
+                }
+
                 //Find matching course field
                 $course_field_title = $fields[$custom_course_id]->name;
 
@@ -667,6 +678,14 @@ class individual_course_progress_report extends table_report {
         $record->enrol_status = (empty($record->enrol_status))
                                 ? get_string('grouping_course_in_progress', $this->lang_file)
                                 : get_string('grouping_course_complete', $this->lang_file);
+
+        // Default values for custom fields IF not set
+        foreach ($this->field_default as $key => $value) {
+            //error_log("ICPR:transform_record(), checking default for {$key} => {$value}");
+            if (!isset($record->$key)) {
+                $record->$key = $value;
+            }
+        }
 
         return $record;
     }
