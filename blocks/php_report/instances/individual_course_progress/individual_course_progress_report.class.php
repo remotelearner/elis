@@ -96,6 +96,8 @@ class individual_course_progress_report extends table_report {
     }
 
     function get_header_entries($export_format) {
+        global $DB;
+
         $header_array = array();
 
         $cm_user_id = php_report_filtering_get_active_filter_values(
@@ -104,13 +106,19 @@ class individual_course_progress_report extends table_report {
         $cluster_names = array();
         // Find all the clusters this user is in
         if (!empty($cm_user_id[0]['value'])) {
-            $user_obj = new user($cm_user_id[0]['value']);
-            if ($user_obj) {
-                $user_obj->load();
-                if (!empty($user_obj->clusterassignments)) {
-                    foreach ($user_obj->clusterassignments as $cluster) {
-                        $cluster_names[] = $cluster->cluster->name;
-                    }
+            $userid = (int)$cm_user_id[0]['value'];
+            $user_obj = new user($userid);
+            $user_obj->load();
+
+            $sql = "SELECT DISTINCT clst.name
+                    FROM {".userset::TABLE."} clst
+                    JOIN {".clusterassignment::TABLE."} usrclst
+                      ON clst.id = usrclst.clusterid
+                    WHERE usrclst.userid = ?";
+            $params = array($userid);
+            if ($clusters = $DB->get_recordset_sql($sql, $params)) {
+                foreach ($clusters as $cluster) {
+                    $cluster_names[] = $cluster->name;
                 }
             }
         }
