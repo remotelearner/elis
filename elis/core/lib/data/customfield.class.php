@@ -305,6 +305,20 @@ class field extends elis_data_object {
         return $field;
     }
 
+    /**
+     * Get the default value of the field.
+     *
+     * @return mixed default value of field or false for none.
+     */
+    public function get_default() {
+        global $DB;
+        if (empty($this->id)) { // TBD: or throw exception?
+            return false;
+        }
+        return $DB->get_field_select($this->data_table(), 'data',
+                                     'contextid IS NULL AND fieldid = ?',
+                                     array($this->id));
+    }
 }
 
 class elis_field_filter extends data_filter {
