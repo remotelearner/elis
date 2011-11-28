@@ -53,7 +53,7 @@ class generalized_filter_display_text extends generalized_filter_type {
      * @return string the filtering condition or null if the filter is disabled
      */
     function get_sql_filter($data) {
-        return array('TRUE', array());
+        return null;
     }
 
     /**
