@@ -365,11 +365,11 @@ abstract class php_report {
         }
     }
 
-    public set_gas_gauge_page($gas_gauge_page) {
+    function set_gas_gauge_page($gas_gauge_page) {
         $this->gas_gauge_page = $gas_gauge_page;
     }
 
-    public get_gas_gauge_page() {
+    function get_gas_gauge_page() {
         return $this->gas_gauge_page;
     }
 
