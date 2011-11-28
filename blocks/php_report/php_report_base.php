@@ -64,6 +64,8 @@ abstract class php_report {
     //capability that should be checked for permissions, based on execution mode
     var $access_capability;
 
+    protected $gas_gauge_page = 0;
+
     /**
      * PHP report constructor
      *
@@ -363,6 +365,14 @@ abstract class php_report {
         }
     }
 
+    public set_gas_gauge_page($gas_gauge_page) {
+        $this->gas_gauge_page = $gas_gauge_page;
+    }
+
+    public get_gas_gauge_page() {
+        return $this->gas_gauge_page;
+    }
+
     /**
      * Specifies the config header for this report
      *
@@ -440,7 +450,7 @@ abstract class php_report {
                 //link alt text
                 $alt_text = get_string('export_link_'.$allowable_export_format, 'block_php_report');
                 //export link, with hash for smooth flow
-                $export_url = $CFG->wwwroot.'/blocks/php_report/download.php?id='.$this->id.'&format='.$allowable_export_format.'#';
+                $export_url = $CFG->wwwroot.'/blocks/php_report/download.php?id='.$this->id.'&gas_gauge_page=' . $this->gas_gauge_page . '&format='.$allowable_export_format.'#';
                 //icon url
                 $icon = 'f/'.mimeinfo('icon', "foo.$allowable_export_format");
 
