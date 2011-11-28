@@ -247,6 +247,61 @@ class field extends elis_data_object {
     }
 
     /**
+     * Cast the data to the correct type for the field.
+     * ELIS-3829
+     *
+     * @param  $val   the data value to cast.
+     * @return mixed  input param $val cast to data type, NULL otherwise?
+     */
+    public function cast_to_type($val) {
+        switch ($this->datatype) {
+            case 'int':
+                return(is_int($val) ? $val : intval($val));
+            case 'num':
+                return(is_float($val) ? $val : floatval($val));
+            case 'bool':
+                if (is_string($val)) {
+                    $lc_val = strtolower($val);
+                    if ($lc_val == 'true' || $lc_val == 'yes' || $lc_val == 'on') {
+                        return true;
+                    }
+                    if ($lc_val == 'false' || $lc_val == 'no' || $lc_val == 'off') {
+                        return false;
+                    }
+                }
+                return((bool)$val);
+            case 'char':
+                if (is_string($val)) {
+                    return substr($val, 0, 255);
+                }
+                // fall-thru case???
+            case 'text':
+                return $val; // TBD: no cast?
+            default:
+                break;
+        }
+        return null; // TBD?
+    }
+
+    /**
+     * Cast data to correct type for the field - recursive.
+     * ELIS-3829
+     *
+     * @param mixed $data  the data value or array of data values
+     */
+    public function cast_data($data) {
+        if (is_array($data)) {
+            $retdata = array();
+            foreach ($data as $key => $val) {
+                $retdata[$key] = $this->cast_data($val);
+            }
+            return $retdata;
+        } else {
+            return $this->cast_to_type($data);
+        }
+    }
+
+    /**
      * Makes sure that a custom field (identified by $field->shortname) exists
      * for the given context level.  If not, it will create a field, putting it
      * in the given category (identified by $category->name), creating it if
@@ -657,7 +712,7 @@ abstract class field_data extends elis_data_object {
      */
     public static function set_for_context_and_field($context, field $field, $data) {
         global $DB;
-
+        $data = $field->cast_data($data); // ELIS-3829
         if ($context) {
             $contextid = $context->id;
         } else {
