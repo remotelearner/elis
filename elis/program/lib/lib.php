@@ -1487,9 +1487,24 @@ function pm_fix_duplicate_moodle_users() {
             // Store whether there was some failure generating an idnumber
             $idnumber_generation_failure = false;
 
-            // Get records in order by timemodified, so that more recently modified users are considered
-            // the duplicates
-            if ($rs2 = $DB->get_recordset('user', array('idnumber' => $record->idnumber), 'timemodified')) {
+            // By default, obtain the least recently modified record
+            $sort_condition = 'timemodified';
+
+            $sql = "SELECT mu.id
+                    FROM {user} mu
+                    JOIN {".user::TABLE."} pu
+                      ON mu.idnumber = pu.idnumber
+                      AND mu.username = pu.username
+                      AND mu.idnumber = ?";
+            $params = array($record->idnumber);
+
+            if ($correct_record = $DB->get_record_sql($sql, $params, IGNORE_MULTIPLE)) {
+                // Found corresponding user with username and idnumber matching, so
+                // prioritize it
+                $sort_condition = 'id = '.$correct_record->id.' DESC';
+            }
+
+            if ($rs2 = $DB->get_recordset('user', array('idnumber' => $record->idnumber), $sort_condition)) {
                 foreach ($rs2 as $record2) {
 
                     // Store information about the current user
@@ -1513,9 +1528,6 @@ function pm_fix_duplicate_moodle_users() {
                             }
                         }
 
-                    } else {
-                        // Send messages from the first user, whose idnumber is not changing
-                        $userfrom = $DB->get_record('user', array('id' => $record2->id));
                     }
 
                     if (!$first && !$generated) {
@@ -1595,9 +1607,24 @@ function pm_fix_duplicate_pm_users() {
             // Store whether there was some failure generating an idnumber
             $idnumber_generation_failure = false;
 
-            // Get records in order by timemodified, so that more recently modified users are considered
-            // the duplicates
-            if ($rs2 = $DB->get_recordset(user::TABLE, array('idnumber' => $record->idnumber), 'timemodified')) {
+            // By default, obtain the least recently modified record
+            $sort_condition = 'timemodified';
+
+            $sql = "SELECT pu.id
+                    FROM {user} mu
+                    JOIN {".user::TABLE."} pu
+                      ON mu.idnumber = pu.idnumber
+                      AND mu.username = pu.username
+                      AND mu.idnumber = ?";
+            $params = array($record->idnumber);
+
+            if ($correct_record = $DB->get_record_sql($sql, $params, IGNORE_MULTIPLE)) {
+                // Found corresponding user with username and idnumber matching, so
+                // prioritize it
+                $sort_condition = 'id = '.$correct_record->id.' DESC';
+            }
+
+            if ($rs2 = $DB->get_recordset(user::TABLE, array('idnumber' => $record->idnumber), $sort_condition)) {
                 foreach ($rs2 as $record2) {
 
                     // Store information about the current user
@@ -1621,25 +1648,10 @@ function pm_fix_duplicate_pm_users() {
                             }
                         }
 
-                    } else {
-                        // Send messages from the first user, whose idnumber is not changing
-                        // (need the Moodle user since this is called during upgrade before association
-                        // table is populated)
-                        $userfrom = $DB->get_record('user', array('idnumber' => $record2->idnumber), '*', IGNORE_MULTIPLE);
-                        if (!$userfrom) {
-                            //fall back to admin
-                            $userfrom = NULL;
-                        }
                     }
 
                     if (!$first && !$generated) {
-                        // Send a failure message
-                        $message = new notification();
-                        $message->fullmessageformat = FORMAT_MOODLE;
-
-                        $messagetext = get_string('pm_duplicate_idnumber_fail', 'elis_program', $record->idnumber);
-
-                        $message->send_notification($messagetext, $admin, $userfrom);
+                        //this is where we would ideally send a failure message
 
                         $idnumber_generation_failure = true;
                     }
@@ -1648,30 +1660,9 @@ function pm_fix_duplicate_pm_users() {
                 }
             }
 
-            if (!$idnumber_generation_failure) {
-	            // Send a success message
-	            $message = new notification();
-	            $message->fullmessageformat = FORMAT_MOODLE;
-	
-	            // Main body of the message
-	            $a = new stdClass;
-	            $a->idnumber = $record->idnumber;
-	            $a->username = $usernames[0];
-	            $page = new userpage(array('id' => $userids[0], 'action' => 'view'));
-	            $a->url = $page->url->out(false);
-	            $messagetext = get_string('pm_duplicate_idnumber_unchanged', 'elis_program', $a);
-	
-	            // Info regarding users whose idnumbers have been changed
-	            for ($i = 1; $i < count($userids); $i++) {
-	                $a = new stdClass;
-	                $a->username = $usernames[$i];
-	                $page = new userpage(array('id' => $userids[$i], 'action' => 'view'));
-	                $a->url = $page->url->out(false);
-	                $messagetext .= get_string('pm_duplicate_idnumber_changed', 'elis_program', $a);
-	            }
-
-                $message->send_notification($messagetext, $admin, $userfrom);
-            }
+            //this is where we would ideally send a success message but it's current
+            //not possible because this is called during the upgrade before the messages
+            //setup happens
         }
     }
 
