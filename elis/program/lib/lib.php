@@ -1113,6 +1113,17 @@ function usermanagement_get_users_recordset($sort = 'name', $dir = 'ASC',
 }
 
 /**
+ * Output a message during plugin upgrade or install
+ */
+function install_msg($msg) {
+    $msg .= "\n";
+    if (!CLI_SCRIPT) {
+        $msg = nl2br($msg);
+    }
+    echo $msg;
+}
+
+/**
  * Migrate tags and tag instances to custom fields and custom field data
  * (run as a one-off during the elis program upgrade)
  *
@@ -1671,3 +1682,38 @@ function pm_fix_duplicate_pm_users() {
 
     return $result;
 }
+
+/**
+ * Migrates certificate border & seal image files from ELIS 1.9x to 2.x
+ * @return boolean true on success, otherwise false
+ */
+function pm_migrate_certificate_files() {
+    global $CFG, $DB;
+    $result = true;
+    // Migrate directories: olddir => newdir
+    $dirs = array('curriculum/pix/certificate/borders'
+                  => 'elis/program/pix/certificate/borders',
+                  'curriculum/pix/certificate/seals'
+                  => 'elis/program/pix/certificate/seals');
+    $courses = $DB->get_records('course', null, '', 'id');
+    foreach ($courses as $crs) {
+        foreach ($dirs as $olddir => $newdir) {
+            $oldpath = $CFG->dataroot .'/'. $crs->id .'/'. $olddir;
+            $newpath = $CFG->dataroot .'/'. $crs->id .'/'. $newdir;
+            if (is_dir($oldpath) && ($dh = opendir($oldpath))) {
+                while (($file = readdir($dh)) !== false) {
+                    if (is_file($oldpath .'/'. $file)) {
+                        if (!is_dir($newpath) && !mkdir($newpath, 0777, true)) {
+                            install_msg("pm_migrate_certificate_files(): Failed creating certificate directory: {$newpath}");
+                        } else if (!copy($oldpath .'/'. $file, $newpath .'/'. $file)) {
+                            install_msg("pm_migrate_certificate_files(): Failed copying certificate file: {$oldpath}/{$file} to {$newpath}/{$file}");
+                        }
+                    }
+                }
+                closedir($dh);
+            }
+        }
+    }
+    return $result;
+}
+

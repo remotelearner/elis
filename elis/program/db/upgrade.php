@@ -290,6 +290,12 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $sql = "UPDATE {crlm_notification_log}
                 SET fromuserid = userid";
         $DB->execute($sql);
+        upgrade_plugin_savepoint($result, 2011110700, 'elis', 'program');
+    }
+
+    if ($result && $oldversion < 2011112800) {
+        $result = pm_migrate_certificate_files();
+        upgrade_plugin_savepoint($result, 2011112800, 'elis', 'program');
     }
 
     return $result;

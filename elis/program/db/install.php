@@ -38,4 +38,7 @@ function xmldb_elis_program_install() {
     update_capabilities('elis_program'); // load context levels
     pm_ensure_role_assignable('manager');
     pm_ensure_role_assignable('curriculumadmin');
+
+    // Migrate dataroot files
+    pm_migrate_certificate_files();
 }
