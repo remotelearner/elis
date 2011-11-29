@@ -6,7 +6,7 @@ require_once dirname(__FILE__) .'/lib/setup.php';
 require_once elispm::lib('data/curriculumstudent.class.php'); // defines
 require_once elispm::lib('certificate.php'); // TBD: cm_certificate_get__()
 
-global $DB; // TBD: roles
+global $COURSE, $DB; // TBD: roles
 global $SESSION;
 
 if ($ADMIN->fulltree) {
@@ -74,7 +74,7 @@ if ($ADMIN->fulltree) {
                        ''                 => 'None'); // for testing
     $settings->add(new admin_setting_configselect('elis_program/certificate_border_image',
                            get_string('cert_border_setting', 'elis_program'),
-                           get_string('cert_border_help', 'elis_program'),
+                           get_string('cert_border_help', 'elis_program', $COURSE->id),
                            0, $borders)); // TBD
 
     // Certificate seal image
@@ -85,7 +85,7 @@ if ($ADMIN->fulltree) {
                      'Teamwork.png' => 'Teamwork', '' => 'None'); // for testing
     $settings->add(new admin_setting_configselect('elis_program/certificate_seal_image',
                            get_string('cert_seal_setting', 'elis_program'),
-                           get_string('cert_seal_help', 'elis_program'),
+                           get_string('cert_seal_help', 'elis_program', $COURSE->id),
                            0, $seals)); // TBD
 
     // ***Interface Settings

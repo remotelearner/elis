@@ -114,10 +114,10 @@ $string['browse'] = 'Browse';
 $string['bulkedit_select_all'] = 'Select All';
 
 $string['cert_border_help'] = 'The certificate border image is what gets displayed as the background for certificates in the program.
-You can add more border images by uploading them to your moodledata directory under the directory: /elis/program/pix/certificate/borders/';
+You can add more border images by uploading them to your moodledata directory under the directory: {$a}/elis/program/pix/certificate/borders/ (where \'{$a}\' maybe replaced by the Moodle Course id).';
 $string['cert_border_setting'] = 'Certificate border image';
 $string['cert_seal_help'] = 'The certificate seal image is what gets displayed as the logo on certificates in the program.
-You can add more seal images by uploading them to your moodledata directory under the directory: /elis/program/pix/certificate/seals/';
+You can add more seal images by uploading them to your moodledata directory under the directory: {$a}/elis/program/pix/certificate/seals/ (where \'{$a}\' maybe replaced by the Moodle Course id).';
 $string['cert_seal_setting'] = 'Certificate seal image';
 $string['certificate_border_image'] = 'Certificate border image';
 $string['certificate_certify'] = 'This is to certify that';
