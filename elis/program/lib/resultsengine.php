@@ -92,8 +92,8 @@ function results_engine_manual($id) {
 
     if (is_object($class)) {
         $class->cron = false;
-        // Called to generate scheduled date and rundate
-        $class = results_engine_check($class);
+        $class->rundate = time();
+        $class->scheduleddate = 0;
 
         return results_engine_process($class);
     }

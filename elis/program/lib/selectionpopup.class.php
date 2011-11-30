@@ -30,7 +30,7 @@
  * This file contains table_sql child classes used to override the display code
  * for certain columns
  */
-require ($CFG->libdir.'/tablelib.php');
+require_once($CFG->libdir.'/tablelib.php');
 
 global $OUTPUT;
 

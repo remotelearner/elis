@@ -2,12 +2,18 @@ YUI().use('io-base', 'node', function(Y) {
 
 function complete(id, o, args) {
     var div = Y.one('#results');
-    div.set("innerHTML", M.str.elis_program.results_done)
+    var message = M.str.elis_program.results_done;
+    if (o.status != 200) {
+    	message = message +"<br />\n"+ o.statusText;
+    } else {
+    	message = message +"<br />\n"+ o.responseText;
+    }
+    div.set("innerHTML", message)
 }
 
 M.results_engine = {
-    process: function(properties) {
-        var uri = properties.source +"?id="+properties.pmclass;
+    process: function(source, pmclass) {
+        var uri = source +"?id="+pmclass;
         var request = Y.io(uri);
     }
 }
