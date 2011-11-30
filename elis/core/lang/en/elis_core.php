@@ -169,7 +169,7 @@ $string['nocourseselected'] = 'No course selected';
 $string['nofieldsselected'] = 'No fields selected';
 $string['nogradeitems'] = 'No grade items found';
 $string['noidnumber'] = 'No ID number';
-
+$string['or'] = ' or ';
 $string['pluginname'] = 'ELIS Core';
 $string['profilefield_help'] = '<h1>Profile filter</h1>
 <p>This filter allows you to filter users based on values of profile fields.
