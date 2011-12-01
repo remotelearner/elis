@@ -26,7 +26,6 @@
  *
  */
 
-// Delete this file when test harness is no longer needed.
 require_once(dirname(__FILE__) .'/lib/setup.php');
 require_once(dirname(__FILE__) .'/lib/resultsengine.php');
 
@@ -37,15 +36,27 @@ if (! isloggedin()) {
     exit;
 }
 
+$context = get_context_instance_by_id($id);
 $classlevel = context_level_base::get_custom_context_level('class', 'elis_program');
-$context = get_context_instance($classlevel, $id);
+$courselevel = context_level_base::get_custom_context_level('course', 'elis_program');
 
-if (! has_capability('elis/program:class_edit', $context)) {
+if ((! $context) || (($context->contextlevel != $classlevel) && ($context->contextlevel != $courselevel))) {
+    print_string('results_unknown_classcourse', RESULTS_ENGINE_LANG_FILE);
+    exit;
+}
+
+$capability = 'elis/program:course_edit';
+
+if ($context->contextlevel == $classlevel) {
+    $capability = 'elis/program:class_edit';
+}
+
+if (! has_capability($capability, $context)) {
     print_string('not_permitted', RESULTS_ENGINE_LANG_FILE);
     exit;
 }
 
-if (results_engine_manual($id)) {
+if (results_engine_manual($context)) {
     print_string('results_manual_success', RESULTS_ENGINE_LANG_FILE);
 } else {
     print_string('results_manual_failure', RESULTS_ENGINE_LANG_FILE);

@@ -70,34 +70,48 @@ function results_engine_cron() {
 /**
  * Process an entire class manually
  *
- * @param int $id The id of the class to process
+ * @param object $context The context object for the course/class to process
  * @return boolean Success/failure
- * @uses $CFG;
  * @uses $DB;
  */
-function results_engine_manual($id) {
+function results_engine_manual($context) {
     global $DB;
 
-    $classlevel = context_level_base::get_custom_context_level('class', 'elis_program');
-    $params = array($classlevel, $id);
+    $processed = false;
+
+    $level  = context_level_base::get_custom_context_level('class', 'elis_program');
+    $courselevel = context_level_base::get_custom_context_level('course', 'elis_program');
+    $tables = '{crlm_class} cc'
+            .' JOIN {context} c ON c.instanceid=cc.id AND c.contextlevel=?'
+            .' JOIN {crlm_results} cr ON cr.contextid=c.id';
+    $where = array('cc.id = ?');
+
+    if ($context->contextlevel == $courselevel) {
+        $level    = $courselevel;
+        $tables = '{crlm_class} cc'
+                .' JOIN {crlm_course} ccd ON ccd.id=cc.courseid'
+                .' JOIN {context} c ON c.instanceid=ccd.id AND c.contextlevel=?'
+                .' JOIN {crlm_results} cr ON cr.contextid=c.id';
+        $where = array('ccd.id = ?');
+    }
 
     $sql = 'SELECT cc.id, cc.idnumber, cc.startdate, cc.enddate, cr.eventtriggertype,'
          .       ' cr.criteriatype, cr.id as engineid, cr.triggerstartdate, cr.days'
-         .' FROM {crlm_class} cc'
-         .' JOIN {context} c ON c.instanceid=cc.id AND c.contextlevel=?'
-         .' JOIN {crlm_results} cr ON cr.contextid=c.id'
-         .' WHERE cc.id=?';
+         .' FROM '. $tables
+         .' WHERE '. implode(' AND ', $where);
 
-    $class = $DB->get_record_sql($sql, $params);
+    $params = array($level, $context->instanceid);
+    $classes = $DB->get_records_sql($sql, $params);
 
-    if (is_object($class)) {
+    foreach ($classes as $class) {
         $class->cron = false;
         $class->rundate = time();
         $class->scheduleddate = 0;
 
-        return results_engine_process($class);
+        results_engine_process($class);
+        $processed = true;
     }
-    return false;
+    return $processed;
 }
 
 /**

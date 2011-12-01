@@ -856,6 +856,7 @@ $string['results_status_course_title'] = 'Results Engine status report for {$a->
 $string['results_status_report'] = 'Status report';
 $string['results_track_desc_header'] = 'Track Description';
 $string['results_track_name_header'] = 'Track Name';
+$string['results_unknown_classcourse'] = 'Unknown Class or Course requested for processing.';
 $string['results_use_locked_grades'] = 'Use locked grades only';
 $string['results_when_student_grade_set'] = 'When Student grade set';
 $string['results_with_selected_value'] = 'With selected value';
@@ -1054,4 +1055,3 @@ $string['program_copy'] = 'Program Copying';
 $string['program_copy_help'] = '<p>If a Program is copied to this User Set, then a duplicate of the Program is made, and added to the User Set. This is a new Program that is only linked to this user Set, and changes made to this Program will only be available to this User Set (unless other User Sets are linked to it using the link option above).</p>';
 
 $string['nocoursedescassoc'] = "There is no course description associated with this program.";
-
