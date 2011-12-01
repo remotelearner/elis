@@ -1688,30 +1688,27 @@ function pm_fix_duplicate_pm_users() {
  * @return boolean true on success, otherwise false
  */
 function pm_migrate_certificate_files() {
-    global $CFG, $DB;
+    global $CFG;
     $result = true;
     // Migrate directories: olddir => newdir
-    $dirs = array('curriculum/pix/certificate/borders'
+    $dirs = array('1/curriculum/pix/certificate/borders'
                   => 'elis/program/pix/certificate/borders',
-                  'curriculum/pix/certificate/seals'
+                  '1/curriculum/pix/certificate/seals'
                   => 'elis/program/pix/certificate/seals');
-    $courses = $DB->get_records('course', null, '', 'id');
-    foreach ($courses as $crs) {
-        foreach ($dirs as $olddir => $newdir) {
-            $oldpath = $CFG->dataroot .'/'. $crs->id .'/'. $olddir;
-            $newpath = $CFG->dataroot .'/'. $crs->id .'/'. $newdir;
-            if (is_dir($oldpath) && ($dh = opendir($oldpath))) {
-                while (($file = readdir($dh)) !== false) {
-                    if (is_file($oldpath .'/'. $file)) {
-                        if (!is_dir($newpath) && !mkdir($newpath, 0777, true)) {
-                            install_msg("pm_migrate_certificate_files(): Failed creating certificate directory: {$newpath}");
-                        } else if (!copy($oldpath .'/'. $file, $newpath .'/'. $file)) {
-                            install_msg("pm_migrate_certificate_files(): Failed copying certificate file: {$oldpath}/{$file} to {$newpath}/{$file}");
-                        }
+    foreach ($dirs as $olddir => $newdir) {
+        $oldpath = $CFG->dataroot .'/'. $olddir;
+        $newpath = $CFG->dataroot .'/'. $newdir;
+        if (is_dir($oldpath) && ($dh = opendir($oldpath))) {
+            while (($file = readdir($dh)) !== false) {
+                if (is_file($oldpath .'/'. $file)) {
+                    if (!is_dir($newpath) && !mkdir($newpath, 0777, true)) {
+                        install_msg("\n pm_migrate_certificate_files(): Failed creating certificate directory: {$newpath}");
+                    } else if (!copy($oldpath .'/'. $file, $newpath .'/'. $file)) {
+                        install_msg("\n pm_migrate_certificate_files(): Failed copying certificate file: {$oldpath}/{$file} to {$newpath}/{$file}");
                     }
                 }
-                closedir($dh);
             }
+            closedir($dh);
         }
     }
     return $result;

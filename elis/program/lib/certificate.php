@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @param  string  $expirydate       A string representing the time that the certificate expires (optional).
  */
 function certificate_output_completion($person_fullname, $entity_name, $date_string, $expirydate = '', $border = '', $seal = '') {
-    global $CFG, $COURSE;
+    global $CFG;
 
     //use the TCPDF library
     require_once($CFG->libdir.'/pdflib.php');
@@ -65,8 +65,8 @@ function certificate_output_completion($person_fullname, $entity_name, $date_str
     if (!empty($border)) {
         if (file_exists($CFG->dirroot .'/elis/program/pix/certificate/borders/'. $border)) {
             $pdf->Image($CFG->dirroot .'/elis/program/pix/certificate/borders/'. $border, 0, 0, 10.25, 7.75);
-        } else if (file_exists($CFG->dataroot .'/'. $COURSE->id .'/elis/program/pix/certificate/borders/'. $border)) {
-            $pdf->Image($CFG->dataroot .'/'. $COURSE->id .'/elis/program/pix/certificate/borders/'. $border, 0, 0, 10.25, 7.75);
+        } else if (file_exists($CFG->dataroot .'/elis/program/pix/certificate/borders/'. $border)) {
+            $pdf->Image($CFG->dataroot .'/elis/program/pix/certificate/borders/'. $border, 0, 0, 10.25, 7.75);
         }
     }
 
@@ -75,8 +75,8 @@ function certificate_output_completion($person_fullname, $entity_name, $date_str
     if (!empty($seal)) {
         if (file_exists($CFG->dirroot .'/elis/program/pix/certificate/seals/'. $seal)) {
             $pdf->Image($CFG->dirroot .'/elis/program/pix/certificate/seals/'. $seal, 8.0, 5.8);
-        } else if (file_exists($CFG->dataroot .'/'. $COURSE->id .'/elis/program/pix/certificate/seals/' . $seal)) {
-            $pdf->Image($CFG->dataroot .'/'. $COURSE->id .'/elis/program/pix/certificate/seals/'. $seal, 8.0, 5.8);
+        } else if (file_exists($CFG->dataroot .'/elis/program/pix/certificate/seals/' . $seal)) {
+            $pdf->Image($CFG->dataroot .'/elis/program/pix/certificate/seals/'. $seal, 8.0, 5.8);
         }
     }
 
@@ -116,7 +116,7 @@ function certificate_output_completion($person_fullname, $entity_name, $date_str
 }
 
 function cm_certificate_get_borders() {
-    global $CFG, $COURSE;
+    global $CFG;
 
     // Add default images
     $my_path = "{$CFG->dirroot}/elis/program/pix/certificate/borders";
@@ -135,7 +135,7 @@ function cm_certificate_get_borders() {
 
     // Add custom images
     cm_certificate_check_data_path('borders');
-    $my_path = "{$CFG->dataroot}/{$COURSE->id}/elis/program/pix/certificate/borders";
+    $my_path = "{$CFG->dataroot}/elis/program/pix/certificate/borders";
     if (file_exists($my_path) && $handle = opendir($my_path)) {
         while (false !== ($file = readdir($handle))) {
             if (strpos($file, '.png',1)||strpos($file, '.jpg',1) ) {
@@ -158,7 +158,7 @@ function cm_certificate_get_borders() {
 }
 
 function cm_certificate_get_seals() {
-    global $CFG, $COURSE;
+    global $CFG;
 
     // Add default images
     $my_path = "{$CFG->dirroot}/elis/program/pix/certificate/seals";
@@ -177,7 +177,7 @@ function cm_certificate_get_seals() {
 
     // Add custom images
     cm_certificate_check_data_path('seals');
-    $my_path = "{$CFG->dataroot}/{$COURSE->id}/elis/program/pix/certificate/seals";
+    $my_path = "{$CFG->dataroot}/elis/program/pix/certificate/seals";
     if (file_exists($my_path) && $handle = opendir($my_path)) {
         while (false !== ($file = readdir($handle))) {
             if (strpos($file, '.png',1)||strpos($file, '.jpg',1) ) {
@@ -200,9 +200,9 @@ function cm_certificate_get_seals() {
 }
 
 function cm_certificate_check_data_path($imagetype) {
-    global $CFG, $COURSE;
+    global $CFG;
 
-    $path_array = array($COURSE->id, 'elis', 'program', 'pix', 'certificate', $imagetype);
+    $path_array = array('elis', 'program', 'pix', 'certificate', $imagetype);
     $full_path = $CFG->dataroot;
     foreach ($path_array as $path) {
         $full_path .= '/' . $path;
