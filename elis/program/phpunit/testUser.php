@@ -55,6 +55,7 @@ class userTest extends elis_database_test {
             field_contextlevel::TABLE => 'elis_core',
             field_category_contextlevel::TABLE => 'elis_core',
             user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
         );
     }
 
@@ -110,6 +111,7 @@ class userTest extends elis_database_test {
         $dataset->addTable('user_info_field', elis::component_file('program', 'phpunit/user_info_field.csv'));
         $dataset->addTable('user_info_data', elis::component_file('program', 'phpunit/user_info_data.csv'));
         $dataset->addTable(user::TABLE, elis::component_file('program', 'phpunit/pmuser.csv'));
+        $dataset->addTable(usermoodle::TABLE, elis::component_file('program', 'phpunit/usermoodle.csv'));
         $dataset->addTable(field_category::TABLE, elis::component_file('program', 'phpunit/user_field_category.csv'));
         $dataset->addTable(field::TABLE, elis::component_file('program', 'phpunit/user_field.csv'));
         $dataset->addTable(field_owner::TABLE, elis::component_file('program', 'phpunit/user_field_owner.csv'));
@@ -212,12 +214,12 @@ class userTest extends elis_database_test {
         $src->save();
 
         // read it back
-        $retr = new user(103, null, array(), false, array(), self::$overlaydb);
+        $retr = new user($src->id, null, array(), false, array(), self::$overlaydb);
         $this->assertEquals($src->firstname, $retr->firstname);
         $this->assertEquals($src->lastname, $retr->lastname);
 
         // check the Moodle user
-        $retr = self::$overlaydb->get_record('user', array('id' => 100));
+        $retr = self::$overlaydb->get_record('user', array('id' => 100)); // TBV
         profile_load_data($retr);
         $this->assertEquals($src->firstname, $retr->firstname);
         $this->assertEquals($src->lastname, $retr->lastname);
