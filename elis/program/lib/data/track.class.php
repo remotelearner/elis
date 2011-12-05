@@ -133,7 +133,7 @@ class track extends data_object_with_custom_fields {
 
         // Pull up the curricula assignment record(s)
         //        $curcourse = curriculumcourse_get_list_by_curr($this->curid);
-        $sql = 'SELECT ccc.*, cc.idnumber ' .
+        $sql = 'SELECT ccc.*, cc.idnumber, cc.name ' .
             'FROM {' . curriculumcourse::TABLE . '} ccc ' .
             'INNER JOIN {' . course::TABLE . '} cc ON cc.id = ccc.courseid '.
             'WHERE ccc.curriculumid = ? ';
@@ -180,10 +180,8 @@ class track extends data_object_with_custom_fields {
 
             // Create class
             if (!($classid = $classojb->auto_create_class(array('courseid' => $curcourec->courseid)))) {
-                cm_error('Could not create class');
-                echo '<br>could not create class';
-                die();
-                return false;
+                cm_error(get_string('error_creating_class', 'elis_program', $curcourec->name));
+                continue;
             }
 
             // attach course to moodle template
@@ -790,15 +788,23 @@ class trackassignment extends elis_data_object {
                 $enrol->classid = $this->classid;
                 $enrol->userid = $user->userid;
                 $enrol->enrolmenttime = $timenow;
-                $result = $enrol->save(array('prereq' => 1, 'waitlist' => 1));
-                if ($result === true) {
+                try {
+                    $enrol->save();
                     $count++;
-                } else if (is_object($result)) {
-                    if ($result->code = 'user_waitlisted') {
-                        $waitlisted++;
-                    } else if ($result->code = 'user_waitlisted') {
-                        $prereq++;
-                    }
+                } catch (unsatisfied_prerequisites_exception $ex) {
+                    $prereq++;
+
+                } catch (pmclass_enrolment_limit_validation_exception $ex) {
+                    // autoenrol into waitlist
+                    $wait_record = new stdClass;
+                    $wait_record->userid = $user->userid;
+                    $wait_record->classid = $this->classid;
+                    //$wait_record->enrolmenttime = $timenow;
+                    $wait_record->timecreated = $timenow;
+                    $wait_record->position = 0;
+                    $wait_list = new waitlist($wait_record);
+                    $wait_list->save();
+                    $waitlisted++;
                 }
             }
 

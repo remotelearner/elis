@@ -231,7 +231,7 @@ class trackassignmentpage extends associationpage {
         return new trackassignment_page_table($items, $columns, $this);
     }
 
-    function do_autocreate() {
+    function do_autocreate() { // TBD: display_autocreate() for error messages?
         $id = required_param('id', PARAM_INT);
 
         $track = new track($id);
@@ -241,7 +241,9 @@ class trackassignmentpage extends associationpage {
         redirect($tmppage->url, get_string('track_success_autocreate','elis_program'));
     }
 
-    function do_enrolall() {
+    function display_enrolall() {
+        // ELIS-3761: changed from do_enrolall()
+        // since enrol_all_track_users_in_class() outputs message(s)!
         $id = required_param('id', PARAM_INT);
         $aid = required_param('association_id', PARAM_INT);
 
@@ -249,7 +251,7 @@ class trackassignmentpage extends associationpage {
         $trackassignment->enrol_all_track_users_in_class();
 
         $tmppage = new trackassignmentpage(array('id' => $id));
-        redirect($tmppage->url);
+        redirect($tmppage->url, '', 15);
     }
 }
 
