@@ -33,6 +33,7 @@ $string['data_object_validation_unique'] = '{$a->tablename} record must have uni
 $string['date'] = 'Date filter';
 $string['date_help'] = '<h1>Date filter</h1>
 <p>This filter allows you to filter information from before and/or after selected dates.</p>';
+$string['done'] = 'done';
 $string['elis'] = 'ELIS';
 $string['elisversion'] = '<strong>ELIS Version:</strong> {$a}';
 $string['finish'] = 'Finish';
@@ -168,6 +169,25 @@ $string['nogradeitems'] = 'No grade items found';
 $string['noidnumber'] = 'No ID number';
 
 $string['pluginname'] = 'ELIS Core';
+$string['preup_ac_check'] = 'Checking for ELIS Alfresco configuration settings';
+$string['preup_ac_error'] = 'error migrating configuration settings';
+$string['preup_ac_found'] = 'found configuration settings';
+$string['preup_ac_success'] = 'migrated configuration settings';
+$string['preup_as_check'] = 'Checking if the Alfresco SSO auth plugin is enabled';
+$string['preup_as_error'] = 'error switching auth plugin to ELIS Files SSO';
+$string['preup_as_found'] = 'found enabled auth plugin';
+$string['preup_as_success'] = 'migrated auth plugin settings';
+$string['preup_dupfound'] = 'found duplicate records';
+$string['preup_ec_check'] = 'Checking for ELIS Alfresco capabilities associated with role';
+$string['preup_ec_error'] = 'error migrating capability settings';
+$string['preup_ec_found'] = 'found capabilities associated with a role';
+$string['preup_ec_success'] = 'migrated capability settings';
+$string['preup_error_tablecreate'] = 'error creating grade_letters_temp table';
+$string['preup_error_uniquecopy'] = 'error copying unique records';
+$string['preup_gl_check'] = 'Checking for duplicate records in grade_letters table';
+$string['preup_gl_success'] = 'removed duplicate grade_letters records';
+$string['preup_up_check'] = 'Checking for duplicate records in user_preferences table';
+$string['preup_up_success'] = 'removed duplicate user_preferences records';
 $string['profilefield_help'] = '<h1>Profile filter</h1>
 <p>This filter allows you to filter users based on values of profile fields.
 The filter can be applied on a single profile field or an all profile fields.
@@ -202,7 +222,7 @@ $string['subplugintype_eliscoreplugins_plural'] = 'General plugins';
 $string['subplugintype_elisfields_plural'] = 'Custom field types';
 $string['text'] = 'Text filter';
 $string['text_help'] = '<h1>Text filter</h1>
-<p>This filter allows you to filter information based on a free form text. 
+<p>This filter allows you to filter information based on a free form text.
 The filter has the following options:</p>
 <ul>
 <li>contains - this option allows only information that contains the text entered (if no text is entered, then the filter is disabled)</li>

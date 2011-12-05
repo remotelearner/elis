@@ -30,7 +30,10 @@
 define('CLI_SCRIPT', true);
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+require_once($CFG->libdir.'/ddllib.php');
 
+
+$dbman = $DB->get_manager();
 
 /*
  * Handle duplicate records in the mdl_grade_letters table.
@@ -38,163 +41,182 @@ require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 
 $status = true;
 
-// Detect if we have any duplicate records before we try to remove duplicates
-$sql = "SELECT contextid, lowerboundary, letter, COUNT(*) count
+mtrace(' >>> '.get_string('preup_gl_check', 'elis_core'));
+
+// Detect if we have any duplicate records that need removal
+$sql = "SELECT contextid, lowerboundary, letter, COUNT('x') count
         FROM {grade_letters}
         GROUP BY contextid, lowerboundary, letter
-        ORDER BY count DESC";
+        HAVING COUNT('x') > 1";
 
-if ($rec = $DB->get_records_sql($sql, array(), 0, 1)) {
-    $count = current($rec);
+if ($rec = $DB->record_exists_sql($sql, array())) {
+    mtrace(' --- '.get_string('preup_dupfound', 'elis_core'));
 
-    if ($count->count > 1) {
+    $table = new XMLDBTable('grade_letters_temp');
+    $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+    $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+    $table->add_field('lowerboundary', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+    $table->add_field('letter', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+    $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+    try {
+        $dbman->create_table($table);
+    } catch (Excpetion $e) {
+        mtrace(' xxx '.get_string('preup_error_tablecreate', 'elis_core'));
+
+        $status = false;
+    }
+
+    if ($status) {
+        $sql = 'INSERT INTO {grade_letters_temp} (contextid, lowerboundary, letter)
+                SELECT contextid, lowerboundary, letter
+                FROM {grade_letters}
+                GROUP BY contextid, lowerboundary, letter
+                ORDER BY id ASC';
+
         try {
-            $DB->execute('CREATE TABLE {grade_letters_temp} LIKE {grade_letters}');
-        } catch (Excpetion $e) {
+            $DB->execute($sql);
+        } catch (Exception $e) {
+            mtrace(' xxx '.get_string('preup_error_uniquecopy', 'elis_core'));
+
             $status = false;
+            break;
         }
+    }
 
-        if ($status) {
-            $tx = $DB->start_delegated_transaction();
+    if ($status) {
+        try {
+            $dbman->drop_table(new XMLDBTable('grade_letters'));
+            $dbman->rename_table($table, 'grade_letters');
 
-            $sql = 'INSERT INTO {grade_letters_temp} (contextid, lowerboundary, letter)
-                    SELECT contextid, lowerboundary, letter
-                    FROM {grade_letters}
-                    GROUP BY contextid, lowerboundary, letter';
+            mtrace(' --- '.get_string('preup_gl_success', 'elis_core'));
+        } catch (Exception $e) {
+            mtrace(' xxx '.get_string('preup_error_uniquecopy', 'elis_core'));
 
-            try {
-                $DB->execute($sql);
-            } catch (Exception $e) {
-                $status = false;
-                $tx->rollback($e);
-                $tx->dispose();
-                break;
-            }
-
-            $tx->allow_commit();
-            $tx->dispose();
-        }
-
-        if ($status) {
-            try {
-                $DB->execute('DROP TABLE {grade_letters}');
-                $DB->execute('RENAME TABLE {grade_letters_temp} TO {grade_letters}');
-            } catch (Exception $e) {
-                $status = false;
-            }
+            $status = false;
         }
     }
 }
+
+mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 
 
 /*
 * Handle duplicate records in the mdl_user_preferences table.
 */
 
-$status = true;
+mtrace(' >>> '.get_string('preup_up_check', 'elis_core'));
 
 // Detect if we have any duplicate records before we try to remove duplicates
-$sql = "SELECT userid, name, value, COUNT(*) count
+$sql = "SELECT userid, name, value, COUNT('x') count
         FROM {user_preferences}
         GROUP BY userid, name, value
+        HAVING COUNT('x') > 1
         ORDER BY count DESC";
 
-if ($rec = $DB->get_records_sql($sql, array(), 0, 1)) {
-    $count = current($rec);
+if ($rec = $DB->record_exists_sql($sql, array())) {
+    $table = new XMLDBTable('user_preferences');
+    $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+    $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+    $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+    $table->add_field('value', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+    $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
 
-    if ($count->count > 1) {
-        try {
-            $DB->execute('CREATE TABLE {user_preferences_temp} LIKE {user_preferences}');
-        } catch (Excpetion $e) {
-            $status = false;
-        }
+    try {
+        $dbman->create_table($table);
+    } catch (Excpetion $e) {
+        mtrace(' xxx '.get_string('preup_error_tablecreate', 'elis_core'));
+
+        $status = false;
+    }
 
     if ($status) {
-        $tx = $DB->start_delegated_transaction();
-
         $sql = 'INSERT INTO {user_preferences_temp} (userid, name, value)
                 SELECT userid, name, value
                 FROM {user_preferences}
-                GROUP BY userid, name, value';
+                GROUP BY userid, name, value
+                ORDER BY id ASC';
 
-            try {
-                $DB->execute($sql);
-            } catch (Exception $e) {
-                $status = false;
-                $tx->rollback($e);
-                $tx->dispose();
-            }
+        try {
+            $DB->execute($sql);
+        } catch (Exception $e) {
+            mtrace(' xxx '.get_string('preup_error_uniquecopy', 'elis_core'));
 
-            if ($status) {
-                $tx->allow_commit();
-                $tx->dispose();
-            }
+            $status = false;
         }
+    }
 
-        if ($status) {
-            try {
-                $DB->execute('DROP TABLE {user_preferences}');
-                $DB->execute('RENAME TABLE {user_preferences_temp} TO {user_preferences}');
-            } catch (Exception $e) {
-                $status = false;
-            }
+    if ($status) {
+        try {
+            $dbman->drop_table(new XMLDBTable('user_preferences'));
+            $dbman->rename_table($table, 'user_preferences');
+
+            mtrace(' --- '.get_string('preup_up_success', 'elis_core'));
+        } catch (Exception $e) {
+            mtrace(' xxx '.get_string('preup_error_uniquecopy', 'elis_core'));
+
+            $status = false;
         }
     }
 }
+
+mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 
 
 /*
  * Migrate the old Alfresco capability / role assignments to new ELIS Files capabilities.
  */
 
-if ($status) {
-    $tx = $DB->start_delegated_transaction();
+mtrace(' >>> '.get_string('preup_ec_check', 'elis_core'));
 
+if ($status) {
     try {
-        // Find all of the capabilities that are
+        // Find all of the capabilities that are set to enabled
         $select = 'capability LIKE :cap AND permission LIKE :perm';
         $params = array('cap' => 'block/repository:%', 'perm' => CAP_ALLOW);
 
         if ($rcaps = $DB->get_recordset_select('role_capabilities', $select, $params, 'timemodified ASC', 'id, capability')) {
+            mtrace(' --- '.get_string('preup_ec_found', 'elis_core'));
+
             foreach ($rcaps as $rcap) {
                 $rcap->capability = str_replace('block/repository:', 'repository/elis_files:', $rcap->capability);
                 $DB->update_record_raw('role_capabilities', $rcap, true);
             }
 
             $rcaps->close();
+            mtrace(' --- '.get_string('preup_ec_success', 'elis_core'));
         }
     } catch (Exception $e) {
+        mtrace(' xxx '.get_string('preup_ec_error', 'elis_core'));
+
         $status = false;
-        $tx->rollback($e);
     }
-
-    if ($status) {
-        $tx->allow_commit();
-    }
-
-    $tx->dispose();
 }
+
+mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 
 
 /*
  * Migrate the old Alfresco repository plugin configuration settings to the new ELIS Files repository plugin.
  */
 
-if ($status) {
-    $tx = $DB->start_delegated_transaction();
+mtrace(' >>> '.get_string('preup_ac_check', 'elis_core'));
 
+if ($status) {
     try {
     // Find all of the old Alfresco repository plugin capabilities that are set to enabled
         $select = 'name LIKE :name';
         $params = array('name' => 'repository_alfresco%');
 
         if ($cfgs = $DB->get_recordset_select('config', $select, $params, 'name ASC')) {
+            mtrace(' --- '.get_string('preup_ac_found', 'elis_core'));
+
             foreach ($cfgs as $cfg) {
                 // We need to create a new entry in the mdl_plugin_config table and remove the mdl_config values
                 $pcfg = new stdClass;
                 $pcfg->plugin = 'elis_files';
 
-                // Soem variables should not be migrated and need to just be deleted
+                // Some variables should not be migrated and need to just be deleted
                 if ($cfg->name == 'repository_alfresco_version' || $cfg->name == 'repository_alfresco_cachetime') {
                     continue;
                 }
@@ -217,42 +239,41 @@ if ($status) {
 
             // Delete the old plugin configuration values
             $DB->delete_records_select('config', $select, $params);
+            mtrace(' --- '.get_string('preup_ac_success', 'elis_core'));
         }
     } catch (Exception $e) {
+        mtrace(' xxx '.get_string('preup_ac_error', 'elis_core'));
+
         $status = false;
-        $tx->rollback($e);
     }
-
-    if ($status) {
-        $tx->allow_commit();
-    }
-
-    $tx->dispose();
 }
+
+mtrace(' ... '.get_string('done', 'elis_core')."!\n");
+
 
 /*
  * Ensure that if the Alfresco SSO auth plugin is enabled that it is replaced witht the ELIS Files SSO plugin instead.
  */
 
-if ($status) {
-    $tx = $DB->start_delegated_transaction();
+mtrace(' >>> '.get_string('preup_as_check', 'elis_core'));
 
+if ($status) {
     try {
         $auth = $DB->get_field('config', 'value', array('name' => 'auth'));
 
         $auth = str_replace('alfrescosso', 'elisfilessso', $auth, $count);
 
         if ($count > 0) {
+            mtrace(' --- '.get_string('preup_as_found', 'elis_core'));
+
             $DB->set_field('config', 'value', $auth, array('name' => 'auth'));
+            mtrace(' --- '.get_string('preup_as_success', 'elis_core'));
         }
     } catch (Excpetion $e) {
+        mtrace(' xxx '.get_string('preup_as_error', 'elis_core'));
+
         $status = false;
-        $tx->rollback($e);
     }
-
-    if ($status) {
-        $tx->allow_commit();
-    }
-
-    $tx->dispose();
 }
+
+mtrace(' ... '.get_string('done', 'elis_core')."!\n");
