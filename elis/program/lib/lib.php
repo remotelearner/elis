@@ -79,7 +79,8 @@ function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
             echo ' ', html_writer::tag('b', $letter);
         } else {
             $url = clone($moodle_url); // TBD
-            $url->params(array($pname => $letter));
+            // Set current page to 0
+            $url->params(array($pname => $letter, 'page' => 0));
             echo ' ', html_writer::link($url, $letter);
         }
     }
@@ -822,7 +823,7 @@ function pm_moodle_user_to_pm($mu) {
         $um->muserid  = $mu->id;
         $um->idnumber = $mu->idnumber;
         $um->save();
-    } 
+    }
 
     return true;
 }
@@ -976,7 +977,7 @@ function usermanagement_get_users($sort = 'name', $dir = 'ASC', $startrec = 0,
     $FULLNAME = $DB->sql_concat('firstname', "' '", 'lastname');
     $select   = 'SELECT id, idnumber, country, language, timecreated, '.
                $FULLNAME . ' as name ';
-    //do not use a user table alias because user-based filters operate on the user table directly               
+    //do not use a user table alias because user-based filters operate on the user table directly
     $tables   = 'FROM {'. user::TABLE .'} ';
     $where    = array();
     $params   = array();
