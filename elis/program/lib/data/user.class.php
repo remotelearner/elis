@@ -247,7 +247,7 @@ class user extends data_object_with_custom_fields {
                       ON mu.id = um.muserid
                     JOIN {".user::TABLE."} cu
                       ON um.cuserid = cu.id
-                    WHERE cu.id = ? 
+                    WHERE cu.id = ?
                       AND mu.deleted = 0";
 
             return $this->_db->get_record_sql($sql, array($this->id));
@@ -303,6 +303,13 @@ class user extends data_object_with_custom_fields {
      */
     public function save($strict_match = true) {
         $isnew = empty($this->id);
+
+        $now = time();
+        if ($isnew) {
+            $this->timecreated = $now;
+        } else {
+            $this->timemodified = $now;
+        }
 
         parent::save();
 
