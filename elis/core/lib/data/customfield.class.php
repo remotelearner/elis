@@ -727,8 +727,9 @@ abstract class field_data extends elis_data_object {
             $todelete = array();
             $existing = array();
             foreach ($records as $rec) {
-                if (in_array($rec->data, $data)) {
-                    $existing[] = $rec->data;
+                $val = $field->cast_to_type($rec->data);
+                if (in_array($val, $data)) {
+                    $existing[] = $val;
                 } else {
                     $todelete[] = $rec;
                 }
