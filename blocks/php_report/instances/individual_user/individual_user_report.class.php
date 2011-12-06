@@ -396,14 +396,15 @@ class individual_user_report extends table_report {
         }
 
         // Figure out the number of completed credits for the curriculum
-        $numcomplete_subquery = "SELECT sum(innerclsenr.credits)
+         $numcomplete_subquery = "SELECT sum(innerclsenr.credits)
                                  FROM {". student::TABLE ."} innerclsenr
-                                 LEFT JOIN {". curriculumstudent::TABLE ."} innercurass
-                                     ON innercurass.userid = innerclsenr.userid
+                                 JOIN {". pmclass::TABLE ."} innercls ON innercls.id = innerclsenr.classid
+                                 JOIN {". course::TABLE ."} innercrs ON innercls.courseid = innercrs.id
+                                 JOIN {". curriculumcourse::TABLE ."} innercurcrs
+                                     ON innercurcrs.courseid = innercrs.id
                                  WHERE innerclsenr.userid = usr.id
-                                     AND innercurass.curriculumid = cur.id
-                                     AND innerclsenr.classid = cls.id
-                                ";
+                                     AND innercurcrs.curriculumid = cur.id
+                                     AND innerclsenr.completestatusid = " . STUSTATUS_PASSED ;
 
         // Main query
         $sql = "SELECT {$columns},
