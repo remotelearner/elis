@@ -6,6 +6,7 @@ require_once ($CFG->dirroot . '/lib/formslib.php');
 
 class resultsconfigform extends moodleform {
     public $title;
+    public $maxrowid = 0;
 
     public function __construct($action=null, $customdata=null) {
         $this->populate_title();
@@ -22,12 +23,45 @@ class resultsconfigform extends moodleform {
         $PAGE->requires->js('/elis/program/js/results_engine/results_config.js', true);
 
         $mform =& $this->_form;
+        $mform->addElement('header', 'activationrules',$this->title);
+        if (!empty($this->_customdata['results'])) {
+            $mform->addElement('html',$this->_customdata['results']);
+        }
+
+        $stored_rowids = array();
+        foreach ($this->_customdata['defaults'] as $i => $row) {
+            if (is_numeric($i) && !empty($row['rowid'])) {
+                $stored_rowids[$row['rowid']] = $row['rowid'];
+            }
+        }
+
+        if (!empty($stored_rowids)) {
+            $this->maxrowid = max($stored_rowids);
+        }
+
         $cd=(array)$this->_customdata;
         $cd['nrc']=(isset($cd['nrc']))?$cd['nrc']:1;
-        $mform->addElement('header', 'activationrules',$this->title);
-        for($i=1;$i<=$cd['nrc'];$i++){
-            $this->generate_row($i,$mform);
+        $used_rowids = array();
+        for($i=0;$i<$cd['nrc'];$i++){
+
+            if (empty($this->_customdata['defaults'][$i]['rowid'])) {
+                $this->maxrowid++;
+                $id = $this->maxrowid;
+            } else {
+                $id = $this->_customdata['defaults'][$i]['rowid'];
+            }
+
+            if (isset($used_rowids[$id])) {
+                $this->maxrowid++;
+                $id = $this->maxrowid;
+            }
+
+            $used_rowids[$id] = $id;
+
+            $this->generate_row($i,$mform,$id);
+
         }
+
 
         $mform->addElement('hidden', 'rowcount',$cd['nrc'],array('id'=>'rowcount'));
         $mform->addElement('submit','addrange',get_string('results_add_another_score_btn', 'elis_program'),array('onclick'=>'$(\'#rowcount\').val(parseInt($(\'#rowcount\').val())+1)'));
@@ -53,11 +87,12 @@ class resultsconfigform extends moodleform {
         return true;
     }
 
-    protected function generate_row($i,&$mform,$id='d') {
+    protected function generate_row($i,&$mform,$id=0) {
         global $OUTPUT;
 
         $textgroup=array();
-        $textgroup[]=&$mform->createElement('static','grouplabel','','Range '.$i.':');
+        $textgroup[]=&$mform->createElement('static','grouplabel','','Range '.($i+1).':');
+        $textgroup[]=&$mform->createElement('hidden','rowid','Id',array('size'=>5));
         $textgroup[]=&$mform->createElement('static','minlabel','','Min');
         $textgroup[]=&$mform->createElement('text','mininput','Min',array('size'=>5));
         $textgroup[]=&$mform->createElement('static','maxlabel','','Max');
@@ -68,14 +103,16 @@ class resultsconfigform extends moodleform {
         $this->generate_row_additional_elements($textgroup,$i);
 
         $mform->addGroup($textgroup,'textgroup_'.$i);
+        $mform->setDefault('textgroup_'.$i.'[rowid]',$id);
+
         if (!empty($this->_customdata['defaults'][$i]))
         {
-             $fields=array('min','max','name');
-             foreach ($fields as $f) {
-                 if (isset($this->_customdata['defaults'][$i][$f])) {
-                     $mform->setDefault('textgroup_'.$i.'['.$f.'input]',$this->_customdata['defaults'][$i][$f]);
-                 }
-             }
+            $fields=array('min','max','name');
+            foreach ($fields as $f) {
+                if (isset($this->_customdata['defaults'][$i][$f])) {
+                    $mform->setDefault('textgroup_'.$i.'['.$f.'input]',$this->_customdata['defaults'][$i][$f]);
+                }
+            }
         }
     }
 
