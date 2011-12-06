@@ -203,11 +203,10 @@ class studentcurriculumpage extends associationpage2 {
         $context = $this->get_context();
         $id = $this->required_param('id', PARAM_INT);
 
-        $pagenum = optional_param('page', 0, PARAM_INT);
-        $perpage = 30;
-
-        $sort = optional_param('sort', 'name', PARAM_ACTION);
-        $order = optional_param('dir', 'ASC', PARAM_ACTION);
+        $pagenum = $this->optional_param('page', 0, PARAM_INT);
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
+        $sort    = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $order   = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
         if ($order != 'DESC') {
             $order = 'ASC';
         }
@@ -280,10 +279,9 @@ class studentcurriculumpage extends associationpage2 {
         $id = $this->required_param('id', PARAM_INT);
 
         $pagenum = $this->optional_param('page', 0, PARAM_INT);
-        $perpage = 30;
-
-        $sort = $this->optional_param('sort', 'name', PARAM_ACTION);
-        $order = $this->optional_param('dir', 'ASC', PARAM_ACTION);
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
+        $sort    = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $order   = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
         if ($order != 'DESC') {
             $order = 'ASC';
         }
@@ -306,31 +304,75 @@ class studentcurriculumpage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
-        $sql = 'SELECT curass.id, curass.curriculumid curid, curass.completed, curass.timecompleted, curass.credits,
+        $where = 'id IN (SELECT curriculumid FROM {'.curriculumstudent::TABLE.'} WHERE userid=:userid1)';
+        $sql = 'SELECT curass.id, curass.curriculumid AS curid, curass.completed, curass.timecompleted, curass.credits,
                 cur.idnumber, cur.name, cur.description, cur.reqcredits, curcrscnt.count as numcourses
                   FROM {'.curriculumstudent::TABLE.'} curass
                   JOIN {'.curriculum::TABLE.'} cur ON cur.id = curass.curriculumid
                   LEFT JOIN (SELECT curriculumid, COUNT(courseid) AS count
-                               FROM {'.curriculumcourse::TABLE.'}
+                               FROM {'.curriculumcourse::TABLE."}
                            GROUP BY curriculumid) curcrscnt ON cur.id = curcrscnt.curriculumid
-                 WHERE curass.userid = :userid
-              ORDER BY '.$sortclause;
-        $where = 'id IN (SELECT curriculumid FROM {'.curriculumstudent::TABLE.'} WHERE userid=:userid)';
+                 WHERE curass.userid = :userid2
+                   AND cur.{$where}
+              ORDER BY $sortclause";
 
-        $params = array('userid'=>$id);
+        $params = array('userid1' => $id, 'userid2' => $id);
 
         $count = $DB->count_records_select(curriculum::TABLE, $where, $params);
-        $curricula = $DB->get_records_sql($sql, $params, $where, $pagenum*$perpage, $perpage);
+        $curricula = $DB->get_records_sql($sql, $params, $pagenum*$perpage, $perpage);
 
         return array($curricula, $count);
     }
 
     function get_records_from_selection($record_ids) {
-        $sort = $this->optional_param('sort', 'name', PARAM_ACTION);
-        $order = $this->optional_param('dir', 'ASC', PARAM_ACTION);
+        global $DB;
+        $id      = $this->required_param('id', PARAM_INT);
+        $sort    = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $order   = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
+        $page    = $this->optional_param('page', 0, PARAM_INT);
 
-        $records = curriculum::find(new in_list_filter('id', $record_ids), array($sort => $order));
-        return $records;
+        if ($order != 'DESC') {
+            $order = 'ASC';
+        }
+
+        static $sortfields = array(
+            'name' => 'name',
+            'idnumber' => 'idnumber',
+            'description' => 'description',
+            'reqcredits' => 'reqcredits',
+            'numcourses' => 'numcourses',
+            'timecompleted' => 'timecompleted',
+            'credits' => 'credits',
+            );
+        if (!array_key_exists($sort, $sortfields)) {
+            $sort = key($sortfields);
+        }
+        if ($this->is_assigning()) {
+            return curriculum::find(new in_list_filter('id', $record_ids), array($sort => $order), $page * $perpage, $perpage);
+        }
+
+        if (is_array($sortfields[$sort])) {
+            $sortclause = implode(', ', array_map(create_function('$x', "return \"\$x $order\";"), $sortfields[$sort]));
+        } else {
+            $sortclause = "{$sortfields[$sort]} $order";
+        }
+
+        $where = 'id IN (SELECT curriculumid FROM {'.curriculumstudent::TABLE.'} WHERE userid=:userid1)';
+        $sql = 'SELECT curass.id, curass.curriculumid AS curid, curass.completed, curass.timecompleted, curass.credits,
+                cur.idnumber, cur.name, cur.description, cur.reqcredits, curcrscnt.count as numcourses
+                  FROM {'.curriculumstudent::TABLE.'} curass
+                  JOIN {'.curriculum::TABLE.'} cur ON cur.id = curass.curriculumid
+                  LEFT JOIN (SELECT curriculumid, COUNT(courseid) AS count
+                               FROM {'.curriculumcourse::TABLE."}
+                           GROUP BY curriculumid) curcrscnt ON cur.id = curcrscnt.curriculumid
+                 WHERE curass.userid = :userid2
+                   AND cur.{$where}
+                   AND curass.id IN (". implode(',', $record_ids) .")
+              ORDER BY $sortclause";
+
+        $params = array('userid1' => $id, 'userid2' => $id);
+        return $DB->get_records_sql($sql, $params, $page * $perpage, $perpage);
     }
 
     protected function create_selection_table($records, $baseurl) {
@@ -347,8 +389,8 @@ class studentcurriculumpage extends associationpage2 {
         }
 
         //determine sort order (default to lastname, firstname ascending)
-        $sort = optional_param('sort', 'name', PARAM_ALPHA);
-        $dir  = optional_param('dir', 'ASC', PARAM_ALPHA);
+        $sort = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $dir  = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
         if ($dir !== 'DESC') {
             $dir = 'ASC';
         }
@@ -568,12 +610,11 @@ class curriculumstudentpage extends associationpage2 {
         $context = $this->get_context();
         $id = required_param('id', PARAM_INT);
 
-        $pagenum = optional_param('page', 0, PARAM_INT);
-        $perpage = 30;
-
+        $pagenum = $this->optional_param('page', 0, PARAM_INT);
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
+        $sort    = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $order   = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
         $params = array();
-        $sort = optional_param('sort', 'name', PARAM_ACTION);
-        $order = optional_param('dir', 'ASC', PARAM_ACTION);
         if ($order != 'DESC') {
             $order = 'ASC';
         }
@@ -642,12 +683,11 @@ class curriculumstudentpage extends associationpage2 {
         $context = $this->get_context();
         $id = required_param('id', PARAM_INT);
 
-        $pagenum = optional_param('page', 0, PARAM_INT);
-        $perpage = 30;
-
-        $params = array();
-        $sort = optional_param('sort', 'name', PARAM_ACTION);
-        $order = optional_param('dir', 'ASC', PARAM_ACTION);
+        $pagenum = $this->optional_param('page', 0, PARAM_INT);
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
+        $sort    = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $order   = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
+        $params  = array();
         if ($order != 'DESC') {
             $order = 'ASC';
         }
@@ -668,14 +708,17 @@ class curriculumstudentpage extends associationpage2 {
             $sortclause = "{$sortfields[$sort]} $order";
         }
 
+        $where = 'id IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid=:id1)';
         //do not use a user table alias because user-based filters operate on the user table directly
         $sql = 'SELECT curass.id, {'.user::TABLE.'}.id AS userid, firstname, lastname, idnumber, country, language, curass.timecreated
                 FROM {'.curriculumstudent::TABLE.'} curass
-                JOIN {'.user::TABLE.'} on curass.userid = {'.user::TABLE.'}.id
-                WHERE curass.curriculumid=:id';
-        $where = 'id IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid=:id)';
+                JOIN {'.user::TABLE.'}
+                  ON curass.userid = {'.user::TABLE.'}.id
+               WHERE curass.curriculumid=:id2
+                 AND {' .user::TABLE."}.{$where}";
 
-        $params['id'] = $id;
+        $params['id1'] = $id;
+        $params['id2'] = $id;
 
         $extrasql = $filter->get_sql_filter();
         if ($extrasql[0]) {
@@ -704,10 +747,12 @@ class curriculumstudentpage extends associationpage2 {
     }
 
     function get_records_from_selection($record_ids) {
-        $sort = optional_param('sort', 'name', PARAM_ACTION);
-        $order = optional_param('dir', 'ASC', PARAM_ACTION);
+        $sort    = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $order   = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
+        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
+        $page    = $this->optional_param('page', 0, PARAM_INT);
 
-        $records = user::find(new in_list_filter('id', $record_ids), array($sort => $order));
+        $records = user::find(new in_list_filter('id', $record_ids), array($sort => $order), $page * $perpage, $perpage);
         return $records;
     }
 
@@ -723,8 +768,8 @@ class curriculumstudentpage extends associationpage2 {
         }
 
         //determine sort order (default to lastname, firstname ascending)
-        $sort = optional_param('sort', 'name', PARAM_ALPHA);
-        $dir  = optional_param('dir', 'ASC', PARAM_ALPHA);
+        $sort = $this->optional_param('sort', 'name', PARAM_ALPHA);
+        $dir  = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
         if ($dir !== 'DESC') {
             $dir = 'ASC';
         }
