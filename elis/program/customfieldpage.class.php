@@ -410,6 +410,12 @@ class customfieldpage extends pm_page {
                             }
                         }
                     }
+
+                    // Format decimal numbers
+                    if(strcmp($data_array['datatype'],'num') == 0) {
+                        $defaultdata = $this->format_number($defaultdata);
+                    }
+
                     if (!is_object($defaultdata)) {
                         $data_array['defaultdata'] = $defaultdata;
                     }
@@ -429,6 +435,15 @@ class customfieldpage extends pm_page {
             }
             $form->display();
         }
+    }
+
+    // Removes extra zeros from a string
+    function format_number($number) {
+        $formatted = rtrim(format_float($number, 5),'0');
+        if (substr($formatted, -1) == '.') { //if last char is the decimal point
+            $formatted .= '0';
+        }
+        return $formatted;
     }
 
     function display_deletefield() {
