@@ -293,11 +293,26 @@ class userform extends cmform {
             $contextid = 0;
         }
 
+        /**
+         * TBD: Move the following code into an ELIS custom field/formslib
+         *      validation rule, which would work for all unqiue custom fields
+         */
         foreach ($fields as $field) {
             if ($field->forceunique) {
-                $fielddata = $DB->get_record($field->data_table(), 'fieldid', $field->id, 'data', $data["field_{$field->shortname}"]);
-                if ($fielddata && $fielddata->contextid != $contextid) {
-                    $errors["field_{$field->shortname}"] = get_string('valuealreadyused');
+                $datafield = 'data';
+                if ($field->data_type() == 'text') {
+                    //error_log("userform.class.php::field({$field->id}), datafield = {$datafield}, type = " . $field->data_type() );
+                    $datafield = $DB->sql_compare_text('data', 255); // TBV
+                }
+                $where = "fieldid = ? AND {$datafield} = ?";
+                $fielddata = $DB->get_recordset_select($field->data_table(), $where, array($field->id, $data["field_{$field->shortname}"]));
+                $fcount = $DB->count_records_select($field->data_table(), $where, array($field->id, $data["field_{$field->shortname}"]));
+                if (!empty($fielddata) && $fielddata->valid()) {
+                    $fdata = $fielddata->current();
+                    if ($fcount > 1 || $fdata->contextid != $contextid) {
+                        $errors["field_{$field->shortname}"] = get_string('valuealreadyused');
+                    }
+                    $fielddata->close();
                 }
             }
         }
@@ -305,4 +320,3 @@ class userform extends cmform {
         return $errors;
     }
 }
-?>
