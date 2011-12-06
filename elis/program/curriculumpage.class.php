@@ -197,6 +197,13 @@ class curriculumpage extends managementpage {
             'priority'    => array('header' => get_string('priority', 'elis_program'))
         );
 
+        if($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if(isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        }
+
         // Get list of users
         $items    = curriculum_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, curriculumpage::get_contexts('elis/program:program_view'));
         $numitems = curriculum_count_records($namesearch, $alpha, curriculumpage::get_contexts('elis/program:program_view'));
