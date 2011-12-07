@@ -1058,9 +1058,9 @@ class pm_custom_field_filter extends user_filter_type {
             $control = 'text';
         }
         require_once elis::plugin_file('elisfields_manual', "field_controls/{$control}.php");
+        $mform->setAdvanced($fieldname); // ELIS-3894: moved up
         call_user_func("{$control}_control_display", $mform, $mform, null, $this->_field, true);
 
-        $mform->setAdvanced($fieldname);
     }
 
     function check_data($formdata) {
