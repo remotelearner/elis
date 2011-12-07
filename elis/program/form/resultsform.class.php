@@ -328,6 +328,7 @@ class cmEngineForm extends cmform {
     function validate_fold($actiontype, $data) {
         $errors = array();
         $ranges = array();
+        $parsed = array();
 
         $prefix = $this->types[$actiontype];
 
@@ -354,7 +355,13 @@ class cmEngineForm extends cmform {
 
                 // Extract the element unique id
                 $parts      = explode('_', $key);
-                $keyprefix .= $parts[$instance];
+                $id         = $parts[$instance];
+
+                if (array_key_exists($id, $parsed)) {
+                    continue;
+                }
+
+                $keyprefix .= $id;
                 $keymin     = $keyprefix .'_min';
                 $keymax     = $keyprefix .'_max';
                 $keyselect  = $keyprefix .'_selected';
@@ -375,11 +382,17 @@ class cmEngineForm extends cmform {
 
                 // Only check the ranges if no other error has been found yet.
                 if (empty($error) && !(empty($data[$keymin]) || empty($data[$keymax]))) {
+
                     foreach ($ranges as $range) {
-                        if (($range['min'] < $data[$keymin]) && ($data[$keymin] < $range['max'])) {
+
+                        if (($range['min'] <= $data[$keymin]) && ($data[$keymin] <= $range['max'])) {
                             $error = get_string('results_error_range_overlap_min', self::LANG_FILE);
-                        } else if (($range['min'] < $data[$keymax]) && ($data[$keymax] < $range['max'])) {
+
+                        } else if (($range['min'] <= $data[$keymax]) && ($data[$keymax] <= $range['max'])) {
                             $error = get_string('results_error_range_overlap_max', self::LANG_FILE);
+
+                        } else if (($data[$keymin] <= $range['min']) && ($range['max'] <= $data[$keymax])) {
+                            $error = get_string('results_error_range_envelop', self::LANG_FILE);
                         }
                     }
 
@@ -387,6 +400,7 @@ class cmEngineForm extends cmform {
                 }
 
                 $errors[$keygroup] = $error;
+                $parsed[$id] = true;
             }
         }
 
