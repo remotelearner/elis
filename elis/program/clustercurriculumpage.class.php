@@ -312,9 +312,11 @@ class clustercurriculumpage extends clustercurriculumbasepage {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        $items = clustercurriculum::get_curricula($id);
+        //determine the full sort clause
+        $sort_clause = $sort.' '.$dir;
+        $items = clustercurriculum::get_curricula($id, 0, 0, $sort_clause);
 
-       $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns);
 
         // find the curricula that the user can associate with this cluster
         $contexts = curriculumpage::get_contexts('elis/program:associate');
