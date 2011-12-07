@@ -327,83 +327,66 @@ class cmEngineForm extends cmform {
      */
     function validate_fold($actiontype, $data) {
         $errors = array();
+        $ranges = array();
 
         $prefix = $this->types[$actiontype];
 
         // Add another track score range button.  Validate and make sure all rows have been filled out
         if (! array_key_exists($prefix .'_assignment', $data)) {
-            $keys = array();
-            $newkeys = array();
 
-            // Iterate through the submitted values.  Separate the newly submitted
-            // data from the rest of the data.  New track data has the key
-            // track_add_<number>_min/max/etc.  Existing data has the key
-            // track_<number>_min/max/etc.
+            // Iterate through the submitted values.
+            // New track data has the key track_add_<number>_min/max/etc.
+            // Existing data has the key track_<number>_min/max/etc.
             foreach ($data as $key => $value) {
+                $error = '';
 
                 if (false !== strpos($key, $prefix .'_add_')) {
-                    // Extract the element unique id
-                    $element_instance = explode('_', $key);
-                    $element_instance = $element_instance[2];
-
-                    $newkeys[$element_instance] = '';
+                    $instance = 2;
+                    $keyprefix = $prefix .'_add_';
 
                 } elseif (false !== strpos($key, $prefix .'_')) {
-                    // Extract the element unique id
-                    $element_instance = explode('_', $key);
-                    $element_instance = $element_instance[1];
+                    $instance = 1;
+                    $keyprefix = $prefix .'_';
 
-                    $keys[$element_instance] = '';
-                }
-            }
-
-            // Iterate over new and old data and validate whether minimum is less than maximum
-            // and if a value has been selected
-            foreach ($newkeys as $key => $value) {
-                $keyprefix = $prefix .'_add_'. $key;
-                $keymin    = $keyprefix .'_min';
-                $keymax    = $keyprefix .'_max';
-                $keyselect = $keyprefix .'_selected';
-                $keygroup  = $keyprefix .'_group';
-
-                // Skip over empty score ranges.
-                if (empty($data[$keymin]) && empty($data[$keymax]) && empty($data[$keyselect])) {
+                } else {
                     continue;
                 }
 
-                if (empty($data[$keymin]) || empty($data[$keymax]) || empty($data[$keyselect])) {
+                // Extract the element unique id
+                $parts      = explode('_', $key);
+                $keyprefix .= $parts[$instance];
+                $keymin     = $keyprefix .'_min';
+                $keymax     = $keyprefix .'_max';
+                $keyselect  = $keyprefix .'_selected';
+                $keygroup   = $keyprefix .'_group';
 
-                    $errors[$keygroup] = get_string('results_error_incomplete_score_range', self::LANG_FILE);
+                // Skip over empty score ranges.
+                if (empty($data[$keymin]) && empty($data[$keymax]) && empty($data[$keyselect])) {
+                    // Skip
+                } else if (empty($data[$keymin]) || empty($data[$keymax]) || empty($data[$keyselect])) {
+                    $error = get_string('results_error_incomplete_score_range', self::LANG_FILE);
+
+                } else if ((int) $data[$keymin] >= (int) $data[$keymax]) {
+                    $error = get_string('results_error_min_larger_than_max', self::LANG_FILE);
+
+                } else if (empty($data[$keyselect])) {
+                    $error = get_string('results_error_no_'. $prefix, self::LANG_FILE);
                 }
 
-                if ((int) $data[$keymin] >= (int) $data[$keymax]) {
-                    $errors[$keygroup] = get_string('results_error_min_larger_than_max', self::LANG_FILE);
+                // Only check the ranges if no other error has been found yet.
+                if (empty($error) && !(empty($data[$keymin]) || empty($data[$keymax]))) {
+                    foreach ($ranges as $range) {
+                        if (($range['min'] < $data[$keymin]) && ($data[$keymin] < $range['max'])) {
+                            $error = get_string('results_error_range_overlap_min', self::LANG_FILE);
+                        } else if (($range['min'] < $data[$keymax]) && ($data[$keymax] < $range['max'])) {
+                            $error = get_string('results_error_range_overlap_max', self::LANG_FILE);
+                        }
+                    }
+
+                    $ranges[] = array('min' => $data[$keymin], 'max' => $data[$keymax]);
                 }
 
-                if (empty($data[$keyselect])) {
-                    $errors[$keygroup] = get_string('results_error_no_'. $prefix, self::LANG_FILE);
-                }
-            }
-
-            foreach ($keys as $key => $value) {
-                $keyprefix = $prefix .'_'. $key;
-                $keymin    = $keyprefix .'_min';
-                $keymax    = $keyprefix .'_max';
-                $keyselect = $keyprefix .'_selected';
-                $keygroup  = $keyprefix .'_group';
-
-                if (array_key_exists($keygroup, $errors)) {
-                    unset($errors[$keygroup]);
-                }
-
-                if ((int) $data[$keymin] >= (int) $data[$keymax]) {
-                        $errors[$keygroup] = get_string('results_error_min_larger_than_max', self::LANG_FILE);
-                }
-
-                if (empty($data[$keyselect])) {
-                    $errors[$keygroup] = get_string('results_error_no_'. $prefix, self::LANG_FILE);
-                }
-
+                $errors[$keygroup] = $error;
             }
         }
 
@@ -600,6 +583,11 @@ class cmEngineForm extends cmform {
 
         foreach ($dataset as $data) {
 
+            //error checking
+            if (!isset($data->min,$data->max)) {
+                continue;
+            }
+
             if (isset($data->id)) {
                 $i = $data->id;
             } else {
@@ -763,6 +751,10 @@ class cmEngineForm extends cmform {
         $defaults=get_config('elis_program','results_engine_defaults');
         $defaults=(!empty($defaults))?unserialize($defaults):array();
         foreach ($defaults as $i => $default) {
+            if ($i === 'national_average') {
+                continue;
+            }
+
             $default=(object)$default;
             $default->selected = '';
             $defaults[$i] = $default;
