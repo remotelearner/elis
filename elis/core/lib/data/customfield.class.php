@@ -161,6 +161,15 @@ class field extends elis_data_object {
         parent::delete();
     }
 
+    // Removes extra zeros from a string
+    function format_number($number) {
+        $formatted = rtrim(format_float($number, 5),'0');
+        if (substr($formatted, -1) == '.') { //if last char is the decimal point
+            $formatted .= '0';
+        }
+        return $formatted;
+    }
+
     /**
      * Gets the custom field types, along with their categories, for a given
      * context level.
