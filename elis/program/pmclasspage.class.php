@@ -345,7 +345,6 @@ class pmclasspage extends managementpage {
         $id = required_param('id', PARAM_INT);
         $needconfirm = optional_param('needconfirm', 0, PARAM_INT);
 
-//        $this->display('delete_warning');
         if ($needconfirm != 1) {
             $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1, 'needconfirm' => 1));
             notify(get_string('pmclass_delete_warning', 'elis_program'), 'errorbox');
