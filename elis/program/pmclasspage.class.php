@@ -304,6 +304,14 @@ class pmclasspage extends managementpage {
             'maxstudents'  => array('header' => get_string('class_maxstudents', 'elis_program')),
         );
 
+        //set the column data needed to maintain and display current sort
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        }
+
         $items    = pmclass_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, false, pmclasspage::get_contexts('elis/program:class_view'), $parent_clusterid);
         $numitems = pmclass_count_records($namesearch, $alpha, $id, false, pmclasspage::get_contexts('elis/program:class_view'), $parent_clusterid);
 
