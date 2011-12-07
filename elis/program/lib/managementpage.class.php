@@ -586,7 +586,15 @@ class management_page_table extends display_table {
     var $page;
     var $viewurl;
 
-    function __construct(&$items, $columns, $page) {
+    /**
+     * Constructor for a table that displays management page entries
+     *
+     * @param array $items The elements representing the rows of the table
+     * @param array $columns The specifications for the columns of the table
+     * @param elis_page $page An instance of the displayed entity type's page
+     * @param array $extra_params Extra parameters to add to the page URL
+     */
+    function __construct(&$items, $columns, $page, $extra_params = null) {
         $namesearch   = trim(optional_param('search', '', PARAM_TEXT));
         $alpha        = optional_param('alpha', '', PARAM_ALPHA);
         $params = array(
@@ -597,6 +605,12 @@ class management_page_table extends display_table {
         //add page params
         if(!empty($page->params)) {
             $params += $page->params;
+        }
+
+        if (!empty($extra_params)) {
+            //ok to use union here since we typically only pass
+            //parameters that can't be accessed within the page class
+            $params += $extra_params;
         }
 
         $this->page = $page;
