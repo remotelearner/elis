@@ -47,9 +47,10 @@ $element_update = required_param('id', PARAM_TEXT);
 $callback       = required_param('callback', PARAM_TEXT);
 
 $baseurl        = new moodle_url('/elis/program/trackselector.php',
-                                array('alpha' => $letterselect,
-                                      'search' => $search,
-                                      'id' => $element_update));
+                                array('alpha'    => $letterselect,
+                                      'search'   => $search,
+                                      'id'       => $element_update,
+                                      'callback' => $callback));
 
 $PAGE->requires->js('/elis/program/js/results_engine/results_selection.js', true);
 $PAGE->set_url($baseurl);

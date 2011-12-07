@@ -48,9 +48,10 @@ $callback       = required_param('callback', PARAM_TEXT);
 
 
 $baseurl        = new moodle_url('/elis/program/classselector.php',
-                                array('alpha' => $letterselect,
-                                      'search' => $search,
-                                      'id' => $element_update));
+                                array('alpha'    => $letterselect,
+                                      'search'   => $search,
+                                      'id'       => $element_update,
+                                      'callback' => $callback));
 
 $PAGE->requires->js('/elis/program/js/results_engine/results_selection.js', true);
 $PAGE->set_url($baseurl);
@@ -74,13 +75,15 @@ $searchwhere    = '';
 $params         = array();
 
 if (!empty($letterselect)) {
-    $alphawhere = $DB->sql_like('cd.syllabus', ':alphasyllabus', false);
+    $alphawhere = $DB->sql_like('cd.syllabus', ':alphasyllabus', false) .' OR '
+                . $DB->sql_like('cls.idnumber', ':alphaidnumber', false);
     $params['alphasyllabus'] = $letterselect.'%';
+    $params['alphaidnumber'] = $letterselect.'%';
 }
 
 if (!empty($search)) {
-    $searchwhere = $DB->sql_like('cls.idnumber', ':searchclsidnumber' , false, false) . ' OR ' .
-             $DB->sql_like('cd.syllabus', ':searchsyllabus', false, false);
+    $searchwhere = $DB->sql_like('cls.idnumber', ':searchclsidnumber' , false, false) . ' OR '
+                 . $DB->sql_like('cd.syllabus', ':searchsyllabus', false, false);
 
     $params['searchclsidnumber']    = '%'.$search.'%';
     $params['searchsyllabus']       = '%'.$search.'%';
