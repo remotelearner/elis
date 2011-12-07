@@ -324,13 +324,27 @@ class pmclasspage extends managementpage {
         $id = required_param('id', PARAM_INT);
         $force = optional_param('force', 0, PARAM_INT);
         $confirm = optional_param('confirm', 0, PARAM_INT);
+        $needconfirm = optional_param('needconfirm', 0, PARAM_INT);
 
         if($DB->count_records(student::TABLE, array('classid'=>$id)) && $force != 1 && $confirm != 1) {
-            $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1));
+            $this->display('delete');
+        } else {
+            parent::do_delete();
+        }
+    }
+
+    function display_delete() {
+        $id = required_param('id', PARAM_INT);
+        $needconfirm = optional_param('needconfirm', 0, PARAM_INT);
+
+//        $this->display('delete_warning');
+        if ($needconfirm != 1) {
+            $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1, 'needconfirm' => 1));
             notify(get_string('pmclass_delete_warning', 'elis_program'), 'errorbox');
             echo '<center><a href="'.$target->url.'">'.get_string('pmclass_delete_warning_continue', 'elis_program').'</a></center>';
         } else {
-            parent::do_delete();
+            $obj = $this->get_new_data_object($id);
+            $this->print_delete_form($obj);
         }
     }
 
