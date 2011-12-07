@@ -247,6 +247,7 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
  */
 function manual_field_add_help_button($mform, $elementname, $field) {
     global $CFG, $OUTPUT, $PAGE;
+    //error_log("manual_field_add_help_button(mform, elementname $elementname, field {$field->name})");
     $manual = isset($field->owners['manual'])
               ? new field_owner($field->owners['manual']) : new stdClass;
     $filename = '';
@@ -268,8 +269,14 @@ function manual_field_add_help_button($mform, $elementname, $field) {
                urlencode($heading) .'&helptext='.
                urlencode($field->description) . $ajax;
         // help using custom_field->description
-        //error_log("manual_field_add_help_button()::adding help button for field: {$field->name}");
-        $mform->addElement('html', '<div class="fitem"><div class="fitemtitle"><label for="id_'.
+        $divclass = 'fitem';
+        if (array_key_exists($elementname, $mform->_advancedElements)) {
+            $divclass .= ' advanced hide';
+            //$mform->setAdvanced($elementname .'_help');
+        }
+        //$mform->addElement('static', $elementname .'_help',
+        $mform->addElement('html',
+            '<div class="'. $divclass .'"><div class="fitemtitle"><label for="id_'.
             $elementname .'"><span class="helplink"><a href="'. $url
             .'" title="'. $heading .'" id="'. $id .'"><img src="'.
             $OUTPUT->pix_url('help') .'" alt="'. $heading .'" title="'.
