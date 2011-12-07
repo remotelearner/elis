@@ -136,11 +136,12 @@ function pre_submit_processing(type) {
             continue;
         }
 
-        if ( ('' != ele_min.value) &&
-             ('' != ele_max.value) &&
-             ('' != ele_sel.value) ) {
-            // Only cache complete rows.  Incomplete rows are discarded for now
+        if ( ('' != ele_min.value) ||
+             ('' != ele_max.value) ||
+             (('' != ele_sel.value) && (0 != ele_sel.value)) ) {
+            // We need to cache incomplete rows too because of user profiles and configuration.
             value = 0;
+            
             if (typeof ele_val != 'undefined') {
                 value = ele_val.value;
             }
