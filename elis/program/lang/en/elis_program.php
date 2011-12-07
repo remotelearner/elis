@@ -793,6 +793,7 @@ $string['redirect_dashbrd_setting'] = 'Redirect users accessing My Moodle to the
 $string['registered_date'] = 'Registered date';
 $string['remove_coreq'] = 'Remove co-requisites';
 $string['remove_prereq'] = 'Remove prerequisites';
+$string['report'] = 'Report';
 $string['reports'] = 'Reports';
 $string['required'] = 'Required';
 $string['required_credits'] = 'Required Credits';
