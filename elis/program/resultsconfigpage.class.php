@@ -104,6 +104,10 @@ class resultsconfigpage extends pm_page {
                                 $errs[$i][] = get_string('results_engine_defaults_err_max_conflict', 'elis_program');
                                 break;
                             }
+                            if ($ex_rng['min'] >= $range['min'] && $ex_rng['max'] <= $range['max']) {
+                                $errs[$i][] = get_string('results_engine_defaults_err_enveloped_range', 'elis_program');
+                                break;
+                            }
                         }
                     }
 

@@ -825,6 +825,7 @@ $string['results_engine_defaults_err_no_min'] = 'No Minimum Value';
 $string['results_engine_defaults_err_no_max'] = 'No Maximum Value';
 $string['results_engine_defaults_err_min_conflict'] = 'Invalid minimum value - conflicts with a previous row.';
 $string['results_engine_defaults_err_max_conflict'] = 'Invalid maximum value - conflicts with a previous row.';
+$string['results_engine_defaults_err_enveloped_range'] = 'Invalid range - envelopes a previous row.';
 $string['results_engine_defaults_errs_encountered'] = 'Errors Encountered:';
 $string['results_engine_defaults_err_row'] = 'Errors for Row {$a}. Was not Saved.';
 $string['results_engine_defaults_saved_with_errors'] = 'All Other Settings Saved!';
