@@ -685,6 +685,17 @@ function pm_moodle_user_to_pm($mu) {
         return true;
     }
 
+    if (empty($mu->city) || empty($mu->password)) {
+        //not really necessary but we only want
+        //fully instantiated Moodle users
+        return true;
+    }
+
+    if (empty($mu->country)) {
+        //this is necessary because PM requires this field
+        return true;
+    }
+
     if (empty($mu->idnumber) && elis::$config->elis_program->auto_assign_user_idnumber) {
         //make sure the current user's username does not match up with some other user's
         //idnumber (necessary since usernames and idnumbers aren't bound to one another)
