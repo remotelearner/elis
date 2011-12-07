@@ -685,11 +685,7 @@ function pm_moodle_user_to_pm($mu) {
         return true;
     }
 
-    if (empty($mu->city) || empty($mu->password)) {
-        //not really necessary but we only want
-        //fully instantiated Moodle users
-        return true;
-    }
+    //not going to be concerned with city or password for now
 
     if (empty($mu->country)) {
         //this is necessary because PM requires this field

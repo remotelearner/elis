@@ -354,15 +354,27 @@ class health_user_sync extends crlm_health_check_base {
                 AND confirmed = 1
                 AND mnethostid = ?
                 AND idnumber != ''
+                AND firstname != ''
+                AND lastname != ''
+                AND email != ''
+                AND country != ''
                 AND NOT EXISTS (SELECT 'x'
                                 FROM {". user::TABLE ."} cu
                                 WHERE cu.idnumber = {$CFG->prefix}user.idnumber)";
 
         $this->count = $DB->count_records_sql($sql, array($CFG->mnet_localhost_id));
+
+        $sql = "SELECT COUNT(*) FROM {user} usr
+                WHERE idnumber IN (
+                  SELECT idnumber FROM {user}
+                  WHERE username != 'guest' AND deleted = 0
+                  AND confirmed = 1 AND mnethostid = ? AND id != usr.id)";
+
+        $this->dupids = $DB->count_records_sql($sql, array($CFG->mnet_localhost_id));
     }
 
     function exists() {
-        return $this->count != 0;
+        return $this->count != 0 || $this->dupids != 0;
     }
     function severity() {
         return healthpage::SEVERITY_CRITICAL;
@@ -376,20 +388,14 @@ class health_user_sync extends crlm_health_check_base {
     function solution() {
         global $CFG, $DB;
 
-        $dupids = $DB->count_records_sql('
-SELECT COUNT(*) FROM {user} usr
- WHERE idnumber IN (
-                    SELECT idnumber FROM {user}
-                     WHERE username != \'guest\' AND deleted = 0
-                       AND confirmed = 1 AND mnethostid = ? AND id != usr.id)',
-                                         array($CFG->mnet_localhost_id));
         $msg = '';
-        if ($this->count > $dupids) {
-            $msg = get_string('health_user_syncsoln', 'elis_program', $CFG->wwwroot);
-        }
-        if ($dupids > 0) {
+
+        if ($this->dupids > 0) {
             $msg .= get_string('health_user_dupidsoln', 'elis_program');
+        } else {
+            $msg .= get_string('health_user_syncsoln', 'elis_program', $CFG->wwwroot);
         }
+
         return $msg;
     }
 }
