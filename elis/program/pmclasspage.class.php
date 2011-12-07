@@ -441,17 +441,18 @@ class pmclasspage extends managementpage {
      * @param array $columns
      */
     function create_table_object($items, $columns) {
-
+        $crsid = $this->get_cm_id();
         $parent_clusterid = $this->optional_param('parent_clusterid', 0, PARAM_INT);
-
         $extra_params = array();
-        if(!empty($parent_clusterid)) {
+        if ($crsid) {
+            $extra_params['id'] = $crsid;
+        }
+        if (!empty($parent_clusterid)) {
             $extra_params['parent_clusterid'] = $parent_clusterid;
         }
 
         $page_object = $this->get_new_page($extra_params);
-
-        return new management_page_table($items, $columns, $page_object);
+        return new management_page_table($items, $columns, $page_object, $extra_params);
     }
 
     /**
