@@ -174,8 +174,7 @@ class studentcurriculumpage extends associationpage2 {
             $stucur->save();
         }
 
-        $tmppage = $this->get_basepage();
-        $tmppage->params['_assign'] = 'assign';
+        $tmppage = $this->get_new_page(array('_assign' => 'assign'));
         $sparam = new stdClass;
         $sparam->num = count($data->_selection);
         redirect($tmppage->url, get_string('num_curricula_assigned', 'elis_program', $sparam));
@@ -190,8 +189,7 @@ class studentcurriculumpage extends associationpage2 {
             }
         }
 
-        $tmppage = $this->get_basepage();
-        $tmppage->params['_assign'] = 'unassign';
+        $tmppage = $this->get_new_page(array('_assign' => 'unassign'));
         $sparam = new stdClass;
         $sparam->num = count($data->_selection);
         redirect($tmppage->url, get_string('num_curricula_unassigned', 'elis_program', $sparam));
@@ -570,8 +568,7 @@ class curriculumstudentpage extends associationpage2 {
             $stucur->save();
         }
 
-        $tmppage = $this->get_basepage();
-        $tmppage->params['_assign'] = 'assign';
+        $tmppage = $this->get_new_page(array('_assign' => 'assign'));
         $sparam = new stdClass;
         $sparam->num = count($data->_selection);
         redirect($tmppage->url, get_string('num_users_assigned', 'elis_program', $sparam));
@@ -586,7 +583,7 @@ class curriculumstudentpage extends associationpage2 {
             }
         }
 
-        $tmppage = $this->get_basepage();
+        $tmppage = $this->get_new_page(array('_assign' => 'unassign'));
         $sparam = new stdClass;
         $sparam->num = count($data->_selection);
         redirect($tmppage->url, get_string('num_users_unassigned', 'elis_program', $sparam));
