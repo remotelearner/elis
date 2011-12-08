@@ -49,8 +49,10 @@ class trackform extends cmform {
             $field = new field($rec);
             if(strcmp($field->datatype,"num") == 0) {
                 $fieldname = "field_$field->shortname";
-                $formatnum = $field->format_number($this->_customdata['obj']->$fieldname);
-                $this->_customdata['obj']->$fieldname = $formatnum;
+                if(isset($this->_customdata['obj']->$fieldname)) {
+                    $formatnum = $field->format_number($this->_customdata['obj']->$fieldname);
+                    $this->_customdata['obj']->$fieldname = $formatnum;
+                }
             }
         }
 
