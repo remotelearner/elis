@@ -360,7 +360,10 @@ class health_user_sync extends crlm_health_check_base {
                 AND country != ''
                 AND NOT EXISTS (SELECT 'x'
                                 FROM {". user::TABLE ."} cu
-                                WHERE cu.idnumber = {$CFG->prefix}user.idnumber)";
+                                WHERE cu.idnumber = {$CFG->prefix}user.idnumber)
+                AND NOT EXISTS (SELECT 'x'
+                                FROM {". user::TABLE ."} cu
+                                WHERE cu.username = {$CFG->prefix}user.username)";
 
         $this->count = $DB->count_records_sql($sql, array($CFG->mnet_localhost_id));
 
