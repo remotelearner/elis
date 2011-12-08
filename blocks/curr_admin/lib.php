@@ -773,23 +773,13 @@ function block_curr_admin_create_instance() {
     }
 
     // Set up the new instance
-    $dummy_page = new moodle_page();
-    $dummy_page->set_pagetype('*');
-    $dummy_page->set_context(get_context_instance(CONTEXT_SYSTEM));
-
-    // Set up the block information and add a block instance
-    $dummy_page->blocks->add_region('side-pre');
-    $dummy_page->blocks->set_default_region('side-pre');
-    $dummy_page->blocks->load_blocks(false); // ELIS-3248 -- initialize page blocks to prevent a warning
-    $dummy_page->blocks->add_block_at_end_of_default_region('curr_admin');
-
-    // Update the block instance so that it shows up in subcontexts
-    $params = array('blockname' => 'curr_admin');
-    if ($block_instance_record = $DB->get_record('block_instances', $params)) {
-        $block_instance_record->showinsubcontexts = 1;
-        // Force location
-        $block_instance_record->defaultregion = 'side-pre'; // ELIS-3452: TBD
-        $block_instance_record->defaultweight = -1; // ELIS-3452: TBD
-        $DB->update_record('block_instances', $block_instance_record);
-    }
+    $block_instance_record = new stdclass;
+    $block_instance_record->blockname = 'curr_admin';
+    $block_instance_record->pagetypepattern = '*';
+    $block_instance_record->parentcontextid = 1;
+    $block_instance_record->showinsubcontexts = 1;
+    // Force location
+    $block_instance_record->defaultregion = 'side-pre';
+    $block_instance_record->defaultweight = -999;
+    $DB->insert_record('block_instances', $block_instance_record);
 }
