@@ -385,8 +385,25 @@ function results_engine_process($class) {
                         print(get_string('results_field_not_found', RESULTS_ENGINE_LANG_FILE, $do) ."\n");
                         break;
                     }
+
+                    /*
                     $context = get_context_instance($userlevel, $student->userid);
                     field_data::set_for_context_and_field($context, $userfields[$do->fieldid], $do->fielddata);
+                    */
+
+                    //set field
+                    $filter = new select_filter('id = :userid', array('userid' => $student->userid));
+                    if (user::exists($filter)) {
+                        //get user
+                        $user = user::find($filter);
+                        $user = $user->current();
+
+                        //set field
+                        $field = 'field_'.$userfields[$do->fieldid]->shortname;
+                        $user->$field = $do->fielddata;
+                        $user->save();
+                    }
+
                     $message = 'results_action_update_profile';
                     $obj->name  = $userfields[$do->fieldid]->shortname;
                     $obj->value = $do->fielddata;
