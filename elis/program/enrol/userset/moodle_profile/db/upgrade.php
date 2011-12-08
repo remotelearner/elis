@@ -43,4 +43,6 @@ function xmldb_usersetenrol_moodle_profile_upgrade($oldversion=0) {
         // userset enrol savepoint reached
         upgrade_plugin_savepoint(true, 2011120800, 'usersetenrol', 'moodle_profile');
     }
+
+    return $result;
 }
