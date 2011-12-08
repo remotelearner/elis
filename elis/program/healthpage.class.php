@@ -368,7 +368,8 @@ class health_user_sync extends crlm_health_check_base {
         $this->count = $DB->count_records_sql($sql, $params);
 
         $sql = "SELECT COUNT(*) FROM {user} usr
-                WHERE idnumber IN (
+                WHERE deleted = 0
+                  AND idnumber IN (
                   SELECT idnumber FROM {user}
                   WHERE username != 'guest' AND deleted = 0
                   AND confirmed = 1 AND mnethostid = ? AND id != usr.id)";
