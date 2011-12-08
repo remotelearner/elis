@@ -398,8 +398,9 @@ class cmEngineForm extends cmform {
 
                     $ranges[] = array('min' => $data[$keymin], 'max' => $data[$keymax]);
                 }
-
-                $errors[$keygroup] = $error;
+                if (!empty($error)) {
+                    $errors[$keygroup] = $error;
+                }
                 $parsed[$id] = true;
             }
         }
