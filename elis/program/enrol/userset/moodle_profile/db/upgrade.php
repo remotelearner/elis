@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage programmanagement
+ * @subpackage core
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
@@ -26,4 +26,21 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2011120800;
+function xmldb_usersetenrol_moodle_profile_upgrade($oldversion=0) {
+    global $CFG, $THEME, $DB, $OUTPUT;
+
+    $dbman = $DB->get_manager();
+    $result = true;
+
+    if ($result && $oldversion < 2011120800) {
+    	//fix plugin name
+    	$sql = "UPDATE {".clusterassignment::TABLE."}
+    	        SET plugin = 'moodle_profile'
+    	        WHERE plugin = 'profile'";
+
+    	$DB->execute($sql);
+
+        // userset enrol savepoint reached
+        upgrade_plugin_savepoint(true, 2011120800, 'usersetenrol', 'moodle_profile');
+    }
+}
