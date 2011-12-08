@@ -435,6 +435,7 @@ and then remove the <tt>{$a->dirroot}/blocks/completion_export</tt> directory.';
 $string['health_cron_block'] = '<b>Block \'{$a->name}\' last run:</b> {$a->lastcron}<br/>';
 $string['health_cron_elis'] = '<b>ELIS scheduled tasks last run:</b> {$a}';
 $string['health_cron_plugin'] = '<b>Plugin \'{$a->name}\' last run:</b> {$a->lastcron}<br/>';
+$string['health_cron_soln'] = '<p><b>cron</b> needs to be configured to run every 5-10 minutes. If you cannot setup cron then open a support ticket to have this configured.';
 $string['health_cron_title'] = 'Last cron run times';
 $string['health_curriculum'] = 'Stale ELIS Course Description - Moodle Program record';
 $string['health_curriculumdesc'] = 'There are {$a->count} records in the {$a->table} table referencing nonexistent ELIS course descriptions';
@@ -454,6 +455,7 @@ $string['health_trackcheckdesc'] = 'Found {$a} class instances that are attached
 $string['health_trackcheckdescnone'] = 'There were no issues found.';
 $string['health_trackchecksoln'] = 'Need to remove all class instances in tracks that do not have an associated course descriptions in its associated program by running the script linked below.<br/><br/>' .
                '<a href="{$a}/elis/program/scripts/fix_track_classes.php">Fix this now</a>';
+$string['health_user_dupiddesc'] = 'There are {$a} user records with duplicate and/or empty idnumbers.';
 $string['health_user_dupidsoln'] = '<p>The Moodle user table contains users with duplicate and/or empty idnumbers. Please open a support ticket to have these fixed. Once this has been corrected, please re-check this page for updated status.</p>';
 $string['health_user_sync'] = 'User Records Mismatch - Synchronize Users';
 $string['health_user_syncdesc'] = 'There are {$a} extra user records for Moodle which don\'t exist for ELIS.';

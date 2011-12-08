@@ -347,7 +347,7 @@ class health_curriculum_course extends crlm_health_check_base {
 class health_user_sync extends crlm_health_check_base {
     function __construct() {
         global $CFG, $DB;
-
+        $params = array($CFG->mnet_localhost_id);
         $sql = "SELECT COUNT(*) FROM {user} WHERE
                 username != 'guest'
                 AND deleted = 0
@@ -365,7 +365,7 @@ class health_user_sync extends crlm_health_check_base {
                                 FROM {". user::TABLE ."} cu
                                 WHERE cu.username = {$CFG->prefix}user.username)";
 
-        $this->count = $DB->count_records_sql($sql, array($CFG->mnet_localhost_id));
+        $this->count = $DB->count_records_sql($sql, $params);
 
         $sql = "SELECT COUNT(*) FROM {user} usr
                 WHERE idnumber IN (
@@ -373,11 +373,11 @@ class health_user_sync extends crlm_health_check_base {
                   WHERE username != 'guest' AND deleted = 0
                   AND confirmed = 1 AND mnethostid = ? AND id != usr.id)";
 
-        $this->dupids = $DB->count_records_sql($sql, array($CFG->mnet_localhost_id));
+        $this->dupids = $DB->count_records_sql($sql, $params);
     }
 
     function exists() {
-        return $this->count != 0 || $this->dupids != 0;
+        return $this->count > 0 || $this->dupids > 0;
     }
     function severity() {
         return healthpage::SEVERITY_CRITICAL;
@@ -386,19 +386,32 @@ class health_user_sync extends crlm_health_check_base {
         return get_string('health_user_sync', 'elis_program');
     }
     function description() {
-        return get_string('health_user_syncdesc', 'elis_program', $this->count);
+        $msg = '';
+        if ($this->count > 0) {
+            $msg = get_string('health_user_syncdesc', 'elis_program', $this->count);
+        }
+        if ($this->dupids > 0) {
+            if (!empty($msg)) {
+                $msg .= "<br/>\n";
+            }
+            $msg .= get_string('health_user_dupiddesc', 'elis_program', $this->dupids);
+        }
+        return $msg;
     }
     function solution() {
-        global $CFG, $DB;
+        global $CFG;
 
         $msg = '';
-
         if ($this->dupids > 0) {
-            $msg .= get_string('health_user_dupidsoln', 'elis_program');
-        } else {
+            $msg = get_string('health_user_dupidsoln', 'elis_program');
+        }
+        if ($this->count > $this->dupids) {
+            // ELIS-3963: Only run migrate script if more mismatches then dups
+            if (!empty($msg)) {
+                $msg .= "<br/>\n";
+            }
             $msg .= get_string('health_user_syncsoln', 'elis_program', $CFG->wwwroot);
         }
-
         return $msg;
     }
 }
@@ -613,6 +626,9 @@ class cron_lastruntimes_check extends crlm_health_check_base {
         return $description;
     }
 
+    function solution() {
+        return get_string('health_cron_soln', 'elis_program');
+    }
 }
 
 /**
