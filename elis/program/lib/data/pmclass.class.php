@@ -698,9 +698,8 @@ class pmclass extends data_object_with_custom_fields {
      * @return mixed course id if created, false if error encountered
      */
     function auto_create_class($params = array()) {
-        if (empty($this->courseid) and
-            (empty($params) or
-            !array_key_exists('courseid', $params))) {
+        if (empty($this->courseid) &&
+            (empty($params) || !array_key_exists('courseid', $params))) {
             return false;
         }
 
@@ -711,16 +710,21 @@ class pmclass extends data_object_with_custom_fields {
         $this->endtimehour     = 25;
 
         if (!empty($params)) {
-            foreach($params as $key => $data) {
+            foreach ($params as $key => $data) {
                 $this->$key = $data;
             }
         }
 
         $defaults = $this->get_default();
         if (!empty($defaults)) {
-            foreach($defaults as $key => $data) {
+            foreach ($defaults as $key => $data) {
                 if (!isset($this->$key)) {
-                    $this->$key = $data;
+                    try {
+                        $this->$key = $data;
+                    } catch (data_object_exception $ex) {
+                        // ELIS-3989: just log - TBV
+                        error_log("/elis/program/lib/data/pmclass.class.php::auto_create_class() - data_object_exception setting property from defaults: $key = $data");
+                    }
                 }
             }
         }
