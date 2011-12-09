@@ -376,6 +376,10 @@ function pm_synchronize_moodle_class_grades() {
                 // skip user records that don't match up
                 // (this works since both sets are sorted by Moodle user ID)
                 // (in theory, we shouldn't need this, but just in case...)
+                // Verify that we have stugrades before continuing...
+                if (!$stugrades) {
+                    break;
+                }
                 while ($sturec && $sturec->muid < $stugrades->user->id) {
                     $sturec = next($causers);
                 }
