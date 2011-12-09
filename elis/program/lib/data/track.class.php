@@ -963,13 +963,13 @@ function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $
     if (!empty($namesearch)) {
         //$where[] = "name $LIKE '%$namesearch%'";
         $where[] = $NAMESEARCH_LIKE;
-        $params['search_namesearch'] = '%$namesearch%';
+        $params['search_namesearch'] = "%{$namesearch}%";
     }
 
     if ($alpha) {
         //$where[] = "(name $LIKE '$alpha%')";
         $where[] = $ALPHA_LIKE;
-        $params['search_alpha'] = '$alpha%';
+        $params['search_alpha'] = "{$alpha}%";
     }
 
     if ($curriculumid) {
