@@ -498,7 +498,7 @@ class track extends data_object_with_custom_fields {
         }
 
         // copy classes
-        $clstrks = track_assignment_get_listing();
+        $clstrks = track_assignment_get_listing($this->id);
         if (!empty($clstrks)) {
             $objs['classes'] = array();
             if (!isset($options['classmap'])) {
