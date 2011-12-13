@@ -163,11 +163,22 @@ class field extends elis_data_object {
 
     // Removes extra zeros from a string
     function format_number($number) {
-        $formatted = rtrim(format_float($number, 5),'0');
-        if (substr($formatted, -1) == '.') { //if last char is the decimal point
-            $formatted .= '0';
+        if(is_array($number)) {
+            $formatted_num_arr = array();
+            foreach($number as $key => $num) {
+                $formatted_num_arr[$key] = rtrim(format_float((double)$num, 5),'0');
+                if (substr($formatted_num_arr[$key], -1) == '.') { //if last char is the decimal point
+                    $formatted_num_arr[$key] .= '0';
+                }
+            }
+            return $formatted_num_arr;
+        } else {
+            $formatted = rtrim(format_float((double)$number, 5),'0');
+            if (substr($formatted, -1) == '.') {
+                $formatted .= '0';
+            }
+            return $formatted;
         }
-        return $formatted;
     }
 
     /**
