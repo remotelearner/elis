@@ -853,7 +853,7 @@ $string['tips_time_format'] = "The format of this is ' *h, *d, *w, *m, *y ' (rep
 $string['time_to_complete'] = 'Time to complete';
 $string['top_clusters_help'] = 'This setting controls whether existing user sets are listed at the top level of the Program Administration block.
 When changing the value of this setting, please navigate to another page to determine whether this functionality is working as expected.';
-$string['top_clusters_setting'] = 'Display User Sets as the Top Level';
+$string['top_clusters_setting'] = 'Display User Sets at the Top Level';
 $string['top_curricula_help'] = 'This setting controls whether existing programs are listed at the top level of the Program Administration block.
 When changing the value of this setting, please navigate to another page to determine whether this functionality is working as expected.';
 $string['top_curricula_setting'] = 'Display Programs at the Top Level';

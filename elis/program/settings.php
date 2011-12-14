@@ -138,7 +138,7 @@ if ($ADMIN->fulltree) {
                            get_string('icon_collapse_setting', 'elis_program'),
                            get_string('icon_collapse_help', 'elis_program'), 5, PARAM_INT)); // TBD
 
-    // Display Clusters as the Top Level
+    // Display Clusters at the Top Level
     $settings->add(new admin_setting_configcheckbox('elis_program/display_clusters_at_top_level',
                            get_string('top_clusters_setting', 'elis_program'),
                            get_string('top_clusters_help', 'elis_program'), 1));
