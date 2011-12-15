@@ -168,11 +168,12 @@ function xmldb_elis_program_upgrade($oldversion=0) {
     }
 
     if ($result && $oldversion < 2011092101) {
+      /*
         // make sure that the manager role can be assigned to all PM context levels
         update_capabilities('elis_program'); // load context levels
         pm_ensure_role_assignable('manager');
         pm_ensure_role_assignable('curriculumadmin');
-
+      */
         upgrade_plugin_savepoint(true, 2011092101, 'elis', 'program');
     }
 
