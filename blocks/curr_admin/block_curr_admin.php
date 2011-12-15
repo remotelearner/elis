@@ -312,7 +312,7 @@ class block_curr_admin extends block_base {
         }
 
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
-        if (has_capability('moodle/site:config', $syscontext)) {
+        if (has_capability('elis/program:config', $syscontext)) {
             $pages[] = new menuitem('configmanager',
                                     new menuitempage('url_page',
                                                      'lib/menuitem.class.php',

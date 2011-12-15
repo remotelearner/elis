@@ -16,7 +16,7 @@ if ($ADMIN->fulltree) {
 
     $ADMIN->add('root', new admin_category('elis_program', get_string('elis_config', 'elis_program'), true));
 
-    $settings = new admin_settingpage('elis_program_settings', get_string('elis_settings', 'elis_program'));
+    $settings = new admin_settingpage('elis_program_settings', get_string('elis_settings', 'elis_program'), 'elis/program:config');
 
     // ***Track Settings
     $settings->add(new admin_setting_heading('track_settings', get_string('track_settings', 'elis_program'), '' /* get_string('track_settings_info', 'elis_program') */));
