@@ -1139,6 +1139,7 @@ class pm_user_filter_text_OR extends user_filter_text {
         $value    = addslashes($data['value']);
         $params   = array();
         $conditions = array();
+        $combine_op = ' OR ';
 
         foreach ($this->_fields as $field) {
             $param = 'pmufto'. $counter++;
@@ -1150,6 +1151,7 @@ class pm_user_filter_text_OR extends user_filter_text {
                 case 1: // does not contain
                     $conditions[] = $DB->sql_like($field, ":{$param}", FALSE, true, true);
                     $params[$param] = "%{$value}%";
+                    $combine_op = ' AND ';
                     break;
                 case 2: // equal to
                     $conditions[] = $DB->sql_like($field, ":{$param}", FALSE);
@@ -1168,7 +1170,8 @@ class pm_user_filter_text_OR extends user_filter_text {
                     break;
             }
         }
-        return array('(' . implode(' OR ', $conditions) . ')', $params);
+        $sql = '('. implode($combine_op, $conditions) .')';
+        return array($sql, $params);
     }
 }
 
