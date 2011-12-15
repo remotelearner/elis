@@ -1945,5 +1945,17 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         upgrade_block_savepoint($result, 2011081603, 'curr_admin');
     }
 
+    if ($result && $oldversion < 2011121500) {
+        if ($role = $DB->get_record('role', array('shortname' => 'curriculumadmin'))) {
+            if ($role->name == 'Curriculum Administrator') {
+                $role->name = get_string('curriculumadminname', 'elis_program');
+                $role->description = get_string('curriculumadmindescription',
+                                                'elis_program');
+                $DB->update_record('role', $role);
+            }
+        }
+        upgrade_block_savepoint($result, 2011121500, 'curr_admin');
+    }
+
     return $result;
 }

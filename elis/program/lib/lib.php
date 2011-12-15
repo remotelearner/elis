@@ -1336,24 +1336,36 @@ function pm_migrate_environments() {
 
 /**
  * Ensures that a role is assignable to all the PM context levels
+ *
+ * @param $role mixed - either the role shortname OR a role id
+ * @return the roleid on success, false otherwise.
+ * @uses  $DB
  */
 function pm_ensure_role_assignable($role) {
     global $DB;
     if (!is_numeric($role)) {
-        $role = $DB->get_field('role', 'id', array('shortname' => $role));
+        if ( !($roleid = $DB->get_field('role', 'id', array('shortname' => $role)))
+            && !($roleid = create_role(get_string($role .'name', 'elis_program'),
+                               $role, get_string($role .'description', 'elis_program'),
+                               get_string($role .'archetype', 'elis_program')))) {
+            mtrace("\n pm_ensure_role_assignable(): Error creating role '{$role}'\n");
+        }
+    } else {
+        $roleid = $role;
     }
-    if ($role) {
+    if ($roleid) {
         $sql = "INSERT INTO {role_context_levels}
                        (roleid, contextlevel)
-                SELECT $role AS roleid, ctxlvl.id + 1000 AS contextlevel
+                SELECT $roleid AS roleid, ctxlvl.id + 1000 AS contextlevel
                   FROM {context_levels} ctxlvl
              LEFT JOIN {role_context_levels} rcl
                        ON rcl.contextlevel = ctxlvl.id + 1000
-                       AND rcl.roleid = $role
+                       AND rcl.roleid = $roleid
                  WHERE ctxlvl.component='elis_program'
                    AND rcl.id IS NULL";
         $DB->execute($sql);
     }
+    return $roleid;
 }
 
 /**
