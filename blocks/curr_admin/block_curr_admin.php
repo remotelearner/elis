@@ -118,7 +118,7 @@ class block_curr_admin extends block_base {
 
         //if we are not on a PM page, disable the expansion of
         //entities in the curr admin tree (logic in curriculum/index.php)
-        if (!is_a($PAGE, 'pm_page')) {
+        if (!is_a($PAGE, 'pm_page') && $PAGE->pagetype != 'admin-setting-elis_program_settings') {
             unset($USER->currentitypath);
         }
 

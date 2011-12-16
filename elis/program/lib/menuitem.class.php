@@ -165,7 +165,7 @@ class menuitemlisting {
                 if ($position_in_path < count($parts) - 1) {
                 
                     //automatically load all correct children
-                    if ($children = block_curr_admin_load_menu_children($current_parts[0], $current_parts[1], $parent_cluster_id, $parent_curriculum_id, $cumulative_path)) {
+                    if ($children = block_curr_admin_load_menu_children($current_parts[0], !isset($current_parts[1]) ? '' : $current_parts[1], $parent_cluster_id, $parent_curriculum_id, $cumulative_path)) {
                         foreach ($children as $child) {
                         
                             $node = clone($child);

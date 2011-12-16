@@ -6,10 +6,21 @@ require_once dirname(__FILE__) .'/lib/setup.php';
 require_once elispm::lib('data/curriculumstudent.class.php'); // defines
 require_once elispm::lib('certificate.php'); // TBD: cm_certificate_get__()
 
-global $DB; // TBD: roles
+global $DB, $PAGE, $USER; // TBD: roles
 global $SESSION;
 
 if ($ADMIN->fulltree) {
+    $USER->currentitypath = 'admn/elis_program_settings'; // TBD: to expand menu
+
+    if (!is_siteadmin() &&
+        optional_param('section', '', PARAM_SAFEDIR) == 'elis_program_settings') {
+        // TBD: Ugly hack to get navbar/breadcrumbs to appear for non-admins ...
+        // since Moodle core methods: navbar->get/has_items() are broken!!!
+        $PAGE->navbar->add(get_string('administrationsite'), null);
+        $PAGE->navbar->add(get_string('elis_config', 'elis_program'), null);
+        $PAGE->navbar->add(get_string('elis_settings', 'elis_program'), $PAGE->url);
+    }
+
     //flag that can be overrideen to signal that re-calculating student' curriculum
     //expiry times has already been done for the current settings change
     $SESSION->curriculum_expiration_toggled = false;
