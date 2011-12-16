@@ -252,7 +252,7 @@ mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 
 
 /*
- * Ensure that if the Alfresco SSO auth plugin is enabled that it is replaced witht the ELIS Files SSO plugin instead.
+ * Remove two ELIS auth plugins that are no longer present if they are enabled (Alfresco SSO and ELIS dummy plugin).
  */
 
 mtrace(' >>> '.get_string('preup_as_check', 'elis_core'));
@@ -261,12 +261,27 @@ if ($status) {
     try {
         $auth = $DB->get_field('config', 'value', array('name' => 'auth'));
 
-        $auth = str_replace('alfrescosso', 'elisfilessso', $auth, $count);
+        $auths = explode(',', $auth);
+        $found = false;
 
-        if ($count > 0) {
+        foreach ($auths as $i => $val) {
+            switch ($val) {
+                case 'alfrescosso':
+                case 'elis':
+                    // Remove these values if found
+                    unset($auths[$i]);
+                    $found = true;
+                    break;
+
+                default:
+                    // do nothing
+            }
+        }
+
+        if ($found) {
             mtrace(' --- '.get_string('preup_as_found', 'elis_core'));
 
-            $DB->set_field('config', 'value', $auth, array('name' => 'auth'));
+            $DB->set_field('config', 'value', implode(',', $auth), array('name' => 'auth'));
             mtrace(' --- '.get_string('preup_as_success', 'elis_core'));
         }
     } catch (Excpetion $e) {
