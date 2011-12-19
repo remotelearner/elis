@@ -25,4 +25,4 @@
  */
 
 $plugin->version = 2011121500;
-$plugin->release = "2.0.0-PRERELEASE (Build: 20100621)";
+$plugin->release = "2.0.0 (Build: 20111219)";
