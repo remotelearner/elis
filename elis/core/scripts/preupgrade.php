@@ -281,7 +281,7 @@ if ($status) {
         if ($found) {
             mtrace(' --- '.get_string('preup_as_found', 'elis_core'));
 
-            $DB->set_field('config', 'value', implode(',', $auth), array('name' => 'auth'));
+            $DB->set_field('config', 'value', implode(',', $auths), array('name' => 'auth'));
             mtrace(' --- '.get_string('preup_as_success', 'elis_core'));
         }
     } catch (Excpetion $e) {
