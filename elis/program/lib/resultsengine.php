@@ -337,13 +337,13 @@ function results_engine_process($class) {
     $tracks  = $DB->get_records_list('crlm_track', 'id', $trackids);
 
     // Log that the class has been processed
-    $log = new object();
+    $log = new stdClass();
     $log->classid       = $class->id;
     $log->datescheduled = $class->scheduleddate;
     $log->daterun       = $class->rundate;
     $classlogid = $DB->insert_record('crlm_results_class_log', $log);
 
-    $log = new object();
+    $log = new stdClass();
     $log->classlogid = $classlogid;
     $log->daterun    = $class->rundate;
 

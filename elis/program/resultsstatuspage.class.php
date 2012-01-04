@@ -32,10 +32,92 @@ require_once elispm::lib('page.class.php');
 require_once elispm::file('resultspage.class.php');
 require_once($CFG->libdir .'/tablelib.php');
 
+/**
+ * New table class to extend table_sql
+ *
+ * We're extending the table so we can format class name and student name columns
+ *
+ * @author Remote Learner http://www.remote-learner.net
+ */
+class table_engine_status extends table_sql {
 
+    public $classurl;
+
+    /**
+     * Standard Constructor
+     *
+     * @param string $uniqueid A unique id for the table
+     * @param string $url      The base url for the page
+     */
+    function __construct($uniqueid, $url) {
+        $this->classurl = $url .'?s=clsenginestatus&id=';
+        parent::__construct($uniqueid);
+    }
+
+    /**
+     * Format the idnumber with a link to the class results
+     *
+     * @param object $row A row of data
+     * @return string The formatted idnumber
+     */
+    function col_idnumber($row) {
+        $idnumber = $row->idnumber;
+
+        if (!$this->download && !empty($row->daterun)) {
+            $idnumber = "<a href=\"{$this->classurl}{$row->id}\">{$row->idnumber}</a>";
+        }
+        return $idnumber;
+    }
+
+    /**
+     * Format the actions with each action on a separate line
+     *
+     * @param object $row A row of data
+     * @return string The formatted actions
+     */
+    function col_actions($row) {
+        $actions = $row->actions;
+
+        if (!$this->download) {
+            $rows = explode(',', $row->actions);
+            $actions = implode("<br />\n", $rows);
+        }
+        return $actions;
+    }
+
+    /**
+     * Format the run date column to be human readable
+     *
+     * @param object $row A row of data
+     * @return string The formatted date
+     */
+    function col_daterun($row) {
+        $date = '';
+
+        if (! empty($row->daterun)) {
+            if (is_numeric($row->daterun)) {
+                $date = date('Y-m-d',$row->daterun);
+            } else {
+                $date = $row->daterun;
+            }
+        }
+        return $date;
+    }
+}
+
+/**
+ * Abstract class to define engine status pages.
+ *
+ * @author Remote Learner http://www.remote-learner.net
+ */
 abstract class enginestatuspage extends enginepage {
     protected $headers = array();
 
+    /**
+     * Build the default navigation bar
+     *
+     * @see enginepage::build_navbar_default()
+     */
     function build_navbar_default() {
         parent::build_navbar_default();
 
@@ -60,7 +142,7 @@ abstract class enginestatuspage extends enginepage {
 
         $page = $this->get_new_page(array('id' => $id), true);
 
-        $table = new table_sql($this->tableid);
+        $table = new table_engine_status($this->tableid, $this->_get_page_url());
         $table->define_columns($this->columns);
         $table->define_headers($this->headers);
         $table->define_baseurl($page->url);
@@ -72,9 +154,9 @@ abstract class enginestatuspage extends enginepage {
     }
 
     /**
-     * Do the default
+     * Do the default action
      *
-     * Set up the editing form before save.
+     * @see enginestatuspage::display_default
      */
     function do_default() {
         $this->display('default');
@@ -109,8 +191,6 @@ class course_enginestatuspage extends enginestatuspage {
         $classinstance = get_string('results_class_instance', self::LANG_FILE);
         $datescheduled = get_string('results_date_scheduled', self::LANG_FILE);
         $this->headers = array($classinstance, $datescheduled, $daterun);
-
-
 
         parent::__construct($params);
     }
@@ -194,8 +274,8 @@ class class_enginestatuspage extends enginestatuspage {
 
 
     protected $tableid = 'results_engine_class_status';
-    protected $columns = array('name', 'actions', 'daterun');
-    protected $fields  = 'cu.id, CONCAT(cu.firstname, " ", cu.lastname) as name, GROUP_CONCAT(crsl.action) as actions, MAX(crsl.daterun) as daterun';
+    protected $columns = array('fullname', 'actions', 'daterun');
+    protected $fields  = 'cu.id, cu.firstname, cu.lastname, GROUP_CONCAT(crsl.action) as actions, MAX(crsl.daterun) as daterun';
     protected $from    = '{crlm_class_enrolment} cce JOIN {crlm_user} cu ON cu.id=cce.userid LEFT JOIN {crlm_results_class_log} crcl ON crcl.classid=cce.classid LEFT JOIN {crlm_results_student_log} crsl ON crsl.userid=cce.userid AND crsl.classlogid=crcl.id';
     protected $where   = 'cce.classid=? GROUP BY cu.id, cu.firstname, cu.lastname';
     protected $count   = 'SELECT COUNT(1) FROM {crlm_class_enrolment} WHERE classid=?';
