@@ -41,7 +41,7 @@ require_once($CFG->libdir .'/tablelib.php');
  */
 class table_engine_status extends table_sql {
 
-    public $classurl;
+    public $elisurl;
 
     /**
      * Standard Constructor
@@ -50,7 +50,7 @@ class table_engine_status extends table_sql {
      * @param string $url      The base url for the page
      */
     function __construct($uniqueid, $url) {
-        $this->classurl = $url .'?s=clsenginestatus&id=';
+        $this->elisurl = $url;
         parent::__construct($uniqueid);
     }
 
@@ -64,7 +64,9 @@ class table_engine_status extends table_sql {
         $idnumber = $row->idnumber;
 
         if (!$this->download && !empty($row->daterun)) {
-            $idnumber = "<a href=\"{$this->classurl}{$row->id}\">{$row->idnumber}</a>";
+            $params = array('s' => 'clsenginestatus', 'id' => $row->id);
+            $url = new moodle_url($this->elisurl, $params);
+            $idnumber = html_writer::link($url, $row->idnumber);
         }
         return $idnumber;
     }
@@ -102,6 +104,32 @@ class table_engine_status extends table_sql {
             }
         }
         return $date;
+    }
+
+    /**
+    * Fullname is treated as a special columname in tablelib and should always
+    * be treated the same as the fullname of a user.
+    * @uses $this->useridfield if the userid field is not expected to be id
+    * then you need to override $this->useridfield to point at the correct
+    * field for the user id.
+    *
+    * ELIS version.
+    *
+    */
+    function col_fullname($row) {
+        global $COURSE, $CFG;
+
+        if (!$this->download) {
+            $params = array('s' => 'usr', 'id' => $row->{$this->useridfield}, 'action' => 'view');
+            $url = new moodle_url($this->elisurl, $params);
+            if ($COURSE->id != SITEID) {
+                $url->param('course', $COURSE->id);
+            }
+            return html_writer::link($url, fullname($row));
+
+        } else {
+            return fullname($row);
+        }
     }
 }
 
