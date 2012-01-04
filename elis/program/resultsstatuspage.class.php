@@ -98,7 +98,8 @@ class table_engine_status extends table_sql {
 
         if (! empty($row->daterun)) {
             if (is_numeric($row->daterun)) {
-                $date = date('Y-m-d',$row->daterun);
+                $format = get_string('strftimedate');
+                $date = userdate($row->daterun, $format);
             } else {
                 $date = $row->daterun;
             }
