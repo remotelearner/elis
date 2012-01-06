@@ -177,9 +177,12 @@ abstract class enginestatuspage extends enginepage {
         $table->define_baseurl($page->url);
         $table->set_sql($this->fields, $this->from, $this->where, $params);
         $table->set_count_sql($this->count, $params);
+        $table->sortable(true, $this->sort);
 
+        print('<div class="results enginestatus">');
         print_string('results_status_'. $this->type .'_title', self::LANG_FILE, $this->get_title_data());
         $table->out(50, false);
+        print('</div>');
     }
 
     /**
@@ -207,6 +210,7 @@ class course_enginestatuspage extends enginestatuspage {
     protected $from    = '{crlm_class} cc LEFT JOIN {crlm_results_class_log} crcl ON crcl.classid=cc.id';
     protected $where   = 'cc.courseid=? GROUP BY cc.id, cc.idnumber';
     protected $count   = 'SELECT COUNT(1) FROM {crlm_class} WHERE courseid=?';
+    protected $sort    = 'idnumber';
 
     /**
      * Constructor
@@ -308,6 +312,7 @@ class class_enginestatuspage extends enginestatuspage {
     protected $from    = '{crlm_class_enrolment} cce JOIN {crlm_user} cu ON cu.id=cce.userid LEFT JOIN {crlm_results_class_log} crcl ON crcl.classid=cce.classid LEFT JOIN {crlm_results_student_log} crsl ON crsl.userid=cce.userid AND crsl.classlogid=crcl.id';
     protected $where   = 'cce.classid=? GROUP BY cu.id, cu.firstname, cu.lastname';
     protected $count   = 'SELECT COUNT(1) FROM {crlm_class_enrolment} WHERE classid=?';
+    protected $sort    = 'lastname';
 
     /**
      * Constructor

@@ -135,5 +135,14 @@ table#class_selection_table {
 
 #page-elispm #track_selection_table td:last-child,
 #page-elispm #class_selection_table td:last-child {
-	text-align: right;
+    text-align: right;
+}
+
+.results.enginestatus {
+    text-align: center;
+    padding-top: 2em;
+}
+
+.results.enginestatus .generaltable {
+    margin: 0 auto;
 }
