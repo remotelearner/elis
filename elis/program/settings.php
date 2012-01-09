@@ -6,17 +6,28 @@ require_once dirname(__FILE__) .'/lib/setup.php';
 require_once elispm::lib('data/curriculumstudent.class.php'); // defines
 require_once elispm::lib('certificate.php'); // TBD: cm_certificate_get__()
 
-global $DB; // TBD: roles
+global $DB, $PAGE, $USER; // TBD: roles
 global $SESSION;
 
 if ($ADMIN->fulltree) {
+    $USER->currentitypath = 'admn/elis_program_settings'; // TBD: to expand menu
+
+    if (!is_siteadmin() &&
+        optional_param('section', '', PARAM_SAFEDIR) == 'elis_program_settings') {
+        // TBD: Ugly hack to get navbar/breadcrumbs to appear for non-admins ...
+        // since Moodle core methods: navbar->get/has_items() are broken!!!
+        $PAGE->navbar->add(get_string('administrationsite'), null);
+        $PAGE->navbar->add(get_string('elis_config', 'elis_program'), null);
+        $PAGE->navbar->add(get_string('elis_settings', 'elis_program'), $PAGE->url);
+    }
+
     //flag that can be overrideen to signal that re-calculating student' curriculum
     //expiry times has already been done for the current settings change
     $SESSION->curriculum_expiration_toggled = false;
 
     $ADMIN->add('root', new admin_category('elis_program', get_string('elis_config', 'elis_program'), true));
 
-    $settings = new admin_settingpage('elis_program_settings', get_string('elis_settings', 'elis_program'));
+    $settings = new admin_settingpage('elis_program_settings', get_string('elis_settings', 'elis_program'), 'elis/program:config');
 
     // ***Track Settings
     $settings->add(new admin_setting_heading('track_settings', get_string('track_settings', 'elis_program'), '' /* get_string('track_settings_info', 'elis_program') */));
@@ -138,7 +149,7 @@ if ($ADMIN->fulltree) {
                            get_string('icon_collapse_setting', 'elis_program'),
                            get_string('icon_collapse_help', 'elis_program'), 5, PARAM_INT)); // TBD
 
-    // Display Clusters as the Top Level
+    // Display Clusters at the Top Level
     $settings->add(new admin_setting_configcheckbox('elis_program/display_clusters_at_top_level',
                            get_string('top_clusters_setting', 'elis_program'),
                            get_string('top_clusters_help', 'elis_program'), 1));

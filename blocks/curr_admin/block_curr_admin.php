@@ -118,7 +118,7 @@ class block_curr_admin extends block_base {
 
         //if we are not on a PM page, disable the expansion of
         //entities in the curr admin tree (logic in curriculum/index.php)
-        if (!is_a($PAGE, 'pm_page')) {
+        if (!is_a($PAGE, 'pm_page') && $PAGE->pagetype != 'admin-setting-elis_program_settings') {
             unset($USER->currentitypath);
         }
 
@@ -313,7 +313,7 @@ class block_curr_admin extends block_base {
         }
 
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
-        if (has_capability('moodle/site:config', $syscontext)) {
+        if (has_capability('elis/program:config', $syscontext)) {
             $pages[] = new menuitem('configmanager',
                                     new menuitempage('url_page',
                                                      'lib/menuitem.class.php',

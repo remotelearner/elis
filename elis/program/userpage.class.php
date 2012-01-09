@@ -31,6 +31,7 @@ require_once elispm::file('usertrackpage.class.php');
 require_once elispm::lib('managementpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('form/userform.class.php');
+require_once elispm::file('linkpage.class.php');
 /*
 require_once (CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php');
 require_once (CURMAN_DIRLOCATION . '/lib/curriculumstudent.class.php');
@@ -106,6 +107,16 @@ class userpage extends managementpage {
     }
 
     public function __construct(array $params=null) {
+        //tab for the Individual User report
+        //todo: check availability and permissions
+        $report_tab = array('tab_id' => 'report',
+                            'page' => 'linkpage',
+                            'params' => array('linkurl' => 'blocks/php_report/render_report_page.php',
+                                              'linkparams'=>'report,userid',
+                                              'report'=>'individual_user', 'userid'=>'=id'),
+                            'name' => get_string('report', 'elis_program'),
+                            'showbutton' => true,
+                            'image' => 'report');
         $this->tabs = array(
             array('tab_id' => 'view', 'page' => 'userpage', 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
             array('tab_id' => 'edit', 'page' => 'userpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
@@ -116,7 +127,7 @@ class userpage extends managementpage {
             array('tab_id' => 'user_rolepage', 'page' => 'user_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
             array('tab_id' => 'delete', 'page' => 'userpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
-            //array('tab_id' => 'report', 'page' => 'jasperreportpage', 'params' => array('report' => 'induser'), 'name' => get_string('report', 'elis_program'), 'showbutton' => true, 'image' => 'report'),
+            $report_tab,
         );
 
         parent::__construct($params);

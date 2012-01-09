@@ -305,6 +305,14 @@ class pmclasspage extends managementpage {
             'maxstudents'  => array('header' => get_string('class_maxstudents', 'elis_program')),
         );
 
+        //set the column data needed to maintain and display current sort
+        if ($dir !== 'DESC') {
+            $dir = 'ASC';
+        }
+        if (isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
+        }
+
         $items    = pmclass_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, false, pmclasspage::get_contexts('elis/program:class_view'), $parent_clusterid);
         $numitems = pmclass_count_records($namesearch, $alpha, $id, false, pmclasspage::get_contexts('elis/program:class_view'), $parent_clusterid);
 
@@ -325,13 +333,26 @@ class pmclasspage extends managementpage {
         $id = required_param('id', PARAM_INT);
         $force = optional_param('force', 0, PARAM_INT);
         $confirm = optional_param('confirm', 0, PARAM_INT);
+        $needconfirm = optional_param('needconfirm', 0, PARAM_INT);
 
         if($DB->count_records(student::TABLE, array('classid'=>$id)) && $force != 1 && $confirm != 1) {
-            $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1));
+            $this->display('delete');
+        } else {
+            parent::do_delete();
+        }
+    }
+
+    function display_delete() {
+        $id = required_param('id', PARAM_INT);
+        $needconfirm = optional_param('needconfirm', 0, PARAM_INT);
+
+        if ($needconfirm != 1) {
+            $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1, 'needconfirm' => 1));
             notify(get_string('pmclass_delete_warning', 'elis_program'), 'errorbox');
             echo '<center><a href="'.$target->url.'">'.get_string('pmclass_delete_warning_continue', 'elis_program').'</a></center>';
         } else {
-            parent::do_delete();
+            $obj = $this->get_new_data_object($id);
+            $this->print_delete_form($obj);
         }
     }
 
@@ -421,17 +442,18 @@ class pmclasspage extends managementpage {
      * @param array $columns
      */
     function create_table_object($items, $columns) {
-
+        $crsid = $this->get_cm_id();
         $parent_clusterid = $this->optional_param('parent_clusterid', 0, PARAM_INT);
-
         $extra_params = array();
-        if(!empty($parent_clusterid)) {
+        if ($crsid) {
+            $extra_params['id'] = $crsid;
+        }
+        if (!empty($parent_clusterid)) {
             $extra_params['parent_clusterid'] = $parent_clusterid;
         }
 
         $page_object = $this->get_new_page($extra_params);
-
-        return new management_page_table($items, $columns, $page_object);
+        return new management_page_table($items, $columns, $page_object, $extra_params);
     }
 
     /**

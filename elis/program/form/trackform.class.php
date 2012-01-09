@@ -42,6 +42,20 @@ class trackform extends cmform {
      */
     public function definition() {
         global $USER;
+
+        $fields = field::get_for_context_level('track');
+
+        foreach ($fields as $rec) {
+            $field = new field($rec);
+            if(strcmp($field->datatype,"num") == 0) {
+                $fieldname = "field_$field->shortname";
+                if(isset($this->_customdata['obj']->$fieldname)) {
+                    $formatnum = $field->format_number($this->_customdata['obj']->$fieldname);
+                    $this->_customdata['obj']->$fieldname = $formatnum;
+                }
+            }
+        }
+
         $this->set_data($this->_customdata['obj']);
 
         $mform = &$this->_form;

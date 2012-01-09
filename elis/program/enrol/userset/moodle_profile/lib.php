@@ -331,20 +331,20 @@ function cluster_profile_update_handler($userdata) {
                        SELECT id FROM {" . clusterassignment::TABLE . "} a
                        LEFT OUTER JOIN $new_assignments b ON a.clusterid = b.clusterid AND a.userid = b.userid
                        WHERE a.userid = ? AND b.clusterid IS NULL
-                   ) AND plugin='profile'";
+                   ) AND plugin='moodle_profile'";
     } else {
         $delete = "DELETE a FROM {" . clusterassignment::TABLE . "} a
                    LEFT OUTER JOIN $new_assignments b ON a.clusterid = b.clusterid AND a.userid = b.userid
-                   WHERE a.userid = ? AND b.clusterid IS NULL AND a.plugin='profile'";
+                   WHERE a.userid = ? AND b.clusterid IS NULL AND a.plugin='moodle_profile'";
     }
     $DB->execute($delete, array_merge($new_assignments_params, array($cuid)));
 
     // add new assignments
     $insert = "INSERT INTO {" . clusterassignment::TABLE . "}
                (clusterid, userid, plugin)
-               SELECT a.clusterid, a.userid, 'profile'
+               SELECT a.clusterid, a.userid, 'moodle_profile'
                FROM $new_assignments a
-               LEFT OUTER JOIN {" . clusterassignment::TABLE . "} b ON a.clusterid = b.clusterid AND a.userid = b.userid AND b.plugin='profile'
+               LEFT OUTER JOIN {" . clusterassignment::TABLE . "} b ON a.clusterid = b.clusterid AND a.userid = b.userid AND b.plugin='moodle_profile'
                WHERE a.userid = ? AND b.clusterid IS NULL";
 
     $DB->execute($insert, array_merge($new_assignments_params, array($cuid)));

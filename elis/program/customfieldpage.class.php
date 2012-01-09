@@ -410,6 +410,14 @@ class customfieldpage extends pm_page {
                             }
                         }
                     }
+
+                    $field = new field();
+
+                    // Format decimal numbers
+                    if(strcmp($data_array['datatype'],'num') == 0) {
+                        $defaultdata = $field->format_number($defaultdata);
+                    }
+
                     if (!is_object($defaultdata)) {
                         $data_array['defaultdata'] = $defaultdata;
                     }

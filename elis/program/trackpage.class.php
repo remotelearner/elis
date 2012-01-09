@@ -399,7 +399,9 @@ class trackpage extends managementpage {
         }
         $page_object = $this->get_new_page($extra_params);
 
-        return new management_page_table($items, $columns, $page_object);
+        //pass along the extra parameters because they are protected within
+        //the page object
+        return new management_page_table($items, $columns, $page_object, $extra_params);
     }
 
     /**

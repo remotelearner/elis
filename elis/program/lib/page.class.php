@@ -68,4 +68,36 @@ abstract class pm_page extends elis_page {
                            : get_string('learningplan', 'elis_program'),
                           "{$CFG->wwwroot}/elis/program/");
     }
+
+    /**
+     * Determines the name of the context class that represents this page's cm entity
+     *
+     * @return  string  The name of the context class that represents this page's cm entity
+     *
+     * @todo            Do something less complex to determine the appropriate class
+     *                  (requires page class redesign)
+     */
+    function get_page_context() {
+        $context = '';
+
+        if (isset($this->parent_data_class)) {
+            //parent data class is specified directly in the record
+            $context = $this->parent_data_class;
+        } else if (isset($this->parent_page) && isset($this->parent_page->data_class)) {
+            //parent data class is specified indirectly through a parent page object
+            $context = $this->parent_page->data_class;
+        } else if (isset($this->tab_page)) {
+            //a parent tab class exists
+            $tab_page_class = $this->tab_page;
+
+            //construct an instance of the named class and obtain its core data class
+            $tab_page_class_instance = new $tab_page_class();
+            $context = $tab_page_class_instance->data_class;
+        } else if(isset($this->data_class)) {
+            //out of other options, so directly use the data class associated with this page
+            $context = $this->data_class;
+        }
+
+        return $context;
+    }
 }

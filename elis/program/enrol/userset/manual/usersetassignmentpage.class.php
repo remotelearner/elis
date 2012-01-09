@@ -156,14 +156,12 @@ class userclusterpage extends userclusterbasepage {
             'display'     => array('header' => get_string('description', 'elis_program')),
         );
 
-        // set sorting
-        if ($dir !== 'DESC') {
+        if($dir !== 'DESC') {
             $dir = 'ASC';
         }
-        if (isset($columns[$sort])) {
-            $sort = 'name';
+        if(isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
         }
-        $columns[$sort]['sortable'] = $dir;
 
         $filter = new join_filter('id', clusterassignment::TABLE, 'clusterid',
                                   new AND_filter(array(new field_filter('plugin', 'manual', field_filter::NEQ),
@@ -194,14 +192,12 @@ class userclusterpage extends userclusterbasepage {
             'manage'      => array('header' => ''),
         );
 
-        // set sorting
-        if ($dir !== 'DESC') {
+        if($dir !== 'DESC') {
             $dir = 'ASC';
         }
-        if (isset($columns[$sort])) {
-            $sort = 'name';
+        if(isset($columns[$sort])) {
+            $columns[$sort]['sortable'] = $dir;
         }
-        $columns[$sort]['sortable'] = $dir;
 
         $filter = new join_filter('id', clusterassignment::TABLE, 'clusterid',
                                   new AND_filter(array(new field_filter('plugin', 'manual'),
@@ -212,9 +208,10 @@ class userclusterpage extends userclusterbasepage {
 
         $filtersql = $filter->get_sql(false, 'ca');
         $sql = 'SELECT ca.id, u.id AS clusterid, u.name, u.display
-                  FROM {' . clusterassignment::TABLE . '} ca
-                  JOIN {' . userset::TABLE . "} u ON ca.clusterid = u.id
-                 WHERE {$filtersql['where']}";
+                FROM {' . clusterassignment::TABLE . '} ca
+                JOIN {' . userset::TABLE . "} u ON ca.clusterid = u.id
+                WHERE {$filtersql['where']}
+                ORDER BY {$sort} {$dir}";
         $items = $DB->get_records_sql($sql, $filtersql['where_parameters']);
 
         echo html_writer::tag('h2', get_string('manually_assigned_usersets', 'usersetenrol_manual'));

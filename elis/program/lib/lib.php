@@ -79,7 +79,8 @@ function pmalphabox($moodle_url, $pname = 'alpha', $label = null) {
             echo ' ', html_writer::tag('b', $letter);
         } else {
             $url = clone($moodle_url); // TBD
-            $url->params(array($pname => $letter));
+            // Set current page to 0
+            $url->params(array($pname => $letter, 'page' => 0));
             echo ' ', html_writer::link($url, $letter);
         }
     }
@@ -375,16 +376,20 @@ function pm_synchronize_moodle_class_grades() {
                 // skip user records that don't match up
                 // (this works since both sets are sorted by Moodle user ID)
                 // (in theory, we shouldn't need this, but just in case...)
-                while ($sturec && $sturec->muid < $stugrades->user->id) {
-                    $sturec = next($causers);
-                }
-                if (!$sturec) {
+                // Verify that we have stugrades before continuing...
+                if (!is_object($stugrades)) {
                     break;
                 }
-                while($stugrades && $stugrades->user->id < $sturec->muid) {
+                while (is_object($sturec) && is_object($stugrades) && ($sturec->muid < $stugrades->user->id)) {
+                    $sturec = next($causers);
+                }
+                if (!is_object($sturec)) {
+                    break;
+                }
+                while(is_object($stugrades) && is_object($gradedusers) && ($stugrades->user->id < $sturec->muid)) {
                     $stugrades = $gradedusers->next_user();
                 }
-                if (!$stugrades) {
+                if (!is_object($stugrades)) {
                     break;
                 }
 
@@ -684,6 +689,13 @@ function pm_moodle_user_to_pm($mu) {
         return true;
     }
 
+    //not going to be concerned with city or password for now
+
+    if (empty($mu->country)) {
+        //this is necessary because PM requires this field
+        return true;
+    }
+
     if (empty($mu->idnumber) && elis::$config->elis_program->auto_assign_user_idnumber) {
         //make sure the current user's username does not match up with some other user's
         //idnumber (necessary since usernames and idnumbers aren't bound to one another)
@@ -822,7 +834,7 @@ function pm_moodle_user_to_pm($mu) {
         $um->muserid  = $mu->id;
         $um->idnumber = $mu->idnumber;
         $um->save();
-    } 
+    }
 
     return true;
 }
@@ -976,7 +988,7 @@ function usermanagement_get_users($sort = 'name', $dir = 'ASC', $startrec = 0,
     $FULLNAME = $DB->sql_concat('firstname', "' '", 'lastname');
     $select   = 'SELECT id, idnumber, country, language, timecreated, '.
                $FULLNAME . ' as name ';
-    //do not use a user table alias because user-based filters operate on the user table directly               
+    //do not use a user table alias because user-based filters operate on the user table directly
     $tables   = 'FROM {'. user::TABLE .'} ';
     $where    = array();
     $params   = array();
@@ -1110,6 +1122,17 @@ function usermanagement_get_users_recordset($sort = 'name', $dir = 'ASC',
 
     $sql = $select.$tables.$where.$sort;
     return $DB->get_recordset_sql($sql, $params, $startrec, $perpage);
+}
+
+/**
+ * Output a message during plugin upgrade or install
+ */
+function install_msg($msg) {
+    $msg .= "\n";
+    if (!CLI_SCRIPT) {
+        $msg = nl2br($msg);
+    }
+    echo $msg;
 }
 
 /**
@@ -1313,24 +1336,36 @@ function pm_migrate_environments() {
 
 /**
  * Ensures that a role is assignable to all the PM context levels
+ *
+ * @param $role mixed - either the role shortname OR a role id
+ * @return the roleid on success, false otherwise.
+ * @uses  $DB
  */
 function pm_ensure_role_assignable($role) {
     global $DB;
     if (!is_numeric($role)) {
-        $role = $DB->get_field('role', 'id', array('shortname' => $role));
+        if ( !($roleid = $DB->get_field('role', 'id', array('shortname' => $role)))
+            && !($roleid = create_role(get_string($role .'name', 'elis_program'),
+                               $role, get_string($role .'description', 'elis_program'),
+                               get_string($role .'archetype', 'elis_program')))) {
+            mtrace("\n pm_ensure_role_assignable(): Error creating role '{$role}'\n");
+        }
+    } else {
+        $roleid = $role;
     }
-    if ($role) {
+    if ($roleid) {
         $sql = "INSERT INTO {role_context_levels}
                        (roleid, contextlevel)
-                SELECT $role AS roleid, ctxlvl.id + 1000 AS contextlevel
+                SELECT $roleid AS roleid, ctxlvl.id + 1000 AS contextlevel
                   FROM {context_levels} ctxlvl
              LEFT JOIN {role_context_levels} rcl
                        ON rcl.contextlevel = ctxlvl.id + 1000
-                       AND rcl.roleid = $role
+                       AND rcl.roleid = $roleid
                  WHERE ctxlvl.component='elis_program'
                    AND rcl.id IS NULL";
         $DB->execute($sql);
     }
+    return $roleid;
 }
 
 /**
@@ -1487,9 +1522,24 @@ function pm_fix_duplicate_moodle_users() {
             // Store whether there was some failure generating an idnumber
             $idnumber_generation_failure = false;
 
-            // Get records in order by timemodified, so that more recently modified users are considered
-            // the duplicates
-            if ($rs2 = $DB->get_recordset('user', array('idnumber' => $record->idnumber), 'timemodified')) {
+            // By default, obtain the least recently modified record
+            $sort_condition = 'timemodified';
+
+            $sql = "SELECT mu.id
+                    FROM {user} mu
+                    JOIN {".user::TABLE."} pu
+                      ON mu.idnumber = pu.idnumber
+                      AND mu.username = pu.username
+                      AND mu.idnumber = ?";
+            $params = array($record->idnumber);
+
+            if ($correct_record = $DB->get_record_sql($sql, $params, IGNORE_MULTIPLE)) {
+                // Found corresponding user with username and idnumber matching, so
+                // prioritize it
+                $sort_condition = 'id = '.$correct_record->id.' DESC';
+            }
+
+            if ($rs2 = $DB->get_recordset('user', array('idnumber' => $record->idnumber), $sort_condition)) {
                 foreach ($rs2 as $record2) {
 
                     // Store information about the current user
@@ -1513,9 +1563,6 @@ function pm_fix_duplicate_moodle_users() {
                             }
                         }
 
-                    } else {
-                        // Send messages from the first user, whose idnumber is not changing
-                        $userfrom = $DB->get_record('user', array('id' => $record2->id));
                     }
 
                     if (!$first && !$generated) {
@@ -1595,9 +1642,24 @@ function pm_fix_duplicate_pm_users() {
             // Store whether there was some failure generating an idnumber
             $idnumber_generation_failure = false;
 
-            // Get records in order by timemodified, so that more recently modified users are considered
-            // the duplicates
-            if ($rs2 = $DB->get_recordset(user::TABLE, array('idnumber' => $record->idnumber), 'timemodified')) {
+            // By default, obtain the least recently modified record
+            $sort_condition = 'timemodified';
+
+            $sql = "SELECT pu.id
+                    FROM {user} mu
+                    JOIN {".user::TABLE."} pu
+                      ON mu.idnumber = pu.idnumber
+                      AND mu.username = pu.username
+                      AND mu.idnumber = ?";
+            $params = array($record->idnumber);
+
+            if ($correct_record = $DB->get_record_sql($sql, $params, IGNORE_MULTIPLE)) {
+                // Found corresponding user with username and idnumber matching, so
+                // prioritize it
+                $sort_condition = 'id = '.$correct_record->id.' DESC';
+            }
+
+            if ($rs2 = $DB->get_recordset(user::TABLE, array('idnumber' => $record->idnumber), $sort_condition)) {
                 foreach ($rs2 as $record2) {
 
                     // Store information about the current user
@@ -1621,25 +1683,10 @@ function pm_fix_duplicate_pm_users() {
                             }
                         }
 
-                    } else {
-                        // Send messages from the first user, whose idnumber is not changing
-                        // (need the Moodle user since this is called during upgrade before association
-                        // table is populated)
-                        $userfrom = $DB->get_record('user', array('idnumber' => $record2->idnumber), '*', IGNORE_MULTIPLE);
-                        if (!$userfrom) {
-                            //fall back to admin
-                            $userfrom = NULL;
-                        }
                     }
 
                     if (!$first && !$generated) {
-                        // Send a failure message
-                        $message = new notification();
-                        $message->fullmessageformat = FORMAT_MOODLE;
-
-                        $messagetext = get_string('pm_duplicate_idnumber_fail', 'elis_program', $record->idnumber);
-
-                        $message->send_notification($messagetext, $admin, $userfrom);
+                        //this is where we would ideally send a failure message
 
                         $idnumber_generation_failure = true;
                     }
@@ -1648,30 +1695,9 @@ function pm_fix_duplicate_pm_users() {
                 }
             }
 
-            if (!$idnumber_generation_failure) {
-	            // Send a success message
-	            $message = new notification();
-	            $message->fullmessageformat = FORMAT_MOODLE;
-	
-	            // Main body of the message
-	            $a = new stdClass;
-	            $a->idnumber = $record->idnumber;
-	            $a->username = $usernames[0];
-	            $page = new userpage(array('id' => $userids[0], 'action' => 'view'));
-	            $a->url = $page->url->out(false);
-	            $messagetext = get_string('pm_duplicate_idnumber_unchanged', 'elis_program', $a);
-	
-	            // Info regarding users whose idnumbers have been changed
-	            for ($i = 1; $i < count($userids); $i++) {
-	                $a = new stdClass;
-	                $a->username = $usernames[$i];
-	                $page = new userpage(array('id' => $userids[$i], 'action' => 'view'));
-	                $a->url = $page->url->out(false);
-	                $messagetext .= get_string('pm_duplicate_idnumber_changed', 'elis_program', $a);
-	            }
-
-                $message->send_notification($messagetext, $admin, $userfrom);
-            }
+            //this is where we would ideally send a success message but it's current
+            //not possible because this is called during the upgrade before the messages
+            //setup happens
         }
     }
 
@@ -1680,3 +1706,35 @@ function pm_fix_duplicate_pm_users() {
 
     return $result;
 }
+
+/**
+ * Migrates certificate border & seal image files from ELIS 1.9x to 2.x
+ * @return boolean true on success, otherwise false
+ */
+function pm_migrate_certificate_files() {
+    global $CFG;
+    $result = true;
+    // Migrate directories: olddir => newdir
+    $dirs = array('1/curriculum/pix/certificate/borders'
+                  => 'elis/program/pix/certificate/borders',
+                  '1/curriculum/pix/certificate/seals'
+                  => 'elis/program/pix/certificate/seals');
+    foreach ($dirs as $olddir => $newdir) {
+        $oldpath = $CFG->dataroot .'/'. $olddir;
+        $newpath = $CFG->dataroot .'/'. $newdir;
+        if (is_dir($oldpath) && ($dh = opendir($oldpath))) {
+            while (($file = readdir($dh)) !== false) {
+                if (is_file($oldpath .'/'. $file)) {
+                    if (!is_dir($newpath) && !mkdir($newpath, 0777, true)) {
+                        install_msg("\n pm_migrate_certificate_files(): Failed creating certificate directory: {$newpath}");
+                    } else if (!copy($oldpath .'/'. $file, $newpath .'/'. $file)) {
+                        install_msg("\n pm_migrate_certificate_files(): Failed copying certificate file: {$oldpath}/{$file} to {$newpath}/{$file}");
+                    }
+                }
+            }
+            closedir($dh);
+        }
+    }
+    return $result;
+}
+

@@ -196,7 +196,7 @@ if (!empty($currentitypath)) {
 } else {
     //determine whether to unset the parameter based on comparing the current
     //page type with the last entity set
-    $effective_entity_type = $PAGE->context;
+    $effective_entity_type = $PAGE->get_page_context();
 
     if (isset($USER->currentitypath)) {
         $parts = explode('/', $USER->currentitypath);

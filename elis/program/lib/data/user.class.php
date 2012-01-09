@@ -247,7 +247,7 @@ class user extends data_object_with_custom_fields {
                       ON mu.id = um.muserid
                     JOIN {".user::TABLE."} cu
                       ON um.cuserid = cu.id
-                    WHERE cu.id = ? 
+                    WHERE cu.id = ?
                       AND mu.deleted = 0";
 
             return $this->_db->get_record_sql($sql, array($this->id));
@@ -303,6 +303,13 @@ class user extends data_object_with_custom_fields {
      */
     public function save($strict_match = true) {
         $isnew = empty($this->id);
+
+        $now = time();
+        if ($isnew) {
+            $this->timecreated = $now;
+        } else {
+            $this->timemodified = $now;
+        }
 
         parent::save();
 
@@ -835,24 +842,24 @@ class user extends data_object_with_custom_fields {
         /// Completed non-curricula course data
         if ($tab != 'archivedlp') {
             if (!empty($classids)) {
-                $sql = 'SELECT stu.id, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+                $sql = 'SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
                         FROM {'.student::TABLE.'} stu
                         INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
                         INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
-                        WHERE userid = '.$this->id.'
-                        AND classid '.(count($classids) == 1 ? '!= ' . current($classids) :
-                        'NOT IN (' . implode(', ', $classids) . ')').'
+                        WHERE userid = ?
+                        AND classid '. (count($classids) == 1 ? '!= '. current($classids) :
+                        'NOT IN ('. implode(', ', $classids) .')') .'
                         ORDER BY crs.name ASC, stu.completetime ASC';
             } else {
-                $sql = 'SELECT stu.id, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+                $sql = 'SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
                         FROM {'.student::TABLE.'} stu
                         INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
                         INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
-                        WHERE userid = '.$this->id.'
+                        WHERE userid = ?
                         ORDER BY crs.name ASC, stu.completetime ASC';
             }
 
-            if ($classes = $DB->get_recordset_sql($sql) and $classes->valid()) {
+            if ($classes = $DB->get_recordset_sql($sql, array($this->id)) and $classes->valid()) {
                 $table = new html_table();
                 $table->head = array(
                     get_string('class', 'elis_program'),
@@ -864,7 +871,7 @@ class user extends data_object_with_custom_fields {
                 $table->data = array();
 
                 foreach ($classes as $class) {
-                    if ($mdlcrs = moodle_get_course($class->id)) {
+                    if ($mdlcrs = moodle_get_course($class->classid)) {
                         $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
                                       $mdlcrs . '">' . $class->coursename . '</a>';
                     } else {
@@ -1051,9 +1058,9 @@ class pm_custom_field_filter extends user_filter_type {
             $control = 'text';
         }
         require_once elis::plugin_file('elisfields_manual', "field_controls/{$control}.php");
+        $mform->setAdvanced($fieldname); // ELIS-3894: moved up
         call_user_func("{$control}_control_display", $mform, $mform, null, $this->_field, true);
 
-        $mform->setAdvanced($fieldname);
     }
 
     function check_data($formdata) {
@@ -1132,6 +1139,7 @@ class pm_user_filter_text_OR extends user_filter_text {
         $value    = addslashes($data['value']);
         $params   = array();
         $conditions = array();
+        $combine_op = ' OR ';
 
         foreach ($this->_fields as $field) {
             $param = 'pmufto'. $counter++;
@@ -1143,6 +1151,7 @@ class pm_user_filter_text_OR extends user_filter_text {
                 case 1: // does not contain
                     $conditions[] = $DB->sql_like($field, ":{$param}", FALSE, true, true);
                     $params[$param] = "%{$value}%";
+                    $combine_op = ' AND ';
                     break;
                 case 2: // equal to
                     $conditions[] = $DB->sql_like($field, ":{$param}", FALSE);
@@ -1161,7 +1170,8 @@ class pm_user_filter_text_OR extends user_filter_text {
                     break;
             }
         }
-        return array('(' . implode(' OR ', $conditions) . ')', $params);
+        $sql = '('. implode($combine_op, $conditions) .')';
+        return array($sql, $params);
     }
 }
 

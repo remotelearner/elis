@@ -168,11 +168,12 @@ function xmldb_elis_program_upgrade($oldversion=0) {
     }
 
     if ($result && $oldversion < 2011092101) {
+      /*
         // make sure that the manager role can be assigned to all PM context levels
         update_capabilities('elis_program'); // load context levels
         pm_ensure_role_assignable('manager');
         pm_ensure_role_assignable('curriculumadmin');
-
+      */
         upgrade_plugin_savepoint(true, 2011092101, 'elis', 'program');
     }
 
@@ -189,13 +190,7 @@ function xmldb_elis_program_upgrade($oldversion=0) {
     if ($result && $oldversion < 2011102700) {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('lib.php'));
-
-        //fix duplicate enrolment data
-        $result = $result && pm_fix_duplicate_class_enrolments();
-        //fix duplicate Moodle idnumber values
-        $result = $result && pm_fix_duplicate_moodle_users();
-        //fix duplicate Program Management idnumber values
-        $result = $result && pm_fix_duplicate_pm_users();
+        require_once(elispm::lib('data/user.class.php'));
 
         //create table for storing the association between Moodle and PM users
         $table = new XMLDBTable('crlm_user_moodle');
@@ -215,6 +210,32 @@ function xmldb_elis_program_upgrade($oldversion=0) {
 
         $dbman->create_table($table);
 
+        // Create a temporary table used to determine whether a PM user originally referenced
+        // a Moodle user
+        $result = $result && $DB->execute("CREATE TABLE {$CFG->prefix}crlm_user_moodle_temp LIKE {$CFG->prefix}crlm_user_moodle");
+
+        $table = new xmldb_table('crlm_user_moodle_temp');
+        $index = new xmldb_index('idnumber_idx', XMLDB_INDEX_UNIQUE, array('idnumber'));
+        $dbman->drop_index($table, $index);
+
+        // populate data for temporary table
+        $sql = "INSERT
+                INTO {crlm_user_moodle_temp} (cuserid, muserid, idnumber)
+                SELECT cu.id, mu.id, cu.idnumber
+                FROM {crlm_user} cu
+                JOIN {user} mu ON cu.idnumber = mu.idnumber AND cu.idnumber != ''
+                WHERE mu.deleted = 0
+                AND mu.mnethostid = :mnethostid";
+
+        $DB->execute($sql, array('mnethostid' => $CFG->mnet_localhost_id));
+
+        //fix duplicate enrolment data
+        $result = $result && pm_fix_duplicate_class_enrolments();
+        //fix duplicate Moodle idnumber values
+        $result = $result && pm_fix_duplicate_moodle_users();
+        //fix duplicate Program Management idnumber values
+        $result = $result && pm_fix_duplicate_pm_users();
+
         // populate data from existing Moodle and PM user tables
         $sql = "INSERT
                 INTO {crlm_user_moodle} (cuserid, muserid, idnumber)
@@ -225,6 +246,30 @@ function xmldb_elis_program_upgrade($oldversion=0) {
                 AND mu.mnethostid = :mnethostid";
 
         $DB->execute($sql, array('mnethostid' => $CFG->mnet_localhost_id));
+
+        //safe to migrate all Moodle users to ELIS because deleting in ELIS
+        //would have deleted the Moodle user record
+        pm_migrate_moodle_users();
+
+        //migrate ELIS user records to Moodle if a new idnumber was generated for
+        //a user
+        $rs = $DB->get_recordset_select(user::TABLE,
+               "NOT EXISTS (SELECT 'x'
+                            FROM {user} mu
+                            WHERE mu.idnumber = {".user::TABLE."}.idnumber)
+                AND EXISTS (SELECT 'x'
+                            FROM {crlm_user_moodle_temp} umt
+                            WHERE umt.cuserid = {".user::TABLE."}.id)");
+        if ($rs) {
+            foreach ($rs as $user) {
+                $user = new user($user->id);
+                $user->load();
+                $user->synchronize_moodle_user(true, true);
+            }
+        }
+
+        //drop the temporary table
+        $result = $result && $DB->execute("DROP TABLE {$CFG->prefix}crlm_user_moodle_temp");
 
         upgrade_plugin_savepoint(true, 2011102700, 'elis', 'program');
     }
@@ -246,6 +291,20 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $sql = "UPDATE {crlm_notification_log}
                 SET fromuserid = userid";
         $DB->execute($sql);
+        upgrade_plugin_savepoint($result, 2011110700, 'elis', 'program');
+    }
+
+    if ($result && $oldversion < 2011120100) {
+        $result = pm_migrate_certificate_files();
+        upgrade_plugin_savepoint($result, 2011120100, 'elis', 'program');
+    }
+
+    if ($result && $oldversion < 2011121500) {
+        // make sure that the manager role can be assigned to all PM context levels
+        update_capabilities('elis_program'); // load context levels
+        pm_ensure_role_assignable('manager');
+        pm_ensure_role_assignable('curriculumadmin');
+        upgrade_plugin_savepoint($result, 2011121500, 'elis', 'program');
     }
 
     if ($oldversion < 2011091601) {

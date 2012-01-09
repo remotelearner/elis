@@ -421,7 +421,7 @@ function _cmctx_get_track_containing_class($instance_id) {
 function _cmctx_get_cluster_containing_user($instance_id) {
     global $DB;
     require_once elispm::lib('data/clusterassignment.class.php');
-    $result = $DB->get_records(clusterassignment::TABLE, array('userid' => $instance_id), '', 'clusterid');
+    $result = $DB->get_records(clusterassignment::TABLE, array('userid' => $instance_id), '', 'DISTINCT clusterid');
     if ($result) {
         return $result;
     } else {

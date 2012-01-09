@@ -42,6 +42,7 @@ class studentTest extends elis_database_test {
             'context' => 'moodle',
             'user' => 'moodle',
             'course' => 'moodle',
+            'message' => 'moodle',
             user::TABLE => 'elis_program',
             student::TABLE => 'elis_program',
             pmclass::TABLE => 'elis_program',
