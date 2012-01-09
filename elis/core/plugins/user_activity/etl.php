@@ -191,7 +191,8 @@ function user_activity_task_init( $output_mtrace = true ) {
         mtrace('Calculating user activity from Moodle log');
     }
 
-    $state = elis::$config->eliscoreplugins_user_activity->state;
+    $state = isset(elis::$config->eliscoreplugins_user_activity->state) ?
+                 elis::$config->eliscoreplugins_user_activity->state : '';
     if (!empty($state)) {
         // We already have some state saved.  Use that.
         return unserialize($state);
@@ -203,7 +204,8 @@ function user_activity_task_init( $output_mtrace = true ) {
     $state['sessiontail'] = elis::$config->eliscoreplugins_user_activity->session_tail;
 
     // the last run time that we have processed until
-    $lastrun = elis::$config->eliscoreplugins_user_activity->last_run;
+    $lastrun = isset(elis::$config->eliscoreplugins_user_activity->last_run) ?
+                   elis::$config->eliscoreplugins_user_activity->last_run : 0;
     $state['starttime'] = !empty($lastrun) ? (int)$lastrun : 0;
 
     $startrec = $DB->get_field_select('log', 'MAX(id)', 'time <= ?',

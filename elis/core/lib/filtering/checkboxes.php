@@ -94,6 +94,19 @@ class generalized_filter_checkboxes extends generalized_filter_type {
     }
 
     /**
+     * Returns an array of checked checkboxes
+     * @param array
+     * @return array
+     */
+    function get_default_values($filter_data) {
+        $checkbox_filter = array();
+        foreach ($filter_data as $key => $value) {
+            $checkbox_filter[$key] = 1;
+        }
+        return $checkbox_filter;
+    }
+
+    /**
      * Adds controls specific to this filter in the form.
      * @param object $mform a MoodleForm object to setup
      */
