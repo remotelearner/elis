@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,16 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
 
         $this->recordset = $DB->get_recordset_sql($sql);
 
-        //todo: write out header
+        //write out header
+        $fileplugin->write(array(get_string('header_firstname', 'rlipexport_version1'),
+                                 get_string('header_lastname', 'rlipexport_version1'),
+                                 get_string('header_username', 'rlipexport_version1'),
+                                 get_string('header_useridnumber', 'rlipexport_version1'),
+                                 get_string('header_courseidnumber', 'rlipexport_version1'),
+                                 get_string('header_startdate', 'rlipexport_version1'),
+                                 get_string('header_enddate', 'rlipexport_version1'),
+                                 get_string('header_grade', 'rlipexport_version1'),
+                                 get_string('header_letter', 'rlipexport_version1')));
     }
 
     /**
@@ -89,7 +98,9 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         //fetch the current record
         $record = $this->recordset->current();
 
-        //perform necessary data transformation
+        /*
+         * Perform necessary data transformation
+         */
 
         //format start time
         $record->timestart = date($format, $record->timestart);
@@ -105,6 +116,7 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         //write the line out of a file
         $csvrecord = array($record->firstname,
                            $record->lastname,
+                           $record->username,
                            $record->usridnumber,
                            $record->crsidnumber,
                            $record->timestart,
