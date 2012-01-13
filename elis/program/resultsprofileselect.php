@@ -26,45 +26,35 @@
  */
 
 /**
- * This file runs the Results Engine Manual processing.  It is meant to be run via AJAX from a
- * popup spawned by the results engine page for courses or classes.  It returns a simple success or
- * failure message that will be processed and displayed on the popup.
+ * This file is meant to return a snippet of html code that can be used via AJAX to display
+ * a value select box for the currently selected user profile field on the user profile field
+ * section of the results engine setup page.
  */
+
 require_once(dirname(__FILE__) .'/lib/setup.php');
 require_once(dirname(__FILE__) .'/lib/resultsengine.php');
 
-$id = required_param('id', PARAM_INT);
+$id   = required_param('id', PARAM_INT);
+$name = required_param('name', PARAM_ALPHANUMEXT);
 
 if (! isloggedin()) {
     print_string('loggedinnot');
     exit;
 }
 
-$context = get_context_instance_by_id($id);
-$classlevel = context_level_base::get_custom_context_level('class', 'elis_program');
-$courselevel = context_level_base::get_custom_context_level('course', 'elis_program');
+$criteria = array('fieldid' => $id, 'plugin' => 'manual');
+$params = $DB->get_field(field_owner::TABLE, 'params', $criteria);
+$config = unserialize($params);
 
-if ((! $context) || (($context->contextlevel != $classlevel) && ($context->contextlevel != $courselevel))) {
-    print_string('results_unknown_classcourse', RESULTS_ENGINE_LANG_FILE);
-    exit;
-}
-
-// Set page context.  Needed for custom field synchronization with Moodle users.
-$PAGE->set_context($context);
-
-$capability = 'elis/program:course_edit';
-
-if ($context->contextlevel == $classlevel) {
-    $capability = 'elis/program:class_edit';
-}
-
-if (! has_capability($capability, $context)) {
-    print_string('not_permitted', RESULTS_ENGINE_LANG_FILE);
-    exit;
-}
-
-if (results_engine_manual($context)) {
-    print_string('results_manual_success', RESULTS_ENGINE_LANG_FILE);
+if ($config['control'] == 'menu') {
+    $choices = explode("\r\n", $config['options']);
+    $options = array_combine($choices, $choices);
+    asort($options);
+    $field = html_writer::select($options, $name);
 } else {
-    print_string('results_manual_failure', RESULTS_ENGINE_LANG_FILE);
+    $params = array('name' => $name);
+    $field = html_writer::empty_tag('input', $params);
 }
+
+print('<div class="fitem"><div class="fitemtitle">&nbsp;</div><div class="felement fselect">'
+    . $field .'</div></div>');

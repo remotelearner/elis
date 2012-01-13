@@ -291,8 +291,17 @@ abstract class enginepage extends pm_page {
     function do_edit() {
 
         $known = false;
-        $id = $this->required_param('id', PARAM_INT);
-        $cache = $this->optional_param('actioncache', '', PARAM_SEQUENCE);
+        $id         = $this->required_param('id', PARAM_INT);
+        $actiontype = $this->get_action_type();
+        $cache = '';
+
+        if ($actiontype >= 0) {
+            // TODO: Figure out a good place to store this lookup table.
+            $types   = array(ACTION_TYPE_CLASS => 'class', ACTION_TYPE_TRACK => 'track', ACTION_TYPE_PROFILE => 'profile');
+            $type    = $types[$actiontype];
+            $cacheid = $type .'_cache';
+            $cache   = $this->optional_param($cacheid, '', PARAM_SEQUENCE);
+        }
         $form = $this->get_engine_form($cache);
 
         if ($form->is_cancelled()) {
@@ -302,9 +311,6 @@ abstract class enginepage extends pm_page {
         }
 
         $data           = $form->get_data();
-        $childdata      = array();
-        $newchilddata   = '';
-        $actiontype     = '';
 
         if ($form->no_submit_button_pressed()) {
 
@@ -335,18 +341,16 @@ abstract class enginepage extends pm_page {
                 $obj->save();
 
                 // Updating existing score ranges
-                $actiontype = $this->get_action_type();
+                print($actiontype);
                 $typename = $form->types[$actiontype];
                 $data = (array) $data;
 
-                // We don't keep the type of action in the parent table so child must be cleared
-                $this->delete_existing_data($actiontype);
 
-                // Iterate through the data array and update the existing score ranges submitted
-                $this->save_existing_data_submitted($data, $typename, $actiontype);
+                // We don't keep the type of action in the parent table so child must be cleared
+                $this->delete_data();
 
                 // Save new score ranges submitted
-                $this->save_new_data_submitted($data, $typename, $actiontype, $obj->id);
+                $this->save_data($data, $typename, $actiontype, $obj->id);
 
                 $target = $this->get_new_page(array('action' => 'default',
                                                     'id' => $id), false);
@@ -413,13 +417,12 @@ abstract class enginepage extends pm_page {
      * @param int    $actiontype        The id of the action type
      * @param int    $results_engine_id The id of the result engine entry
      */
-    protected function save_new_data_submitted($data, $type, $actiontype, $results_engine_id) {
+    protected function save_data($data, $type, $actiontype, $results_engine_id) {
 
         $savetype = '';
         $instance = array();
         $dataobj  = (object) $data;
-        $prefix   = "${type}_add_";
-        $length   = strlen($prefix);
+        $pattern  = "/${type}_([0-9]+)_/";
 
         // Check for existing data regarding track/class/profile actions
         foreach($data as $key => $value) {
@@ -430,24 +433,10 @@ abstract class enginepage extends pm_page {
                 continue;
             }
 
-            // Check for existing track data in the form of track_<id>_...
-            $pos    = strpos($key, $prefix);
+            if (preg_match($pattern, $key, $matches)) {
 
-            if (false !== $pos) {
-
-                $lpos = strrpos($key, '_');
-                $pos  = strlen($prefix)-1;
-
-                if (false !== $pos && false !== $lpos) {
-
-                    $length = $lpos - $pos - 1;
-                    $instance_key = substr($key, $pos+1, $length);
-
-                    if (is_numeric($instance_key) && !array_key_exists($instance_key, $instance)) {
-
-                        $instance[$instance_key] = '';
-                        continue;
-                    }
+                if (! array_key_exists($matches[1], $instance)) {
+                    $instance[$matches[1]] = '';
                 }
             }
         }
@@ -477,107 +466,6 @@ abstract class enginepage extends pm_page {
             $updaterec = $this->get_new_child_data_object();
             $updaterec->resultsid = $results_engine_id;
 
-            $key = "{$type}_add_{$recid}_min";
-            $fieldmap['minimum'] = $key;
-
-            $key = "{$type}_add_{$recid}_max";
-            $fieldmap['maximum'] = $key;
-
-            $key = "{$type}_add_{$recid}_selected";
-            $fieldmap[$field] = $key;
-
-            if ($fieldvalue) {
-                $key = "{$type}_add_{$recid}_value";
-                $fieldmap['fielddata'] = $key;
-            }
-
-            $updaterec->set_from_data($dataobj, true, $fieldmap);
-            $updaterec->save();
-        }
-
-
-    }
-
-    /**
-     * Delete existing data
-     *
-     * @param int    $actiontype The action type id
-     */
-    protected function delete_existing_data($actiontype) {
-        $record = $this->get_new_child_data_object();
-
-        $filters = array(
-            new field_filter('resultsid', $this->get_engine_id()),
-            new field_filter('actiontype', $actiontype, '!=')
-        );
-
-        $record->delete_records($filters);
-    }
-
-    /**
-     * Save existing data
-     *
-     * This function check to see if existing track/class/profile record data
-     * was submitted with the form; because the use are only submit only submit
-     * track or class or profile data.  And returns an array with the type of
-     * data (track/class/profile) and id values for existing records to be
-     * updated
-     *
-     * @param array  $data       Data from the submitted form
-     * @param string $type       The name of the action type
-     * @param int    $actiontype The action type id
-     * @return array - key -- type (either track/class/profile), ids (array
-     *                        whose keys are existing record ids)
-     */
-    protected function save_existing_data_submitted($data, $type, $actiontype) {
-        $savetype       = '';
-        $instance       = array();
-        $dataobj        = (object) $data;
-
-        // Check for existing data regarding track/class/profile actions
-        foreach($data as $key => $value) {
-
-            // Check for existing track data in the form of track_<id>_...
-            $pos = strpos($key, "{$type}_");
-
-            if (false !== $pos) {
-                $pos  = strpos($key, '_');
-                $lpos = strrpos($key, '_');
-
-                if (false !== $pos && false !== $lpos) {
-
-                    $length = $lpos - $pos - 1;
-                    $instance_key = substr($key, $pos+1, $length);
-
-                    if (is_numeric($instance_key) && !array_key_exists($instance_key, $instance)) {
-
-                        $instance[$instance_key] = '';
-                        continue;
-                    }
-                }
-            }
-        }
-
-        $field      = '';
-        $fieldmap   = array();
-        $fieldvalue = false;
-        $updaterec  = new stdClass();
-
-        switch ($actiontype) {
-            case ACTION_TYPE_TRACK:
-                $field = 'trackid';
-                break;
-            case ACTION_TYPE_CLASS:
-                $field = 'classid';
-                break;
-            case ACTION_TYPE_PROFILE:
-                $field = 'fieldid';
-                $fieldvalue = true;
-                break;
-        }
-
-        foreach ($instance as $recid => $dummy_val) {
-            $updaterec = $this->get_new_child_data_object($recid);
             $key = "{$type}_{$recid}_min";
             $fieldmap['minimum'] = $key;
 
@@ -595,6 +483,21 @@ abstract class enginepage extends pm_page {
             $updaterec->set_from_data($dataobj, true, $fieldmap);
             $updaterec->save();
         }
+    }
+
+    /**
+     * Delete existing data
+     *
+     * @param int    $actiontype The action type id
+     */
+    protected function delete_data() {
+        $record = $this->get_new_child_data_object();
+
+        $filters = array(
+            new field_filter('resultsid', $this->get_engine_id()),
+        );
+
+        $record->delete_records($filters);
     }
 
     /**

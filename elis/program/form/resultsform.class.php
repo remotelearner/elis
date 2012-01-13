@@ -39,17 +39,29 @@ require_once elispm::lib('data/resultsengine.class.php');
 class cmEngineForm extends cmform {
     const LANG_FILE = 'elis_program';
 
+    // Names used in lookup for language strings
     public $types = array(
-        ACTION_TYPE_TRACK => 'track',
-        ACTION_TYPE_CLASS => 'class',
+        ACTION_TYPE_TRACK   => 'track',
+        ACTION_TYPE_CLASS   => 'class',
         ACTION_TYPE_PROFILE => 'profile'
     );
 
+    // Type of form element used to select value for each action type
     public $rowtypes = array(
-        ACTION_TYPE_TRACK => 'picklist',
-        ACTION_TYPE_CLASS => 'picklist',
+        ACTION_TYPE_TRACK   => 'picklist',
+        ACTION_TYPE_CLASS   => 'picklist',
         ACTION_TYPE_PROFILE => 'doubleselect',
     );
+
+    // Prefixes used by tables
+    protected $prefixes = array(
+        ACTION_TYPE_TRACK   => 'track',
+        ACTION_TYPE_CLASS   => 'class',
+        ACTION_TYPE_PROFILE => 'profile'
+    );
+
+    // The names of the form elements on each row of the table
+    protected $settings = array('min','max','selected','value');
 
     // Form html
     protected $_html = array();
@@ -58,6 +70,7 @@ class cmEngineForm extends cmform {
     protected $_layout = 'default';
 
     protected $_submitted_data = '';
+
 
     /**
      * defines items in the form
@@ -72,6 +85,21 @@ class cmEngineForm extends cmform {
         $PAGE->requires->js('/elis/program/js/results_engine/jquery-1.6.2.min.js', true);
         $PAGE->requires->js('/elis/program/js/results_engine/jquery-ui-1.8.16.custom.js', true);
         $PAGE->requires->js('/elis/program/js/results_engine/results_selection.js', true);
+        $PAGE->requires->js('/elis/program/js/dhtmltable.js', true);
+
+        $formid   = $this->_form->_attributes['id'];
+        $settings = implode(',', $this->settings);
+
+        foreach ($this->prefixes as $type => $prefix) {
+            $typename = $this->types[$type];
+            $js = "{$prefix}_object = new dhtml_table(\"$formid\", \"$prefix\",\"$settings\");"
+                . "{$prefix}_object.set_add_button(\"id_{$typename}_add\");"
+                . "{$prefix}_object.set_footer_rows(0);"
+                . "{$prefix}_object.set_header_rows(1);"
+                . "{$prefix}_object.set_id_prefix('id_');"
+                . "{$prefix}_object.set_table(\"{$typename}_selection_table\")";
+            $PAGE->requires->js_init_code($js);
+        }
 
         $this->defineActivation();
         $this->defineResults();
@@ -146,11 +174,13 @@ class cmEngineForm extends cmform {
         $mform->setType('active', PARAM_BOOL);
 
         $attributes = array();
+
         if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
             $attributes = array('disabled' => 'disabled');
         }
 
         $exists = array_key_exists('eventtriggertype', $this->_customdata);
+
         if ($exists && ($this->_customdata['eventtriggertype'] == RESULTS_ENGINE_MANUAL)) {
             $settings = 'height=200,width=500,top=0,left=0,menubar=0,location=0,scrollbars,'
                       . 'resizable,toolbar,status,directories=0,fullscreen=0,dependent';
@@ -255,9 +285,7 @@ class cmEngineForm extends cmform {
 
             $this->setup_table_type($mform, $type, $rid, $cache[$type]);
 
-            $options = $attributes;
-            $options['onclick'] = 'pre_submit_processing("'. $typename .'");';
-            $mform->addElement('submit', $typename .'_assignment', $addscorerange, $options);
+            $mform->addElement('button', $typename .'_add', $addscorerange, $attributes);
 
             $mform->addElement('html', '</div>');
 
@@ -333,10 +361,9 @@ class cmEngineForm extends cmform {
         $prefix = $this->types[$actiontype];
 
         // Add another track score range button.  Validate and make sure all rows have been filled out
-        if (! array_key_exists($prefix .'_assignment', $data)) {
+        if (! array_key_exists($prefix .'_add', $data)) {
 
             // Iterate through the submitted values.
-            // New track data has the key track_add_<number>_min/max/etc.
             // Existing data has the key track_<number>_min/max/etc.
             foreach ($data as $key => $value) {
                 $error = '';
@@ -526,6 +553,9 @@ class cmEngineForm extends cmform {
         $output = '';
         $i = 1;
 
+        $attributes = array('id' => $this->prefixes[$type] .'_cache');
+        $mform->addElement('hidden', $this->prefixes[$type] .'_cache', '', $attributes);
+
         $attributes = array('border' => '1', 'id' => "{$typename}_selection_table");
         $tablehtml = html_writer::start_tag('table', $attributes);
         $tablehtml .= html_writer::start_tag('tr');
@@ -535,18 +565,17 @@ class cmEngineForm extends cmform {
         $tablehtml .= html_writer::end_tag('tr');
 
         $funcname = "get_assign_to_{$typename}_data";
-        $result_action_data = $this->$funcname($resultsid);
+        if (empty($cache)) {
+            $cache = $this->$funcname($resultsid);
+        }
         $mform->addElement('html', $tablehtml);
 
-        if (empty($result_action_data) && empty($cache) ) {
+        if (empty($cache) ) {
             //Pre-populate with default values
             $defaults = $this->get_default_data();
+
             $this->setup_table_type_row($mform, $type, $defaults, true);
         } else {
-
-            // Add score ranges for existing table records
-            $this->setup_table_type_row($mform, $type, $result_action_data, false);
-
             // Add score ranges for cached data
             $this->setup_table_type_row($mform, $type, $cache, true);
         }
@@ -564,10 +593,11 @@ class cmEngineForm extends cmform {
      * @param int    $type     The datatype of the rows
      * @param array  $dataset  The row data
      * @param bool   $extrarow Whether an extra row should be added.
+     * @uses $CFG
      * @uses $OUTPUT
      */
     protected function setup_table_type_row($mform, $type, $dataset = array(), $extrarow) {
-        global $OUTPUT;
+        global $CFG, $OUTPUT;
 
         $typename = $this->types[$type];
 
@@ -582,8 +612,6 @@ class cmEngineForm extends cmform {
         $configs  = array();
 
         if ($extrarow) {
-
-            $prefix = $typename . '_add_';
             $empty_record = new stdClass();
             $empty_record->min      = '';
             $empty_record->max      = '';
@@ -603,31 +631,24 @@ class cmEngineForm extends cmform {
                 continue;
             }
 
-            if (isset($data->id)) {
-                $i = $data->id;
-            } else {
-                $value = optional_param($prefix . $i .'_selected', 0, PARAM_INT);
-                $data->selected = $value;
-            }
-
             // Start a table row and column
             $tablehtml = html_writer::start_tag('tr');
             $tablehtml .= html_writer::start_tag('td');
 
             $mform->addElement('html', $tablehtml);
 
-            $score = array();
+            $group = array();
 
             // Add minimum field
             $attributes = array('size' => 5, 'maxlength' => 5, 'value' => $data->min);
             if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
                 $attributes['disabled'] = 'disabled';
             }
-            $score[] = $mform->createElement('text', "{$prefix}{$i}_min", '', $attributes);
+            $group[] = $mform->createElement('text', "{$prefix}{$i}_min", '', $attributes);
 
             // Add maximum field
             $attributes['value'] = $data->max;
-            $score[] = $mform->createElement('text', "{$prefix}{$i}_max", '', $attributes);
+            $group[] = $mform->createElement('text', "{$prefix}{$i}_max", '', $attributes);
 
             // Add image element
             $attributes = array('title' => $deletescoretype,
@@ -637,44 +658,51 @@ class cmEngineForm extends cmform {
             $image  = html_writer::empty_tag('img', $attributes);
 
             // Add link and image field (Delete link)
-            $attributes     = array('onclick' => "return delete_row($i,$cache,'$typename');");
-            $score[] = $mform->createElement('link', 'delete', '', "#", $image, $attributes);
+            $attributes     = array('onclick' => $this->prefixes[$type] .'_object.deleteRow(this); return false;');
+            $group[] = $mform->createElement('link', 'delete', '', "#", $image, $attributes);
 
             // Add minimum, maximum and delete to field group
-            $mform->addGroup($score, "{$prefix}{$i}_group", '', '', false);
-
-            $key = "{$prefix}{$i}_min";
-            $grouprules[$key][] = array(get_string('results_error_min_numeric', self::LANG_FILE), 'numeric', null, 'client');
-
-            $key = "{$prefix}{$i}_max";
-            $grouprules[$key][] = array(get_string('results_error_max_numeric', self::LANG_FILE), 'numeric', null, 'client');
-            $mform->addGroupRule("{$prefix}{$i}_group", $grouprules);
+            $mform->addGroup($group, "{$prefix}{$i}_score", '', '', false);
 
             $tablehtml = html_writer::end_tag('td');
             $tablehtml .= html_writer::start_tag('td');
             $mform->addElement('html', $tablehtml);
 
             if ($this->rowtypes[$type] == 'picklist') {
-                $name = $this->get_label_name($typename, $data->selected);
+                $name = '';
+                if (! empty($data->selected)) {
+                    $name = $this->get_label_name($typename, $data->selected);
+                } else if (! empty($data->name)) {
+                    $name = $data->name;
+                }
+
+                // Need to add 2 hidden elements - 1 for Moodle forms and 1 For dynamic table.
+                $mform->addElement('hidden', "{$prefix}{$i}_selected", $data->selected);
 
                 $attributes     = array('id' => "{$prefix}{$i}_label");
+                $attributes = array('size' => 20, 'value' => $name, 'disabled' => 'disabled');
 
-                $output         = html_writer::tag('label', $name, $attributes);
+                $attributes     = array(
+                    'id'       => "id_{$prefix}{$i}_label",  // Needed for javascript call back
+                    'value'    => $name,
+                    'name'     => "{$prefix}{$i}_label",
+                    'type'     => 'text',
+                    'disabled' => 'disabled'
+                );
+                $output     = html_writer::empty_tag('input', $attributes);
 
+                $attributes     = array(
+                    'id' => "id_{$prefix}{$i}_selected", // Needed for javascript call back
+                    'value' => $data->selected,
+                    'name' => "{$prefix}{$i}_selected",
+                    'type' => 'hidden'
+                );
+                $output    .= html_writer::empty_tag('input', $attributes);
+
+                $url        = "{$typename}selector.php?id=id_{$prefix}{$i}_&callback=add_selection";
+                $attributes = array('onclick' => 'show_panel("'.$url.'"); return false;');
+                $output    .= html_writer::link('#', $selecttype, $attributes);
                 $mform->addElement('html', $output);
-
-                $tablehtml = html_writer::end_tag('td');
-                $tablehtml .= html_writer::start_tag('td');
-                $mform->addElement('html', $tablehtml);
-
-                $url            = "{$typename}selector.php?id={$prefix}{$i}&callback=add_selection";
-                $attributes     = array('onclick' => 'show_panel("'.$url.'"); return false;');
-                $output         = html_writer::link('#', $selecttype, $attributes);
-                $mform->addElement('html', $output);
-
-                $attributes     = array('id' => "{$prefix}{$i}_selected"); // Needed for javascript call back
-
-                $mform->addElement('hidden', "{$prefix}{$i}_selected", $data->selected, $attributes);
 
             } else if ($this->rowtypes[$type] == 'doubleselect') {
                 $options = $this->get_profile_fields();
@@ -683,7 +711,10 @@ class cmEngineForm extends cmform {
                 if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
                     $attributes = array('disabled' => 'disabled');
                 }
-                $attributes['onchange'] = 'document.getElementById("id_profile_assignment").click();';
+                $url   = $CFG->wwwroot .'/elis/program/resultsprofileselect.php';
+                $frame = "{$prefix}{$i}_frame";
+                $value = "{$prefix}{$i}_value";
+                $attributes['onchange'] = "replace_content(\"{$url}\",\"{$frame}\",this.value,\"{$value}\");";
 
                 $mform->addElement('select', "{$prefix}{$i}_selected", '', $options, $attributes);
 
@@ -691,8 +722,9 @@ class cmEngineForm extends cmform {
                 if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
                     $attributes = array('disabled' => 'disabled');
                 }
-                $tablehtml = html_writer::end_tag('td');
+                $tablehtml  = html_writer::end_tag('td');
                 $tablehtml .= html_writer::start_tag('td');
+                $tablehtml .= html_writer::start_tag('div', array('id' => $frame));
                 $mform->addElement('html', $tablehtml);
 
                 $selected      = $data->selected;
@@ -701,6 +733,7 @@ class cmEngineForm extends cmform {
                 if ($selected_form > 0) {
                     $selected = $selected_form;
                 }
+
 
                 if ($selected != '') {
                     $defaults["{$prefix}{$i}_selected"] = $selected;
@@ -712,6 +745,7 @@ class cmEngineForm extends cmform {
                     if ($configs[$selected]['control'] == 'menu') {
                         $choices = explode("\r\n", $configs[$selected]['options']);
                         $options = array_combine($choices, $choices);
+                        asort($options);
                         $mform->addElement('select', "{$prefix}{$i}_value", '', $options, $attributes);
                     } else {
                         $mform->addElement('text', "{$prefix}{$i}_value", '', $attributes);
@@ -721,6 +755,8 @@ class cmEngineForm extends cmform {
                         $defaults["{$prefix}{$i}_value"] = $data->value;
                     }
                 }
+                $tablehtml  = html_writer::end_tag('div');
+                $mform->addElement('html', $tablehtml);
             }
 
             $tablehtml = html_writer::end_tag('td');
@@ -743,7 +779,7 @@ class cmEngineForm extends cmform {
             $x = 0;
             $i = 0;
 
-            for($i; $i < count($cachedata); $i = $i + 4) {
+            for($i; $i < count($cachedata)-1; $i = $i + 4) {
                 $data[$x] = new stdClass();
                 $data[$x]->min      = $cachedata[$i];
                 $data[$x]->max      = $cachedata[$i+1];

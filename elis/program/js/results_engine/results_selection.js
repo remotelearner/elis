@@ -43,17 +43,46 @@ function show_panel( url ) {
  */
 function add_selection(elmid, label, id) {
 
-    var elementid = elmid + "_label";
-    
+    var elementid = elmid + 'label';
     var element = window.opener.document.getElementById(elementid);
-    element.innerHTML = label;
+    element.value = label;
 
-    elementid = elmid + "_selected";
+    elementid = elmid + 'selected';
     element = window.opener.document.getElementById(elementid);
     element.value = id;
 
     window.close();
 }
+
+/**
+ * Update the preview field
+ * 
+ * This method rebuilds the cache and posts it to the preview field.  It should be called
+ * directly from the form elements.
+ */
+function replace_content(page, frameid, fieldid, fieldname) {
+	var frame = document.getElementById(frameid);
+	var url   = page +'?id='+ fieldid +'&name='+ fieldname;
+	
+	if (frame == null) {
+		return false;
+	}
+	if (fieldid == '') {
+		frame.innerHTML = '&nbsp;';
+		return true;
+	}
+	
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function() {
+		if ((xmlhttp.readyState == 4) && (xmlhttp.status == 200)) {
+			frame.innerHTML = xmlhttp.responseText;
+		}
+	}
+	
+	xmlhttp.open('GET', url, true);
+	xmlhttp.send();
+}
+
 
 function delete_row(id, cache, type) {
 	var action = document.getElementsByName("action")[0];
