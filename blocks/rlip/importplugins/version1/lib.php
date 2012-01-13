@@ -24,6 +24,21 @@
  *
  */
 
-$subplugins = array('rlipimport' => 'blocks/rlip/importplugins',
-                    'rlipexport' => 'blocks/rlip/exportplugins',
-                    'rlipfile' => 'blocks/rlip/fileplugins');
+/**
+ * Determines whether the current plugin supports the supplied feature
+ *
+ * @param string $feature A feature description, either in the form
+ *                        [entity] or [entity]_[action]
+ *
+ * @return mixed An array of actions for a supplied entity, an array of
+ *               required fields for a supplied action, or false on error
+ */
+function rlipimport_version1_supports($feature) {
+    global $CFG;
+    require_once(dirname(__FILE__).'/version1.class.php');
+
+    $data_plugin = new rlip_importplugin_version1($feature);
+
+    //delegate to class method
+    return $data_plugin->plugin_supports($feature);
+}

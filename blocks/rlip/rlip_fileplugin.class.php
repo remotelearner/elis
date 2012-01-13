@@ -41,7 +41,7 @@ abstract class rlip_fileplugin_base {
     /**
      * Hook for reading one entry from the file
      *
-     * @return object The entry read
+     * @return array The entry read
      */
     abstract function read();
 

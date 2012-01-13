@@ -46,9 +46,10 @@ class rlip_fileplugin_bogus extends rlip_fileplugin_base {
     /**
      * Read one entry from the file
      *
-     * @return object The entry read
+     * @return array The entry read
      */
     public function read() {
+        //nothing to do
     }
 
     /**
@@ -64,6 +65,7 @@ class rlip_fileplugin_bogus extends rlip_fileplugin_base {
      * Close the file
      */
     public function close() {
+        //nothing to do
     }
 
     public function get_data() {

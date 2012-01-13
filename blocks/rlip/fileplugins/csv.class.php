@@ -31,6 +31,8 @@
 class rlip_fileplugin_csv extends rlip_fileplugin_base {
 
 	var $filepointer;
+	var $first;
+	var $header;
 
     /**
      * Open the file
@@ -44,18 +46,22 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
     	if ($mode == RLIP_FILE_WRITE) {
     	    //todo: use configured location
             $this->filepointer = fopen($CFG->dataroot.'/testexport.csv', 'w');
+    	} else {
+    	    //todo: use configured location
+    	    $this->filepointer = fopen($CFG->dataroot.'/testimport.csv', 'r');
     	}
 
-    	//todo: implement read case
+    	$this->first = true;
+    	$this->header = NULL;
     }
 
     /**
      * Read one entry from the file
      *
-     * @return object The entry read
+     * @return array The entry read
      */
     function read() {
-        //todo: implement
+        return fgetcsv($this->filepointer);
     }
 
     /**
