@@ -39,7 +39,7 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
      * Perform initialization that should
      * be done at the beginning of the export
      */
-    function init($fileplugin) {
+    function init() {
         global $CFG, $DB;
 
         //initialize our recordset to the core data
@@ -64,15 +64,15 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         $this->recordset = $DB->get_recordset_sql($sql);
 
         //write out header
-        $fileplugin->write(array(get_string('header_firstname', 'rlipexport_version1'),
-                                 get_string('header_lastname', 'rlipexport_version1'),
-                                 get_string('header_username', 'rlipexport_version1'),
-                                 get_string('header_useridnumber', 'rlipexport_version1'),
-                                 get_string('header_courseidnumber', 'rlipexport_version1'),
-                                 get_string('header_startdate', 'rlipexport_version1'),
-                                 get_string('header_enddate', 'rlipexport_version1'),
-                                 get_string('header_grade', 'rlipexport_version1'),
-                                 get_string('header_letter', 'rlipexport_version1')));
+        $this->fileplugin->write(array(get_string('header_firstname', 'rlipexport_version1'),
+                                       get_string('header_lastname', 'rlipexport_version1'),
+                                       get_string('header_username', 'rlipexport_version1'),
+                                       get_string('header_useridnumber', 'rlipexport_version1'),
+                                       get_string('header_courseidnumber', 'rlipexport_version1'),
+                                       get_string('header_startdate', 'rlipexport_version1'),
+                                       get_string('header_enddate', 'rlipexport_version1'),
+                                       get_string('header_grade', 'rlipexport_version1'),
+                                       get_string('header_letter', 'rlipexport_version1')));
     }
 
     /**
@@ -87,6 +87,8 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
 
     /**
      * Hook for export the next data record in-place
+     *
+     * @return array The next record to be exported
      */
     function next() {
         global $CFG;

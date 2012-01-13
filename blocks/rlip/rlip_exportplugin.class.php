@@ -30,6 +30,8 @@ require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
  * Base class for Integration Point export plugins
  */
 abstract class rlip_exportplugin_base extends rlip_dataplugin {
+    //track the file being used for export
+    var $fileplugin;
 
 	//methods to be implemented in specific export
 
@@ -37,7 +39,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      * Hook for performing any initialization that should
      * be done at the beginning of the export
      */
-	abstract function init($fileplugin);
+	abstract function init();
 
     /**
      * Hook for specifiying whether more data remains to be exported
@@ -49,6 +51,8 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 
 	/**
 	 * Hook for exporting the next data record in-place
+	 *
+	 * @return array The next record to be exported
 	 */
 	abstract function next();
 
@@ -59,37 +63,39 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 	abstract function close();
 
 	/**
+	 * Default export plugin constructor
+	 *
+	 * @param object $fileplugin the file plugin used for output
+	 */
+	function __construct($fileplugin) {
+        $this->fileplugin = $fileplugin;
+	}
+
+	/**
 	 * Mainline for export processing
 	 */
     function run() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-
-        //obtain a file plugin instance, opening the file in write mode
-        $fileplugin = rlip_fileplugin_factory::factory();
-        $fileplugin->open(RLIP_FILE_WRITE);
-
         //perform any necessary setup
-        $this->init($fileplugin);
+        $this->init();
 
         //run the main export process
-        $this->export_records($fileplugin);
+        $this->export_records();
 
         //clean up
         $this->close();
 
         //close the output file
-        $fileplugin->close();
+        $this->fileplugin->close();
     }
 
     /**
      * Main loop for handling the body of the export
      */
-    function export_records($fileplugin) {
+    function export_records() {
         while ($this->has_next()) {
             //fetch and write out the next record
             $record = $this->next();
-            $fileplugin->write($record);
+            $this->fileplugin->write($record);
         }
     }
 

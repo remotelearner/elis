@@ -30,7 +30,7 @@ require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 /**
  * Mock file plugin that provides a fixed set of data
  */
-class rlip_fileplugin_mock extends rlip_fileplugin_base {
+class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
     //current file position
     var $index;
     //file data
@@ -92,9 +92,9 @@ class rlip_fileplugin_mock extends rlip_fileplugin_base {
 }
 
 /**
- * Mock file plugin for testing closing of files
+ * Mock file plugin for testing closing of input files
  */
-class rlip_fileplugin_testclosed extends rlip_fileplugin_mock {
+class rlip_fileplugin_inputclosed extends rlip_fileplugin_readmemory {
     //track whether the file was closed
     var $closed = false;
 
@@ -106,7 +106,7 @@ class rlip_fileplugin_testclosed extends rlip_fileplugin_mock {
     }
 
     /**
-     * Specifies this file was closed
+     * Specifies whether this file was closed
      *
      * @return boolean true if the file was closed, otherwise false
      */
@@ -123,7 +123,7 @@ class rlip_importprovider_mock extends rlip_importprovider {
         $data = array(array('entity', 'action'),
                       array('sampleentity', 'sampleaction'));
 
-        return new rlip_fileplugin_mock($data);
+        return new rlip_fileplugin_readmemory($data);
     }
 }
 
@@ -131,7 +131,7 @@ class rlip_importprovider_mock extends rlip_importprovider {
  * File plugin provider that supplies the import with our "test closed" file
  * plugin
  */
-class rlip_importprovider_testclosed extends rlip_importprovider_mock {
+class rlip_importprovider_inputclosed extends rlip_importprovider_mock {
     //file plugin instance
     var $file;
 
@@ -139,7 +139,7 @@ class rlip_importprovider_testclosed extends rlip_importprovider_mock {
         $data = array(array('entity', 'action'),
                       array('sampleentity', 'sampleaction'));
 
-        $this->file = new rlip_fileplugin_testclosed($data);
+        $this->file = new rlip_fileplugin_inputclosed($data);
 
         return $this->file;
     }
@@ -174,7 +174,7 @@ class rlip_importprovider_multiple extends rlip_importprovider {
                               array('secondentity', 'defaultaction'));
         }
 
-        return new rlip_fileplugin_mock($data);
+        return new rlip_fileplugin_readmemory($data);
     }
 }
 
@@ -253,7 +253,7 @@ class importPluginTest extends PHPUnit_Framework_TestCase {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/sample/sample.class.php');
 
-        $provider = new rlip_importprovider_testclosed();
+        $provider = new rlip_importprovider_inputclosed();
 
         $importplugin = new rlip_importplugin_sample($provider);
         $importplugin->run();

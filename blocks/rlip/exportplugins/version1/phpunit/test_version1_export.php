@@ -132,8 +132,8 @@ class version1ExportTest extends elis_database_test {
     	$fileplugin->open(RLIP_FILE_WRITE);
 
     	//our specific export
-        $exportplugin = new rlip_exportplugin_version1();
-        $exportplugin->init($fileplugin);
+        $exportplugin = new rlip_exportplugin_version1($fileplugin);
+        $exportplugin->init();
         $exportplugin->export_records($fileplugin);
         $exportplugin->close();
 
