@@ -389,7 +389,7 @@ class cmEngineForm extends cmform {
                 $keygroup   = $keyprefix .'_score';
 
                 // Skip over empty score ranges.
-                if (empty($data[$keymin]) && empty($data[$keymax]) && empty($data[$keyselect])) {
+                if (empty($data[$keymin]) && empty($data[$keymax])) {
                     // Skip
                 } else if (empty($data[$keymin]) || empty($data[$keymax]) || empty($data[$keyselect])) {
                     $error = get_string('results_error_incomplete_score_range', self::LANG_FILE);
@@ -782,7 +782,6 @@ class cmEngineForm extends cmform {
                 $x++;
             }
         }
-
         return $data;
     }
 

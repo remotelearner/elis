@@ -422,13 +422,16 @@ abstract class enginepage extends pm_page {
         $savetype = '';
         $instance = array();
         $dataobj  = (object) $data;
-        $pattern  = "/${type}_([0-9]+)_/";
+
+        // Since the selected value may be a hidden value, it might be set to a legacy value
+        // So only check valid min and max rows.
+        $pattern  = "/${type}_([0-9]+)_m/";
 
         // Check for existing data regarding track/class/profile actions
         foreach($data as $key => $value) {
 
             if (empty($data[$key])) {
-                // If value is empty then it must be an empyt score range row
+                // If value is empty then it must be an empty score range row
                 // because form validation will catch any incomplete rows
                 continue;
             }
