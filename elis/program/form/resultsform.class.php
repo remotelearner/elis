@@ -358,41 +358,35 @@ class cmEngineForm extends cmform {
         $ranges = array();
         $parsed = array();
 
-        $prefix = $this->types[$actiontype];
+        $prefix = $this->types[$actiontype] .'_';
 
-        // Add another track score range button.  Validate and make sure all rows have been filled out
-        if (! array_key_exists($prefix .'_add', $data)) {
+        // Fallback check, if add another range button pushed skip vaidation.
+        // Otherwise validate and make sure all rows have been filled correctly out
+        if (! array_key_exists($prefix .'add', $data)) {
 
             // Iterate through the submitted values.
             // Existing data has the key track_<number>_min/max/etc.
             foreach ($data as $key => $value) {
                 $error = '';
 
-                if (false !== strpos($key, $prefix .'_add_')) {
-                    $instance = 2;
-                    $keyprefix = $prefix .'_add_';
-
-                } elseif (false !== strpos($key, $prefix .'_')) {
-                    $instance = 1;
-                    $keyprefix = $prefix .'_';
-
-                } else {
+                if (false === strpos($key, $prefix)) {
                     continue;
                 }
 
+
                 // Extract the element unique id
                 $parts      = explode('_', $key);
-                $id         = $parts[$instance];
+                $id         = $parts[1];
 
                 if (array_key_exists($id, $parsed)) {
                     continue;
                 }
 
-                $keyprefix .= $id;
+                $keyprefix  = $prefix . $id;
                 $keymin     = $keyprefix .'_min';
                 $keymax     = $keyprefix .'_max';
                 $keyselect  = $keyprefix .'_selected';
-                $keygroup   = $keyprefix .'_group';
+                $keygroup   = $keyprefix .'_score';
 
                 // Skip over empty score ranges.
                 if (empty($data[$keymin]) && empty($data[$keymax]) && empty($data[$keyselect])) {
@@ -617,7 +611,6 @@ class cmEngineForm extends cmform {
             $empty_record->max      = '';
             $empty_record->selected = '';
             $empty_record->value    = '';
-            $empty_record->name = $notypeselected;
             array_push($dataset, $empty_record);
             $cache = 1;
         }
@@ -672,8 +665,8 @@ class cmEngineForm extends cmform {
                 $name = '';
                 if (! empty($data->selected)) {
                     $name = $this->get_label_name($typename, $data->selected);
-                } else if (! empty($data->name)) {
-                    $name = $data->name;
+                } else {
+                    $name = $notypeselected;
                 }
 
                 // Need to add 2 hidden elements - 1 for Moodle forms and 1 For dynamic table.
