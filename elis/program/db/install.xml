@@ -565,7 +565,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="resultengineid_idx" UNIQUE="false" FIELDS="resultengineid"/>
+        <INDEX NAME="resultsid_idx" UNIQUE="false" FIELDS="resultsid"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="crlm_results_class_log" COMMENT="results engine class logs" PREVIOUS="crlm_results_action" NEXT="crlm_results_student_log">

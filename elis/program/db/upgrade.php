@@ -339,7 +339,7 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         if (!$dbman->table_exists($table)) {
             /// Adding fields
             $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE);
-            $table->add_field('resultengineid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+            $table->add_field('resultsid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
             $table->add_field('actiontype', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, 0);
             $table->add_field('minimum', XMLDB_TYPE_INTEGER, '10', XMLDB_SIGNED, XMLDB_NOTNULL);
             $table->add_field('maximum', XMLDB_TYPE_INTEGER, '10', XMLDB_SIGNED, XMLDB_NOTNULL);
@@ -350,7 +350,7 @@ function xmldb_elis_program_upgrade($oldversion=0) {
 
             /// Adding keys and index
             $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-            $table->add_index('resultengineid_idx', XMLDB_INDEX_NOTUNIQUE, array('resultengineid'));
+            $table->add_index('resultsid_idx', XMLDB_INDEX_NOTUNIQUE, array('resultsid'));
 
             /// Create table
             $result = $result and $dbman->create_table($table);
