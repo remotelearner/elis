@@ -30,7 +30,11 @@ require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
 require_once($CFG->dirroot . '/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 
+/**
+ * File plugin that just stores read records in memory 
+ */
 class rlip_fileplugin_bogus extends rlip_fileplugin_base {
+    //stored data
     private $data;
 
     /**
@@ -68,6 +72,11 @@ class rlip_fileplugin_bogus extends rlip_fileplugin_base {
         //nothing to do
     }
 
+    /**
+     * Specifies the data currently stored
+     *
+     * @return array The data stored
+     */
     public function get_data() {
         return $this->data;
     }
@@ -79,6 +88,9 @@ class rlip_fileplugin_bogus extends rlip_fileplugin_base {
 class version1ExportTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
+    /**
+     * Return the list of tables that should be overlayed.
+     */
     protected static function get_overlay_tables() {
         return array('grade_items' => 'moodle',
                      'grade_grades' => 'moodle',

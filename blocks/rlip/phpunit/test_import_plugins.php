@@ -25,71 +25,11 @@
  */
 
 global $CFG;
+require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
-
-/**
- * Mock file plugin that provides a fixed set of data
- */
-class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
-    //current file position
-    var $index;
-    //file data
-    var $data;
-
-    /**
-     * Mock file plugin constructor
-     *
-     * @param array $data The data represented by this file
-     */
-    function __construct($data) {
-        $this->index = 0;
-        $this->data = $data;
-    }
-
-    /**
-     * Open the file
-     *
-     * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
-     *                  the mode in which the file should be opened
-     */
-    function open($mode) {
-        //nothing to do
-    }
-
-    /**
-     * Read one entry from the file
-     *
-     * @return array The entry read
-     */
-    function read() {
-        if ($this->index < count($this->data)) {
-            //more lines to read, fetch next one
-            $result = $this->data[$this->index];
-            //move "line pointer"
-            $this->index++;
-            return $result;
-        }
-
-        //out of lines
-        return false;
-    }
-
-    /**
-     * Write one entry to the file
-     *
-     * @param array $entry The entry to write to the file
-     */
-    function write($entry) {
-        //nothing to do
-    }
-
-    /**
-     * Close the file
-     */
-    function close() {
-        //nothing to do
-    }
-}
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
+require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once(elis::lib('testlib.php'));
 
 /**
  * Mock file plugin for testing closing of input files
@@ -119,6 +59,13 @@ class rlip_fileplugin_inputclosed extends rlip_fileplugin_readmemory {
  * Mock file plugin provider that supplies the import with our mock file plugin
  */
 class rlip_importprovider_mock extends rlip_importprovider {
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
     function get_import_file($entity) {
         $data = array(array('entity', 'action'),
                       array('sampleentity', 'sampleaction'));
@@ -135,6 +82,13 @@ class rlip_importprovider_inputclosed extends rlip_importprovider_mock {
     //file plugin instance
     var $file;
 
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
     function get_import_file($entity) {
         $data = array(array('entity', 'action'),
                       array('sampleentity', 'sampleaction'));
@@ -160,6 +114,13 @@ class rlip_importprovider_inputclosed extends rlip_importprovider_mock {
  * Sample file plugin provider that works with multiple files
  */
 class rlip_importprovider_multiple extends rlip_importprovider {
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
     function get_import_file($entity) {
         $data = array();
 
@@ -276,5 +237,20 @@ class importPluginTest extends PHPUnit_Framework_TestCase {
 
         $both_called = $importplugin->both_called();
         $this->assertEquals($both_called, true);
+    }
+
+    /**
+     * Validates that the import process calls the "header read" hook
+     */
+    public function testImportTriggersHeaderReadHook() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/header/header.class.php');
+
+        $provider = new rlip_importprovider_mock();
+
+        $importplugin = new rlip_importplugin_header($provider);
+        $importplugin->run();
+
+        $this->assertEquals($importplugin->hook_called(), true);
     }
 }

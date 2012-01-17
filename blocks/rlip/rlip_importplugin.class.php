@@ -36,6 +36,7 @@ abstract class rlip_importprovider {
      * import entity type
      *
      * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
      */
     abstract function get_import_file($entity);
 }
@@ -234,8 +235,8 @@ class rlip_importplugin_base extends rlip_dataplugin {
     /**
      * Entry point for processing a single record
      *
-     * @param $entity The type of entity
-     * @param $record One record of import data
+     * @param string $entity The type of entity
+     * @param object $record One record of import data
      *
      * @return boolean true on success, otherwise false
      */
@@ -255,6 +256,16 @@ class rlip_importplugin_base extends rlip_dataplugin {
     }
 
     /**
+     * Hook run after a file header is read
+     *
+     * @param string $entity The type of entity
+     * @param array $header The header record
+     */
+    function header_read_hook($entity, $header) {
+        //by default, nothing to do
+    }
+
+    /**
      * Entry point for processing an import file
      *
      * @param string $entity The type of entity
@@ -263,11 +274,17 @@ class rlip_importplugin_base extends rlip_dataplugin {
         //fetch a file plugin for the current file
         $fileplugin = $this->provider->get_import_file($entity);
 
+        if ($fileplugin === false) {
+            return;
+        }
+
         $fileplugin->open(RLIP_FILE_READ);
 
         if (!$header = $fileplugin->read()) {
             return;
         }
+
+        $this->header_read_hook($entity, $header);
 
         //main processing loop
         while ($record = $fileplugin->read()) {
