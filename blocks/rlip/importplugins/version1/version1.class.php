@@ -38,6 +38,13 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                               'email',
                                               'city',
                                               'country');
+    static $import_fields_user_add = array('username',
+                                           'password',
+                                           'firstname',
+                                           'lastname',
+                                           'email',
+                                           'city',
+                                           'country');
 
     /**
      * Hook run after a file header is read
@@ -353,6 +360,18 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         profile_save_data($record);
 
         return true;
+    }
+
+    /**
+     * Create a user
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @return boolean true on success, otherwise false
+     */
+    function user_add($record) {
+        //note: this is only here due to legacy 1.9 weirdness
+        return $this->user_create($record);
     }
 
     /**

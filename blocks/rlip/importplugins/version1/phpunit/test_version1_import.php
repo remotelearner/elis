@@ -182,9 +182,27 @@ class version1ImportTest extends elis_database_test {
     }
 
     /**
+     * Validate that the version 1 plugin supports user addition
+     */
+    public function testVersion1ImportSupportsUserAdd() {
+        //note: this is the same as user creation, but makes up for a weirdness
+        //in IP for 1.9
+        $supports = plugin_supports('rlipimport', 'version1', 'user_add');
+        $required_fields = array('username',
+                                 'password',
+                                 'firstname',
+                                 'lastname',
+                                 'email',
+                                 'city',
+                                 'country');
+
+        $this->assertEquals($supports, $required_fields);
+    }
+
+    /**
      * Validate that required fields are set to specified values during user creation
      */
-    public function testVersion1ImportSetsRequiredUserFields() {
+    public function testVersion1ImportSetsRequiredUserFieldsOnCreate() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
@@ -204,9 +222,32 @@ class version1ImportTest extends elis_database_test {
     }
 
     /**
+     * Validate that required fields are set to specified values during user creation
+     */
+    public function testVersion1ImportSetsRequiredUserFieldsOnAdd() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+
+        $data = $this->get_core_user_data();
+        $data['action'] = 'add';
+        $provider = new rlip_importprovider_mockuser($data);
+
+        $importplugin = new rlip_importplugin_version1($provider);
+        $importplugin->run();
+
+        unset($data['entity']);
+        unset($data['action']);
+        $data['password'] = hash_internal_user_password($data['password']);
+
+        $exists = $DB->record_exists('user', $data);
+
+        $this->assertEquals($exists, true);
+    }
+
+    /**
      * Validate that non-required fields are set to specified values during user creation
      */
-    public function testVersion1ImportSetsNonRequiredUserFields() {
+    public function testVersion1ImportSetsNonRequiredUserFieldsOnCreate() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
