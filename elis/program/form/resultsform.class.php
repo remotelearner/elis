@@ -626,7 +626,7 @@ class cmEngineForm extends cmform {
 
             // Start a table row and column
             $tablehtml = html_writer::start_tag('tr');
-            $tablehtml .= html_writer::start_tag('td');
+            $tablehtml .= html_writer::start_tag('td',array('style'=>'text-align:center'));
 
             $mform->addElement('html', $tablehtml);
 
@@ -658,7 +658,7 @@ class cmEngineForm extends cmform {
             $mform->addGroup($group, "{$prefix}{$i}_score", '', '', false);
 
             $tablehtml = html_writer::end_tag('td');
-            $tablehtml .= html_writer::start_tag('td');
+            $tablehtml .= html_writer::start_tag('td',array('style'=>'text-align:center'));
             $mform->addElement('html', $tablehtml);
 
             if ($this->rowtypes[$type] == 'picklist') {
@@ -695,7 +695,10 @@ class cmEngineForm extends cmform {
                 $url        = "{$typename}selector.php?id=id_{$prefix}{$i}_&callback=add_selection";
                 $attributes = array('onclick' => 'show_panel("'.$url.'"); return false;');
                 $output    .= html_writer::link('#', $selecttype, $attributes);
+                $output    .= html_writer::end_tag('td');
+                $output    .= html_writer::start_tag('td');
                 $mform->addElement('html', $output);
+
 
             } else if ($this->rowtypes[$type] == 'doubleselect') {
                 $options = $this->get_profile_fields();
