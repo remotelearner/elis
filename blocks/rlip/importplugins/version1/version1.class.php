@@ -45,6 +45,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                            'email',
                                            'city',
                                            'country');
+    static $import_fields_user_update = array(array('username',
+                                                    'email',
+                                                    'idnumber'));
 
     /**
      * Hook run after a file header is read
@@ -199,108 +202,121 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
-     * Create a user
-     * @todo: consider factoring this some more once other actions exist
+     * Validates that core user fields are set to valid values, if they are set
+     * on the import record
      *
-     * @param object $record One record of import data
-     * @return boolean true on success, otherwise false
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
      */
-    function user_create($record) {
-        global $CFG, $DB;
-        require_once($CFG->dirroot.'/user/lib.php');
-        require_once($CFG->dirroot.'/user/profile/lib.php');
+    function validate_core_user_data($action, $record) {
+        global $CFG;
 
-        /**
-         * Remove invalid fields
-         */
-        $record = $this->remove_invalid_user_fields($record);
-
-        /**
-         * Field length checking
-         */
-        $lengthcheck = $this->check_user_field_lengths($record);
-        if (!$lengthcheck) {
-            return false;
-        }
-
-        /**
-         * Data checking
-         */
+        //make sure auth plugin refers to a valid plugin
         $auths = get_plugin_list('auth');
         if (!$this->validate_fixed_list($record, 'auth', array_keys($auths))) {
             return false;
         }
 
-        $errmsg = '';
-        if (!check_password_policy($record->password, $errmsg)) {
-            return false;
+        //make sure password satisfies the site password policy
+        if (isset($record->password)) {
+            $errmsg = '';
+            if (!check_password_policy($record->password, $errmsg)) {
+                return false;
+            }
         }
 
-        if (!validate_email($record->email)) {
-            return false;
+        //make sure email is in user@domain.ext format
+        if ($action == 'create') {
+            if (!validate_email($record->email)) {
+                return false;
+            }
         }
 
+        //make sure maildigest is one of the available values
         if (!$this->validate_fixed_list($record, 'maildigest', array(0, 1, 2))) {
             return false;
         }
 
+        //make sure autosubscribe is one of the available values
         if (!$this->validate_fixed_list($record, 'autosubscribe', array(0, 1))) {
             return false;
         }
 
+        //make sure trackforums can only be set if feature is enabled
         if (isset($record->trackforums)) {
             if (empty($CFG->forum_trackreadposts)) {
                 return false;
             }
         }
 
+        //make sure trackforums is one of the available values
         if (!$this->validate_fixed_list($record, 'trackforums', array(0, 1))) {
             return false;
         }
 
+        //make sure screenreader is one of the available values
         if (!$this->validate_fixed_list($record, 'screenreader', array(0, 1))) {
             return false;
         }
 
+        //make sure country refers to a valid country code
         $countries = get_string_manager()->get_list_of_countries();
         if (!$this->validate_fixed_list($record, 'country', array_keys($countries))) {
             return false;
         }
 
+        //make sure timezone can only be set if feature is enabled
         if (isset($record->timezone)) {
             if ($CFG->forcetimezone != 99 && $record->timezone != $CFG->forcetimezone) {
                 return false;
             }
         }
 
+        //make sure timezone refers to a valid timezone offset
         $timezones = get_list_of_timezones();
         if (!$this->validate_fixed_list($record, 'timezone', array_keys($timezones))) {
             return false;
         }
 
+        //make sure theme can only be set if feature is enabled
         if (isset($record->theme)) {
             if (empty($CFG->allowuserthemes)) {
                 return false;
             }
         }
 
+        //make sure theme refers to a valid theme
         $themes = get_list_of_themes();
         if (!$this->validate_fixed_list($record, 'theme', array_keys($themes))) {
             return false;
         }
 
+        //make sure language refers to a valid language
         $languages = get_string_manager()->get_list_of_translations();
         if (!$this->validate_fixed_list($record, 'lang', array_keys($languages))) {
             return false;
         }
 
-        /**
-         * Profile field validation
-         */
+        return true;
+    }
+
+    /**
+     * Validates user profile field data and performs any required
+     * data transformation in-place
+     *
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates, otherwise false
+     */
+    function validate_user_profile_data($record) {
+        //go through each profile field in the header
         foreach ($this->fields as $shortname => $field) {
             $key = 'profile_field_'.$shortname;
             $data = $record->$key;
 
+            //perform type-specific validation and transformation
             if ($field->datatype == 'checkbox') {
                 if ($data != 0 && $data != 1) {
                     return false;
@@ -320,9 +336,41 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
         }
 
-        /**
-         * Uniqueness checks
-         */
+        return true;
+    }
+
+    /**
+     * Create a user
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @return boolean true on success, otherwise false
+     */
+    function user_create($record) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/lib.php');
+        require_once($CFG->dirroot.'/user/profile/lib.php');
+
+        //remove invalid fields
+        $record = $this->remove_invalid_user_fields($record);
+
+        //field length checking
+        $lengthcheck = $this->check_user_field_lengths($record);
+        if (!$lengthcheck) {
+            return false;
+        }
+
+        //data checking
+        if (!$this->validate_core_user_data('create', $record)) {
+            return false;
+        }
+
+        //profile field validation
+        if (!$this->validate_user_profile_data($record)) {
+            return false;
+        }
+
+        //uniqueness checks
         if ($DB->record_exists('user', array('username' => $record->username,
                                              'mnethostid'=> $CFG->mnet_localhost_id))) {
             return false;
@@ -338,9 +386,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
         }
 
-        /**
-         * Final data sanitization
-         */
+        //final data sanitization
         if (!isset($record->description)) {
             $record->description = '';
         }
@@ -353,9 +399,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         $record->mnethostid = $CFG->mnet_localhost_id;
 
-        /**
-         * Write to the database
-         */
+        //write to the database
         $record->id = user_create_user($record);
         profile_save_data($record);
 
@@ -364,7 +408,6 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
     /**
      * Create a user
-     * @todo: consider factoring this some more once other actions exist
      *
      * @param object $record One record of import data
      * @return boolean true on success, otherwise false
@@ -372,6 +415,73 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     function user_add($record) {
         //note: this is only here due to legacy 1.9 weirdness
         return $this->user_create($record);
+    }
+
+    /**
+     * Update a user
+     *
+     * @param object $record One record of import data
+     * @return boolean true on success, otherwise false
+     */
+    function user_update($record) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/lib.php');
+        require_once($CFG->dirroot.'/user/profile/lib.php');
+
+        //remove invalid fields
+        $record = $this->remove_invalid_user_fields($record);
+
+        //field length checking
+        $lengthcheck = $this->check_user_field_lengths($record);
+        if (!$lengthcheck) {
+            return false;
+        }
+
+        //data checking
+        if (!$this->validate_core_user_data('update', $record)) {
+            return false;
+        }
+
+        //profile field validation
+        if (!$this->validate_user_profile_data($record)) {
+            return false;
+        }
+
+        //find existing user record
+        $params = array();
+        if (isset($record->username)) {
+            $params['username'] = $record->username;
+        }
+        if (isset($record->email)) {
+            $params['email'] = $record->email;
+        }
+        if (isset($record->idnumber)) {
+            $params['idnumber'] = $record->idnumber;
+        }
+
+        $record->id = $DB->get_field('user', 'id', $params);
+        if (empty($record->id)) {
+            return false;
+        }
+
+        //write to the database
+
+        //taken from user_update_user
+        // hash the password
+        if (isset($record->password)) {
+            $record->password = hash_internal_user_password($record->password);
+        }
+
+        $record->timemodified = time();
+        $DB->update_record('user', $record);
+
+        // trigger user_updated event on the full database user row
+        $updateduser = $DB->get_record('user', array('id' => $record->id));
+        events_trigger('user_updated', $updateduser);
+
+        profile_save_data($record);
+
+        return true;
     }
 
     /**
