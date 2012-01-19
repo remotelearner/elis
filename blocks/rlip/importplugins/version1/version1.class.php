@@ -48,6 +48,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     static $import_fields_user_update = array(array('username',
                                                     'email',
                                                     'idnumber'));
+    static $import_fields_user_delete = array(array('username',
+                                                    'email',
+                                                    'idnumber'));
+    static $import_fields_user_disable = array(array('username',
+                                                     'email',
+                                                     'idnumber'));
 
     /**
      * Hook run after a file header is read
@@ -407,7 +413,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
-     * Create a user
+     * Add a user
      *
      * @param object $record One record of import data
      * @return boolean true on success, otherwise false
@@ -482,6 +488,48 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         profile_save_data($record);
 
         return true;
+    }
+
+    /**
+     * Delete a user
+     *
+     * @param object $record One record of import data
+     * @return boolean true on success, otherwise false
+     */
+    function user_delete($record) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/lib.php');
+
+        //find existing user record
+        $params = array();
+        if (isset($record->username)) {
+            $params['username'] = $record->username;
+        }
+        if (isset($record->email)) {
+            $params['email'] = $record->email;
+        }
+        if (isset($record->idnumber)) {
+            $params['idnumber'] = $record->idnumber;
+        }
+
+        //make the appropriate changes
+        if ($user = $DB->get_record('user', $params)) {
+            user_delete_user($user);
+            return true;
+        }        
+
+        return false;
+    }
+
+    /**
+     * Create a user
+     *
+     * @param object $record One record of import data
+     * @return boolean true on success, otherwise false
+     */
+    function user_disable($record) {
+        //note: this is only here due to legacy 1.9 weirdness
+        return $this->user_delete($record);
     }
 
     /**

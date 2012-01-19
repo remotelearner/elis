@@ -88,7 +88,50 @@ class version1ImportTest extends elis_database_test {
                      'config' => 'moodle',
                      'user_info_field' => 'moodle',
                      'user_info_category' => 'moodle',
-                     'user_info_data' => 'moodle');
+                     'user_info_data' => 'moodle',
+                     'user_enrolments' => 'moodle',
+                     'cohort_members' => 'moodle',
+                     'groups_members' => 'moodle',
+                     'user_preferences' => 'moodle',
+                     'user_lastaccess' => 'moodle',
+                     'block_positions' => 'moodle',
+                     'block_instances' => 'moodle',
+                     'filter_active' => 'moodle',
+                     'filter_config' => 'moodle',
+                     'comments' => 'moodle',
+                     'rating' => 'moodle',
+                     'role_assignments' => 'moodle',
+                     'role_capabilities' => 'moodle',
+                     'role_names' => 'moodle',
+                     'cache_flags' => 'moodle',
+                     'events_queue' => 'moodle',
+                     'groups' => 'moodle',
+                     'course' => 'moodle',
+                     'course_sections' => 'moodle',
+                     'course_categories' => 'moodle',
+                     'enrol' => 'moodle',
+                     'role' => 'moodle',
+                     'role_context_levels' => 'moodle',
+                     'message' => 'moodle',
+                     'message_read' => 'moodle',
+                     'message_working' => 'moodle',
+                     'grade_items' => 'moodle',
+                     'grade_items_history' => 'moodle',
+                     'grade_grades' => 'moodle',
+                     'grade_grades_history' => 'moodle',
+                     'tag' => 'moodle',
+                     'tag_instance' => 'moodle',
+                     'tag_correlation' => 'moodle',
+                     //not writing to this one but prevent events from
+                     //being fired during testing
+                     'events_queue_handlers' => 'moodle');
+    }
+
+    /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        return array('log' => 'moodle');
     }
 
     /**
@@ -1366,6 +1409,451 @@ class version1ImportTest extends elis_database_test {
         $params = array($starttime, $starttime);
         $exists = $DB->record_exists_select('user', $where, $params);
         $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that the version 1 plugin supports user deletes
+     */
+    public function testVersion1ImportSupportsUserDelete() {
+        $supports = plugin_supports('rlipimport', 'version1', 'user_delete');
+        $required_fields = array(array('username',
+                                       'email',
+                                       'idnumber'));
+        $this->assertEquals($supports, $required_fields);
+    }
+
+    /**
+     * Validate that the version 1 plugin supports user disabling
+     */
+    public function testVersion1ImportSupportsUserDisable() {
+        $supports = plugin_supports('rlipimport', 'version1', 'user_disable');
+        $required_fields = array(array('username',
+                                       'email',
+                                       'idnumber'));
+        $this->assertEquals($supports, $required_fields);
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete uses based on username
+     */
+    public function testVersion1ImportDeletesUserBasedOnUsername() {
+        global $DB;
+
+        $this->run_core_user_import(array());
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('id' => $userid,
+                                                  'deleted' => 1));
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete uses based on email
+     */
+    public function testVersion1ImportDeletesUserBasedOnEmail() {
+        global $DB;
+
+        $this->run_core_user_import(array());
+        $userid = $DB->get_field('user', 'id', array('email' => 'rlipuser@rlipdomain.com'));
+
+        $data = array('action' => 'delete',
+                      'email' => 'rlipuser@rlipdomain.com');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('id' => $userid,
+                                                  'deleted' => 1));
+    }
+
+     /**
+     * Validate that the version 1 plugin can delete uses based on idnumber
+     */
+    public function testVersion1ImportDeletesUserBasedOnIdnumber() {
+        global $DB;
+
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
+        $userid = $DB->get_field('user', 'id', array('idnumber' => 'rlipidnumber'));
+
+        $data = array('action' => 'delete',
+                      'idnumber' => 'rlipidnumber');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('id' => $userid,
+                                                  'deleted' => 1));
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete uses based on username and
+     * email
+     */
+    public function testVersion1ImportDeletesUserBasedOnUsernameEmail() {
+        global $DB;
+
+        $this->run_core_user_import(array());
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
+                                                     'email' => 'rlipuser@rlipdomain.com'));
+
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'email' => 'rlipuser@rlipdomain.com');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('id' => $userid,
+                                                  'deleted' => 1));
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete uses based on username and
+     * idnumber
+     */
+    public function testVersion1ImportDeletesUserBasedOnUsernameIdnumber() {
+        global $DB;
+
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
+                                                     'idnumber' => 'rlipidnumber'));
+
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'idnumber' => 'rlipidnumber');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('id' => $userid,
+                                                  'deleted' => 1));
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete uses based on email and
+     * idnumber
+     */
+    public function testVersion1ImportDeletesUserBasedOnEmailIdnumber() {
+        global $DB;
+
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
+        $userid = $DB->get_field('user', 'id', array('email' => 'rlipuser@rlipdomain.com',
+                                                     'idnumber' => 'rlipidnumber'));
+
+        $data = array('action' => 'delete',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'idnumber' => 'rlipidnumber');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('id' => $userid,
+                                                  'deleted' => 1));
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete uses based on username, email and
+     * idnumber
+     */
+    public function testVersion1ImportDeletesUserBasedOnUsernameEmailIdnumber() {
+        global $DB;
+
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
+                                                     'email' => 'rlipuser@rlipdomain.com',
+                                                     'idnumber' => 'rlipidnumber'));
+
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'idnumber' => 'rlipidnumber');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('id' => $userid,
+                                                  'deleted' => 1));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete users when the
+     * specified username is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteUserWithInvalidUsername() {
+        $this->run_core_user_import(array());
+
+        $data = array('action' => 'delete',
+                      'username' => 'bogususername');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'deleted' => 0));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete users when the
+     * specified email is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteUserWithInvalidEmail() {
+        $this->run_core_user_import(array());
+
+        $data = array('action' => 'delete',
+                      'email' => 'bogus@domain.com');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('email' => 'rlipuser@rlipdomain.com',
+                                                  'deleted' => 0));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete users when the
+     * specified idnumber is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteUserWithInvalidIdnumber() {
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
+
+        $data = array('action' => 'delete',
+                      'idnumber' => 'bogusidnumber');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('idnumber' => 'rlipidnumber',
+                                                  'deleted' => 0));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete a user with the
+     * specified username if the specified email is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteUserWithValidUsernameInvalidEmail() {
+        $this->run_core_user_import(array());
+
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'email' => 'bogus@domain.com');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'email' => 'rlipuser@rlipdomain.com',
+                                                  'deleted' => 0));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete a user with the
+     * specified username if the specified idnumber is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteUserWithValidUsernameInvalidIdnumber() {
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
+
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'idnumber' => 'bogusidnumber');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'idnumber' => 'rlipidnumber',
+                                                  'deleted' => 0));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete a user with the
+     * specified email if the specified username is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteUserWithValidEmailInvalidUsername() {
+        $this->run_core_user_import(array());
+
+        $data = array('action' => 'delete',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'username' => 'bogususername');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('email' => 'rlipuser@rlipdomain.com',
+                                                  'username' => 'rlipusername',
+                                                  'deleted' => 0));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete a user with the
+     * specified email if the specified idnumber is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteUserWithValidEmailInvalidIdnumber() {
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
+
+        $data = array('action' => 'delete',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'idnumber' => 'bogusidnumber');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('email' => 'rlipuser@rlipdomain.com',
+                                                  'idnumber' => 'rlipidnumber',
+                                                  'deleted' => 0));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete a user with the
+     * specified idnumber if the specified username is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteUserWithValidIdnumberInvalidUsername() {
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
+
+        $data = array('action' => 'delete',
+                      'idnumber' => 'rlipidnumber',
+                      'username' => 'bogususername');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('idnumber' => 'rlipidnumber',
+                                                  'username' => 'rlipusername',
+                                                  'deleted' => 0));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete a user with the
+     * specified idnumber if the specified email is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteUserWithValidIdnumberInvalidEmail() {
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
+
+        $data = array('action' => 'delete',
+                      'idnumber' => 'rlipidnumber',
+                      'email' => 'bogus@domain.com');
+        $this->run_core_user_import($data, false);
+
+        $this->assert_record_exists('user', array('idnumber' => 'rlipidnumber',
+                                                  'email' => 'rlipuser@rlipdomain.com',
+                                                  'deleted' => 0));
+    }
+
+    /**
+     * Validate that the version 1 plugin deletes appropriate associations when
+     * deleting a user
+     */
+    public function testVersion1ImportDeleteUserDeletesAssociations() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/cohort/lib.php');
+        require_once($CFG->dirroot.'/course/lib.php');
+        require_once($CFG->dirroot.'/group/lib.php');
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+        require_once($CFG->dirroot.'/lib/gradelib.php');
+
+        //set up the guest user to prevent enrolment plugins from thinking the
+        //created user is the guest user
+        if ($record = self::$origdb->get_record('user', array('username' => 'guest',
+                                                'mnethostid' => $CFG->mnet_localhost_id))) {
+            unset($record->id);
+            $DB->insert_record('user', $record);
+        }
+
+        //create our test user, and determine their userid
+        $this->run_core_user_import(array());
+        $userid = (int)$DB->get_field('user', 'id', array('username' => 'rlipusername'));
+
+        //todo: fix
+        if ($records = self::$origdb->get_records('context')) {
+            foreach ($records as $record) {
+                unset($record->id);
+                $DB->insert_record('context', $record);
+            }
+        }
+
+        //set up the site course
+        if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
+            unset($record->id);
+            $DB->insert_record('course', $record);
+        }
+
+        //the the user to a cohort - does not require cohort to actually exist
+        cohort_add_member(1, $userid);
+
+        //create a course category - there is no API for doing this
+        $category = new stdClass;
+        $category->name = 'testcategory';
+        $category->id = $DB->insert_record('course_categories', $category);
+
+        //create a course
+        $course = new stdClass;
+        $course->category = $category->id;
+        $course->fullname = 'testfullname';
+        $course = create_course($course);
+
+        //create a grade
+        $grade_item = new grade_item(array('courseid' => $course->id,
+                                           'itemtype' => 'manual',
+                                           'itemname' => 'testitem'), false);
+        $grade_item->insert();
+        $grade_grade = new grade_grade(array('itemid' => $grade_item->id,
+                                             'userid' => $userid), false);
+        $grade_grade->insert();
+
+        //send the user an unprocessed message
+        set_config('noemailever', true);
+        $DB->delete_records('message_processors');
+        $message = new stdClass;
+        $message->userfrom = $userid;
+        $message->userto = $userid;
+        $message->component = 'moodle';
+        $message->name = 'notices';
+        $message->subject = 'testsubject';
+        $message->fullmessage = 'testmessage';
+        $message->fullmessagehtml = 'testmessage';
+        $message->smallmessage = 'testmessage';
+        $message->fullmessageformat = FORMAT_PLAIN;
+        message_send($message);
+
+        //set up a user tag
+        tag_set('user', $userid, array('testtag'));
+
+        //create a new course-level role
+        $roleid = create_role('testrole', 'testrole', 'testrole');
+        set_role_contextlevels($roleid, array(CONTEXT_COURSE));
+
+        //enrol the user in the course with the new role
+        enrol_try_internal_enrol($course->id, $userid, $roleid);
+
+        //create a group
+        $group = new stdClass;
+        $group->name = 'testgroup';
+        $group->courseid = $course->id;
+        $groupid = groups_create_group($group);
+
+        //add the user to the group
+        groups_add_member($groupid, $userid);
+
+        set_user_preference('testname', 'testvalue', $userid);
+
+        //create profile field data - don't both with the API here because it's a bit unwieldy
+        $userinfodata = new stdClass;
+        $userinfodata->fieldid = 1;
+        $userinfodata->data ='bogus';
+        $userinfodata->userid = $userid;
+        $DB->insert_record('user_info_data', $userinfodata);
+
+        //there is no easily accessible API for doing this
+        $lastaccess = new stdClass;
+        $lastaccess->userid = $userid;
+        $lastaccess->courseid = $course->id;
+        $DB->insert_record('user_lastaccess', $lastaccess);
+
+        //assert data condition before delete
+        $this->assertEquals($DB->count_records('context', array('contextlevel' => CONTEXT_USER,
+                                                                'instanceid' => $userid)), 1);
+        $this->assertEquals($DB->count_records('message_read'), 0);
+        $this->assertEquals($DB->count_records('tag_instance'), 1);
+        $this->assertEquals($DB->count_records('grade_grades'), 1);
+        $this->assertEquals($DB->count_records('cohort_members'), 1);
+        $this->assertEquals($DB->count_records('user_enrolments'), 1);
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+        $this->assertEquals($DB->count_records('groups_members'), 1);
+        $this->assertEquals($DB->count_records('user_preferences'), 1);
+        $this->assertEquals($DB->count_records('user_info_data'), 1);
+        $this->assertEquals($DB->count_records('user_lastaccess'), 1);
+
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername');
+        $this->run_core_user_import($data, false);
+
+        //assert data condition after delete
+        $this->assertEquals($DB->count_records('context', array('contextlevel' => CONTEXT_USER,
+                                                                'instanceid' => $userid)), 0);
+        $this->assertEquals($DB->count_records('message_read'), 1);
+        $this->assertEquals($DB->count_records('grade_grades'), 0);
+        $this->assertEquals($DB->count_records('tag_instance'), 0);
+        $this->assertEquals($DB->count_records('cohort_members'), 0);
+        $this->assertEquals($DB->count_records('user_enrolments'), 0);
+        $this->assertEquals($DB->count_records('role_assignments'), 0);
+        $this->assertEquals($DB->count_records('groups_members'), 0);
+        $this->assertEquals($DB->count_records('user_preferences'), 0);
+        $this->assertEquals($DB->count_records('user_info_data'), 0);
+        $this->assertEquals($DB->count_records('user_lastaccess'), 0);
     }
 
     /**
