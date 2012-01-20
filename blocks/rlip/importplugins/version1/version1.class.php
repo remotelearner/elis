@@ -55,6 +55,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                      'email',
                                                      'idnumber'));
 
+    static $import_fields_course_create = array('shortname',
+                                                'fullname',
+                                                'category');
+
     /**
      * Hook run after a file header is read
      *
@@ -299,7 +303,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //make sure language refers to a valid language
+        //make sure lang refers to a valid language
         $languages = get_string_manager()->get_list_of_translations();
         if (!$this->validate_fixed_list($record, 'lang', array_keys($languages))) {
             return false;
@@ -548,6 +552,329 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         $method = "course_{$action}";
         return $this->$method($record);
+    }
+
+    /**
+     * Remove invalid fields from a course record
+     * @todo: consider generalizing this
+     *
+     * @param object $record The course record
+     * @return object The course record with the invalid fields removed
+     */
+    function remove_invalid_course_fields($record) {
+        $allowed_fields = array('entity', 'action','shortname', 'fullname',
+                                'idnumber', 'summary', 'format', 'numsections',
+                                'startdate', 'newsitems', 'showgrades', 'showreports',
+                                'maxbytes', 'allowguestaccess', 'password', 'visible',
+                                'lang', 'category');
+        foreach ($record as $key => $value) {
+            if (!in_array($key, $allowed_fields)) {
+                unset($record->$key);
+            }
+        }
+        
+        return $record;
+    }
+
+    /**
+     * Check the lengths of fields from a course record
+     * @todo: consider generalizing
+     *
+     * @param object $record The course record
+     * @return boolean True if field lengths are ok, otherwise false
+     */
+    function check_course_field_lengths($record) {
+        $lengths = array('fullname' => 254,
+                         'shortname' => 100,
+                         'idnumber' => 100);
+
+        foreach ($lengths as $field => $length) {
+            //note: do not worry about missing fields here
+            if (isset($record->$field)) {
+                if (strlen($record->$field) > $length) {
+                    return false;
+                }
+            }
+        }
+
+        //no problems found
+        return true;
+    }
+
+    /**
+     * Intelligently splits a category specification into a list of categories
+     *
+     * @param string $category_string  The category specification string, using
+     *                                 \\\\ to represent \, \\/ to represent /,
+     *                                 and / as a category separator
+     * @return array An array with one entry per category, containing the
+     *               unescaped category names
+     */
+    function get_category_path($category_string) {
+        //in-progress method result
+        $result = array();
+
+        //used to build up the current token before splitting
+        $current_token = '';
+
+        //tracks which token we are currently looking at
+        $current_token_num = 0;
+
+        for ($i = 0; $i < strlen($category_string); $i++) {
+            //initialize the entry if necessary
+            if (!isset($result[$current_token_num])) {
+                $result[$current_token_num] = '';
+            }
+
+            //get the ith character from the category string
+            $current_token .= substr($category_string, $i, 1);
+
+            if(strpos($current_token, '\\\\') === strlen($current_token) - strlen('\\\\')) {
+                //backslash character
+
+                //append the result
+                $result[$current_token_num] .= substr($current_token, 0, strlen($current_token) - strlen('\\\\')) . '\\';
+                //reset the token
+                $current_token = '';
+            } else if(strpos($current_token, '\\/') === strlen($current_token) - strlen('\\/')) {
+                //forward slash character
+
+                //append the result
+                $result[$current_token_num] .= substr($current_token, 0, strlen($current_token) - strlen('\\/')) . '/';
+                //reset the token so that the / is not accidentally counted as a category separator
+                $current_token = '';
+            } else if(strpos($current_token, '/') === strlen($current_token) - strlen('/')) {
+                //category separator
+
+                //append the result
+                $result[$current_token_num] .= substr($current_token, 0, strlen($current_token) - strlen('/'));
+                //reset the token
+                $current_token = '';
+                //move on to the next token
+                $current_token_num++;
+            }
+        }
+
+        //append leftovers after the last slash
+
+        //initialize the entry if necessary
+        if (!isset($result[$current_token_num])) {
+            $result[$current_token_num] = '';
+        }
+
+        $result[$current_token_num] .= $current_token;
+
+        return $result;
+    }
+
+    /**
+     * Map the specified category to a record id
+     *
+     * @param string $category_string The category specification string, using
+     *                                \\\\ to represent \, \\/ to represent /,
+     *                                and / as a category separator
+     * @return mixed Returns false on error, or the integer category id otherwise
+     */
+    function get_category_id($category_string) {
+        global $DB;
+
+        $parentids = array();
+
+        //check for a leading / for the case where an absolute path is specified 
+        if (strpos($category_string, '/') === 0) {
+            $category_string = substr($category_string, 1);
+            $parentids[] = 0;
+        }
+
+        //split the category string into a list of categories
+        $path = $this->get_category_path($category_string);
+
+        foreach ($path as $categoryname) {
+            //look for categories with the correct name
+            $select = "name = ?";
+            $params = array($categoryname);
+
+            if (!empty($parentids)) {
+                //only allow categories that also are children of categories
+                //found in the last iteration of the specified path
+                list($parentselect, $parentparams) = $DB->get_in_or_equal($parentids);
+                $select = "{$select} AND parent {$parentselect}";
+                $params = array_merge($params, $parentparams);
+            }
+
+            //find matching records
+            if ($records = $DB->get_recordset_select('course_categories', $select, $params)) {
+                if (!$records->valid()) {
+                    //none found, so try see if the id was specified
+                    if (is_numeric($category_string)) {
+                        if ($DB->record_exists('course_categories', array('id' => $category_string))) {
+                            return $category_string;
+                        }
+                    }
+
+                    return false;
+                }
+
+                //set "parent ids" to the current result set for our next iteration
+                $parentids = array();
+
+                foreach ($records as $record) {
+                    $parentids[] = $record->id;
+                }
+            }
+        }
+
+        if (count($parentids) == 1) {
+            //found our category
+            return $parentids[0];
+        } else {
+            //path refers to multiple potential categories
+            return false;
+        }
+    }
+
+    /**
+     * Validates that core course fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_core_course_data($action, $record) {
+        global $CFG;
+
+        //make sure format refers to a valid course format
+        if (isset($record->format)) {
+            $courseformats = get_plugin_list('format');
+
+            if (!$this->validate_fixed_list($record, 'format', array_keys($courseformats))) {
+                return false;
+            }
+        }
+
+        //make sure numsections is an integer between 0 and the configured max
+        if (isset($record->numsections)) {
+            $maxsections = (int)get_config('moodlecourse', 'maxsections');
+
+            if ((int)$record->numsections != $record->numsections) {
+                //not an integer
+                return false;
+            }
+
+            $record->numsections = (int)$record->numsections;
+            if ($record->numsections < 0 || $record->numsections > $maxsections) {
+                //not between 0 and 10
+                return false;
+            }
+        }
+
+        //make sure startdate is a valid date
+        if (isset($record->startdate)) {
+            $value = $this->parse_date($record->startdate);
+            if ($value === false) {
+                return false;
+            }
+
+            //use the unix timestamp
+            $record->startdate = $value;
+        }
+
+        //make sure newsitems is an integer between 0 and 10
+        $options = range(0, 10);
+        if (!$this->validate_fixed_list($record, 'newsitems', $options)) {
+            return false;
+        }
+
+        //make sure showgrades is one of the available values 
+        if (!$this->validate_fixed_list($record, 'showgrades', array(0, 1))) {
+            return false;
+        }
+
+        //make sure showreports is one of the available values
+        if (!$this->validate_fixed_list($record, 'showreports', array(0, 1))) {
+            return false;
+        }
+
+        //make sure maxbytes is one of the available values
+        if (isset($record->maxbytes)) {
+            $choices = get_max_upload_sizes($CFG->maxbytes);
+            if (!$this->validate_fixed_list($record, 'maxbytes', array_keys($choices))) {
+                return false;
+            }
+        }
+
+        //make sure allowguestaccess is one of the available values
+        if (!$this->validate_fixed_list($record, 'allowguestaccess', array(0, 1))) {
+            return false;
+        }
+
+        //make sure visible is one of the available values
+        if (!$this->validate_fixed_list($record, 'visible', array(0, 1))) {
+            return false;
+        }
+
+        //make sure lang refers to a valid language or the default value
+        $languages = get_string_manager()->get_list_of_translations();
+        $language_codes = array_merge(array(''), array_keys($languages));
+        if (!$this->validate_fixed_list($record, 'lang', $language_codes)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Create a course
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @return boolean true on success, otherwise false
+     */
+    function course_create($record) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/course/lib.php');
+
+        //remove invalid fields
+        $record = $this->remove_invalid_course_fields($record);
+
+        //field length checking
+        $lengthcheck = $this->check_course_field_lengths($record);
+        if (!$lengthcheck) {
+            return false;
+        }
+
+        //data checking
+        if (!$this->validate_core_course_data('create', $record)) {
+            return false;
+        }
+
+        //validate and set up the category
+        $categoryid = $this->get_category_id($record->category);
+        if ($categoryid === false) {
+            return false;
+        }
+
+        $record->category = $categoryid;
+
+        //uniqueness check
+        if ($DB->record_exists('course', array('shortname' => $record->shortname))) {
+            return false;
+        }
+
+        //final data sanitization
+        if (isset($record->allowguestaccess)) {
+            $record->enrol_guest_status_0 = ENROL_INSTANCE_ENABLED;
+        }
+        if (isset($record->password)) {
+            $record->enrol_guest_password_0 = $record->password;
+        }
+
+        //write to the database
+        create_course($record);
+
+        return true;
     }
 
     /**

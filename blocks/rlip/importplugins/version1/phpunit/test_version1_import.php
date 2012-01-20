@@ -233,7 +233,7 @@ class version1ImportTest extends elis_database_test {
     public function testVersion1ImportSupportsUserActions() {
         $supports = plugin_supports('rlipimport', 'version1', 'user');
 
-        $this->assertNotEquals($supports, false);
+        $this->assertEquals($supports, array('create', 'add', 'update', 'delete', 'disable'));
     }
 
     /**
@@ -330,8 +330,7 @@ class version1ImportTest extends elis_database_test {
      * Validate that non-required fields are set to specified values during user creation
      */
     public function testVersion1ImportSetsNonRequiredUserFieldsOnCreate() {
-        global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        global $DB;
 
         set_config('allowuserthemes', 1);
 
@@ -386,7 +385,7 @@ class version1ImportTest extends elis_database_test {
     /**
      * Validate that fields are set to specified values during user update
      */
-    public function testVersion1ImportSetsFieldsOnUpdate() {
+    public function testVersion1ImportSetsFieldsOnUserUpdate() {
         global $DB;
 
         $this->run_core_user_import(array());
@@ -776,7 +775,6 @@ class version1ImportTest extends elis_database_test {
      */
     public function testVersion1ImportSetsDefaultsOnUserCreate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
         set_config('forcetimezone', 99);
 
@@ -904,9 +902,6 @@ class version1ImportTest extends elis_database_test {
      * Validate that field-length checking works correctly on user creation
      */
     public function testVersion1ImportPreventsLongUserFieldsOnCreate() {
-        global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
-
         $this->run_core_user_import(array('firstname' => str_repeat('a', 101)));
         $this->assert_core_user_does_not_exist();
 
@@ -1737,13 +1732,11 @@ class version1ImportTest extends elis_database_test {
         $this->run_core_user_import(array());
         $userid = (int)$DB->get_field('user', 'id', array('username' => 'rlipusername'));
 
-        //todo: fix
-        if ($records = self::$origdb->get_records('context')) {
-            foreach ($records as $record) {
-                unset($record->id);
-                $DB->insert_record('context', $record);
-            }
-        }
+        //set up context records
+        $prefix = self::$origdb->get_prefix();
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context");
 
         //set up the site course
         if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
@@ -1854,15 +1847,6 @@ class version1ImportTest extends elis_database_test {
         $this->assertEquals($DB->count_records('user_preferences'), 0);
         $this->assertEquals($DB->count_records('user_info_data'), 0);
         $this->assertEquals($DB->count_records('user_lastaccess'), 0);
-    }
-
-    /**
-     * Validate that the version 1 plugin supports course actions
-     */
-    public function testVersion1ImportSupportsCourseActions() {
-        $supports = plugin_supports('rlipimport', 'version1', 'course');
-
-        $this->assertNotEquals($supports, false);
     }
 
     /**
