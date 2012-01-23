@@ -1255,7 +1255,7 @@ class version1ImportTest extends elis_database_test {
      * Validate that updating users does not produce any side-effects
      * in the user data
      */
-    public function testVersion1ImportOnlyUpdatesSuppliedFields() {
+    public function testVersion1ImportOnlyUpdatesSuppliedUserFields() {
         $this->run_core_user_import(array());
 
         $data = array('action' => 'update',
@@ -1310,7 +1310,7 @@ class version1ImportTest extends elis_database_test {
     /**
      * Validate that fields identifying users in updates are not updated
      */
-    public function testVersion1ImportDoesNotUpdateIdentifyingFields() {
+    public function testVersion1ImportDoesNotUpdateIdentifyingUserFields() {
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber',
                                           'firstname' => 'oldfirstname'));
 

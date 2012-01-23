@@ -58,6 +58,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     static $import_fields_course_create = array('shortname',
                                                 'fullname',
                                                 'category');
+    
+    static $import_fields_course_update = array('shortname');
 
     /**
      * Hook run after a file header is read
@@ -565,7 +567,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $allowed_fields = array('entity', 'action','shortname', 'fullname',
                                 'idnumber', 'summary', 'format', 'numsections',
                                 'startdate', 'newsitems', 'showgrades', 'showreports',
-                                'maxbytes', 'allowguestaccess', 'password', 'visible',
+                                'maxbytes', 'guest', 'password', 'visible',
                                 'lang', 'category');
         foreach ($record as $key => $value) {
             if (!in_array($key, $allowed_fields)) {
@@ -743,7 +745,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @return boolean true if the record validates correctly, otherwise false
      */
     function validate_core_course_data($action, $record) {
-        global $CFG;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //make sure format refers to a valid course format
         if (isset($record->format)) {
@@ -805,8 +808,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
         }
 
-        //make sure allowguestaccess is one of the available values
-        if (!$this->validate_fixed_list($record, 'allowguestaccess', array(0, 1))) {
+        //make sure guest is one of the available values
+        if (!$this->validate_fixed_list($record, 'guest', array(0, 1))) {
             return false;
         }
 
@@ -820,6 +823,48 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $language_codes = array_merge(array(''), array_keys($languages));
         if (!$this->validate_fixed_list($record, 'lang', $language_codes)) {
             return false;
+        }
+
+        if ($action == 'create') {
+            //make sure "guest" settings are consistent for new course
+            if (empty($record->guest) && !empty($record->password)) {
+                return false;
+            }
+        }
+
+        if ($action == 'update') {
+            //make sure "guest" settings are consistent for new course
+
+            if (isset($record->guest) || isset($record->password)) {
+                //a "guest" setting is used, validate that the guest enrolment
+                //plugin is enabled for the current course
+                if ($courseid = $DB->get_field('course', 'id', array('shortname' => $record->shortname))) {
+                    if (!$DB->record_exists('enrol', array('courseid' => $courseid,
+                                                            'enrol' => 'guest'))) {
+                       return false;
+                    }
+                }
+            }
+
+            if (!empty($record->password)) {
+                //make sure a password can only be set if guest access is enabled
+                if ($courseid = $DB->get_field('course', 'id', array('shortname' => $record->shortname))) {
+
+                    if (isset($record->guest) && empty($record->guest)) {
+                        //guest access specifically disabled, which isn't
+                        //consistent with providing a password
+                        return false;
+                    } else if (!isset($record->guest)) {
+                        $params = array('courseid' => $courseid,
+                                        'enrol' => 'guest',
+                                        'status' => ENROL_INSTANCE_ENABLED);
+                        if (!$DB->record_exists('enrol', $params)) {
+                            //guest access disabled in the database
+                            return false;
+                        }
+                    }
+                }
+            }
         }
 
         return true;
@@ -864,8 +909,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //final data sanitization
-        if (isset($record->allowguestaccess)) {
+        if (isset($record->guest)) {
             $record->enrol_guest_status_0 = ENROL_INSTANCE_ENABLED;
+            if (!isset($record->enrol_guest_password_0)) {
+                $record->enrol_guest_password_0 = NULL;
+            }
         }
         if (isset($record->password)) {
             $record->enrol_guest_password_0 = $record->password;
@@ -873,6 +921,78 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //write to the database
         create_course($record);
+
+        return true;
+    }
+
+    /**
+     * Update a course
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @return boolean true on success, otherwise false
+     */
+    function course_update($record) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/course/lib.php');
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //remove invalid fields
+        $record = $this->remove_invalid_course_fields($record);
+
+        //field length checking
+        $lengthcheck = $this->check_course_field_lengths($record);
+        if (!$lengthcheck) {
+            return false;
+        }
+
+        //data checking
+        if (!$this->validate_core_course_data('update', $record)) {
+            return false;
+        }
+
+        //validate and set up the category
+        if (isset($record->category)) {
+            $categoryid = $this->get_category_id($record->category);
+            if ($categoryid === false) {
+                return false;
+            }
+    
+            $record->category = $categoryid;
+        }
+
+        $record->id = $DB->get_field('course', 'id', array('shortname' => $record->shortname));
+        if (empty($record->id)) {
+            return false;
+        }
+
+        update_course($record);
+
+        //special work for "guest" settings
+
+        if (isset($record->guest) && empty($record->guest)) {
+            //todo: add more error checking
+            if ($enrol = $DB->get_record('enrol', array('courseid' => $record->id,
+                                                        'enrol' => 'guest'))) {
+                //disable the plugin for the current course
+                $enrol->status = ENROL_INSTANCE_DISABLED;
+                $DB->update_record('enrol', $enrol);
+            }
+        }
+
+        if (!empty($record->guest)) {
+            //todo: add more error checking
+            if ($enrol = $DB->get_record('enrol', array('courseid' => $record->id,
+                                                        'enrol' => 'guest'))) {
+                //enable the plugin for the current course
+                $enrol->status = ENROL_INSTANCE_ENABLED;
+                if (isset($record->password)) {
+                    //password specified, so set it
+                    $enrol->password = $record->password;
+                }
+                $DB->update_record('enrol', $enrol);
+            }
+        }
 
         return true;
     }
