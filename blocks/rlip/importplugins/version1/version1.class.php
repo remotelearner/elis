@@ -58,8 +58,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     static $import_fields_course_create = array('shortname',
                                                 'fullname',
                                                 'category');
-    
     static $import_fields_course_update = array('shortname');
+    static $import_fields_course_delete = array('shortname');
 
     /**
      * Hook run after a file header is read
@@ -995,6 +995,24 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         return true;
+    }
+
+    /**
+     * Delete a course
+     *
+     * @param object $record One record of import data
+     * @return boolean true on success, otherwise false
+     */
+    function course_delete($record) {
+        global $DB;
+
+        if ($courseid = $DB->get_field('course', 'id', array('shortname' => $record->shortname))) {
+            delete_course($courseid, false);
+            fix_course_sortorder();
+            return true;
+        }
+
+        return false;
     }
 
     /**

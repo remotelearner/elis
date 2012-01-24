@@ -91,14 +91,67 @@ class version1CourseImportTest extends elis_database_test {
                      'context' => 'moodle',
                      'enrol' => 'moodle',
                      'role_assignments' => 'moodle',
-                     'user_enrolments' => 'moodle');
+                     'user_enrolments' => 'moodle',
+                     'user' => 'moodle',
+                     'role' => 'moodle',
+                     'role_context_levels' => 'moodle',
+                     'role_capabilities' => 'moodle',
+                     'role_names' => 'moodle',
+                     'grade_items' => 'moodle',
+                     'grade_items_history' => 'moodle',
+                     'grade_grades' => 'moodle',
+                     'grade_grades_history' => 'moodle',
+                     'grade_letters' => 'moodle',
+                     'grade_settings' => 'moodle',
+                     'grade_outcomes' => 'moodle',
+                     'grade_outcomes_courses' => 'moodle',
+                     'grade_outcomes_history' => 'moodle',
+                     'grade_categories' => 'moodle',
+                     'grade_categories_history' => 'moodle',
+                     'scale' => 'moodle',
+                     'scale_history' => 'moodle',
+                     'groups' => 'moodle',
+                     'groups_members' => 'moodle',
+                     'groupings' => 'moodle',
+                     'groupings_groups' => 'moodle',
+                     'tag' => 'moodle',
+                     'tag_instance' => 'moodle',
+                     'user_lastaccess' => 'moodle',
+                     'question_categories' => 'moodle',
+                     'question' => 'moodle',
+                     'question_answers' => 'moodle',
+                     'question_truefalse' => 'qtype_truefalse',
+                     'config' => 'moodle',
+                     'course_display' => 'moodle',
+                     'backup_log' => 'moodle',
+                     'backup_courses' => 'moodle',
+                     'block_positions' => 'moodle',
+                     'forum' => 'mod_forum',
+                     'forum_subscriptions' => 'mod_forum',
+                     'forum_read' => 'mod_forum',
+                     'feedback_template' => 'mod_feedback',
+                     'course_modules' => 'moodle',
+                     'course_modules_completion' => 'moodle',
+                     'course_modules_availability' => 'moodle',
+                     'course_completion_criteria' => 'moodle',
+                     'course_completion_aggr_methd' => 'moodle',
+                     'course_completions' => 'moodle',
+                     'course_completion_crit_compl' => 'moodle',
+                     'filter_active' => 'moodle',
+                     'filter_config' => 'moodle',
+                     'comments' => 'moodle',
+                     'rating' => 'moodle',
+                     'user_preferences' => 'moodle',
+                     'question_hints' => 'moodle',
+                     'log' => 'moodle'
+                     );
     }
 
     /**
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('log' => 'moodle');
+        return array('event' => 'moodle');
     }
 
     /**
@@ -233,7 +286,7 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportSupportsCourseActions() {
         $supports = plugin_supports('rlipimport', 'version1', 'course');
 
-        $this->assertEquals($supports, array('create', 'update'));
+        $this->assertEquals($supports, array('create', 'update', 'delete'));
     }
 
     /**
@@ -1607,5 +1660,284 @@ class version1CourseImportTest extends elis_database_test {
         $params = array($starttime, $starttime);
         $exists = $DB->record_exists_select('course', $where, $params);
         $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that the version 1 plugin supports course deletes
+     */
+    public function testVersion1ImportSupportsCourseDelete() {
+        $supports = plugin_supports('rlipimport', 'version1', 'course_delete');
+        $required_fields = array('shortname');
+        $this->assertEquals($supports, $required_fields);
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete courses based on shortname
+     */
+    public function testVersion1ImportDeletesCourseBasedOnShortname() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $this->run_core_course_import(array());
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+
+        $data = array('action' => 'delete',
+                      'shortname' => 'rlipshortname');
+        $this->run_core_course_import($data, false);
+
+        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname'));
+        $this->assertEquals($exists, false);
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete courses when the
+     * specified shortname is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteCourseWithInvalidShortname() {
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $this->run_core_course_import(array());
+
+        $data = array('action' => 'delete',
+                      'shortname' => 'bogusshortname');
+        $this->run_core_course_import($data, false);
+
+        $this->assert_record_exists('course', array('shortname' => 'rlipshortname'));
+    }
+
+    /**
+     * Validate that the version 1 plugin deletes appropriate associations when
+     * deleting a course
+     */
+    public function testVersion1ImportDeleteCourseDeletesAssociations() {
+        global $DB, $CFG;
+        require_once($CFG->dirroot.'/user/lib.php');
+        require_once($CFG->dirroot.'/lib/gradelib.php');
+        require_once($CFG->dirroot.'/group/lib.php');
+        require_once($CFG->dirroot.'/backup/lib.php');
+        require_once($CFG->dirroot.'/lib/conditionlib.php');
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $initial_num_contexts = $DB->count_records('context', array('contextlevel' => CONTEXT_COURSE));
+
+        //set up the guest user to prevent enrolment plugins from thinking the
+        //created user is the guest user
+        if ($record = self::$origdb->get_record('user', array('username' => 'guest',
+                                                'mnethostid' => $CFG->mnet_localhost_id))) {
+            unset($record->id);
+            $DB->insert_record('user', $record);
+        }
+
+        //set up the course with one section, including default blocks
+        set_config('defaultblocks_topics', 'search_forums');
+        $this->run_core_course_import(array('numsections' => 1));
+
+        //create a user record
+        $record = new stdClass;
+        $record->password = 'Testpass!0';
+        $userid = user_create_user($record);
+
+        //create a course-level role
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+        $course_context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = create_role('testrole', 'testrole', 'testrole');
+        set_role_contextlevels($roleid, array(CONTEXT_COURSE));
+
+        //assign the user to the course-level role
+        enrol_try_internal_enrol($courseid, $userid, $roleid);
+
+        //create a grade item
+        $grade_item = new grade_item(array('courseid' => $courseid,
+                                           'itemtype' => 'manual',
+                                           'itemname' => 'testitem'), false);
+        $grade_item->insert();
+        $grade_grade = new grade_grade(array('itemid' => $grade_item->id,
+                                             'userid' => $userid), false);
+
+        //assign the user a grade
+        $grade_grade->insert();
+
+        //create a grade outcome
+        $grade_outcome = new grade_outcome(array('courseid' => $courseid,
+                                                 'shortname' => 'bogusshortname',
+                                                 'fullname' => 'bogusfullname'));
+        $grade_outcome->insert();
+
+        //create a grade scale
+        $grade_scale = new grade_scale(array('courseid' => $courseid,
+                                             'name' => 'bogusname',
+                                             'userid' => $userid,
+                                             'scale' => 'bogusscale',
+                                             'description' => 'bogusdescription'));
+        $grade_scale->insert();
+
+        //set a grade setting value
+        grade_set_setting($courseid, 'bogus', 'bogus');
+
+        //set up a grade letter
+        $gradeletter = new stdClass;
+        $gradeletter->contextid = $course_context->id;
+        $gradeletter->lowerboundary = 80;
+        $gradeletter->letter = 'A';
+        $DB->insert_record('grade_letters', $gradeletter);
+
+        //set up a forum instance
+        $forum = new stdClass;
+        $forum->course = $courseid;
+        $forum->intro = 'intro';
+        $forum->id = $DB->insert_record('forum', $forum);
+
+        //add it as a course module
+        $forum->module = $DB->get_field('modules', 'id', array('name' => 'forum'));
+        $forum->instance = $forum->id;
+        $cmid = add_course_module($forum);
+
+        //set up a completion record
+        $completion = new stdClass;
+        $completion->coursemoduleid = $cmid;
+        $completion->completionstate = 0;
+        $completion->userid = 9999;
+        $completion->timemodified = time();
+        $DB->insert_record('course_modules_completion', $completion);
+
+        //set up a completion condition
+        $forum->id = $cmid;
+        $ci = new condition_info($forum, CONDITION_MISSING_EVERYTHING, false);
+        $ci->add_completion_condition($cmid, COMPLETION_ENABLED);
+
+        //set the block position
+        $instance = $DB->get_record('block_instances', array('parentcontextid' => $course_context->id));
+        $page = new stdClass;
+        $page->context = $course_context;
+        $page->pagetype = 'course-view-*';
+        $page->subpage = false;
+        blocks_set_visibility($instance, $page, 1);
+
+        //create a group
+        $group = new stdClass;
+        $group->name = 'testgroup';
+        $group->courseid = $courseid;
+        $groupid = groups_create_group($group);
+
+        //add the user to the group
+        groups_add_member($groupid, $userid);
+
+        //create a grouping containing our group
+        $grouping = new stdClass;
+        $grouping->name = 'testgrouping';
+        $grouping->courseid = $courseid;
+        $groupingid = groups_create_grouping($grouping);
+        groups_assign_grouping($groupingid, $groupid);
+
+        //set up a user tag
+        tag_set('course', $courseid, array('testtag'));
+
+        //add a course-level log
+        add_to_log($courseid, 'bogus', 'bogus');
+
+        //set up the default course question category
+        $newcategory = question_make_default_categories(array($course_context));
+
+        //create a test question
+        $question = new stdClass;
+        $question->qtype = 'truefalse';
+        $form = new stdClass;
+        $form->category = $newcategory->id;
+        $form->name = 'testquestion';
+        $form->correctanswer = 1;
+        $form->feedbacktrue = array('text' => 'bogustext',
+                                    'format' => FORMAT_HTML);
+        $form->feedbackfalse = array('text' => 'bogustext',
+                                     'format' => FORMAT_HTML);
+        $question = question_bank::get_qtype('truefalse')->save_question($question, $form);
+
+        //set a "course display" setting
+        course_set_display($courseid, 1);
+
+        //make a bogus backup record
+        $backupcourse = new stdClass;
+        $backupcourse->courseid = $courseid;
+        $DB->insert_record('backup_courses',$backupcourse);
+
+        //add a user lastaccess record
+        $lastaccess = new stdClass;
+        $lastaccess->userid = $userid;
+        $lastaccess->courseid = $courseid;
+        $DB->insert_record('user_lastaccess', $lastaccess);
+
+        //make a bogus backup log record
+        add_to_backup_log(1, $courseid, 'bogus', 'bogus');
+
+        //validate setup
+        $this->assertEquals($DB->count_records('course'), 2);
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+        $this->assertEquals($DB->count_records('user_enrolments'), 1);
+        //course-level and manually added grade items
+        $this->assertEquals($DB->count_records('grade_items'), 2);
+        $this->assertEquals($DB->count_records('grade_grades'), 1);
+        $this->assertEquals($DB->count_records('grade_outcomes'), 1);
+        $this->assertEquals($DB->count_records('grade_outcomes_courses'), 1);
+        $this->assertEquals($DB->count_records('scale'), 1);
+        $this->assertEquals($DB->count_records('grade_settings'), 1);
+        $this->assertEquals($DB->count_records('grade_letters'), 1);
+        $this->assertEquals($DB->count_records('forum'), 1);
+        $this->assertEquals($DB->count_records('course_modules'), 1);
+        $this->assertEquals($DB->count_records('course_modules_completion'), 1);
+        $this->assertEquals($DB->count_records('course_modules_availability'), 1);
+        $this->assertEquals($DB->count_records('block_instances'), 1);
+        $this->assertEquals($DB->count_records('block_positions'), 1);
+        $this->assertEquals($DB->count_records('groups'), 1);
+        $this->assertEquals($DB->count_records('groups_members'), 1);
+        $this->assertEquals($DB->count_records('groupings'), 1);
+        $this->assertEquals($DB->count_records('groupings_groups'), 1);
+        $this->assert_record_exists('log', array('course' => $courseid));
+        $this->assertEquals($DB->count_records('tag_instance'), 1);
+        $this->assertEquals($DB->count_records('course_sections'), 1);
+        $this->assertEquals($DB->count_records('question_categories'), 1);
+        $this->assertEquals($DB->count_records('question'), 1);
+        $this->assertEquals($DB->count_records('course_display'), 1);
+        $this->assertEquals($DB->count_records('backup_courses'), 1);
+        $this->assertEquals($DB->count_records('user_lastaccess'), 1);
+        $this->assertEquals($DB->count_records('backup_log'), 1);
+
+        //delete the course
+        $data = array('action' => 'delete',
+                      'shortname' => 'rlipshortname');
+        $this->run_core_course_import($data, false);
+
+        //validate the result
+        $this->assertEquals($DB->count_records('course'), 1);
+        $this->assertEquals($DB->count_records('role_assignments'), 0);
+        $this->assertEquals($DB->count_records('user_enrolments'), 0);
+        $this->assertEquals($DB->count_records('grade_items'), 0);
+        $this->assertEquals($DB->count_records('grade_grades'), 0);
+        $this->assertEquals($DB->count_records('grade_outcomes'), 0);
+        $this->assertEquals($DB->count_records('grade_outcomes_courses'), 0);
+        $this->assertEquals($DB->count_records('scale'), 0);
+        $this->assertEquals($DB->count_records('grade_settings'), 0);
+        $this->assertEquals($DB->count_records('grade_letters'), 0);
+        $this->assertEquals($DB->count_records('forum'), 0);
+        $this->assertEquals($DB->count_records('course_modules'), 0);
+        $this->assertEquals($DB->count_records('course_modules_completion'), 0);
+        $this->assertEquals($DB->count_records('course_modules_availability'), 0);
+        $this->assertEquals($DB->count_records('block_instances'), 0);
+        $this->assertEquals($DB->count_records('block_positions'), 0);
+        $this->assertEquals($DB->count_records('groups'), 0);
+        $this->assertEquals($DB->count_records('groups_members'), 0);
+        $this->assertEquals($DB->count_records('groupings'), 0);
+        $this->assertEquals($DB->count_records('groupings_groups'), 0);
+        $this->assertEquals($DB->count_records('log', array('course' => $courseid)), 0);
+        $this->assertEquals($DB->count_records('tag_instance'), 0);
+        $this->assertEquals($DB->count_records('course_sections'), 0);
+        $this->assertEquals($DB->count_records('question_categories'), 0);
+        $this->assertEquals($DB->count_records('question'), 0);
+        $this->assertEquals($DB->count_records('course_display'), 0);
+        $this->assertEquals($DB->count_records('backup_courses'), 0);
+        $this->assertEquals($DB->count_records('user_lastaccess'), 0);
+        $this->assertEquals($DB->count_records('backup_log'), 0);
     }
 }
