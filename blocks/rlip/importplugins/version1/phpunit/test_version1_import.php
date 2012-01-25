@@ -119,6 +119,8 @@ class version1ImportTest extends elis_database_test {
                      'grade_items_history' => 'moodle',
                      'grade_grades' => 'moodle',
                      'grade_grades_history' => 'moodle',
+                     'grade_categories' => 'moodle',
+                     'grade_categories_history' => 'moodle',
                      'tag' => 'moodle',
                      'tag_instance' => 'moodle',
                      'tag_correlation' => 'moodle',
@@ -1847,14 +1849,5 @@ class version1ImportTest extends elis_database_test {
         $this->assertEquals($DB->count_records('user_preferences'), 0);
         $this->assertEquals($DB->count_records('user_info_data'), 0);
         $this->assertEquals($DB->count_records('user_lastaccess'), 0);
-    }
-
-    /**
-     * Validate that the version 1 plugin supports enrolment actions
-     */
-    public function testVersion1ImportSupportsEnrolmentActions() {
-        $supports = plugin_supports('rlipimport', 'version1', 'enrolment');
-
-        $this->assertNotEquals($supports, false);
     }
 }

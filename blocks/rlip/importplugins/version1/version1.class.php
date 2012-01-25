@@ -61,6 +61,19 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     static $import_fields_course_update = array('shortname');
     static $import_fields_course_delete = array('shortname');
 
+    static $import_fields_enrolment_create = array(array('username',
+                                                         'email',
+                                                         'idnumber'),
+                                                   'context',
+                                                   'instance',
+                                                   'role');
+    static $import_fields_enrolment_add = array(array('username',
+                                                      'email',
+                                                      'idnumber'),
+                                                'context',
+                                                'instance',
+                                                'role');
+
     /**
      * Hook run after a file header is read
      *
@@ -1031,5 +1044,99 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         $method = "enrolment_{$action}";
         return $this->$method($record);
+    }
+
+    /**
+     * Create an enrolment
+     *
+     * @param object $record One record of import data
+     * @return boolean true on success, otherwise false
+     */
+    function enrolment_create($record) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //data checking
+        if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {
+            return false;
+        }
+
+        //find existing user record
+        $params = array();
+        if (isset($record->username)) {
+            $params['username'] = $record->username;
+        }
+        if (isset($record->email)) {
+            $params['email'] = $record->email;
+        }
+        if (isset($record->idnumber)) {
+            $params['idnumber'] = $record->idnumber;
+        }
+        if (!$userid = $DB->get_field('user', 'id', $params)) {
+            return false;
+        }
+
+        //find existing course
+        if (!$courseid = $DB->get_field('course', 'id', array('shortname' => $record->instance))) {
+            return false;
+        }
+
+        //currently on supporting course context level
+        if ($record->context != 'course') {
+            return false;
+        }
+
+        //obtain the course context instance
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+
+        //make sure the role is assignable at the course context level
+        if (!$DB->record_exists('role_context_levels', array('roleid' => $roleid,
+                                                             'contextlevel' => CONTEXT_COURSE))) {
+            return false;
+        }
+
+        //note: this seems redundant but will be useful for error messages later
+        $params = array('roleid' => $roleid,
+                        'contextid' => $context->id,
+                        'userid' => $userid,
+                        'component' => '',
+                        'itemid' => 0);
+        $role_assignment_exists = $DB->record_exists('role_assignments', $params);
+
+        //todo: add some sort of configuration for this?
+        if ($record->role == 'student') {
+            //set enrolment start time to the course start date
+            $timestart = $DB->get_field('course', 'startdate', array('id' => $courseid));
+
+            if ($role_assignment_exists) {
+                //role assignment already exists, so just enrol the user
+                enrol_try_internal_enrol($courseid, $userid, null, $timestart);
+            } else if (!is_enrolled($context, $userid)) {
+                //role assignment does not exist, so enrol and assign role
+                enrol_try_internal_enrol($courseid, $userid, $roleid, $timestart);
+            } else {
+                return false;
+            }
+        } else {
+            if ($role_assignment_exists) {
+                //role assignment already exists, so this action serves no purpose
+                return false;
+            }
+
+            role_assign($roleid, $userid, $context->id);
+        }
+
+        return true;
+    }
+
+    /**
+     * Add an enrolment
+     *
+     * @param object $record One record of import data
+     * @return boolean true on success, otherwise false
+     */
+    function enrolment_add($record) {
+        //note: this is only here due to legacy 1.9 weirdness
+        return $this->enrolment_create($record);
     }
 }
