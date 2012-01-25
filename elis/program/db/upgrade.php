@@ -307,6 +307,14 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2011121500, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2011121501) {
+        $table = new xmldb_table('crlm_notification_log');
+        $index = new xmldb_index('event_inst_fuser_ix');
+        $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('fromuserid', 'instance', 'event'));
+
+        $dbman->add_index($table, $index);
+    }
+
     return $result;
 }
 
