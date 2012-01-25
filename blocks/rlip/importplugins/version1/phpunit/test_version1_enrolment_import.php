@@ -70,7 +70,10 @@ class version1EnrolmentImportTest extends elis_database_test {
                      'user' => 'moodle',
                      'role' => 'moodle',
                      'role_context_levels' => 'moodle',
-                     'user_enrolments' => 'moodle');
+                     'user_enrolments' => 'moodle',
+                     'groups' => 'moodle',
+                     'groups_members' => 'moodle',
+                     'user_lastaccess' => 'moodle');
     }
 
     /**
@@ -181,6 +184,16 @@ class version1EnrolmentImportTest extends elis_database_test {
     }
 
     /**
+     * Asserts, using PHPunit, that no course enrolments exist
+     */
+    private function assert_no_enrolments_exist() {
+        global $DB;
+
+        $exists = $DB->record_exists('user_enrolments', array());
+        $this->assertEquals($exists, false);
+    }
+
+    /**
      * Asserts, using PHPunit, that no role assignments exist
      */
     private function assert_no_role_assignments_exist() {
@@ -252,7 +265,7 @@ class version1EnrolmentImportTest extends elis_database_test {
     public function testVersion1ImportSupportsEnrolmentActions() {
         $supports = plugin_supports('rlipimport', 'version1', 'enrolment');
 
-        $this->assertEquals($supports, array('create', 'add'));
+        $this->assertEquals($supports, array('create', 'add', 'delete'));
     }
 
     /**
@@ -273,6 +286,19 @@ class version1EnrolmentImportTest extends elis_database_test {
      */
     public function testVersion1ImportSupportsEnrolmentAdd() {
         $supports = plugin_supports('rlipimport', 'version1', 'enrolment_add');
+        $required_fields = array(array('username', 'email', 'idnumber'),
+                                 'context',
+                                 'instance',
+                                 'role');
+
+        $this->assertEquals($supports, $required_fields);
+    }
+
+    /**
+     * Validate that the version 1 plugin supports the enrolment delete action
+     */
+    public function testVersion1ImportSupportsEnrolmentDelete() {
+        $supports = plugin_supports('rlipimport', 'version1', 'enrolment_delete');
         $required_fields = array(array('username', 'email', 'idnumber'),
                                  'context',
                                  'instance',
@@ -894,5 +920,743 @@ class version1EnrolmentImportTest extends elis_database_test {
         $params = array('timemodified' => $starttime);
         $exists = $DB->record_exists_select('role_assignments', $where, $params);
         $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete enrolments based on username,
+     * along with required non-user fields
+     */
+    public function testVersion1ImportDeletesEnrolmentBasedOnUsername() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course(); 
+        $this->create_test_user();
+        $this->run_core_enrolment_import($this->get_core_enrolment_data(), false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete enrolments based on email,
+     * along with required non-user fields
+     */
+    public function testVersion1ImportDeletesEnrolmentBasedOnEmail() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course(); 
+        $this->create_test_user(array('email' => 'rlipuser@rlipdomain.com'));
+        $this->run_core_enrolment_import($this->get_core_enrolment_data(), false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        unset($data['username']);
+        $data['email'] = 'rlipuser@rlipdomain.com';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete enrolments based on idnumber,
+     * along with required non-user fields
+     */
+    public function testVersion1ImportDeletesEnrolmentBasedOnIdnumber() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course(); 
+        $this->create_test_user(array('idnumber' => 'rlipidnumber'));
+        $this->run_core_enrolment_import($this->get_core_enrolment_data(), false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        unset($data['username']);
+        $data['idnumber'] = 'rlipidnumber';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete enrolments based on email,
+     * along with required non-user fields
+     */
+    public function testVersion1ImportDeletesEnrolmentBasedOnUsernameEmail() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course(); 
+        $this->create_test_user(array('email' => 'rlipuser@rlipdomain.com'));
+        $this->run_core_enrolment_import($this->get_core_enrolment_data(), false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete enrolments based on username
+     * and idnumber, along with required non-user fields
+     */
+    public function testVersion1ImportDeletesEnrolmentBasedOnUsernameIdnumber() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course(); 
+        $this->create_test_user(array('idnumber' => 'rlipidnumber'));
+        $this->run_core_enrolment_import($this->get_core_enrolment_data(), false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['idnumber'] = 'rlipidnumber';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete enrolments based on email
+     * and idnumber, along with required non-user fields
+     */
+    public function testVersion1ImportDeletesEnrolmentBasedOnEmailIdnumber() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course(); 
+        $this->create_test_user(array('email' => 'rlipuser@rlipdomain.com',
+                                      'idnumber' => 'rlipidnumber'));
+        $this->run_core_enrolment_import($this->get_core_enrolment_data(), false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        unset($data['username']);
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete enrolments based on username,
+     * email and idnumber, along with required non-user fields
+     */
+    public function testVersion1ImportDeletesEnrolmentBasedOnUsernameEmailIdnumber() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course(); 
+        $this->create_test_user(array('email' => 'rlipuser@rlipdomain.com',
+                                      'idnumber' => 'rlipidnumber'));
+        $this->run_core_enrolment_import($this->get_core_enrolment_data(), false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete an enrolment when there
+     * is no role assignment tied to it
+     */
+    public function testVersion1ImportDeletesEnrolment() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->create_test_role('Student', 'student', 'Student');
+
+        $this->run_core_enrolment_import(array('role' => 'student'));
+        $DB->delete_records('role_assignments');
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['role'] = 'student';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_enrolments_exist();
+    }
+    
+    /**
+     * Validate that the version 1 plugin can delete a role assignment when
+     * there is no enrolment tied to it
+     */
+    public function testVersion1ImportDeletesRoleAssignment() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->run_core_enrolment_import(array());
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete an enrolment and role
+     * assignment at the same time
+     */
+    public function testVersion1ImportDeletesEnrolmentAndRoleAssignment() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->create_test_role('Student', 'student', 'Student');
+
+        $this->run_core_enrolment_import(array('role' => 'student'));
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['role'] = 'student';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_enrolments_exist();
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete enrolments when the
+     * specified username is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithInvalidUsername() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course();
+        $this->create_test_user();
+        $data = $this->get_core_enrolment_data();
+        $this->run_core_enrolment_import($data, false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['username'] = 'bogususername';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete enrolments when the
+     * specified email is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithInvalidEmail() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course();
+        $this->create_test_user(array('email' => 'rlipuser@rlipdomain.com'));
+        $data = $this->get_core_enrolment_data();
+        $this->run_core_enrolment_import($data, false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        unset($data['username']);
+        $data['email'] = 'bogususer@bogusdomain.com';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete enrolments when the
+     * specified idnumber is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithInvalidIdnumber() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course();
+        $this->create_test_user(array('idnumber' => 'rlipidnumber'));
+        $data = $this->get_core_enrolment_data();
+        $this->run_core_enrolment_import($data, false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        unset($data['username']);
+        $data['idnumber'] = 'bogusidnumber';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete enrolments when the
+     * specified context is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithInvalidContext() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->run_core_enrolment_import(array());
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['context'] = 'boguscontext';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete enrolments when the
+     * specified instance is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithInvalidInstance() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->run_core_enrolment_import(array());
+
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['instance'] = 'bogusinstance';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete enrolments when the
+     * specified role is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithInvalidRole() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->run_core_enrolment_import(array());
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['role'] = 'bogusrole';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete an enrolment with the
+     * specified username if the specified email is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithValidUsernameInvalidEmail() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course();
+        $this->create_test_user(array('email' => 'rlipuser@rlipdomain.com'));
+        $data = $this->get_core_enrolment_data();
+        $this->run_core_enrolment_import($data, false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['email'] = 'bogususer@bogusdomain.com';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete an enrolment with the
+     * specified username if the specified idnumber is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithValidUsernameInvalidIdnumber() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course();
+        $this->create_test_user(array('idnumber' => 'rlipidnumber'));
+        $data = $this->get_core_enrolment_data();
+        $this->run_core_enrolment_import($data, false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['idnumber'] = 'bogusidnumber';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete an enrolment with the
+     * specified email if the specified username is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithValidEmailInvalidUsername() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course();
+        $this->create_test_user(array('email' => 'rlipuser@rlipdomain.com'));
+        $data = $this->get_core_enrolment_data();
+        $this->run_core_enrolment_import($data, false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['username'] = 'bogususername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete an enrolment with the
+     * specified email if the specified idnumber is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithValidEmailInvalidIdnumber() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course();
+        $this->create_test_user(array('email' => 'rlipuser@rlipdomain.com',
+                                      'idnumber' => 'rlipidnumber'));
+        $data = $this->get_core_enrolment_data();
+        $this->run_core_enrolment_import($data, false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        unset($data['username']);
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'bogusidnumber';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete an enrolment with the
+     * specified idnumber if the specified username is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithValidIdnumberInvalidUsername() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course();
+        $this->create_test_user(array('idnumber' => 'rlipidnumber'));
+        $data = $this->get_core_enrolment_data();
+        $this->run_core_enrolment_import($data, false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['username'] = 'bogususername';
+        $data['idnumber'] = 'rlipidnumber';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete an enrolment with the
+     * specified idnumber if the specified email is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentWithValidIdnumberInvalidEmail() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->create_test_role();
+        $this->create_test_course();
+        $this->create_test_user(array('idnumber' => 'rlipidnumber',
+                                      'email' => 'rlipuser@rlipdomain.com'));
+        $data = $this->get_core_enrolment_data();
+        $this->run_core_enrolment_import($data, false);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        unset($data['username']);
+        $data['idnumber'] = 'rlipidnumber';
+        $data['email'] = 'bogususer@bogusdomain.com';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that unassigning a role does not remove an enrolment for roles
+     * other than the student role
+     */
+    public function testVersion1ImportDoesNotDeleteEnrolmentForNonStudentRole() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->run_core_enrolment_import(array());
+
+        $this->assertEquals($DB->count_records('user_enrolments'), 0);
+
+        $this->create_test_role('Student', 'student', 'Student');
+
+        //set up our second enrolment
+        $data = $this->get_core_enrolment_data();
+        $data['role'] = 'student'; 
+        $this->run_core_enrolment_import($data, false);
+
+        $this->assertEquals($DB->count_records('user_enrolments'), 1);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('user_enrolments'), 1);
+    }
+
+    /**
+     * Validate that the version 1 import plugin handles deletion of
+     * non-existent enrolments gracefully
+     */
+    public function testVersion1ImportPreventsNonexistentRoleAssignmentDeletion() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->run_core_enrolment_import(array());
+
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+
+        $this->create_test_role('secondname', 'secondshortname', 'seconddescription');
+        $this->create_test_course(array('shortname' => 'secondshortname'));
+        $this->create_test_user(array('username' => 'secondusername'));
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['username'] = 'secondusername';
+        $data['instance'] = 'secondshortname';
+        $data['role'] = 'secondshortname';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+    }
+
+    /**
+     * Validate that an error with the role assignment information prevents
+     * course enrolment from being deleted
+     */
+    public function testVersion1ImportRoleErrorPreventsEnrolmentDeletion() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //set up our enrolment
+        $this->create_test_role('Student', 'student', 'Student');
+        $this->create_test_course();
+        $this->create_test_user();
+        $data = $this->get_core_enrolment_data();
+        $data['role'] = 'student';
+        $this->run_core_enrolment_import($data, false);
+
+        $this->assertEquals($DB->count_records('user_enrolments'), 1);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['role'] = 'bogusshortname';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('user_enrolments'), 1);
+    }
+
+    /**
+     * Validate that deleting role assignments is specific to the role
+     * specified (i.e. does not delete the user's other role assignments
+     * on that same entity)
+     */
+    public function testVersion1ImportEnrolmentDeletionIsRoleSpecific() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //set up our enrolment
+        $this->run_core_enrolment_import(array());
+
+        $this->create_test_role('secondname', 'secondshortname', 'seconddescription');
+
+        //set up a second enrolment
+        $data = $this->get_core_enrolment_data();
+        $data['role'] = 'secondshortname';
+        $this->run_core_enrolment_import($data, false);
+
+        $this->assertEquals($DB->count_records('role_assignments'), 2);
+
+        //perform the delete action
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
     }
 }

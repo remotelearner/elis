@@ -73,6 +73,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                 'context',
                                                 'instance',
                                                 'role');
+    static $import_fields_enrolment_delete = array(array('username',
+                                                        'email',
+                                                        'idnumber'),
+                                                  'context',
+                                                  'instance',
+                                                  'role');
 
     /**
      * Hook run after a file header is read
@@ -1081,7 +1087,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //currently on supporting course context level
+        //currently only supporting course context level
         if ($record->context != 'course') {
             return false;
         }
@@ -1138,5 +1144,72 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     function enrolment_add($record) {
         //note: this is only here due to legacy 1.9 weirdness
         return $this->enrolment_create($record);
+    }
+
+    function enrolment_delete($record) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //data checking
+        if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {
+            return false;
+        }
+
+        //find existing user record
+        $params = array();
+        if (isset($record->username)) {
+            $params['username'] = $record->username;
+        }
+        if (isset($record->email)) {
+            $params['email'] = $record->email;
+        }
+        if (isset($record->idnumber)) {
+            $params['idnumber'] = $record->idnumber;
+        }
+        if (!$userid = $DB->get_field('user', 'id', $params)) {
+            return false;
+        }
+
+        //find existing course
+        if (!$courseid = $DB->get_field('course', 'id', array('shortname' => $record->instance))) {
+            return false;
+        }
+
+        //currently only supporting course context level
+        if ($record->context != 'course') {
+            return false;
+        }
+
+        //obtain the course context instance
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+
+        //determine whether the role assignment and enrolment records exist
+        $role_assignment_exists = $DB->record_exists('role_assignments', array('roleid' => $roleid,
+                                                                               'contextid' => $context->id,
+                                                                               'userid' => $userid));
+        $enrolment_exists = is_enrolled($context, $userid);
+
+        //todo: add some sort of configuration for this?
+        if (!$role_assignment_exists && (!$enrolment_exists || $record->role != 'student')) {
+            //nothing to delete
+            return false;
+        }
+
+        if ($role_assignment_exists) {
+            //unassign role
+            role_unassign($roleid, $userid, $context->id);
+        }
+
+        //todo: add some sort of configuration for this?
+        if ($enrolment_exists && $record->role == 'student') {
+            //remove enrolment
+            if ($instance = $DB->get_record('enrol', array('enrol' => 'manual',
+                                                           'courseid' => $courseid))) {
+                $plugin = enrol_get_plugin('manual');
+                $plugin->unenrol_user($instance, $userid);
+            }
+        }
+
+        return true;
     }
 }

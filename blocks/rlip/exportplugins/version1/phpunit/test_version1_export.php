@@ -96,6 +96,7 @@ class version1ExportTest extends elis_database_test {
                      'grade_grades' => 'moodle',
                      'user' => 'moodle',
                      'course' => 'moodle',
+                     'course_categories' => 'moodle',
                      'grade_grades_history' => 'moodle',
                      'user_enrolments' => 'moodle',
                      'cohort_members' => 'moodle',
@@ -114,7 +115,8 @@ class version1ExportTest extends elis_database_test {
                      'role_names' => 'moodle',
                      'context' => 'moodle',
                      'events_queue' => 'moodle',
-                     'events_queue_handlers' => 'moodle'
+                     'events_queue_handlers' => 'moodle',
+                     'cache_flags' => 'moodle'
                      );
     }
 
@@ -127,6 +129,7 @@ class version1ExportTest extends elis_database_test {
 	    $dataset->addTable('grade_grades', dirname(__FILE__).'/phpunit_gradegrades.csv');
 	    $dataset->addTable('user', dirname(__FILE__).'/phpunit_user.csv');
 	    $dataset->addTable('course', dirname(__FILE__).'/phpunit_course.csv');
+	    $dataset->addTable('course_categories', dirname(__FILE__).'/phpunit_course_categories.csv');
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
