@@ -1109,6 +1109,43 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                         'itemid' => 0);
         $role_assignment_exists = $DB->record_exists('role_assignments', $params);
 
+        //track the group and grouping specified
+        $groupid = 0;
+        $groupingid = 0;
+
+        //duplicate group / grouping name checks and name validity checking
+        if (isset($record->group)) {
+            $count = $DB->count_records('groups', array('name' => $record->group,
+                                                        'courseid' => $courseid));
+            if ($count > 1) {
+                //ambiguous
+                return false;
+            } else if ($count == 0 && empty($CFG->bogus_rlip_creategroups)) {
+                //todo: use proper setting
+                //does not exist and not creating
+                return false;
+            } else {
+                //exact group exists
+                $groupid = groups_get_group_by_name($courseid, $record->group);
+            }
+
+            if (isset($record->grouping)) {
+                $count = $DB->count_records('groupings', array('name' => $record->grouping,
+                                                               'courseid' => $courseid));
+                if ($count > 1) {
+                    //ambiguous
+                    return false;
+                } else if ($count == 0 && empty($CFG->bogus_rlip_creategroups)) {
+                    //todo: use proper setting
+                    //does not exist and not creating
+                    return false;
+                } else {
+                    //exact grouping exists
+                    $groupingid = groups_get_grouping_by_name($courseid, $record->grouping);
+                }
+            }
+        }
+
         //todo: add some sort of configuration for this?
         if ($record->role == 'student') {
             //set enrolment start time to the course start date
@@ -1130,6 +1167,51 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
 
             role_assign($roleid, $userid, $context->id);
+        }
+
+        if (isset($record->group)) {
+            //process specified group
+            require_once($CFG->dirroot.'/lib/grouplib.php');
+            require_once($CFG->dirroot.'/group/lib.php');
+
+            if ($groupid == 0) {
+                //need to create the group
+                $data = new stdClass;
+                $data->courseid = $courseid;
+                $data->name = $record->group;
+    
+                $groupid = groups_create_group($data);
+            }
+
+            if (groups_is_member($groupid, $userid)) {
+                //error handling
+            } else {
+                //try to assign the user to the group
+                if (!groups_add_member($groupid, $userid)) {
+                    //error handling - already a member
+                }
+            }
+
+            if (isset($record->grouping)) {
+                //process the specified grouping
+
+                if ($groupingid == 0) {
+                    //need to create the grouping
+                    $data = new stdClass;
+                    $data->courseid = $courseid;
+                    $data->name = $record->grouping;
+    
+                    $groupingid = groups_create_grouping($data);
+                }
+
+                //assign the group to the grouping
+                if ($DB->record_exists('groupings_groups', array('groupingid' => $groupingid,
+                                                                 'groupid' => $groupid))) {
+                    //error handling
+                } else {
+                    groups_assign_grouping($groupingid, $groupid);
+                }
+            }
         }
 
         return true;

@@ -73,7 +73,10 @@ class version1EnrolmentImportTest extends elis_database_test {
                      'user_enrolments' => 'moodle',
                      'groups' => 'moodle',
                      'groups_members' => 'moodle',
-                     'user_lastaccess' => 'moodle');
+                     'groupings' => 'moodle',
+                     'groupings_groups' => 'moodle',
+                     'user_lastaccess' => 'moodle',
+                     'config' => 'moodle');
     }
 
     /**
@@ -181,6 +184,42 @@ class version1EnrolmentImportTest extends elis_database_test {
             unset($record->id);
             $DB->insert_record('user', $record);
         }
+    }
+
+    /**
+     * Creates a group for testing purposes
+     *
+     * @param int $courseid The id of the course where the group should live
+     * @param string $name The name of the group to create
+     * @return int The id of the group created
+     */
+    private function create_test_group($courseid, $name = 'rlipgroup') {
+        global $CFG;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        $data = new stdClass;
+        $data->courseid = $courseid;
+        $data->name = $name;
+
+        return groups_create_group($data);
+    }
+
+    /**
+     * Creates a grouping for testing purposes
+     *
+     * @param int $courseid The id of the course where the grouping should live
+     * @param string $name The name of the grouping to create
+     * @return int The id of the grouping created
+     */
+    private function create_test_grouping($courseid, $name = 'rlipgrouping') {
+        global $CFG;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        $data = new stdClass;
+        $data->courseid = $courseid;
+        $data->name = $name;
+
+        return groups_create_grouping($data);
     }
 
     /**
@@ -875,6 +914,665 @@ class version1EnrolmentImportTest extends elis_database_test {
         $this->run_core_enrolment_import(array('role' => 'bogusshortname'));
 
         $this->assertEquals($DB->count_records('user_enrolments'), 0);
+    }
+
+    /**
+     * Validate that the version 1 plugin can create a group and assign a
+     * user to it
+     */
+    public function testVersion1ImportAssignsUserToCreatedGroup() {
+        global $DB;
+
+        //enable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 1);
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        $this->create_test_role('Student', 'student', 'Student');
+        $this->create_test_course();
+        $this->create_test_user();
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['group'] = 'rlipgroup';
+        $data['role'] = 'student';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_record_exists('groups', array('name' => 'rlipgroup'));
+
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $groupid = $DB->get_field('groups', 'id', array('name' => 'rlipgroup'));
+
+        $this->assert_record_exists('groups_members', array('userid' => $userid,
+                                                            'groupid' => $groupid));
+    }
+
+    /**
+     * Validate that the version 1 plugin can assign a user to an existing
+     * group
+     */
+    public function testVersion1ImportAssignsUserToExistingGroup() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        $this->create_test_role('Student', 'student', 'Student');
+        $courseid = $this->create_test_course();
+        $userid = $this->create_test_user();
+
+        //set up the "pre-existing" group
+        $groupid = $this->create_test_group($courseid);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['group'] = 'rlipgroup';
+        $data['role'] = 'student';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('groups'), 1);
+        $this->assert_record_exists('groups_members', array('userid' => $userid,
+                                                            'groupid' => $groupid));
+    }
+
+    /**
+     * Validate that the version 1 plugin can create a group and a grouping,
+     * and assign the group to the grouping
+     */
+    public function testVersion1ImportAssignsGreatedGroupToCreatedGrouping() {
+        global $DB;
+
+        //enable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 1);
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //run the import
+        $this->run_core_enrolment_import(array('group' => 'rlipgroup',
+                                               'grouping' => 'rlipgrouping'));
+
+        //compare data
+        $this->assert_record_exists('groups', array('name' => 'rlipgroup'));
+        $this->assert_record_exists('groupings', array('name' => 'rlipgrouping'));
+
+        $groupid = $DB->get_field('groups', 'id', array('name' => 'rlipgroup'));
+        $groupingid = $DB->get_field('groupings', 'id', array('name' => 'rlipgrouping'));
+
+        $this->assert_record_exists('groupings_groups', array('groupid' => $groupid,
+                                                              'groupingid' => $groupingid));
+    }
+
+    /**
+     * Validate that the version 1 plugin can create a grouping and assign an
+     * existing group to it
+     */
+    public function testVersion1ImportAssignsExistingGroupToCreatedGrouping() {
+        global $DB;
+
+        //enable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 1);
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $this->create_test_role();
+        $courseid = $this->create_test_course();
+        $this->create_test_user();
+
+        //set up the "pre-existing" group
+        $groupid = $this->create_test_group($courseid);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $groupingid = $DB->get_field('groupings', 'id', array('name' => 'rlipgrouping'));
+
+        $this->assertEquals($DB->count_records('groups'), 1);
+        $this->assert_record_exists('groupings_groups', array('groupid' => $groupid,
+                                                              'groupingid' => $groupingid));
+    }
+
+    /**
+     * Validate that the version 1 plugin can create a group and assign it
+     * to an existing grouping
+     */
+    public function testVersion1ImportAssignsCreatedGroupToExistingGrouping() {
+        global $DB;
+
+        //enable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 1);
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $this->create_test_role();
+        $courseid = $this->create_test_course();
+        $this->create_test_user();
+
+        //set up the "pre-existing" grouping
+        $groupingid = $this->create_test_grouping($courseid);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $groupid = $DB->get_field('groups', 'id', array('name' => 'rlipgroup'));
+
+        $this->assertEquals($DB->count_records('groupings'), 1);
+        $this->assert_record_exists('groupings_groups', array('groupid' => $groupid,
+                                                              'groupingid' => $groupingid));
+    }
+
+    /**
+     * Validate that the version 1 plugin can assign an existing group to an
+     * existing grouping
+     */
+    public function testVersion1ImportAssignsExistingGroupToExistingGrouping() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $this->create_test_role();
+        $courseid = $this->create_test_course();
+        $this->create_test_user();
+
+        //set up the "pre-existing" group
+        $groupid = $this->create_test_group($courseid);
+
+        //set up the "pre-existing" grouping 
+        $groupingid = $this->create_test_grouping($courseid);;
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('groups'), 1);
+        $this->assertEquals($DB->count_records('groupings'), 1);
+        $this->assert_record_exists('groupings_groups', array('groupid' => $groupid,
+                                                              'groupingid' => $groupingid));
+    }
+
+    /**
+     * Validate that a role-related error prevents processing of
+     * groups and groupings information
+     */
+    public function testVersion1ImportRoleErrorPreventsGroups() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run the import
+        $this->run_core_enrolment_import(array('role' => 'bogusshortname',
+                                               'group' => 'rlipgroup',
+                                               'grouping' => 'rlipgrouping'));
+
+        //compare data
+        $this->assertEquals($DB->count_records('groups'), 0);
+        $this->assertEquals($DB->count_records('groupings'), 0);
+    }
+
+    /**
+     * Validate that processing a duplicate role assignment prevents processing
+     * of groups and groupings information
+     */
+    public function testVersion1ImportDuplicateRoleAssignmentPreventsGroups() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run the import
+        $this->run_core_enrolment_import(array());
+
+        $data = $this->get_core_enrolment_data();
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('groups'), 0);
+        $this->assertEquals($DB->count_records('groupings'), 0);
+    }
+
+    /**
+     * Validate that specifying an ambiguous group name prevents processing of
+     * enrolment information
+     */
+    public function testVersion1ImportAmbiguousGroupNamePreventsEnrolment() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        $this->create_test_role();
+        $courseid = $this->create_test_course();
+        $this->create_test_user();
+
+        //set up two "pre-existing" groups with the same name in our course
+        $this->create_test_group($courseid);
+        $this->create_test_group($courseid);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_enrolments_exist();
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that specifying a non-existent group name prevents processing
+     * of enrolment information when not creating groups
+     */
+    public function testVersion1ImportInvalidGroupNamePreventsEnrolment() {
+        //disable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 0);
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //run the import
+        $this->run_core_enrolment_import(array('group' => 'rlipgroup'));
+
+        //compare data
+        $this->assert_no_enrolments_exist();
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that specifying the name of a group that exists in another
+     * course but not the current course does not prevent group creation
+     */
+    public function testVersion1ImportAllowsDuplicateGroupNamesAcrossCourses() {
+        global $DB;
+
+        //enable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 1);
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        $this->create_test_role('student', 'Student', 'student');
+        $courseid = $this->create_test_course();
+        $secondcourseid = $this->create_test_course(array('shortname' => 'secondshortname'));
+        $userid = $this->create_test_user();
+
+        //set up the "pre-existing" group in another course
+        $this->create_test_group($secondcourseid);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['role'] = 'student';
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('groups'), 2);
+        $this->assert_record_exists('groups', array('courseid' => $courseid,
+                                                    'name' => 'rlipgroup'));
+        $groupid = $DB->get_field('groups', 'id', array('courseid' => $courseid,
+                                                        'name' => 'rlipgroup'));
+
+        $this->assert_record_exists('groups_members', array('groupid' => $groupid,
+                                                            'userid' => $userid));
+    }
+
+    /**
+     * Vaidate that specifying the name of a group that exists multiple times
+     * in another course but does not exist in the current course does not
+     * prevent group creation
+     */
+    public function testVersion1ImportAllowsDuplicateGroupNamesInAnotherCourse() {
+        global $DB;
+
+        //enable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 1);
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        $this->create_test_role('student', 'Student', 'student');
+        $courseid = $this->create_test_course();
+        $secondcourseid = $this->create_test_course(array('shortname' => 'secondshortname'));
+        $userid = $this->create_test_user();
+
+        //set up two "pre-existing" groups with the same name in another course
+        $this->create_test_group($secondcourseid);
+        $this->create_test_group($secondcourseid);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['role'] = 'student';
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('groups'), 3);
+        $this->assert_record_exists('groups', array('courseid' => $courseid,
+                                                    'name' => 'rlipgroup'));
+        $groupid = $DB->get_field('groups', 'id', array('courseid' => $courseid,
+                                                        'name' => 'rlipgroup'));
+
+        $this->assert_record_exists('groups_members', array('groupid' => $groupid,
+                                                            'userid' => $userid));
+    }
+
+    /**
+     * Validate that specifying an ambiguous grouping name prevents processing
+     * of enrolment information
+     */
+    public function testVersion1ImportAmbiguousGroupingNamePreventsEnrolments() {
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        $this->create_test_role();
+        $courseid = $this->create_test_course();
+        $this->create_test_user();
+
+        //set up two "pre-existing" groupings in our course
+        $this->create_test_grouping($courseid);
+        $this->create_test_grouping($courseid);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_enrolments_exist();
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that specifying a non-existent grouping name prevents
+     * processing of enrolment information when not creating groups
+     */
+    public function testVersion1ImportInvalidGroupingNamePreventsEnrolment() {
+        //disable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 0);
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        $this->create_test_role();
+        $courseid = $this->create_test_course();
+        $this->create_test_user();
+
+        //set up the "pre-existing" grouping
+        $this->create_test_grouping($courseid);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_no_enrolments_exist();
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that specifying the name of a grouping that exists in another
+     * course but not the current course does not prevent grouping creation
+     */
+    public function testVersion1ImportAllowsDuplicateGroupingNamesAcrossCourses() {
+        global $DB;
+
+        //enable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 1);
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $this->create_test_role('student', 'Student', 'student');
+        $courseid = $this->create_test_course();
+        $secondcourseid = $this->create_test_course(array('shortname' => 'secondshortname'));
+        $this->create_test_user();
+
+        //set up the "pre-existing" grouping in another course
+        $this->create_test_grouping($secondcourseid);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['role'] = 'student';
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('groupings'), 2);
+        $this->assert_record_exists('groupings', array('courseid' => $courseid,
+                                                       'name' => 'rlipgrouping'));
+        $groupid = $DB->get_field('groups', 'id', array('courseid' => $courseid,
+                                                        'name' => 'rlipgroup'));
+        $groupingid = $DB->get_field('groupings', 'id', array('courseid' => $courseid,
+                                                              'name' => 'rlipgrouping'));
+
+        $this->assert_record_exists('groupings_groups', array('groupid' => $groupid,
+                                                              'groupingid' => $groupingid));
+    }
+
+    /**
+     * Vaidate that specifying the name of a grouping that exists multiple
+     * times in another course but does not exist in the current course does
+     * not prevent grouping creation
+     */
+    public function testVersion1ImportAllowsDuplicateGroupingNamesInAnotherCourse() {
+        global $DB;
+
+        //enable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 1);
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $this->create_test_role('student', 'Student', 'student');
+        $courseid = $this->create_test_course();
+        $secondcourseid = $this->create_test_course(array('shortname' => 'secondshortname'));
+        $this->create_test_user();
+
+        //set up two "pre-existing" groupings in another course
+        $this->create_test_grouping($secondcourseid);
+        $this->create_test_grouping($secondcourseid);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['role'] = 'student';
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('groupings'), 3);
+        $this->assert_record_exists('groupings', array('courseid' => $courseid,
+                                                       'name' => 'rlipgrouping'));
+        $groupid = $DB->get_field('groups', 'id', array('courseid' => $courseid,
+                                                        'name' => 'rlipgroup'));
+        $groupingid = $DB->get_field('groupings', 'id', array('courseid' => $courseid,
+                                                              'name' => 'rlipgrouping'));
+
+        $this->assert_record_exists('groupings_groups', array('groupid' => $groupid,
+                                                              'groupingid' => $groupingid));
+    }
+
+    /**
+     * Validate that the import prevents assigning a user to the same group
+     * twice
+     */
+    public function testVersion1ImportPreventsDuplicateUserGroupAssignments() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        $roleid = $this->create_test_role('student', 'Student', 'student');
+        $courseid = $this->create_test_course();
+        $userid = $this->create_test_user();
+
+        //enrol the user in the course
+        enrol_try_internal_enrol($courseid, $userid, $roleid, 0);
+
+        //set up the "pre-existing" group
+        $groupid = $this->create_test_group($courseid);
+
+        //add the user to the group
+        groups_add_member($groupid, $userid);
+
+        //validate setup
+        $this->assertEquals($DB->count_records('groups_members'), 1);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['role'] = 'student';
+        $data['group'] = 'rlipgroup';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('groups_members'), 1);
+    }
+
+    /**
+     * Validate that the import prevents assigning a user to the same grouping
+     * twice
+     */
+    public function testVersion1ImportPreventsDuplicateGroupGroupingAssignments() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $this->create_test_role();
+        $courseid = $this->create_test_course();
+        $this->create_test_user();
+
+        //set up the "pre-existing" group
+        $groupid = $this->create_test_group($courseid);
+        //set up the "pre-existing" grouping
+        $groupingid = $this->create_test_grouping($courseid);
+
+        //assign the group to the grouping
+        groups_assign_grouping($groupingid, $groupid);
+
+        //validate setup
+        $this->assertEquals($DB->count_records('groupings_groups'), 1);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['group'] = 'rlipgroup';
+        $data['grouping'] = 'rlipgrouping';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assertEquals($DB->count_records('groupings_groups'), 1);
+    }
+
+    /**
+     * Validate that users must be enrolled in a course before they are
+     * assigned to a group within it
+     */
+    public function testVersion1ImportPreventsUnenroledUserGroupAssignments() {
+        global $DB;
+
+        //enable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 1);
+
+        //setup
+        $this->init_contexts_and_site_course();
+        $this->create_guest_user();
+
+        //run the import
+        $this->run_core_enrolment_import(array('group' => 'rlipgroup'));
+
+        //compare data
+        $this->assertEquals($DB->count_records('groups'), 1);
+        $this->assertEquals($DB->count_records('groups_members'), 0);
+    }
+
+    /**
+     * Validate that groups are not created when the required setting is not
+     * enabled
+     */
+    public function testVersion1ImportOnlyCreatesGroupWithSettingEnabled() {
+        global $DB;
+
+        //disable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 0);
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run the import
+        $this->run_core_enrolment_import(array('group' => 'rlipgroup'));
+
+        //compare data
+        $this->assertEquals($DB->count_records('groups'), 0);
+    }
+
+    /**
+     * Validate that groupings are not created when the required setting is not
+     * enabled
+     */
+    public function testVersion1ImportOnlyCreatesGroupingWithSettingEnabled() {
+        global $DB;
+
+        //disable group / grouping creation
+        //todo: use proper setting
+        set_config('bogus_rlip_creategroups', 0);
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run the import
+        $this->run_core_enrolment_import(array('group' => 'rlipgroup',
+                                               'grouping' => 'rlipgrouping'));
+
+        //compare data
+        $this->assertEquals($DB->count_records('groupings'), 0);
     }
 
     /**
