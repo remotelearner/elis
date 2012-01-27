@@ -74,6 +74,106 @@ class rlip_importprovider_mockcourse extends rlip_importprovider {
 }
 
 /**
+ * Overlay database that allows for the handling of temporary tables
+ */
+class overlay_temp_database extends overlay_database {
+
+    /**
+     * Do NOT use in code, to be used by database_manager only!
+     * @param string $sql query
+     * @return bool true
+     * @throws dml_exception if error
+     */
+    public function change_database_structure($sql) {
+        if (strpos($sql, 'CREATE TEMPORARY TABLE ') === 0) {
+            //creating a temporary table, so make it an overlay table
+
+            //find the table name
+            $start_pos = strlen('CREATE TEMPORARY TABLE ');
+            $length = strpos($sql, '(') - $start_pos;
+            $tablename = trim(substr($sql, $start_pos, $length));
+            //don't use prefix when storing
+            $tablename = substr($tablename, strlen($this->overlayprefix));
+
+            //set it up as an overlay table
+            $this->overlaytables[$tablename] = 'moodle';
+            $this->pattern = '/{('.implode('|', array_keys($this->overlaytables)).')}/';
+        }
+
+        // FIXME: or should we just do nothing?
+        return $this->basedb->change_database_structure($sql);
+    }
+
+    /**
+     * Returns detailed information about columns in table. This information is cached internally.
+     * @param string $table name
+     * @param bool $usecache
+     * @return array of database_column_info objects indexed with column names
+     */
+    public function get_columns($table, $usecache=true) {
+        //determine if this is an overlay table
+        $is_overlay_table = array_key_exists($table, $this->overlaytables);
+
+        if ($is_overlay_table) {
+            //temporarily set the prefix to the overlay prefix
+            $cacheprefix = $this->basedb->prefix;
+            $this->basedb->prefix = $this->overlayprefix; // HACK!!!
+        }
+
+        $result = $this->basedb->get_columns($table, $usecache);
+
+        if ($is_overlay_table) {
+            //restore proper prefix
+            $this->basedb->prefix = $cacheprefix;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Clean up the temporary tables.  You'd think that if this method was
+     * called dispose, then the cleanup would happen automatically, but it
+     * doesn't.
+     */
+    public function cleanup() {
+        $manager = $this->get_manager();
+        foreach ($this->overlaytables as $tablename => $component) {
+            $xmldb_file = $this->xmldbfiles[$component];
+            $structure = $xmldb_file->getStructure();
+            $table = $structure->getTable($tablename);
+            // FIXME: when http://bugs.mysql.com/bug.php?id=10327 gets fixed,
+            // we can switch this back to drop_temp_table
+            if ($table === null) {
+                //most likely a temporary table
+                try {
+                    //attempt to drop the temporary table
+                    $table = new xmldb_table($tablename);
+                    $manager->drop_temp_table($table);
+                } catch (Exception $e) {
+                    //temporary table was already dropped
+                }
+            } else {
+                //structure was defined in xml, so drop normal table
+                $manager->drop_table($table);
+            }
+        }
+    }
+
+    /**
+     * Empty out all the overlay tables.
+     */
+    public function reset_overlay_tables() {
+        foreach ($this->overlaytables as $tablename => $component) {
+            try {
+                $this->delete_records($tablename);
+            } catch (Exception $e) {
+                //temporary table was already dropped
+            }
+        }
+    }
+}
+
+/**
  * Class for version 1 course import correctness
  */
 class version1CourseImportTest extends elis_database_test {
@@ -143,8 +243,19 @@ class version1CourseImportTest extends elis_database_test {
                      'rating' => 'moodle',
                      'user_preferences' => 'moodle',
                      'question_hints' => 'moodle',
-                     'log' => 'moodle'
-                     );
+                     'backup_controllers' => 'moodle',
+                     'log' => 'moodle');
+    }
+
+    /**
+     * This method is called before the first test of this test class is run.
+     */
+    public static function setUpBeforeClass() {
+        // called before each test function
+        global $DB;
+        self::$origdb = $DB;
+        //use our custom overlay database type that supports temporary tables
+        self::$overlaydb = new overlay_temp_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
     }
 
     /**
@@ -197,13 +308,14 @@ class version1CourseImportTest extends elis_database_test {
     /**
      * Helper function that creates a test category
      *
+     * @param string A name to set for the category
      * @return string The name of the created category 
      */
-    private function create_test_category() {
+    private function create_test_category($name = 'testcategory') {
         global $DB;
 
         $category = new stdClass;
-        $category->name = 'testcategory';
+        $category->name = $name;
         $category->id = $DB->insert_record('course_categories', $category);
 
         return $category->name;
@@ -1624,6 +1736,206 @@ class version1CourseImportTest extends elis_database_test {
                       'password' => 'password');
         $this->run_core_course_import($data, false);
         $this->assert_record_exists('course', $expected);
+    }
+
+    /**
+     * Validate that the course rollover via link / template sets up the right
+     * data
+     */
+    public function testVersion1ImportRolloverSetsCorrectCourseData() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/course/lib.php');
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $prefix = self::$origdb->get_prefix();
+        $DB->execute("INSERT INTO {user}
+                      SELECT * FROM
+                      {$prefix}user");
+
+        //create a test category
+        $category = $this->create_test_category();
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => $category));
+
+        //create a test course
+        $record = new stdClass;
+        $record->category = $categoryid;
+        $record->shortname = 'rliptemplateshortname';
+        $record->fullname = 'rliptemplatefullname';
+        $record->id = $DB->insert_record('course', $record);
+        //make sure we have a section to work with
+        get_course_section(1, $record->id);
+
+        //create a test forum instance
+        $forum = new stdClass;
+        $forum->course = $record->id;
+        $forum->type = 'news';
+        $forum->name = 'rlipforum';
+        $forum->intro = 'rlipintro';
+        $forum->id = $DB->insert_record('forum', $forum);
+
+        //add it as a course module
+        $forum->module = $DB->get_field('modules', 'id', array('name' => 'forum'));
+        $forum->instance = $forum->id;
+        $forum->section = 1;
+        $cmid = add_course_module($forum);
+
+        //run the import
+        $data = $this->get_core_course_data($category);
+        $data['link'] = 'rliptemplateshortname';
+        $this->run_core_course_import($data, false);
+
+        //validate the number of courses
+        $this->assertEquals($DB->count_records('course'), 3);
+
+        //validate the course course data, as well as category and sortorder
+        $sortorder = $DB->get_field('course', 'sortorder', array('shortname' => 'rliptemplateshortname'));
+        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+                                                    'fullname' => 'rlipfullname',
+                                                    'category' => $categoryid,
+                                                    'sortorder' => $sortorder - 1
+                                                    ));
+
+        //validate that the category is updated with the correct number of courses
+        $this->assert_record_exists('course_categories', array('id' => $categoryid,
+                                                               'coursecount' => 2));
+
+        //validate that the correct number of forum instances exist
+        $this->assertEquals($DB->count_records('forum'), 2);
+
+        //validate the specific forum / course module setup within the new
+        //course
+        $sql = "SELECT *
+                FROM {modules} m
+                JOIN {course_modules} cm
+                  ON m.id = cm.module
+                JOIN {forum} f
+                  ON cm.instance = f.id
+                JOIN {course} c
+                  ON cm.course = c.id
+                  AND f.course = c.id
+                JOIN {course_sections} cs
+                  ON c.id = cs.course
+                  AND cm.section = cs.id
+                WHERE m.name = 'forum'
+                  AND f.type = 'news'
+                  AND f.name = 'rlipforum'
+                  AND f.intro = 'rlipintro'
+                  AND c.shortname = 'rlipshortname'
+                  AND cs.section = 1";
+
+        $exists = $DB->record_exists_sql($sql);
+        $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that we can roll over into a different category
+     */
+    public function testVersion1ImportRolloverSupportsSettingCategory() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $prefix = self::$origdb->get_prefix();
+        $DB->execute("INSERT INTO {user}
+                      SELECT * FROM
+                      {$prefix}user");
+
+        //create a test category
+        $category = $this->create_test_category();
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => $category));
+
+        //create a test course
+        $record = new stdClass;
+        $record->category = $categoryid;
+        $record->shortname = 'rliptemplateshortname';
+        $record->fullname = 'rliptemplatefullname';
+        $record->id = $DB->insert_record('course', $record);
+
+        //create a second test category
+        $category = $this->create_test_category('rlipsecondcategory');
+        $secondcategoryid = $DB->get_field('course_categories', 'id', array('name' => $category));
+
+        //run the import
+        $data = $this->get_core_course_data($category);
+        $data['link'] = 'rliptemplateshortname';
+        $this->run_core_course_import($data, false);
+
+        //validate that the courses are each in their respective categories
+        $this->assert_record_exists('course', array('shortname' => 'rliptemplateshortname',
+                                                    'category' => $categoryid));
+        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+                                                    'category' => $secondcategoryid));
+    }
+
+    /**
+     * Validate that the course rollover via link / template does not include
+     * user data
+     */
+    public function testVersion1ImportRolloverExcludesUsers() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/lib.php');
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //create a test category
+        $category = $this->create_test_category();
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => $category));
+
+        //create a test user
+        $user = new stdClass;
+        $user->username = 'rlipusername';
+        $user->password = 'Password!0';
+        $user->id = user_create_user($user);
+
+        //create a test template course
+        $record = new stdClass;
+        $record->category = $categoryid;
+        $record->shortname = 'rliptemplateshortname';
+        $record->fullname = 'rliptemplatefullname';
+        $record = $course = create_course($record);
+
+        //create a test role
+        $roleid = create_role('testrole', 'testrole', 'testrole');
+        set_role_contextlevels($roleid, array(CONTEXT_COURSE));
+
+        //enrol the test user into the template course, assigning them the test
+        //role
+        enrol_try_internal_enrol($record->id, $user->id, $roleid);
+
+        //validate setup
+        $this->assertEquals($DB->count_records('user_enrolments'), 1);
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+
+        //run the import
+        $this->run_core_course_import(array('link' => 'rliptemplateshortname'));
+
+        //validate that no role assignments or enrolments were created
+        $this->assertEquals($DB->count_records('user_enrolments'), 1);
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+    }
+
+    /**
+     * Validate that invalid template / link values can't be set on course create
+     */
+    public function testVersion1ImportPreventsInvalidLinkOnCreate() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //validate setup
+        $this->assertEquals($DB->count_records('course'), 1);
+
+        //run the import
+        $this->run_core_course_import(array('link' => 'bogusshortname'));
+
+        //validate that no new course was created
+        $this->assertEquals($DB->count_records('course'), 1);
     }
 
     /**

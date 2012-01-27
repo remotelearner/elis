@@ -587,7 +587,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                 'idnumber', 'summary', 'format', 'numsections',
                                 'startdate', 'newsitems', 'showgrades', 'showreports',
                                 'maxbytes', 'guest', 'password', 'visible',
-                                'lang', 'category');
+                                'lang', 'category', 'link');
         foreach ($record as $key => $value) {
             if (!in_array($key, $allowed_fields)) {
                 unset($record->$key);
@@ -849,6 +849,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             if (empty($record->guest) && !empty($record->password)) {
                 return false;
             }
+
+            //make sure we don't have a course "link" (template) that refers to
+            //an invalid course shortname
+            if (isset($record->link)) {
+                if (!$DB->record_exists('course', array('shortname' => $record->link))) {
+                    return false;
+                }
+            }
         }
 
         if ($action == 'update') {
@@ -939,7 +947,20 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //write to the database
-        create_course($record);
+        if (isset($record->link)) {
+            //creating from template
+            require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+            require_once(elis::lib('rollover/lib.php'));
+            $courseid = $DB->get_field('course', 'id', array('shortname' => $record->link));
+
+            //perform the content rollover
+            $record->id = course_rollover($courseid);
+            //update appropriate fields, such as shortname
+            update_course($record);
+        } else {
+            //creating directly (not from template)
+            create_course($record);
+        }
 
         return true;
     }
