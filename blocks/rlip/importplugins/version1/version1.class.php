@@ -733,14 +733,30 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                         }
                     }
 
-                    return false;
-                }
+                    $parent = 0;
+                    if (count($parentids) == 1) {
+                        //we have a specific parent to create a child for
+                        $parent = $parentids[0];
+                    } else if (count($parentids) > 0) {
+                        //ambiguous parent, so we can't continue
+                        return false;
+                    }
 
-                //set "parent ids" to the current result set for our next iteration
-                $parentids = array();
+                    //create a new category
+                    $newcategory = new stdClass;
+                    $newcategory->name = $categoryname;
+                    $newcategory->parent = $parent; 
+                    $newcategory->id = $DB->insert_record('course_categories', $newcategory);
 
-                foreach ($records as $record) {
-                    $parentids[] = $record->id;
+                    //set "parent ids" to the new category id
+                    $parentids = array($newcategory->id);
+                } else {
+                    //set "parent ids" to the current result set for our next iteration
+                    $parentids = array();
+    
+                    foreach ($records as $record) {
+                        $parentids[] = $record->id;
+                    }
                 }
             }
         }
