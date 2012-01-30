@@ -1164,7 +1164,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $context = get_context_instance(CONTEXT_USER, $targetuserid);
             $contextlevel = CONTEXT_USER;
         } else {
-            //currently only supporting course context level
+            //currently only supporting course, system, user and category
+            //context levels
             return false;
         }
 
@@ -1325,24 +1326,56 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //find existing course
-        if (!$courseid = $DB->get_field('course', 'id', array('shortname' => $record->instance))) {
+        //track the context instance
+        $context = null;
+        //track whether an enrolment exists
+        $enrolment_exists = false;
+
+        if ($record->context == 'course') {
+            //find existing course
+            if (!$courseid = $DB->get_field('course', 'id', array('shortname' => $record->instance))) {
+                return false;
+            }
+    
+            //obtain the course context instance
+            $context = get_context_instance(CONTEXT_COURSE, $courseid);
+
+            $enrolment_exists = is_enrolled($context, $userid);
+        } else if ($record->context == 'system') {
+            //obtain the course context instance
+            $context = get_context_instance(CONTEXT_SYSTEM);
+        } else if ($record->context == 'coursecat') {
+            $count = $DB->count_records('course_categories', array('name' => $record->instance));
+            if ($count > 1) {
+                //ambiguous
+                return false;
+            }
+
+            //find existing category
+            if (!$categoryid = $DB->get_field('course_categories', 'id', array('name' => $record->instance))) {
+                return false;
+            }
+
+            //obtain the category context instance
+            $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        } else if ($record->context == 'user') {
+            //find existing user
+            if (!$userid = $DB->get_field('user', 'id', array('username' => $record->instance))) {
+                return false;
+            }
+    
+            //obtain the user context instance
+            $context = get_context_instance(CONTEXT_USER, $userid);
+        } else {
+            //currently only supporting course, system, user and category
+            //context levels
             return false;
         }
-
-        //currently only supporting course context level
-        if ($record->context != 'course') {
-            return false;
-        }
-
-        //obtain the course context instance
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
 
         //determine whether the role assignment and enrolment records exist
         $role_assignment_exists = $DB->record_exists('role_assignments', array('roleid' => $roleid,
                                                                                'contextid' => $context->id,
                                                                                'userid' => $userid));
-        $enrolment_exists = is_enrolled($context, $userid);
 
         //todo: add some sort of configuration for this?
         if (!$role_assignment_exists && (!$enrolment_exists || $record->role != 'student')) {

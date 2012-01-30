@@ -2151,10 +2151,10 @@ class version1EnrolmentImportTest extends elis_database_test {
     }
     
     /**
-     * Validate that the version 1 plugin can delete a role assignment when
-     * there is no enrolment tied to it
+     * Validate that the version 1 plugin can delete a course-level role
+     * assignment when there is no enrolment tied to it
      */
-    public function testVersion1ImportDeletesRoleAssignment() {
+    public function testVersion1ImportDeletesCourseRoleAssignment() {
         //setup
         $this->init_contexts_and_site_course();
         $this->create_guest_user();
@@ -2176,7 +2176,7 @@ class version1EnrolmentImportTest extends elis_database_test {
      * Validate that the version 1 plugin can delete an enrolment and role
      * assignment at the same time
      */
-    public function testVersion1ImportDeletesEnrolmentAndRoleAssignment() {
+    public function testVersion1ImportDeletesEnrolmentAndCourseRoleAssignment() {
         //setup
         $this->init_contexts_and_site_course();
         $this->create_guest_user();
@@ -2196,6 +2196,89 @@ class version1EnrolmentImportTest extends elis_database_test {
         //compare data
         $this->assert_no_enrolments_exist();
         $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete a system-level role
+     * assignment
+     */
+    public function testVersion1ImportDeletesSystemRoleAssignment() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $roleid = $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_SYSTEM));
+        $userid = $this->create_test_user();
+        $context = get_context_instance(CONTEXT_SYSTEM);
+
+        role_assign($roleid, $userid, $context->id);
+
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['context'] = 'system';
+        $this->run_core_enrolment_import($data, false);
+
+        $this->assertEquals($DB->count_records('role_assignments'), 0);
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete a category-level role
+     * assignment
+     */
+    public function testVersion1ImportDeletesCourseCategoryRoleAssignment() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $roleid = $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_USER));
+        $userid = $this->create_test_user();
+        $category = new stdClass;
+        $category->name = 'rlipcategory';
+        $category->id = $DB->insert_record('course_categories', $category);
+        $context = get_context_instance(CONTEXT_COURSECAT, $category->id);
+
+        role_assign($roleid, $userid, $context->id);
+
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['context'] = 'coursecat';
+        $data['instance'] = 'rlipcategory';
+        $this->run_core_enrolment_import($data, false);
+
+        $this->assertEquals($DB->count_records('role_assignments'), 0);
+    }
+
+    /**
+     * Validate that the version 1 plugin can delete a user-level role
+     * assignment
+     */
+    public function testVersion1ImportDeletesUserRoleAssignment() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $roleid = $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_USER));
+        $userid = $this->create_test_user();
+        $context = get_context_instance(CONTEXT_USER, $userid);
+
+        role_assign($roleid, $userid, $context->id);
+
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['context'] = 'user';
+        $data['instance'] = 'rlipusername';
+        $this->run_core_enrolment_import($data, false);
+
+        $this->assertEquals($DB->count_records('role_assignments'), 0);
     }
 
     /**
@@ -2313,10 +2396,10 @@ class version1EnrolmentImportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the version 1 plugin does not delete enrolments when the
-     * specified instance is incorrect
+     * Validate that the version 1 plugin does not delete course-level role
+     * assignments when the specified instance is incorrect
      */
-    public function testVersion1ImportDoesNotDeleteEnrolmentWithInvalidInstance() {
+    public function testVersion1ImportDoesNotDeleteCourseRoleAssignmentWithInvalidInstance() {
         global $DB;
 
         //setup
@@ -2329,10 +2412,115 @@ class version1EnrolmentImportTest extends elis_database_test {
         $data['action'] = 'delete';
         $data['instance'] = 'bogusinstance';
 
+        //run the import
         $this->run_core_enrolment_import($data, false);
 
         //compare data
         $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete category-level role
+     * assignments when the specified instance is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteCourseCategoryRoleAssignmentWithInvalidInstance() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $roleid = $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_USER));
+        $userid = $this->create_test_user();
+        $category = new stdClass;
+        $category->name = 'rlipcategory';
+        $category->id = $DB->insert_record('course_categories', $category);
+        $context = get_context_instance(CONTEXT_COURSECAT, $category->id);
+
+        //set up our role assignment
+        role_assign($roleid, $userid, $context->id);
+
+        //validate setup
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['context'] = 'coursecat';
+        $data['instance'] = 'boguscategory';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete category-level role
+     * assignments when the specified instance is ambiguous
+     */
+    public function testVersion1ImportDoesNotDeleteCourseCategoryRoleAssignmentWithAmbiguousInstance() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $roleid = $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_USER));
+        $userid = $this->create_test_user();
+
+        $category = new stdClass;
+        $category->name = 'rlipcategory';
+        $category->id = $DB->insert_record('course_categories', $category);
+        $category = new stdClass;
+        $category->name = 'rlipcategory';
+        $category->id = $DB->insert_record('course_categories', $category);
+
+        $context = get_context_instance(CONTEXT_COURSECAT, $category->id);
+
+        //set up our role assignment
+        role_assign($roleid, $userid, $context->id);
+
+        //validate setup
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['context'] = 'coursecat';
+        $data['instance'] = 'rlipcategory';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
+        $this->assert_record_exists('role_assignments', array('userid' => $userid));
+    }
+
+    /**
+     * Validate that the version 1 plugin does not delete user-level role
+     * assignments when the specified instance is incorrect
+     */
+    public function testVersion1ImportDoesNotDeleteUserRoleAssignmentWithInvalidInstance() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        $roleid = $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_USER));
+        $userid = $this->create_test_user();
+        $context = get_context_instance(CONTEXT_USER, $userid);
+
+        //set up our role assignment
+        role_assign($roleid, $userid, $context->id);
+
+        //validate setup
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+
+        //run the import
+        $data = $this->get_core_enrolment_data();
+        $data['action'] = 'delete';
+        $data['context'] = 'user';
+        $data['instance'] = 'bogususername';
+        $this->run_core_enrolment_import($data, false);
+
+        //compare data
         $this->assert_record_exists('role_assignments', array('userid' => $userid));
     }
 
