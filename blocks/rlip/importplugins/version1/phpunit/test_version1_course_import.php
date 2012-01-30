@@ -358,17 +358,22 @@ class version1CourseImportTest extends elis_database_test {
     private function init_contexts_and_site_course() {
         global $DB;
 
-        //set up context records
         $prefix = self::$origdb->get_prefix();
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
-                      {$prefix}context");
-
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
         //set up the site course record
         if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
             unset($record->id);
             $DB->insert_record('course', $record);
         }
+
+        build_context_path();
     }
 
     /**
@@ -1404,7 +1409,7 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that the course import creates a single top-level category and
      * assigns a new course to it
      */
-    public function testVersion1ImportCreatesCategoryFromName() {
+    public function testVersion1ImportCourseCreateCreatesCategoryFromName() {
         global $DB;
 
         //setup
@@ -1418,7 +1423,7 @@ class version1CourseImportTest extends elis_database_test {
         $this->assertEquals($DB->count_records('course'), 2);
         $this->assertEquals($DB->count_records('course_categories'), 1);
 
-        //validate course and child category assignment
+        //validate course and category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
@@ -1431,10 +1436,45 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     /**
+     * Validate that the course import creates a single top-level category and
+     * assigns an existing course to it
+     */
+    public function testVersion1ImportCourseUpdateCreatesCategoryFromName() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run import to create initial course and category
+        $this->run_core_course_import(array());
+
+        //run import to move course to new category
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'category' => 'testcategory2');
+        $this->run_core_course_import($data, false);
+
+        //validate counts
+        $this->assertEquals($DB->count_records('course'), 2);
+        $this->assertEquals($DB->count_records('course_categories'), 2);
+
+        //validate course and category assignment
+        $sql = "SELECT *
+                FROM {course} c
+                JOIN {course_categories} cc
+                ON c.category = cc.id
+                WHERE c.shortname = 'rlipshortname'
+                AND cc.name = 'testcategory2'
+                AND cc.parent = ?";
+        $exists = $DB->record_exists_sql($sql, array(0));
+        $this->assertEquals($exists, true);
+    }
+
+    /**
      * Validate that the course import creates a parent and child category and
      * assigns a new course to the child category using a "relative" specification
      */
-    public function testVersion1ImportCreatesCategoriesFromRelativePathWithNonexistentPrefix() {
+    public function testVersion1ImportCourseCreateCreatesCategoriesFromRelativePathWithNonexistentPrefix() {
         global $DB;
 
         //setup
@@ -1466,10 +1506,51 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     /**
+     * Validate that the course import creates a parent and child category and
+     * assigns an existing course to the child category using a "relative"
+     * specification
+     */
+    public function testVersion1ImportCourseUpdateCreatesCategoriesFromRelativePathWithNonexistentPrefix() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run import to create initial course and category
+        $this->run_core_course_import(array());
+
+        //run import to move course to new category
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'category' => 'testparentcategory/testchildcategory');
+        $this->run_core_course_import($data, false);
+
+        //validate counts
+        $this->assertEquals($DB->count_records('course'), 2);
+        $this->assertEquals($DB->count_records('course_categories'), 3);
+
+        //validate parent category
+        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+                                                               'parent' => 0));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+
+        //validate course and child category assignment
+        $sql = "SELECT *
+                FROM {course} c
+                JOIN {course_categories} cc
+                ON c.category = cc.id
+                WHERE c.shortname = 'rlipshortname'
+                AND cc.name = 'testchildcategory'
+                AND cc.parent = ?";
+        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $this->assertEquals($exists, true);
+    }
+
+    /**
      * Validate that the course import creates a child category and assigns a
      * new course to the child category using a "relative" specification
      */
-    public function testVersion1ImportCreatesCategoryFromRelativePathWithExistingPrefix() {
+    public function testVersion1ImportCourseCreateCreatesCategoryFromRelativePathWithExistingPrefix() {
         global $DB;
 
         //setup
@@ -1511,11 +1592,62 @@ class version1CourseImportTest extends elis_database_test {
         $this->assertEquals($exists, true);
     }
 
+    /**
+     * Validate that the course import creates a child category and assigns an
+     * existing course to the child category using a "relative" specification
+     */
+    public function testVersion1ImportCourseUpdateCreatesCategoryFromRelativePathWithExistingPrefix() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run import to create initial course and category
+        $this->run_core_course_import(array());
+
+        //create grandparent category
+        $this->create_test_category('testgrandparentcategory');
+        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
+
+        //create parent category
+        $this->create_test_category('testparentcategory', $grandparentid);
+
+        //run import to move course to new category
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'category' => 'testgrandparentcategory/testparentcategory/testchildcategory');
+        $this->run_core_course_import($data, false);
+
+        //validate counts
+        $this->assertEquals($DB->count_records('course'), 2);
+        $this->assertEquals($DB->count_records('course_categories'), 4);
+
+        //validate grandparent category
+        $this->assert_record_exists('course_categories', array('name' => 'testgrandparentcategory',
+                                                               'parent' => 0));
+
+        //validate parent category
+        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+                                                               'parent' => $grandparentid));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+
+        //validate course and child category assignment
+        $sql = "SELECT *
+                FROM {course} c
+                JOIN {course_categories} cc
+                ON c.category = cc.id
+                WHERE c.shortname = 'rlipshortname'
+                AND cc.name = 'testchildcategory'
+                AND cc.parent = ?";
+        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $this->assertEquals($exists, true);
+    }
+
      /**
      * Validate that the course import creates a parent and child category and
      * assigns a new course to the child category using an "absolute" specification
      */
-    public function testVersion1ImportCreatesNonexistentCategoriesFromAbsolutePathWithNonexistentPrefix() {
+    public function testVersion1ImportCourseCreateCreatesCategoriesFromAbsolutePathWithNonexistentPrefix() {
         global $DB;
 
         //setup
@@ -1547,10 +1679,51 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     /**
+     * Validate that the course import creates a parent and child category and
+     * assigns an existing course to the child category using an "absolute"
+     * specification
+     */
+    public function testVersion1ImportCourseUpdateCreatesCategoriesFromAbsolutePathWithNonexistentPrefix() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run import to create initial course and category
+        $this->run_core_course_import(array());
+
+        //run import to move course to new category
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'category' => '/testparentcategory/testchildcategory');
+        $this->run_core_course_import($data, false);
+
+        //validate counts
+        $this->assertEquals($DB->count_records('course'), 2);
+        $this->assertEquals($DB->count_records('course_categories'), 3);
+
+        //validate parent category
+        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+                                                               'parent' => 0));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+
+        //validate course and child category assignment
+        $sql = "SELECT *
+                FROM {course} c
+                JOIN {course_categories} cc
+                ON c.category = cc.id
+                WHERE c.shortname = 'rlipshortname'
+                AND cc.name = 'testchildcategory'
+                AND cc.parent = ?";
+        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $this->assertEquals($exists, true);
+    }
+
+    /**
      * Validate that the course import creates a child category and assigns a
      * new course to the child category using an "absolute" specification
      */
-    public function testVersion1ImportCreatesNonexistentCategoryFromAbsolutePathWithExistingPrefix() {
+    public function testVersion1ImportCourseCreateCreatesCategoryFromAbsolutePathWithExistingPrefix() {
         global $DB;
 
         //setup
@@ -1593,26 +1766,34 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the course import creates a grandparent, parent and child
-     * category and assigns a new course to the child category
+     * Validate that the course import creates a child category and assigns an
+     * existing course to the child category using an "absolute" specification
      */
-    public function testVersion1ImportCreatesCategoryPath() {
+    public function testVersion1ImportCourseUpdateCreatesCategoryFromAbsolutePathWithExistingPrefix() {
         global $DB;
 
         //setup
         $this->init_contexts_and_site_course();
 
+        //run import to create initial course and category
+        $this->run_core_course_import(array());
+
         //create grandparent category
         $this->create_test_category('testgrandparentcategory');
         $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
 
-        //run import
-        $data = $this->get_core_course_data('/testgrandparentcategory/testparentcategory/testchildcategory');
+        //create parent category
+        $this->create_test_category('testparentcategory', $grandparentid);
+
+        //run import to move course to new category
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'category' => '/testgrandparentcategory/testparentcategory/testchildcategory');
         $this->run_core_course_import($data, false);
 
         //validate counts
         $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 3);
+        $this->assertEquals($DB->count_records('course_categories'), 4);
 
         //validate grandparent category
         $this->assert_record_exists('course_categories', array('name' => 'testgrandparentcategory',
@@ -1636,10 +1817,95 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the course import only allow for category creation when
-     * the specified path is non-ambiguous
+     * Validate that the course import creates a grandparent, parent and child
+     * category and assigns a new course to the child category
      */
-    public function testVersion1ImportPreventsCreatingCategoryWithAmbiguousParentPath() {
+    public function testVersion1ImportCourseCreateCreatesCategoryPath() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run import
+        $data = $this->get_core_course_data('/testgrandparentcategory/testparentcategory/testchildcategory');
+        $this->run_core_course_import($data, false);
+
+        //validate counts
+        $this->assertEquals($DB->count_records('course'), 2);
+        $this->assertEquals($DB->count_records('course_categories'), 3);
+
+        //validate grandparent category
+        $this->assert_record_exists('course_categories', array('name' => 'testgrandparentcategory',
+                                                               'parent' => 0));
+        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
+
+        //validate parent category
+        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+                                                               'parent' => $grandparentid));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+
+        //validate course and child category assignment
+        $sql = "SELECT *
+                FROM {course} c
+                JOIN {course_categories} cc
+                ON c.category = cc.id
+                WHERE c.shortname = 'rlipshortname'
+                AND cc.name = 'testchildcategory'
+                AND cc.parent = ?";
+        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that the course import creates a grandparent, parent and child
+     * category and assigns an existing course to the child category
+     */
+    public function testVersion1ImportCourseUpdateCreatesCategoryPath() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run import to create initial course and category
+        $this->run_core_course_import(array());
+
+        //run import to move course to new category
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'category' => '/testgrandparentcategory/testparentcategory/testchildcategory');
+        $this->run_core_course_import($data, false);
+
+        //validate counts
+        $this->assertEquals($DB->count_records('course'), 2);
+        $this->assertEquals($DB->count_records('course_categories'), 4);
+
+        //validate grandparent category
+        $this->assert_record_exists('course_categories', array('name' => 'testgrandparentcategory',
+                                                               'parent' => 0));
+        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
+
+        //validate parent category
+        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+                                                               'parent' => $grandparentid));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+
+        //validate course and child category assignment
+        $sql = "SELECT *
+                FROM {course} c
+                JOIN {course_categories} cc
+                ON c.category = cc.id
+                WHERE c.shortname = 'rlipshortname'
+                AND cc.name = 'testchildcategory'
+                AND cc.parent = ?";
+        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that the course import only allow for category creation when
+     * the specified path is non-ambiguous (course create)
+     */
+    public function testVersion1ImportCourseCreatePreventsCreatingCategoryWithAmbiguousParentPath() {
         global $DB;
 
         //setup
@@ -1660,6 +1926,38 @@ class version1CourseImportTest extends elis_database_test {
         //validate counts
         $this->assertEquals($DB->count_records('course'), 1);
         $this->assertEquals($DB->count_records('course_categories'), 3);
+    }
+
+    /**
+     * Validate that the course import only allow for category creation when
+     * the specified path is non-ambiguous (course update)
+     */
+    public function testVersion1ImportCourseUpdatePreventsCreatingCategoryWithAmbiguousParentPath() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run import to create initial course and category
+        $this->run_core_course_import(array());
+
+        //create grandparent category
+        $this->create_test_category('testgrandparentcategory');
+        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
+
+        //create two parent categories "beside" eachother
+        $this->create_test_category('testparentcategory', $grandparentid);
+        $this->create_test_category('testparentcategory', $grandparentid);
+
+        //run import to move course to new category
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'category' => '/testgrandparentcategory/testparentcategory/testchildcategory');
+        $this->run_core_course_import($data, false);
+
+        //validate counts
+        $this->assertEquals($DB->count_records('course'), 2);
+        $this->assertEquals($DB->count_records('course_categories'), 4);
     }
 
     /**

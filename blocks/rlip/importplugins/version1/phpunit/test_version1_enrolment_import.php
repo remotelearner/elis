@@ -93,17 +93,22 @@ class version1EnrolmentImportTest extends elis_database_test {
     private function init_contexts_and_site_course() {
         global $DB;
 
-        //set up context records
         $prefix = self::$origdb->get_prefix();
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
-                      {$prefix}context");
-
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
         //set up the site course record
         if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
             unset($record->id);
             $DB->insert_record('course', $record);
         }
+
+        build_context_path();
     }
 
     /**

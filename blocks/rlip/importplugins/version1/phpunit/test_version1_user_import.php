@@ -74,9 +74,9 @@ class rlip_importprovider_mockuser extends rlip_importprovider {
 }
 
 /**
- * Class for version 1 import correctness
+ * Class for version 1 user import correctness
  */
-class version1ImportTest extends elis_database_test {
+class version1UserImportTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
     /**
