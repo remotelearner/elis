@@ -117,12 +117,19 @@ class version1EnrolmentImportTest extends elis_database_test {
      * @param string $name The role's display name
      * @param string $shortname The role's shortname
      * @param string $description The role's description
+     * @param array $contexts The contexts at which the role should be
+     *                        assignable (defaults to course
      * @return int The created role's id
      */
     private function create_test_role($name = 'rlipname', $shortname = 'rlipshortname',
-                                      $description = 'rlipdescription') {
+                                      $description = 'rlipdescription', $contexts = NULL) {
+        if ($contexts === NULL) {
+            //use default of course context
+            $contexts = array(CONTEXT_COURSE);
+        }
+
         $roleid = create_role($name, $shortname, $description);
-        set_role_contextlevels($roleid, array(CONTEXT_COURSE));
+        set_role_contextlevels($roleid, $contexts);
 
         return $roleid;
     }
@@ -352,9 +359,10 @@ class version1EnrolmentImportTest extends elis_database_test {
     }
 
     /**
-     * Validate that required fields are set to specified values during enrolment creation
+     * Validate that required fields are set to specified values during
+     * course-level role assignment creation
      */
-    public function testVersion1ImportSetsRequiredEnrolmentFieldsOnCreate() {
+    public function testVersion1ImportSetsRequiredCourseRoleAssignmentFieldsOnCreate() {
         global $DB;
 
         //setup
@@ -371,6 +379,101 @@ class version1EnrolmentImportTest extends elis_database_test {
         $data['contextid'] = $course_context->id;
 
         $data['userid'] = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+
+        //compare data
+        $this->assert_record_exists('role_assignments', $data);
+    }
+
+    /**
+     * Validate that required fields are set to specified values during
+     * system-level role assignment creation
+     */
+    public function testVersion1ImportSetsRequiredSystemRoleAssignmentFieldsOnCreate() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run the import
+        $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_SYSTEM));
+        $data = $this->get_core_enrolment_data();
+        $data['context'] = 'system';
+        unset($data['instance']);
+        $this->create_test_user();
+        $this->run_core_enrolment_import($data, false);
+
+        $data = array();
+        $data['roleid'] = $DB->get_field('role', 'id', array('shortname' => 'rlipshortname'));
+
+        $system_context = get_context_instance(CONTEXT_SYSTEM);
+        $data['contextid'] = $system_context->id;
+
+        $data['userid'] = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+
+        //compare data
+        $this->assert_record_exists('role_assignments', $data);
+    }
+
+    /**
+     * Validate that required fields are set to specified values during
+     * category-level role assignment creation
+     */
+    public function testVersion1ImportSetsRequiredCourseCategoryRoleAssignmentFieldsOnCreate() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run the import
+        $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_COURSECAT));
+        $category = new stdClass;
+        $category->name = 'rlipcategory';
+        $category->id = $DB->insert_record('course_categories', $category);
+        $this->create_test_user();
+        $data = $this->get_core_enrolment_data();
+        $data['context'] = 'coursecat';
+        $data['instance'] = 'rlipcategory';
+        $this->run_core_enrolment_import($data, false);
+
+        $data = array();
+        $data['roleid'] = $DB->get_field('role', 'id', array('shortname' => 'rlipshortname'));
+
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
+        $category_context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $data['contextid'] = $category_context->id;
+
+        $data['userid'] = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+
+        //compare data
+        $this->assert_record_exists('role_assignments', $data);
+    }
+
+    /**
+     * Validate that required fields are set to specified values during
+     * user-level role assignment creation
+     */
+    public function testVersion1ImportSetsRequiredUserRoleAssignmentFieldsOnCreate() {
+        global $DB;
+
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run the import
+        $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_USER));
+        $this->create_test_user();
+        $data = $this->get_core_enrolment_data();
+        $data['context'] = 'user';
+        $data['instance'] = 'rlipusername';
+        $this->run_core_enrolment_import($data, false);
+
+        $data = array();
+        $data['roleid'] = $DB->get_field('role', 'id', array('shortname' => 'rlipshortname'));
+
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $user_context = get_context_instance(CONTEXT_USER, $userid);
+        $data['contextid'] = $user_context->id;
+
+        $data['userid'] = $userid;
 
         //compare data
         $this->assert_record_exists('role_assignments', $data);
@@ -421,13 +524,82 @@ class version1EnrolmentImportTest extends elis_database_test {
     }
 
     /**
-     * Validate that invalid context instance values can't be set on enrolment creation
+     * Validate that invalid course context instance values can't be set on
+     * role assignment creation
      */
-    public function testVersion1ImportPreventsInvalidInstanceOnCreate() {
+    public function testVersion1ImportPreventsInvalidCourseInstanceOnCreate() {
         //setup
         $this->init_contexts_and_site_course();
 
         $this->run_core_enrolment_import(array('instance' => 'bogusshortname'));
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that invalid category context instance values can't be set on
+     * role assignment creation
+     */
+    public function testVersion1ImportPreventsInvalidCourseCategoryInstanceOnCreate() {
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run the import
+        $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_COURSECAT));
+        $this->create_test_user();
+        $data = $this->get_core_enrolment_data();
+        $data['context'] = 'coursecat';
+        $data['instance'] = 'boguscategory';
+        $this->run_core_enrolment_import($data, false);
+
+        //validation
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that ambiguous category context instance values can't be set on
+     * role assignment creation
+     */
+    public function testVersion1ImportPreventsAmbiguousCourseCategoryInstanceOnCreate() {
+        global $DB;
+
+        //setup
+        $category = new stdClass;
+        $category->name = 'rlipcategory';
+        $category->id = $DB->insert_record('course_categories', $category);
+
+        $category = new stdClass;
+        $category->name = 'rlipcategory';
+        $category->id = $DB->insert_record('course_categories', $category);
+
+        //run the import
+        $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_COURSECAT));
+        $this->create_test_user();
+        $data = $this->get_core_enrolment_data();
+        $data['context'] = 'coursecat';
+        $data['instance'] = 'rlipcategory';
+        $this->run_core_enrolment_import($data, false);
+
+        //validation
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that invalid user context instance values can't be set on
+     * role assignment creation
+     */
+    public function testVersion1ImportPreventsInvalidUserInstanceOnCreate() {
+        //setup
+        $this->init_contexts_and_site_course();
+
+        //run the import
+        $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_USER));
+        $this->create_test_user();
+        $data = $this->get_core_enrolment_data();
+        $data['context'] = 'user';
+        $data['instance'] = 'bogususername';
+        $this->run_core_enrolment_import($data, false);
+
+        //validation
         $this->assert_no_role_assignments_exist();
     }
 
@@ -479,21 +651,68 @@ class version1EnrolmentImportTest extends elis_database_test {
         $this->assertEquals($exists, false);
     }
 
-    /**
-     * Validate that the import does not create duplicate role assignment
-     * records on creation
-     */
-    public function testVersion1ImportPreventsDuplicateRoleAssignmentCreation() {
-        global $DB;
+      /**
+       * Validate that the import does not create duplicate role assignment
+       * records on creation
+       */
+      public function testVersion1ImportPreventsDuplicateRoleAssignmentCreation() {
+          global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+          //setup
+          $this->init_contexts_and_site_course();
 
-        $this->run_core_enrolment_import(array());
-        $this->run_core_enrolment_import($this->get_core_enrolment_data(), false);
+          $this->create_test_role('rlipname','rlipshortname', 'rlipdescription', array(CONTEXT_SYSTEM,
+                                                                                       CONTEXT_COURSE,
+                                                                                       CONTEXT_COURSECAT,
+                                                                                       CONTEXT_USER));
+          $this->create_test_course();
+          $this->create_test_user();
 
-        $this->assertEquals($DB->count_records('role_assignments'), 1);
-    }
+          $roleid = $DB->get_field('role', 'id', array('shortname' => 'rlipshortname'));
+          $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+          $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+          $course_context = get_context_instance(CONTEXT_COURSE, $courseid);
+          role_assign($roleid, $userid, $course_context->id);
+
+          $this->assertEquals($DB->count_records('role_assignments'), 1);
+          $this->run_core_enrolment_import($this->get_core_enrolment_data(), false);
+          $this->assertEquals($DB->count_records('role_assignments'), 1);
+
+          //system
+          $system_context = get_context_instance(CONTEXT_SYSTEM);
+          role_assign($roleid, $userid, $system_context->id);
+
+          $this->assertEquals($DB->count_records('role_assignments'), 2);
+          $data = $this->get_core_enrolment_data();
+          $data['context'] = 'system';
+          $this->run_core_enrolment_import($data, false);
+          $this->assertEquals($DB->count_records('role_assignments'), 2);
+
+          //course category
+          $category = new stdClass;
+          $category->name = 'rlipcategory';
+          $category->id = $DB->insert_record('course_categories', $category);
+
+          $category_context = get_context_instance(CONTEXT_COURSECAT, $category->id);
+          role_assign($roleid, $userid, $category_context->id);
+
+          $this->assertEquals($DB->count_records('role_assignments'), 3);
+          $data = $this->get_core_enrolment_data();
+          $data['context'] = 'coursecat';
+          $this->run_core_enrolment_import($data, false);
+          $this->assertEquals($DB->count_records('role_assignments'), 3);
+
+          //user
+
+          $user_context = get_context_instance(CONTEXT_USER, $userid);
+          role_assign($roleid, $userid, $user_context->id);
+
+          $this->assertEquals($DB->count_records('role_assignments'), 4);
+          $data = $this->get_core_enrolment_data();
+          $data['context'] = 'user';
+          $this->run_core_enrolment_import($data, false);
+          $this->assertEquals($DB->count_records('role_assignments'), 4);
+      }
 
     /**
      * Validate that the import does not created duplicate enrolment records on
@@ -569,6 +788,50 @@ class version1EnrolmentImportTest extends elis_database_test {
         $exists = $DB->record_exists('user_enrolments', array('userid' => $userid,
                                                               'enrolid' => $enrolid));
         $this->assertEquals($exists, false);
+    }
+
+    /**
+     * Validate that setting up course enrolments only works within the course
+     * context
+     */
+    public function testVersion1ImportEnrolmentsAreCourseContextSpecific() {
+        global $DB;
+
+        $this->create_test_role('student', 'Student', 'student', array(CONTEXT_SYSTEM,
+                                                                       CONTEXT_COURSE,
+                                                                       CONTEXT_COURSECAT,
+                                                                       CONTEXT_USER));
+
+        //run the system-level import
+        $this->create_test_user();
+        $data = $this->get_core_enrolment_data();
+        $data['context'] = 'system';
+        $data['role'] = 'student';
+        $this->run_core_enrolment_import($data, false);
+
+        //validation
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+        $this->assert_no_enrolments_exist();
+
+        //run the category-level import
+        $category = new stdClass;
+        $category->name = 'rlipshortname';
+        $category->id = $DB->insert_record('course_categories', $category);
+        $data['context'] = 'coursecat';
+        $this->run_core_enrolment_import($data, false);
+
+        //validation
+        $this->assertEquals($DB->count_records('role_assignments'), 2);
+        $this->assert_no_enrolments_exist();
+
+        //run the user-level import
+        $this->create_test_user(array('username' => 'rlipshortname'));
+        $data['context'] = 'user';
+        $this->run_core_enrolment_import($data, false);
+
+        //validation
+        $this->assertEquals($DB->count_records('role_assignments'), 3);
+        $this->assert_no_enrolments_exist();
     }
 
     /**
@@ -1293,6 +1556,52 @@ class version1EnrolmentImportTest extends elis_database_test {
 
         $this->assert_record_exists('groups_members', array('groupid' => $groupid,
                                                             'userid' => $userid));
+    }
+
+    /**
+     * Validate that groups functionality only works within the course context
+     */
+    public function testVersion1ImportGroupsAreCourseContextSpecific() {
+        global $DB;
+
+        //enable groups functionality
+        set_config('bogus_rlip_creategroups', 1);
+
+        $this->create_test_role('rlipname', 'rlipshortname', 'rlipdescription', array(CONTEXT_SYSTEM,
+                                                                                      CONTEXT_COURSE,
+                                                                                      CONTEXT_COURSECAT,
+                                                                                      CONTEXT_USER));
+
+        //run the system-level import
+        $this->create_test_user();
+        $data = $this->get_core_enrolment_data();
+        $data['context'] = 'system';
+        $data['group'] = 'rlipgroup';
+        $this->run_core_enrolment_import($data, false);
+
+        //validation
+        $this->assertEquals($DB->count_records('role_assignments'), 1);
+        $this->assertEquals($DB->count_records('groups'), 0);
+
+        //run the category-level import
+        $category = new stdClass;
+        $category->name = 'rlipshortname';
+        $category->id = $DB->insert_record('course_categories', $category);
+        $data['context'] = 'coursecat';
+        $this->run_core_enrolment_import($data, false);
+
+        //validation
+        $this->assertEquals($DB->count_records('role_assignments'), 2);
+        $this->assertEquals($DB->count_records('groups'), 0);
+
+        //run the user-level import
+        $this->create_test_user(array('username' => 'rlipshortname'));
+        $data['context'] = 'user';
+        $this->run_core_enrolment_import($data, false);
+
+        //validation
+        $this->assertEquals($DB->count_records('role_assignments'), 3);
+        $this->assertEquals($DB->count_records('groups'), 0);
     }
 
     /**

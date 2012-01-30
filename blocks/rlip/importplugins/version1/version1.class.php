@@ -1119,22 +1119,58 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //find existing course
-        if (!$courseid = $DB->get_field('course', 'id', array('shortname' => $record->instance))) {
+        //track which context level the assignment is taking place at
+        $contextlevel = null;
+
+        if ($record->context == 'course') {
+            //find existing course
+            if (!$courseid = $DB->get_field('course', 'id', array('shortname' => $record->instance))) {
+                //invalid shortname
+                return false;
+            }
+
+            //obtain the course context instance
+            $contextlevel = CONTEXT_COURSE;
+            $context = get_context_instance($contextlevel, $courseid);
+        } else if ($record->context == 'system') {
+            //obtain the system context instance
+            $contextlevel = CONTEXT_SYSTEM;
+            $context = get_context_instance($contextlevel);
+        } else if ($record->context == 'coursecat') {
+            //make sure category name is not ambiguous
+            $count = $DB->count_records('course_categories', array('name' => $record->instance));
+            if ($count > 1) {
+                //ambiguous category name
+                return false;
+            }
+
+            //find existing course category
+            if (!$categoryid = $DB->get_field('course_categories', 'id', array('name' => $record->instance))) {
+                //invalid name
+                return false;
+            }
+
+            //obtain the course category context instance
+            $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+            $contextlevel = CONTEXT_COURSECAT;
+        } else if ($record->context == 'user') {
+            //find existing user category
+            if (!$targetuserid = $DB->get_field('user', 'id', array('username' => $record->instance))) {
+                //invalid username
+                return false;
+            }
+
+            //obtain the user context instance
+            $context = get_context_instance(CONTEXT_USER, $targetuserid);
+            $contextlevel = CONTEXT_USER;
+        } else {
+            //currently only supporting course context level
             return false;
         }
-
-        //currently only supporting course context level
-        if ($record->context != 'course') {
-            return false;
-        }
-
-        //obtain the course context instance
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
 
         //make sure the role is assignable at the course context level
         if (!$DB->record_exists('role_context_levels', array('roleid' => $roleid,
-                                                             'contextlevel' => CONTEXT_COURSE))) {
+                                                             'contextlevel' => $contextlevel))) {
             return false;
         }
 
@@ -1151,7 +1187,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $groupingid = 0;
 
         //duplicate group / grouping name checks and name validity checking
-        if (isset($record->group)) {
+        if ($record->context == 'course' && isset($record->group)) {
             $count = $DB->count_records('groups', array('name' => $record->group,
                                                         'courseid' => $courseid));
             if ($count > 1) {
@@ -1184,7 +1220,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //todo: add some sort of configuration for this?
-        if ($record->role == 'student') {
+        if ($record->context == 'course' && $record->role == 'student') {
             //set enrolment start time to the course start date
             $timestart = $DB->get_field('course', 'startdate', array('id' => $courseid));
 
@@ -1206,7 +1242,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             role_assign($roleid, $userid, $context->id);
         }
 
-        if (isset($record->group)) {
+        if ($record->context == 'course' && isset($record->group)) {
             //process specified group
             require_once($CFG->dirroot.'/lib/grouplib.php');
             require_once($CFG->dirroot.'/group/lib.php');
