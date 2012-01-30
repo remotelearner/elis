@@ -86,6 +86,7 @@ class version1UserImportTest extends elis_database_test {
         return array('user' => 'moodle',
                      'context' => 'moodle',
                      'config' => 'moodle',
+                     'config_plugins' => 'moodle',
                      'user_info_field' => 'moodle',
                      'user_info_category' => 'moodle',
                      'user_info_data' => 'moodle',
@@ -133,7 +134,9 @@ class version1UserImportTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('log' => 'moodle');
+        return array('log' => 'moodle',
+                     'crlm_user' => 'elis_program',
+                     'crlm_user_moodle' => 'elis_program');
     }
 
     /**
@@ -770,6 +773,21 @@ class version1UserImportTest extends elis_database_test {
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
                                                   'lang' => $CFG->lang));        
+    }
+
+    /**
+     * Validate that the import defaults to not setting idnumber values if
+     * a value is not supplied and ELIS is not configured to auto-assign
+     */
+    public function testVersion1ImportDoesNotSetIdnumberWhenNotSuppliedOrConfigured() {
+        //make sure we are not auto-assigning idnumbers
+        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+
+        $this->run_core_user_import(array());
+
+        //make sure idnumber wasn't set
+        $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'idnumber' => ''));
     }
 
     /**
@@ -1759,6 +1777,8 @@ class version1UserImportTest extends elis_database_test {
         $category->id = $DB->insert_record('course_categories', $category);
 
         //create a course
+        set_config('defaultenrol', 1, 'enrol_manual');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
         $course = new stdClass;
         $course->category = $category->id;
         $course->fullname = 'testfullname';
