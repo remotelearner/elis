@@ -24,6 +24,11 @@
  *
  */
 
+if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+    define('CLI_SCRIPT', true);
+}
+
+require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
