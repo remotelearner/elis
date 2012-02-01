@@ -826,6 +826,7 @@ class version1EnrolmentImportTest extends elis_database_test {
     public function testVersion1ImportEnrolmentsAreCourseContextSpecific() {
         global $DB;
 
+        $this->init_contexts_and_site_course();
         $this->create_test_role('student', 'Student', 'student', array(CONTEXT_SYSTEM,
                                                                        CONTEXT_COURSE,
                                                                        CONTEXT_COURSECAT,

@@ -182,7 +182,7 @@ class overlay_temp_database extends overlay_database {
  * Class for version 1 course import correctness
  */
 class version1CourseImportTest extends elis_database_test {
-    protected $backupGlobalsBlacklist = array('DB');
+    protected $backupGlobalsBlacklist = array('DB', 'USER');
 
     /**
      * Return the list of tables that should be overlayed.
@@ -227,6 +227,7 @@ class version1CourseImportTest extends elis_database_test {
                      'question_answers' => 'moodle',
                      'question_truefalse' => 'qtype_truefalse',
                      'config' => 'moodle',
+                     'config_plugins' => 'moodle',
                      'course_display' => 'moodle',
                      'backup_log' => 'moodle',
                      'backup_courses' => 'moodle',
@@ -357,6 +358,21 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     /**
+     * Creates a default guest user record in the database
+     */
+    private function create_guest_user() {
+        global $CFG, $DB;
+
+        //set up the guest user to prevent enrolment plugins from thinking the
+        //created user is the guest user
+        if ($record = self::$origdb->get_record('user', array('username' => 'guest',
+                                                'mnethostid' => $CFG->mnet_localhost_id))) {
+            unset($record->id);
+            $DB->insert_record('user', $record);
+        }
+    }
+
+    /**
      * Set up the course and context records needed for many of the
      * unit tests
      */
@@ -467,10 +483,35 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that non-required fields are set to specified values during course creation
      */
     public function testVersion1ImportSetsNonRequiredCourseFieldsOnCreate() {
-        global $CFG, $DB;
+        global $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //setup
+        $this->create_guest_user();
+
+        /// Now create admin user
+        $admin = new stdClass();
+        $admin->auth         = 'manual';
+        $admin->firstname    = get_string('admin');
+        $admin->lastname     = get_string('user');
+        $admin->username     = 'admin';
+        $admin->password     = 'adminsetuppending';
+        $admin->email        = '';
+        $admin->confirmed    = 1;
+        $admin->mnethostid   = $CFG->mnet_localhost_id;
+        $admin->lang         = $CFG->lang;
+        $admin->maildisplay  = 1;
+        $admin->timemodified = time();
+        $admin->lastip       = CLI_SCRIPT ? '0.0.0.0' : getremoteaddr(); // installation hijacking prevention
+        $admin->id = $DB->insert_record('user', $admin);
+
+        set_config('siteadmins', $admin->id);
+
+        $USER = get_admin();
+
+        set_config('maxsections', 20, 'moodlecourse');
+        set_config('enrol_plugins_enabled', 'guest');
+
         $this->init_contexts_and_site_course();
 
         $data = array('idnumber' => 'rlipidnumber',
@@ -531,6 +572,11 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //setup
+        set_config('defaultenrol', 1, 'enrol_guest');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_guest');
+        set_config('maxsections', 20, 'moodlecourse');
+        set_config('enrol_plugins_enabled', 'guest');
+
         $this->init_contexts_and_site_course();
 
         $this->run_core_course_import(array());
@@ -632,6 +678,7 @@ class version1CourseImportTest extends elis_database_test {
         //setup
         $this->init_contexts_and_site_course();
 
+        set_config('maxsections', 10, 'moodlecourse');
         $this->run_core_course_import(array('numsections' => 7));
 
         $data = array('action' => 'update',
@@ -797,6 +844,13 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid guest values can't be set on course update
      */
     public function testVersion1ImportPreventsInvalidCourseGuestOnUpdate() {
+        global $CFG;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        set_config('defaultenrol', 1, 'enrol_guest');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_guest');
+        set_config('enrol_plugins_enabled', 'guest');
+
         //setup
         $this->init_contexts_and_site_course();
 
@@ -809,7 +863,8 @@ class version1CourseImportTest extends elis_database_test {
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('enrol', array('enrol' => 'guest'));
+        $this->assert_record_exists('enrol', array('enrol' => 'guest',
+                                                   'status' => ENROL_INSTANCE_ENABLED));
     }
 
     /**
@@ -2044,10 +2099,13 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //setup
+        set_config('defaultenrol', 1, 'enrol_guest');
+        set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
         $this->init_contexts_and_site_course();
 
         //create course with guest flag disabled and no password
         $this->run_core_course_import(array());
+
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
         //validate plugin configuration
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
@@ -2065,6 +2123,8 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //setup
+        set_config('defaultenrol', 1, 'enrol_guest');
+        set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
         $this->init_contexts_and_site_course();
 
         //create course with guest flag disabled and no password
@@ -2108,7 +2168,8 @@ class version1CourseImportTest extends elis_database_test {
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
-                                                   'password' => 'password'));
+                                                   'password' => 'password',
+                                                   'status' => ENROL_INSTANCE_ENABLED));
 
         //update course, disabling guest access
         $data = array('action' => 'update',
@@ -2131,6 +2192,8 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //setup
+        set_config('defaultenrol', 1, 'enrol_guest');
+        set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
         $this->init_contexts_and_site_course();
 
         //attempt to create with password but guest plugin disabled
@@ -2185,6 +2248,8 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //setup
+        set_config('defaultenrol', 1, 'enrol_guest');
+        set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
         $this->init_contexts_and_site_course();
 
         //create course without guest access or password
@@ -2281,12 +2346,30 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/course/lib.php');
 
         //setup
-        $this->init_contexts_and_site_course();
+        set_config('backup_general_activities', 1, 'backup');
+        $this->create_guest_user();
 
-        $prefix = self::$origdb->get_prefix();
-        $DB->execute("INSERT INTO {user}
-                      SELECT * FROM
-                      {$prefix}user");
+        /// Now create admin user
+        $admin = new stdClass();
+        $admin->auth         = 'manual';
+        $admin->firstname    = get_string('admin');
+        $admin->lastname     = get_string('user');
+        $admin->username     = 'admin';
+        $admin->password     = 'adminsetuppending';
+        $admin->email        = '';
+        $admin->confirmed    = 1;
+        $admin->mnethostid   = $CFG->mnet_localhost_id;
+        $admin->lang         = $CFG->lang;
+        $admin->maildisplay  = 1;
+        $admin->timemodified = time();
+        $admin->lastip       = CLI_SCRIPT ? '0.0.0.0' : getremoteaddr(); // installation hijacking prevention
+        $admin->id = $DB->insert_record('user', $admin);
+
+        set_config('siteadmins', $admin->id);
+
+        $USER = get_admin();
+
+        $this->init_contexts_and_site_course();
 
         //create a test category
         $category = $this->create_test_category();
@@ -2433,12 +2516,19 @@ class version1CourseImportTest extends elis_database_test {
         $record->fullname = 'rliptemplatefullname';
         $record = $course = create_course($record);
 
+        $enrol = new stdClass;
+        $enrol->enrol = 'manual';
+        $enrol->courseid = $course->id;
+        $enrol->status = ENROL_INSTANCE_ENABLED;
+        $DB->insert_record('enrol', $enrol); 
+
         //create a test role
         $roleid = create_role('testrole', 'testrole', 'testrole');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
 
         //enrol the test user into the template course, assigning them the test
         //role
+        set_config('enrol_plugins_enabled', 'manual');
         enrol_try_internal_enrol($record->id, $user->id, $roleid);
 
         //validate setup
@@ -2559,12 +2649,15 @@ class version1CourseImportTest extends elis_database_test {
      * deleting a course
      */
     public function testVersion1ImportDeleteCourseDeletesAssociations() {
-        global $DB, $CFG;
+        global $DB, $CFG, $USER;
         require_once($CFG->dirroot.'/user/lib.php');
         require_once($CFG->dirroot.'/lib/gradelib.php');
         require_once($CFG->dirroot.'/group/lib.php');
         require_once($CFG->dirroot.'/backup/lib.php');
         require_once($CFG->dirroot.'/lib/conditionlib.php');
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        $USER = get_admin();
 
         //setup
         $this->init_contexts_and_site_course();
@@ -2580,6 +2673,7 @@ class version1CourseImportTest extends elis_database_test {
 
         //set up the course with one section, including default blocks
         set_config('defaultblocks_topics', 'search_forums');
+        set_config('maxsections', 10, 'moodlecourse');
         $this->run_core_course_import(array('numsections' => 1));
 
         //create a user record
@@ -2592,6 +2686,14 @@ class version1CourseImportTest extends elis_database_test {
         $course_context = get_context_instance(CONTEXT_COURSE, $courseid);
         $roleid = create_role('testrole', 'testrole', 'testrole');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
+
+        $enrol = new stdClass;
+        $enrol->enrol = 'manual';
+        $enrol->courseid = $courseid;
+        $enrol->status = ENROL_INSTANCE_ENABLED;
+        $DB->insert_record('enrol', $enrol);
+
+        set_config('enrol_plugins_enabled', 'manual');
 
         //assign the user to the course-level role
         enrol_try_internal_enrol($courseid, $userid, $roleid);

@@ -238,6 +238,31 @@ class version1UserImportTest extends elis_database_test {
     }
 
     /**
+     * Set up the course and context records needed for many of the
+     * unit tests
+     */
+    private function init_contexts_and_site_course() {
+        global $DB;
+
+        $prefix = self::$origdb->get_prefix();
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
+        //set up the site course record
+        if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
+            unset($record->id);
+            $DB->insert_record('course', $record);
+        }
+
+        build_context_path();
+    }
+
+    /**
      * Validate that the version 1 plugin supports user actions
      */
     public function testVersion1ImportSupportsUserActions() {
@@ -1745,6 +1770,9 @@ class version1UserImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/lib/enrollib.php');
         require_once($CFG->dirroot.'/lib/gradelib.php');
 
+        //set up context records
+        $this->init_contexts_and_site_course();
+
         //set up the guest user to prevent enrolment plugins from thinking the
         //created user is the guest user
         if ($record = self::$origdb->get_record('user', array('username' => 'guest',
@@ -1756,16 +1784,6 @@ class version1UserImportTest extends elis_database_test {
         //create our test user, and determine their userid
         $this->run_core_user_import(array());
         $userid = (int)$DB->get_field('user', 'id', array('username' => 'rlipusername'));
-
-        //set up context records
-        $prefix = self::$origdb->get_prefix();
-        try {
-            $DB->execute("INSERT INTO {context}
-                          SELECT * FROM
-                          {$prefix}context");
-        } catch (Exception $e) {
-            //todo: determine why this has issues under certain circumstances
-        }
 
         //set up the site course
         if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
