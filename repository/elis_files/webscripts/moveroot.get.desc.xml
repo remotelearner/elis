@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Move Moodle root folder</shortname>
+  <description>Move the contents of the current Moodle root folder to another location.</description>
+  <url>/moodle/moveroot/{from}/{to}</url>
+  <format default="xml">extension</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

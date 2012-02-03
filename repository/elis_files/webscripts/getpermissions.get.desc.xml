@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Get Permissions</shortname>
+  <description>Get the permissions on a given node optionally filtering the results by a username.</description>
+  <url>/moodle/getpermissions/{uuid}?username={username?}</url>
+  <format default="xml" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>
