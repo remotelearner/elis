@@ -79,9 +79,10 @@ class rlip_importprovider_mockcourse extends rlip_importprovider {
 }
 
 /**
- * Overlay database that allows for the handling of temporary tables
+ * Overlay database that allows for the handling of temporary tables as well
+ * as some course-specific optimizations
  */
-class overlay_temp_database extends overlay_database {
+class overlay_course_database extends overlay_database {
 
     /**
      * Do NOT use in code, to be used by database_manager only!
@@ -168,13 +169,7 @@ class overlay_temp_database extends overlay_database {
      * Empty out all the overlay tables.
      */
     public function reset_overlay_tables() {
-        foreach ($this->overlaytables as $tablename => $component) {
-            try {
-                $this->delete_records($tablename);
-            } catch (Exception $e) {
-                //temporary table was already dropped
-            }
-        }
+        //do nothing
     }
 }
 
@@ -260,8 +255,34 @@ class version1CourseImportTest extends elis_database_test {
         // called before each test function
         global $DB;
         self::$origdb = $DB;
+
         //use our custom overlay database type that supports temporary tables
-        self::$overlaydb = new overlay_temp_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
+        self::$overlaydb = new overlay_course_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
+        $DB = self::$overlaydb;
+
+        //create data we need for many test cases
+        self::create_guest_user();
+        self::init_contexts_and_site_course();
+        self::set_up_category_structure(true);
+        self::create_admin_user();
+    }
+
+    /**
+     * Clean up the temporary database tables.
+     */
+    public static function tearDownAfterClass() {
+        global $DB;
+        $DB = self::$origdb;
+        parent::tearDownAfterClass();
+    }
+
+    /**
+     * reset the $DB global
+     */
+    protected function tearDown() {
+    }
+
+    protected function setUp() {       
     }
 
     /**
@@ -279,7 +300,6 @@ class version1CourseImportTest extends elis_database_test {
     private function get_core_course_data($category) {
         $data = array('entity' => 'course',
                       'action' => 'create',
-                      'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname',
                       'category' => $category);
         return $data;
@@ -295,8 +315,7 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
         if ($use_default_data) {
-            $category = $this->create_test_category();
-            $data = $this->get_core_course_data($category);
+            $data = $this->get_core_course_data('childcategory');
         } else {
             $data = array();
         }
@@ -312,55 +331,9 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     /**
-     * Helper function that creates a test category
-     *
-     * @param string A name to set for the category
-     * @param int The id of the parent category, or 0 for top-level
-     * @return string The name of the created category 
-     */
-    private function create_test_category($name = 'testcategory', $parent = 0) {
-        global $DB;
-
-        $category = new stdClass;
-        $category->name = $name;
-        $category->parent = $parent;
-        $category->id = $DB->insert_record('course_categories', $category);
-
-        return $category->name;
-    }
-
-    /**
-     * Helper function that creates a parent and a child category
-     *
-     * @param boolean $second_child create a second child category if true
-     */
-    private function set_up_category_structure($second_child = false) {
-        global $DB;
-
-        //parent category
-        $parent_category = new stdClass;
-        $parent_category->name = 'parentcategory';
-        $parent_category->id = $DB->insert_record('course_categories', $parent_category);
-
-        //child category
-        $child_category = new stdClass;
-        $child_category->name = 'childcategory';
-        $child_category->parent = $parent_category->id;
-        $child_category->id = $DB->insert_record('course_categories', $child_category);
-
-        if ($second_child) {
-            //another child category with the same name
-            $child_category = new stdClass;
-            $child_category->name = 'childcategory';
-            $child_category->parent = $parent_category->id;
-            $child_category->id = $DB->insert_record('course_categories', $child_category);
-        }
-    }
-
-    /**
      * Creates a default guest user record in the database
      */
-    private function create_guest_user() {
+    private static function create_guest_user() {
         global $CFG, $DB;
 
         //set up the guest user to prevent enrolment plugins from thinking the
@@ -376,7 +349,7 @@ class version1CourseImportTest extends elis_database_test {
      * Set up the course and context records needed for many of the
      * unit tests
      */
-    private function init_contexts_and_site_course() {
+    private static function init_contexts_and_site_course() {
         global $DB;
 
         $prefix = self::$origdb->get_prefix();
@@ -398,12 +371,129 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     /**
-     * Asserts, using PHPunit, that the test course does not exist
+     * Helper function that creates a parent and a child category
+     *
+     * @param boolean $second_child create a second child category if true
      */
-    private function assert_core_course_does_not_exist() {
+    private static function set_up_category_structure($second_child = false) {
         global $DB;
 
-        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname'));
+        //basic parent and child categories
+        $parent_category = new stdClass;
+        $parent_category->name = 'parentcategory';
+        $parent_category->id = $DB->insert_record('course_categories', $parent_category);
+        get_context_instance(CONTEXT_COURSECAT, $parent_category->id);
+
+        //child category
+        $child_category = new stdClass;
+        $child_category->name = 'childcategory';
+        $child_category->parent = $parent_category->id;
+        $child_category->id = $DB->insert_record('course_categories', $child_category);
+        get_context_instance(CONTEXT_COURSECAT, $child_category->id);
+
+        //duplicate parent and child in the form parent/child/parent/child
+        $duplicate_parent_1 = new stdClass;
+        $duplicate_parent_1->name = 'duplicateparentcategory';
+        $duplicate_parent_1->id = $DB->insert_record('course_categories', $duplicate_parent_1);
+        get_context_instance(CONTEXT_COURSECAT, $duplicate_parent_1->id);
+
+        $duplicate_child_1 = new stdClass;
+        $duplicate_child_1->name = 'duplicatechildcategory';
+        $duplicate_child_1->parent = $duplicate_parent_1->id;
+        $duplicate_child_1->id = $DB->insert_record('course_categories', $duplicate_child_1);
+        get_context_instance(CONTEXT_COURSECAT, $duplicate_child_1->id);
+
+        $duplicate_parent_2 = new stdClass;
+        $duplicate_parent_2->name = 'duplicateparentcategory';
+        $duplicate_parent_2->parent = $duplicate_child_1->id;
+        $duplicate_parent_2->id = $DB->insert_record('course_categories', $duplicate_parent_2);
+        get_context_instance(CONTEXT_COURSECAT, $duplicate_parent_2->id);
+
+        $duplicate_child_2 = new stdClass;
+        $duplicate_child_2->name = 'duplicatechildcategory';
+        $duplicate_child_2->parent = $duplicate_parent_2->id;
+        $duplicate_child_2->id = $DB->insert_record('course_categories', $duplicate_child_2);
+        get_context_instance(CONTEXT_COURSECAT, $duplicate_child_2->id);
+
+        //parent category with two child categories, both with the same name
+        $nonunique_parent = new stdClass;
+        $nonunique_parent->name = 'nonuniqueabsoluteparent';
+        $nonunique_parent->id = $DB->insert_record('course_categories', $nonunique_parent);
+        get_context_instance(CONTEXT_COURSECAT, $nonunique_parent->id);
+
+        $nonunique_child_1 = new stdClass;
+        $nonunique_child_1->name = 'nonuniqueabsolutechild';
+        $nonunique_child_1->parent = $nonunique_parent->id;
+        $nonunique_child_1->id = $DB->insert_record('course_categories', $nonunique_child_1);
+        get_context_instance(CONTEXT_COURSECAT, $nonunique_child_1->id);
+
+        $nonunique_child_2 = new stdClass;
+        $nonunique_child_2->name = 'nonuniqueabsolutechild';
+        $nonunique_child_2->parent = $nonunique_parent->id;
+        $nonunique_child_2->id = $DB->insert_record('course_categories', $nonunique_child_2);
+        get_context_instance(CONTEXT_COURSECAT, $nonunique_child_2->id);
+
+        build_context_path(true);
+    }
+
+    /**
+     * Helper function that creates a test category
+     *
+     * @param string A name to set for the category
+     * @param int The id of the parent category, or 0 for top-level
+     * @return string The name of the created category 
+     */
+    private static function create_test_category($name, $parent = 0) {
+        global $DB;
+
+        $category = new stdClass;
+        $category->name = $name;
+        $category->parent = $parent;
+        $category->id = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $category->id);
+
+        build_context_path(true);
+
+        return $category->name;
+    }
+
+    /**
+     * Helper function that creates an admin user and initializes the user
+     * global
+     */
+    private static function create_admin_user() {
+        global $USER, $DB, $CFG;
+
+        //create the user record
+        $admin = new stdClass();
+        $admin->auth         = 'manual';
+        $admin->firstname    = get_string('admin');
+        $admin->lastname     = get_string('user');
+        $admin->username     = 'admin';
+        $admin->password     = 'adminsetuppending';
+        $admin->email        = '';
+        $admin->confirmed    = 1;
+        $admin->mnethostid   = $CFG->mnet_localhost_id;
+        $admin->lang         = $CFG->lang;
+        $admin->maildisplay  = 1;
+        $admin->timemodified = time();
+        $admin->lastip       = CLI_SCRIPT ? '0.0.0.0' : getremoteaddr(); // installation hijacking prevention
+        $admin->id = $DB->insert_record('user', $admin);
+
+        //register as site admin
+        set_config('siteadmins', $admin->id);
+
+        //set up user global
+        $USER = get_admin();
+    }
+
+    /**
+     * Asserts, using PHPunit, that the test course does not exist
+     */
+    private function assert_core_course_does_not_exist($shortname) {
+        global $DB;
+
+        $exists = $DB->record_exists('course', array('shortname' => $shortname));
         $this->assertEquals($exists, false);
     }
 
@@ -458,12 +548,9 @@ class version1CourseImportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
-        //setup
-        $this->init_contexts_and_site_course();
-
         //run the import
-        $category = $this->create_test_category();
-        $data = $this->get_core_course_data($category);
+        $data = $this->get_core_course_data('childcategory');
+        $data['shortname'] = 'requiredfields';
         $provider = new rlip_importprovider_mockcourse($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
@@ -471,7 +558,7 @@ class version1CourseImportTest extends elis_database_test {
 
         unset($data['entity']);
         unset($data['action']);
-        $data['category'] = $DB->get_field('course_categories', 'id', array('name' => 'testcategory'));
+        $data['category'] = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
         //compare data
         $exists = $DB->record_exists('course', $data);
@@ -487,35 +574,12 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //setup
-        $this->create_guest_user();
-
-        /// Now create admin user
-        $admin = new stdClass();
-        $admin->auth         = 'manual';
-        $admin->firstname    = get_string('admin');
-        $admin->lastname     = get_string('user');
-        $admin->username     = 'admin';
-        $admin->password     = 'adminsetuppending';
-        $admin->email        = '';
-        $admin->confirmed    = 1;
-        $admin->mnethostid   = $CFG->mnet_localhost_id;
-        $admin->lang         = $CFG->lang;
-        $admin->maildisplay  = 1;
-        $admin->timemodified = time();
-        $admin->lastip       = CLI_SCRIPT ? '0.0.0.0' : getremoteaddr(); // installation hijacking prevention
-        $admin->id = $DB->insert_record('user', $admin);
-
-        set_config('siteadmins', $admin->id);
-
-        $USER = get_admin();
-
         set_config('maxsections', 20, 'moodlecourse');
         set_config('enrol_plugins_enabled', 'guest');
 
-        $this->init_contexts_and_site_course();
-
-        $data = array('idnumber' => 'rlipidnumber',
-                      'summary' => 'rlipsummary',
+        $data = array('shortname' => 'nonrequiredfields',
+                      'idnumber' => 'nonrequiredfieldsidnumber',
+                      'summary' => 'nonrequiredfieldssummary',
                       'format' => 'social',
                       'numsections' => '15',
                       'startdate' => 'Jan/01/2012',
@@ -524,7 +588,7 @@ class version1CourseImportTest extends elis_database_test {
                       'showreports' => 1,
                       'maxbytes' => 10240,
                       'guest' => 1,
-                      'password' => 'rlippassword',
+                      'password' => 'nonrequiredfieldspassword',
                       'visible' => 0,
                       'lang' => 'en');
 
@@ -542,9 +606,9 @@ class version1CourseImportTest extends elis_database_test {
                    maxbytes = :maxbytes AND ".
                    "visible = :visible AND
                    lang = :lang";
-        $params = array('shortname' => 'rlipshortname',
-                        'idnumber' => 'rlipidnumber',
-                        'summary' => 'rlipsummary',
+        $params = array('shortname' => 'nonrequiredfields',
+                        'idnumber' => 'nonrequiredfieldsidnumber',
+                        'summary' => 'nonrequiredfieldssummary',
                         'format' => 'social',
                         'numsections' => '15',
                         'startdate' => mktime(0, 0, 0, 1, 1, 2012),
@@ -559,8 +623,10 @@ class version1CourseImportTest extends elis_database_test {
 
         $this->assertEquals($exists, true);
 
-        $this->assert_record_exists('enrol', array('enrol' => 'guest',
-                                                   'password' => 'rlippassword',
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'nonrequiredfields'));
+        $this->assert_record_exists('enrol', array('courseid' => $courseid,
+                                                   'enrol' => 'guest',
+                                                   'password' => 'nonrequiredfieldspassword',
                                                    'status' => ENROL_INSTANCE_ENABLED));
     }
 
@@ -577,16 +643,14 @@ class version1CourseImportTest extends elis_database_test {
         set_config('maxsections', 20, 'moodlecourse');
         set_config('enrol_plugins_enabled', 'guest');
 
-        $this->init_contexts_and_site_course();
-
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'updateshortname'));
 
         $new_category = new stdClass;
-        $new_category->name = 'newcategory';
+        $new_category->name = 'updatecategory';
         $new_category->id = $DB->insert_record('course_categories', $new_category);
         
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'updateshortname',
                       'fullname' => 'updatedfullname',
                       'idnumber' => 'rlipidnumber',
                       'summary' => 'rlipsummary',
@@ -601,7 +665,7 @@ class version1CourseImportTest extends elis_database_test {
                       'password' => 'password',
                       'visible' => 0,
                       'lang' => 'en',
-                      'category' => 'newcategory');
+                      'category' => 'updatecategory');
         $this->run_core_course_import($data, false);
 
         unset($data['action']);
@@ -628,7 +692,7 @@ class version1CourseImportTest extends elis_database_test {
         $exists = $DB->record_exists_select('course', $select, $data);
         $this->assertEquals($exists, true);
 
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'updateshortname'));
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
                                                    'password' => 'password',
@@ -639,8 +703,9 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid format values can't be set on course creation
      */
     public function testVersion1ImportPreventsInvalidCourseFormatOnCreate() {
-        $this->run_core_course_import(array('format' => 'invalid'));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'invalidcourseformatcreate',
+                                            'format' => 'invalid'));
+        $this->assert_core_course_does_not_exist('invalidcourseformatcreate');
     }
 
     /**
@@ -648,18 +713,19 @@ class version1CourseImportTest extends elis_database_test {
      */
     public function testVersion1ImportPreventsInvalidCourseFormatOnUpdate() {
         //setup
-        $this->init_contexts_and_site_course();
+        //$this->init_contexts_and_site_course();
 
-        $this->run_core_course_import(array('format' => 'topics'));
+        $this->run_core_course_import(array('shortname' => 'invalidcourseformatupdate',
+                                            'format' => 'topics'));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidcourseformatupdate',
                       'format' => 'bogus');
 
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'invalidcourseformatupdate',
                                                     'format' => 'topics'));
     }
 
@@ -667,8 +733,10 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid numsections values can't be set on course creation
      */
     public function testVersion1ImportPreventsInvalidCourseNumsectionsOnCreate() {
-        $this->run_core_course_import(array('numsections' => 99999));
-        $this->assert_core_course_does_not_exist();
+        set_config('maxsections', 10, 'moodlecourse');
+        $this->run_core_course_import(array('shortname' => 'invalidcoursenumsectionscreate',
+                                            'numsections' => 99999));
+        $this->assert_core_course_does_not_exist('invalidcoursenumsectionscreate');
     }
 
     /**
@@ -676,19 +744,20 @@ class version1CourseImportTest extends elis_database_test {
      */
     public function testVersion1ImportPreventsInvalidCourseNumsectionsOnUpdate() {
         //setup
-        $this->init_contexts_and_site_course();
+        //$this->init_contexts_and_site_course();
 
         set_config('maxsections', 10, 'moodlecourse');
-        $this->run_core_course_import(array('numsections' => 7));
+        $this->run_core_course_import(array('shortname' => 'invalidcoursenumsectionscreate',
+                                            'numsections' => 7));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidcoursenumsectionscreate',
                       'numsections' => 9999);
 
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'invalidcoursenumsectionscreate',
                                                     'numsections' => 7));
     }
 
@@ -696,8 +765,9 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid startdate values can't be set on course creation
      */
     public function testVersion1ImportPreventsInvalidCourseStartdateOnCreate() {
-        $this->run_core_course_import(array('startdate' => 'invalidstartdate'));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'invalidcoursestartdatecreate',
+                                            'startdate' => 'invalidstartdate'));
+        $this->assert_core_course_does_not_exist('invalidcoursestartdatecreate');
     }
 
     /**
@@ -705,18 +775,19 @@ class version1CourseImportTest extends elis_database_test {
      */
     public function testVersion1ImportPreventsInvalidCourseStartdateOnUpdate() {
         //setup
-        $this->init_contexts_and_site_course();
+        //$this->init_contexts_and_site_course();
 
-        $this->run_core_course_import(array('startdate' => 'Jan/01/2012'));
+        $this->run_core_course_import(array('shortname' => 'invalidcoursestartdateupdate',
+                                            'startdate' => 'Jan/01/2012'));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidcoursestartdateupdate',
                       'startdate' => 'bogus');
 
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'invalidcoursestartdateupdate',
                                                     'startdate' => mktime(0, 0, 0, 1, 1, 2012)));
     }
 
@@ -724,8 +795,9 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid newsitems values can't be set on course creation
      */
     public function testVersion1ImportPreventsInvalidCourseNewsitemsOnCreate() {
-        $this->run_core_course_import(array('newsitems' => 99999));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'invalidcoursenewsitemscreate',
+                                            'newsitems' => 99999));
+        $this->assert_core_course_does_not_exist('invalidcoursenewsitemscreate');
     }
 
     /**
@@ -733,18 +805,19 @@ class version1CourseImportTest extends elis_database_test {
      */
     public function testVersion1ImportPreventsInvalidCourseNewsitemsOnUpdate() {
         //setup
-        $this->init_contexts_and_site_course();
+        //$this->init_contexts_and_site_course();
 
-        $this->run_core_course_import(array('newsitems' => 7));
+        $this->run_core_course_import(array('shortname' => 'invalidcoursenewsitemsupdate',
+                                            'newsitems' => 7));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidcoursenewsitemsupdate',
                       'newsitems' => 9999);
 
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'invalidcoursenewsitemsupdate',
                                                     'newsitems' => 7));
     }
 
@@ -752,8 +825,9 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid showgrades values can't be set on course creation
      */
     public function testVersion1ImportPreventsInvalidCourseShowgradesOnCreate() {
-        $this->run_core_course_import(array('showgrades' => 2));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'invalidcourseshowgradescreate',
+                                            'showgrades' => 2));
+        $this->assert_core_course_does_not_exist('invalidcourseshowgradescreate');
     }
 
     /**
@@ -761,18 +835,19 @@ class version1CourseImportTest extends elis_database_test {
      */
     public function testVersion1ImportPreventsInvalidCourseShowgradesOnUpdate() {
         //setup
-        $this->init_contexts_and_site_course();
+        //$this->init_contexts_and_site_course();
 
-        $this->run_core_course_import(array('showgrades' => 1));
+        $this->run_core_course_import(array('shortname' => 'invalidcourseshowgradesupdate',
+                                            'showgrades' => 1));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidcourseshowgradesupdate',
                       'showgrades' => 9999);
 
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'invalidcourseshowgradesupdate',
                                                     'showgrades' => 1));
     }
 
@@ -780,27 +855,26 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid showreports values can't be set on course creation
      */
     public function testVersion1ImportPreventsInvalidCourseShowreportsOnCreate() {
-        $this->run_core_course_import(array('showreports' => 2));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'invalidcourseshowreportscreate',
+                                            'showreports' => 2));
+        $this->assert_core_course_does_not_exist('invalidcourseshowreportscreate');
     }
 
     /**
      * Validate that invalid showreports values can't be set on course update
      */
     public function testVersion1ImportPreventsInvalidCourseShowreportsOnUpdate() {
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->run_core_course_import(array('showreports' => 1));
+        $this->run_core_course_import(array('shortname' => 'invalidcourseshowreportsupdate',
+                                            'showreports' => 1));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidcourseshowreportsupdate',
                       'showreports' => 9999);
 
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'invalidcourseshowreportsupdate',
                                                     'showreports' => 1));
     }
 
@@ -808,27 +882,26 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid maxbytes values can't be set on course creation
      */
     public function testVersion1ImportPreventsInvalidCourseMaxbytesOnCreate() {
-        $this->run_core_course_import(array('maxbytes' => 25));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'invalidcoursemaxbytescreate',
+                                            'maxbytes' => 25));
+        $this->assert_core_course_does_not_exist('invalidcoursemaxbytescreate');
     }
 
     /**
      * Validate that invalid maxbytes values can't be set on course update
      */
     public function testVersion1ImportPreventsInvalidCourseMaxbytesOnUpdate() {
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->run_core_course_import(array('maxbytes' => 0));
+        $this->run_core_course_import(array('shortname' => 'invalidcoursemaxbytesupdate',
+                                            'maxbytes' => 0));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidcoursemaxbytesupdate',
                       'maxbytes' => 9999);
 
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'invalidcoursemaxbytesupdate',
                                                     'maxbytes' => 0));
     }
 
@@ -836,34 +909,35 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid guest values can't be set on course creation
      */
     public function testVersion1ImportPreventsInvalidCourseGuestOnCreate() {
-        $this->run_core_course_import(array('guest' => 2));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'invalidcourseguestcreate',
+                                            'guest' => 2));
+        $this->assert_core_course_does_not_exist('invalidcourseguestcreate');
     }
 
     /**
      * Validate that invalid guest values can't be set on course update
      */
     public function testVersion1ImportPreventsInvalidCourseGuestOnUpdate() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         set_config('defaultenrol', 1, 'enrol_guest');
         set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_guest');
         set_config('enrol_plugins_enabled', 'guest');
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->run_core_course_import(array('allowguestacces' => 1));
+        $this->run_core_course_import(array('shortname' => 'invalidcourseguestupdate',
+                                            'allowguestacces' => 1));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidcourseguestupdate',
                       'guest' => 9999);
 
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('enrol', array('enrol' => 'guest',
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'invalidcourseguestupdate'));
+        $this->assert_record_exists('enrol', array('courseid' => $courseid,
+                                                   'enrol' => 'guest',
                                                    'status' => ENROL_INSTANCE_ENABLED));
     }
 
@@ -871,27 +945,26 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid visible values can't be set on course creation
      */
     public function testVersion1ImportPreventsInvalidCourseVisibleOnCreate() {
-        $this->run_core_course_import(array('visible' => 2));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'invalidcoursevisiblecreate',
+                                            'visible' => 2));
+        $this->assert_core_course_does_not_exist('invalidcoursevisiblecreate');
     }
 
     /**
      * Validate that invalid visible values can't be set on course update
      */
     public function testVersion1ImportPreventsInvalidCourseVisibleOnUpdate() {
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->run_core_course_import(array('visible' => 1));
+        $this->run_core_course_import(array('shortname' => 'invalidcoursevisibleupdate',
+                                            'visible' => 1));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidcoursevisibleupdate',
                       'visible' => 9999);
 
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'invalidcoursevisibleupdate',
                                                     'visible' => 1));
     }
 
@@ -899,27 +972,26 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid lang values can't be set on course creation
      */
     public function testVersion1ImportPreventsInvalidCourseLangOnCreate() {
-        $this->run_core_course_import(array('lang' => 'boguslang'));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'invalidcourselangcreate',
+                                            'lang' => 'boguslang'));
+        $this->assert_core_course_does_not_exist('invalidcourselangcreate');
     }
 
     /**
      * Validate that invalid lang values can't be set on course update
      */
     public function testVersion1ImportPreventsInvalidCourseLangOnUpdate() {
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->run_core_course_import(array('lang' => 'en'));
+        $this->run_core_course_import(array('shortname' => 'invalidcourselangupdate',
+                                            'lang' => 'en'));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidcourselangupdate',
                       'lang' => 'bogus');
 
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'invalidcourselangupdate',
                                                     'lang' => 'en'));
     }
 
@@ -929,19 +1001,19 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportPreventsSettingUnsupportedCourseFieldsOnCreate() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
         $starttime = time();
 
         $data = array();
+        $data['shortname'] = 'unsupportedcoursefieldscreate';
         $data['sortorder'] = 999;
         $data['timecreated'] = 25;
         $data['completionnotify'] = 7;
         $this->run_core_course_import($data);
 
-        $select = "timecreated >= :starttime";
-        $params = array('starttime' => $starttime);
+        $select = "shortname = :shortname AND
+                   timecreated >= :starttime";
+        $params = array('shortname' => 'unsupportedcoursefieldscreate',
+                        'starttime' => $starttime);
 
         //make sure that a record exists with the default data rather than with the
         //specified values
@@ -949,11 +1021,13 @@ class version1CourseImportTest extends elis_database_test {
         $this->assertEquals($exists, true);
 
         //make sure sortorder isn't set to the supplied value
-        $exists = $DB->record_exists('course', array('sortorder' => 999));
+        $exists = $DB->record_exists('course', array('shortname' => 'unsupportedcoursefieldscreate', 
+                                                     'sortorder' => 999));
         $this->assertEquals($exists, false);
 
         //make sure completionnotify isn't set to the supplied value
-        $exists = $DB->record_exists('course', array('completionnotify' => 7));
+        $exists = $DB->record_exists('course', array('shortname' => 'unsupportedcoursefieldscreate',
+                                                     'completionnotify' => 7));
         $this->assertEquals($exists, false);
     }
 
@@ -963,24 +1037,23 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportPreventsSettingUnsupportedCourseFieldsOnUpdate() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
         $starttime = time();
 
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'unsupportedcoursefieldsupdate'));
 
         $data = array();
         $data['action'] = 'update';
-        $data['shortname'] = 'rlipshortname';
+        $data['shortname'] = 'unsupportedcoursefieldsupdate';
         $data['sortorder'] = 999;
         $data['timecreated'] = 25;
         $data['completionnotify'] = 7;
 
         $this->run_core_course_import($data, false);
 
-        $select = "timecreated >= :starttime";
-        $params = array('starttime' => $starttime);
+        $select = "shortname = :shortname AND
+                   timecreated >= :starttime";
+        $params = array('shortname' => 'unsupportedcoursefieldsupdate',
+                        'starttime' => $starttime);
 
         //make sure that a record exists with the default data rather than with the
         //specified values
@@ -988,11 +1061,13 @@ class version1CourseImportTest extends elis_database_test {
         $this->assertEquals($exists, true);
 
         //make sure sortorder isn't set to the supplied value
-        $exists = $DB->record_exists('course', array('sortorder' => 999));
+        $exists = $DB->record_exists('course', array('shortname' => 'unsupportedcoursefieldsupdate',
+                                                     'sortorder' => 999));
         $this->assertEquals($exists, false);
 
         //make sure completionnotify isn't set to the supplied value
-        $exists = $DB->record_exists('course', array('completionnotify' => 7));
+        $exists = $DB->record_exists('course', array('shortname' => 'unsupportedcoursefieldsupdate',
+                                                     'completionnotify' => 7));
         $this->assertEquals($exists, false);
     }
 
@@ -1000,38 +1075,40 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that field-length checking works correctly on course creation
      */
     public function testVersion1ImportPreventsLongCourseFieldsOnCreate() {
-        $this->run_core_course_import(array('fullname' => str_repeat('a', 255)));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'coursefullnametoolongcreate',
+                                            'fullname' => str_repeat('a', 255)));
+        $this->assert_core_course_does_not_exist('coursefullnametoolongcreate');
 
-        $this->run_core_course_import(array('shortname' => str_repeat('a', 101)));
-        $this->assert_core_course_does_not_exist();
+        $shortname = str_repeat('a', 101);
+        $this->run_core_course_import(array('shortname' => $shortname));
+        $this->assert_core_course_does_not_exist($shortname);
 
-        $this->run_core_course_import(array('idnumber' => str_repeat('a', 101)));
-        $this->assert_core_course_does_not_exist();
+        $this->run_core_course_import(array('shortname' => 'courseidnumbertoolongcreate',
+                                            'idnumber' => str_repeat('a', 101)));
+        $this->assert_core_course_does_not_exist('courseidnumbertoolongcreate');
     }
 
     /**
      * Validate that field-length checking works correctly on course update
      */
     public function testVersion1ImportPreventsLongCourseFieldsOnUpdate() {
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->run_core_course_import(array('idnumber' => 'rlipidnumber'));
+        $this->run_core_course_import(array('shortname' => 'coursefullnametoolongupdate',
+                                            'fullname' => 'coursefullnametoolongupdatefullname',
+                                            'idnumber' => 'coursefullnametoolongupdateidnumber'));
 
         $params = array('action' => 'update',
-                        'shortname' => 'rlipshortname',
+                        'shortname' => 'coursefullnametoolongupdate',
                         'fullname' => str_repeat('a', 256));
         $this->run_core_course_import($params, false);
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
-                                                    'fullname' => 'rlipfullname'));
+        $this->assert_record_exists('course', array('shortname' => 'coursefullnametoolongupdate',
+                                                    'fullname' => 'coursefullnametoolongupdatefullname'));
 
         $params = array('action' => 'update',
-                        'shortname' => 'rlipshortname',
+                        'shortname' => 'coursefullnametoolongupdate',
                         'idnumber' => str_repeat('a', 101));
         $this->run_core_course_import($params, false);
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
-                                                    'idnumber' => 'rlipidnumber'));
+        $this->assert_record_exists('course', array('shortname' => 'coursefullnametoolongupdate',
+                                                    'idnumber' => 'coursefullnametoolongupdateidnumber'));
     }
 
     /**
@@ -1040,18 +1117,15 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportPreventsDuplicateCourseCreation() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
         $initial_count = $DB->count_records('course');
 
         //set up our data
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'preventduplicatecourses'));
         $count = $DB->count_records('course');
         $this->assertEquals($initial_count + 1, $count);
 
         //test duplicate username
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'preventduplicatecourses'));
         $count = $DB->count_records('course');
         $this->assertEquals($initial_count + 1, $count);
     }
@@ -1063,17 +1137,13 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCreatesCourseInUniqueCategory() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->set_up_category_structure();
-
         $data = $this->get_core_course_data('childcategory');
+        $data['shortname'] = 'uniquecategorycreate';
         $this->run_core_course_import($data);
 
         $child_category_id = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
-        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname',
+        $exists = $DB->record_exists('course', array('shortname' => 'uniquecategorycreate',
                                                      'category' => $child_category_id));
         $this->assertEquals($exists, true);
     }
@@ -1085,12 +1155,8 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportMovesCourseToUniqueCategory() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->set_up_category_structure();
-
         $data = $this->get_core_course_data('childcategory');
+        $data['shortname'] = 'uniquecategoryupdate';
         $this->run_core_course_import($data);
 
         $new_category = new stdClass;
@@ -1098,11 +1164,11 @@ class version1CourseImportTest extends elis_database_test {
         $new_category->id = $DB->insert_record('course_categories', $new_category);
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'uniquecategoryupdate',
                       'category' => 'newcategory');
         $this->run_core_course_import($data, false);
 
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'uniquecategoryupdate',
                                                     'category' => $new_category->id));
     }
 
@@ -1113,17 +1179,13 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCreatesCourseInUniqueRelativeCategoryPath() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->set_up_category_structure();
-
         $data = $this->get_core_course_data('parentcategory/childcategory');
+        $data['shortname'] = 'uniquerelativepathcreate';
         $this->run_core_course_import($data);
 
         $child_category_id = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
-        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname',
+        $exists = $DB->record_exists('course', array('shortname' => 'uniquerelativepathcreate',
                                                      'category' => $child_category_id));
         $this->assertEquals($exists, true);
     }
@@ -1135,26 +1197,18 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportMovesCourseToUniqueRelativeCategoryPath() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->set_up_category_structure();
-
-        $data = $this->get_core_course_data('childcategory');
+        $data = $this->get_core_course_data('parentcategory');
+        $data['shortname'] = 'uniquerelativepathupdate';
         $this->run_core_course_import($data);
 
-        $new_category = new stdClass;
-        $new_category->name = 'newcategory';
-        $new_category->parent = $DB->get_field('course_categories', 'id', array('name' => 'parentcategory'));
-        $new_category->id = $DB->insert_record('course_categories', $new_category);
-
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => 'parentcategory/newcategory');
+                      'shortname' => 'uniquerelativepathupdate',
+                      'category' => 'parentcategory/childcategory');
         $this->run_core_course_import($data, false);
 
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
-                                                    'category' => $new_category->id));
+        $child_category_id = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
+        $this->assert_record_exists('course', array('shortname' => 'uniquerelativepathupdate',
+                                                    'category' => $child_category_id));
     }
 
     /**
@@ -1164,17 +1218,13 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCreatesCourseInUniqueAbsoluteCategoryPath() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->set_up_category_structure();
-
         $data = $this->get_core_course_data('/parentcategory/childcategory');
+        $data['shortname'] = 'uniqueabsoluatepathcreate';
         $this->run_core_course_import($data);
 
         $child_category_id = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
-        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname',
+        $exists = $DB->record_exists('course', array('shortname' => 'uniqueabsoluatepathcreate',
                                                      'category' => $child_category_id));
         $this->assertEquals($exists, true);
     }
@@ -1186,26 +1236,18 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportMovesCourseToUniqueAbsoluteCategoryPath() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->set_up_category_structure();
-
-        $data = $this->get_core_course_data('childcategory');
+        $data = $this->get_core_course_data('parentcategory');
+        $data['shortname'] = 'uniqueabsoluatepathupdate';
         $this->run_core_course_import($data);
 
-        $new_category = new stdClass;
-        $new_category->name = 'newcategory';
-        $new_category->parent = $DB->get_field('course_categories', 'id', array('name' => 'parentcategory'));
-        $new_category->id = $DB->insert_record('course_categories', $new_category);
-
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => '/parentcategory/newcategory');
+                      'shortname' => 'uniqueabsoluatepathupdate',
+                      'category' => '/parentcategory/childcategory');
         $this->run_core_course_import($data, false);
 
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
-                                                    'category' => $new_category->id));
+        $child_category_id = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
+        $this->assert_record_exists('course', array('shortname' => 'uniqueabsoluatepathupdate',
+                                                    'category' => $child_category_id));
     }
 
     /**
@@ -1215,37 +1257,25 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCreatesCourseOnlyInAbsoluteCategoryPath() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        //set up a parent and child category
-        $this->set_up_category_structure();
-
-        //create a grandchild and a great-grandchild with the same parent/child
-        //naming structure
-        $child_category_id = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
-
-        $second_parent = new stdClass;
-        $second_parent->name = 'parentcategory';
-        $second_parent->parent = $child_category_id;
-        $second_parent->id = $DB->insert_record('course_categories', $second_parent);
-
-        $second_child = new stdClass;
-        $second_child->name = 'childcategory';
-        $second_child->parent = $second_parent->id;
-        $second_child->id = $DB->insert_record('course_categories', $second_child);
-
         //make sure specifying an ambigious relative path does not create a course 
-        $data = $this->get_core_course_data('parentcategory/childcategory');
+        $data = $this->get_core_course_data('duplicateparentcategory/duplicatechildcategory');
+        $data['shortname'] = 'ambiguousrelativepathcreate';
         $this->run_core_course_import($data);
-        $this->assert_core_course_does_not_exist();
+        $this->assert_core_course_does_not_exist('ambiguousrelativepathcreate');
 
         //make sure specifying a non-ambiguous absolute path creates the course
-        $data = $this->get_core_course_data('/parentcategory/childcategory');
+        $data = $this->get_core_course_data('/duplicateparentcategory/duplicatechildcategory');
+        $data['shortname'] = 'ambiguousrelativepathcreate';
         $this->run_core_course_import($data);
 
-        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname',
-                                                     'category' => $child_category_id));
+        $child_category = $DB->get_record_sql("SELECT child.*
+                                               FROM {course_categories} child
+                                               JOIN {course_categories} parent
+                                                 ON child.parent = parent.id
+                                               WHERE child.name = ?
+                                                 AND parent.parent = 0", array('duplicatechildcategory'));
+        $exists = $DB->record_exists('course', array('shortname' => 'ambiguousrelativepathcreate',
+                                                     'category' => $child_category->id));
         $this->assertEquals($exists, true);
     }
 
@@ -1256,47 +1286,37 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportMovesCourseOnlyToAbsoluteCategoryPath() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        //set up a parent and child category
-        $this->set_up_category_structure();
-
         $data = $this->get_core_course_data('childcategory');
+        $data['shortname'] = 'absolutecategorypathupdate';
         $this->run_core_course_import($data);
 
-        //create a grandchild and a great-grandchild with the same parent/child
-        //naming structure
-        $child_category_id = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
-
-        $second_parent = new stdClass;
-        $second_parent->name = 'parentcategory';
-        $second_parent->parent = $child_category_id;
-        $second_parent->id = $DB->insert_record('course_categories', $second_parent);
-
-        $second_child = new stdClass;
-        $second_child->name = 'childcategory';
-        $second_child->parent = $second_parent->id;
-        $second_child->id = $DB->insert_record('course_categories', $second_child);
+        $duplicate_child_category = $DB->get_record_sql("SELECT *
+                                                         FROM {course_categories} parent
+                                                         WHERE name = ?
+                                                         AND NOT EXISTS (
+                                                           SELECT *
+                                                           FROM {course_categories} child
+                                                          WHERE parent.id = child.parent
+                                                         )", array('duplicatechildcategory'));
 
         //make sure specifying an ambigious relative path does not move a course
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => 'parentcategory/childcategory'); 
+                      'shortname' => 'absolutecategorypathupdate',
+                      'category' => 'duplicateparentcategory/duplicatechildcategory'); 
         $this->run_core_course_import($data, false);
 
-        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname',
-                                                     'category' => $second_child->id));
+        $exists = $DB->record_exists('course', array('shortname' => 'absolutecategorypathupdate',
+                                                     'category' => $duplicate_child_category->id));
         $this->assertEquals($exists, false);
 
         //make sure specifying a non-ambiguous absolute path moves the course
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => '/parentcategory/childcategory/parentcategory/childcategory');
+                      'shortname' => 'absolutecategorypathupdate',
+                      'category' => 'duplicateparentcategory/duplicatechildcategory/duplicateparentcategory/duplicatechildcategory');
         $this->run_core_course_import($data, false);
 
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
-                                                    'category' => $second_child->id));
+        $this->assert_record_exists('course', array('shortname' => 'absolutecategorypathupdate',
+                                                    'category' => $duplicate_child_category->id));
     }
 
     /**
@@ -1307,18 +1327,23 @@ class version1CourseImportTest extends elis_database_test {
         global $DB;
 
         //setup
-        $this->init_contexts_and_site_course();
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
-        //set up the test category
-        $categoryname = $this->create_test_category();
-        $categoryid = $DB->get_field('course_categories', 'id', array('name' => $categoryname));
+        $new_category = new stdClass;
+        $new_category->name = $categoryid;
+        $new_category->id = $DB->insert_record('course_categories', $new_category);
+        get_context_instance(CONTEXT_COURSECAT, $new_category->id);
+        build_context_path(true);
 
         //run the import
         $data = $this->get_core_course_data($categoryid);
+        $data['shortname'] = 'categoryidcreate';
+        $data['category'] = $categoryid;
         $this->run_core_course_import($data);
+        $DB->delete_records('course_categories', array('id' => $new_category->id));
 
-        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname',
-                                                     'category' => $categoryid));
+        $exists = $DB->record_exists('course', array('shortname' => 'categoryidcreate',
+                                                     'category' => $new_category->id));
         $this->assertEquals($exists, true);
     }
 
@@ -1330,23 +1355,25 @@ class version1CourseImportTest extends elis_database_test {
         global $DB;
 
         //setup
-        $this->init_contexts_and_site_course();
-
-        $this->set_up_category_structure();
-
         $data = $this->get_core_course_data('childcategory');
+        $data['shortname'] = 'categoryidupdate';
         $this->run_core_course_import($data);
 
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
+
         $new_category = new stdClass;
-        $new_category->name = 'newcategory';
+        $new_category->name =  $categoryid;
         $new_category->id = $DB->insert_record('course_categories', $new_category);
+        get_context_instance(CONTEXT_COURSECAT, $new_category->id);
+        build_context_path(true);
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'categoryidupdate',
                       'category' => $new_category->id);
         $this->run_core_course_import($data, false);
+        $DB->delete_records('course_categories', array('id' => $new_category->id));
 
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'categoryidupdate',
                                                     'category' => $new_category->id));
     }
 
@@ -1357,9 +1384,6 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCreatesCourseInCategoryWithSlash() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
         //create category
         $category = new stdClass;
         $category->name = 'slash/slash';
@@ -1367,10 +1391,11 @@ class version1CourseImportTest extends elis_database_test {
 
         //run import
         $data = $this->get_core_course_data('slash\\/slash');
+        $data['shortname'] = 'categoryslashcreate';
         $this->run_core_course_import($data);
 
         //make sure the import completed
-        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname',
+        $exists = $DB->record_exists('course', array('shortname' => 'categoryslashcreate',
                                                      'category' => $category->id));
         $this->assertEquals($exists, true);
     }
@@ -1382,9 +1407,6 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCreatesCourseInCategoryWithBackslash() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
         //create category
         $category = new stdClass;
         $category->name = 'backslash\\backslash';
@@ -1392,10 +1414,11 @@ class version1CourseImportTest extends elis_database_test {
 
         //run import
         $data = $this->get_core_course_data('backslash\\\\backslash');
+        $data['shortname'] = 'categorybackslashcreate';
         $this->run_core_course_import($data);
 
         //make sure the import completed
-        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname',
+        $exists = $DB->record_exists('course', array('shortname' => 'categorybackslashcreate',
                                                      'category' => $category->id));
         $this->assertEquals($exists, true);
     }
@@ -1405,12 +1428,11 @@ class version1CourseImportTest extends elis_database_test {
      * name is not unique
      */
     public function testVersion1ImportPreventsCreatingCourseInNonuniqueCategory() {
-        $this->set_up_category_structure(true);
-
-        $data = $this->get_core_course_data('childcategory');
+        $data = $this->get_core_course_data('duplicatechildcategory');
+        $data['shortname'] = 'createinnonuniquecategory1';
         $this->run_core_course_import($data);
 
-        $this->assert_core_course_does_not_exist();
+        $this->assert_core_course_does_not_exist('createinnonuniquecategory1');
     }
 
     /**
@@ -1418,12 +1440,11 @@ class version1CourseImportTest extends elis_database_test {
      * path is not unique using a relative category path
      */
     public function testVersion1ImportPreventsCreatingCourseInNonuniqueRelativeCategoryPath() {
-        $this->set_up_category_structure(true);
-
-        $data = $this->get_core_course_data('parentcategory/childcategory');
+        $data = $this->get_core_course_data('duplicateparentcategory/duplicatechildcategory');
+        $data['shortname'] = 'createinnonuniquecategory2';
         $this->run_core_course_import($data);
 
-        $this->assert_core_course_does_not_exist();
+        $this->assert_core_course_does_not_exist('createinnonuniquecategory2');
     }
 
     /**
@@ -1431,12 +1452,11 @@ class version1CourseImportTest extends elis_database_test {
      * path is not unique using an absolute category path
      */
     public function testVersion1ImportPreventsCreatingCourseInNonuniqueAbsoluteCategoryPath() {
-        $this->set_up_category_structure(true);
-
-        $data = $this->get_core_course_data('/parentcategory/childcategory');
+        $data = $this->get_core_course_data('/nonuniqueabsoluteparent/nonuniqueabsolutechild');
+        $data['shortname'] = 'createinnonuniquecategory3';
         $this->run_core_course_import($data);
 
-        $this->assert_core_course_does_not_exist();
+        $this->assert_core_course_does_not_exist('createinnonuniquecategory3');
     }
 
     /**
@@ -1446,11 +1466,7 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportPrioritizesCategoryNamesOverIds() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->create_test_category();
-        $testcategoryid = $DB->get_field('course_categories', 'id', array('name' => 'testcategory'));
+        $testcategoryid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
         //create a category whose name is the id of the existing category
         $category = new stdClass;
@@ -1458,10 +1474,13 @@ class version1CourseImportTest extends elis_database_test {
         $category->id = $DB->insert_record('course_categories', $category);
 
         $data = $this->get_core_course_data($testcategoryid);
+        $data['shortname'] = 'prioritizecategoryname';
+        $data['category'] = $testcategoryid;
         $this->run_core_course_import($data, false);
+        $DB->delete_records('course_categories', array('id' => $category->id));
 
         //make sure category was identified by name
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'prioritizecategoryname',
                                                     'category' => $category->id));
     }
 
@@ -1472,26 +1491,28 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseCreateCreatesCategoryFromName() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import
-        $data = $this->get_core_course_data('testcategory');
+        $data = $this->get_core_course_data('createcategorycreate');
+        $data['shortname'] = 'createcategorycreate';
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 1);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 1);
 
         //validate course and category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testcategory'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array(0));
+        $exists = $DB->record_exists_sql($sql, array('createcategorycreate', 'createcategorycreate', 0));
         $this->assertEquals($exists, true);
     }
 
@@ -1502,31 +1523,32 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseUpdateCreatesCategoryFromName() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import to create initial course and category
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'createcategoryupdate'));
 
         //run import to move course to new category
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => 'testcategory2');
+                      'shortname' => 'createcategoryupdate',
+                      'category' => 'createcategoryupdate');
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 2);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 1);
 
         //validate course and category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testcategory2'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array(0));
+        $exists = $DB->record_exists_sql($sql, array('createcategoryupdate', 'createcategoryupdate', 0));
         $this->assertEquals($exists, true);
     }
 
@@ -1537,31 +1559,33 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseCreateCreatesCategoriesFromRelativePathWithNonexistentPrefix() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import
-        $data = $this->get_core_course_data('testparentcategory/testchildcategory');
+        $data = $this->get_core_course_data('createrelativenonexistentparentcreate/createrelativenonexistentchildcreate');
+        $data['shortname'] = 'createrelativenonexistentcreate';
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 2);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 2);
 
         //validate parent category
-        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+        $this->assert_record_exists('course_categories', array('name' => 'createrelativenonexistentparentcreate',
                                                                'parent' => 0));
-        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'createrelativenonexistentparentcreate'));
 
         //validate course and child category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testchildcategory'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $exists = $DB->record_exists_sql($sql, array('createrelativenonexistentcreate', 'createrelativenonexistentchildcreate', $parentid));
         $this->assertEquals($exists, true);
     }
 
@@ -1573,36 +1597,37 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseUpdateCreatesCategoriesFromRelativePathWithNonexistentPrefix() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import to create initial course and category
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'createrelativenonexistentupdate'));
 
         //run import to move course to new category
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => 'testparentcategory/testchildcategory');
+                      'shortname' => 'createrelativenonexistentupdate',
+                      'category' => 'createrelativenonexistentparentupdate/createrelativenonexistentchildupdate');
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 3);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 2);
 
         //validate parent category
-        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+        $this->assert_record_exists('course_categories', array('name' => 'createrelativenonexistentparentupdate',
                                                                'parent' => 0));
-        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'createrelativenonexistentparentupdate'));
 
         //validate course and child category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testchildcategory'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $exists = $DB->record_exists_sql($sql, array('createrelativenonexistentupdate', 'createrelativenonexistentchildupdate', $parentid));
         $this->assertEquals($exists, true);
     }
 
@@ -1613,42 +1638,30 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseCreateCreatesCategoryFromRelativePathWithExistingPrefix() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        //create grandparent category
-        $this->create_test_category('testgrandparentcategory');
-        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
-
-        //create parent category
-        $this->create_test_category('testparentcategory', $grandparentid);
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import
-        $data = $this->get_core_course_data('testgrandparentcategory/testparentcategory/testchildcategory');
+        $data = $this->get_core_course_data('parentcategory/childcategory/createrelativeexistentcreatechild');
+        $data['shortname'] = 'createrelativeexistentcreate';
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 3);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 1);
 
-        //validate grandparent category
-        $this->assert_record_exists('course_categories', array('name' => 'testgrandparentcategory',
-                                                               'parent' => 0));
-
-        //validate parent category
-        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
-                                                               'parent' => $grandparentid));
-        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+        $childid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
         //validate course and child category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testchildcategory'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $exists = $DB->record_exists_sql($sql, array('createrelativeexistentcreate', 'createrelativeexistentcreatechild', $childid));
         $this->assertEquals($exists, true);
     }
 
@@ -1659,11 +1672,12 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseUpdateCreatesCategoryFromRelativePathWithExistingPrefix() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import to create initial course and category
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'createrelativeexistentupdate'));
 
         //create grandparent category
         $this->create_test_category('testgrandparentcategory');
@@ -1674,21 +1688,14 @@ class version1CourseImportTest extends elis_database_test {
 
         //run import to move course to new category
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => 'testgrandparentcategory/testparentcategory/testchildcategory');
+                      'shortname' => 'createrelativeexistentupdate',
+                      'category' => 'testgrandparentcategory/testparentcategory/createrelativeexistentupdatechild');
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 4);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 3);
 
-        //validate grandparent category
-        $this->assert_record_exists('course_categories', array('name' => 'testgrandparentcategory',
-                                                               'parent' => 0));
-
-        //validate parent category
-        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
-                                                               'parent' => $grandparentid));
         $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
 
         //validate course and child category assignment
@@ -1696,10 +1703,10 @@ class version1CourseImportTest extends elis_database_test {
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testchildcategory'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $exists = $DB->record_exists_sql($sql, array('createrelativeexistentupdate', 'createrelativeexistentupdatechild', $parentid));
         $this->assertEquals($exists, true);
     }
 
@@ -1710,31 +1717,33 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseCreateCreatesCategoriesFromAbsolutePathWithNonexistentPrefix() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import
-        $data = $this->get_core_course_data('/testparentcategory/testchildcategory');
+        $data = $this->get_core_course_data('/createabsolutenonexistentcreateparent/createabsolutenonexistentcreatechild');
+        $data['shortname'] = 'createabsolutenonexistentcreate';
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 2);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 2);
 
         //validate parent category
-        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+        $this->assert_record_exists('course_categories', array('name' => 'createabsolutenonexistentcreateparent',
                                                                'parent' => 0));
-        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'createabsolutenonexistentcreateparent'));
 
         //validate course and child category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testchildcategory'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $exists = $DB->record_exists_sql($sql, array('createabsolutenonexistentcreate', 'createabsolutenonexistentcreatechild', $parentid));
         $this->assertEquals($exists, true);
     }
 
@@ -1746,36 +1755,37 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseUpdateCreatesCategoriesFromAbsolutePathWithNonexistentPrefix() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_courses = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import to create initial course and category
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'createabsolutenonexistentupdate'));
 
         //run import to move course to new category
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => '/testparentcategory/testchildcategory');
+                      'shortname' => 'createabsolutenonexistentupdate',
+                      'category' => '/createabsolutenonexistentupdateparent/createabsolutenonexistentupdatechild');
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 3);
+        $this->assertEquals($DB->count_records('course'), $initial_num_courses + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 2);
 
         //validate parent category
-        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+        $this->assert_record_exists('course_categories', array('name' => 'createabsolutenonexistentupdateparent',
                                                                'parent' => 0));
-        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'createabsolutenonexistentupdateparent'));
 
         //validate course and child category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testchildcategory'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $exists = $DB->record_exists_sql($sql, array('createabsolutenonexistentupdate', 'createabsolutenonexistentupdatechild', $parentid));
         $this->assertEquals($exists, true);
     }
 
@@ -1786,42 +1796,30 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseCreateCreatesCategoryFromAbsolutePathWithExistingPrefix() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        //create grandparent category
-        $this->create_test_category('testgrandparentcategory');
-        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
-
-        //create parent category
-        $this->create_test_category('testparentcategory', $grandparentid);
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import
-        $data = $this->get_core_course_data('/testgrandparentcategory/testparentcategory/testchildcategory');
+        $data = $this->get_core_course_data('/parentcategory/childcategory/createabsoluteexistentcreatechild');
+        $data['shortname'] = 'createabsoluteexistentcreate';
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 3);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 1);
 
-        //validate grandparent category
-        $this->assert_record_exists('course_categories', array('name' => 'testgrandparentcategory',
-                                                               'parent' => 0));
-
-        //validate parent category
-        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
-                                                               'parent' => $grandparentid));
-        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+        $childid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
         //validate course and child category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testchildcategory'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $exists = $DB->record_exists_sql($sql, array('createabsoluteexistentcreate', 'createabsoluteexistentcreatechild', $childid));
         $this->assertEquals($exists, true);
     }
 
@@ -1832,47 +1830,34 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseUpdateCreatesCategoryFromAbsolutePathWithExistingPrefix() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import to create initial course and category
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'createabsoluteexistentupdate'));
 
-        //create grandparent category
-        $this->create_test_category('testgrandparentcategory');
-        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
-
-        //create parent category
-        $this->create_test_category('testparentcategory', $grandparentid);
+        //get parent category
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
         //run import to move course to new category
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => '/testgrandparentcategory/testparentcategory/testchildcategory');
+                      'shortname' => 'createabsoluteexistentupdate',
+                      'category' => '/testgrandparentcategory/testparentcategory/createabsoluteexistentupdatechild');
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 4);
-
-        //validate grandparent category
-        $this->assert_record_exists('course_categories', array('name' => 'testgrandparentcategory',
-                                                               'parent' => 0));
-
-        //validate parent category
-        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
-                                                               'parent' => $grandparentid));
-        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 1);
 
         //validate course and child category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testchildcategory'
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array($parentid));
+                WHERE c.shortname = ?
+                AND cc.name = ?";
+        $exists = $DB->record_exists_sql($sql, array('createabsoluteexistentupdate', 'createabsoluteexistentupdatechild'));
         $this->assertEquals($exists, true);
     }
 
@@ -1883,36 +1868,38 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseCreateCreatesCategoryPath() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import
-        $data = $this->get_core_course_data('/testgrandparentcategory/testparentcategory/testchildcategory');
+        $data = $this->get_core_course_data('/coursecreatecreatespathgrandparent/coursecreatecreatespathparent/coursecreatecreatespathchild');
+        $data['shortname'] = 'coursecreatecreatespath';
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 3);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 3);
 
         //validate grandparent category
-        $this->assert_record_exists('course_categories', array('name' => 'testgrandparentcategory',
+        $this->assert_record_exists('course_categories', array('name' => 'coursecreatecreatespathgrandparent',
                                                                'parent' => 0));
-        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
+        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'coursecreatecreatespathgrandparent'));
 
         //validate parent category
-        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+        $this->assert_record_exists('course_categories', array('name' => 'coursecreatecreatespathparent',
                                                                'parent' => $grandparentid));
-        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'coursecreatecreatespathparent'));
 
         //validate course and child category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testchildcategory'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $exists = $DB->record_exists_sql($sql, array('coursecreatecreatespath', 'coursecreatecreatespathchild', $parentid));
         $this->assertEquals($exists, true);
     }
 
@@ -1923,41 +1910,42 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseUpdateCreatesCategoryPath() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import to create initial course and category
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'courseupdatecreatespath'));
 
         //run import to move course to new category
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => '/testgrandparentcategory/testparentcategory/testchildcategory');
+                      'shortname' => 'courseupdatecreatespath',
+                      'category' => '/courseupdatecreatespathgrandparent/courseupdatecreatespathparent/courseupdatecreatespathchild');
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 4);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 3);
 
         //validate grandparent category
-        $this->assert_record_exists('course_categories', array('name' => 'testgrandparentcategory',
+        $this->assert_record_exists('course_categories', array('name' => 'courseupdatecreatespathgrandparent',
                                                                'parent' => 0));
-        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
+        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'courseupdatecreatespathgrandparent'));
 
         //validate parent category
-        $this->assert_record_exists('course_categories', array('name' => 'testparentcategory',
+        $this->assert_record_exists('course_categories', array('name' => 'courseupdatecreatespathparent',
                                                                'parent' => $grandparentid));
-        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'testparentcategory'));
+        $parentid = $DB->get_field('course_categories', 'id', array('name' => 'courseupdatecreatespathparent'));
 
         //validate course and child category assignment
         $sql = "SELECT *
                 FROM {course} c
                 JOIN {course_categories} cc
                 ON c.category = cc.id
-                WHERE c.shortname = 'rlipshortname'
-                AND cc.name = 'testchildcategory'
+                WHERE c.shortname = ?
+                AND cc.name = ?
                 AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array($parentid));
+        $exists = $DB->record_exists_sql($sql, array('courseupdatecreatespath', 'courseupdatecreatespathchild', $parentid));
         $this->assertEquals($exists, true);
     }
 
@@ -1968,24 +1956,18 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseCreatePreventsCreatingCategoryWithAmbiguousParentPath() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        //create grandparent category
-        $this->create_test_category('testgrandparentcategory');
-        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
-
-        //create two parent categories "beside" eachother
-        $this->create_test_category('testparentcategory', $grandparentid);
-        $this->create_test_category('testparentcategory', $grandparentid);
+        //get initial counts
+        $initial_num_courses = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
         //run import
-        $data = $this->get_core_course_data('/testgrandparentcategory/testparentcategory/testchildcategory');
+        $data = $this->get_core_course_data('/nonuniqueabsoluteparent/nonuniqueabsolutechild/ambiguousparentcreatecategory');
+        $data['shortname'] = 'ambiguousparentcreate';
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 1);
-        $this->assertEquals($DB->count_records('course_categories'), 3);
+        $this->assertEquals($DB->count_records('course'), $initial_num_courses);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories);
     }
 
     /**
@@ -1995,29 +1977,22 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseUpdatePreventsCreatingCategoryWithAmbiguousParentPath() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
+        //get initial counts
+        $initial_num_courses = $DB->count_records('course');
+        $initial_num_categories = $DB->count_records('course_categories');
 
-        //run import to create initial course and category
-        $this->run_core_course_import(array());
-
-        //create grandparent category
-        $this->create_test_category('testgrandparentcategory');
-        $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'testgrandparentcategory'));
-
-        //create two parent categories "beside" eachother
-        $this->create_test_category('testparentcategory', $grandparentid);
-        $this->create_test_category('testparentcategory', $grandparentid);
+        //run import to create initial course
+        $this->run_core_course_import(array('shortname' => 'ambiguousparentupdate'));
 
         //run import to move course to new category
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'category' => '/testgrandparentcategory/testparentcategory/testchildcategory');
+                      'shortname' => 'ambiguousparentupdate',
+                      'category' => '/nonuniqueabsoluteparent/nonuniqueabsolutechild/ambiguousparentupdatecategory');
         $this->run_core_course_import($data, false);
 
         //validate counts
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('course_categories'), 4);
+        $this->assertEquals($DB->count_records('course'), $initial_num_courses + 1);
+        $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories);
     }
 
     /**
@@ -2027,22 +2002,20 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportOnlyUpdatesSuppliedCourseFields() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'updatescoursefields'));
 
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'updatescoursefields',
                       'fullname' => 'updatedfullname');
 
         $this->run_core_course_import($data, false);
 
-        $data = $this->get_core_course_data('testcategory');
+        $data = $this->get_core_course_data('childcategory');
         unset($data['entity']);
         unset($data['action']);
+        $data['shortname'] = 'updatescoursefields';
         $data['fullname'] = 'updatedfullname';
-        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'testcategory'));
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
         $data['category'] = $categoryid;
 
         $this->assert_record_exists('course', $data);
@@ -2052,17 +2025,15 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that update actions must match existing courses to do anything
      */
     public function testVersion1ImportDoesNotUpdateNonmatchingCourses() {
-        //setup
-        $this->init_contexts_and_site_course();
+        $this->run_core_course_import(array('shortname' => 'updatenonmatching',
+                                            'fullname' => 'fullname'));
 
-        $this->run_core_course_import(array());
-
-        $check_data = array('shortname' => 'rlipshortname',
-                            'fullname' => 'rlipfullname');
+        $check_data = array('shortname' => 'updatenonmatching',
+                            'fullname' => 'fullname');
 
         //bogus shortname
         $data = array('action' => 'update',
-                      'shortname' => 'bogusshortname',
+                      'shortname' => 'bogus',
                       'fullname' => 'newfullname');
         $this->run_core_course_import($data, false);
         $this->assert_record_exists('course', $check_data);
@@ -2076,14 +2047,12 @@ class version1CourseImportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        //setup
-        $this->init_contexts_and_site_course();
-
         //create course with guest flag and password
-        $this->run_core_course_import(array('guest' => 1,
+        $this->run_core_course_import(array('shortname' => 'createwithguest',
+                                            'guest' => 1,
                                             'password' => 'password'));
         //validate plugin configuration
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'createwithguest'));
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
                                                    'password' => 'password',
@@ -2101,12 +2070,11 @@ class version1CourseImportTest extends elis_database_test {
         //setup
         set_config('defaultenrol', 1, 'enrol_guest');
         set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
-        $this->init_contexts_and_site_course();
 
         //create course with guest flag disabled and no password
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'createwithoutguest'));
 
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'createwithoutguest'));
         //validate plugin configuration
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
@@ -2125,12 +2093,12 @@ class version1CourseImportTest extends elis_database_test {
         //setup
         set_config('defaultenrol', 1, 'enrol_guest');
         set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
-        $this->init_contexts_and_site_course();
+        //$this->init_contexts_and_site_course();
 
         //create course with guest flag disabled and no password
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'enableguestenrolment'));
         //validate plugin configuration
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'enableguestenrolment'));
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
                                                    'password' => NULL,
@@ -2138,7 +2106,7 @@ class version1CourseImportTest extends elis_database_test {
 
         //update course, enabling plugin and creating a password
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'enableguestenrolment',
                       'guest' => 1,
                       'password' => 'password');
         $this->run_core_course_import($data, false);
@@ -2158,14 +2126,15 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //setup
-        $this->init_contexts_and_site_course();
+        //$this->init_contexts_and_site_course();
 
         //create course with guest flag enabled and password
-        $this->run_core_course_import(array('guest' => 1,
+        $this->run_core_course_import(array('shortname' => 'disableguestenrolment',
+                                            'guest' => 1,
                                             'password' => 'password'));
 
         //validate setup
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'disableguestenrolment'));
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
                                                    'password' => 'password',
@@ -2173,7 +2142,7 @@ class version1CourseImportTest extends elis_database_test {
 
         //update course, disabling guest access
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'disableguestenrolment',
                       'guest' => 0);
         $this->run_core_course_import($data, false);
 
@@ -2194,27 +2163,28 @@ class version1CourseImportTest extends elis_database_test {
         //setup
         set_config('defaultenrol', 1, 'enrol_guest');
         set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
-        $this->init_contexts_and_site_course();
+        //$this->init_contexts_and_site_course();
 
         //attempt to create with password but guest plugin disabled
-        $this->run_core_course_import(array('guest' => 0,
+        $this->run_core_course_import(array('shortname' => 'invalidguestconfiguration',
+                                            'guest' => 0,
                                             'password' => 'password'));
         //validate that creation failed
-        $this->assert_core_course_does_not_exist();
+        $this->assert_core_course_does_not_exist('invalidguestconfiguration');
 
         //clean up category
         $DB->delete_records('course_categories');
 
         //create with plugin disabled and no password
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'invalidguestconfiguration'));
 
         //attempt to update, setting a password with no guest value supplied
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidguestconfiguration',
                       'password' => 'password');
         $this->run_core_course_import($data, false);
         //validate that update failed
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'invalidguestconfiguration'));
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
                                                    'status' => ENROL_INSTANCE_DISABLED,
@@ -2228,7 +2198,7 @@ class version1CourseImportTest extends elis_database_test {
 
         //attempt to update, setting a password with the guest flag being disabled
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'invalidguestconfiguration',
                       'guest' => 0,
                       'password' => 'password');
         $this->run_core_course_import($data, false);
@@ -2250,19 +2220,18 @@ class version1CourseImportTest extends elis_database_test {
         //setup
         set_config('defaultenrol', 1, 'enrol_guest');
         set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
-        $this->init_contexts_and_site_course();
 
         //create course without guest access or password
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'plugintwice'));
 
         //disable guest access in update action
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'plugintwice',
                       'guest' => 0);
         $this->run_core_course_import($data);
 
         //data validation
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'plugintwice'));
         $this->assertEquals($DB->count_records('enrol', array('courseid' => $courseid,
                                                               'enrol' => 'guest')), 1);
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
@@ -2274,18 +2243,18 @@ class version1CourseImportTest extends elis_database_test {
         $DB->delete_records('course_categories');
 
         //create course with guest access
-        $data = array('shortname' => 'rlipshortname2',
+        $data = array('shortname' => 'plugintwice2',
                       'guest' => 1);
 
         //enable guest access in update action
         $this->run_core_course_import($data);
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname2',
+                      'shortname' => 'plugintwice2',
                       'guest' => 1);
         $this->run_core_course_import($data);
 
         //data validation
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname2'));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'plugintwice2'));
         $this->assertEquals($DB->count_records('enrol', array('courseid' => $courseid,
                                                               'enrol' => 'guest')), 1);
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
@@ -2301,20 +2270,18 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersionImportPreventsConfiguringRemovedGuestPlugin() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
         //run basic import
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'removedguestplugin',
+                                            'fullname' => 'fullname'));
         //delete plugin from course
         $DB->delete_records('enrol', array('enrol' => 'guest'));
 
-        $expected = array('shortname' => 'rlipshortname',
-                          'fullname' => 'rlipfullname');
+        $expected = array('shortname' => 'removedguestplugin',
+                          'fullname' => 'fullname');
 
         //validate for specifying guest value of 0
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'removedguestplugin',
                       'fullname' => 'updatedfullname',
                       'guest' => 0);
         $this->run_core_course_import($data, false);
@@ -2322,7 +2289,7 @@ class version1CourseImportTest extends elis_database_test {
 
         //validate for specifying guest value of 1
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'removedguestplugin',
                       'fullname' => 'updatedfullname',
                       'guest' => 1);
         $this->run_core_course_import($data, false);
@@ -2330,7 +2297,7 @@ class version1CourseImportTest extends elis_database_test {
 
         //validate for specifying a password value
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
+                      'shortname' => 'removedguestplugin',
                       'fullname' => 'updatedfullname',
                       'password' => 'password');
         $this->run_core_course_import($data, false);
@@ -2345,70 +2312,51 @@ class version1CourseImportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
 
+        //get initial counts
+        $initial_num_courses = $DB->count_records('course');
+
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
+        $initial_num_courses_in_category = $DB->get_field('course_categories', 'coursecount', array('id' => $categoryid));
+        $initial_num_forums = $DB->count_records('forum');
+
         //setup
         set_config('backup_general_activities', 1, 'backup');
-        $this->create_guest_user();
-
-        /// Now create admin user
-        $admin = new stdClass();
-        $admin->auth         = 'manual';
-        $admin->firstname    = get_string('admin');
-        $admin->lastname     = get_string('user');
-        $admin->username     = 'admin';
-        $admin->password     = 'adminsetuppending';
-        $admin->email        = '';
-        $admin->confirmed    = 1;
-        $admin->mnethostid   = $CFG->mnet_localhost_id;
-        $admin->lang         = $CFG->lang;
-        $admin->maildisplay  = 1;
-        $admin->timemodified = time();
-        $admin->lastip       = CLI_SCRIPT ? '0.0.0.0' : getremoteaddr(); // installation hijacking prevention
-        $admin->id = $DB->insert_record('user', $admin);
-
-        set_config('siteadmins', $admin->id);
-
-        $USER = get_admin();
-
-        $this->init_contexts_and_site_course();
-
-        //create a test category
-        $category = $this->create_test_category();
-        $categoryid = $DB->get_field('course_categories', 'id', array('name' => $category));
 
         //create a test course
         $record = new stdClass;
         $record->category = $categoryid;
-        $record->shortname = 'rliptemplateshortname';
-        $record->fullname = 'rliptemplatefullname';
+        $record->shortname = 'rollovertemplateshortname';
+        $record->fullname = 'rollovertemplatefullname';
         $record->id = $DB->insert_record('course', $record);
         //make sure we have a section to work with
-        get_course_section(1, $record->id);
+        $section = get_course_section(1, $record->id);
 
         //create a test forum instance
         $forum = new stdClass;
         $forum->course = $record->id;
         $forum->type = 'news';
-        $forum->name = 'rlipforum';
-        $forum->intro = 'rlipintro';
+        $forum->name = 'rollovertemplateforum';
+        $forum->intro = 'rollovertemplateintro';
         $forum->id = $DB->insert_record('forum', $forum);
 
         //add it as a course module
         $forum->module = $DB->get_field('modules', 'id', array('name' => 'forum'));
         $forum->instance = $forum->id;
-        $forum->section = 1;
+        $forum->section = $section->id;
         $cmid = add_course_module($forum);
 
         //run the import
-        $data = $this->get_core_course_data($category);
-        $data['link'] = 'rliptemplateshortname';
+        $data = $this->get_core_course_data('childcategory');
+        $data['shortname'] = 'rollovershortname';
+        $data['link'] = 'rollovertemplateshortname';
         $this->run_core_course_import($data, false);
 
         //validate the number of courses
-        $this->assertEquals($DB->count_records('course'), 3);
+        $this->assertEquals($DB->count_records('course'), $initial_num_courses + 2);
 
         //validate the course course data, as well as category and sortorder
-        $sortorder = $DB->get_field('course', 'sortorder', array('shortname' => 'rliptemplateshortname'));
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $sortorder = $DB->get_field('course', 'sortorder', array('shortname' => 'rollovertemplateshortname'));
+        $this->assert_record_exists('course', array('shortname' => 'rollovershortname',
                                                     'fullname' => 'rlipfullname',
                                                     'category' => $categoryid,
                                                     'sortorder' => $sortorder - 1
@@ -2416,10 +2364,10 @@ class version1CourseImportTest extends elis_database_test {
 
         //validate that the category is updated with the correct number of courses
         $this->assert_record_exists('course_categories', array('id' => $categoryid,
-                                                               'coursecount' => 2));
+                                                               'coursecount' => $initial_num_courses_in_category + 2));
 
         //validate that the correct number of forum instances exist
-        $this->assertEquals($DB->count_records('forum'), 2);
+        $this->assertEquals($DB->count_records('forum'), $initial_num_forums + 2);
 
         //validate the specific forum / course module setup within the new
         //course
@@ -2431,18 +2379,16 @@ class version1CourseImportTest extends elis_database_test {
                   ON cm.instance = f.id
                 JOIN {course} c
                   ON cm.course = c.id
-                  AND f.course = c.id
                 JOIN {course_sections} cs
                   ON c.id = cs.course
                   AND cm.section = cs.id
-                WHERE m.name = 'forum'
-                  AND f.type = 'news'
-                  AND f.name = 'rlipforum'
-                  AND f.intro = 'rlipintro'
-                  AND c.shortname = 'rlipshortname'
-                  AND cs.section = 1";
+                WHERE f.type = ?
+                  AND f.name = ?
+                  AND f.intro = ?
+                  AND c.shortname = ?";
 
-        $exists = $DB->record_exists_sql($sql);
+        $exists = $DB->record_exists_sql($sql, array('news', 'rollovertemplateforum',
+                                                     'rollovertemplateintro', 'rollovershortname'));
         $this->assertEquals($exists, true);
     }
 
@@ -2452,38 +2398,29 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportRolloverSupportsSettingCategory() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $prefix = self::$origdb->get_prefix();
-        $DB->execute("INSERT INTO {user}
-                      SELECT * FROM
-                      {$prefix}user");
-
-        //create a test category
-        $category = $this->create_test_category();
-        $categoryid = $DB->get_field('course_categories', 'id', array('name' => $category));
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
         //create a test course
         $record = new stdClass;
         $record->category = $categoryid;
-        $record->shortname = 'rliptemplateshortname';
-        $record->fullname = 'rliptemplatefullname';
+        $record->shortname = 'categorytemplateshortname';
+        $record->fullname = 'categorytemplatefullname';
         $record->id = $DB->insert_record('course', $record);
 
         //create a second test category
-        $category = $this->create_test_category('rlipsecondcategory');
+        $category = $this->create_test_category('templatecategory');
         $secondcategoryid = $DB->get_field('course_categories', 'id', array('name' => $category));
 
         //run the import
         $data = $this->get_core_course_data($category);
-        $data['link'] = 'rliptemplateshortname';
+        $data['shortname'] = 'categorytemplatecopyshortname';
+        $data['link'] = 'categorytemplateshortname';
         $this->run_core_course_import($data, false);
 
         //validate that the courses are each in their respective categories
-        $this->assert_record_exists('course', array('shortname' => 'rliptemplateshortname',
+        $this->assert_record_exists('course', array('shortname' => 'categorytemplateshortname',
                                                     'category' => $categoryid));
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname',
+        $this->assert_record_exists('course', array('shortname' => 'categorytemplatecopyshortname',
                                                     'category' => $secondcategoryid));
     }
 
@@ -2496,12 +2433,7 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/user/lib.php');
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        //create a test category
-        $category = $this->create_test_category();
-        $categoryid = $DB->get_field('course_categories', 'id', array('name' => $category));
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
         //create a test user
         $user = new stdClass;
@@ -2512,8 +2444,8 @@ class version1CourseImportTest extends elis_database_test {
         //create a test template course
         $record = new stdClass;
         $record->category = $categoryid;
-        $record->shortname = 'rliptemplateshortname';
-        $record->fullname = 'rliptemplatefullname';
+        $record->shortname = 'nousertemplateshortname';
+        $record->fullname = 'nousertemplatefullname';
         $record = $course = create_course($record);
 
         $enrol = new stdClass;
@@ -2523,7 +2455,7 @@ class version1CourseImportTest extends elis_database_test {
         $DB->insert_record('enrol', $enrol); 
 
         //create a test role
-        $roleid = create_role('testrole', 'testrole', 'testrole');
+        $roleid = create_role('rolloverrole', 'rolloverrole', 'rolloverrole');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
 
         //enrol the test user into the template course, assigning them the test
@@ -2549,17 +2481,16 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportPreventsInvalidLinkOnCreate() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
         //validate setup
-        $this->assertEquals($DB->count_records('course'), 1);
+        //$this->assertEquals($DB->count_records('course'), 1);
+        $initial_num_courses = $DB->count_records('course');
 
         //run the import
-        $this->run_core_course_import(array('link' => 'bogusshortname'));
+        $this->run_core_course_import(array('shortname' => 'invalidlink',
+                                            'link' => 'bogusshortname'));
 
         //validate that no new course was created
-        $this->assertEquals($DB->count_records('course'), 1);
+        $this->assertEquals($DB->count_records('course'), $initial_num_courses);
     }
 
     /**
@@ -2569,31 +2500,31 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportSetsCourseTimestamps() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
         //record the current time
         $starttime = time();
 
         //set up base data
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'coursetimestamps'));
 
         //validate timestamps
-        $where = "timecreated >= ? AND
+        $where = "shortname = ? AND
+                  timecreated >= ? AND
                   timemodified >= ?";
-        $params = array($starttime, $starttime);
+        $params = array('coursetimestamps', $starttime, $starttime);
         $exists = $DB->record_exists_select('course', $where, $params);
         $this->assertEquals($exists, true);
 
         //update data
-        $this->run_core_course_import(array('action' => 'update',
+        $this->run_core_course_import(array('shortname' => 'coursetimestamps',
+                                            'action' => 'update',
                                             'username' => 'shortname',
                                             'fullname' => 'newfullname'));
 
         //validate timestamps
-        $where = "timecreated >= ? AND
+        $where = "shortname = ? AND
+                  timecreated >= ? AND
                   timemodified >= ?";
-        $params = array($starttime, $starttime);
+        $params = array('coursetimestamps', $starttime, $starttime);
         $exists = $DB->record_exists_select('course', $where, $params);
         $this->assertEquals($exists, true);
     }
@@ -2613,17 +2544,14 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportDeletesCourseBasedOnShortname() {
         global $DB;
 
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->run_core_course_import(array());
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+        $this->run_core_course_import(array('shortname' => 'deleteshortname'));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'deleteshortname'));
 
         $data = array('action' => 'delete',
-                      'shortname' => 'rlipshortname');
+                      'shortname' => 'deleteshortname');
         $this->run_core_course_import($data, false);
 
-        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname'));
+        $exists = $DB->record_exists('course', array('shortname' => 'deleteshortname'));
         $this->assertEquals($exists, false);
     }
 
@@ -2632,16 +2560,13 @@ class version1CourseImportTest extends elis_database_test {
      * specified shortname is incorrect
      */
     public function testVersion1ImportDoesNotDeleteCourseWithInvalidShortname() {
-        //setup
-        $this->init_contexts_and_site_course();
-
-        $this->run_core_course_import(array());
+        $this->run_core_course_import(array('shortname' => 'validshortname'));
 
         $data = array('action' => 'delete',
                       'shortname' => 'bogusshortname');
         $this->run_core_course_import($data, false);
 
-        $this->assert_record_exists('course', array('shortname' => 'rlipshortname'));
+        $this->assert_record_exists('course', array('shortname' => 'validshortname'));
     }
 
     /**
@@ -2657,24 +2582,14 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/lib/conditionlib.php');
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        $USER = get_admin();
-
         //setup
-        $this->init_contexts_and_site_course();
         $initial_num_contexts = $DB->count_records('context', array('contextlevel' => CONTEXT_COURSE));
-
-        //set up the guest user to prevent enrolment plugins from thinking the
-        //created user is the guest user
-        if ($record = self::$origdb->get_record('user', array('username' => 'guest',
-                                                'mnethostid' => $CFG->mnet_localhost_id))) {
-            unset($record->id);
-            $DB->insert_record('user', $record);
-        }
 
         //set up the course with one section, including default blocks
         set_config('defaultblocks_topics', 'search_forums');
         set_config('maxsections', 10, 'moodlecourse');
-        $this->run_core_course_import(array('numsections' => 1));
+        $this->run_core_course_import(array('shortname' => 'deleteassociationsshortname',
+                                            'numsections' => 1));
 
         //create a user record
         $record = new stdClass;
@@ -2682,9 +2597,9 @@ class version1CourseImportTest extends elis_database_test {
         $userid = user_create_user($record);
 
         //create a course-level role
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'rlipshortname'));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'deleteassociationsshortname'));
         $course_context = get_context_instance(CONTEXT_COURSE, $courseid);
-        $roleid = create_role('testrole', 'testrole', 'testrole');
+        $roleid = create_role('deleterole', 'deleterole', 'deleterole');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
 
         $enrol = new stdClass;
@@ -2820,72 +2735,70 @@ class version1CourseImportTest extends elis_database_test {
         //make a bogus backup log record
         add_to_backup_log(1, $courseid, 'bogus', 'bogus');
 
-        //validate setup
-        $this->assertEquals($DB->count_records('course'), 2);
-        $this->assertEquals($DB->count_records('role_assignments'), 1);
-        $this->assertEquals($DB->count_records('user_enrolments'), 1);
-        //course-level and manually added grade items
-        $this->assertEquals($DB->count_records('grade_items'), 2);
-        $this->assertEquals($DB->count_records('grade_grades'), 1);
-        $this->assertEquals($DB->count_records('grade_outcomes'), 1);
-        $this->assertEquals($DB->count_records('grade_outcomes_courses'), 1);
-        $this->assertEquals($DB->count_records('scale'), 1);
-        $this->assertEquals($DB->count_records('grade_settings'), 1);
-        $this->assertEquals($DB->count_records('grade_letters'), 1);
-        $this->assertEquals($DB->count_records('forum'), 1);
-        $this->assertEquals($DB->count_records('course_modules'), 1);
-        $this->assertEquals($DB->count_records('course_modules_completion'), 1);
-        $this->assertEquals($DB->count_records('course_modules_availability'), 1);
-        $this->assertEquals($DB->count_records('block_instances'), 1);
-        $this->assertEquals($DB->count_records('block_positions'), 1);
-        $this->assertEquals($DB->count_records('groups'), 1);
-        $this->assertEquals($DB->count_records('groups_members'), 1);
-        $this->assertEquals($DB->count_records('groupings'), 1);
-        $this->assertEquals($DB->count_records('groupings_groups'), 1);
-        $this->assert_record_exists('log', array('course' => $courseid));
-        $this->assertEquals($DB->count_records('tag_instance'), 1);
-        $this->assertEquals($DB->count_records('course_sections'), 1);
-        $this->assertEquals($DB->count_records('question_categories'), 1);
-        $this->assertEquals($DB->count_records('question'), 1);
-        $this->assertEquals($DB->count_records('course_display'), 1);
-        $this->assertEquals($DB->count_records('backup_courses'), 1);
-        $this->assertEquals($DB->count_records('user_lastaccess'), 1);
-        $this->assertEquals($DB->count_records('backup_log'), 1);
+        //get initial counts
+        $initial_num_course = $DB->count_records('course');
+        $initial_num_role_assignments = $DB->count_records('role_assignments');
+        $initial_num_user_enrolments = $DB->count_records('user_enrolments');
+        $initial_num_grade_items = $DB->count_records('grade_items');
+        $initial_num_grade_grades = $DB->count_records('grade_grades');
+        $initial_num_grade_outcomes = $DB->count_records('grade_outcomes');
+        $initial_num_grade_outcomes_courses = $DB->count_records('grade_outcomes_courses');
+        $initial_num_scale = $DB->count_records('scale');
+        $initial_num_grade_settings = $DB->count_records('grade_settings');
+        $initial_num_grade_letters = $DB->count_records('grade_letters');
+        $initial_num_forum = $DB->count_records('forum');
+        $initial_num_course_modules = $DB->count_records('course_modules');
+        $initial_num_course_modules_completion = $DB->count_records('course_modules_completion');
+        $initial_num_course_modules_availability = $DB->count_records('course_modules_availability');
+        $initial_num_block_instances = $DB->count_records('block_instances');
+        $initial_num_block_positions = $DB->count_records('block_positions');
+        $initial_num_groups = $DB->count_records('groups');
+        $initial_num_groups_members = $DB->count_records('groups_members');
+        $initial_num_groupings = $DB->count_records('groupings');
+        $initial_num_groupings_groups = $DB->count_records('groupings_groups');
+        $initial_num_tag_instance = $DB->count_records('tag_instance');
+        $initial_num_course_sections = $DB->count_records('course_sections');
+        $initial_num_question_categories = $DB->count_records('question_categories');
+        $initial_num_question = $DB->count_records('question');
+        $initial_num_course_display = $DB->count_records('course_display');
+        $initial_num_backup_courses = $DB->count_records('backup_courses');
+        $initial_num_user_lastaccess = $DB->count_records('user_lastaccess');
+        $initial_num_backup_log = $DB->count_records('backup_log');
 
         //delete the course
         $data = array('action' => 'delete',
-                      'shortname' => 'rlipshortname');
+                      'shortname' => 'deleteassociationsshortname');
         $this->run_core_course_import($data, false);
 
         //validate the result
-        $this->assertEquals($DB->count_records('course'), 1);
-        $this->assertEquals($DB->count_records('role_assignments'), 0);
-        $this->assertEquals($DB->count_records('user_enrolments'), 0);
-        $this->assertEquals($DB->count_records('grade_items'), 0);
-        $this->assertEquals($DB->count_records('grade_grades'), 0);
-        $this->assertEquals($DB->count_records('grade_outcomes'), 0);
-        $this->assertEquals($DB->count_records('grade_outcomes_courses'), 0);
-        $this->assertEquals($DB->count_records('scale'), 0);
-        $this->assertEquals($DB->count_records('grade_settings'), 0);
-        $this->assertEquals($DB->count_records('grade_letters'), 0);
-        $this->assertEquals($DB->count_records('forum'), 0);
-        $this->assertEquals($DB->count_records('course_modules'), 0);
-        $this->assertEquals($DB->count_records('course_modules_completion'), 0);
-        $this->assertEquals($DB->count_records('course_modules_availability'), 0);
-        $this->assertEquals($DB->count_records('block_instances'), 0);
-        $this->assertEquals($DB->count_records('block_positions'), 0);
-        $this->assertEquals($DB->count_records('groups'), 0);
-        $this->assertEquals($DB->count_records('groups_members'), 0);
-        $this->assertEquals($DB->count_records('groupings'), 0);
-        $this->assertEquals($DB->count_records('groupings_groups'), 0);
+        $this->assertEquals($DB->count_records('course'), $initial_num_course - 1);
+        $this->assertEquals($DB->count_records('role_assignments'), $initial_num_role_assignments - 1);
+        $this->assertEquals($DB->count_records('user_enrolments'), $initial_num_user_enrolments -  1);
+        $this->assertEquals($DB->count_records('grade_items'), $initial_num_grade_items - 2);
+        $this->assertEquals($DB->count_records('grade_grades'), $initial_num_grade_grades -  1);
+        $this->assertEquals($DB->count_records('grade_outcomes'), $initial_num_grade_outcomes -  1);
+        $this->assertEquals($DB->count_records('grade_outcomes_courses'), $initial_num_grade_outcomes_courses -  1);
+        $this->assertEquals($DB->count_records('scale'), $initial_num_scale -  1);
+        $this->assertEquals($DB->count_records('grade_settings'), $initial_num_grade_settings -  1);
+        $this->assertEquals($DB->count_records('grade_letters'), $initial_num_grade_letters -  1);
+        $this->assertEquals($DB->count_records('forum'), $initial_num_forum -  1);
+        $this->assertEquals($DB->count_records('course_modules'), $initial_num_course_modules -  1);
+        $this->assertEquals($DB->count_records('course_modules_completion'), $initial_num_course_modules_completion - 1);
+        $this->assertEquals($DB->count_records('course_modules_availability'), $initial_num_course_modules_availability - 1);
+        $this->assertEquals($DB->count_records('block_instances'), $initial_num_block_instances - 1);
+        $this->assertEquals($DB->count_records('block_positions'), $initial_num_block_positions - 1);
+        $this->assertEquals($DB->count_records('groups'), $initial_num_groups - 1);
+        $this->assertEquals($DB->count_records('groups_members'), $initial_num_groups_members - 1);
+        $this->assertEquals($DB->count_records('groupings'), $initial_num_groupings - 1);
+        $this->assertEquals($DB->count_records('groupings_groups'), $initial_num_groupings_groups - 1);
         $this->assertEquals($DB->count_records('log', array('course' => $courseid)), 0);
-        $this->assertEquals($DB->count_records('tag_instance'), 0);
-        $this->assertEquals($DB->count_records('course_sections'), 0);
-        $this->assertEquals($DB->count_records('question_categories'), 0);
-        $this->assertEquals($DB->count_records('question'), 0);
-        $this->assertEquals($DB->count_records('course_display'), 0);
-        $this->assertEquals($DB->count_records('backup_courses'), 0);
-        $this->assertEquals($DB->count_records('user_lastaccess'), 0);
-        $this->assertEquals($DB->count_records('backup_log'), 0);
+        $this->assertEquals($DB->count_records('tag_instance'), $initial_num_tag_instance - 1);
+        $this->assertEquals($DB->count_records('course_sections'), $initial_num_course_sections - 1);
+        $this->assertEquals($DB->count_records('question_categories'), $initial_num_question_categories - 1);
+        $this->assertEquals($DB->count_records('question'), $initial_num_question - 1);
+        $this->assertEquals($DB->count_records('course_display'), $initial_num_course_display - 1);
+        $this->assertEquals($DB->count_records('backup_courses'), $initial_num_backup_courses - 1);
+        $this->assertEquals($DB->count_records('user_lastaccess'), $initial_num_user_lastaccess - 1);
+        $this->assertEquals($DB->count_records('backup_log'), $initial_num_backup_log - 1);
     }
 }

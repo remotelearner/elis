@@ -803,7 +803,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             $record->numsections = (int)$record->numsections;
             if ($record->numsections < 0 || $record->numsections > $maxsections) {
-                //not between 0 and 10
+                //not between 0 and max
                 return false;
             }
         }
@@ -1221,7 +1221,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //todo: add some sort of configuration for this?
-        if ($record->context == 'course' && $record->role == 'student') {
+        if ($record->context == 'course' && $record->role == 'studentshortname') {
             //set enrolment start time to the course start date
             $timestart = $DB->get_field('course', 'startdate', array('id' => $courseid));
 
@@ -1378,7 +1378,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                                                'userid' => $userid));
 
         //todo: add some sort of configuration for this?
-        if (!$role_assignment_exists && (!$enrolment_exists || $record->role != 'student')) {
+        if (!$role_assignment_exists && (!$enrolment_exists || $record->role != 'studentshortname')) {
             //nothing to delete
             return false;
         }
@@ -1389,7 +1389,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //todo: add some sort of configuration for this?
-        if ($enrolment_exists && $record->role == 'student') {
+        if ($enrolment_exists && $record->role == 'studentshortname') {
             //remove enrolment
             if ($instance = $DB->get_record('enrol', array('enrol' => 'manual',
                                                            'courseid' => $courseid))) {
