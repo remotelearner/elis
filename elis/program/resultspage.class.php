@@ -317,7 +317,7 @@ abstract class enginepage extends pm_page {
             $this->_form = $form;
             $this->display('edit');
 
-        } elseif  ($data) {
+        } else if ($data) {
 
             require_sesskey();
 
@@ -341,7 +341,6 @@ abstract class enginepage extends pm_page {
                 $obj->save();
 
                 // Updating existing score ranges
-                print($actiontype);
                 $typename = $form->types[$actiontype];
                 $data = (array) $data;
 
