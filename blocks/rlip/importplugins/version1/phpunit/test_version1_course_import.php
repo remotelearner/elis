@@ -1511,8 +1511,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('createcategorycreate', 'createcategorycreate', 0));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('createcategorycreate', 'createcategorycreate',
+                                                     0, 1));
         $this->assertEquals($exists, true);
     }
 
@@ -1547,8 +1549,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('createcategoryupdate', 'createcategoryupdate', 0));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('createcategoryupdate', 'createcategoryupdate',
+                                                     0, 1));
         $this->assertEquals($exists, true);
     }
 
@@ -1574,7 +1578,8 @@ class version1CourseImportTest extends elis_database_test {
 
         //validate parent category
         $this->assert_record_exists('course_categories', array('name' => 'createrelativenonexistentparentcreate',
-                                                               'parent' => 0));
+                                                               'parent' => 0,
+                                                               'depth' => 1));
         $parentid = $DB->get_field('course_categories', 'id', array('name' => 'createrelativenonexistentparentcreate'));
 
         //validate course and child category assignment
@@ -1584,8 +1589,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('createrelativenonexistentcreate', 'createrelativenonexistentchildcreate', $parentid));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('createrelativenonexistentcreate', 'createrelativenonexistentchildcreate',
+                                                     $parentid, 2));
         $this->assertEquals($exists, true);
     }
 
@@ -1616,7 +1623,8 @@ class version1CourseImportTest extends elis_database_test {
 
         //validate parent category
         $this->assert_record_exists('course_categories', array('name' => 'createrelativenonexistentparentupdate',
-                                                               'parent' => 0));
+                                                               'parent' => 0,
+                                                               'depth' => 1));
         $parentid = $DB->get_field('course_categories', 'id', array('name' => 'createrelativenonexistentparentupdate'));
 
         //validate course and child category assignment
@@ -1626,8 +1634,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('createrelativenonexistentupdate', 'createrelativenonexistentchildupdate', $parentid));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('createrelativenonexistentupdate', 'createrelativenonexistentchildupdate',
+                                                     $parentid, 2));
         $this->assertEquals($exists, true);
     }
 
@@ -1660,8 +1670,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('createrelativeexistentcreate', 'createrelativeexistentcreatechild', $childid));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('createrelativeexistentcreate', 'createrelativeexistentcreatechild',
+                                                     $childid, 3));
         $this->assertEquals($exists, true);
     }
 
@@ -1705,8 +1717,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('createrelativeexistentupdate', 'createrelativeexistentupdatechild', $parentid));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('createrelativeexistentupdate', 'createrelativeexistentupdatechild',
+                                                     $parentid, 3));
         $this->assertEquals($exists, true);
     }
 
@@ -1732,7 +1746,8 @@ class version1CourseImportTest extends elis_database_test {
 
         //validate parent category
         $this->assert_record_exists('course_categories', array('name' => 'createabsolutenonexistentcreateparent',
-                                                               'parent' => 0));
+                                                               'parent' => 0,
+                                                               'depth' => 1));
         $parentid = $DB->get_field('course_categories', 'id', array('name' => 'createabsolutenonexistentcreateparent'));
 
         //validate course and child category assignment
@@ -1742,8 +1757,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('createabsolutenonexistentcreate', 'createabsolutenonexistentcreatechild', $parentid));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('createabsolutenonexistentcreate', 'createabsolutenonexistentcreatechild',
+                                                     $parentid, 2));
         $this->assertEquals($exists, true);
     }
 
@@ -1774,7 +1791,8 @@ class version1CourseImportTest extends elis_database_test {
 
         //validate parent category
         $this->assert_record_exists('course_categories', array('name' => 'createabsolutenonexistentupdateparent',
-                                                               'parent' => 0));
+                                                               'parent' => 0,
+                                                               'depth' => 1));
         $parentid = $DB->get_field('course_categories', 'id', array('name' => 'createabsolutenonexistentupdateparent'));
 
         //validate course and child category assignment
@@ -1784,8 +1802,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('createabsolutenonexistentupdate', 'createabsolutenonexistentupdatechild', $parentid));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('createabsolutenonexistentupdate', 'createabsolutenonexistentupdatechild',
+                                         $parentid, 2));
         $this->assertEquals($exists, true);
     }
 
@@ -1818,8 +1838,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('createabsoluteexistentcreate', 'createabsoluteexistentcreatechild', $childid));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('createabsoluteexistentcreate', 'createabsoluteexistentcreatechild',
+                                                     $childid, 3));
         $this->assertEquals($exists, true);
     }
 
@@ -1843,12 +1865,14 @@ class version1CourseImportTest extends elis_database_test {
         //run import to move course to new category
         $data = array('action' => 'update',
                       'shortname' => 'createabsoluteexistentupdate',
-                      'category' => '/testgrandparentcategory/testparentcategory/createabsoluteexistentupdatechild');
+                      'category' => '/parentcategory/childcategory/createabsoluteexistentupdatechild');
         $this->run_core_course_import($data, false);
 
         //validate counts
         $this->assertEquals($DB->count_records('course'), $initial_num_course + 1);
         $this->assertEquals($DB->count_records('course_categories'), $initial_num_categories + 1);
+
+        $childid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
         //validate course and child category assignment
         $sql = "SELECT *
@@ -1856,8 +1880,11 @@ class version1CourseImportTest extends elis_database_test {
                 JOIN {course_categories} cc
                 ON c.category = cc.id
                 WHERE c.shortname = ?
-                AND cc.name = ?";
-        $exists = $DB->record_exists_sql($sql, array('createabsoluteexistentupdate', 'createabsoluteexistentupdatechild'));
+                AND cc.name = ?
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('createabsoluteexistentupdate', 'createabsoluteexistentupdatechild',
+                                                     $childid, 3));
         $this->assertEquals($exists, true);
     }
 
@@ -1883,12 +1910,14 @@ class version1CourseImportTest extends elis_database_test {
 
         //validate grandparent category
         $this->assert_record_exists('course_categories', array('name' => 'coursecreatecreatespathgrandparent',
-                                                               'parent' => 0));
+                                                               'parent' => 0,
+                                                               'depth' => 1));
         $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'coursecreatecreatespathgrandparent'));
 
         //validate parent category
         $this->assert_record_exists('course_categories', array('name' => 'coursecreatecreatespathparent',
-                                                               'parent' => $grandparentid));
+                                                               'parent' => $grandparentid,
+                                                               'depth' => 2));
         $parentid = $DB->get_field('course_categories', 'id', array('name' => 'coursecreatecreatespathparent'));
 
         //validate course and child category assignment
@@ -1898,8 +1927,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('coursecreatecreatespath', 'coursecreatecreatespathchild', $parentid));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('coursecreatecreatespath', 'coursecreatecreatespathchild',
+                                                     $parentid, 3));
         $this->assertEquals($exists, true);
     }
 
@@ -1929,12 +1960,14 @@ class version1CourseImportTest extends elis_database_test {
 
         //validate grandparent category
         $this->assert_record_exists('course_categories', array('name' => 'courseupdatecreatespathgrandparent',
-                                                               'parent' => 0));
+                                                               'parent' => 0,
+                                                               'depth' => 1));
         $grandparentid = $DB->get_field('course_categories', 'id', array('name' => 'courseupdatecreatespathgrandparent'));
 
         //validate parent category
         $this->assert_record_exists('course_categories', array('name' => 'courseupdatecreatespathparent',
-                                                               'parent' => $grandparentid));
+                                                               'parent' => $grandparentid,
+                                                               'depth' => 2));
         $parentid = $DB->get_field('course_categories', 'id', array('name' => 'courseupdatecreatespathparent'));
 
         //validate course and child category assignment
@@ -1944,8 +1977,10 @@ class version1CourseImportTest extends elis_database_test {
                 ON c.category = cc.id
                 WHERE c.shortname = ?
                 AND cc.name = ?
-                AND cc.parent = ?";
-        $exists = $DB->record_exists_sql($sql, array('courseupdatecreatespath', 'courseupdatecreatespathchild', $parentid));
+                AND cc.parent = ?
+                AND cc.depth = ?";
+        $exists = $DB->record_exists_sql($sql, array('courseupdatecreatespath', 'courseupdatecreatespathchild',
+                                                     $parentid, 3));
         $this->assertEquals($exists, true);
     }
 
