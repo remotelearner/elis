@@ -579,6 +579,15 @@ class version1EnrolmentImportTest extends elis_database_test {
     }
 
     /**
+     * Validate that roles that are not assignable at the required contextlevel
+     * can't be set on enrolment creation
+     */
+    public function testVersion1ImportPreventsUnassignableContextOnCreate() {
+        $this->run_core_enrolment_import(array('role' => 'systemshortname'));
+        $this->assert_no_role_assignments_exist();
+    }
+
+    /**
      * Validate that invalid course context instance values can't be set on
      * role assignment creation
      */
