@@ -1171,8 +1171,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
             $contextlevel = CONTEXT_COURSECAT;
         } else if ($record->context == 'user') {
-            //find existing user category
-            if (!$targetuserid = $DB->get_field('user', 'id', array('username' => $record->instance))) {
+            //find existing user
+            if (!$targetuserid = $DB->get_field('user', 'id', array('username' => $record->instance,
+                                                                    'mnethostid' => $CFG->mnetlocalhostid))) {
                 //invalid username
                 return false;
             }
@@ -1377,7 +1378,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
         } else if ($record->context == 'user') {
             //find existing user
-            if (!$userid = $DB->get_field('user', 'id', array('username' => $record->instance))) {
+            if (!$userid = $DB->get_field('user', 'id', array('username' => $record->instance,
+                                                              'mnethostid' => $CFG->mnetlocalhostid))) {
                 return false;
             }
     

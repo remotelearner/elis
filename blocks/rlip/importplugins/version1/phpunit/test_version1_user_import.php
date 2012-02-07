@@ -218,9 +218,10 @@ class version1UserImportTest extends elis_database_test {
      * Asserts, using PHPunit, that the test user does not exist
      */
     private function assert_core_user_does_not_exist() {
-        global $DB;
+        global $CFG, $DB;
 
-        $exists = $DB->record_exists('user', array('username' => 'rlipusername'));
+        $exists = $DB->record_exists('user', array('username' => 'rlipusername',
+                                                   'mnethostid' => $CFG->mnet_localhost_id));
         $this->assertEquals($exists, false);
     }
 
@@ -331,6 +332,7 @@ class version1UserImportTest extends elis_database_test {
 
         unset($data['entity']);
         unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
         $data['password'] = hash_internal_user_password($data['password']);
 
         $exists = $DB->record_exists('user', $data);
@@ -354,6 +356,7 @@ class version1UserImportTest extends elis_database_test {
 
         unset($data['entity']);
         unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
         $data['password'] = hash_internal_user_password($data['password']);
 
         $exists = $DB->record_exists('user', $data);
@@ -365,7 +368,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that non-required fields are set to specified values during user creation
      */
     public function testVersion1ImportSetsNonRequiredUserFieldsOnCreate() {
-        global $DB;
+        global $CFG, $DB;
 
         set_config('allowuserthemes', 1);
 
@@ -386,6 +389,7 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import($data);
 
         $select = "username = :username AND
+                   mnethostid = :mnethostid AND
                    auth = :auth AND
                    maildigest = :maildigest AND
                    autosubscribe = :autosubscribe AND
@@ -399,6 +403,7 @@ class version1UserImportTest extends elis_database_test {
                    institution = :institution AND
                    department = :department";
         $params = array('username' => 'rlipusername',
+                        'mnethostid' => $CFG->mnet_localhost_id,
                         'auth' => 'mnet',
                         'maildigest' => 2,
                         'autosubscribe' => 1,
@@ -421,7 +426,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that fields are set to specified values during user update
      */
     public function testVersion1ImportSetsFieldsOnUserUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -442,8 +447,10 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import($data, false);
 
         unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
 
         $select = "username = :username AND
+                   mnethostid = :mnethostid AND
                    auth = :auth AND
                    maildigest = :maildigest AND
                    autosubscribe = :autosubscribe AND
@@ -473,7 +480,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that invalid auth plugins can't be set on user update
      */
     public function testVersion1ImportPreventsInvalidUserAuthOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -485,6 +492,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'auth' => 'manual'));
     }
 
@@ -500,7 +508,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that supplied passwords must match the site's password policy on user update
      */
     public function testVersion1ImportPreventsInvalidUserPasswordOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -512,7 +520,8 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
-                                                   'password' => hash_internal_user_password('Rlippassword!1234')));
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
+                                                  'password' => hash_internal_user_password('Rlippassword!1234')));
     }
 
     /**
@@ -535,7 +544,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that invalid maildigest values can't be set on user update
      */
     public function testVersion1ImportPreventsInvalidUserMaildigestOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -547,6 +556,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'maildigest' => 0));
     }
 
@@ -562,7 +572,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that invalid autosubscribe values can't be set on user update
      */
     public function testVersion1ImportPreventsInvalidUserAutosubscribeOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -574,6 +584,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'autosubscribe' => 1));        
     }
 
@@ -596,7 +607,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that invalid trackforums values can't be set on user update
      */
     public function testVersion1ImportPreventsInvalidUserTrackforumsOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         set_config('forum_trackreadposts', 0);
         $this->run_core_user_import(array());
@@ -609,6 +620,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'trackforums' => 0));
 
         set_config('forum_trackreadposts', 1);
@@ -617,7 +629,8 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
-                                                 'trackforums' => 0));
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
+                                                  'trackforums' => 0));
     }
 
     /**
@@ -632,7 +645,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that invalid screenreader values can't be set on user update
      */
     public function testVersion1ImportPreventsInvalidUserScreenreaderOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -644,6 +657,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'screenreader' => 0));
     }
 
@@ -659,7 +673,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that invalid country values can't be set on user update
      */
     public function testVersion1ImportPreventsInvalidUserCountryOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array('country' => 'CA'));
 
@@ -671,6 +685,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'country' => 'CA'));
     }
 
@@ -686,7 +701,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that invalid timezone values can't be set on user update
      */
     public function testVersion1ImportPreventsInvalidUserTimezoneOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -698,6 +713,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'timezone' => 99));
     }
 
@@ -715,7 +731,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that timezone values can't be set on user update when they are forced globally
      */
     public function testVersion1ImportPreventsOverridingForcedTimezoneOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -729,6 +745,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'timezone' => 99));
     }
 
@@ -751,7 +768,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that invalid theme values can't be set on user update
      */
     public function testVersion1ImportPreventsInvalidUserThemeOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -765,6 +782,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'theme' => ''));
 
         set_config('allowuserthemes', 1);
@@ -775,6 +793,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'theme' => ''));
     }
 
@@ -802,6 +821,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'lang' => $CFG->lang));        
     }
 
@@ -810,6 +830,8 @@ class version1UserImportTest extends elis_database_test {
      * a value is not supplied and ELIS is not configured to auto-assign
      */
     public function testVersion1ImportDoesNotSetIdnumberWhenNotSuppliedOrConfigured() {
+        global $CFG;
+
         //make sure we are not auto-assigning idnumbers
         set_config('auto_assign_user_idnumber', 0, 'elis_program');
 
@@ -817,6 +839,7 @@ class version1UserImportTest extends elis_database_test {
 
         //make sure idnumber wasn't set
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'idnumber' => ''));
     }
 
@@ -833,6 +856,7 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import(array());
 
         $select = "username = :username AND
+                   mnethostid = :mnethostid AND
                    auth = :auth AND
                    maildigest = :maildigest AND
                    autosubscribe = :autosubscribe AND
@@ -846,6 +870,7 @@ class version1UserImportTest extends elis_database_test {
                    institution = :institution AND
                    department = :department";
         $params = array('username' => 'rlipusername',
+                        'mnethostid' => $CFG->mnet_localhost_id,
                         'auth' => 'manual',
                         'maildigest' => 0,
                         'autosubscribe' => 1,
@@ -880,12 +905,14 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import($data);
 
         $select = "username = :username AND
+                   mnethostid = :mnethostid AND
                    maildisplay = :maildisplay AND
                    mailformat = :mailformat AND
                    htmleditor = :htmleditor AND
                    ajax = :ajax AND
                    descriptionformat = :descriptionformat";
         $params = array('username' => 'rlipusername',
+                        'mnethostid' => $CFG->mnet_localhost_id,
                         'maildisplay' => 2,
                         'mailformat' => 1,
                         'htmleditor' => 1,
@@ -898,7 +925,8 @@ class version1UserImportTest extends elis_database_test {
         $this->assertEquals($exists, true);
 
         //check force password change separately
-        $user = $DB->get_record('user', array('username' => 'rlipusername'));
+        $user = $DB->get_record('user', array('username' => 'rlipusername',
+                                              'mnethostid' => $CFG->mnet_localhost_id));
         $preferences = get_user_preferences('forcepasswordchange', null, $user);
 
         $this->assertEquals(count($preferences), 0);
@@ -908,7 +936,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that import does not set unsupported fields on user update
      */
     public function testVersion1ImportPreventsSettingUnsupportedUserFieldsOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -924,12 +952,14 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import($data, false);
 
         $select = "username = :username AND
+                   mnethostid = :mnethostid AND
                    maildisplay = :maildisplay AND
                    mailformat = :mailformat AND
                    htmleditor = :htmleditor AND
                    ajax = :ajax AND
                    descriptionformat = :descriptionformat";
         $params = array('username' => 'rlipusername',
+                        'mnethostid' => $CFG->mnet_localhost_id,
                         'maildisplay' => 2,
                         'mailformat' => 1,
                         'htmleditor' => 1,
@@ -942,7 +972,8 @@ class version1UserImportTest extends elis_database_test {
         $this->assertEquals($exists, true);
 
         //check force password change separately
-        $user = $DB->get_record('user', array('username' => 'rlipusername'));
+        $user = $DB->get_record('user', array('username' => 'rlipusername',
+                                              'mnethostid' => $CFG->mnet_localhost_id));
         $preferences = get_user_preferences('forcepasswordchange', null, $user);
 
         $this->assertEquals(count($preferences), 0);
@@ -979,7 +1010,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that field-length checking works correct on user update
      */
     public function testVersion1ImportPreventsLongUserFieldsOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber',
                                           'institution' => 'rlipinstitution',
@@ -990,6 +1021,7 @@ class version1UserImportTest extends elis_database_test {
                         'firstname' => str_repeat('a', 101));
         $this->run_core_user_import($params, false);
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'firstname' => 'rlipfirstname'));
 
         $params = array('action' => 'update',
@@ -997,6 +1029,7 @@ class version1UserImportTest extends elis_database_test {
                         'lastname' => str_repeat('a', 101));
         $this->run_core_user_import($params, false);
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'lastname' => 'rliplastname'));
 
         $params = array('action' => 'update',
@@ -1004,6 +1037,7 @@ class version1UserImportTest extends elis_database_test {
                         'email' => str_repeat('a', 50).'@'.str_repeat('b', 50));
         $this->run_core_user_import($params, false);
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'email' => 'rlipuser@rlipdomain.com'));
 
         $params = array('action' => 'update',
@@ -1011,6 +1045,7 @@ class version1UserImportTest extends elis_database_test {
                         'city' => str_repeat('a', 256));
         $this->run_core_user_import($params, false);
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'city' => 'rlipcity'));
 
         $params = array('action' => 'update',
@@ -1018,13 +1053,15 @@ class version1UserImportTest extends elis_database_test {
                         'idnumber' => str_repeat('a', 256));
         $this->run_core_user_import($params, false);
         $this->assert_record_exists('user', array('username' => 'rlipusername',
-                                                   'idnumber' => 'rlipidnumber'));
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
+                                                  'idnumber' => 'rlipidnumber'));
 
         $params = array('action' => 'update',
                         'username' => 'rlipusername',
                         'institution' => str_repeat('a', 41));
         $this->run_core_user_import($params, false);
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'institution' => 'rlipinstitution'));
 
         $params = array('action' => 'update',
@@ -1032,6 +1069,7 @@ class version1UserImportTest extends elis_database_test {
                         'department' => str_repeat('a', 31));
         $this->run_core_user_import($params, false);
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'department' => 'rlipdepartment'));
     }
 
@@ -1066,7 +1104,8 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import($data);
 
         //fetch the user and their profile field data
-        $user = $DB->get_record('user', array('username' => 'rlipusername'));
+        $user = $DB->get_record('user', array('username' => 'rlipusername',
+                                              'mnethostid' => $CFG->mnet_localhost_id));
         profile_load_data($user);
 
         //validate data
@@ -1086,7 +1125,7 @@ class version1UserImportTest extends elis_database_test {
      * Validate that setting profile fields works on user update
      */
     public function testVersion1ImportSetsUserProfileFieldsOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         //perform default "user create" import
         $this->run_core_user_import(array());
@@ -1116,7 +1155,8 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import($data, false);
 
         //fetch the user and their profile field data
-        $user = $DB->get_record('user', array('username' => 'rlipusername'));
+        $user = $DB->get_record('user', array('username' => 'rlipusername',
+                                              'mnethostid' => $CFG->mnet_localhost_id));
         profile_load_data($user);
 
         //validate data
@@ -1159,12 +1199,13 @@ class version1UserImportTest extends elis_database_test {
      * Validate that the import does not create bogus profile field data on user update
      */
     public function testVersion1ImportValidatesProfileFieldsOnUpdate() {
-        global $DB;
+        global $CFG, $DB;
 
         //run the "create user" import
         $this->run_core_user_import(array());
 
-        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
+                                                     'mnethostid' => $CFG->mnet_localhost_id));
 
         //create the category
         $category = new stdClass;
@@ -1246,6 +1287,8 @@ class version1UserImportTest extends elis_database_test {
      * of username, email and idnumber
      */
     public function testVersion1ImportUpdatesBasedOnIdentifyingFields() {
+        global $CFG;
+
         //set up our data
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
 
@@ -1255,6 +1298,7 @@ class version1UserImportTest extends elis_database_test {
                       'firstname' => 'setfromusername');
         $this->run_core_user_import($data, false);
         unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
         $this->assert_record_exists('user', $data);
 
         //update based on email
@@ -1263,6 +1307,7 @@ class version1UserImportTest extends elis_database_test {
                       'firstname' => 'setfromemail');
         $this->run_core_user_import($data, false);
         unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
         $this->assert_record_exists('user', $data);
 
         //update based on idnumber
@@ -1271,6 +1316,7 @@ class version1UserImportTest extends elis_database_test {
                       'firstname' => 'setfromidnumber');
         $this->run_core_user_import($data, false);
         unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
         $this->assert_record_exists('user', $data);
 
         //update based on username, email
@@ -1280,6 +1326,7 @@ class version1UserImportTest extends elis_database_test {
                       'firstname' => 'setfromusernameemail');
         $this->run_core_user_import($data, false);
         unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
         $this->assert_record_exists('user', $data);
 
         //update based on username, idnumber
@@ -1289,6 +1336,7 @@ class version1UserImportTest extends elis_database_test {
                       'firstname' => 'setfromusernameidnumber');
         $this->run_core_user_import($data, false);
         unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
         $this->assert_record_exists('user', $data);
 
         //update based on email, idnumber
@@ -1298,6 +1346,7 @@ class version1UserImportTest extends elis_database_test {
                       'firstname' => 'setfromemailidnumber');
         $this->run_core_user_import($data, false);
         unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
         $this->assert_record_exists('user', $data);
     }
 
@@ -1306,6 +1355,8 @@ class version1UserImportTest extends elis_database_test {
      * in the user data
      */
     public function testVersion1ImportOnlyUpdatesSuppliedUserFields() {
+        global $CFG;
+
         $this->run_core_user_import(array());
 
         $data = array('action' => 'update',
@@ -1317,6 +1368,7 @@ class version1UserImportTest extends elis_database_test {
         $data = $this->get_core_user_data();
         unset($data['entity']);
         unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
         $data['password'] = hash_internal_user_password($data['password']);
         $data['firstname'] = 'updatedfirstname';
 
@@ -1327,10 +1379,13 @@ class version1UserImportTest extends elis_database_test {
      * Validate that update actions must match existing users to do anything
      */
     public function testVersion1ImportDoesNotUpdateNonmatchingUsers() {
+        global $CFG;
+
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber',
                                           'firstname' => 'oldfirstname'));
 
-        $check_data = array('username' => 'rlipusername',
+        $check_data = array('mnethostid' => $CFG->mnet_localhost_id,
+                            'username' => 'rlipusername',
                             'email' => 'rlipuser@rlipdomain.com',
                             'idnumber' => 'rlipidnumber',
                             'firstname' => 'oldfirstname');
@@ -1361,10 +1416,13 @@ class version1UserImportTest extends elis_database_test {
      * Validate that fields identifying users in updates are not updated
      */
     public function testVersion1ImportDoesNotUpdateIdentifyingUserFields() {
+        global $CFG;
+
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber',
                                           'firstname' => 'oldfirstname'));
 
-        $check_data = array('username' => 'rlipusername',
+        $check_data = array('mnethostid' => $CFG->mnet_localhost_id,
+                            'username' => 'rlipusername',
                             'email' => 'rlipuser@rlipdomain.com',
                             'idnumber' => 'rlipidnumber',
                             'firstname' => 'oldfirstname');
@@ -1423,7 +1481,7 @@ class version1UserImportTest extends elis_database_test {
      * and time modified appropriately
      */
     public function testVersion1ImportSetsUserTimestamps() {
-        global $DB;
+        global $CFG, $DB;
 
         $starttime = time();
 
@@ -1431,15 +1489,18 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import(array());
 
         //validate timestamps
-        $where = "timecreated >= ? AND
+        $where = "username = ? AND
+                  mnethostid = ? AND
+                  timecreated >= ? AND
                   timemodified >= ?";
-        $params = array($starttime, $starttime);
+        $params = array('rlipusername', $CFG->mnet_localhost_id, $starttime, $starttime);
         $exists = $DB->record_exists_select('user', $where, $params);
         $this->assertEquals($exists, true);
 
         //reset time modified
         $user = new stdClass;
-        $user->id = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $user->id = $DB->get_field('user', 'id', array('username' => 'rlipusername',
+                                                       'mnethostid' => $CFG->mnet_localhost_id));
         $user->timemodified = 0;
         $DB->update_record('user', $user);
 
@@ -1449,9 +1510,11 @@ class version1UserImportTest extends elis_database_test {
                                           'firstname' => 'newfirstname'));
 
         //validate timestamps
-        $where = "timecreated >= ? AND
+        $where = "username = ? AND
+                  mnethostid = ? AND
+                  timecreated >= ? AND
                   timemodified >= ?";
-        $params = array($starttime, $starttime);
+        $params = array('rlipusername', $CFG->mnet_localhost_id, $starttime, $starttime);
         $exists = $DB->record_exists_select('user', $where, $params);
         $this->assertEquals($exists, true);
     }
@@ -1482,10 +1545,11 @@ class version1UserImportTest extends elis_database_test {
      * Validate that the version 1 plugin can delete uses based on username
      */
     public function testVersion1ImportDeletesUserBasedOnUsername() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
-        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
+                                                     'mnethostid' => $CFG->mnet_localhost_id));
 
         $data = array('action' => 'delete',
                       'username' => 'rlipusername');
@@ -1534,10 +1598,11 @@ class version1UserImportTest extends elis_database_test {
      * email
      */
     public function testVersion1ImportDeletesUserBasedOnUsernameEmail() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
         $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
+                                                     'mnethostid' => $CFG->mnet_localhost_id,
                                                      'email' => 'rlipuser@rlipdomain.com'));
 
         $data = array('action' => 'delete',
@@ -1554,10 +1619,11 @@ class version1UserImportTest extends elis_database_test {
      * idnumber
      */
     public function testVersion1ImportDeletesUserBasedOnUsernameIdnumber() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
         $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
+                                                     'mnethostid' => $CFG->mnet_localhost_id,
                                                      'idnumber' => 'rlipidnumber'));
 
         $data = array('action' => 'delete',
@@ -1594,10 +1660,11 @@ class version1UserImportTest extends elis_database_test {
      * idnumber
      */
     public function testVersion1ImportDeletesUserBasedOnUsernameEmailIdnumber() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
         $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
+                                                     'mnethostid' => $CFG->mnet_localhost_id,
                                                      'email' => 'rlipuser@rlipdomain.com',
                                                      'idnumber' => 'rlipidnumber'));
 
@@ -1616,6 +1683,8 @@ class version1UserImportTest extends elis_database_test {
      * specified username is incorrect
      */
     public function testVersion1ImportDoesNotDeleteUserWithInvalidUsername() {
+        global $CFG;
+
         $this->run_core_user_import(array());
 
         $data = array('action' => 'delete',
@@ -1623,6 +1692,7 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import($data, false);
 
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'deleted' => 0));
     }
 
@@ -1661,6 +1731,8 @@ class version1UserImportTest extends elis_database_test {
      * specified username if the specified email is incorrect
      */
     public function testVersion1ImportDoesNotDeleteUserWithValidUsernameInvalidEmail() {
+        global $CFG;
+
         $this->run_core_user_import(array());
 
         $data = array('action' => 'delete',
@@ -1669,6 +1741,7 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import($data, false);
 
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'email' => 'rlipuser@rlipdomain.com',
                                                   'deleted' => 0));
     }
@@ -1678,6 +1751,8 @@ class version1UserImportTest extends elis_database_test {
      * specified username if the specified idnumber is incorrect
      */
     public function testVersion1ImportDoesNotDeleteUserWithValidUsernameInvalidIdnumber() {
+        global $CFG;
+
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
 
         $data = array('action' => 'delete',
@@ -1686,6 +1761,7 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import($data, false);
 
         $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'idnumber' => 'rlipidnumber',
                                                   'deleted' => 0));
     }
@@ -1695,6 +1771,8 @@ class version1UserImportTest extends elis_database_test {
      * specified email if the specified username is incorrect
      */
     public function testVersion1ImportDoesNotDeleteUserWithValidEmailInvalidUsername() {
+        global $CFG;
+
         $this->run_core_user_import(array());
 
         $data = array('action' => 'delete',
@@ -1704,6 +1782,7 @@ class version1UserImportTest extends elis_database_test {
 
         $this->assert_record_exists('user', array('email' => 'rlipuser@rlipdomain.com',
                                                   'username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'deleted' => 0));
     }
 
@@ -1729,6 +1808,8 @@ class version1UserImportTest extends elis_database_test {
      * specified idnumber if the specified username is incorrect
      */
     public function testVersion1ImportDoesNotDeleteUserWithValidIdnumberInvalidUsername() {
+        global $CFG;
+
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
 
         $data = array('action' => 'delete',
@@ -1738,6 +1819,7 @@ class version1UserImportTest extends elis_database_test {
 
         $this->assert_record_exists('user', array('idnumber' => 'rlipidnumber',
                                                   'username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
                                                   'deleted' => 0));
     }
 
@@ -1783,7 +1865,8 @@ class version1UserImportTest extends elis_database_test {
 
         //create our test user, and determine their userid
         $this->run_core_user_import(array());
-        $userid = (int)$DB->get_field('user', 'id', array('username' => 'rlipusername'));
+        $userid = (int)$DB->get_field('user', 'id', array('username' => 'rlipusername',
+                                                          'mnethostid' => $CFG->mnet_localhost_id));
 
         //set up the site course
         if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
