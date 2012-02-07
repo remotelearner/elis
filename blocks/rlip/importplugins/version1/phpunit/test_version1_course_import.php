@@ -265,6 +265,10 @@ class version1CourseImportTest extends elis_database_test {
         self::init_contexts_and_site_course();
         self::set_up_category_structure(true);
         self::create_admin_user();
+
+        set_config('defaultenrol', 1, 'enrol_guest');
+        set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
+        set_config('enrol_plugins_enabled', 'manual,guest');
     }
 
     /**
@@ -575,7 +579,6 @@ class version1CourseImportTest extends elis_database_test {
 
         //setup
         set_config('maxsections', 20, 'moodlecourse');
-        set_config('enrol_plugins_enabled', 'guest');
 
         $data = array('shortname' => 'nonrequiredfields',
                       'idnumber' => 'nonrequiredfieldsidnumber',
@@ -638,12 +641,10 @@ class version1CourseImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //setup
-        set_config('defaultenrol', 1, 'enrol_guest');
-        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_guest');
         set_config('maxsections', 20, 'moodlecourse');
-        set_config('enrol_plugins_enabled', 'guest');
 
-        $this->run_core_course_import(array('shortname' => 'updateshortname'));
+        $this->run_core_course_import(array('shortname' => 'updateshortname',
+                                            'guest' => 0));
 
         $new_category = new stdClass;
         $new_category->name = 'updatecategory';
@@ -712,9 +713,6 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid format values can't be set on course update
      */
     public function testVersion1ImportPreventsInvalidCourseFormatOnUpdate() {
-        //setup
-        //$this->init_contexts_and_site_course();
-
         $this->run_core_course_import(array('shortname' => 'invalidcourseformatupdate',
                                             'format' => 'topics'));
 
@@ -743,9 +741,6 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid numsections values can't be set on course update
      */
     public function testVersion1ImportPreventsInvalidCourseNumsectionsOnUpdate() {
-        //setup
-        //$this->init_contexts_and_site_course();
-
         set_config('maxsections', 10, 'moodlecourse');
         $this->run_core_course_import(array('shortname' => 'invalidcoursenumsectionscreate',
                                             'numsections' => 7));
@@ -774,9 +769,6 @@ class version1CourseImportTest extends elis_database_test {
      * Validate that invalid startdate values can't be set on course update
      */
     public function testVersion1ImportPreventsInvalidCourseStartdateOnUpdate() {
-        //setup
-        //$this->init_contexts_and_site_course();
-
         $this->run_core_course_import(array('shortname' => 'invalidcoursestartdateupdate',
                                             'startdate' => 'Jan/01/2012'));
 
@@ -921,12 +913,8 @@ class version1CourseImportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        set_config('defaultenrol', 1, 'enrol_guest');
-        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_guest');
-        set_config('enrol_plugins_enabled', 'guest');
-
         $this->run_core_course_import(array('shortname' => 'invalidcourseguestupdate',
-                                            'allowguestacces' => 1));
+                                            'guest' => 1));
 
         $data = array('action' => 'update',
                       'shortname' => 'invalidcourseguestupdate',
@@ -2102,12 +2090,9 @@ class version1CourseImportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        //setup
-        set_config('defaultenrol', 1, 'enrol_guest');
-        set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
-
         //create course with guest flag disabled and no password
-        $this->run_core_course_import(array('shortname' => 'createwithoutguest'));
+        $this->run_core_course_import(array('shortname' => 'createwithoutguest',
+                                            'guest' => 0));
 
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'createwithoutguest'));
         //validate plugin configuration
@@ -2125,13 +2110,9 @@ class version1CourseImportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        //setup
-        set_config('defaultenrol', 1, 'enrol_guest');
-        set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
-        //$this->init_contexts_and_site_course();
-
         //create course with guest flag disabled and no password
-        $this->run_core_course_import(array('shortname' => 'enableguestenrolment'));
+        $this->run_core_course_import(array('shortname' => 'enableguestenrolment',
+                                            'guest' => 0));
         //validate plugin configuration
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'enableguestenrolment'));
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
@@ -2160,9 +2141,6 @@ class version1CourseImportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        //setup
-        //$this->init_contexts_and_site_course();
-
         //create course with guest flag enabled and password
         $this->run_core_course_import(array('shortname' => 'disableguestenrolment',
                                             'guest' => 1,
@@ -2187,61 +2165,90 @@ class version1CourseImportTest extends elis_database_test {
                                                    'status' => ENROL_INSTANCE_DISABLED));
     }
 
-    /**
-     * Validate that the version 1 plugin disallows invalid guest enrolment
-     * configuration
-     */
-    public function testVersion1ImportPreventsInvalidGuestEnrolmentConfigurations() {
+    public function testVersion1ImportPreventsInvalidGuestEnrolmentConfigurationsOnCreate() {
+        //validate that passwords require enrolments to be enabled
+        set_config('defaultenrol', 0, 'enrol_guest');
+        $this->run_core_course_import(array('shortname' => 'invalidguestconfigurationcreate',
+                                            'password' => 'asdf'));
+        set_config('defaultenrol', 1, 'enrol_guest');
+        $this->assert_core_course_does_not_exist('invalidguestconfigurationcreate');
+
+        $this->run_core_course_import(array('shortname' => 'invalidguestconfigurationcreate',
+                                            'guest' => 0,
+                                            'password' => 'asdf'));
+        $this->assert_core_course_does_not_exist('invalidguestconfigurationcreate');
+
+        //validate that creation with guest access fails when the guest plugin
+        //is globally disabled
+        set_config('enrol_plugins_enabled', 'manual');
+        $this->run_core_course_import(array('shortname' => 'invalidguestconfigurationcreate',
+                                            'guest' => 1));
+        set_config('enrol_plugins_enabled', 'manual,guest');
+        $this->assert_core_course_does_not_exist('invalidguestconfigurationcreate');
+
+        //validate that creation with guest access fails when not adding the
+        //guest plugin to courses
+        set_config('defaultenrol', 0, 'enrol_guest');
+        $this->run_core_course_import(array('shortname' => 'invalidguestconfigurationcreate',
+                                            'guest' => 1));
+        set_config('defaultenrol', 1, 'enrol_guest');
+        $this->assert_core_course_does_not_exist('invalidguestconfigurationcreate');
+    }
+
+    public function testVersion1ImportPreventsInvalidGuestEnrolmentConfigurationsOnUpdate() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        //setup
-        set_config('defaultenrol', 1, 'enrol_guest');
-        set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
-        //$this->init_contexts_and_site_course();
+        $this->run_core_course_import(array('shortname' => 'invalidguestconfigurationupdate',
+                                            'guest' => 0));
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'invalidguestconfigurationupdate'));
 
-        //attempt to create with password but guest plugin disabled
-        $this->run_core_course_import(array('shortname' => 'invalidguestconfiguration',
+        //validate that passwords require enrolments to be enabled
+        $this->run_core_course_import(array('action' => 'update',
+                                            'shortname' => 'invalidguestconfigurationupdate',
+                                            'password' => 'asdf'));
+        $this->assert_record_exists('enrol', array('courseid' => $courseid,
+                                                   'enrol' => 'guest',
+                                                   'status' => ENROL_INSTANCE_DISABLED));
+
+        $this->run_core_course_import(array('action' => 'update',
+                                            'shortname' => 'invalidguestconfigurationupdate',
                                             'guest' => 0,
-                                            'password' => 'password'));
-        //validate that creation failed
-        $this->assert_core_course_does_not_exist('invalidguestconfiguration');
-
-        //clean up category
-        $DB->delete_records('course_categories');
-
-        //create with plugin disabled and no password
-        $this->run_core_course_import(array('shortname' => 'invalidguestconfiguration'));
-
-        //attempt to update, setting a password with no guest value supplied
-        $data = array('action' => 'update',
-                      'shortname' => 'invalidguestconfiguration',
-                      'password' => 'password');
-        $this->run_core_course_import($data, false);
-        //validate that update failed
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'invalidguestconfiguration'));
+                                            'password' => 'asdf'));
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
-                                                   'status' => ENROL_INSTANCE_DISABLED,
-                                                   'password' => NULL));
+                                                   'status' => ENROL_INSTANCE_DISABLED));
 
-        //enable guest plugin
-        $record = $DB->get_record('enrol', array('courseid' => $courseid,
-                                                 'enrol' => 'guest'));
-        $record->status = ENROL_INSTANCE_ENABLED;
-        $DB->update_record('enrol', $record);
+        //validate that creation with guest access fails when the guest plugin
+        //is globally disabled
+        set_config('enrol_plugins_enabled', 'manual');
+        $this->run_core_course_import(array('action' => 'update',
+                                            'shortname' => 'invalidguestconfigurationupdate',
+                                            'guest' => 1));
+        $exists = $DB->record_exists('enrol', array('courseid' => $courseid,
+                                                    'enrol' => 'guest',
+                                                    'status' => ENROL_INSTANCE_DISABLED));
+        set_config('enrol_plugins_enabled', 'manual,guest');
+        $this->assertEquals($exists, true);
 
-        //attempt to update, setting a password with the guest flag being disabled
-        $data = array('action' => 'update',
-                      'shortname' => 'invalidguestconfiguration',
-                      'guest' => 0,
-                      'password' => 'password');
-        $this->run_core_course_import($data, false);
-        //validate that the update failed
-        $this->assert_record_exists('enrol', array('courseid' => $courseid,
-                                                   'enrol' => 'guest',
-                                                   'status' => ENROL_INSTANCE_ENABLED,
-                                                   'password' => NULL));
+        //validate that creation with guest access fails when not adding the
+        //guest plugin to courses
+        $DB->delete_records('enrol', array('courseid' => $courseid));
+        $this->run_core_course_import(array('action' => 'update',
+                                            'shortname' => 'invalidguestconfigurationupdate',
+                                            'guest' => 1));
+        $exists = $DB->record_exists('enrol', array('courseid' => $courseid,
+                                                    'enrol' => 'guest'));
+        $this->assertEquals($exists, false);
+
+        //validate that creation with guest access fails when not adding the
+        //guest plugin to courses
+        $this->run_core_course_import(array('action' => 'update',
+                                            'shortname' => 'invalidguestconfigurationupdate',
+                                            'password' => 'asdf'));
+        $exists = $DB->record_exists('enrol', array('courseid' => $courseid,
+                                                    'enrol' => 'guest'));
+        $this->assertEquals($exists, false);
     }
 
     /**
@@ -2251,10 +2258,6 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCompletesImportWhenEnablingOrDisablingGuestEnrolmentTwice() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
-
-        //setup
-        set_config('defaultenrol', 1, 'enrol_guest');
-        set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
 
         //create course without guest access or password
         $this->run_core_course_import(array('shortname' => 'plugintwice'));
@@ -2495,7 +2498,6 @@ class version1CourseImportTest extends elis_database_test {
 
         //enrol the test user into the template course, assigning them the test
         //role
-        set_config('enrol_plugins_enabled', 'manual');
         enrol_try_internal_enrol($record->id, $user->id, $roleid);
 
         //validate setup
@@ -2642,8 +2644,6 @@ class version1CourseImportTest extends elis_database_test {
         $enrol->courseid = $courseid;
         $enrol->status = ENROL_INSTANCE_ENABLED;
         $DB->insert_record('enrol', $enrol);
-
-        set_config('enrol_plugins_enabled', 'manual');
 
         //assign the user to the course-level role
         enrol_try_internal_enrol($courseid, $userid, $roleid);

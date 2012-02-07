@@ -132,7 +132,8 @@ class version1EnrolmentImportTest extends elis_database_test {
                      'groupings' => 'moodle',
                      'groupings_groups' => 'moodle',
                      'user_lastaccess' => 'moodle',
-                     'config' => 'moodle');
+                     'config' => 'moodle',
+                     'config_plugins' => 'moodle');
     }
 
     /**
@@ -181,6 +182,11 @@ class version1EnrolmentImportTest extends elis_database_test {
      */
     private static function init_contexts_and_site_course() {
         global $DB;
+
+        //setup
+        set_config('defaultenrol', 1, 'enrol_manual');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
+        set_config('enrol_plugins_enabled', 'manual');
 
         $prefix = self::$origdb->get_prefix();
         $DB->execute("INSERT INTO {context}

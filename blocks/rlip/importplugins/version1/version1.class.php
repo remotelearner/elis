@@ -860,9 +860,23 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
+        //determine if this plugin is even enabled
+        $enabled = explode(',', $CFG->enrol_plugins_enabled);
+        if (!in_array('guest', $enabled) && !empty($record->guest)) {
+            return false;
+        }
+
         if ($action == 'create') {
             //make sure "guest" settings are consistent for new course
-            if (empty($record->guest) && !empty($record->password)) {
+            if (isset($record->guest) && empty($record->guest) && !empty($record->password)) {
+                //password set but guest is not enabled
+                return false;
+            }
+
+            $defaultenrol = get_config('enrol_guest', 'defaultenrol');
+            
+            if (empty($defaultenrol) && (!empty($record->guest) || !empty($record->password))) {
+                //enabling guest access without the guest plugin being added by default
                 return false;
             }
 
@@ -880,7 +894,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             if (isset($record->guest) || isset($record->password)) {
                 //a "guest" setting is used, validate that the guest enrolment
-                //plugin is enabled for the current course
+                //plugin is added to the current course
                 if ($courseid = $DB->get_field('course', 'id', array('shortname' => $record->shortname))) {
                     if (!$DB->record_exists('enrol', array('courseid' => $courseid,
                                                             'enrol' => 'guest'))) {
@@ -953,13 +967,16 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //final data sanitization
         if (isset($record->guest)) {
-            $record->enrol_guest_status_0 = ENROL_INSTANCE_ENABLED;
-            if (!isset($record->enrol_guest_password_0)) {
-                $record->enrol_guest_password_0 = NULL;
+            if ($record->guest == 0) {
+                $record->enrol_guest_status_0 = ENROL_INSTANCE_DISABLED;
+            } else {
+                $record->enrol_guest_status_0 = ENROL_INSTANCE_ENABLED;
+                if (isset($record->password)) {
+                    $record->enrol_guest_password_0 = $record->password;
+                } else {
+                    $record->enrol_guest_password_0 = NULL;
+                }
             }
-        }
-        if (isset($record->password)) {
-            $record->enrol_guest_password_0 = $record->password;
         }
 
         //write to the database
