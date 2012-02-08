@@ -426,13 +426,21 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $record->lang = $CFG->lang;
         }
 
-        $record->descriptionformat = FORMAT_HTML;
-
-        $record->mnethostid = $CFG->mnet_localhost_id;
-
         //write to the database
-        $record->id = user_create_user($record);
+        $record->descriptionformat = FORMAT_HTML;
+        $record->mnethostid = $CFG->mnet_localhost_id;
+        $record->password = hash_internal_user_password($record->password);
+        $record->timecreated = time();
+        $record->timemodified = $record->timecreated;
+        $record->id = $DB->insert_record('user', $record);
+
+        get_context_instance(CONTEXT_USER, $record->id);
+
         profile_save_data($record);
+
+        //sync to PM is necessary
+        $user = $DB->get_record('user', array('id' => $record->id));
+        events_trigger('user_created', $user);
 
         return true;
     }
@@ -506,11 +514,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $record->timemodified = time();
         $DB->update_record('user', $record);
 
+        profile_save_data($record);
+
         // trigger user_updated event on the full database user row
         $updateduser = $DB->get_record('user', array('id' => $record->id));
         events_trigger('user_updated', $updateduser);
-
-        profile_save_data($record);
 
         return true;
     }
@@ -1125,6 +1133,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $params = array();
         if (isset($record->username)) {
             $params['username'] = $record->username;
+            $params['mnethostid'] = $CFG->mnet_localhost_id;
         }
         if (isset($record->email)) {
             $params['email'] = $record->email;
@@ -1173,7 +1182,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         } else if ($record->context == 'user') {
             //find existing user
             if (!$targetuserid = $DB->get_field('user', 'id', array('username' => $record->instance,
-                                                                    'mnethostid' => $CFG->mnetlocalhostid))) {
+                                                                    'mnethostid' => $CFG->mnet_localhost_id))) {
                 //invalid username
                 return false;
             }
@@ -1379,7 +1388,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         } else if ($record->context == 'user') {
             //find existing user
             if (!$userid = $DB->get_field('user', 'id', array('username' => $record->instance,
-                                                              'mnethostid' => $CFG->mnetlocalhostid))) {
+                                                              'mnethostid' => $CFG->mnet_localhost_id))) {
                 return false;
             }
     

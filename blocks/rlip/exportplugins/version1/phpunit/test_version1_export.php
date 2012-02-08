@@ -96,32 +96,41 @@ class version1ExportTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        return array('grade_items' => 'moodle',
-                     'grade_grades' => 'moodle',
-                     'user' => 'moodle',
-                     'course' => 'moodle',
-                     'course_categories' => 'moodle',
-                     'grade_grades_history' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     'cohort_members' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'user_preferences' => 'moodle',
-                     'user_info_data' => 'moodle',
-                     'user_lastaccess' => 'moodle',
-                     'block_instances' => 'moodle',
-                     'block_positions' => 'moodle',
-                     'filter_active' => 'moodle',
-                     'filter_config' => 'moodle',
-                     'comments' => 'moodle',
-                     'rating' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'role_names' => 'moodle',
-                     'context' => 'moodle',
-                     'events_queue' => 'moodle',
-                     'events_queue_handlers' => 'moodle',
-                     'cache_flags' => 'moodle'
+        global $DB;
+
+        $result = array('grade_items' => 'moodle',
+                        'grade_grades' => 'moodle',
+                        'user' => 'moodle',
+                        'course' => 'moodle',
+                        'course_categories' => 'moodle',
+                        'grade_grades_history' => 'moodle',
+                        'user_enrolments' => 'moodle',
+                        'cohort_members' => 'moodle',
+                        'groups_members' => 'moodle',
+                        'user_preferences' => 'moodle',
+                        'user_info_data' => 'moodle',
+                        'user_lastaccess' => 'moodle',
+                        'block_instances' => 'moodle',
+                        'block_positions' => 'moodle',
+                        'filter_active' => 'moodle',
+                        'filter_config' => 'moodle',
+                        'comments' => 'moodle',
+                        'rating' => 'moodle',
+                        'role_assignments' => 'moodle',
+                        'role_capabilities' => 'moodle',
+                        'role_names' => 'moodle',
+                        'context' => 'moodle',
+                        'events_queue' => 'moodle',
+                        'events_queue_handlers' => 'moodle',
+                        'cache_flags' => 'moodle'
                      );
+
+         if ($DB->record_exists('block', array('name' => 'curr_admin'))) {
+             //add PM-related tables
+             $result['crlm_user_moodle'] = 'elis_program';
+         }
+
+         return $result;
     }
 
     /**
@@ -212,7 +221,13 @@ class version1ExportTest extends elis_database_test {
      * Validate that the export data does not include deleted users
      */
     public function testVersion1ExportExcludesDeletedUsers() {
-        global $DB;
+        global $CFG, $DB;
+
+        if ($DB->record_exists('block', array('name' => 'curr_admin'))) {
+            //needed to prevent error in PM delete handler
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        }
+
         $this->load_csv_data();
 
         //delete the user the "correct" way

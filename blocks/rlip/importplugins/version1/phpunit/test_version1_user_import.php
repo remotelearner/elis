@@ -88,51 +88,67 @@ class version1UserImportTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        return array('user' => 'moodle',
-                     'context' => 'moodle',
-                     'config' => 'moodle',
-                     'config_plugins' => 'moodle',
-                     'user_info_field' => 'moodle',
-                     'user_info_category' => 'moodle',
-                     'user_info_data' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     'cohort_members' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'user_preferences' => 'moodle',
-                     'user_lastaccess' => 'moodle',
-                     'block_positions' => 'moodle',
-                     'block_instances' => 'moodle',
-                     'filter_active' => 'moodle',
-                     'filter_config' => 'moodle',
-                     'comments' => 'moodle',
-                     'rating' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'role_names' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'events_queue' => 'moodle',
-                     'groups' => 'moodle',
-                     'course' => 'moodle',
-                     'course_sections' => 'moodle',
-                     'course_categories' => 'moodle',
-                     'enrol' => 'moodle',
-                     'role' => 'moodle',
-                     'role_context_levels' => 'moodle',
-                     'message' => 'moodle',
-                     'message_read' => 'moodle',
-                     'message_working' => 'moodle',
-                     'grade_items' => 'moodle',
-                     'grade_items_history' => 'moodle',
-                     'grade_grades' => 'moodle',
-                     'grade_grades_history' => 'moodle',
-                     'grade_categories' => 'moodle',
-                     'grade_categories_history' => 'moodle',
-                     'tag' => 'moodle',
-                     'tag_instance' => 'moodle',
-                     'tag_correlation' => 'moodle',
-                     //not writing to this one but prevent events from
-                     //being fired during testing
-                     'events_queue_handlers' => 'moodle');
+        global $DB;
+
+        $result = array('user' => 'moodle',
+                        'context' => 'moodle',
+                        'config' => 'moodle',
+                        'config_plugins' => 'moodle',
+                        'user_info_field' => 'moodle',
+                        'user_info_category' => 'moodle',
+                        'user_info_data' => 'moodle',
+                        'user_enrolments' => 'moodle',
+                        'cohort_members' => 'moodle',
+                        'groups_members' => 'moodle',
+                        'user_preferences' => 'moodle',
+                        'user_lastaccess' => 'moodle',
+                        'block_positions' => 'moodle',
+                        'block_instances' => 'moodle',
+                        'filter_active' => 'moodle',
+                        'filter_config' => 'moodle',
+                        'comments' => 'moodle',
+                        'rating' => 'moodle',
+                        'role_assignments' => 'moodle',
+                        'role_capabilities' => 'moodle',
+                        'role_names' => 'moodle',
+                        'cache_flags' => 'moodle',
+                        'events_queue' => 'moodle',
+                        'groups' => 'moodle',
+                        'course' => 'moodle',
+                        'course_sections' => 'moodle',
+                        'course_categories' => 'moodle',
+                        'enrol' => 'moodle',
+                        'role' => 'moodle',
+                        'role_context_levels' => 'moodle',
+                        'message' => 'moodle',
+                        'message_read' => 'moodle',
+                        'message_working' => 'moodle',
+                        'grade_items' => 'moodle',
+                        'grade_items_history' => 'moodle',
+                        'grade_grades' => 'moodle',
+                        'grade_grades_history' => 'moodle',
+                        'grade_categories' => 'moodle',
+                        'grade_categories_history' => 'moodle',
+                        'tag' => 'moodle',
+                        'tag_instance' => 'moodle',
+                        'tag_correlation' => 'moodle',
+                        'elis_field_categories' => 'elis_core',
+                        'elis_field_category_contexts' => 'elis_core',
+                        'elis_field' => 'elis_core',
+                        'elis_field_contextlevels' => 'elis_core',
+                        'elis_field_owner' => 'elis_core',
+                        'elis_field_data_text' => 'elis_core',
+                        //not writing to this one but prevent events from
+                        //being fired during testing
+                        'events_queue_handlers' => 'moodle');
+
+        if ($DB->record_exists('block', array('name' => 'curr_admin'))) {
+            //add PM-related tables
+            $result['crlm_user'] = 'elis_program';
+            $result['crlm_user_moodle'] = 'elis_program';
+        }
+
+        return $result;
     }
 
     /**
@@ -831,9 +847,11 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportDoesNotSetIdnumberWhenNotSuppliedOrConfigured() {
         global $CFG;
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 
         //make sure we are not auto-assigning idnumbers
         set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        elis::$config = new elis_config();
 
         $this->run_core_user_import(array());
 
@@ -844,14 +862,207 @@ class version1UserImportTest extends elis_database_test {
     }
 
     /**
+     * Validate the the import can set a user's idnumber value on user creation
+     */
+    public function testVersion1ImportSetsSuppliedIdnumberOnCreate() {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+
+        //make sure we are not auto-assigning idnumbers
+        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        elis::$config = new elis_config();
+
+        //run the import
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
+
+        //make sure idnumber was set
+        $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
+                                                  'idnumber' => 'rlipidnumber'));
+    }
+
+    /**
+     * Validate the the import can't set a user's idnumber value on user update
+     */
+    public function testVersion1ImportDoesNotSetSuppliedIdnumberOnUpdate() {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+
+        //make sure we are not auto-assigning idnumbers
+        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        elis::$config = new elis_config();
+
+        //create the user
+        $this->run_core_user_import(array());
+
+        //run the import
+        $this->run_core_user_import(array('action' => 'update',
+                                          'username' => 'rlipusername',
+                                          'idnumber' => 'rlipidnumber'));
+
+        //make sure the idnumber was not set
+        $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
+                                                  'idnumber' => ''));
+    }
+
+    /**
+     * Validate that the import performs user synchronization on user create
+     */
+    public function testVersion1ImportSyncsUserToElisOnCreate() {
+        global $CFG, $DB;
+
+        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
+            $this->markTestIncomplete('This test depends on the PM system');
+        }
+
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //make sure we are not auto-assigning idnumbers
+        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        elis::$config = new elis_config();
+
+        //create Moodle custom field category
+        $category = new stdClass;
+        $category->sortorder = $DB->count_records('user_info_category') + 1;
+        $category->id = $DB->insert_record('user_info_category', $category);
+
+        //create Moodle custom profile field
+        $this->create_profile_field('rliptext', 'text', $category->id);
+
+        //obtain the PM user context level
+        $contextlevel = context_level_base::get_custom_context_level('user', 'elis_program');
+
+        //make sure the PM category and field exist
+        $category = new field_category(array('name' => 'rlipcategory'));
+
+        $field = new field(array('shortname'   => 'rliptext',
+                                 'name'        => 'rliptext',
+                                 'datatype'    => 'text',
+                                 'multivalued' => 0));
+        $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
+
+        //make sure the field is set up for synchronization
+        field_owner::ensure_field_owner_exists($field, 'moodle_profile');
+        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id));
+        $owner = new field_owner($ownerid);
+        $owner->exclude = pm_moodle_profile::sync_from_moodle;
+        $owner->save();
+
+        //update the user class's static cache of define user custom fields
+        $tempuser = new user();
+        $tempuser->reset_custom_field_list();
+
+        //run the import
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber',
+                                          'profile_field_rliptext' => 'rliptext'));
+
+        //make sure PM user was created correctly
+        $this->assert_record_exists(user::TABLE, array('username' => 'rlipusername',
+                                                       'idnumber' => 'rlipidnumber'));
+
+        //make sure the PM custom field data was set
+        $sql = "SELECT 'x'
+                FROM {".field::TABLE."} f
+                JOIN {".field_data_text::TABLE."} d
+                  ON f.id = d.fieldid
+                WHERE f.shortname = ?
+                AND d.data = ?";
+        $params = array('rliptext', 'rliptext');
+        $exists = $DB->record_exists_sql($sql, $params);
+        $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that the import performs user synchronization on user update
+     */
+    public function testVersion1ImportSyncsUserToElisOnUpdate() {
+        global $CFG, $DB;
+
+        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
+            $this->markTestIncomplete('This test depends on the PM system');
+        }
+
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //make sure we are not auto-assigning idnumbers
+        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        elis::$config = new elis_config();
+
+        //create Moodle custom field category
+        $category = new stdClass;
+        $category->sortorder = $DB->count_records('user_info_category') + 1;
+        $category->id = $DB->insert_record('user_info_category', $category);
+
+        //create Moodle custom profile field
+        $this->create_profile_field('rliptext', 'text', $category->id);
+
+        //obtain the PM user context level
+        $contextlevel = context_level_base::get_custom_context_level('user', 'elis_program');
+
+        //make sure the PM category and field exist
+        $category = new field_category(array('name' => 'rlipcategory'));
+
+        $field = new field(array('shortname'   => 'rliptext',
+                                 'name'        => 'rliptext',
+                                 'datatype'    => 'text',
+                                 'multivalued' => 0));
+        $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
+
+        //make sure the field is set up for synchronization
+        field_owner::ensure_field_owner_exists($field, 'moodle_profile');
+        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id));
+        $owner = new field_owner($ownerid);
+        $owner->exclude = pm_moodle_profile::sync_from_moodle;
+        $owner->save();
+
+        //update the user class's static cache of define user custom fields
+        $tempuser = new user();
+        $tempuser->reset_custom_field_list();
+
+        //create the user
+        $this->run_core_user_import(array('idnumber' => 'rlipidnumber',
+                                          'profile_field_rliptext' => 'rliptext'));
+
+        //make sure PM user was created correctly
+        $this->assert_record_exists(user::TABLE, array('username' => 'rlipusername',
+                                                       'idnumber' => 'rlipidnumber'));
+
+        //run the import, updating the user
+        $this->run_core_user_import(array('action' => 'update',
+                                          'username' => 'rlipusername',
+                                          'profile_field_rliptext' => 'rliptextupdated'));
+
+        //make sure the PM custom field data was set
+        $sql = "SELECT 'x'
+                FROM {".field::TABLE."} f
+                JOIN {".field_data_text::TABLE."} d
+                  ON f.id = d.fieldid
+                WHERE f.shortname = ?
+                AND d.data = ?";
+        $params = array('rliptext', 'rliptextupdated');
+        $exists = $DB->record_exists_sql($sql, $params);
+        $this->assertEquals($exists, true);
+    }
+
+    /**
      * Validate that default values are correctly set on user creation
      */
     public function testVersion1ImportSetsDefaultsOnUserCreate() {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 
         set_config('forcetimezone', 99);
 
-        //todo: disable auto-assigning of idnumbers when testing with elis
+        //make sure we are not auto-assigning idnumbers
+        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        elis::$config = new elis_config();
 
         $this->run_core_user_import(array());
 

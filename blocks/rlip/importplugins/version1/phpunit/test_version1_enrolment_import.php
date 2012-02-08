@@ -271,6 +271,7 @@ class version1EnrolmentImportTest extends elis_database_test {
 
         $user = new stdClass;
         $user->username = 'rlipusername';
+        $user->mnethostid = $CFG->mnet_localhost_id;
         $user->idnumber = 'rlipidnumber';
         $user->email = 'rlipuser@rlipdomain.com';
         $user->password = 'Password!0';
@@ -1941,6 +1942,9 @@ class version1EnrolmentImportTest extends elis_database_test {
         //setup
         $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
         $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        //prevent PM from trying to process instructors
+        set_config('coursecontact', '');
 
         role_assign(self::$coursecatroleid, self::$userid, $context->id);
 
