@@ -907,9 +907,61 @@ class version1UserImportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the import performs user synchronization on user create
+     * Validate that the import auto-assigns missing idnumbers when the column
+     * is not supplied and the config setting is on
      */
-    public function testVersion1ImportSyncsUserToElisOnCreate() {
+    public function testVersion1ImportAutoAssignsMissingIdnumbersOnCreate() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+
+        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
+            $this->markTestIncomplete('This test depends on the PM system');
+        }
+
+        //make sure we are auto-assigning idnumbers
+        set_config('auto_assign_user_idnumber', 1, 'elis_program');
+        elis::$config = new elis_config();
+
+        //run the import
+        $this->run_core_user_import(array('rlipusername' => 'rlipusername'));
+
+        //make sure the idnumber was set to the username value
+        $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
+                                                  'idnumber' => 'rlipusername'));
+    }
+
+    /**
+     * Validate that the import auto-assigns missing idnumbers when they are
+     * empty and the config setting is on
+     */
+    public function testVersion1ImportAutoAssignsEmptyIdnumbersOnCreate() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+
+        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
+            $this->markTestIncomplete('This test depends on the PM system');
+        }
+
+        //make sure we are auto-assigning idnumbers
+        set_config('auto_assign_user_idnumber', 1, 'elis_program');
+        elis::$config = new elis_config();
+
+        //run the import
+        $this->run_core_user_import(array('rlipusername' => 'rlipusername',
+                                          'idnumber' => ''));
+
+        //make sure the idnumber was set to the username value
+        $this->assert_record_exists('user', array('username' => 'rlipusername',
+                                                  'mnethostid' => $CFG->mnet_localhost_id,
+                                                  'idnumber' => 'rlipusername'));
+    }
+
+    /**
+     * Validate that the import performs user synchronization on user create
+     * when an idnumber is supplied
+     */
+    public function testVersion1ImportSyncsUserToElisOnCreateWithIdnumberSupplied() {
         global $CFG, $DB;
 
         if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
@@ -963,6 +1015,76 @@ class version1UserImportTest extends elis_database_test {
         //make sure PM user was created correctly
         $this->assert_record_exists(user::TABLE, array('username' => 'rlipusername',
                                                        'idnumber' => 'rlipidnumber'));
+
+        //make sure the PM custom field data was set
+        $sql = "SELECT 'x'
+                FROM {".field::TABLE."} f
+                JOIN {".field_data_text::TABLE."} d
+                  ON f.id = d.fieldid
+                WHERE f.shortname = ?
+                AND d.data = ?";
+        $params = array('rliptext', 'rliptext');
+        $exists = $DB->record_exists_sql($sql, $params);
+        $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that the import performs user synchronization on user create
+     * when an idnumber is auto-assigned
+     */
+    public function testVersion1ImportSyncsUserToElisOnCreateWithIdnumberAutoAssigned() {
+        global $CFG, $DB;
+
+        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
+            $this->markTestIncomplete('This test depends on the PM system');
+        }
+
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //make sure we are not auto-assigning idnumbers
+        set_config('auto_assign_user_idnumber', 1, 'elis_program');
+        elis::$config = new elis_config();
+
+        //create Moodle custom field category
+        $category = new stdClass;
+        $category->sortorder = $DB->count_records('user_info_category') + 1;
+        $category->id = $DB->insert_record('user_info_category', $category);
+
+        //create Moodle custom profile field
+        $this->create_profile_field('rliptext', 'text', $category->id);
+
+        //obtain the PM user context level
+        $contextlevel = context_level_base::get_custom_context_level('user', 'elis_program');
+
+        //make sure the PM category and field exist
+        $category = new field_category(array('name' => 'rlipcategory'));
+
+        $field = new field(array('shortname'   => 'rliptext',
+                                 'name'        => 'rliptext',
+                                 'datatype'    => 'text',
+                                 'multivalued' => 0));
+        $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
+
+        //make sure the field is set up for synchronization
+        field_owner::ensure_field_owner_exists($field, 'moodle_profile');
+        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id));
+        $owner = new field_owner($ownerid);
+        $owner->exclude = pm_moodle_profile::sync_from_moodle;
+        $owner->save();
+
+        //update the user class's static cache of define user custom fields
+        $tempuser = new user();
+        $tempuser->reset_custom_field_list();
+
+        //run the import
+        $this->run_core_user_import(array('profile_field_rliptext' => 'rliptext'));
+
+        //make sure PM user was created correctly
+        $this->assert_record_exists(user::TABLE, array('username' => 'rlipusername',
+                                                       'idnumber' => 'rlipusername'));
 
         //make sure the PM custom field data was set
         $sql = "SELECT 'x'
