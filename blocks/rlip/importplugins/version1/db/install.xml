@@ -6,16 +6,16 @@
   <TABLES>
     <TABLE NAME="block_rlip_version1_fieldmap" COMMENT="Field mapping configuration for version 1 import plugin">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="contextlevel"/>
-        <FIELD NAME="contextlevel" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"  COMMENT="The shortname of the context level" PREVIOUS="id" NEXT="standardfieldname"/>
-        <FIELD NAME="standardfieldname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  COMMENT="The standard name of the field being mapped out" PREVIOUS="contextlevel" NEXT="customfieldname"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"  NEXT="entitytype"/>
+        <FIELD NAME="entitytype" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"  COMMENT="The type of entity being operated on, e.g. course" PREVIOUS="id" NEXT="standardfieldname"/>
+        <FIELD NAME="standardfieldname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  COMMENT="The standard name of the field being mapped out" PREVIOUS="entitytype" NEXT="customfieldname"/>
         <FIELD NAME="customfieldname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  COMMENT="The custom name of the field being mapped out" PREVIOUS="standardfieldname"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="standardfieldname_ix" UNIQUE="true" FIELDS="standardfieldname"/>
+        <INDEX NAME="entitytypestandardfieldname_ix" UNIQUE="true" FIELDS="entitytype, standardfieldname"/>
       </INDEXES>
     </TABLE>
   </TABLES>
