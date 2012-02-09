@@ -1,0 +1,72 @@
+<?php
+/**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    elis
+ * @subpackage core
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+function xmldb_block_rlip_upgrade($oldversion=0) {
+    global $DB;
+
+    $result = true;
+
+    $dbman = $DB->get_manager();
+
+    if ($result && $oldversion < 2012020900) {
+
+        // Define table block_rlip_summary_log to be created
+        $table = new xmldb_table('block_rlip_summary_log');
+
+        // Adding fields to table block_rlip_summary_log
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('plugin', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('targetstarttime', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('starttime', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('endtime', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('filesuccesses', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('filefailures', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('storedsuccesses', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('storedfailures', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('statusmessage', XMLDB_TYPE_TEXT, 'medium', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('dbops', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '-1');
+        $table->add_field('unmetdependency', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table block_rlip_summary_log
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table block_rlip_summary_log
+        $table->add_index('plugin_ix', XMLDB_INDEX_UNIQUE, array('plugin'));
+        $table->add_index('userid_ix', XMLDB_INDEX_UNIQUE, array('userid'));
+        $table->add_index('targetstarttime_ix', XMLDB_INDEX_UNIQUE, array('targetstarttime'));
+        $table->add_index('starttime_ix', XMLDB_INDEX_UNIQUE, array('starttime'));
+        $table->add_index('endtime_ix', XMLDB_INDEX_UNIQUE, array('endtime'));
+
+        // Launch create table for block_rlip_summary_log
+        $dbman->create_table($table);
+
+        // block rlip savepoint reached
+        upgrade_block_savepoint(true, 2012020900, 'rlip');
+    }
+}
