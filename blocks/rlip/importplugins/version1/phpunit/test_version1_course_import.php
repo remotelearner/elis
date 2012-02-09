@@ -245,7 +245,8 @@ class version1CourseImportTest extends elis_database_test {
                      'user_preferences' => 'moodle',
                      'question_hints' => 'moodle',
                      'backup_controllers' => 'moodle',
-                     'log' => 'moodle');
+                     'log' => 'moodle',
+                     'block_rlip_version1_fieldmap' => 'rlipimport_version1');
     }
 
     /**
@@ -2835,5 +2836,139 @@ class version1CourseImportTest extends elis_database_test {
         $this->assertEquals($DB->count_records('backup_courses'), $initial_num_backup_courses - 1);
         $this->assertEquals($DB->count_records('user_lastaccess'), $initial_num_user_lastaccess - 1);
         $this->assertEquals($DB->count_records('backup_log'), $initial_num_backup_log - 1);
+    }
+
+    /**
+     * Validate that the version 1 import plugin correctly uses field mappings
+     * on course creation
+     */
+    public function testVersion1ImportUsesCourseFieldMappings() {
+        global $DB;
+
+        //setup
+        set_config('maxsections', 20, 'moodlecourse');
+
+        //determine the pre-existing category's id
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
+
+        //set up our mapping of standard field names to custom field names
+        $mapping = array('action' => 'action1',
+                         'shortname' => 'shortname1',
+                         'fullname' => 'fullname1',
+                         'idnumber' => 'idnumber1',
+                         'summary' => 'summary1',
+                         'format' => 'format1',
+                         'numsections' => 'numsections1',
+                         'startdate' => 'startdate1',
+                         'newsitems' => 'newsitems1',
+                         'showgrades' => 'showgrades1',
+                         'showreports' => 'showreports1',
+                         'maxbytes' => 'maxbytes1',
+                         'guest' => 'guest1',
+                         'password' => 'password1',
+                         'visible' => 'visible1',
+                         'lang' => 'lang1',
+                         'category' => 'category1');
+
+        //store the mapping records in the database
+        foreach ($mapping as $standardfieldname => $customfieldname) {
+            $record = new stdClass;
+            $record->entitytype = 'course';
+            $record->standardfieldname = $standardfieldname;
+            $record->customfieldname = $customfieldname;
+            $DB->insert_record('block_rlip_version1_fieldmap', $record);
+        }
+
+        //run the import
+        $data = array('entity' => 'course',
+                      'action1' => 'create',
+                      'shortname1' => 'fieldmapping',
+                      'fullname1' => 'fieldmappingfullname',
+                      'idnumber1' => 'fieldmappingidnumber',
+                      'summary1' => 'fieldmappingsummary',
+                      'format1' => 'social',
+                      'numsections1' => 15,
+                      'startdate1' => 'Jan/01/2012',
+                      'newsitems1' => 8,
+                      'showgrades1' => 0,
+                      'showreports1' => 1,
+                      'maxbytes1' => 0,
+                      'guest1' => 1,
+                      'password1' => 'fieldmappingpassword',
+                      'visible1' => 0,
+                      'lang1' => 'en',
+                      'category1' => 'childcategory');
+        $this->run_core_course_import($data, false);
+
+        //validate course record
+        $select = "shortname = :shortname AND
+                   fullname = :fullname AND
+                   idnumber = :idnumber AND
+                   summary = :summary AND
+                   format = :format AND
+                   numsections = :numsections AND
+                   startdate = :startdate AND
+                   newsitems = :newsitems AND
+                   showgrades = :showgrades AND
+                   showreports = :showreports AND
+                   maxbytes = :maxbytes AND
+                   visible = :visible AND
+                   lang = :lang AND
+                   category = :category";
+        $params = array('shortname' => 'fieldmapping',
+                        'fullname' => 'fieldmappingfullname',
+                        'idnumber' => 'fieldmappingidnumber',
+                        'summary' => 'fieldmappingsummary',
+                        'format' => 'social',
+                        'numsections' => 15,
+                        'startdate' => mktime(0, 0, 0, 1, 1, 2012),
+                        'newsitems' => 8,
+                        'showgrades' => 0,
+                        'showreports' => 1,
+                        'maxbytes' => 0,
+                        'visible' => 0,
+                        'lang' => 'en',
+                        'category' => $categoryid);
+        $exists = $DB->record_exists_select('course', $select, $params);
+        $DB->delete_records('block_rlip_version1_fieldmap');
+        $this->assertEquals($exists, true);
+
+        //validate enrolment record
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'fieldmapping'));
+        $this->assert_record_exists('enrol', array('courseid' => $courseid,
+                                                   'enrol' => 'guest',
+                                                   'password' => 'fieldmappingpassword',
+                                                   'status' => ENROL_INSTANCE_ENABLED));
+    }
+
+    /**
+     * Validate that field mapping does not use a field if its name should be
+     * mapped to some other value
+     */
+    public function testVersion1ImportCourseFieldImportPreventsStandardFieldUse() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+
+        //create the mapping record
+        $record = new stdClass;
+        $record->entitytype = 'course';
+        $record->standardfieldname = 'shortname';
+        $record->customfieldname = 'shortname2';
+        $DB->insert_record('block_rlip_version1_fieldmap', $record);
+
+        //get the import plugin set up
+        $data = array();
+        $provider = new rlip_importprovider_mockcourse($data);
+        $importplugin = new rlip_importplugin_version1($provider);
+
+        //transform a sample record
+        $record = new stdClass;
+        $record->shortname = 'shortname';
+        $record = $importplugin->apply_mapping('course', $record);
+
+        $DB->delete_records('block_rlip_version1_fieldmap');
+
+        //validate that the field was unset
+        $this->assertEquals(isset($record->shortname), false);
     }
 }

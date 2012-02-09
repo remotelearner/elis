@@ -133,7 +133,8 @@ class version1EnrolmentImportTest extends elis_database_test {
                      'groupings_groups' => 'moodle',
                      'user_lastaccess' => 'moodle',
                      'config' => 'moodle',
-                     'config_plugins' => 'moodle');
+                     'config_plugins' => 'moodle',
+                     'block_rlip_version1_fieldmap' => 'rlipimport_version1');
     }
 
     /**
@@ -2419,5 +2420,84 @@ class version1EnrolmentImportTest extends elis_database_test {
 
         //compare data
         $this->assertEquals($DB->count_records('role_assignments'), 1);
+    }
+
+    /**
+     * Validate that the version 1 import plugin correctly uses field mappings
+     * on enrolment creation
+     */
+    public function testVersion1ImportUsesEnrolmentFieldMappings() {
+        global $DB;
+
+        //set up our mapping of standard field names to custom field names
+        $mapping = array('action' => 'action1',
+                         'username' => 'username1',
+                         'email' => 'email1',
+                         'idnumber' => 'idnumber1',
+                         'context' => 'context1',
+                         'instance' => 'instance1',
+                         'role' => 'role1');
+
+        //store the mapping records in the database
+        foreach ($mapping as $standardfieldname => $customfieldname) {
+            $record = new stdClass;
+            $record->entitytype = 'enrolment';
+            $record->standardfieldname = $standardfieldname;
+            $record->customfieldname = $customfieldname;
+            $DB->insert_record('block_rlip_version1_fieldmap', $record);
+        }
+
+        //run the import
+        $data = array('entity' => 'enrolment',
+                      'action1' => 'create',
+                      'username1' => 'rlipusername',
+                      'email1' => 'rlipuser@rlipdomain.com',
+                      'idnumber1' => 'rlipidnumber',
+                      'context1' => 'course',
+                      'instance1' => 'rlipshortname',
+                      'role1' => 'courseshortname');
+        $this->run_core_enrolment_import($data, false);
+
+        //validate role assignment record
+        $data = array();
+        $data['roleid'] = self::$courseroleid;
+        $course_context = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $data['contextid'] = $course_context->id;
+        $data['userid'] = self::$userid;
+
+        $DB->delete_records('block_rlip_version1_fieldmap');
+
+        $this->assert_record_exists('role_assignments', $data);
+    }
+
+    /**
+     * Validate that field mapping does not use a field if its name should be
+     * mapped to some other value
+     */
+    public function testVersion1ImportEnrolmentFieldImportPreventsStandardFieldUse() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+
+        //create the mapping record
+        $record = new stdClass;
+        $record->entitytype = 'enrolment';
+        $record->standardfieldname = 'context';
+        $record->customfieldname = 'context2';
+        $DB->insert_record('block_rlip_version1_fieldmap', $record);
+
+        //get the import plugin set up
+        $data = array();
+        $provider = new rlip_importprovider_mockenrolment($data);
+        $importplugin = new rlip_importplugin_version1($provider);
+
+        //transform a sample record
+        $record = new stdClass;
+        $record->context = 'course';
+        $record = $importplugin->apply_mapping('enrolment', $record);
+
+        $DB->delete_records('block_rlip_version1_fieldmap');
+
+        //validate that the field was unset
+        $this->assertEquals(isset($record->context), false);
     }
 }

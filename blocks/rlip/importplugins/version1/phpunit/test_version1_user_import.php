@@ -138,6 +138,7 @@ class version1UserImportTest extends elis_database_test {
                         'elis_field_contextlevels' => 'elis_core',
                         'elis_field_owner' => 'elis_core',
                         'elis_field_data_text' => 'elis_core',
+                        'block_rlip_version1_fieldmap' => 'rlipimport_version1',
                         //not writing to this one but prevent events from
                         //being fired during testing
                         'events_queue_handlers' => 'moodle');
@@ -2312,5 +2313,143 @@ class version1UserImportTest extends elis_database_test {
         $this->assertEquals($DB->count_records('user_preferences'), 0);
         $this->assertEquals($DB->count_records('user_info_data'), 0);
         $this->assertEquals($DB->count_records('user_lastaccess'), 0);
+    }
+
+    /**
+     * Validate that the version 1 import plugin correctly uses field mappings
+     * on user creation
+     */
+    public function testVersion1ImportUsesUserFieldMappings() {
+        global $CFG, $DB;
+
+        //set up our mapping of standard field names to custom field names
+        $mapping = array('action' => 'action1',
+                         'username' => 'username1',
+                         'auth' => 'auth1',
+                         'password' => 'password1',
+                         'firstname' => 'firstname1',
+                         'lastname' => 'lastname1',
+                         'email' => 'email1',
+                         'maildigest' => 'maildigest1',
+                         'autosubscribe' => 'autosubscribe1',
+                         'trackforums' => 'trackforums1',
+                         'screenreader' => 'screenreader1',
+                         'city' => 'city1',
+                         'country' => 'country1',
+                         'timezone' => 'timezone1',
+                         'theme' => 'theme1',
+                         'lang' => 'lang1',
+                         'description' => 'description1',
+                         'idnumber' => 'idnumber1',
+                         'institution' => 'institution1',
+                         'department' => 'department1');
+
+        //store the mapping records in the database
+        foreach ($mapping as $standardfieldname => $customfieldname) {
+            $record = new stdClass;
+            $record->entitytype = 'user';
+            $record->standardfieldname = $standardfieldname;
+            $record->customfieldname = $customfieldname;
+            $DB->insert_record('block_rlip_version1_fieldmap', $record);
+        }
+ 
+        //run the import
+        $data = array('entity' => 'user',
+                      'action1' => 'create',
+                      'username1' => 'rlipusername',
+                      'auth1' => 'mnet',
+                      'password1' => 'Rlippassword!0',
+                      'firstname1' => 'rlipfirstname',
+                      'lastname1' => 'rliplastname',
+                      'email1' => 'rlipuser@rlipdomain.com',
+                      'maildigest1' => '2',
+                      'autosubscribe1' => '1',
+                      'trackforums1' => '1',
+                      'screenreader1' => '1',
+                      'city1' => 'rlipcity',
+                      'country1' => 'CA',
+                      'timezone1' => -5.0,
+                      'theme1' => 'rlmaster',
+                      'lang1' => 'en',
+                      'description1' => 'rlipdescription',
+                      'idnumber1' => 'rlipidnumber',
+                      'institution1' => 'rlipinstitution',
+                      'department1' => 'rlipdepartment');
+        $this->run_core_user_import($data, false);
+
+        //validate user record
+        $select = "username = :username AND
+                   mnethostid = :mnethostid AND
+                   auth = :auth AND
+                   password = :password AND
+                   firstname = :firstname AND
+                   lastname = :lastname AND
+                   email = :email AND
+                   maildigest = :maildigest AND
+                   autosubscribe = :autosubscribe AND
+                   trackforums = :trackforums AND
+                   screenreader = :screenreader AND
+                   city = :city AND
+                   country = :country AND
+                   theme = :theme AND
+                   lang = :lang AND
+                   {$DB->sql_compare_text('description')} = :description AND
+                   idnumber = :idnumber AND
+                   institution = :institution AND
+                   department = :department";
+        $params = array('username' => 'rlipusername',
+                        'mnethostid' => $CFG->mnet_localhost_id,
+                        'auth' => 'mnet',
+                        'password' => hash_internal_user_password('Rlippassword!0'),
+                        'firstname' => 'rlipfirstname',
+                        'lastname' => 'rliplastname',
+                        'email' => 'rlipuser@rlipdomain.com',
+                        'maildigest' => 2,
+                        'autosubscribe' => 1,
+                        'trackforums' => 1,
+                        'screenreader' => 1,
+                        'city' => 'rlipcity',
+                        'country' => 'CA',
+                        'timezone' => -5.0,
+                        'theme' => 'rlmaster',
+                        'lang' => 'en',
+                        'description' => 'rlipdescription',
+                        'idnumber' => 'rlipidnumber',
+                        'institution' => 'rlipinstitution',
+                        'department' => 'rlipdepartment'
+                        );
+        $exists = $DB->record_exists_select('user', $select, $params);
+        $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that field mapping does not use a field if its name should be
+     * mapped to some other value
+     */
+    public function testVersion1ImportUserFieldImportPreventsStandardFieldUse() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+
+        //create the mapping record
+        $record = new stdClass;
+        $record->entitytype = 'user';
+        $record->standardfieldname = 'username';
+        $record->customfieldname = 'username2';
+        $DB->insert_record('block_rlip_version1_fieldmap', $record);
+
+        //get the import plugin set up
+        $data = array();
+        $provider = new rlip_importprovider_mockuser($data);
+        $importplugin = new rlip_importplugin_version1($provider);
+
+        //transform a sample record
+        $record = new stdClass;
+        $record->username = 'username';
+        $record = $importplugin->apply_mapping('user', $record);
+
+        $DB->delete_records('block_rlip_version1_fieldmap');
+
+        //validate that the field was unset
+        $this->assertEquals(isset($record->username), false);
     }
 }

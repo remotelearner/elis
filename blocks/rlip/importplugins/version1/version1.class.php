@@ -997,6 +997,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //perform the content rollover
             $record->id = course_rollover($courseid);
             //update appropriate fields, such as shortname
+            //todo: validate if this fully works with guest enrolments?
             update_course($record);
         } else {
             //creating directly (not from template)
@@ -1427,5 +1428,56 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         return true;
+    }
+
+    /**
+     * Apply the configured field mapping to a single record
+     *
+     * @param string $entity The type of entity
+     * @param object $record One record of import data
+     *
+     * @return object The record, with the field mapping applied
+     */
+    function apply_mapping($entity, $record) {
+        global $DB;
+
+        //fetch all records for the current entity type (not using recordset
+        //since there are a fixed number of fields)
+        $params = array('entitytype' => $entity);
+        if ($mapping = $DB->get_records('block_rlip_version1_fieldmap', $params)) {
+            foreach ($mapping as $entry) {
+                //get the custom and standard field names from the mapping
+                //record
+                $customfieldname = $entry->customfieldname;
+                $standardfieldname = $entry->standardfieldname;
+
+                if (isset($record->$customfieldname)) {
+                    //do the conversion
+                    $record->$standardfieldname = $record->$customfieldname;
+                    unset($record->$customfieldname);
+                } else if (isset($record->$standardfieldname)) {
+                    //remove the standard field because it should have been
+                    //provided as a mapped value
+                    unset($record->$standardfieldname);
+                }
+            }
+        }
+
+        return $record;
+    }
+
+    /**
+     * Entry point for processing a single record
+     *
+     * @param string $entity The type of entity
+     * @param object $record One record of import data
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function process_record($entity, $record) {
+        //apply the field mapping
+        $record = $this->apply_mapping($entity, $record);
+
+        return parent::process_record($entity, $record);
     }
 }
