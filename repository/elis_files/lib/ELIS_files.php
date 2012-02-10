@@ -220,71 +220,23 @@ class ELIS_files {
 
         $alfresco_version = elis_files_get_repository_version();
 
-//         if ($alfresco_version == '3.2.1') {
-        // Ensure that the current user is already setup on the
-/*
-        if (isloggedin()) {
-            if (!$this->elis_files_userdir($USER->username)) {
-                if (!$this->migrate_user($USER->username)) {
-                    return false;
-                }
-            }
+        // For Alfresco 3.4 make sure $this->cmis is not empty
+        if ($alfresco_version != '3.2.1') {
+             if (empty($this->cmis)) {
+                 $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
+                                           $this->config->server_username,
+                                           $this->config->server_password);
+             }
         }
-*/
-            if (!elis_files_get_services()) {
-                return false;
-            }
-            $response = elis_files_request(elis_files_get_uri('', 'sites'));
-
-            $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
-
-            $dom = new DOMDocument();
-            $dom->preserveWhiteSpace = false;
-            $dom->loadXML($response);
-
-            $nodes = $dom->getElementsByTagName('entry');
-            $type  = '';
-
-            $this->root = elis_files_process_node($dom, $nodes->item(0), $type);
-
-            // If there is no root folder saved or it's set to default,
-            // make sure there is a default '/moodle' folder.
-            //if (empty($this->config->root_folder) ||
-            //($this->config->root_folder == '/moodle')) {
-
-            //    $root = $this->get_root();
-
-            //    if (empty($root->uuid)) {
-             //       return false;
-            //    }
-//         } else { // Alfresco 3.4
-//             if (empty($this->cmis)) {
-//                 $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
-//                                           $this->config->server_username,
-//                                           $this->config->server_password);
-//             }
-//         }
-
         $root = $this->get_root();
         if ($root == false || !isset($root->uuid)) {
             return false;
         }
 
-
         // If there is no root folder saved or it's set to default,
         // make sure there is a default '/moodle' folder.
         if (empty($this->config->root_folder) ||
             ($this->config->root_folder == '/moodle')) {
-
-            if ($alfresco_version == '3.2.1') {
-                $root = $this->get_root();
-
-                if (empty($root->uuid)) {
-                    return false;
-                }
-
-                $root = $this->get_root();
-            }
 
             $dir = $this->read_dir($root->uuid, true);
 
@@ -2172,7 +2124,7 @@ class ELIS_files {
         if (count($matches) == 2) {
             $cshortname     = $matches[1];
             $cid = $DB->get_field('course','id',array('shortname'=>$cshortname), IGNORE_MULTIPLE);
-//echo "\n in permission_check cid: $cid";
+
         /// This is a server file.
             if ($cid == SITEID) {
                 $context = get_context_instance(CONTEXT_SYSTEM);
@@ -2229,6 +2181,9 @@ class ELIS_files {
     /// permissions.
         $referer = get_referer(false);
 
+//echo '$$$$$$$ufile: '.$ufile.' course file: '.$cfile.' shfile: '.$shfile.' usersetfile: '.$ofile;
+//echo '####referer? ';
+//print_object($referer);
         if ($useurl && !empty($referer)) {
             $frommodule  = strpos($referer, $CFG->wwwroot . '/mod/') !== false;
             $fromblock   = strpos($referer, $CFG->wwwroot . '/blocks/') !== false;
@@ -2278,7 +2233,6 @@ class ELIS_files {
             $capabilities = array('repository/elis_files:viewowncontent'=> false,
                                   'repository/elis_files:viewsharedcontent'=> false);
             $this->get_other_capabilities($USER, $capabilities);
-
             if ($ufile) {
             /// If the current user is not the user who owns this file and we can't access anything in the
             /// repository, don't allow access.

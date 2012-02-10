@@ -40,8 +40,7 @@ require_once dirname(__FILE__) . '/cmis-php/cmis_repository_wrapper.php';
 function elis_files_request($uri, $username = '') {
     global $CFG;
 
-    if (ELIS_FILES_DEBUG_TRACE) print_object('$uri: ' . $uri);
-
+    if (ELIS_FILES_DEBUG_TRACE) print_object('$uri: ' . $uri.' username: '.$username);
     if (!$response = elis_files_utils_invoke_service($uri, 'ticket', array(), 'GET', array(), $username)) {
 //        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
         if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response);
@@ -354,6 +353,8 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
             	$return->files[] = $contentNode;
         	}
         } else { // Alfresco 3.4
+            $contentNode = elis_files_process_node_old($dom, $node, $type);
+
 			if ($type == 'cmis:folder') {
             	$return->folders[] = $contentNode;
 
@@ -478,6 +479,8 @@ function elis_files_get_type($uuid) {
         	}
     	}
 	} else { // Alfresco 3.4
+	    $elm = $dom->getElementsByTagNameNS('http://docs.oasis-open.org/ns/cmis/core/200908/', 'properties');
+
 		if ($elm->length === 1) {
         	$elm = $elm->item(0);
 //print_object($elm->nodeName);
@@ -1366,7 +1369,7 @@ function elis_files_process_node_new($node, &$type) {
     $contentNode->summary = ''; // Not returned with CMIS data
     $contentNode->title   = $node->properties['cmis:name'];
     $contentNode->icon    = '';
-    $contentNode->type    = $type = $node->properties['cmis:objectTypeId'];
+    $contentNode->type    = $type = $node->properties['cmis:baseTypeId'];
 
     if (isset($node->properties['cmis:lastModifiedBy'])) {
         $contentNode->owner   = $node->properties['cmis:lastModifiedBy'];

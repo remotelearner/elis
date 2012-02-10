@@ -101,10 +101,10 @@ class repository_elis_files extends repository {
      */
     public function get_listing($encodedpath = '', $path = '') {
         global $CFG, $COURSE, $DB, $SESSION, $OUTPUT, $USER;
-
-ob_start();
-echo "encoded path: ";
-print_object($encodedpath);
+//echo '<br>in get_listing';
+//ob_start();
+//echo "encoded path: ";
+//print_object($encodedpath);
 
 
         // Check for a TRUE value in the encodedpath and retrieve the location
@@ -112,7 +112,7 @@ print_object($encodedpath);
         if ($encodedpath === true || empty($encodedpath)) {
 
             // Get optional course param from url to make ELIS Files page work properly
-            echo "\n this context id: ".$this->context->id;
+//            echo "\n this context id: ".$this->context->id;
             list($context, $course, $cm) = get_context_info_array($this->context->id);
             $cid = is_object($course) ? $course->id : 0;
 //            $context = get_context_instance(CONTEXT_COURSE, $courseid);
@@ -189,8 +189,7 @@ print_object($encodedpath);
         $ret['path'] = array_reverse($return_path);
 
         $this->current_node = $this->elis_files->get_info($uuid);
-//echo " current node? *****";
-//print_object($this->current_node);
+
 //echo "\n in get_listing and setting path and thisuuid, cid: $cid, title: ".$this->current_node->title." oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
         // Add current node to the return path
         // Include shared and oid parameters
@@ -206,19 +205,17 @@ print_object($encodedpath);
         // Unserialized array of path/shared/oid
         $ret['thisuuid'] = $params;
         $ret['thisuuid']['encodedpath'] = $encodedpath;
-//echo "\n thisuuid: ";
-//print_object($params);
+
         // Store the UUID value that we are currently browsing.
         $this->elis_files->set_repository_location($uuid, $cid, $uid, $shared, $oid);
-//echo "\n checking the following uuid: ".$this->current_node->uuid;
+
         $children = elis_files_read_dir($this->current_node->uuid);
         $ret['list'] = array();
 //echo "\n and now, near end of get_listing, oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
-//echo "\n in get_listing have children: ";
-//print_object($children);
+
         foreach ($children->folders as $child) {
             if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
-                break;
+                continue;
             }
 
             // Include shared and oid parameters
@@ -240,7 +237,7 @@ print_object($encodedpath);
         foreach ($children->files as $child) {
             // Check permissions first
             if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
-                break;
+                continue;
             }
 
             $params = array('path'=>$child->uuid,
@@ -258,9 +255,10 @@ print_object($encodedpath);
                     'owner'=>$child->owner,
                     'source'=>$child->uuid); // or links['self']???
         }
- $tmp = ob_get_contents();
- ob_end_clean();
- error_log("values = {$tmp}");
+
+// $tmp = ob_get_contents();
+// ob_end_clean();
+// error_log("values = {$tmp}");
         return $ret;
     }
 
