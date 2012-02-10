@@ -141,7 +141,8 @@ class version1EnrolmentImportTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('log' => 'moodle');
+        return array('log' => 'moodle',
+                     'block_rlip_summary_log' => 'block_rlip');
     }
 
     /**

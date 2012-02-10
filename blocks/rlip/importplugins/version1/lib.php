@@ -37,7 +37,7 @@ function rlipimport_version1_supports($feature) {
     global $CFG;
     require_once(dirname(__FILE__).'/version1.class.php');
 
-    $data_plugin = new rlip_importplugin_version1($feature);
+    $data_plugin = new rlip_importplugin_version1();
 
     //delegate to class method
     return $data_plugin->plugin_supports($feature);

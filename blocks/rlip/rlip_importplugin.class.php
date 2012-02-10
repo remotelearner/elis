@@ -39,13 +39,28 @@ abstract class rlip_importprovider {
      * @return object The file plugin instance, or false if not applicable
      */
     abstract function get_import_file($entity);
+
+    /**
+     * Provides the object used to log information to the database to the
+     * import
+     *
+     * @return object the DB logger
+     */
+    function get_dblogger() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
+
+        //for now, the only db logger
+        return new rlip_dblogger();
+    }
 }
 
 /**
  * Base class for Integration Point import plugins
  */
 class rlip_importplugin_base extends rlip_dataplugin {
-    var $provider;
+    var $provider = NULL;
+    var $dblogger = NULL;
 
     /**
      * Import plugin constructor
@@ -53,8 +68,12 @@ class rlip_importplugin_base extends rlip_dataplugin {
      * @param object $provider The import file provider that will be used to
      *                         obtain any applicable import files
      */
-    function __construct($provider) {
-        $this->provider = $provider;
+    function __construct($provider = NULL) {
+        if ($provider !== NULL) {
+            //note: provider is not set if only using plugin_supports
+            $this->provider = $provider;
+            $this->dblogger = $this->provider->get_dblogger();
+        }
     }
 
     /**
@@ -290,11 +309,18 @@ class rlip_importplugin_base extends rlip_dataplugin {
         while ($record = $fileplugin->read()) {
             //index the import record with the appropriate keys
             $record = $this->index_record($header, $record);
-            //todo: handle return value
-            $this->process_record($entity, $record);
+
+            //track return value
+            //todo: change second parameter when in the cron
+            $result = $this->process_record($entity, $record);
+            $this->dblogger->track_success($result, true);
         }
 
         $fileplugin->close();
+
+        //flush db log record
+        $filename = $fileplugin->get_filename();
+        $this->dblogger->flush($filename);
     }
 
     /**

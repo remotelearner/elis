@@ -37,7 +37,7 @@ function rlipimport_header_supports($feature) {
     global $CFG;
     require_once(dirname(__FILE__).'/header.class.php');
 
-    $data_plugin = new rlip_importplugin_header($feature);
+    $data_plugin = new rlip_importplugin_header();
 
     //delegate to class method
     return $data_plugin->plugin_supports($feature);

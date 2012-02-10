@@ -147,8 +147,22 @@ class rlip_importprovider_multiple extends rlip_importprovider {
 /**
  * Class for testing the base import plugin class
  */
-class importPluginTest extends PHPUnit_Framework_TestCase {
+class importPluginTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
+
+    /**
+     * Return the list of tables that should be overlayed.
+     */
+    protected static function get_overlay_tables() {
+        return array();
+    }
+
+    /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        return array('block_rlip_summary_log' => 'block_rlip');
+    }
 
     /**
      * Validate that plugin_supports works for entities

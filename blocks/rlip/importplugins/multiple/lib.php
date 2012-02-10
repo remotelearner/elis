@@ -37,7 +37,7 @@ function rlipimport_multiple_supports($feature) {
     global $CFG;
     require_once(dirname(__FILE__).'/multiple.class.php');
 
-    $data_plugin = new rlip_importplugin_multiple($feature);
+    $data_plugin = new rlip_importplugin_multiple();
 
     //delegate to class method
     return $data_plugin->plugin_supports($feature);

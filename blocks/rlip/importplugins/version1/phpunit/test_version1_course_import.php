@@ -250,6 +250,14 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        return array('event' => 'moodle',
+                     'block_rlip_summary_log' => 'block_rlip');
+    }
+
+    /**
      * This method is called before the first test of this test class is run.
      */
     public static function setUpBeforeClass() {
@@ -288,13 +296,6 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     protected function setUp() {       
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        return array('event' => 'moodle');
     }
 
     /**

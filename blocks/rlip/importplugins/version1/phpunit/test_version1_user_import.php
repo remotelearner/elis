@@ -158,7 +158,8 @@ class version1UserImportTest extends elis_database_test {
     static protected function get_ignored_tables() {
         return array('log' => 'moodle',
                      'crlm_user' => 'elis_program',
-                     'crlm_user_moodle' => 'elis_program');
+                     'crlm_user_moodle' => 'elis_program',
+                     'block_rlip_summary_log' => 'block_rlip',);
     }
 
     /**
@@ -2352,7 +2353,7 @@ class version1UserImportTest extends elis_database_test {
             $record->customfieldname = $customfieldname;
             $DB->insert_record('block_rlip_version1_fieldmap', $record);
         }
- 
+
         //run the import
         $data = array('entity' => 'user',
                       'action1' => 'create',

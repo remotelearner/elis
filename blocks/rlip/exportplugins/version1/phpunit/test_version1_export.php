@@ -84,6 +84,15 @@ class rlip_fileplugin_bogus extends rlip_fileplugin_base {
     public function get_data() {
         return $this->data;
     }
+
+    /**
+     * Specifies the name of the current open file
+     *
+     * @return string The file name, not including the full path
+     */
+    function get_filename() {
+        return 'bogus';
+    }
 }
 
 /**

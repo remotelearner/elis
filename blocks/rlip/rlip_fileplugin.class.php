@@ -56,6 +56,13 @@ abstract class rlip_fileplugin_base {
      * Hook for closing the file
      */
     abstract function close();
+
+    /**
+     * Specifies the name of the current open file
+     *
+     * @return string The file name, not including the full path
+     */
+    abstract function get_filename();
 }
 
 /**

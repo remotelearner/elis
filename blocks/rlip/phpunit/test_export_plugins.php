@@ -141,6 +141,15 @@ class rlip_fileplugin_writememory extends rlip_fileplugin_base {
     function get_data() {
         return $this->entries;
     }
+
+    /**
+     * Specifies the name of the current open file
+     *
+     * @return string The file name, not including the full path
+     */
+    function get_filename() {
+        return 'writememory';
+    }
 }
 
 /**
@@ -164,6 +173,15 @@ class rlip_fileplugin_outputclosed extends rlip_fileplugin_writememory {
      */
     function closed() {
         return $this->closed;
+    }
+
+    /**
+     * Specifies the name of the current open file
+     *
+     * @return string The file name, not including the full path
+     */
+    function get_filename() {
+        return 'outputclosed';
     }
 }
 
