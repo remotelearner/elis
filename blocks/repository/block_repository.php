@@ -60,9 +60,13 @@ class block_repository extends block_base {
         // Get the ELIS Files plugin configuration values
         $pcfg = get_config('elis_files');
 
+        $username = $USER->username == 'admin' ? $pcfg->admin_username : $USER->username;
+        $username = $repo->alfresco_username_fix($username);
+        $repo->set_alfresco_username($username);
+
         if ($repo->elis_files_userdir($repo->get_alfresco_username_fix()) !== false) {
             // So that we don't conflict with the default Alfresco admin account.
-            $username = $USER->username == 'admin' ? $pcfg->admin_username : $USER->username;
+//            $username = $USER->username == 'admin' ? $pcfg->admin_username : $USER->username;
 
             $hastenant = false;
 

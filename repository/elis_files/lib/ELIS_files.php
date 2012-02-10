@@ -65,7 +65,7 @@ define('ELIS_FILES_CRON_VALUE',  HOURSECS); // Run the cron job every hour.
 define('ELIS_FILES_LOGIN_RESET', 5 * MINSECS);      // Reset a login after 5 minutes.
 
 define('ELIS_FILES_DEBUG_TIME',  false);
-define('ELIS_FILES_DEBUG_TRACE', false);
+define('ELIS_FILES_DEBUG_TRACE', true);
 
 // Alfresco 3.4 type definitions
 define('ELIS_FILES_TYPE_FOLDER',   'cmis:folder');
@@ -222,11 +222,25 @@ class ELIS_files {
 
         // For Alfresco 3.4 make sure $this->cmis is not empty
         if ($alfresco_version != '3.2.1') {
-             if (empty($this->cmis)) {
-                 $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
+            // Check for connection first!
+            if (!elis_files_get_services()) {
+                return false;
+            }
+            $response = elis_files_request(elis_files_get_uri('', 'sites'));
+
+            $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
+
+            $dom = new DOMDocument();
+            $dom->preserveWhiteSpace = false;
+            $dom->loadXML($response);
+
+            $nodes = $dom->getElementsByTagName('entry');
+            $type  = '';
+            if (empty($this->cmis)) {
+                $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
                                            $this->config->server_username,
                                            $this->config->server_password);
-             }
+            }
         }
         $root = $this->get_root();
         if ($root == false || !isset($root->uuid)) {
@@ -1729,15 +1743,13 @@ class ELIS_files {
  * @return string|bool The user store UUID value or, False.
  */
     function has_old_user_store($uid) {
-        if (ELIS_FILES_DEBUG_TRACE) mtrace('has_user_store(' . $uid . ')');
-
+        if (ELIS_FILES_DEBUG_TRACE) mtrace('has_old_user_store(' . $uid . ')');
         if (empty($this->uuuid)) {
             return false;
         }
 
         $dir = $this->read_dir($this->uuuid, true);
-
-        // Look at all of the course directories that exist for our course ID.
+        // Look at all of the course directories that exist for our user ID.
         if (!empty($dir->folders)) {
             foreach ($dir->folders as $folder) {
                 if ($folder->title == $uid) {
@@ -2514,7 +2526,11 @@ class ELIS_files {
 
         // Build the option for browsing from the repository userset / course / site files.
 //        echo "\n in file browse options siteid: ".SITEID." cid: $cid viewalfsite: $viewalfsite";
+//echo '<br>in get_listing and this is: ';
+//print_object($this);
         if ($cid == SITEID && $viewalfsite) {
+            $repoisup = $this->is_running() && $this->verify_setup();
+//            echo '<br>is repo up? '.$repoisup.'well?';
             $alfroot = $this->get_root();
             if (!empty($alfroot->uuid)) {
                 $uuid = $alfroot->uuid;
@@ -2548,7 +2564,8 @@ class ELIS_files {
 //            if (!elis_files_has_permission($this->muuid, $USER->username)) {
 //                $this->allow_read($USER->username, $this->muuid);
 //            }
-
+$repoisup = $this->is_running() && $this->verify_setup();
+//            echo '<br>is repo up? '.$repoisup.'well?';
             if (!elis_files_has_permission($this->cuuid, $USER->username)) {
                 $this->allow_read($USER->username, $this->cuuid);
             }
@@ -2883,8 +2900,9 @@ class ELIS_files {
             return false;
         }
 
-        // If the user has an old-style user directory, migrate it's contents and delete the directory.
+        // If the user has an old-style user directory, migrate its contents and delete the directory.
         if ($this->has_old_user_store($user->id)) {
+            echo '<br>has old user store, really?';
             $uuid = $this->get_user_store($user->id, true);
 
             if (($touuid = elis_files_get_home_directory($user->username)) === false) {
@@ -2918,7 +2936,7 @@ class ELIS_files {
                 return false;
             }
         }
-
+echo '<br>leaving migrate_user';
         return true;
     }
 
@@ -3495,6 +3513,19 @@ class ELIS_files {
         return $modified_username;
     }
 
+    /**
+     * Correct Moodle username so it can be used for Alfresco
+     *
+     * @param string $username The Moodle user's username.
+     * @return string|bool The UUID of the home directory or, False.
+     */
+    function fix_username($username) {
+        if (ALFRESCO_DEBUG_TRACE) mtrace('alfresco_name(' . $username . ')');
+
+        $username = str_replace(array_keys(repository_plugin_alfresco::$username_map),array_values(repository_plugin_alfresco::$username_map), $username);
+
+        return $username;
+    }
     function set_alfresco_username($username) {
         $this->alfresco_username_fix = $username;
     }

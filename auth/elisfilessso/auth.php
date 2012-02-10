@@ -193,8 +193,10 @@ class auth_plugin_elisfilessso extends auth_plugin_base {
             return;
         }
 
+        $repoisup = $repo->is_running() && $repo->verify_setup();
+
         // Perform the proper setup / updating / migration of user information on Alfresco.
-        if ($repo->migrate_user($user, $password)) {
+        if ($repoisup && $repo->migrate_user($user, $password)) {
             $repo->sync_permissions($user);
         }
     }
