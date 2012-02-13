@@ -223,19 +223,6 @@ class ELIS_files {
         // For Alfresco 3.4 make sure $this->cmis is not empty
         if ($alfresco_version != '3.2.1') {
             // Check for connection first!
-            if (!elis_files_get_services()) {
-                return false;
-            }
-            $response = elis_files_request(elis_files_get_uri('', 'sites'));
-
-            $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
-
-            $dom = new DOMDocument();
-            $dom->preserveWhiteSpace = false;
-            $dom->loadXML($response);
-
-            $nodes = $dom->getElementsByTagName('entry');
-            $type  = '';
             if (empty($this->cmis)) {
                 $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
                                            $this->config->server_username,
@@ -692,7 +679,6 @@ class ELIS_files {
 
             return $return;
         }
-
     }
 
 

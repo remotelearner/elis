@@ -1036,7 +1036,7 @@ class repository_elis_files extends repository {
      * @return  boolean         Return true if uuid is at root = e.g. end = uuid
      */
     function get_parent_path($uuid, &$path = array(), $cid, $uid, $shared, $oid) {
-        if (ELIS_FILES_DEBUG_TRACE) mtrace("\n".'get_parent_path ' . $uuid . ', ' . $cid . ', ' . $userid . ', ' . $shared . ', ' . $oid . ')');
+        if (ELIS_FILES_DEBUG_TRACE) mtrace("\n".'get_parent_path ' . $uuid . ', ' . $cid . ', ' . $uid . ', ' . $shared . ', ' . $oid . ')');
     /// Get the "ending" UUID for the 'root' of navigation.
         if ((empty($cid) || $cid == SITEID) && empty($uid) && empty($shared) && empty($oid)) {
             $end   = $this->elis_files->get_root()->uuid;
