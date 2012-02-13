@@ -131,7 +131,10 @@ class version1ExportTest extends elis_database_test {
                         'context' => 'moodle',
                         'events_queue' => 'moodle',
                         'events_queue_handlers' => 'moodle',
-                        'cache_flags' => 'moodle'
+                        'cache_flags' => 'moodle',
+                        'user_info_category' => 'moodle',
+                        'user_info_field' => 'moodle',
+                        'block_rlip_version1_export' => 'rlipexport_version1'
                      );
 
          if ($DB->record_exists('block', array('name' => 'curr_admin'))) {
@@ -178,6 +181,97 @@ class version1ExportTest extends elis_database_test {
 
         return $fileplugin->get_data();
     } 
+
+    /**
+     * Create a custom field category
+     *
+     * @return int The database id of the new category
+     */
+    private function create_custom_field_category() {
+        global $DB;
+
+        $category = new stdClass;
+        $category->sortorder = $DB->count_records('user_info_category') + 1;
+        $category->id = $DB->insert_record('user_info_category', $category);
+
+        return $category->id;
+    }
+
+    /**
+     * Helper function for creating a Moodle user profile field
+     *
+     * @param string $name Profile field shortname
+     * @param string $datatype Profile field data type
+     * @param int $categoryid Profile field category id
+     * @param string $param1 Extra parameter, used for select options
+     * @param string $defaultdata Default value
+     * @return int The id of the created profile field
+     */
+    private function create_profile_field($name, $datatype, $categoryid, $param1 = NULL, $defaultdata = NULL) {
+        global $CFG;
+        require_once($CFG->dirroot.'/user/profile/field/'.$datatype.'/define.class.php');
+
+        //core fields
+        $class = "profile_define_{$datatype}";
+        $field = new $class();
+        $data = new stdClass;
+        $data->shortname = $name;
+        $data->name = $name;
+        $data->datatype = $datatype;
+        $data->categoryid = $categoryid;
+
+        if ($param1 !== NULL) {
+            //set the select options
+            $data->param1 = $param1;
+        }
+
+        if ($defaultdata !== NULL) {
+            //set the default value
+            $data->defaultdata = $defaultdata;
+        }
+
+        $field->define_save($data);
+        return $data->id;
+    }
+
+    /**
+     * Create a database record maps a field to an export column
+     *
+     * @param int $fieldid The database id of the Moodle custom field
+     * @param string $header The string to display as a CSV column header
+     * @param int $fieldorder A number used to order fields in the export
+     */
+    private function create_field_mapping($fieldid, $header = 'Header', $fieldorder = 0) {
+        global $DB;
+
+        //set up and insert the record
+        $mapping = new stdClass;
+        $mapping->fieldid = $fieldid;
+        $mapping->header = $header;
+        $mapping->fieldorder = $fieldorder;
+        $DB->insert_record('block_rlip_version1_export', $mapping);
+    }
+
+    /**
+     * Creates a user info data record with the supplied information
+     *
+     * @param int $userid The Moodle user's id
+     * @param int $fieldid The Moodle profile field id
+     * @param string $data The data to set
+     */
+    private function create_data_record($userid, $fieldid, $data) {
+        global $DB;
+
+        //set up and insert the record
+        $datarecord = new stdClass;
+        $datarecord->userid = $userid;
+        $datarecord->fieldid = $fieldid;
+        $datarecord->data = $data;
+        $datarecord->id = $DB->insert_record('user_info_data', $datarecord);
+
+        //return the database id
+        return $datarecord->id;
+    }
 
     /**
      * Validate the export header row for an empty data set
@@ -330,5 +424,408 @@ class version1ExportTest extends elis_database_test {
 
         //make sure only the header was included
         $this->assertEquals(count($data), 1);
+    }
+
+    /**
+     * Validate that the version 1 export includes custom field headers in
+     * the output
+     */
+    public function testVersion1ExportIncludesCustomFieldHeaderInfo() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $expected_header = array(get_string('header_firstname', 'rlipexport_version1'),
+                                 get_string('header_lastname', 'rlipexport_version1'),
+                                 get_string('header_username', 'rlipexport_version1'),
+                                 get_string('header_useridnumber', 'rlipexport_version1'),
+                                 get_string('header_courseidnumber', 'rlipexport_version1'),
+                                 get_string('header_startdate', 'rlipexport_version1'),
+                                 get_string('header_enddate', 'rlipexport_version1'),
+                                 get_string('header_grade', 'rlipexport_version1'),
+                                 get_string('header_letter', 'rlipexport_version1'),
+                                 'Header');
+
+        $this->assertEquals(count($data), 1);
+
+        //make sure the data matches the expected header
+        $this->assertEquals($data, array($expected_header));
+    }
+
+    /**
+     * Validate that the version 1 export includes custom field checkbox data
+     * in the output
+     */
+    public function testVersion1ExportIncludesCustomFieldCheckboxData() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rlipcheckbox', 'checkbox', $categoryid);
+        $datarecordid = $this->create_data_record(2, $fieldid, 0);
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'no');
+
+        $datarecord = new stdClass;
+        $datarecord->id = $datarecordid;
+        $datarecord->data = 1;
+        $DB->update_record('user_info_data', $datarecord);
+
+        $data = $this->get_export_data();
+
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'yes');
+    }
+
+    /**
+     * Validate that the version 1 export uses custom field default values for
+     * checkbox fields
+     */
+    public function testVersion1ExportIncludesCustomFieldCheckboxDefault() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rlipcheckbox', 'checkbox', $categoryid, NULL, '0');
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'no');
+
+        $field = new stdClass;
+        $field->id = $fieldid;
+        $field->defaultdata = '1';
+        $DB->update_record('user_info_field', $field);
+
+        $data = $this->get_export_data();
+
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'yes');
+    }
+
+    /**
+     * Validate that the version 1 export includes custom field datetime data
+     * in the output
+     */
+    public function testVersion1ExportIncludesCustomFieldDatetimeData() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rlipdate', 'datetime', $categoryid);
+        $datarecordid = $this->create_data_record(2, $fieldid, mktime(0, 0, 0, 1, 1, 2012));
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'Jan/01/2012');
+
+        $field = new stdClass;
+        $field->id = $fieldid;
+        $field->param3 = 1;
+        $DB->update_record('user_info_field', $field);
+
+        $datarecord = new stdClass;
+        $datarecord->id = $datarecordid;
+        $datarecord->data = mktime(10, 10, 0, 1, 1, 2012);
+        $DB->update_record('user_info_data', $datarecord);
+
+        $data = $this->get_export_data();
+
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'Jan/01/2012, 10:10 am');
+    }
+
+    /**
+     * datetime currently doesn't support default values
+     */
+
+    /**
+     * Validate that the version 1 export includes custom field menu data
+     * in the output
+     */
+    public function testVersion1ExportIncludesCustomFieldMenuData() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rlipmenu', 'menu', $categoryid, 'rlipoption1');
+        $this->create_data_record(2, $fieldid, 'rlipoption1');
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'rlipoption1');
+    }
+
+    /**
+     * Validate that the version 1 export uses custom field default values for
+     * menu fields
+     */
+    public function testVersion1ExportIncludesCustomFieldMenuDefault() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $options = "rlipoption1
+                    rlipoption2";
+        $fieldid = $this->create_profile_field('rlipmenu', 'menu', $categoryid, $options, 'rlipoption2');
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'rlipoption2');
+    }
+
+    /**
+     * Validate that the version 1 export includes custom field textarea data
+     * in the output
+     */
+    public function testVersion1ExportIncludesCustomFieldTextareaData() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rliptextarea', 'textarea', $categoryid);
+        $this->create_data_record(2, $fieldid, 'rliptextarea');
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'rliptextarea');
+    }
+
+    /**
+     * Validate that the version 1 export uses custom field default values for
+     * textarea fields
+     */
+    public function testVersion1ExportIncludesCustomFieldTextareaDefault() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rliptextarea', 'textarea', $categoryid, NULL, 'rliptextareadefault');
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'rliptextareadefault');
+    }
+
+    /**
+     * Validate that the version 1 export includes custom field textinput data
+     * in the output
+     */
+    public function testVersion1ExportIncludesCustomFieldTextinputData() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_data_record(2, $fieldid, 'rliptext');
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'rliptext');
+    }
+
+    /**
+     * Validate that the version 1 export uses custom field default values for
+     * textinput fields
+     */
+    public function testVersion1ExportIncludesCustomFieldTextinputDefault() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rliptext', 'text', $categoryid, NULL, 'rliptextdefault');
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $this->assertEquals($row[9], 'rliptextdefault');
+    }
+
+    /**
+     * Validate that the version 1 export does not include information about
+     * delete custom fields
+     */
+    public function testVersion1ExportIgnoresDeletedCustomFields() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $this->create_field_mapping(1);
+
+        //set up the expected output
+        $expected_header = array(get_string('header_firstname', 'rlipexport_version1'),
+                                 get_string('header_lastname', 'rlipexport_version1'),
+                                 get_string('header_username', 'rlipexport_version1'),
+                                 get_string('header_useridnumber', 'rlipexport_version1'),
+                                 get_string('header_courseidnumber', 'rlipexport_version1'),
+                                 get_string('header_startdate', 'rlipexport_version1'),
+                                 get_string('header_enddate', 'rlipexport_version1'),
+                                 get_string('header_grade', 'rlipexport_version1'),
+                                 get_string('header_letter', 'rlipexport_version1'));
+        $expected_body = array('test',
+                               'user',
+                               'testuser',
+                               'testuseridnumber',
+                               'testcourse',
+                               date('M/d/Y', 1000000000),
+                               date('M/d/Y'),
+                               70.00000,
+                               'C-');
+        $expected_data = array($expected_header, $expected_body);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals($expected_data, $data);
+    }
+
+    /**
+     * Validate that the version 1 export shows custom field columns in the
+     * configured order, after non-configurable fields
+     */
+    public function testVersion1ExportRespectsCustomFieldOrder() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
+        $this->create_data_record(2, $fieldid, 'rliptext2');
+        $this->create_field_mapping($fieldid, 'Header2', 1);
+        $fieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_data_record(2, $fieldid, 'rliptext');
+        $this->create_field_mapping($fieldid);
+
+        //set up the expected output
+        $expected_header = array(get_string('header_firstname', 'rlipexport_version1'),
+                                 get_string('header_lastname', 'rlipexport_version1'),
+                                 get_string('header_username', 'rlipexport_version1'),
+                                 get_string('header_useridnumber', 'rlipexport_version1'),
+                                 get_string('header_courseidnumber', 'rlipexport_version1'),
+                                 get_string('header_startdate', 'rlipexport_version1'),
+                                 get_string('header_enddate', 'rlipexport_version1'),
+                                 get_string('header_grade', 'rlipexport_version1'),
+                                 get_string('header_letter', 'rlipexport_version1'),
+                                 'Header',
+                                 'Header2');
+        $expected_body = array('test',
+                               'user',
+                               'testuser',
+                               'testuseridnumber',
+                               'testcourse',
+                               date('M/d/Y', 1000000000),
+                               date('M/d/Y'),
+                               70.00000,
+                               'C-',
+                               'rliptext',
+                               'rliptext2');
+        $expected_data = array($expected_header, $expected_body);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals($expected_data, $data);
     }
 }
