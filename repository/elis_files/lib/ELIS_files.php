@@ -65,7 +65,7 @@ define('ELIS_FILES_CRON_VALUE',  HOURSECS); // Run the cron job every hour.
 define('ELIS_FILES_LOGIN_RESET', 5 * MINSECS);      // Reset a login after 5 minutes.
 
 define('ELIS_FILES_DEBUG_TIME',  false);
-define('ELIS_FILES_DEBUG_TRACE', true);
+define('ELIS_FILES_DEBUG_TRACE', false);
 
 // Alfresco 3.4 type definitions
 define('ELIS_FILES_TYPE_FOLDER',   'cmis:folder');
@@ -2129,9 +2129,11 @@ class ELIS_files {
                 $sfile   = true;
 
         /// This is a course file.
-            } else {
+            } else if (!empty($cid)) {
                 $context = get_context_instance(CONTEXT_COURSE, $cid);
                 $cfile   = true;
+            } else { // TBD
+                return false;
             }
         }
 
@@ -2140,6 +2142,7 @@ class ELIS_files {
             preg_match('/\\' . $moodleroot . '\/shared\//', $path, $matches);
 
             if (count($matches) == 1) {
+                $context = get_context_instance(CONTEXT_SYSTEM);
                 $shfile  = true;
             }
         }
@@ -2150,6 +2153,7 @@ class ELIS_files {
 
             if (count($matches) == 2) {
                 $username  = $matches[1];
+                $context = get_context_instance(CONTEXT_SYSTEM);
                 $ufile   = true;
             }
         }
@@ -2163,6 +2167,9 @@ class ELIS_files {
 
                 // Get cluster id
                 $oid = $DB->get_field('crlm_cluster','id',array('name'=>$oname));
+                if (empty($oid)) { // TBD
+                    return false;
+                }
                 $cluster_context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $oid);
 
                 $ofile   = true;
@@ -2227,10 +2234,11 @@ class ELIS_files {
     /// This file didn't come from somewhere within Moodle that we know about so access has
     /// to be determined based on the Alfresco capabilities the current user has.
         } else {
-            // Get the non context based permissions
+			// Get the non context based permissions
             $capabilities = array('repository/elis_files:viewowncontent'=> false,
-                                  'repository/elis_files:viewsharedcontent'=> false);
+                              'repository/elis_files:viewsharedcontent'=> false);
             $this->get_other_capabilities($USER, $capabilities);
+
             if ($ufile) {
             /// If the current user is not the user who owns this file and we can't access anything in the
             /// repository, don't allow access.
