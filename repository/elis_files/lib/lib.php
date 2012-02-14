@@ -765,11 +765,14 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     } else {
         return false;
     }
-
-    if (empty($uuid)) {
-        $uuid = $USER->elis_repo->get_root()->uuid;
+    if (!$repo = repository_factory::factory('elis_files')) {
+        return false;
     }
 
+    if (empty($uuid)) {
+        $uuid = $repo->get_root()->uuid;
+
+    }
     $chunksize = 8192;
 
 /// We need to write the XML structure for the upload out to a file on disk to accomdate large files
@@ -777,6 +780,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     $data1 = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
 
 	$alfresco_version = elis_files_get_repository_version();
+
     if ($alfresco_version == '3.2.1') {
         $data1 .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" ' .
                   'xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">' . "\n" .
@@ -786,9 +790,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         $data1 .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">' . "\n";
     }
 
-    $data1 .= '  <link rel="type" href="' . elis_files_base_url() . '/api/type/document"/>' . "\n" .
-              '  <link rel="repository" href="' . elis_files_base_url() . '/api/repository"/>' . "\n" .
-              '  <title>' . $filename . '</title>' . "\n" .
+    $data1 .= '  <title>' . $filename . '</title>' . "\n" .
               '  <summary>' . get_string('uploadedbymoodle', 'repository_elis_files') . '</summary>' . "\n" .
               '  <content type="' . $filemime . '">';
 
@@ -833,9 +835,12 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         $username = $USER->username;
     }
 
-    $serviceuri = '/api/node/workspace/SpacesStore/' . $uuid . '/descendants';
+    if ($alfresco_version == '3.2.1') {
+        $serviceuri = '/api/node/workspace/SpacesStore/' . $uuid . '/descendants';
+    } else {
+        $serviceuri = '/cmis/i/' . $uuid . '/children';
+    }
     $url        = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);
-
     $uri        = parse_url($url);
 
     switch ($uri['scheme']) {
@@ -853,12 +858,14 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
             break;
 
         default:
-            return false;
+            $result->error = 'invalid schema '. $uri['scheme'];
+            return $result;
     }
 
 /// Make sure the socket opened properly.
     if (!$fp) {
-        return false;
+        $result->error = trim($errno .' '. $errstr);
+        return $result;
     }
 
 /// Construct the path to act on.
@@ -882,7 +889,6 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     $request = 'POST  '. $path . " HTTP/1.0\r\n";
     $request .= implode("\r\n", $headers);
     $request .= "\r\n\r\n";
-
     fwrite($fp, $request);
 
 /// Write the XML request (which contains the base64-encoded uploaded file contents) into the socket.

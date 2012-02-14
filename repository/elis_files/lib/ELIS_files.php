@@ -1696,7 +1696,7 @@ class ELIS_files {
             return false;
         }
 
-        if (empty($uuid)) {
+        //if (empty($uuid)) {
             if ($node = elis_files_create_dir($userset->name, $this->ouuid, $userset->display)) {
                 $uuid = $node->uuid;
 
@@ -1704,7 +1704,7 @@ class ELIS_files {
                 // reset by the code elsewhere.
                 $this->node_inherit($uuid, false);
             }
-        }
+        //}
 
         if (!empty($uuid)) {
             // Store the UUID value if it hasn't been stored already.
@@ -2491,6 +2491,7 @@ class ELIS_files {
     function file_browse_options($cid, $uid, $shared, $oid, &$opts=array(), $createonly = false) {
         global $USER, $COURSE;
 
+        $opts = array();
 //echo " in file_browse_option cid: $cid from COURSE: $COURSE->id uid: $uid";
         if (empty($cid)) {
             $cid = $COURSE->id;
@@ -2523,7 +2524,7 @@ class ELIS_files {
 //echo '<br>in get_listing and this is: ';
 //print_object($this);
         if ($cid == SITEID && $viewalfsite) {
-            $repoisup = $this->is_running() && $this->verify_setup();
+//            $repoisup = $this->is_running() && $this->verify_setup();
 //            echo '<br>is repo up? '.$repoisup.'well?';
             $alfroot = $this->get_root();
             if (!empty($alfroot->uuid)) {
@@ -2558,7 +2559,7 @@ class ELIS_files {
 //            if (!elis_files_has_permission($this->muuid, $USER->username)) {
 //                $this->allow_read($USER->username, $this->muuid);
 //            }
-$repoisup = $this->is_running() && $this->verify_setup();
+//$repoisup = $this->is_running() && $this->verify_setup();
 //            echo '<br>is repo up? '.$repoisup.'well?';
             if (!elis_files_has_permission($this->cuuid, $USER->username)) {
                 $this->allow_read($USER->username, $this->cuuid);
@@ -2619,10 +2620,11 @@ $repoisup = $this->is_running() && $this->verify_setup();
                                 'path'=> $encodedpath);
             }
         }
-
+//echo '<br>capabilities:';
+//print_object($capabilities);
         // Build the option for browsing from the repository personal / user files.
-        if ($capabilities['repository/elis_files:viewowncontent'] || $capabilities['repository/elis_files:createowncontent']) {
-            if (!$createonly || ($createonly && $capabilities['repository/elis_files:createowncontent'])) {
+        if ($capabilities['repository/elis_files:viewowncontent']) {
+            if (!$createonly || ($createonly && ($capabilities['repository/elis_files:createowncontent'] == true))) {
                 $params = array('path'=>$this->get_user_store($USER->id),
                                 'shared'=>(boolean)0,
                                 'oid'=>(int)0,
@@ -2674,7 +2676,9 @@ $repoisup = $this->is_running() && $this->verify_setup();
         require_once($CFG->dirroot . '/elis/program/lib/data/userset.class.php');
 
         // Get cm userid
-//        $userid = pm_get_crlmuserid($muserid);
+        $cmuserid = pm_get_crlmuserid($USER->id);
+
+        $timenow = time();
 
         $contextlevelnum = context_level_base::get_custom_context_level('cluster', 'elis_program');
         $capability = 'repository/elis_files:viewusersetcontent';
@@ -2684,24 +2688,35 @@ $repoisup = $this->is_running() && $this->verify_setup();
 
         // Select clusters and sub-clusters for the current user
         // to which they have the vieworganization capability
-        $sql = "SELECT DISTINCT c.*, c_parent.path as parent_path, ra.userid
-            FROM {context} c
-            JOIN {context} c_parent
-              ON {$like}
-              OR c.path = c_parent.path
-            JOIN {role_assignments} ra
-              ON ra.contextid = c_parent.id
-            JOIN {role_capabilities} rc
-              ON ra.roleid = rc.roleid
-             AND rc.capability = :capability
-            WHERE (c_parent.contextlevel = :contextlevelnum)
-              AND ra.userid = :userid";
-        $params = array('capability'=>$capability,
-        			    'child_path'=>$child_path,
-                        'contextlevelnum'=>$contextlevelnum,
-                        'userid'=>$USER->id);
-//                        'timenow'=>$timenow);
+$sql = "SELECT DISTINCT clst.id AS instanceid
+            FROM {crlm_cluster} clst
+            WHERE EXISTS ( SELECT 'x'
+                FROM {context} c
+                JOIN {context} c_parent
+                  ON {$like}
+                  OR c.path = c_parent.path
+                JOIN {role_assignments} ra
+                  ON ra.contextid = c_parent.id
+                  AND ra.userid = :muserid
+                JOIN {role_capabilities} rc
+                  ON ra.roleid = rc.roleid
+                WHERE c_parent.instanceid = clst.id
+                  AND c.contextlevel = :contextlevelnum
+                  AND c_parent.contextlevel = :contextlevelnum2
+                  AND rc.capability = :capability
+                )
+             OR EXISTS ( SELECT 'x'
+                 FROM {crlm_cluster_assignments} ca
+                WHERE ca.clusterid = clst.id
+                  AND ca.userid = :cmuserid)
+              ";
 
+        $params = array('capability'=>$capability,
+                        'child_path'=>$child_path,
+                        'contextlevelnum'=>$contextlevelnum,
+                        'contextlevelnum2'=>$contextlevelnum,
+                        'muserid'=>$USER->id,
+                        'cmuserid'=>$cmuserid);
 //        $viewable_clusters = $DB->get_records_sql($sql, $params);
         $viewable_clusters = $DB->get_recordset_sql($sql, $params);
 
@@ -3110,22 +3125,29 @@ echo '<br>leaving migrate_user';
  * @return none
  */
     function get_other_capabilities($user,&$capabilities) {
-        global $CFG, $DB;
+        global $CFG, $DB, $USER;
 //echo "\n ******* capabilities array: ";
 //print_object($capabilities);
 //        $root = $this->get_root();
 
-        foreach ($capabilities as $capability=>$value) {
-            $sql = "SELECT DISTINCT ra.id
-                    FROM {$CFG->prefix}role_assignments ra
-                    INNER JOIN {$CFG->prefix}role_capabilities rc ON rc.roleid = ra.roleid
-                    WHERE ra.userid = :userid
-                    AND rc.capability = :capability
-                    AND rc.permission = " . CAP_ALLOW;
-            $params = array('userid'=>$user->id, 'capability'=> $capability);
-//echo "\n SQL: $sql params:";
-//var_dump($params);
-            if ($DB->record_exists_sql($sql, $params)) {
+        if (!empty($USER->access['rdef'])) {
+            foreach ($USER->access['rdef'] as $ctx) {
+                foreach ($capabilities as $capability=>$value) {
+                    if (isset($ctx[$capability]) &&
+                        $ctx[$capability] == CAP_ALLOW) {
+                        $capabilities[$capability] = true;
+                    }
+                }
+            }
+        }
+//            if ($recordset = $DB->get_recordset_sql($sql, $params)) {
+//                foreach ($recordset as $record) {
+//                    if (in_array($capabilities,$record->capability)) {
+//                        $capabilities[$record->capability] = true;
+//                    }
+//                }
+//            }
+            /*if ($DB->record_exists_sql($sql, $params)) {
                 if ($capability == 'repository/elis_files:createowncontent') {
                     $capabilities['repository/elis_files:createowncontent'] = true;
                 } else if ($capability == 'repository/elis_files:viewowncontent') {
@@ -3135,8 +3157,7 @@ echo '<br>leaving migrate_user';
                 } else if ($capability == 'repository/elis_files:viewsharedcontent') {
                     $capabilities['repository/elis_files:viewsharedcontent'] = true;
                 }
-            }
-        }
+            }*/
     }
 
 
