@@ -33,6 +33,9 @@ $string['data_object_validation_unique'] = '{$a->tablename} record must have uni
 $string['date'] = 'Date filter';
 $string['date_help'] = '<h1>Date filter</h1>
 <p>This filter allows you to filter information from before and/or after selected dates.</p>';
+$string['displaytext'] = 'Display text';
+$string['displaytext_help'] = '<h1>Display text</h1>
+<p>This filter allows you to display custom text in the report header, there are usually predefined fields, but this report has neglected to define them.</p>';
 $string['done'] = 'done';
 $string['elis'] = 'ELIS';
 $string['elisversion'] = '<strong>ELIS Version:</strong> {$a}';
@@ -167,7 +170,7 @@ $string['nocourseselected'] = 'No course selected';
 $string['nofieldsselected'] = 'No fields selected';
 $string['nogradeitems'] = 'No grade items found';
 $string['noidnumber'] = 'No ID number';
-
+$string['or'] = ' or ';
 $string['pluginname'] = 'ELIS Core';
 $string['preup_ac_check'] = 'Checking for ELIS Alfresco configuration settings';
 $string['preup_ac_error'] = 'error migrating configuration settings';
