@@ -213,47 +213,54 @@ class repository_elis_files extends repository {
         $ret['list'] = array();
 //echo "\n and now, near end of get_listing, oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
 
-        foreach ($children->folders as $child) {
-            if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
-                continue;
-            }
+        // Check that there are folders to list
+        if (isset($children->folders) && is_array($children->folders)) {
+            foreach ($children->folders as $child) {
+                if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
+                    continue;
+                }
 
-            // Include shared and oid parameters
-            $params = array('path'=>$child->uuid,
-                            'shared'=>(boolean)$shared,
-                            'oid'=>(int)$oid,
-                            'cid'=>(int)$cid,
-                            'uid'=>(int)$uid);
-            $encodedpath = base64_encode(serialize($params));
-            $ret['list'][] = array('title'=>$child->title,
-                    'path'=>$encodedpath, //$child->uuid,
-                    'name'=>$child->title,
-                    'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
-                    'created'=>'',
-                    'modified'=>'',
-                    'owner'=>'',
-                    'children'=>array());
+                // Include shared and oid parameters
+                $params = array('path'=>$child->uuid,
+                                'shared'=>(boolean)$shared,
+                                'oid'=>(int)$oid,
+                                'cid'=>(int)$cid,
+                                'uid'=>(int)$uid);
+                $encodedpath = base64_encode(serialize($params));
+                $ret['list'][] = array('title'=>$child->title,
+                        'path'=>$encodedpath, //$child->uuid,
+                        'name'=>$child->title,
+                        'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
+                        'created'=>'',
+                        'modified'=>'',
+                        'owner'=>'',
+                        'children'=>array());
+            }
         }
-        foreach ($children->files as $child) {
-            // Check permissions first
-            if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
-                continue;
+
+        // Check that there are files to list
+        if (isset($children->files) && is_array($children->files)) {
+            foreach ($children->files as $child) {
+                // Check permissions first
+                if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
+                    continue;
+                }
+
+                $params = array('path'=>$child->uuid,
+                                'shared'=>(boolean)$shared,
+                                'oid'=>(int)$oid,
+                                'cid'=>(int)$cid,
+                                'uid'=>(int)$uid);
+                $encodedpath = base64_encode(serialize($params));
+
+                $ret['list'][] = array('title'=>$child->title,
+                        'path'=>$encodedpath, //$child->uuid,
+                        'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 32))->out(false),
+                        'created'=>date("M. j, Y",$child->created),
+                        'modified'=>date("M. j, Y",$child->modified),
+                        'owner'=>$child->owner,
+                        'source'=>$child->uuid); // or links['self']???
             }
-
-            $params = array('path'=>$child->uuid,
-                            'shared'=>(boolean)$shared,
-                            'oid'=>(int)$oid,
-                            'cid'=>(int)$cid,
-                            'uid'=>(int)$uid);
-            $encodedpath = base64_encode(serialize($params));
-
-            $ret['list'][] = array('title'=>$child->title,
-                    'path'=>$encodedpath, //$child->uuid,
-                    'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 32))->out(false),
-                    'created'=>date("M. j, Y",$child->created),
-                    'modified'=>date("M. j, Y",$child->modified),
-                    'owner'=>$child->owner,
-                    'source'=>$child->uuid); // or links['self']???
         }
 
 // $tmp = ob_get_contents();
