@@ -55,7 +55,7 @@ class generalized_filter_dependentselect extends generalized_filter_type {
         '_options'     => 'choices',
         '_default'     => 'default',
         '_numeric'     => 'numeric',
-        '_report_path' => 'report_parth',
+        '_report_path' => 'report_path',
         '_isrequired'  => 'isrequired',
         '_filename'    => 'filename',
     );
