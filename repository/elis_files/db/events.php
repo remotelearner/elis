@@ -48,5 +48,11 @@ $handlers = array (
          'handlerfile'     => '/repository/elis_files/lib/eventlib.php',
          'handlerfunction' => 'elis_files_userset_deassigned',
          'schedule'        => 'instant'
+     ),
+
+    'user_created' => array (
+         'handlerfile'     => '/repository/elis_files/lib/eventlib.php',
+         'handlerfunction' => 'elis_files_user_created',
+         'schedule'        => 'instant'
      )
 );

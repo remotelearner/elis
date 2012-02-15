@@ -65,6 +65,11 @@ class repository_factory {
             require_once(dirname(__FILE__).'/lib/ELIS_files.php');
 
             $class = "ELIS_files";
+            if (isset($SESSION->repo) && is_siteadmin($USER->id) &&
+                !get_config(ELIS_files::$plugin_name, 'initialized')) {
+                error_log("repository_factory::factory(): unsetting SESSION->repo");
+                unset($SESSION->repo);
+            }
 
             if (!(isset($SESSION->repo))) {
                 $SESSION->repo = new $class;

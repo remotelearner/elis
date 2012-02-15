@@ -448,3 +448,41 @@ function elis_files_userset_deassigned($usersetinfo) {
 
     return true;
 }
+
+/**
+ * Method to return authentication methods that DO NOT use passwords
+ *
+ * @return array  list of authentications that DO NOT use passwords
+ */
+function elis_files_nopasswd_auths() {
+    // TBD: determine from auth plugin which don't support passwords ???
+    return array('openid', 'cas');
+}
+
+/**
+ * Handle the event when a user is created in Moodle.
+ *
+ * @uses $CFG
+ * @param object $user Moodle user record object.
+ * @return bool True on success, False otherwise.
+ */
+function elis_files_user_created($user) {
+    global $CFG;
+
+    // Only proceed here if the Alfresco plug-in is actually enabled.
+    if (!($repo = repository_factory::factory('elis_files')) || !$repo->is_configured() || !$repo->verify_setup()) {
+        error_log("elis_files_user_created(): Alfresco NOT enabled!");
+    } else {
+        // create a random password for certain authentications
+        $auths = elis_files_nopasswd_auths();
+        if (!empty($user->auth) && in_array($user->auth, $auths)) {
+            $passwd = random_string(8);
+            //$user->password = md5($passwd); // TBD: or reversible encrypt
+            //update_record('user', $user);
+            //error_log("elis_files_user_created(): generating password for {$user->id} ({$user->auth}) => {$passwd}");
+            $repo->migrate_user($user, $passwd);
+        }
+    }
+
+    return true;
+}

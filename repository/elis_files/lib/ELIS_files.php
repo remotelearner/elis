@@ -95,6 +95,8 @@ defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_
 
 class ELIS_files {
 
+    static $plugin_name = 'repository/alfresco'; // TBD
+    static $init   = false; // Prevent recursion
     var $errormsg  = '';  // Standard error message varible.
     var $log       = '';  // Cron task log messages.
     var $cmis      = null;  // CMIS service connection object.
@@ -109,6 +111,8 @@ class ELIS_files {
     var $alfresco_username_fix = ''; // The fixed username for Alfresco where @ is replaced with _AT_
 
     function ELIS_files() {
+        global $CFG, $USER, $DB;
+
         if (ELIS_FILES_DEBUG_TRACE) mtrace('ELIS_files()');
 
         $this->process_config(get_config('elis_files'));
@@ -121,7 +125,34 @@ class ELIS_files {
             return false;
         }
 
-        return $this->verify_setup();
+        $result = $this->verify_setup();
+
+        // Check if we need to initialize non-password users (openid, cas, ...)
+        if ($result && !self::$init && is_siteadmin($USER->id) &&
+            !get_config(self::$plugin_name, 'initialized')) {
+            require_once($CFG->dirroot . '/repository/elis_files/lib/eventlib.php');
+            error_log('ELIS_files() - INFO: initializing users ...');
+            self::$init = true;
+            $errors = 0;
+            $auths = elis_files_nopasswd_auths();
+            $authlist = "'". implode("', '", $auths) ."'";
+            $users = $DB->get_records_select('user', "auth IN ({$authlist})", array(), 'id, auth');
+            if (!empty($users)) {
+                foreach ($users as $user) {
+                    $user = get_complete_user_data('id', $user->id);
+                    $migrate_ok = elis_files_user_created($user);
+                    if (!$migrate_ok) {
+                        $errors++;
+                        error_log("ELIS_files() - failed migrating user ({$user->id}) to Alfresco.");
+                    }
+                }
+            }
+            error_log("ELIS_files() - INFO: initialization complete ({$errors} errors)");
+            if (!$errors) {
+                set_config('initialized', 1, self::$plugin_name);
+            }
+        }
+
     }
 
 

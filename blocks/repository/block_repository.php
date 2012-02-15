@@ -24,13 +24,13 @@
  *
  */
 
+require_once($CFG->dirroot. '/repository/elis_files/lib/eventlib.php');
 
 class block_repository extends block_base {
 
     function block_repository() {
         $this->title = get_string('blockname', 'block_repository');
     }
-
 
     function get_content() {
         global $CFG, $USER;
@@ -45,6 +45,11 @@ class block_repository extends block_base {
 
         $content = '';
         $footer  = '';
+
+        $nologin_auths = elis_files_nopasswd_auths();
+        if (!empty($USER->auth) && in_array($USER->auth, $nologin_auths)) {
+            return '';
+        }
 
         // Only proceed here if the Alfresco plug-in is actually enabled.
         if (!isloggedin() || !file_exists($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php')) {
