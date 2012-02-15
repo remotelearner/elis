@@ -1005,7 +1005,8 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     }
 
     if ($id) {
-        $where[] = "(crs.id = $id)";
+        $where[] = is_array($id) ? '(crs.id IN ('. implode(', ', $id) .'))'
+                                 : "(crs.id = $id)";
     }
 
     if ($onlyopen) {
