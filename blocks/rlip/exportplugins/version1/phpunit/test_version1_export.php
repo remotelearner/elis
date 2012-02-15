@@ -274,6 +274,19 @@ class version1ExportTest extends elis_database_test {
     }
 
     /**
+     * Asserts that a record in the given table exists
+     *
+     * @param string $table The database table to check
+     * @param array $params The query parameters to validate against
+     */
+    private function assert_record_exists($table, $params = array()) {
+        global $DB;
+
+        $exists = $DB->record_exists($table, $params);
+        $this->assertEquals($exists, true); 
+    }
+
+    /**
      * Validate the export header row for an empty data set
      */
     public function testVersion1ExportCreatesCorrectHeader() {
@@ -827,5 +840,316 @@ class version1ExportTest extends elis_database_test {
 
         //data validation
         $this->assertEquals($expected_data, $data);
+    }
+
+    /**
+     * Validate that the API call for removing a custom profile field from the
+     * export works as expected
+     */
+    public function testVersion1ExportDeletesField() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+
+        //set up the category and field, along with the export mapping
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_field_mapping($fieldid);
+
+        //verify setup
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $fieldid));
+
+        //remove the field from the export
+        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $fieldid));
+        rlipexport_version1_config::delete_field_from_export($id);
+
+        //validation
+        $exists = $DB->record_exists('block_rlip_version1_export', array('fieldid' => $fieldid));
+        $this->assertEquals($exists, false);
+    }
+
+    /**
+     * Validate that the API call for adding a custom profile field to the
+     * export works as expected
+     */
+    public function testVersion1ExportAddsField() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+
+        //set up the category and field
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+
+        //add the field to the export
+        rlipexport_version1_config::add_field_to_export($fieldid);
+
+        //validation
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $fieldid));
+    }
+
+    /**
+     * Validate that the API call for moving a custom profile field up in the
+     * export field order works as expected
+     */
+    public function testVersion1ExportMovesFieldUp() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+
+        //set up the category and field, along with the export mapping
+        $categoryid = $this->create_custom_field_category();
+        $firstfieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_field_mapping($firstfieldid);
+
+        //set up a second field and mapping record
+        $secondfieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
+        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+
+        //move the second field up
+        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $secondfieldid));
+        rlipexport_version1_config::move_field($id, rlipexport_version1_config::DIR_UP);
+
+        //validation
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $firstfieldid,
+                                                                        'fieldorder' => 1));
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $secondfieldid,
+                                                                        'fieldorder' => 0));
+    }
+
+    /**
+     * Validate that the API call for moving a custom profile field down in the
+     * export field order works as expected
+     */
+    public function testVersion1ExportMovesFieldDown() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+
+        //set up the category and field, along with the export mapping
+        $categoryid = $this->create_custom_field_category();
+        $firstfieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_field_mapping($firstfieldid);
+
+        //set up a second field and mapping record
+        $secondfieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
+        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+
+        //move the first field down
+        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $firstfieldid));
+        rlipexport_version1_config::move_field($id, rlipexport_version1_config::DIR_DOWN);
+
+        //validation
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $firstfieldid,
+                                                                        'fieldorder' => 1));
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $secondfieldid,
+                                                                        'fieldorder' => 0));
+    }
+
+    /**
+     * Validate that the API call for updating the header text for a single
+     * configured custom profile field works as expected
+     */
+    public function testVersion1ExportUpdatesHeader() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+
+        //set up the category and field, along with the export mapping
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_field_mapping($fieldid);
+
+        //update the header
+        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $fieldid));
+        rlipexport_version1_config::update_field_header($id, 'Updatedvalue');
+
+        //validation
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $fieldid,
+                                                                        'header' => 'Updatedvalue'));
+    }
+
+    /**
+     * Validate that the API call for updating the header text for multiple
+     * configured custom profile fields works as expected
+     */
+    public function testVersion1ExportUpdatesHeaders() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+
+        //set up the category and field, along with the export mapping
+        $categoryid = $this->create_custom_field_category();
+        $firstfieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_field_mapping($firstfieldid);
+
+        //set up a second field and mapping record
+        $secondfieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
+        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+
+        //obtain DB record ids
+        $firstid = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $firstfieldid));
+        $secondid = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $secondfieldid));
+
+        //update the headers
+        $data = array('header_'.$firstid => 'Updatedvalue1',
+                      'header_'.$secondid => 'Updatedvalue2');
+        rlipexport_version1_config::update_field_headers($data);
+
+        //validation
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $firstfieldid,
+                                                                        'header' => 'Updatedvalue1'));
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $secondfieldid,
+                                                                        'header' => 'Updatedvalue2'));
+    }
+
+    /**
+     * Validate that the API call for obtaining the recordset of configured
+     * export fields works as expected
+     */
+    public function testVersion1ExportReportsConfiguredFields() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+
+        //set up the category and field, along with the export mapping
+        $categoryid = $this->create_custom_field_category();
+        $firstfieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_field_mapping($firstfieldid);
+
+        //set up a second field and mapping record
+        $secondfieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
+        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+
+        //track whether each expected record was found
+        $found_first = false;
+        $found_second = false;
+
+        //look through the configured fields recordset
+        if ($recordset = rlipexport_version1_config::get_configured_fields()) {
+            foreach ($recordset as $record) {
+                //conditions for matching the first and second expected records
+                $is_first = $record->name == 'rliptext' && $record->header == 'Header' &&
+                            $record->fieldorder == 0;
+                $is_second = $record->name == 'rliptext2' && $record->header == 'Header2' &&
+                             $record->fieldorder == 1;
+
+                if ($is_first) {
+                    //first record found
+                    $found_first = true;
+                } else if ($is_second) {
+                    //second record found
+                    $found_second = true;
+                } else {
+                    //invalid record found
+                    $this->assertEquals(true, false);
+                }
+            }
+        } else {
+            //problem fetching recordset
+            $this->assertEquals(true, false);
+        }
+
+        //validate that both records were found
+        $this->assertEquals($found_first, true);
+        $this->assertEquals($found_second, true);
+    }
+
+    /**
+     * Validate that the API call for obtaining the recordset of available
+     * export fields works as expected
+     */
+    public function testVersion1ExportReportsAvailableFields() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+
+        //set up the category and field, along with the export mapping
+        $categoryid = $this->create_custom_field_category();
+        $firstfieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_field_mapping($firstfieldid);
+
+        //set up a second field without mapping record
+        $secondfieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
+
+        //track whether each expected record was found
+        $found_second = false;
+
+        //look through the available fields recordset
+        if ($recordset = rlipexport_version1_config::get_available_fields()) {
+            foreach ($recordset as $record) {
+                //condition for matching the expected record
+                $is_second =  $secondfieldid && $record->name = 'rliptext2';
+
+                if ($is_second) {
+                    //expected record found
+                    $found_second = true;
+                } else {
+                    //invalid record found
+                    $this->assertEquals(true, false);
+                }
+            }
+        } else {
+            //problem fetching recordset
+            $this->assertEquals(true, false);
+        }
+
+        //validate that the record was found
+        $this->assertEquals($found_second, true);
+    }
+
+    /**
+     * Validate that the API call for moving a profile field up in export
+     * position deals with deleted user profile fields correctly
+     */
+    public function testVersion1ExportHandlesDeletedFieldsWhenMovingUp() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+
+        //set up the category and field, along with the export mapping
+        $categoryid = $this->create_custom_field_category();
+        $firstfieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_field_mapping($firstfieldid);
+
+        //set up a second mapping record without a field
+        $secondfieldid = 9999;
+        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+
+        //set up a third field with a mapping record
+        $thirdfieldid = $this->create_profile_field('rliptext3', 'text', $categoryid);
+        $this->create_field_mapping($thirdfieldid, 'Header3', 2);
+
+        //move the third field up
+        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $thirdfieldid));
+        rlipexport_version1_config::move_field($id, rlipexport_version1_config::DIR_UP);
+
+        //validate that the first and third fields swapped, ignoring the second field
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $firstfieldid,
+                                                                        'fieldorder' => 2));
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $thirdfieldid,
+                                                                        'fieldorder' => 0));
+    }
+
+    /**
+     * Validate that the API call for moving a profile field down in export
+     * position deals with deleted user profile fields correctly
+     */
+    public function testVersion1ExportHandlesDeletedFieldsWhenMovingDown() {
+        global $DB;
+
+        //set up the category and field, along with the export mapping
+        $categoryid = $this->create_custom_field_category();
+        $firstfieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
+        $this->create_field_mapping($firstfieldid);
+
+        //set up a second mapping record without a field
+        $secondfieldid = 9999;
+        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+
+        //set up a third field with a mapping record
+        $thirdfieldid = $this->create_profile_field('rliptext3', 'text', $categoryid);
+        $this->create_field_mapping($thirdfieldid, 'Header3', 2);
+
+        //move the first field down
+        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $firstfieldid));
+        rlipexport_version1_config::move_field($id, rlipexport_version1_config::DIR_DOWN);
+
+        //validate that the first and third fields swapped, ignoring the second field
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $firstfieldid,
+                                                                        'fieldorder' => 2));
+        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $thirdfieldid,
+                                                                        'fieldorder' => 0));
     }
 }
