@@ -651,7 +651,7 @@ class version1CourseImportTest extends elis_database_test {
         $new_category = new stdClass;
         $new_category->name = 'updatecategory';
         $new_category->id = $DB->insert_record('course_categories', $new_category);
-        
+
         $data = array('action' => 'update',
                       'shortname' => 'updateshortname',
                       'fullname' => 'updatedfullname',
@@ -685,7 +685,7 @@ class version1CourseImportTest extends elis_database_test {
                    numsections = :numsections AND
                    startdate = :startdate AND
                    newsitems = :newsitems AND
-                   showgrades = :showgrades AND 
+                   showgrades = :showgrades AND
                    showreports = :showreports AND
                    maxbytes = :maxbytes AND
                    visible = :visible AND
@@ -696,6 +696,77 @@ class version1CourseImportTest extends elis_database_test {
         $this->assertEquals($exists, true);
 
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'updateshortname'));
+        $this->assert_record_exists('enrol', array('courseid' => $courseid,
+                                                   'enrol' => 'guest',
+                                                   'password' => 'password',
+                                                   'status' => ENROL_INSTANCE_ENABLED));
+    }
+
+    /**
+     * Validate that fields are mapped from 'yes', 'no' values to integer values during course update
+     */
+    public function testVersion1ImportMapsFieldsOnCourseUpdate() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //setup
+        set_config('maxsections', 20, 'moodlecourse');
+
+        $this->run_core_course_import(array('shortname' => 'mapshortname',
+                                            'guest' => 'no'));
+
+        $new_category = new stdClass;
+        $new_category->name = 'mapcategory';
+        $new_category->id = $DB->insert_record('course_categories', $new_category);
+
+        $data = array('action' => 'update',
+                      'shortname' => 'mapshortname',
+                      'fullname' => 'mapfullname',
+                      'idnumber' => 'rlipidnumber2',
+                      'summary' => 'rlipsummary',
+                      'format' => 'social',
+                      'numsections' => 7,
+                      'startdate' => 'Jan/12/2012',
+                      'newsitems' => 7,
+                      'showgrades' => 'no',
+                      'showreports' => 'yes',
+                      'maxbytes' => 0,
+                      'guest' => 'yes',
+                      'password' => 'password',
+                      'visible' => 'no',
+                      'lang' => 'en',
+                      'category' => 'mapcategory');
+        $this->run_core_course_import($data, false);
+
+        foreach ($data as $key => $val) {
+            if (in_array((string)$val, array('no', 'yes'))) {
+                $data[$key] = ((string)$val == 'yes') ? 1: 0;
+            }
+        }
+        unset($data['action']);
+        unset($data['guest']);
+        unset($data['password']);
+        $data['startdate'] = mktime(0, 0, 0, 1, 12, 2012);
+        $data['category'] = $new_category->id;
+
+        $select = "shortname = :shortname AND
+                   fullname = :fullname AND
+                   idnumber = :idnumber AND
+                   summary = :summary AND
+                   format = :format AND
+                   numsections = :numsections AND
+                   startdate = :startdate AND
+                   newsitems = :newsitems AND
+                   showgrades = :showgrades AND
+                   showreports = :showreports AND
+                   maxbytes = :maxbytes AND
+                   visible = :visible AND
+                   lang = :lang AND
+                   category = :category";
+
+        $exists = $DB->record_exists_select('course', $select, $data);
+        $this->assertEquals($exists, true);
+        $courseid = $DB->get_field('course', 'id', array('shortname' => 'mapshortname'));
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
                                                    'password' => 'password',
