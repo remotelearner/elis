@@ -343,7 +343,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
                      'backup_courses' => 'moodle',
                      'backup_log' => 'moodle',
                      'role' => 'moodle',
-                     'role_context_levels' => 'moodle');
+                     'role_context_levels' => 'moodle',
+                     //this prevents createorupdate from being used
+                     'config_plugins' => 'moodle');
     }
 
     /**

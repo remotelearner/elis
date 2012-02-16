@@ -38,36 +38,39 @@ admin_externalpage_setup('rlipsettingplugins');
 $PAGE->requires->css('/blocks/rlip/styles.css');
 echo $OUTPUT->header();
 
-//export plugin header
-echo $OUTPUT->box_start('generalbox pluginspageheading');
-print_string('exportplugins', 'block_rlip');
-echo $OUTPUT->box_end();
-
-//initialize table
-$table = new html_table();
-$table->head = array(get_string('name'), get_string('settings'));
-$table->align = array('left', 'left');
-$table->size = array('80%', '20%');
-$table->data = array();
-$table->width = '30%';
-
-//obtain plugins and iterate through them
-$plugins = get_plugin_list('rlipexport');
-foreach ($plugins as $name => $path) {
-    //get the display name from the plugin-specific language string
-    $displayname = get_string('pluginname', "rlipexport_{$name}");
-
-    //configuration link
-    $url = $CFG->wwwroot."/admin/settings.php?section=rlipsettingrlipexport_{$name}";
-    $attributes = array('href' => $url);
-    $tag = html_writer::tag('a', get_string('edit'), $attributes);
-
-    //combine into row data
-    $table->data[] = array($displayname, $tag);
+$plugintypes = array('import', 'export');
+foreach ($plugintypes as $plugintype) {
+    //plugin header
+    echo $OUTPUT->box_start('generalbox pluginspageheading');
+    print_string("{$plugintype}plugins", 'block_rlip');
+    echo $OUTPUT->box_end();
+    
+    //initialize table
+    $table = new html_table();
+    $table->head = array(get_string('name'), get_string('settings'));
+    $table->align = array('left', 'left');
+    $table->size = array('80%', '20%');
+    $table->data = array();
+    $table->width = '30%';
+    
+    //obtain plugins and iterate through them
+    $plugins = get_plugin_list("rlip{$plugintype}");
+    foreach ($plugins as $name => $path) {
+        //get the display name from the plugin-specific language string
+        $displayname = get_string('pluginname', "rlip{$plugintype}_{$name}");
+    
+        //configuration link
+        $url = $CFG->wwwroot."/admin/settings.php?section=rlipsettingrlip{$plugintype}_{$name}";
+        $attributes = array('href' => $url);
+        $tag = html_writer::tag('a', get_string('edit'), $attributes);
+    
+        //combine into row data
+        $table->data[] = array($displayname, $tag);
+    }
+    
+    //output the table
+    echo html_writer::table($table);
 }
-
-//output the table
-echo html_writer::table($table);
 
 //footer
 echo $OUTPUT->footer();

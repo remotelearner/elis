@@ -215,6 +215,41 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
+    function handle_user_createorupdate($record, $action) {
+        global $CFG, $DB;
+
+        //check config setting
+        $createorupdate = get_config('rlipimport_version1', 'createorupdate');
+
+        if (!empty($createorupdate)) {
+            //identify the user
+            $params = array('username' => $record->username,
+                            'mnethostid' => $CFG->mnet_localhost_id,
+                            'email' => $record->email);
+            if (isset($record->idnumber)) {
+                $params['idnumber'] = $record->idnumber;
+            }
+
+            if ($DB->record_exists('user', $params)) {
+                //user exists, so the action is an update
+                $action = 'update';
+            } else {
+                //user does not exist, so the action is a create
+                $action = 'create';
+            }
+        }
+
+        return $action;
+    }
+
+    /**
      * Delegate processing of an import line for entity type "user"
      *
      * @param object $record One record of import data
@@ -227,6 +262,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if ($action === '') {
             $action = $record->action;
         }
+
+        $action = $this->handle_user_createorupdate($record, $action);
 
         $method = "user_{$action}";
         return $this->$method($record);
@@ -566,6 +603,34 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
+    function handle_course_createorupdate($record, $action) {
+        global $DB;
+
+        //check config setting
+        $createorupdate = get_config('rlipimport_version1', 'createorupdate');
+
+        if (!empty($createorupdate)) {
+            //identify the course
+            if ($DB->record_exists('course', array('shortname' => $record->shortname))) {
+                //course exists, so the action is an update
+                $action = 'update';
+            } else {
+                //course does not exist, so the action is a create
+                $action = 'create';
+            }
+        }
+
+        return $action;
+    }
+
+    /**
      * Delegate processing of an import line for entity type "course"
      *
      * @param object $record One record of import data
@@ -578,6 +643,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if ($action === '') {
             $action = $record->action;
         }
+
+        $action = $this->handle_course_createorupdate($record, $action);
 
         $method = "course_{$action}";
         return $this->$method($record);
@@ -1112,7 +1179,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         $method = "enrolment_{$action}";
-        return $this->$method($record);
+        if (method_exists($this, $method)) {
+            return $this->$method($record);
+        } else {
+            //todo: add logging
+            return false;
+        }
     }
 
     /**

@@ -34,22 +34,25 @@
 function rlip_admintree_setup(&$adminroot) {
     global $CFG;
 
-    //obtain the list of rlip export plugins
-    if ($plugins = get_plugin_list('rlipexport')) {
-        ksort($plugins);
-
-        foreach ($plugins as $plugin => $path) {
-            $plugsettings = $path.'/settings.php';
-
-            if (file_exists($plugsettings)) {
-                //the plugin has a settings file, so add it to the tree
-                $name = 'rlipsettingrlipexport_'.$plugin;
-                $displaystring = get_string('pluginname', "rlipexport_$plugin");
-                $settings = new admin_settingpage($name, $displaystring);
-
-                //add the actual settings to the list
-                include($plugsettings);
-                $adminroot->add('blocksettings', $settings);
+    $plugintypes = array('rlipimport', 'rlipexport');
+    foreach ($plugintypes as $plugintype) {
+        //obtain the list of plugins of the current type
+        if ($plugins = get_plugin_list($plugintype)) {
+            ksort($plugins);
+    
+            foreach ($plugins as $plugin => $path) {
+                $plugsettings = $path.'/settings.php';
+    
+                if (file_exists($plugsettings)) {
+                    //the plugin has a settings file, so add it to the tree
+                    $name = "rlipsetting{$plugintype}_{$plugin}";
+                    $displaystring = get_string('pluginname', "{$plugintype}_$plugin");
+                    $settings = new admin_settingpage($name, $displaystring);
+    
+                    //add the actual settings to the list
+                    include($plugsettings);
+                    $adminroot->add('blocksettings', $settings);
+                }
             }
         }
     }

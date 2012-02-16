@@ -3,7 +3,7 @@
 //sample setting to indicate that this config page is working normally and
 //saving values to the config_plugins table
 //todo: replace with real settings
-$settings->add(new admin_setting_configcheckbox('rlipimport_version1/name', 'Visible Name',
+$settings->add(new admin_setting_configcheckbox('rlipexport_version1/name', 'Visible Name',
                                                 'Description', 0));
 
 //link for configuring export fields
