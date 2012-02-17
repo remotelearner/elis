@@ -90,6 +90,9 @@ function php_report_filtering_update_form($report_name, &$parameter_form) {
             if (strpos($key, $prefix) === 0) {
                 //preference contains the form field name and UI value
                 $field_name = substr($key, strlen($prefix));
+                if (is_array($value)) {
+                    $value = serialize($value);
+                }
                 $parameter_form->set_data(array($field_name => $value), true);
             }
 
@@ -196,6 +199,9 @@ function php_report_filtering_resolve_submitted_preferences($filter_object, $per
 
                 //store all related values as preferences
                 foreach ($per_filter_data[$field_shortname] as $key => $value) {
+                    if (is_string($value) && strpos($value, 'a:') === 0) {
+                        $value = unserialize($value);
+                    }
                     $preferences['php_report_' . $report_shortname . '/' . $key] = $value;
                     if (array_key_exists($key,$all_options)) {
                         unset($all_options[$key]);
@@ -436,12 +442,23 @@ function php_report_filtering_reset_form($form_data, $filter_object, $report_nam
     foreach ($per_filter_data as $filter_name => $filter_data) {
         //obtain the instance
         // Checking with isset() should not be necessary. This is a workaround.
-        if(isset($filter_object->_fields[$filter_name])) {
+        if (!empty($filter_object->_fields[$filter_name])) { // TBD: isset() ?
+            //corresponds to a normal filter
             $filter_instance = $filter_object->_fields[$filter_name];
+            //append the default values to our list
+            $default_values = $filter_instance->get_default_values($filter_data);
+            $reset_array = array_merge($reset_array, $default_values);
+        } else {
+            //check secondary filterings
+            foreach ($filter_object->secondary_filterings as $secondary) {
+                if (!empty($secondary->_fields[$filter_name])) {
+                    $filter_instance = $secondary->_fields[$filter_name];
+                    //append the default values to our list
+                    $default_values = $filter_instance->get_default_values($filter_data);
+                    $reset_array = array_merge($reset_array, $default_values);
+                }
+            }
         }
-        //append the default values to our list
-        $default_values = $filter_instance->get_default_values($filter_data);
-        $reset_array = array_merge($reset_array, $default_values);
     }
 
     // start with getting the database preferences
@@ -559,7 +576,9 @@ class php_report_default_capable_filtering extends generalized_filtering {
             $preference_prefix = 'php_report_' . $this->reportname;
 
             //is preference related to this report?
-            if (strpos($parts[0], $preference_prefix) === 0) {
+            //match exactly in case one report name prefixes another
+            if ($parts[0] == $preference_prefix) {
+                // TBD ^ WAS: if (strpos($parts[0], $preference_prefix) === 0)
                 $element_name = $parts[1];
 
                 //calculate the group name
