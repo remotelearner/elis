@@ -38,7 +38,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
     var $_field;
 
     var $_options  = array();  // Select options
-    var $_numeric  = false;    // TBD: obsolete
+    var $_numeric  = false;    // set true if field is numeric (not string)
     var $_anyvalue = null;     // The "any value" entry
     var $_noany    = false;    // Whether to hide the "any value" entry
     var $_onchange = '';       // On change javascript
@@ -73,7 +73,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
                     ? $options['help']
                     : array('simpleselect', $label, 'elis_core'));
 
-        if (! is_array($options)) {
+        if (!is_array($options)) {
             $options = array($options);
         }
 
@@ -118,7 +118,15 @@ class generalized_filter_simpleselect extends generalized_filter_type {
             $options['class'] = $this->_class;
         }
 
+        $options = array();
+        if (!empty($this->_onchange)) {
+            $options['onchange'] = $this->_onchange;
+        }
+        if (!empty($this->_multiple)) {
+            $options['multiple'] = $this->_multiple;
+        }
         $mform->addElement('select', $this->_uniqueid, $this->_label, $choices, $options);
+
         $mform->addHelpButton($this->_uniqueid, $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */ ); // TBV
         if ($this->_advanced) {
             $mform->setAdvanced($this->_uniqueid);
@@ -132,6 +140,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
      */
     function check_data($formdata) {
         $field = $this->_uniqueid;
+
         if (array_key_exists($field, $formdata)) {
             $value = $formdata->$field;
             if ($this->_multiple && is_array($value)) {
@@ -145,7 +154,6 @@ class generalized_filter_simpleselect extends generalized_filter_type {
                 return array('value' => (string)$value);
             }
         }
-
         return false;
     }
 
@@ -163,15 +171,15 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         $value = $data['value'];
 
         $a = new object();
-        $a->label    = $this->_label;
+        $a->label = $this->_label;
 
         if (is_array($value)) {
             foreach ($value as $key => $subvalue) {
                 $value[$key] = '"'. s($subvalue) .'"';
             }
-            $a->value    = implode(get_string('or', 'elis_core'), $value);
+            $a->value = implode(get_string('or', 'elis_core'), $value);
         } else {
-            $a->value    = '"'.s($this->_options[$value]).'"';
+            $a->value = '"'. s($this->_options[$value]) .'"';
         }
         $a->operator = get_string('isequalto', 'filters');
 
@@ -200,29 +208,23 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         }
 
         $value = $data['value'];
-
-        if (is_array($value) && (sizeof($value) == 1)) {
+        if (is_array($value) && sizeof($value) == 1) {
             $value = reset($value);
         }
 
         if ($this->_multiple && is_array($value)) {
-            $places = array();
-            $values = array();
-
             foreach ($value as $key => $val) {
-                $name = $param_name .'_'. $key;
-                $values[$name] = addslashes($val);
-                $places[$key]  = ':'. $name;
+                $val = addslashes($val);
+                if (empty($this->_numeric)) {
+                    $val = "'$val'";
+                }
+                $value[$key] = $val;
             }
-
-
-            return array("{$full_fieldname} IN (". implode(',', $places) .')', $values);
-        } else {
-            $value = addslashes($value);
-
-            return array("{$full_fieldname} = :{$param_name}", array($param_name => $value));
+            return array("{$full_fieldname} IN (". implode(',', $value) .')',
+                         array());
         }
+        return array("{$full_fieldname} = :{$param_name}",
+                     array($param_name => $value));
     }
-
 }
 
