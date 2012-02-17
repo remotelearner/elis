@@ -1278,13 +1278,7 @@ class ELIS_files {
 
             // Ensure that we set the current user to be the owner of the newly created directory.
             if (!empty($properties->uuid)) {
-                // So that we don't conflict with the default Alfresco admin account.
-                $username = $USER->username == 'admin' ? $this->config->admin_username : $USER->username;
-
-                // We must include the tenant portion of the username here.
-                if (($tenantname = strpos($this->config->server_username, '@')) > 0) {
-                    $username .= substr($this->config->server_username, $tenantname);
-                }
+                $username = alfresco_transform_username($USER->username);
 
                 // We're not going to check the response for this right now.
                 elis_files_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
@@ -1816,7 +1810,8 @@ class ELIS_files {
             $uuid = false;
 
             if (($uuid = $this->has_old_user_store($uid)) !== false) {
-                if (!$this->migrate_user($username)) {
+                $fixed_username = $this->fix_username($username);
+                if (!$this->migrate_user($fixed_username)) {
                     return false;
                 }
             }
@@ -2869,13 +2864,7 @@ $sql = "SELECT DISTINCT clst.id AS instanceid
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('update_user_password(' . $user->username . ', ' . $password . ')');
 
-        // If the user has an old-style user directory, migrate it's contents and delete the directory.
-        $username = $user->username == 'admin' ? $this->config->admin_username : $user->username;
-
-        // We must include the tenant portion of the username here.
-        if (($tenantname = strpos($this->config->server_username, '@')) > 0) {
-            $username .= substr($this->config->server_username, $tenantname);
-        }
+        $username = alfresco_transform_username($user->username);
 
         // We need to create a new account now.
         $userdata = array(

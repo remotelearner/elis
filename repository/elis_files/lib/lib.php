@@ -710,13 +710,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
 
     // Ensure that we set the current user to be the owner of the newly created directory.
     if (!empty($properties->uuid)) {
-        // So that we don't conflict with the default Alfresco admin account.
-		$username = $USER->username == 'admin' ? elis::$config->elis_files->admin_username : $USER->username;
-
-        // We must include the tenant portion of the username here.
-        if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-            $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-        }
+        $username = alfresco_transform_username($USER->username);
 
         // We're not going to check the response for this right now.
         elis_files_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
@@ -969,13 +963,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 
     // Ensure that we set the current user to be the owner of the newly created directory.
     if (!empty($properties->uuid)) {
-        // So that we don't conflict with the default Alfresco admin account.
-        $username = $USER->username == 'admin' ? elis::$config->elis_files->admin_username : $USER->username;
-
-            // We must include the tenant portion of the username here.
-        if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-            $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-        }
+        $username = alfresco_transform_username($USER->username);
 
         // We're not going to check the response for this right now.
         elis_files_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
@@ -1945,13 +1933,7 @@ function elis_files_move_node($fromuuid, $touuid) {
 function elis_files_create_user($user, $password = '') {
     global $CFG;
 
-    // So that we don't conflict with the default Alfresco admin account.
-    $username = $user->username == 'admin' ? elis::$config->elis_files->admin_username : $user->username;
-
-    // We must include the tenant portion of the username here.
-    if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-        $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-    }
+    $username = alfresco_transform_username($user->username);
 
     $result = elis_files_request('/api/people/' . $username);
 
@@ -2008,13 +1990,7 @@ function elis_files_delete_user($username, $deletehomedir = false) {
 
     $status = true;
 
-    // So that we don't conflict with the default Alfresco admin account.
-    $username = $username == 'admin' ? elis::$config->elis_files->admin_username : $username;
-
-    // We must include the tenant portion of the username here.
-    if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-        $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-    }
+    $username = alfresco_transform_username($username);
 
     if ($deletehomedir) {
         $uuid = elis_files_get_home_directory($username);
@@ -2041,13 +2017,7 @@ function elis_files_delete_user($username, $deletehomedir = false) {
 function elis_files_get_home_directory($username) {
     global $CFG;
 
-    // So that we don't conflict with the default Alfresco admin account.
-    $username = $username == 'admin' ? elis::$config->elis_files->admin_username : $username;
-
-    // We must include the tenant portion of the username here.
-    if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-        $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-    }
+    $username = alfresco_transform_username($username);
 
     $response = elis_files_request('/moodle/homedirectory?username=' . $username);
 
@@ -2085,13 +2055,7 @@ function elis_files_has_permission($uuid, $username = '', $edit = false) {
         $username = $USER->username;
     }
 
-    // So that we don't conflict with the default Alfresco admin account.
-    $username = $username == 'admin' ? elis::$config->elis_files->admin_username : $username;
-
-    // We must include the tenant portion of the username here.
-    if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-        $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-    }
+    $username = alfresco_transform_username($username);
 
     $response = elis_files_request('/moodle/getpermissions/' . $uuid . '?username=' . $username);
 
@@ -2162,13 +2126,7 @@ function elis_files_get_permissions($uuid, $username = '') {
     }
 */
     if (!empty($username)) {
-        // So that we don't conflict with the default Alfresco admin account.
-        $username = $username == 'admin' ? elis::$config->elis_files->admin_username : $username;
-
-        // We must include the tenant portion of the username here.
-        if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-            $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-        }
+        $username = alfresco_transform_username($username);
     }
 
     $permissions = array();
@@ -2267,13 +2225,7 @@ function elis_files_set_permission($username, $uuid, $role, $capability) {
             return false;
     }
 
-    // So that we don't conflict with the default Alfresco admin account.
-    $username = $username == 'admin' ? elis::$config->elis_files->admin_username : $username;
-
-    // We must include the tenant portion of the username here.
-    if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-        $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-    }
+    $username = alfresco_transform_username($username);
 
     $postdata = array(
         'username'   => $username,
@@ -2385,13 +2337,7 @@ function elis_files_quota_info($username = '') {
         $username = $USER->username;
     }
 
-    // So that we don't conflict with the default Alfresco admin account.
-    $username = $USER->username == 'admin' ? elis::$config->elis_files->admin_username : $USER->username;
-
-    // We must include the tenant portion of the username here.
-    if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-        $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-    }
+    $username = alfresco_transform_username($username);
 
     // Get the JSON response containing user data for the given account.
     if (($json = elis_files_request('/api/people/' . $username)) === false) {
@@ -2610,14 +2556,7 @@ function elis_files_utils_get_auth_headers($username = '') {
     if (ELIS_FILES_DEBUG_TRACE) print_object('elis_files_utils_get_auth_headers(' . $username . ')');
 
     if (!empty($username)) {
-        // So that we don't conflict with the default Alfresco admin account.
-        $username = $username == 'admin' ? elis::$config->elis_files->admin_username : $username;
-
-            // We must include the tenant portion of the username here.
-        if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-            $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-        }
-
+        $username = alfresco_transform_username($username);
         $user = $username;
         $pass = 'password';
     } else {
@@ -2657,14 +2596,7 @@ function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
     $alf_ticket   = !empty($_SESSION['elis_files_ticket']) ? $_SESSION['elis_files_ticket'] : NULL;
 
     if (!empty($username)) {
-        // So that we don't conflict with the default Alfresco admin account.
-        $username = $username == 'admin' ? elis::$config->elis_files->admin_username : $username;
-
-        // We must include the tenant portion of the username here.
-        if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-            $username .= substr(elis::$config->elis_files->server_username, $tenantname);
-        }
-
+        $username = alfresco_transform_username($username);
         $user = $username;
         $pass = 'password';
     } else {
@@ -2924,4 +2856,40 @@ function elis_files_utils_http_request($serviceurl, $auth = 'ticket', $headers =
     $result->data = $return_data;
 
     return $result;
+}
+
+/**
+ * Function to transform Moodle username to Alfresco username
+ * converting 'admin' user and adding tenant info.
+ * Check to make sure username has NOT already been transformed
+ *
+ * @param  $username the username to transform
+ * @uses   $CFG
+ * @uses   $USER
+ * @return string    the transformed username.
+ */
+function alfresco_transform_username($username) {
+    global $CFG, $USER;
+
+    $tenantpos = strpos(elis::$config->elis_files->server_username, '@');
+    if ($username == 'admin' || empty($USER->username) || $USER->username == $username ||
+        (($atpos = strpos($username, '@')) !== false &&
+          ($tenantpos === false ||
+           strcmp(substr($username, $atpos),
+                  substr(elis::$config->elis_files->server_username, $tenantpos))))
+       || ($atpos === false && $tenantpos !== false)) {
+
+        // Fix username
+        $username = ELIS_files::alfresco_username_fix($username);
+
+        // So that we don't conflict with the default Alfresco admin account.
+        $username = ($username == 'admin')
+                    ? elis::$config->elis_files->admin_username : $username;
+
+        // We must include the tenant portion of the username here.
+        if ($tenantpos > 0) {
+            $username .= substr(elis::$config->elis_files->server_username, $tenantpos);
+        }
+    }
+    return $username;
 }
