@@ -93,6 +93,15 @@ class rlip_fileplugin_bogus extends rlip_fileplugin_base {
     function get_filename() {
         return 'bogus';
     }
+
+    /**
+     * Specifies the extension of the current open file
+     *
+     * @return string The file extension
+     */
+    function get_extension() {
+        return 'bogus';
+    }
 }
 
 /**

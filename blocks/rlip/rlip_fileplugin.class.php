@@ -63,6 +63,13 @@ abstract class rlip_fileplugin_base {
      * @return string The file name, not including the full path
      */
     abstract function get_filename();
+
+    /**
+     * Specifies the extension of the current open file
+     *
+     * @return string The file extension
+     */
+    abstract function get_extension();
 }
 
 /**
@@ -73,13 +80,26 @@ class rlip_fileplugin_factory {
 	/**
 	 * Main factory method for obtaining a file plugin instance
 	 *
+	 * @param string $filename The path of the file to open
+	 * @param boolean $logging If true, the file is being opened for logging,
+	 *                         otherwise for import
 	 * @return object The file plugin instance
 	 */
-    static function factory() {
+    static function factory($filename, $logging = false) {
     	global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
 
-        //for now, we only have the CSV file type
-        return new rlip_fileplugin_csv();
+    	if ($logging) {
+    	    //using a standard text file for logging
+    	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log.class.php');
+
+            $filename .= '.'.rlip_fileplugin_log::get_extension();
+            return new rlip_fileplugin_log($filename);
+    	} else {
+    	    //using a csv file for import or export
+    	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
+
+            $filename .= '.'.rlip_fileplugin_csv::get_extension();
+            return new rlip_fileplugin_csv($filename);
+    	}
     }
 }

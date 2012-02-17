@@ -25,42 +25,32 @@
  */
 
 /**
- * File plugin that handles the reading and writing of CSV
- * data
+ * File plugin used for writing text to log files
  */
-class rlip_fileplugin_csv extends rlip_fileplugin_base {
-
+class rlip_fileplugin_log extends rlip_fileplugin_base {
     var $filename;
-    var $filepointer;
-    var $first;
-    var $header;
 
-	/**
-     * CSV file plugin constructor
+    /**
+     * Log file plugin constructor
      *
      * @param string $filename The path of the file to open
      */
-    function __construct($filename) {
-        $this->filename = $filename;
-    }
+	function __construct($filename) {
+	    $this->filename = $filename;
+	}
 
-    /**
+	/**
      * Open the file
      *
      * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
      *                  the mode in which the file should be opened
      */
     function open($mode) {
-    	global $CFG;
-
     	if ($mode == RLIP_FILE_WRITE) {
             $this->filepointer = fopen($this->filename, 'w');
     	} else {
-    	    $this->filepointer = fopen($this->filename, 'r');
+    	    //we never read with this class
     	}
-
-    	$this->first = true;
-    	$this->header = NULL;
     }
 
     /**
@@ -69,7 +59,7 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      * @return array The entry read
      */
     function read() {
-        return fgetcsv($this->filepointer);
+        //we never read with this class
     }
 
     /**
@@ -78,7 +68,8 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      * @param array $entry The entry to write to the file
      */
     function write($entry) {
-        fputcsv($this->filepointer, $entry);
+        $entry = reset($entry);
+        fwrite($this->filepointer, $entry."\n");
     }
 
     /**
@@ -94,7 +85,7 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      * @return string The file name, not including the full path
      */
     function get_filename() {
-        //todo: actuall implement?
+        //todo: implement?
         return '';
     }
 
@@ -104,6 +95,6 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      * @return string The file extension
      */
     function get_extension() {
-        return 'csv';
+        return 'log';
     }
 }

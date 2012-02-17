@@ -97,4 +97,13 @@ class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
     function get_filename() {
         return 'memoryfile';
     }
+
+    /**
+     * Specifies the extension of the current open file
+     *
+     * @return string The file extension
+     */
+    function get_extension() {
+        return 'readmemory';
+    }
 }
