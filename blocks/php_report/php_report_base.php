@@ -381,7 +381,7 @@ abstract class php_report {
      */
     function get_config_url() {
         global $CFG;
-        return $CFG->wwwroot .'/blocks/php_report/config_params.php?id='. $this->id; // TBD: '&showcancel=1' ???
+        return $CFG->wwwroot .'/blocks/php_report/config_params.php?id='. $this->id .'&showcancel=1'; // TBD ???
     }
 
     /**
