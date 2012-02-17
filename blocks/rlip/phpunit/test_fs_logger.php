@@ -127,7 +127,8 @@ class fsLoggerTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
-        return array('config' => 'moodle');
+        return array('config' => 'moodle',
+                     'timezone' => 'moodle');
     }
 
     protected function assert_file_contents_equal($filename, $data) {
@@ -447,10 +448,200 @@ class fsLoggerTest extends elis_database_test {
 
     /**
      * Validate that the file-system logger plays nicely with daylight savings
-     * time
+     * time and uses string timezones - this also implicitly sets string timezones
+     * with the "timezone" and "forcetimezone" settings
      */
     public function testFsLoggerRespectsDaylightSavings() {
-        $this->assertEquals(0, 1);
+        global $DB;
+
+        /**
+         * Something in the southern hemisphere
+         */
+
+        //force the timezone to a region that uses DST
+        set_config('timezone', 'America/New_York');
+
+        //set up timezone data
+        $record = new stdClass;
+        $record->name = 'America/New_York';
+        $record->year = 2007;
+        $record->tzrule = 'US';
+        $record->gmtoff = -300;
+        $record->dstoff = 60;
+        $record->dst_month = 3;
+        $record->dst_startday = 8;
+        $record->dst_weekday = 0;
+        $record->dst_skipweeks = 0;
+        $record->dst_time = '-3:00';
+        $record->std_month = 11;
+        $record->std_startday = 1;
+        $record->std_weekday = 0; 
+        $record->std_skipweeks = 0;
+        $record->std_time = '-4.00';
+        $DB->insert_record('timezone', $record);
+
+        //set up the logging object
+        list($fslogger, $filename) = $this->get_fs_logger();
+
+        //write a line for the current time
+        $time = time();
+        $message = 'Message';
+        $fslogger->log($message);
+
+        //write a line for six months in the future
+        $time += 182 * DAYSECS;
+        $fslogger->log($message, $time);
+
+        //clean up
+        $fslogger->close();
+
+        //validation
+
+        //validate number of lines
+        $this->assertEquals(count(file($filename)), 2);
+
+        //get file contents
+        $pointer = fopen($filename, 'r');
+        $line1 = fgets($pointer);
+        $line2 = fgets($pointer);
+        fclose($pointer);
+
+        //validate that the times match
+        $portion1 = substr($line1, 12);
+        $portion2 = substr($line2, 12);
+        $this->assertEquals($portion1, $portion2);
+
+        //validate that the offsets are reported correctly
+        $position1 = strpos($portion1, '-0500');
+        $this->assertTrue($position1 !== false);
+        $position2 = strpos($portion2, '-0500');
+        $this->assertTrue($position2 !== false);
+
+        /**
+         * Something in the southern hemisphere
+         */
+
+        //force the timezone to a region that uses DST
+        set_config('forcetimezone', 'America/Asuncion');
+
+        //set up timezone data
+        $record = new stdClass;
+        $record->name = 'America/Asuncion';
+        $record->year = 2010;
+        $record->tzrule = 'Para';
+        $record->gmtoff = -240;
+        $record->dstoff = 60;
+        $record->dst_month = 10;
+        $record->dst_startday = 1;
+        $record->dst_weekday = 0;
+        $record->dst_skipweeks = 0;
+        $record->dst_time = '-4:00';
+        $record->std_month = 4;
+        $record->std_startday = 4;
+        $record->std_weekday = 8; 
+        $record->std_skipweeks = 0;
+        $record->std_time = '-5.00';
+        $DB->insert_record('timezone', $record);
+
+        //set up the logging object
+        list($fslogger, $filename) = $this->get_fs_logger();
+
+        //write a line for the current time
+        $time = time();
+        $message = 'Message';
+        $fslogger->log($message);
+
+        //write a line for six months in the future
+        $time += 182 * DAYSECS;
+        $fslogger->log($message, $time);
+
+        //clean up
+        $fslogger->close();
+
+        //validation
+
+        //validate number of lines
+        $this->assertEquals(count(file($filename)), 2);
+
+        //get file contents
+        $pointer = fopen($filename, 'r');
+        $line1 = fgets($pointer);
+        $line2 = fgets($pointer);
+        fclose($pointer);
+
+        //validate that the times match
+        $portion1 = substr($line1, 12);
+        $portion2 = substr($line2, 12);
+        $this->assertEquals($portion1, $portion2);
+
+        //validate that the offsets are reported correctly
+        $position1 = strpos($portion1, '-0400');
+        $this->assertTrue($position1 !== false);
+        $position2 = strpos($portion2, '-0400');
+        $this->assertTrue($position2 !== false);
+
+        /**
+         * Something without DST
+         */
+
+        //force the timezone to a region that does not use DST
+        set_config('forcetimezone', 'Asia/Jakarta');
+
+        //set up timezone data
+        $record = new stdClass;
+        $record->name = 'Asia/Jakarta';
+        $record->year = 1970;
+        $record->tzrule = '';
+        $record->gmtoff = 420;
+        $record->dstoff = 0;
+        $record->dst_month = 0;
+        $record->dst_startday = 0;
+        $record->dst_weekday = 0;
+        $record->dst_skipweeks = 0;
+        $record->dst_time = '00:00';
+        $record->std_month = 0;
+        $record->std_startday = 0;
+        $record->std_weekday = 0; 
+        $record->std_skipweeks = 0;
+        $record->std_time = '00.00';
+        $DB->insert_record('timezone', $record);
+
+        //set up the logging object
+        list($fslogger, $filename) = $this->get_fs_logger();
+
+        //write a line for the current time
+        $time = time();
+        $message = 'Message';
+        $fslogger->log($message);
+
+        //write a line for six months in the future
+        $time += 182 * DAYSECS;
+        $fslogger->log($message, $time);
+
+        //clean up
+        $fslogger->close();
+
+        //validation
+
+        //validate number of lines
+        $this->assertEquals(count(file($filename)), 2);
+
+        //get file contents
+        $pointer = fopen($filename, 'r');
+        $line1 = fgets($pointer);
+        $line2 = fgets($pointer);
+        fclose($pointer);
+
+        //validate that the times match
+        $portion1 = substr($line1, 12);
+        $portion2 = substr($line2, 12);
+        $this->assertEquals($portion1, $portion2);
+
+        //validate that the offsets are reported correctly
+        $position1 = strpos($portion1, '+0700');
+        $this->assertTrue($position1 !== false);
+        $position2 = strpos($portion2, '+0700');
+        $this->assertTrue($position2 !== false);
     }
 
     /**

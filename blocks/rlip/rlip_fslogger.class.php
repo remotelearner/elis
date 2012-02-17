@@ -86,6 +86,21 @@ class rlip_fslogger {
     }
 
     /**
+     * Convert a timezone name to an offset in hours
+     *
+     * @param string $timezone The name of the timezone
+     * @return float The numerical timezone offset
+     */
+    function get_offset_from_timezone_string($timezone) {
+        global $DB;
+
+        //look up timezone by name
+        $tzrecord = $DB->get_record_sql('SELECT * FROM {timezone}
+                                         WHERE name = ? ORDER BY year DESC', array($timezone), true);
+        return (float)$tzrecord->gmtoff / HOURMINS;
+    }
+
+    /**
      * Log a message to the log file
      *
      * @param string $message The message to long
@@ -109,10 +124,22 @@ class rlip_fslogger {
         if (!empty($CFG->forcetimezone) && $CFG->forcetimezone != 99) {
             //timezone is forced to some value
             $timezone = $CFG->forcetimezone;
+
+            if (!is_numeric($timezone)) {
+                //look up timezone by name
+                $timezone = $this->get_offset_from_timezone_string($timezone);
+            }
+
             $offset = self::offset_display($timezone);
         } else if (!empty($CFG->timezone) && $CFG->timezone != 99) {
             //timezone defaults to some value
             $timezone = $CFG->timezone;
+
+            if (!is_numeric($timezone)) {
+                //look up timezone by name
+                $timezone = $this->get_offset_from_timezone_string($timezone);
+            }
+
             $offset = self::offset_display($timezone);
         } else {
             //use server default timezone
