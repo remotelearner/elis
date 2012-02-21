@@ -38,11 +38,11 @@ class generalized_filter_simpleselect extends generalized_filter_type {
     var $_field;
 
     var $_options  = array();  // Select options
-    var $_numeric  = false;    // set true if field is numeric (not string)
+    var $_numeric  = false;    // TBD: obsolete - set true if field is numeric
     var $_anyvalue = null;     // The "any value" entry
     var $_noany    = false;    // Whether to hide the "any value" entry
     var $_onchange = '';       // On change javascript
-    var $_multiple = '';       // Whether this select is a multi-select
+    var $_multiple = false;    // Whether this select is a multi-select
     var $_class    = '';       // CSS class attribute
     var $_nofilter = false;    // boolean - true makes get_sql_filter() always return null
     var $_nooptions = false;   // If true, hide all select options
@@ -108,22 +108,14 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         }
 
         $options = array();
-        if (! empty($this->_onchange)) {
-            $options['onchange'] = $this->_onchange;
-        }
-        if (! empty($this->_multiple)) {
-            $options['multiple'] = $this->_multiple;
-        }
-        if (! empty($this->_class)) {
-            $options['class'] = $this->_class;
-        }
-
-        $options = array();
         if (!empty($this->_onchange)) {
             $options['onchange'] = $this->_onchange;
         }
         if (!empty($this->_multiple)) {
             $options['multiple'] = $this->_multiple;
+        }
+        if (!empty($this->_class)) {
+            $options['class'] = $this->_class;
         }
         $mform->addElement('select', $this->_uniqueid, $this->_label, $choices, $options);
 
@@ -213,15 +205,14 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         }
 
         if ($this->_multiple && is_array($value)) {
+            $values = array();
             foreach ($value as $key => $val) {
-                $val = addslashes($val);
-                if (empty($this->_numeric)) {
-                    $val = "'$val'";
-                }
-                $value[$key] = $val;
+                $name = $param_name .'_'. $key;
+                $values[$name] = $val; // TBD: addslashes($val);
             }
-            return array("{$full_fieldname} IN (". implode(',', $value) .')',
-                         array());
+
+            return array("{$full_fieldname} IN ( :". implode(', :', array_keys($values)) .')',
+                         $values);
         }
         return array("{$full_fieldname} = :{$param_name}",
                      array($param_name => $value));
