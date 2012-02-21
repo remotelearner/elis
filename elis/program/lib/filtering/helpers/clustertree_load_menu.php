@@ -25,7 +25,7 @@
  */
 
 //require necessary dependencies 
-require_once(dirname(__FILE__) .'/../../../../config.php');
+require_once(dirname(__FILE__) .'/../../../../../config.php');
 
 require_once($CFG->dirroot .'/elis/program/lib/setup.php');
 require_once($CFG->dirroot .'/elis/program/lib/data/userset.class.php');
