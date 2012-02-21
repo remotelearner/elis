@@ -39,16 +39,27 @@ class generalized_filter_simpleselect extends generalized_filter_type {
 
     var $_field;
 
-    var $_numeric  = false;
-    var $_anyvalue = null;
-    var $_noany    = false;
-    var $_onchange = '';
-    var $_multiple = '';
-    var $_class    = '';
+    var $_options  = array();  // Select options
+    var $_numeric  = false;    // TBD: obsolete - set true if field is numeric
+    var $_anyvalue = null;     // The "any value" entry
+    var $_noany    = false;    // Whether to hide the "any value" entry
+    var $_onchange = '';       // On change javascript
+    var $_multiple = false;    // Whether this select is a multi-select
+    var $_class    = '';       // CSS class attribute
+    var $_nofilter = false;    // boolean - true makes get_sql_filter() always return null
+    var $_nooptions = false;   // If true, hide all select options
 
-    var $_nofilter = false;
-    // ^ boolean - true makes get_sql_filter() always return null
-    // set with $options['nofilter']
+    var $_optionfields = array(
+        '_options'   => 'choices',   // The options to be displayed
+        '_numeric'   => 'numeric',   // No longer used (used to be for numeric values)
+        '_anyvalue'  => 'anyvalue',  // The "any value" string
+        '_noany'     => 'noany',     // Used to hide the "any value" entry
+        '_onchange'  => 'onchange',  // Often used to alter dependent fields
+        '_multiple'  => 'multiple',  // Used to make this select into a multi-select
+        '_class'     => 'class',     // Used to add a CSS class attribute for display
+        '_nofilter'  => 'nofilter',  // Used for filters that change report behaviour
+        '_nooptions' => 'nochoices'  // Used for filters that start blank
+    );
 
     /**
      * Constructor
@@ -97,8 +108,16 @@ class generalized_filter_simpleselect extends generalized_filter_type {
             } else {
                 $choices = array('' => get_string('anyvalue', 'filters')) + $this->_options;
             }
+<<<<<<< HEAD
         } else {
             $choices = $this->_options;
+=======
+
+            // Have to do this manually because php function renumber numeric indexes.
+            foreach ($this->_options as $key => $value) {
+                $choices[$key] = $value;
+            }
+>>>>>>> b13a9b3... ELIS-4509: Correct simple select filter to use SQL params for values array and code clean-up.
         }
 
         $options = array();
@@ -107,6 +126,9 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         }
         if (!empty($this->_multiple)) {
             $options['multiple'] = $this->_multiple;
+        }
+        if (!empty($this->_class)) {
+            $options['class'] = $this->_class;
         }
         $mform->addElement('select', $this->_uniqueid, $this->_label, $choices, $options);
 
@@ -190,15 +212,22 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         }
 
         if ($this->_multiple && is_array($value)) {
+            $values = array();
             foreach ($value as $key => $val) {
+<<<<<<< HEAD
                 $val = addslashes($val);
                 if (!empty($this->_numeric)) {
                     $val = "'$val'";
                 }
                 $value[$key] = $val;
+=======
+                $name = $param_name .'_'. $key;
+                $values[$name] = $val; // TBD: addslashes($val);
+>>>>>>> b13a9b3... ELIS-4509: Correct simple select filter to use SQL params for values array and code clean-up.
             }
-            return array("{$full_fieldname} IN (". implode(',', $value) .')',
-                         array());
+
+            return array("{$full_fieldname} IN ( :". implode(', :', array_keys($values)) .')',
+                         $values);
         }
         return array("{$full_fieldname} = :{$param_name}",
                      array($param_name => $value));
