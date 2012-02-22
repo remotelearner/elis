@@ -1675,6 +1675,8 @@ function elis_files_process_node($dom, $node, &$type) {
  * @return object The node properties in an object format.
  */
 function elis_files_process_node_old($dom, $node, &$type) {
+    // TODO: merge this with elis_files_process_node and remove any code that distinguishes between the two
+    // basically just need elis_files_process_node and elis_files_process_node_new
     $xpath = new DOMXPath($dom);
 
     if ($node->hasChildNodes()) {
@@ -1863,7 +1865,7 @@ function elis_files_process_node_old($dom, $node, &$type) {
                     $isfolder = true;
                 } else if ($prop->nodeValue == 'cmis:document') { // Added for Moodle 2.1 as this seems to be the only way to find folders
                     $type = $prop->nodeValue;
-                    $isfolder = true;
+                    $isdocument = true;
                 }
             }
         }

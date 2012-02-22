@@ -68,6 +68,7 @@ define('ELIS_FILES_DEBUG_TIME',  false);
 define('ELIS_FILES_DEBUG_TRACE', false);
 
 // Alfresco 3.4 type definitions
+// TODO: add type_folder and type_file to repo like in 1.9.3
 define('ELIS_FILES_TYPE_FOLDER',   'cmis:folder');
 define('ELIS_FILES_TYPE_DOCUMENT', 'cmis:document');
 
@@ -249,6 +250,7 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('verify_setup()');
 
+        // TODO: save this here as $this->version and then change all alfresco_version to this->version
         $alfresco_version = elis_files_get_repository_version();
 
         // For Alfresco 3.4 make sure $this->cmis is not empty
@@ -645,7 +647,7 @@ class ELIS_files {
     function category_filter($node, $categories) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('category_filter(' . $node . ', ' . $categories . ')');
 
-        if (!$nodecats = elis_files_get_node_categories($node->noderef)) {
+        if (!isset($node->noderef) || !($nodecats = elis_files_get_node_categories($node->noderef)) ) {
             return false;
         }
 
