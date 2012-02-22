@@ -120,7 +120,7 @@
  * @package elis-core
  * @subpackage filtering
  * @license  http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  */
 
 require_once($CFG->dirroot.'/user/filters/lib.php');
@@ -128,6 +128,7 @@ require_once($CFG->dirroot.'/user/filters/lib.php');
 require_once(elis::lib('filtering/multifilter.php'));
 require_once(elis::lib('filtering/userprofileselect.php'));
 require_once(elis::lib('filtering/userprofiletext.php'));
+require_once(elis::lib('filtering/userprofiledatetime.php'));
 
 /**
  * Generic userprofilematch filter class
@@ -137,17 +138,21 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
     /**
      * Class contants: Additional required sub-filter types
      */
-    const filtertype_userprofiletext   = 'userprofiletext';
-    const filtertype_userprofileselect = 'userprofileselect';
+    const filtertype_userprofiledatetime = 'userprofiledatetime';
+    const filtertype_userprofiletext     = 'userprofiletext';
+    const filtertype_userprofileselect   = 'userprofileselect';
 
-    const languagefile = 'elis_core';
+    //const languagefile = 'elis_core';
 
     // Data type map
     protected $datatypemap = array(
+        'char'     => self::filtertype_userprofiletext, // TBD
         'text'     => self::filtertype_userprofiletext,
         'textarea' => self::filtertype_userprofiletext,
         'checkbox' => self::filtertype_userprofileselect,
+        'bool'     => self::filtertype_userprofileselect,
         'menu'     => self::filtertype_userprofileselect,
+        'datetime' => self::filtertype_userprofiledatetime,
     );
 
     protected $selects = array(
@@ -221,6 +226,7 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
     protected $_label;
     protected $_heading;
     protected $_footer;
+    protected $_choices = array();
 
     protected $sections = array('up' => array('name' => 'user'));
 
@@ -252,11 +258,17 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
 
         $this->fieldtofiltermap['up']['fullname'] = self::filtertypetext;
 
+        $extrafields = $DB->get_records('user_info_field', null,
+                           'sortorder ASC', 'id, shortname, name, datatype');
+        $extrafields = $extrafields ? $extrafields : array();
+        $this->get_custom_fields('up', $extrafields);
+
         $this->_filters['up'] = array();
         foreach ($this->_fields as $group => $fields) {
             foreach ($fields as $userfield => $fieldlabel) {
+                //error_log("userprofilematch.php: creating filter for {$userfield} => {$fieldlabel}");
                 // must setup select choices for specific fields
-                $myoptions = $this->make_filter_options($group, $userfield, $options['help']);
+                $myoptions = $this->make_filter_options_custom(array(), $group, $userfield);
                 $filterid = $uniqueid . substr($userfield, 0, MAX_FILTER_SUFFIX_LEN);
                 $ftype = (string)$this->fieldtofiltermap[$group][$userfield];
                 $advanced = (!empty($options['advanced']) &&
@@ -284,20 +296,18 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
     function get_custom_fields($group, $fields) {
         global $DB;
 
-        // Array $xoptions to append to existing options['choices']
         $options = array();
 
         if (!empty($fields)) {
-            // Array $choices to hold sub options for extra field ($myoptions)
-            $choices = array();
 
             foreach ($fields as $field) {
                 $this->_fieldids[$field->shortname] = $field->id;
+                $this->_fields[$group][$field->shortname] = $field->shortname; // TBD???
                 $this->record_short_field_name($field->shortname);
                 $this->fieldtofiltermap[$group][$field->shortname] = $this->datatypemap[$field->datatype];
                 $options[$field->shortname] = $field->name;
                 switch ($field->datatype) {
-                    case 'char':
+                    case 'char': // TBD
                     case 'text':
                         // fall-thru case!
                     case 'textarea':
@@ -306,7 +316,15 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
 
                     case 'bool':
                     case 'checkbox':
-                        $this->_choices[$field->shortname] = array('0' => 'No', 1 => 'Yes');
+                        $this->_choices[$field->shortname] =
+                            array('0' => get_string('no'),
+                                   1  => get_string('yes'));
+                        break;
+
+                    case 'datetime': // start, stop year => param1, param2
+                        $this->_choices[$field->shortname] = array();
+                        $this->_choices[$field->shortname]['startyear'] = $DB->get_field('user_info_field', 'param1', array('shortname' => $field->shortname));
+                        $this->_choices[$field->shortname]['stopyear'] = $DB->get_field('user_info_field', 'param2', array('shortname' => $field->shortname));
                         break;
 
                     case 'menu':
@@ -318,13 +336,13 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
                                 $this->_choices[$field->shortname][$opt] = $opt;
                             }
                         }
-                        if (empty($fieldvals) || empty($choices[$field->shortname])) {
-                            error_log("multifilter.php:: error getting menu choices for field: {$field->shortname}");
+                        if (empty($fieldvals) || empty($this->_choices[$field->shortname])) {
+                            error_log("userprofilematch.php:: error getting menu choices for field: {$field->shortname}");
                         }
                         break;
 
                     default:
-                        error_log("multifilter.php:: datatype = {$field->datatype} not supported");
+                        error_log("userprofilematch.php:: datatype = {$field->datatype} not supported");
                 }
             }
         }
@@ -348,6 +366,14 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
 
         $manager = get_string_manager();
 
+        $options['tables'] = $this->tables[$group]; // TBD: default?
+        $options['dbfield'] = $name; // TBD: default?
+        if (isset($this->tables[$group]['user'])) {
+            $options['talias'] = $this->tables[$group]['user']; // default table?
+        } else {
+            $options['talias'] = ''; // TBD???
+            error_log("userprofilematch::make_filter_options_custom(options, $group, $name) ... setting 'talias' empty!");
+        }
         switch ($name) {
             case 'fullname':
                 $firstname = $this->tables[$group]['user'] .'.firstname';
@@ -400,7 +426,16 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
         if (array_key_exists($name, $this->_fieldids)) {
             $options['fieldid'] = $this->_fieldids[$name];
         }
+
+        $is_xfield = array_key_exists($name, $this->sections[$group]['custom']);
+        if ($is_xfield) {
+            // custom profile field
+            $options['talias'] = '';
+            $options['dbfield'] = 'data';
+        }
+
         return $options;
     }
 
 }
+

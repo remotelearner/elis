@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@
  * @subpackage filtering
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -58,6 +58,7 @@ require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
 require_once(elis::lib('filtering/simpleselect.php'));
 require_once(elis::lib('filtering/text.php'));
 require_once(elis::lib('filtering/date.php'));
+require_once(elis::lib('filtering/userprofiledatetime.php'));
 
 /**
  * Base class for multi-filter filters.
@@ -86,6 +87,7 @@ class generalized_filter_multifilter {
 
     const filtertype_custom_field_select = 'custom_field_select';
     const filtertype_custom_field_text   = 'custom_field_text';
+    const filtertype_custom_field_datetime = 'userprofiledatetime'; // TBD
 
     // This array should map each field to a filter type
     protected $fieldtofiltermap = array();
@@ -103,6 +105,7 @@ class generalized_filter_multifilter {
         'password'  => self::filtertype_custom_field_text,  // Shouldn't be used!
         'text'      => self::filtertype_custom_field_text,
         'textarea'  => self::filtertype_custom_field_text,
+        'datetime'  => self::filtertype_custom_field_datetime, // TBD
     );
 
     protected $selects = array(
@@ -287,7 +290,7 @@ class generalized_filter_multifilter {
         // Array $xoptions to append to existing options['choices']
         $options = array();
 
-        if (! is_array($fields)) {
+        if (!is_array($fields)) {
             $fields = array();
         }
 
@@ -311,6 +314,10 @@ class generalized_filter_multifilter {
             $this->fieldtofiltermap[$group][$field_identifier] = $this->datatypemap[$params['control']];
 
              switch ($params['control']) {
+                case 'datetime':
+                    // TBD - options required for datetime fields?
+                    break;
+
                 case 'checkbox':
                     $this->_choices[$field_identifier] = $yesno;
                     break;
@@ -372,7 +379,7 @@ class generalized_filter_multifilter {
         // Generate a list of custom fields
         foreach ($this->sections as $group => $section) {
             $ctxtlvl = context_level_base::get_custom_context_level(
-                    $section['name'], 'block_curr_admin');
+                    $section['name'], 'elis_program');
 
             $this->sections[$group]['contextlevel'] = $ctxtlvl;
 
@@ -403,7 +410,7 @@ class generalized_filter_multifilter {
             }
 
             if (!empty($this->sections[$group]['custom'])) {
-                $this->_fields[$group] = array_merge($this->fields[$group], $this->sections[$group]['custom']);
+                $this->_fields[$group] = array_merge($this->_fields[$group], $this->sections[$group]['custom']);
             }
         }
     }
@@ -434,8 +441,14 @@ class generalized_filter_multifilter {
             $options['tables'] = $this->tables[$group];
 
             if (array_key_exists($name, $this->_fields[$group])) {
-                $options['fieldid']  = $this->_fields[$group][$name]->id;
-                $options['datatype'] = $this->_fields[$group][$name]->datatype;
+                if (property_exists($this->_fields[$group][$name], 'id') &&
+                    property_exists($this->_fields[$group][$name], 'datatype')) {
+                    $options['fieldid']  = $this->_fields[$group][$name]->id;
+                    $options['datatype'] = $this->_fields[$group][$name]->datatype;
+                } else { // TBD !!!
+                    $options['fieldid']  = $name;
+                    $options['datatype'] = $this->fieldtofiltermap[$group][$name];
+                }
             }
         } else {
             $options['dbfield'] = $name;
@@ -446,7 +459,8 @@ class generalized_filter_multifilter {
                 $labeled = array_key_exists($name, $this->labels[$group]);
                 $options['help'] =
                     array($labeled ? $this->labels[$group][$name] : $name,
-                          $labeled ? get_string($this->labels[$group][$name], $this->languagefile) : $name,
+                          ($labeled && get_string_manager()->string_exists($this->labels[$group][$name], $this->languagefile))
+                           ? get_string($this->labels[$group][$name], $this->languagefile) : $name,
                           $this->languagefile);
             }
         }

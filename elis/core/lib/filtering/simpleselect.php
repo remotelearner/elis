@@ -94,11 +94,9 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         if (!$this->_nooptions) {
 
             if (!$this->_noany) {
-                $choices[''] = $this->_anyvalue;
-
-                if (empty($this->_anyvalue)) {
-                    $choices[''] = get_string('anyvalue', 'filters');
-                }
+                $choices[''] = empty($this->_anyvalue)
+                               ? get_string('anyvalue', 'filters')
+                               : $this->_anyvalue;
             }
 
             // Have to do this manually because php function renumber numeric indexes.
