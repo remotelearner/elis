@@ -73,7 +73,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
                     ? $options['help']
                     : array('simpleselect', $label, 'elis_core'));
 
-        if (! is_array($options)) {
+        if (!is_array($options)) {
             $options = array($options);
         }
 
@@ -94,11 +94,9 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         if (!$this->_nooptions) {
 
             if (!$this->_noany) {
-                $choices[''] = $this->_anyvalue;
-
-                if (empty($this->_anyvalue)) {
-                    $choices[''] = get_string('anyvalue', 'filters');
-                }
+                $choices[''] = empty($this->_anyvalue)
+                               ? get_string('anyvalue', 'filters')
+                               : $this->_anyvalue;
             }
 
             // Have to do this manually because php function renumber numeric indexes.
@@ -108,13 +106,13 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         }
 
         $options = array();
-        if (! empty($this->_onchange)) {
+        if (!empty($this->_onchange)) {
             $options['onchange'] = $this->_onchange;
         }
-        if (! empty($this->_multiple)) {
+        if (!empty($this->_multiple)) {
             $options['multiple'] = $this->_multiple;
         }
-        if (! empty($this->_class)) {
+        if (!empty($this->_class)) {
             $options['class'] = $this->_class;
         }
 
