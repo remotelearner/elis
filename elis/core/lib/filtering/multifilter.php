@@ -87,7 +87,7 @@ class generalized_filter_multifilter {
 
     const filtertype_custom_field_select = 'custom_field_select';
     const filtertype_custom_field_text   = 'custom_field_text';
-    const filtertype_custom_field_datetime = 'userprofiledatetime'; // TBD
+    const filtertype_custom_field_datetime = 'custom_field_datetime'; // TBD
 
     // This array should map each field to a filter type
     protected $fieldtofiltermap = array();
@@ -269,7 +269,7 @@ class generalized_filter_multifilter {
         $shortfieldname = substr($name, 0, MAX_FILTER_SUFFIX_LEN);
 
         if (in_array($shortfieldname, $this->_shortfields)) {
-            error_log("generalized_filter_curriculumclass::non-unique field name: '{$shortfieldname}' - modify code!");
+            error_log("generalized_filter_multifilter: non-unique field name: '{$shortfieldname}' - modify code!");
         } else {
             $this->_shortfields[] = $shortfieldname;
         }
@@ -376,16 +376,19 @@ class generalized_filter_multifilter {
             }
         }
 
-        // Generate a list of custom fields
-        foreach ($this->sections as $group => $section) {
-            $ctxtlvl = context_level_base::get_custom_context_level(
-                    $section['name'], 'elis_program');
+        if (get_class($this) != 'generalized_filter_userprofilematch') {
+            // UPM filter uses Moodle profile, we should obey 'extra' option
+            // Generate a list of custom fields
+            foreach ($this->sections as $group => $section) {
+                $ctxtlvl = context_level_base::get_custom_context_level(
+                               $section['name'], 'elis_program');
 
-            $this->sections[$group]['contextlevel'] = $ctxtlvl;
+                $this->sections[$group]['contextlevel'] = $ctxtlvl;
 
-            // Add custom fields to array
-            $extrafields = field::get_for_context_level($ctxtlvl);
-            $this->get_custom_fields($group, $extrafields);
+                // Add custom fields to array
+                $extrafields = field::get_for_context_level($ctxtlvl);
+                $this->get_custom_fields($group, $extrafields);
+            }
         }
 
         // Generate the standard fields

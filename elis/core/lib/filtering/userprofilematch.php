@@ -258,10 +258,12 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
 
         $this->fieldtofiltermap['up']['fullname'] = self::filtertypetext;
 
-        $extrafields = $DB->get_records('user_info_field', null,
-                           'sortorder ASC', 'id, shortname, name, datatype');
-        $extrafields = $extrafields ? $extrafields : array();
-        $this->get_custom_fields('up', $extrafields);
+        if (!empty($options['extra'])) {
+            $extrafields = $DB->get_records('user_info_field', null,
+                               'sortorder ASC', 'id, shortname, name, datatype');
+            $extrafields = $extrafields ? $extrafields : array();
+            $this->get_custom_fields('up', $extrafields);
+        }
 
         $this->_filters['up'] = array();
         foreach ($this->_fields as $group => $fields) {
@@ -302,7 +304,7 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
 
             foreach ($fields as $field) {
                 $this->_fieldids[$field->shortname] = $field->id;
-                $this->_fields[$group][$field->shortname] = $field->shortname; // TBD???
+                $this->_fields[$group][$field->shortname] = $field->name; // TBD???
                 $this->record_short_field_name($field->shortname);
                 $this->fieldtofiltermap[$group][$field->shortname] = $this->datatypemap[$field->datatype];
                 $options[$field->shortname] = $field->name;
