@@ -143,7 +143,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         }
 
         $value = $data['value'];
-        $value = addslashes($value);
+        //$value = addslashes($value);
 
         return array("{$full_fieldname} = :{$param_name}",
                      array($param_name => $value));

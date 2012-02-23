@@ -147,7 +147,7 @@ class generalized_filter_dependentselect extends generalized_filter_type {
         }
 
         $param_name = 'ex_dependselect'. $counter++;
-        $value = addslashes($data['value']);
+        $value = $data['value'];
         return array("{$full_fieldname} = :{$param_name}",
                      array($param_name => $value));
     }
