@@ -162,6 +162,8 @@ The filter has the following options:</p>
 $string['invalidid'] = 'Invalid ID';
 $string['invalidoperator'] = 'Invalid Operator';
 
+$string['missing_datatype'] = 'Missing datatype';
+
 $string['noactivities'] = 'No activities found';
 $string['nocourseselected'] = 'No course selected';
 $string['nofieldsselected'] = 'No fields selected';
@@ -232,6 +234,8 @@ The filter has the following options:</p>
 <li>ends with - this option allows only information that ends with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only information that is equal to an empty string (the text entered is ignored)</li>
 </ul>';
+
+$string['unknown_datatype'] = 'Unknown datatype';
 $string['workflow_cancelled'] = 'Cancelled';
 $string['workflow_invalidstep'] = 'Invalid step specified';
 $string['write_to_non_overlay_table'] = 'Attempted write to a non-overlay table: {$a}';
