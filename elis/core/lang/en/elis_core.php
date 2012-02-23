@@ -34,9 +34,9 @@ $string['date'] = 'Date filter';
 $string['date_help'] = '<h1>Date filter</h1>
 <p>This filter allows you to filter information from before and/or after selected dates.</p>';
 $string['display'] = 'Display';
-$string['displaytext'] = 'Display text';
-$string['displaytext_help'] = '<h1>Display text</h1>
-<p>This filter allows you to display custom text in the report header, there are usually predefined fields, but this report has neglected to define them.</p>';
+$string['displaytext'] = 'Display Text filter';
+$string['displaytext_help'] = '<h1>Display Text filter</h1>
+<p>This filter allows you to display a custom text label.</p>';
 $string['done'] = 'done';
 $string['elis'] = 'ELIS';
 $string['elisversion'] = '<strong>ELIS Version:</strong> {$a}';
