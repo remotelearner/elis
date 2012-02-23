@@ -108,16 +108,11 @@ class generalized_filter_simpleselect extends generalized_filter_type {
             } else {
                 $choices = array('' => get_string('anyvalue', 'filters')) + $this->_options;
             }
-<<<<<<< HEAD
-        } else {
-            $choices = $this->_options;
-=======
 
             // Have to do this manually because php function renumber numeric indexes.
             foreach ($this->_options as $key => $value) {
                 $choices[$key] = $value;
             }
->>>>>>> b13a9b3... ELIS-4509: Correct simple select filter to use SQL params for values array and code clean-up.
         }
 
         $options = array();
@@ -214,16 +209,8 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         if ($this->_multiple && is_array($value)) {
             $values = array();
             foreach ($value as $key => $val) {
-<<<<<<< HEAD
-                $val = addslashes($val);
-                if (!empty($this->_numeric)) {
-                    $val = "'$val'";
-                }
-                $value[$key] = $val;
-=======
                 $name = $param_name .'_'. $key;
                 $values[$name] = $val; // TBD: addslashes($val);
->>>>>>> b13a9b3... ELIS-4509: Correct simple select filter to use SQL params for values array and code clean-up.
             }
 
             return array("{$full_fieldname} IN ( :". implode(', :', array_keys($values)) .')',
