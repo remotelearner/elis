@@ -123,15 +123,15 @@ class generalized_filter_date extends generalized_filter_type {
             $mform->setAdvanced($this->_uniqueid.'_grp');
         }
 
-        $mform->disabledIf($this->_uniqueid.'_sdt[day]', $this->_uniqueid.'_sck', 'notchecked');
-        $mform->disabledIf($this->_uniqueid.'_sdt[month]', $this->_uniqueid.'_sck', 'notchecked');
-        $mform->disabledIf($this->_uniqueid.'_sdt[year]', $this->_uniqueid.'_sck', 'notchecked');
-        $mform->disabledIf($this->_uniqueid.'_edt[day]', $this->_uniqueid.'_eck', 'notchecked');
-        $mform->disabledIf($this->_uniqueid.'_edt[month]', $this->_uniqueid.'_eck', 'notchecked');
-        $mform->disabledIf($this->_uniqueid.'_edt[year]', $this->_uniqueid.'_eck', 'notchecked');
+        $mform->disabledIf($this->_uniqueid.'_sdt[day]', $this->_uniqueid.'_sck', '0');
+        $mform->disabledIf($this->_uniqueid.'_sdt[month]', $this->_uniqueid.'_sck', '0');
+        $mform->disabledIf($this->_uniqueid.'_sdt[year]', $this->_uniqueid.'_sck', '0');
+        $mform->disabledIf($this->_uniqueid.'_edt[day]', $this->_uniqueid.'_eck', '0');
+        $mform->disabledIf($this->_uniqueid.'_edt[month]', $this->_uniqueid.'_eck', '0');
+        $mform->disabledIf($this->_uniqueid.'_edt[year]', $this->_uniqueid.'_eck', '0');
 
         if ($this->_never_included) {
-            $mform->disabledIf($this->_uniqueid.'_never', $this->_uniqueid.'_eck', 'notchecked');
+            $mform->disabledIf($this->_uniqueid.'_never', $this->_uniqueid.'_eck', '0');
         }
     }
 
