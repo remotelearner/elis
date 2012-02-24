@@ -198,6 +198,15 @@ class generalized_filter_display_table extends generalized_filter_type {
     }
 
     /**
+     * Placeholder function
+     *
+     * @param array $data Report parameters?
+     */
+    function get_report_parameters($data) {
+        //obsolete
+    }
+
+    /**
      * Retrieves data from the form data
      *
      * @param object $formdata Data submited with the form
