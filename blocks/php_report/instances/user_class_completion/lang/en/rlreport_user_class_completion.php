@@ -34,6 +34,14 @@ $string['user_class_completion_class'] = 'Class Instance';
 $string['user_class_completion_class_help'] = '<p align="center"><b>User Class Completion Report Help</b></p>
 <p>This field represents the class instance of users to be included in this report.</p>';
 
+$string['user_class_completion_cluster'] = 'User Set';
+$string['user_class_completion_cluster_help'] = '<p align="center"><b>User Class Completion Report Help</b></p>
+<p>Single user set selection: Use the drop-down and select a user set.</p>
+<p>Multiple user set selection: Click Enable Tree and...</p>
+<p>To add a user set, check the box beside it.</p>
+<p>If there are any child user sets, selecting a parent user set will select all the child user sets.</p>
+<p>To unselect a child user set, expand the parent user set\'s tree and uncheck the child user set.</p>';
+
 $string['user_class_completion_completionstatus'] = 'Completion Status';
 $string['user_class_completion_completionstatus_help'] = '<p align="center"><b>User Class Completion Report Help</b></p>
 <p>This field only allows classes which match the selected value in the report.</p>
@@ -45,14 +53,6 @@ $string['user_class_completion_completionstatus_help'] = '<p align="center"><b>U
 <li>Not Started: The user has never logged into the class and has not completed any course elements*.</li>
 </ol>
 <p>* Course elements may be marked as completed by course instructors.</p>';
-
-$string['user_class_completion_cluster'] = 'User Set';
-$string['user_class_completion_cluster_help'] = '<p align="center"><b>User Class Completion Report Help</b></p>
-<p>Single user set selection: Use the drop-down and select a user set.</p>
-<p>Multiple user set selection: Click Enable Tree and...</p>
-<p>To add a user set, check the box beside it.</p>
-<p>If there are any child user sets, selecting a parent user set will select all the child user sets.</p>
-<p>To unselect a child user set, expand the parent user set\'s tree and uncheck the child user set.</p>';
 
 $string['user_class_completion_country'] = 'Country';
 $string['user_class_completion_country_help'] = '<p align="center"><b>User Class Completion Report Help</b></p>
