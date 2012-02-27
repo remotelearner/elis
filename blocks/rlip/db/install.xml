@@ -24,11 +24,11 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="plugin_ix" UNIQUE="true" FIELDS="plugin" NEXT="userid_ix"/>
-        <INDEX NAME="userid_ix" UNIQUE="true" FIELDS="userid" PREVIOUS="plugin_ix" NEXT="targetstarttime_ix"/>
-        <INDEX NAME="targetstarttime_ix" UNIQUE="true" FIELDS="targetstarttime" PREVIOUS="userid_ix" NEXT="starttime_ix"/>
-        <INDEX NAME="starttime_ix" UNIQUE="true" FIELDS="starttime" PREVIOUS="targetstarttime_ix" NEXT="endtime_ix"/>
-        <INDEX NAME="endtime_ix" UNIQUE="true" FIELDS="endtime" PREVIOUS="starttime_ix"/>
+        <INDEX NAME="plugin_ix" UNIQUE="false" FIELDS="plugin" NEXT="userid_ix"/>
+        <INDEX NAME="userid_ix" UNIQUE="false" FIELDS="userid" PREVIOUS="plugin_ix" NEXT="targetstarttime_ix"/>
+        <INDEX NAME="targetstarttime_ix" UNIQUE="false" FIELDS="targetstarttime" PREVIOUS="userid_ix" NEXT="starttime_ix"/>
+        <INDEX NAME="starttime_ix" UNIQUE="false" FIELDS="starttime" PREVIOUS="targetstarttime_ix" NEXT="endtime_ix"/>
+        <INDEX NAME="endtime_ix" UNIQUE="false" FIELDS="endtime" PREVIOUS="starttime_ix"/>
       </INDEXES>
     </TABLE>
   </TABLES>

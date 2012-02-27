@@ -24,4 +24,4 @@
  *
  */
 
-$plugin->version = 2012020900;
+$plugin->version = 2012022700;

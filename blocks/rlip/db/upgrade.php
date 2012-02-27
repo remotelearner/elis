@@ -69,4 +69,38 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         // block rlip savepoint reached
         upgrade_block_savepoint(true, 2012020900, 'rlip');
     }
+
+    if ($result && $oldversion < 2012022700) {
+        // Get the summary log table, so we can make its indexes nonunique
+        $table = new xmldb_table('block_rlip_summary_log');
+
+        // Drop indexes and re-add them as not unique
+        $index = new xmldb_index('plugin_ix', XMLDB_INDEX_UNIQUE, array('plugin'));
+        $dbman->drop_index($table, $index);
+        $index = new xmldb_index('plugin_ix', XMLDB_INDEX_NOTUNIQUE, array('plugin'));
+        $dbman->add_index($table, $index);
+
+        $index = new xmldb_index('userid_ix', XMLDB_INDEX_UNIQUE, array('userid'));
+        $dbman->drop_index($table, $index);
+        $index = new xmldb_index('userid_ix', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+        $dbman->add_index($table, $index);
+
+        $index = new xmldb_index('targetstarttime_ix', XMLDB_INDEX_UNIQUE, array('targetstarttime'));
+        $dbman->drop_index($table, $index);
+        $index = new xmldb_index('targetstarttime_ix', XMLDB_INDEX_NOTUNIQUE, array('targetstarttime'));
+        $dbman->add_index($table, $index);
+
+        $index = new xmldb_index('starttime_ix', XMLDB_INDEX_UNIQUE, array('starttime'));
+        $dbman->drop_index($table, $index);
+        $index = new xmldb_index('starttime_ix', XMLDB_INDEX_NOTUNIQUE, array('starttime'));
+        $dbman->add_index($table, $index);
+
+        $index = new xmldb_index('endtime_ix', XMLDB_INDEX_UNIQUE, array('endtime'));
+        $dbman->drop_index($table, $index);
+        $index = new xmldb_index('endtime_ix', XMLDB_INDEX_NOTUNIQUE, array('endtime'));
+        $dbman->add_index($table, $index);
+
+        // block rlip savepoint reached
+        upgrade_block_savepoint(true, 2012022700, 'rlip');
+    }
 }
