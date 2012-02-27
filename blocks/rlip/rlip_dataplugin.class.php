@@ -37,3 +37,49 @@ abstract class rlip_dataplugin {
      */
     abstract function run();
 }
+
+/**
+ * Data plugin factory class that easily provides import and export plugin
+ * instances
+ */
+class rlip_dataplugin_factory {
+
+    /**
+     * Factory method
+     *
+     * @param string $plugin The name of the plugin to create, either rlipimport_*
+     *                       or rlipexport_*
+     * @param object $importprovider The import provider to use, if obtaining
+     *                               an import plugin
+     */
+    static function factory($plugin, $importprovider = NULL) {
+        global $CFG;
+
+        //split into plugin type and name
+        list($plugintype, $pluginname) = explode('_', $plugin);
+
+        if ($plugintype == 'rlipimport') {
+            //import plugin
+            $path = "{$CFG->dirroot}/blocks/rlip/importplugins/";
+            $classname = "rlip_importplugin_";
+        } else {
+            //export plugin
+            $path = "{$CFG->dirroot}/blocks/rlip/exportplugins/";
+            $classname = "rlip_exportplugin_";
+        }
+
+        //set up plugin path and class name
+        $path .= "{$pluginname}/{$pluginname}.class.php";
+        $classname .= $pluginname;
+
+        //load class definition
+        require_once($path);
+
+        //obtain the plugin instance
+        if ($plugintype == 'rlipimport') {
+            return new $classname($importprovider);
+        } else {
+            return new $classname();
+        }
+    }
+}

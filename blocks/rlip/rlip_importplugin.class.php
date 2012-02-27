@@ -58,7 +58,7 @@ abstract class rlip_importprovider {
 /**
  * Base class for Integration Point import plugins
  */
-class rlip_importplugin_base extends rlip_dataplugin {
+abstract class rlip_importplugin_base extends rlip_dataplugin {
     var $provider = NULL;
     var $dblogger = NULL;
 
@@ -335,4 +335,13 @@ class rlip_importplugin_base extends rlip_dataplugin {
             $this->process_import_file($entity);
         }
     }
+
+    /**
+     * Specifies the UI labels for the various import files supported by this
+     * plugin
+     *
+     * @return array The string labels, in the order in which the
+     *               associated [entity]_action methods are defined
+     */
+    abstract function get_file_labels();
 }

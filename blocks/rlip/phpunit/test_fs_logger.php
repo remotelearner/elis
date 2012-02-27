@@ -160,7 +160,7 @@ class fsLoggerTest extends elis_database_test {
 
         //set up the file plugin for IO
         $filename = $CFG->dataroot.'/rliptest';
-        $fileplugin = rlip_fileplugin_factory::factory($CFG->dataroot.'/rliptest', true);
+        $fileplugin = rlip_fileplugin_factory::factory($CFG->dataroot.'/rliptest', NULL, true);
 
         //set up the logging object
         $fslogger = rlip_fslogger_factory::factory($fileplugin);

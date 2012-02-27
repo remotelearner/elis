@@ -29,6 +29,21 @@ define('RLIP_FILE_READ', 1);
 define('RLIP_FILE_WRITE', 2);
 
 abstract class rlip_fileplugin_base {
+    var $filename;
+    var $fileid;
+
+	/**
+     * Base file plugin constructor
+     *
+     * @param string $filename The path of the file to open, or the empty
+     *                         string if instead using a Moodle file id
+     * @param mixed $fileid The id of the Moodle file to open, or NULL if we
+     *                      are using a file on the file system
+     */
+    function __construct($filename = '', $fileid = NULL) {
+        $this->filename = $filename;
+        $this->fileid = $fileid;
+    }
 
 	/**
 	 * Hook for opening the file
@@ -85,10 +100,16 @@ class rlip_fileplugin_factory {
 	 *                         otherwise for import
 	 * @return object The file plugin instance
 	 */
-    static function factory($filename, $logging = false) {
+    static function factory($filename = '', $fieldid = NULL, $logging = false) {
     	global $CFG;
 
-    	if ($logging) {
+    	if ($filename == '') {
+    	    //reading a CSV file from Moodle file system
+    	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
+
+            $filename .= '.'.rlip_fileplugin_csv::get_extension();
+            return new rlip_fileplugin_csv('', $fieldid);
+    	} else if ($logging) {
     	    //using a standard text file for logging
     	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log.class.php');
 

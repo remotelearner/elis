@@ -64,3 +64,103 @@ function rlip_admintree_setup(&$adminroot) {
                                    'moodle/site:config');
     $adminroot->add('blocksettings', $page);
 }
+
+/**
+ * Perform page setup for the page that allows you to run tasks manually
+ *
+ * @param string $baseurl The base page url
+ */
+function rlip_manualrun_page_setup($baseurl) {
+    global $PAGE, $SITE;
+
+    //set up the basic page info
+    $PAGE->set_url($baseurl);
+    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+    $displaystring = get_string('configuretitle', 'rlipexport_version1');
+    $PAGE->set_title("$SITE->shortname: ".$displaystring);
+    $PAGE->set_heading($SITE->fullname);
+
+    //use the default admin layout
+    $PAGE->set_pagelayout('admin');
+
+    //add navigation items
+    $PAGE->navbar->add(get_string('administrationsite'));
+    $PAGE->navbar->add(get_string('plugins', 'admin'));
+    $PAGE->navbar->add(get_string('blocks'));
+    $PAGE->navbar->add(get_string('runmanually', 'block_rlip'));
+}
+
+/**
+ * Perform the handling of an uploaded file, including moving it to a non-draft
+ * area
+ *
+ * @param object $data The data submitted by the file upload form
+ * @param string $key The key that represents the field containing the file
+ *                    "itemid"
+ * @return mixed The file record id on success, or false if not selected
+ */
+function rlip_handle_file_upload($data, $key) {
+    global $USER, $DB;
+
+    $result = false;
+
+    //get general file storage object
+    $fs = get_file_storage();
+
+    //obtain the listing of files just uploaded
+    $usercontext = get_context_instance(CONTEXT_USER, $USER->id);
+    $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->$key);
+
+    if ($instanceid = $DB->get_field('block_instances', 'id', array('blockname' => 'rlip'))) {
+        //try to use the block context
+        $context = get_context_instance(CONTEXT_BLOCK, $instanceid);
+    } else {
+        //fall back to site context
+        $context = get_context_instance(CONTEXT_SYSTEM);
+    }
+
+    //set up file parameters
+    $file_record = array('contextid' => $context->id,
+                         'component' => 'block_rlip',
+                         'filearea' => 'files',
+                         'filepath' => '/manualupload/');
+
+    //transfer files to a specific area
+    foreach ($files as $draftfile) {
+
+        //file API seems to always upload a directory record, so ignore that 
+        if (!$draftfile->is_directory()) {
+            $exists = false;
+
+            //maintain the same filename
+            $draft_filename = $draftfile->get_filename();
+            $file = $fs->get_file($context->id, 'block_rlip', 'files',
+                                  $data->$key, '/manualupload/', $draft_filename);
+
+            if ($file) {
+                //file exists
+                $exists = true;
+                $samesize = ($file->get_filesize() == $draftfile->get_filesize());
+                $sametime = ($file->get_timemodified() == $draftfile->get_timemodified());
+
+                //if not the same file, delete it
+                if ((!$samesize || !$sametime) && $file->delete()) {
+                    $exists = false;
+                }
+            }
+
+            if (!$exists) {
+                //create as new file
+                $file = $fs->create_file_from_storedfile($file_record, $draftfile);
+            }
+
+            //delete the draft file
+            $draftfile->delete();
+
+            //obtain the file record id
+            $result = $file->get_id();
+        }
+    }
+
+    return $result;
+}

@@ -47,11 +47,11 @@ foreach ($plugintypes as $plugintype) {
     
     //initialize table
     $table = new html_table();
-    $table->head = array(get_string('name'), get_string('settings'));
-    $table->align = array('left', 'left');
-    $table->size = array('80%', '20%');
+    $table->head = array(get_string('name'), get_string('settings'), get_string('runmanually', 'block_rlip'));
+    $table->align = array('left', 'left', 'left');
+    $table->size = array('70%', '15%', '15%');
     $table->data = array();
-    $table->width = '30%';
+    $table->width = '40%';
     
     //obtain plugins and iterate through them
     $plugins = get_plugin_list("rlip{$plugintype}");
@@ -62,10 +62,15 @@ foreach ($plugintypes as $plugintype) {
         //configuration link
         $url = $CFG->wwwroot."/admin/settings.php?section=rlipsettingrlip{$plugintype}_{$name}";
         $attributes = array('href' => $url);
-        $tag = html_writer::tag('a', get_string('edit'), $attributes);
-    
+        $config_tag = html_writer::tag('a', get_string('edit'), $attributes);
+
+        //manual run link
+        $url = $CFG->wwwroot."/blocks/rlip/manualrun.php?plugin=rlip{$plugintype}_{$name}";
+        $attributes = array('href' => $url);
+        $run_tag = html_writer::tag('a', get_string('go', 'block_rlip'), $attributes);
+
         //combine into row data
-        $table->data[] = array($displayname, $tag);
+        $table->data[] = array($displayname, $config_tag, $run_tag);
     }
     
     //output the table

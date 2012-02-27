@@ -1572,4 +1572,17 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         return parent::process_record($entity, $record);
     }
+
+    /**
+     * Specifies the UI labels for the various import files supported by this
+     * plugin
+     *
+     * @return array The string labels, in the order in which the
+     *               associated [entity]_action methods are defined
+     */
+    function get_file_labels() {
+        return array(get_string('userfile', 'rlipimport_version1'),
+                     get_string('coursefile', 'rlipimport_version1'),
+                     get_string('enrolmentfile', 'rlipimport_version1'));
+    }
 }

@@ -28,16 +28,6 @@
  * File plugin used for writing text to log files
  */
 class rlip_fileplugin_log extends rlip_fileplugin_base {
-    var $filename;
-
-    /**
-     * Log file plugin constructor
-     *
-     * @param string $filename The path of the file to open
-     */
-	function __construct($filename) {
-	    $this->filename = $filename;
-	}
 
 	/**
      * Open the file

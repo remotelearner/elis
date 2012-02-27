@@ -29,20 +29,9 @@
  * data
  */
 class rlip_fileplugin_csv extends rlip_fileplugin_base {
-
-    var $filename;
     var $filepointer;
     var $first;
     var $header;
-
-	/**
-     * CSV file plugin constructor
-     *
-     * @param string $filename The path of the file to open
-     */
-    function __construct($filename) {
-        $this->filename = $filename;
-    }
 
     /**
      * Open the file
@@ -53,10 +42,20 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
     function open($mode) {
     	global $CFG;
 
+    	$fs = get_file_storage();
+
     	if ($mode == RLIP_FILE_WRITE) {
+    	    //we are only writing to files on the file-system
             $this->filepointer = fopen($this->filename, 'w');
     	} else {
-    	    $this->filepointer = fopen($this->filename, 'r');
+    	    if ($this->filename != '') {
+    	        //read from the file system
+    	        $this->filepointer = fopen($this->filename, 'r');
+    	    } else {
+    	        //read from a Moodle file
+    	        $file = $fs->get_file_by_id($this->fileid);
+    	        $this->filepointer = $file->get_content_file_handle();
+    	    }
     	}
 
     	$this->first = true;
