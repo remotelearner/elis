@@ -3,4 +3,4 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version = 2012022400;
-$plugin->release = '2.0.0 (Build: 20120224)';
+$plugin->release = '2.0.2-PRERELEASE (Build: 20120224)';
