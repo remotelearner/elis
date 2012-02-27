@@ -107,14 +107,27 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * Checks a field's data is one of the specified values
      * @todo: consider moving this because it's fairly generalized
      *
-     * @param object $record The record containing the data to validate
+     * @param object $record The record containing the data to validate,
+                             and possibly modify if $stringvalues used.
      * @param string $property The field / property to check
      * @param array $list The valid possible values
+     * @param array $stringvalues associative array of strings to map back to
+     *                            $list value. Eg. array('no' => 0, 'yes' => 1)
      */
-    function validate_fixed_list($record, $property, $list) {
+    function validate_fixed_list(&$record, $property, $list, $stringvalues = null) {
         //note: do not worry about missing fields here
         if (isset($record->$property)) {
-            return in_array($record->$property, $list);
+            if (is_array($stringvalues) && isset($stringvalues[$record->$property])) {
+                $record->$property = (string)$stringvalues[$record->$property];
+            }
+            // CANNOT use in_array() 'cause types don't match ...
+            // AND PHP::in_array('yes', array(0, 1)) == true ???
+            foreach ($list as $entry) {
+                if ((string)$record->$property == (string)$entry) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         return true;
@@ -308,7 +321,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //make sure autosubscribe is one of the available values
-        if (!$this->validate_fixed_list($record, 'autosubscribe', array(0, 1))) {
+        if (!$this->validate_fixed_list($record, 'autosubscribe', array(0, 1),
+                                        array('no' => 0, 'yes' => 1))) {
             return false;
         }
 
@@ -320,12 +334,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //make sure trackforums is one of the available values
-        if (!$this->validate_fixed_list($record, 'trackforums', array(0, 1))) {
+        if (!$this->validate_fixed_list($record, 'trackforums', array(0, 1),
+                                        array('no' => 0, 'yes' => 1))) {
             return false;
         }
 
         //make sure screenreader is one of the available values
-        if (!$this->validate_fixed_list($record, 'screenreader', array(0, 1))) {
+        if (!$this->validate_fixed_list($record, 'screenreader', array(0, 1),
+                                        array('no' => 0, 'yes' => 1))) {
             return false;
         }
 
@@ -901,12 +917,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //make sure showgrades is one of the available values 
-        if (!$this->validate_fixed_list($record, 'showgrades', array(0, 1))) {
+        if (!$this->validate_fixed_list($record, 'showgrades', array(0, 1),
+                                        array('no' => 0, 'yes' => 1))) {
             return false;
         }
 
         //make sure showreports is one of the available values
-        if (!$this->validate_fixed_list($record, 'showreports', array(0, 1))) {
+        if (!$this->validate_fixed_list($record, 'showreports', array(0, 1),
+                                        array('no' => 0, 'yes' => 1))) {
             return false;
         }
 
@@ -919,12 +937,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //make sure guest is one of the available values
-        if (!$this->validate_fixed_list($record, 'guest', array(0, 1))) {
+        if (!$this->validate_fixed_list($record, 'guest', array(0, 1),
+                                        array('no' => 0, 'yes' => 1))) {
             return false;
         }
 
         //make sure visible is one of the available values
-        if (!$this->validate_fixed_list($record, 'visible', array(0, 1))) {
+        if (!$this->validate_fixed_list($record, 'visible', array(0, 1),
+                                        array('no' => 0, 'yes' => 1))) {
             return false;
         }
 

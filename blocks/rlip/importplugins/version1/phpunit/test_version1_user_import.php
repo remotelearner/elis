@@ -483,7 +483,57 @@ class version1UserImportTest extends elis_database_test {
 
         $exists = $DB->record_exists_select('user', $select, $data);
 
-        $this->assertEquals($exists, true);        
+        $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that yes/no fields are mapped to valid values during user update
+     */
+    public function testVersion1ImportMapsFieldsOnUserUpdate() {
+        global $CFG, $DB;
+
+        $this->run_core_user_import(array());
+
+        $data = array('action' => 'update',
+                      'username' => 'rlipusername',
+                      'auth' => 'mnet',
+                      'maildigest' => 2,
+                      'autosubscribe' => 'yes',
+                      'trackforums' => 'yes',
+                      'screenreader' => 'no',
+                      'timezone' => -5.0,
+                      'theme' => 'rlmaster',
+                      'lang' => 'en',
+                      'description' => 'rlipdescription',
+                      'institution' => 'rlipinstitution',
+                      'department' => 'rlipdepartment');
+
+        $this->run_core_user_import($data, false);
+
+        foreach ($data as $key => $val) {
+            if (in_array((string)$val, array('no', 'yes'))) {
+                $data[$key] = ((string)$val == 'yes') ? 1: 0;
+            }
+        }
+        unset($data['action']);
+        $data['mnethostid'] = $CFG->mnet_localhost_id;
+
+        $select = "username = :username AND
+                   mnethostid = :mnethostid AND
+                   auth = :auth AND
+                   maildigest = :maildigest AND
+                   autosubscribe = :autosubscribe AND
+                   trackforums = :trackforums AND
+                   screenreader = :screenreader AND
+                   timezone = :timezone AND
+                   theme = :theme AND
+                   lang = :lang AND
+                   {$DB->sql_compare_text('description')} = :description AND
+                   institution = :institution AND
+                   department = :department";
+
+        $exists = $DB->record_exists_select('user', $select, $data);
+        $this->assertEquals($exists, true);
     }
 
     /**
