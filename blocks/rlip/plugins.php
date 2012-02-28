@@ -44,7 +44,7 @@ foreach ($plugintypes as $plugintype) {
     echo $OUTPUT->box_start('generalbox pluginspageheading');
     print_string("{$plugintype}plugins", 'block_rlip');
     echo $OUTPUT->box_end();
-    
+
     //initialize table
     $table = new html_table();
     $table->head = array(get_string('name'), get_string('settings'), get_string('runmanually', 'block_rlip'));
@@ -52,13 +52,13 @@ foreach ($plugintypes as $plugintype) {
     $table->size = array('70%', '15%', '15%');
     $table->data = array();
     $table->width = '40%';
-    
+
     //obtain plugins and iterate through them
     $plugins = get_plugin_list("rlip{$plugintype}");
     foreach ($plugins as $name => $path) {
         //get the display name from the plugin-specific language string
         $displayname = get_string('pluginname', "rlip{$plugintype}_{$name}");
-    
+
         //configuration link
         $url = $CFG->wwwroot."/admin/settings.php?section=rlipsettingrlip{$plugintype}_{$name}";
         $attributes = array('href' => $url);
@@ -72,7 +72,7 @@ foreach ($plugintypes as $plugintype) {
         //combine into row data
         $table->data[] = array($displayname, $config_tag, $run_tag);
     }
-    
+
     //output the table
     echo html_writer::table($table);
 }
