@@ -65,6 +65,7 @@ $string['fld_cost'] = 'Cost';
 $string['fld_country'] = 'Country';
 $string['fld_country_help'] = '<h1>Country filter</h1>
 <p>This filter allows you to filter users\' country based on a drop down list of countries. This filter does not have any other options.</p>';
+$string['fld_course'] = 'Course';
 $string['fld_coursecat'] = 'Course category';
 $string['fld_courserole'] = 'Course role';
 $string['fld_courserole_help'] = '<h1>Course role filter</h1>
