@@ -68,7 +68,14 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      * @return array The entry read
      */
     function read() {
-        return fgetcsv($this->filepointer);
+        $result = fgetcsv($this->filepointer);
+
+        if (is_array($result) && count($result) == 1 && $result[0] == '') {
+            //this catches an empty line with just a newline character
+            return false;
+        }
+
+        return $result;
     }
 
     /**
