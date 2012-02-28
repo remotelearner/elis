@@ -96,7 +96,7 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
      * @return array of sub-filters
      */
     function generalized_filter_elisuserprofile($uniqueid, $label, $options = array()) {
-        parent::multifilter($uniqueid, $label, $options);
+        parent::__construct($uniqueid, $label, $options);
 
         foreach ($this->tables as $key => $val) {
             foreach ($val as $table => $alias) {
@@ -163,16 +163,17 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
      * @param string $group  The index of the group to which the sub filter belongs to.
      * @param string $name   The name of the sub filter to process.
      * @param array  $help   An array representing the help icon for the filter
+     * @uses  $DB
      * @return array The customized options for the selected sub-filter
      */
     function make_filter_options_custom($options, $group, $name) {
-
+        global $DB;
         switch ($name) {
             case 'fullname':
                 //combine the firstname and lastname into a fullname field
                 $firstname = $this->tables[$group]['crlm_user'] .'.firstname';
                 $lastname  = $this->tables[$group]['crlm_user'] .'.lastname';
-                $options['dbfield'] = sql_fullname($firstname, $lastname);
+                $options['dbfield'] = $DB->sql_concat($firstname, "' '", $lastname);
                 $options['talias'] = '';
                 //todo: find a better way to do this
                 $this->fieldtofiltermap[$group][$options['dbfield']] =

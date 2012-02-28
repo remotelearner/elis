@@ -275,13 +275,12 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
      * @param string $label    Filter label
      * @param array  $options  Filter options (see above)
      * @return array The sub-filters
-     * @uses $CFG
      * @uses $PAGE
      */
     function generalized_filter_curriculumclass($uniqueid, $label, $options = array()) {
-        global $CFG, $PAGE;
+        global $PAGE;
 
-        parent::multifilter($uniqueid, $label, $options);
+        parent::__construct($uniqueid, $label, $options);
 
         $this->_fields = array();
 
@@ -307,7 +306,6 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
 
         // Check for & assign table aliases
         foreach ($this->tables as $group => $tables) {
-
             if (!array_key_exists($group, $options['tables'])) {
                 continue;
             }
