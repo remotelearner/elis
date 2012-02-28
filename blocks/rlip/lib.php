@@ -167,3 +167,31 @@ function rlip_handle_file_upload($data, $key) {
 
     return $result;
 }
+
+/**
+ * Displays the status of processing as represented by the supplied log ids
+ *
+ * @param array $logids The ids of log records to display 
+ */
+function rlip_print_manual_status($logids) {
+    global $DB, $OUTPUT;
+
+    if (!empty($logids)) {
+        //get IN / = clause for specific ids
+        list($select, $params) = $DB->get_in_or_equal($logids);
+        $select = "id {$select}";
+
+        //only need a couple of fields
+        $fields = 'filesuccesses, filefailures, statusmessage';
+        if ($recordset = $DB->get_recordset_select('block_rlip_summary_log', $select, $params, 'id', $fields)) {
+            foreach ($recordset as $record) {
+                //total rows = successes + failures
+                $record->total = $record->filesuccesses + $record->filefailures;
+
+                //display status message with successes and total records
+                $displaystring = get_string('manualstatus', 'block_rlip', $record);
+                echo $OUTPUT->box($displaystring);
+            }
+        }
+    }
+}

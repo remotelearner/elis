@@ -29,6 +29,16 @@
  * database
  */
 class rlip_dblogger {
+    //this plugin that doing the work
+    var $plugin = '';
+    //the user running the task
+    var $userid;
+
+    //timing values
+    var $targetstarttime = 0;
+    var $starttime = 0;
+    var $endtime = 0;
+
     //counts were are tracking
 
     //number of rows successfuly imported from file
@@ -39,6 +49,61 @@ class rlip_dblogger {
     var $storedsuccesses = 0;
     //number of stored rows with error
     var $storedfailures = 0;
+
+    //number of db operations used
+    var $dbops = -1;
+
+    //tracks whether an unmet dependency was encountered
+    var $unmetdependency = 0;
+
+    //track the ids of the log records created
+    var $logids = array();
+
+    /**
+     * DB logger constructor
+     */
+    function __construct() {
+        global $USER;
+
+        //set the userid to the global user id
+        $this->userid = $USER->id;
+    }
+
+    /**
+     * Set the plugin that we are logging for
+     *
+     * @param string $plugin The plugin shortname, such as rlipimport_version1
+     */
+    function set_plugin($plugin) {
+        $this->plugin = $plugin;
+    }
+
+    /**
+     * Set the target (planned) start time
+     * 
+     * @param int $targetstarttime The target (planned) start time
+     */
+    function set_targetstarttime($targetstarttime) {
+        $this->targetstarttime = $targetstarttime;
+    }
+
+    /**
+     * Sets the actual start time
+     *
+     * @param int $starttime The actual start time
+     */
+    function set_starttime($starttime) {
+        $this->starttime = $starttime;
+    }
+
+    /**
+     * Sets the actual end time
+     *
+     * @param int $starttime The actual end time
+     */
+    function set_endtime($endtime) {
+        $this->endtime = $endtime;
+    }
 
     /**
      * Store the result of a current row's action
@@ -65,14 +130,36 @@ class rlip_dblogger {
     }
 
     /**
+     * Sets the number of DB ops used
+     *
+     * @param int $dbops The number of DB ops used
+     */
+    function set_dbops($dbops) {
+        $this->dbops = $dbops;
+    }
+
+    /**
+     * Signals that an unmet dependency was encountered
+     */
+    function signal_unmetdependency() {
+        $this->unmetdependency = 1;
+    }
+
+    /**
      * Reset the state of the logger between executions
      */
     function reset_state() {
+        $this->starttime = 0;
+        $this->endtime = 0;
+
         //set all counts back to zero
         $this->filesuccesses = 0;
         $this->filefailures = 0;
         $this->storedsuccesses = 0;
         $this->storedfailures = 0;
+
+        $this->dbops = -1;
+        $this->unmetdependency = 0;
     }
 
     /**
@@ -85,16 +172,18 @@ class rlip_dblogger {
         global $DB, $USER;
 
         //set up our basic log record fields
-        //todo: finish implementing
         $record = new stdClass;
-        $record->userid = $USER->id;
-        $record->targetstarttime = 0;
-        $record->starttime = 0;
-        $record->endtime = 0;
+        $record->plugin = $this->plugin;
+        $record->userid = $this->userid;
+        $record->targetstarttime = $this->targetstarttime;
+        $record->starttime = $this->starttime;
+        $record->endtime = $this->endtime;
         $record->filesuccesses = $this->filesuccesses;
         $record->filefailures = $this->filefailures;
-        $record->storedsuccesses = 0;
-        $record->storedfailures = 0;
+        $record->storedsuccesses = $this->storedsuccesses;
+        $record->storedfailures = $this->storedfailures;
+        $record->dbops = $this->dbops;
+        $record->unmetdependency = $this->unmetdependency;
 
         if ($this->filefailures == 0) {
             //success message
@@ -105,9 +194,18 @@ class rlip_dblogger {
         }
 
         //persist
-        $DB->insert_record('block_rlip_summary_log', $record);
+        $this->logids[] = $DB->insert_record('block_rlip_summary_log', $record);
 
         //reset state
         $this->reset_state();
+    }
+
+    /**
+     * Obtains the record ids of the log records created
+     *
+     * @return array The database record ids of the log records created
+     */
+    function get_logids() {
+        return $this->logids;
     }
 }

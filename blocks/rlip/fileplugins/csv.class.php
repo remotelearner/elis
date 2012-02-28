@@ -100,8 +100,18 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      * @return string The file name, not including the full path
      */
     function get_filename() {
-        //todo: actuall implement?
-        return '';
+        global $DB;
+
+        if ($this->filename != '') {
+            //physical file, so obtain filename from full path
+            $parts = explode('/', $this->filename);
+            $count = count($parts);
+            return $parts[$count - 1];
+        } else {
+            //Moodle file system file, so obtain filename from db
+            $params = array('id' => $this->fileid);
+            return $DB->get_field('files', 'filename', $params);
+        }
     }
 
     /**

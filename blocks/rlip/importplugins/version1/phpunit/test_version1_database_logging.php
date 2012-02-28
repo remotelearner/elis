@@ -287,6 +287,29 @@ class rlip_importprovider_loguser_dynamic extends rlip_importprovider_loguser {
     }
 }
 
+class rlip_importprovider_userfile extends rlip_importprovider {
+    var $filename;
+
+    function __construct($filename) {
+        $this->filename = $filename;
+    }
+
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'user') {
+            return false;
+        }
+
+        return rlip_fileplugin_factory::factory($this->filename);
+    }
+}
+
 /**
  * Class for testing database logging with the version 1 plugin
  */
@@ -344,6 +367,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
                      'backup_log' => 'moodle',
                      'role' => 'moodle',
                      'role_context_levels' => 'moodle',
+                     'files' => 'moodle',
                      //this prevents createorupdate from being used
                      'config_plugins' => 'moodle');
     }
@@ -353,8 +377,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     static protected function get_ignored_tables() {
         return array('log' => 'moodle',
-                     'event' => 'moodle',
-                     'files' => 'moodle');
+                     'event' => 'moodle');
     }
 
     /**
@@ -375,6 +398,20 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $params = array('statusmessage' => $message);
         return $DB->record_exists_select('block_rlip_summary_log', $select, $params);
     }
+
+    /**
+     * Asserts that a record in the given table exists
+     *
+     * @param string $table The database table to check
+     * @param array $params The query parameters to validate against
+     */
+    private function assert_record_exists($table, $params = array()) {
+        global $DB;
+
+        $exists = $DB->record_exists($table, $params);
+        $this->assertEquals($exists, true); 
+    }
+    
 
     /**
      * Run the user import with a fixed set of data
@@ -926,12 +963,20 @@ class version1DatabaseLoggingTest extends elis_database_test {
     }
 
     /**
-     * Validate that DB logging object correctly resets its state when flushing
-     * data to the DB
+     * Validate that DB logging object correctly persists values and resets its state
+     * when flushing data to the DB
      */
-    public function testVersion1DBLoggingSuccessTrackingStoresCorrectValues() {
+    public function testVersion1DBLoggingSuccessTrackingStoresCorrectValuesViaAPI() {
+        global $USER;
+
         //set up the logger object
         $logger = new rlip_dblogger();
+
+        //provide appropriate times
+        $logger->set_plugin('plugin');
+        $logger->set_targetstarttime(1000000000);
+        $logger->set_starttime(1000000001);
+        $logger->set_endtime(1000000002);
 
         //give it one of each "status"
         $logger->track_success(true, true);
@@ -939,23 +984,144 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $logger->track_success(false, true);
         $logger->track_success(false, false);
 
+        //specify number of db ops
+        $logger->set_dbops(5);
+
+        $logger->signal_unmetdependency();
+
         //validate setup
+        $this->assertEquals($logger->plugin, 'plugin');
+        $this->assertEquals($logger->userid, $USER->id);
+        $this->assertEquals($logger->targetstarttime, 1000000000);
+        $this->assertEquals($logger->starttime, 1000000001);
+        $this->assertEquals($logger->endtime, 1000000002);
         $this->assertEquals($logger->filesuccesses, 1);
         $this->assertEquals($logger->filefailures, 1);
         $this->assertEquals($logger->storedsuccesses, 1);
         $this->assertEquals($logger->storedfailures, 1);
+        $this->assertEquals($logger->dbops, 5);
+        $this->assertEquals($logger->unmetdependency, 1);
 
         //flush
         $logger->flush('bogusfilename');
 
+        $params = array('plugin' => 'plugin',
+                        'userid' => $USER->id,
+                        'targetstarttime' => 1000000000,
+                        'starttime' => 1000000001,
+                        'endtime' => 1000000002,
+                        'filesuccesses' => 1,
+                        'filefailures' => 1,
+                        'storedsuccesses' => 1,
+                        'storedfailures' => 1,
+                        'dbops' => 5,
+                        'unmetdependency' => 1);
+        $this->assert_record_exists('block_rlip_summary_log', $params);
+
         //validate that the state is reset
+        $this->assertEquals($logger->plugin, 'plugin');
+        $this->assertEquals($logger->userid, $USER->id);
+        $this->assertEquals($logger->targetstarttime, 1000000000);
+        $this->assertEquals($logger->starttime, 0);
+        $this->assertEquals($logger->endtime, 0);
         $this->assertEquals($logger->filesuccesses, 0);
         $this->assertEquals($logger->filefailures, 0);
         $this->assertEquals($logger->storedsuccesses, 0);
         $this->assertEquals($logger->storedfailures, 0);
-
-        //todo: add other fields
+        $this->assertEquals($logger->dbops, -1);
+        $this->assertEquals($logger->unmetdependency, 0);
     }
+
+    public function testVersion1DBLoggingStoresCorrectValuesOnRun() {
+        global $DB;
+
+        $mintime = time();
+
+        $data = array(array('entity' => 'user',
+                            'action' => 'create',
+                            'username' => 'rlipusername',
+                            'password' => 'Rlippassword!0',
+                            'firstname' => 'rlipfirstname',
+                            'lastname' => 'rliplastname',
+                            'email' => 'rlipuser@rlipdomain.com',
+                            'city' => 'rlipcity',
+                            'country' => 'CA'),
+                      array('entity' => 'user',
+                            'action' => 'create',
+                            'username' => 'rlipusername2',
+                            'password' => 'Rlippassword!0',
+                            'firstname' => 'rlipfirstname2',
+                            'lastname' => 'rliplastname2',
+                            'email' => 'rlipuse2r@rlipdomain.com',
+                            'city' => 'rlipcity',
+                            'country' => 'boguscountry'));
+
+        $provider = new rlip_importprovider_multiuser($data);
+
+        $importplugin = new rlip_importplugin_version1($provider);
+        $importplugin->run();
+
+        $maxtime = time();
+
+        $select = "plugin = :plugin AND
+                   filesuccesses = :filesuccesses AND
+                   filefailures = :filefailures AND
+                   starttime >= :minstarttime AND
+                   starttime <= :maxstarttime AND
+                   endtime >= :minendtime AND
+                   endtime <= :maxendtime";
+        $params = array('plugin' => 'rlipimport_version1',
+                        'filesuccesses' => 1,
+                        'filefailures' => 1,
+                        'minstarttime' => $mintime,
+                        'maxstarttime' => $maxtime,
+                        'minendtime' => $mintime,
+                        'maxendtime' => $maxtime);
+        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $this->assertEquals($exists, true);
+    }
+
+    public function testVersion1DBLoggingStoresCorrectFilenameOnRun() {
+        global $CFG, $DB;
+
+        $provider = new rlip_importprovider_userfile($CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile');
+
+        $importplugin = new rlip_importplugin_version1($provider);
+        $importplugin->run();
+
+        $select = "{$DB->sql_compare_text('statusmessage')} = :message";
+        $params = array('message' => 'All lines from import file userfile.csv were successfully processed.');
+        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $this->assertEquals($exists, true);
+    }
+
+    public function testVersion1DBLoggingStoresCorrectFilenameOnRunWithMoodleFile() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
+
+        $fileinfo = array('contextid' => get_context_instance(CONTEXT_SYSTEM)->id,
+                          'component' => 'system',
+                          'filearea'  => 'draft',
+                          'itemid'    => 9999,
+                          'filepath'  => $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/',
+                          'filename'  => 'userfile.csv'
+                    );
+
+        $fs = get_file_storage();
+        $fs->create_file_from_pathname($fileinfo, $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile.csv');
+
+        $fileid = $DB->get_field_select('files', 'id', "filename != '.'");
+        $provider = new rlip_importprovider_moodlefile(array('user', 'bogus', 'bogus'), array($fileid, false, false));
+
+        $importplugin = new rlip_importplugin_version1($provider);
+        $importplugin->run();
+
+        $select = "{$DB->sql_compare_text('statusmessage')} = :message";
+        $params = array('message' => 'All lines from import file userfile.csv were successfully processed.');
+        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $this->assertEquals($exists, true);
+    }
+
 
     /**
      * Validate that DB logging does not log a success message when a mixtures

@@ -71,8 +71,14 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     function __construct($provider = NULL) {
         if ($provider !== NULL) {
             //note: provider is not set if only using plugin_supports
+
+            //convert class name to plugin name 
+            $class = get_class($this);
+            $plugin = str_replace('rlip_importplugin_', 'rlipimport_', $class);
+
             $this->provider = $provider;
             $this->dblogger = $this->provider->get_dblogger();
+            $this->dblogger->set_plugin($plugin);
         }
     }
 
@@ -290,6 +296,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * @param string $entity The type of entity
      */
     function process_import_file($entity) {
+        //track the start time as the current time
+        $this->dblogger->set_starttime(time());
+
         //fetch a file plugin for the current file
         $fileplugin = $this->provider->get_import_file($entity);
 
@@ -317,6 +326,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         }
 
         $fileplugin->close();
+
+        //track the end time as the current time
+        $this->dblogger->set_endtime(time());
 
         //flush db log record
         $filename = $fileplugin->get_filename();

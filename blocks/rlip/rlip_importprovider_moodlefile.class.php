@@ -32,7 +32,7 @@ require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
  */
 class rlip_importprovider_moodlefile extends rlip_importprovider {
     var $entity_types;
-    var $fieldids;
+    var $fileids;
 
     /**
      * Constructor
@@ -43,7 +43,7 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
      */
     function __construct($entity_types, $fieldids) {
         $this->entity_types = $entity_types;
-        $this->fieldids = $fieldids;
+        $this->fileids = $fieldids;
     }
 
     /**
@@ -59,8 +59,8 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
 
         foreach ($this->entity_types as $key => $value) {
             if ($entity == $value) {
-                if ($this->fieldids[$key] !== false) {
-                    return rlip_fileplugin_factory::factory('', $this->fieldids[$key]);
+                if ($this->fileids[$key] !== false) {
+                    return rlip_fileplugin_factory::factory('', $this->fileids[$key]);
                 }
             }
         }
