@@ -803,7 +803,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 /// Use a stream filter to base64 encode the file contents to a temporary file.
     if ($fi = fopen($filepath, 'r')) {
         if ($fo = tmpfile()) {
-            stream_filter_append($fi, 'convert.base64-encode');
+            stream_filter_append($fi, 'convert.base64-encode', STREAM_FILTER_WRITE);
 
         /// Write the beginning of the XML document to the temporary file.
             $encodedbytes += fwrite($fo, $data1, strlen($data1));
