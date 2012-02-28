@@ -353,7 +353,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     static protected function get_ignored_tables() {
         return array('log' => 'moodle',
-                     'event' => 'moodle');
+                     'event' => 'moodle',
+                     'files' => 'moodle');
     }
 
     /**

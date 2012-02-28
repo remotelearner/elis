@@ -159,7 +159,8 @@ class version1UserImportTest extends elis_database_test {
         return array('log' => 'moodle',
                      'crlm_user' => 'elis_program',
                      'crlm_user_moodle' => 'elis_program',
-                     'block_rlip_summary_log' => 'block_rlip',);
+                     'block_rlip_summary_log' => 'block_rlip',
+                     'files' => 'moodle');
     }
 
     /**

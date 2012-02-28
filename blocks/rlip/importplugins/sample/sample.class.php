@@ -76,4 +76,15 @@ class rlip_importplugin_sample extends rlip_importplugin_base {
     function action_called() {
         return $this->action_called;
     }
+
+    /**
+     * Specifies the UI labels for the various import files supported by this
+     * plugin
+     *
+     * @return array The string labels, in the order in which the
+     *               associated [entity]_action methods are defined
+     */
+    function get_file_labels() {
+        return array('Sample Entity');
+    }
 }

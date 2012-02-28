@@ -109,4 +109,16 @@ class rlip_importplugin_multiple extends rlip_importplugin_base {
         //only return true if both were called
         return $this->firstcalled && $this->secondcalled;
     }
+
+    /**
+     * Specifies the UI labels for the various import files supported by this
+     * plugin
+     *
+     * @return array The string labels, in the order in which the
+     *               associated [entity]_action methods are defined
+     */
+    function get_file_labels() {
+        return array('First Entity',
+                     'Second Entity');
+    }
 }
