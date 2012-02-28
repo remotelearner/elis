@@ -161,7 +161,7 @@ class generalized_filter_display_table extends generalized_filter_type {
         $html[] = '<div class="fitem">';
         $html[] = '<div class="fitemtitle">';
         $html[] = $this->_label;
-        $htnl[] = $OUTPUT->help_icon($this->help, 'block_php_report');
+        $htnl[] = $OUTPUT->help_icon($this->help, $this->languagefile);
         $html[] = '</div>';
         $html[] = '<div class="felement">';
         $html[] = '<table class="display_table">';
