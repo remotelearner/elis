@@ -69,8 +69,9 @@ function rlip_admintree_setup(&$adminroot) {
  * Perform page setup for the page that allows you to run tasks manually
  *
  * @param string $baseurl The base page url
+ * @param string $plugin_display The display name of the plugin
  */
-function rlip_manualrun_page_setup($baseurl) {
+function rlip_manualrun_page_setup($baseurl, $plugin_display) {
     global $PAGE, $SITE;
 
     //set up the basic page info
@@ -87,6 +88,8 @@ function rlip_manualrun_page_setup($baseurl) {
     $PAGE->navbar->add(get_string('administrationsite'));
     $PAGE->navbar->add(get_string('plugins', 'admin'));
     $PAGE->navbar->add(get_string('blocks'));
+    $PAGE->navbar->add(get_string('plugins', 'block_rlip'));
+    $PAGE->navbar->add($plugin_display);
     $PAGE->navbar->add(get_string('runmanually', 'block_rlip'));
 }
 

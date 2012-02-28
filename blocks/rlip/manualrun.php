@@ -44,7 +44,8 @@ $baseurl = $CFG->wwwroot.'/blocks/rlip/manualrun.php';
 $plugin = required_param('plugin', PARAM_CLEAN);
 
 //header
-rlip_manualrun_page_setup($baseurl);
+$plugin_display = get_string('pluginname', $plugin);
+rlip_manualrun_page_setup($baseurl, $plugin_display);
 echo $OUTPUT->header();
 
 //need to get number of different files
