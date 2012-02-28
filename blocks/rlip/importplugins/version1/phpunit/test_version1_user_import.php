@@ -353,6 +353,8 @@ class version1UserImportTest extends elis_database_test {
         unset($data['action']);
         $data['mnethostid'] = $CFG->mnet_localhost_id;
         $data['password'] = hash_internal_user_password($data['password']);
+        //user should be confirmed by default
+        $data['confirmed'] = 1;
 
         $exists = $DB->record_exists('user', $data);
 

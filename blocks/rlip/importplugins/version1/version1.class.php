@@ -485,6 +485,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $record->password = hash_internal_user_password($record->password);
         $record->timecreated = time();
         $record->timemodified = $record->timecreated;
+        //make sure the user is confirmed!
+        $record->confirmed = 1;
+
         $record->id = $DB->insert_record('user', $record);
 
         get_context_instance(CONTEXT_USER, $record->id);
