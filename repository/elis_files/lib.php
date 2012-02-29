@@ -611,9 +611,16 @@ class repository_elis_files extends repository {
                                     'cid'=>(int)$cid,
                                     'uid'=>(int)$uid);
                     $encodedpath = base64_encode(serialize($params));
+
+                    $alfresco_version = elis_files_get_repository_version();
+                    if ($alfresco_version == '3.2.1') {
+                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->filename, 32))->out(false);
+                    } else {
+                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->icon, 32))->out(false);
+                    }
                     $ret['list'][] = array('title'=>$file_object->title,
                                            'path'=>$encodedpath,
-                                           'thumbnail' => $OUTPUT->pix_url(file_extension_icon($file_object->filename, 32))->out(false),
+                                           'thumbnail' => $thumbnail,
                                            'created'=>date("M. j, Y",$file_object->created),
                                            'modified'=>date("M. j, Y",$file_object->modified),
                                            'owner'=>$file_object->owner,

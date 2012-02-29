@@ -1021,11 +1021,20 @@ function elis_files_search($query, $page = 1, $perpage = 9999) {
 
             $type = elis_files_get_type($node->uuid);
 
-            if ($type == 'folder') {
+            $alfresco_version = elis_files_get_repository_version();
+
+            if ($alfresco_version == '3.2.1') {
+              if ($type == 'folder') {
                 $return->folders[] = $node;
-            } else if ($type == 'document') {
+              }
+              if ($type == 'document') {
                 $return->files[] = $node;
+              }
+            } else {
+              // We only care about files for searches
+              $return->files[] = $node;
             }
+
         }
     }
 
