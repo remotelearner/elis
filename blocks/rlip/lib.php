@@ -91,6 +91,9 @@ function rlip_manualrun_page_setup($baseurl, $plugin_display) {
     $PAGE->navbar->add(get_string('plugins', 'block_rlip'));
     $PAGE->navbar->add($plugin_display);
     $PAGE->navbar->add(get_string('runmanually', 'block_rlip'));
+
+    //block css file
+    $PAGE->requires->css('/blocks/rlip/styles.css');
 }
 
 /**
@@ -190,7 +193,7 @@ function rlip_print_manual_status($logids) {
 
                 //display status message with successes and total records
                 $displaystring = get_string('manualstatus', 'block_rlip', $record);
-                echo $OUTPUT->box($displaystring);
+                echo $OUTPUT->box($displaystring, 'generalbox manualstatusbox');
             }
         }
     }
