@@ -1005,6 +1005,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //flush
         $logger->flush('bogusfilename');
 
+        //validate that the values were correctly persisted
         $params = array('plugin' => 'plugin',
                         'userid' => $USER->id,
                         'targetstarttime' => 1000000000,
@@ -1032,11 +1033,17 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertEquals($logger->unmetdependency, 0);
     }
 
+    /**
+     * Validate that correct values are stored after an actual run of a
+     * "version 1" import
+     */
     public function testVersion1DBLoggingStoresCorrectValuesOnRun() {
         global $DB;
 
+        //capture the earliest possible start time
         $mintime = time();
 
+        
         $data = array(array('entity' => 'user',
                             'action' => 'create',
                             'username' => 'rlipusername',
@@ -1056,13 +1063,16 @@ class version1DatabaseLoggingTest extends elis_database_test {
                             'city' => 'rlipcity',
                             'country' => 'boguscountry'));
 
+        //run the import
         $provider = new rlip_importprovider_multiuser($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
         $importplugin->run();
 
+        //capture the latest possible end time
         $maxtime = time();
 
+        //validate that values were persisted correctly
         $select = "plugin = :plugin AND
                    filesuccesses = :filesuccesses AND
                    filefailures = :filefailures AND
@@ -1081,41 +1091,66 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertEquals($exists, true);
     }
 
+    /**
+     * Validate that filenames are correctly stored when an import is run from
+     * a file on the file system
+     */
     public function testVersion1DBLoggingStoresCorrectFilenameOnRun() {
         global $CFG, $DB;
 
-        $provider = new rlip_importprovider_userfile($CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile');
+        //set up a "user" import provider, using a single fixed file
+        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile';
+        $provider = new rlip_importprovider_userfile($file);
 
+        //run the import
         $importplugin = new rlip_importplugin_version1($provider);
         $importplugin->run();
 
+        //data validation
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
         $params = array('message' => 'All lines from import file userfile.csv were successfully processed.');
         $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
         $this->assertEquals($exists, true);
     }
 
+    /**
+     * Validate that filenames are correctly stored when an import is run
+     * based on a Moodle file-system file
+     */
     public function testVersion1DBLoggingStoresCorrectFilenameOnRunWithMoodleFile() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
 
-        $fileinfo = array('contextid' => get_context_instance(CONTEXT_SYSTEM)->id,
+        //store it at the system context
+        $context = get_context_instance(CONTEXT_SYSTEM);
+
+        //file path and name
+        $file_path = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/';
+        $file_name = 'userfile.csv';
+
+        //file information
+        $fileinfo = array('contextid' => $context->id,
                           'component' => 'system',
                           'filearea'  => 'draft',
                           'itemid'    => 9999,
-                          'filepath'  => $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/',
-                          'filename'  => 'userfile.csv'
+                          'filepath'  => $file_path,
+                          'filename'  => $file_name
                     );
 
+        //create a file in the Moodle file system with the right content
         $fs = get_file_storage();
-        $fs->create_file_from_pathname($fileinfo, $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile.csv');
-
+        $fs->create_file_from_pathname($fileinfo, "{$file_path}{$file_name}");
         $fileid = $DB->get_field_select('files', 'id', "filename != '.'");
-        $provider = new rlip_importprovider_moodlefile(array('user', 'bogus', 'bogus'), array($fileid, false, false));
+        
+        //run the import
+        $entity_types = array('user', 'bogus', 'bogus');
+        $fileids = array($fileid, false, false);
+        $provider = new rlip_importprovider_moodlefile($entity_types, $fileids);
 
         $importplugin = new rlip_importplugin_version1($provider);
         $importplugin->run();
 
+        //data validation
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
         $params = array('message' => 'All lines from import file userfile.csv were successfully processed.');
         $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
