@@ -682,6 +682,33 @@ class version1ExportTest extends elis_database_test {
     }
 
     /**
+     * Validate that the version 1 export adds a special marker for unset
+     * datetime custom fields
+     */
+    public function testVersion1ExportHandlesCustomFieldDatetimeUnset() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        $this->load_csv_data();
+
+        //set up necessary custom field information in the database
+        $categoryid = $this->create_custom_field_category();
+        $fieldid = $this->create_profile_field('rlipdate', 'datetime', $categoryid);
+        $datarecordid = $this->create_data_record(2, $fieldid, 0);
+        $this->create_field_mapping($fieldid);
+
+        //obtain our export data based on the current DB state
+        $data = $this->get_export_data();
+
+        //data validation
+        $this->assertEquals(count($data), 2);
+        $row = $data[1];
+        $this->assertEquals(count($row), 10);
+        $marker = get_string('nodatemarker', 'rlipexport_version1');
+        $this->assertEquals($row[9], $marker);
+    }
+
+    /**
      * datetime currently doesn't support default values
      */
 

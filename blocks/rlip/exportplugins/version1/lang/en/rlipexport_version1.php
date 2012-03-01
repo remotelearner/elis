@@ -16,6 +16,7 @@ $string['header_letter'] = 'Letter';
 $string['header_startdate'] = 'Start Date';
 $string['header_useridnumber'] = 'User Idnumber';
 $string['header_username'] = 'Username';
+$string['nodatemarker'] = '-';
 $string['pluginname'] = 'Version 1 export';
 $string['profilefieldname'] = 'Profile Field Name';
 $string['revertheaders'] = 'Revert Changes to Column Headers';

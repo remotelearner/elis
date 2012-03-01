@@ -172,10 +172,14 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
                 $value = 'yes';
             }
         } else if ($this->datatypes[$fieldid] == 'datetime') {
-            //format as a date, with or without time
-            if (!empty($this->showtime[$fieldid])) {
+            if ($value == 0) {
+                //use a marker to indicate that it's not set
+                $value = get_string('nodatemarker', 'rlipexport_version1');
+            } else if (!empty($this->showtime[$fieldid])) {
+                //format as a date, with time
                 $value = date('M/d/Y, h:i a', $value);
             } else {
+                //format as date, without time
                 $value = date('M/d/Y', $value);
             }
         }
