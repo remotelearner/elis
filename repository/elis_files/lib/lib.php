@@ -531,13 +531,11 @@ function elis_files_delete($uuid, $recursive = false, $repo = NULL) {
     // This is to prevent the user's Alfresco account from having space incorrectly attributed to it.
     // ELIS-1102
 
+    elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
 
     if (ELIS_files::is_version('3.2')) {
-        elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
         return (true === elis_files_send(elis_files_get_uri($uuid, 'delete'), array(), 'DELETE'));
     } else if (ELIS_files::is_version('3.4')) {
-        $result = elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
-
         // Get node type and use descendants delete for folders
         $node_type = elis_files_get_type($uuid);
 
@@ -551,7 +549,6 @@ function elis_files_delete($uuid, $recursive = false, $repo = NULL) {
                 return false;
             }
         }
-
         return true;
     }
 }

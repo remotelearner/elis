@@ -571,15 +571,11 @@ class ELIS_files {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('is_dir(' . $uuid . ')');
 
         // Set the file and folder type
-        if (!defined('ALFRESCO_TYPE_FOLDER')) {
-            if (self::is_version('3.2')) {
-                define('ALFRESCO_TYPE_FOLDER',   'folder');
-                define('ALFRESCO_TYPE_DOCUMENT', 'document');
-            } else if (self::is_version('3.4')) {
-                define('ALFRESCO_TYPE_FOLDER',   'cmis:folder');
-                define('ALFRESCO_TYPE_DOCUMENT', 'cmis:document');
-            }
+        if (!$this->get_defaults()) {
+            return false;
         }
+
+        return (elis_files_get_type($uuid) == ELIS_FILES_TYPE_FOLDER);
     }
 
 
@@ -1528,10 +1524,14 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE)  print_object('repo elis_files_delete(' . $uuid . ', ' . $recursive . ')');
 
+        if (!$this->get_defaults()) {
+            return false;
+        }
+
         // Ensure that we set the configured admin user to be the owner of the deleted file before deleting.
         // This is to prevent the user's Alfresco account from having space incorrectly attributed to it.
         // ELIS-1102
-        elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->server_username);
+        elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
 
         if (self::is_version('3.2')) {
             return (true === alfresco_send(alfresco_get_uri($uuid, 'delete'), array(), 'DELETE'));
@@ -3027,9 +3027,6 @@ echo '<br>leaving migrate_user';
  */
     function get_other_capabilities($user,&$capabilities) {
         global $CFG, $DB, $USER;
-//echo "\n ******* capabilities array: ";
-//print_object($capabilities);
-//        $root = $this->get_root();
 
         if (!empty($USER->access['rdef'])) {
             foreach ($USER->access['rdef'] as $ctx) {
@@ -3041,24 +3038,6 @@ echo '<br>leaving migrate_user';
                 }
             }
         }
-//            if ($recordset = $DB->get_recordset_sql($sql, $params)) {
-//                foreach ($recordset as $record) {
-//                    if (in_array($capabilities,$record->capability)) {
-//                        $capabilities[$record->capability] = true;
-//                    }
-//                }
-//            }
-            /*if ($DB->record_exists_sql($sql, $params)) {
-                if ($capability == 'repository/elis_files:createowncontent') {
-                    $capabilities['repository/elis_files:createowncontent'] = true;
-                } else if ($capability == 'repository/elis_files:viewowncontent') {
-                    $capabilities['repository/elis_files:viewowncontent'] = true;
-                } else if ($capability == 'repository/elis_files:createsharedcontent') {
-                    $capabilities['repository/elis_files:createsharedcontent'] = true;
-                } else if ($capability == 'repository/elis_files:viewsharedcontent') {
-                    $capabilities['repository/elis_files:viewsharedcontent'] = true;
-                }
-            }*/
     }
 
 
@@ -3164,12 +3143,7 @@ echo '<br>leaving migrate_user';
  */
     function get_repository_location(&$cid, &$uid, &$shared, &$oid) {
         global $COURSE, $USER;
-//echo "\n in get repository location: ";
-//echo " cid: $cid";
-//echo " uid: $uid";
-//print_object('$shared: ' . $shared);
-//print_object('$oid:     '.$oid);
-        // If there was no previous location stored we have nothing to return.
+
         if (!isset($USER->elis_files_repository_location)) {
             return '';
         }
@@ -3180,10 +3154,7 @@ echo '<br>leaving migrate_user';
         $capabilities = array('repository/elis_files:viewowncontent'=> false,
                               'repository/elis_files:viewsharedcontent'=> false);
         $this->get_other_capabilities($USER, $capabilities);
-//echo "\n in get_repository_location and capabilities: ";
-//print_object($capabilities);
-//echo "\n location: ";
-//print_object($location);
+
         // If the previous value comes from within a cluster that is not the current cluster, return the root
         // storage value for the current cluster directory.
 
