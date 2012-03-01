@@ -198,3 +198,51 @@ function rlip_print_manual_status($logids) {
         }
     }
 }
+
+/**
+ * Sanitizes time strings and applies a default value if necessary
+ *
+ * @param string $time_string A user-entered time string
+ * @param string $default The field default
+ * @return string The time string with proper formatting and invalid data
+ *                removed
+ */
+function rlip_sanitize_time_string($time_string, $default = '') {
+    //valid time units - hours, minutes, seconds
+    $valid_units = array('d', 'h', 'm');
+
+    $result = '';
+    //track the current "group", e.g. 2d
+    $current_group = '';
+
+    //iterate through characters
+    for ($i = 0; $i < strlen($time_string); $i++) {
+        //retrieve current character
+        $character = strtolower(substr($time_string, $i, 1));
+
+        if ($character >= '0' && $character <= '9') {
+            //append digit
+            $current_group .= $character;
+        } else {
+            if (in_array($character, $valid_units)) {
+                //time unit is valid
+                if ($current_group != '') {
+                    //a number was specified, so append the "group" to the
+                    //result
+                    $current_group .= $character;
+                    $result .= $current_group;
+                }
+            }
+
+            //looking for new entry
+            $current_group = '';
+        }
+    }
+
+    if ($result == '') {
+        //no valid data, so use the default
+        return $default;
+    }
+
+    return $result;
+}

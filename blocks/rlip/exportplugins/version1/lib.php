@@ -290,3 +290,25 @@ function rlipexport_version1_linked_image($url, $imageidentifier) {
     $attributes = array('href' => $url);
     return html_writer::tag('a', $imagetag, $attributes);
 }
+
+/**
+ * Callback function to clean up badly formatted incremental time value
+ *
+ * @param string $name The appropriate setting name
+ */
+function rlipexport_version1_incrementaldelta_updatedcallback($name) {
+    global $CFG;
+    require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+    if ($name == 's_rlipexport_version1_incrementaldelta') {
+        //have the right setting
+
+        //obtain the value
+        $time_string = get_config('rlipexport_version1', 'incrementaldelta');
+        //sanitize
+        $time_string = rlip_sanitize_time_string($time_string, '1d');
+
+        //flush
+        set_config('incrementaldelta', $time_string, 'rlipexport_version1');
+    }
+}
