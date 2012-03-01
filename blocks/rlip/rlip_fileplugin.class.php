@@ -31,6 +31,8 @@ define('RLIP_FILE_WRITE', 2);
 abstract class rlip_fileplugin_base {
     var $filename;
     var $fileid;
+    //track whether we're sending to the browser, for writes
+    var $sendtobrowser;
 
 	/**
      * Base file plugin constructor
@@ -39,10 +41,12 @@ abstract class rlip_fileplugin_base {
      *                         string if instead using a Moodle file id
      * @param mixed $fileid The id of the Moodle file to open, or NULL if we
      *                      are using a file on the file system
+     * @param boolean $sendtobrowser Set to true to send writes to the browser
      */
-    function __construct($filename = '', $fileid = NULL) {
+    function __construct($filename = '', $fileid = NULL, $sendtobrowser = false) {
         $this->filename = $filename;
         $this->fileid = $fileid;
+        $this->sendtobrowser = $sendtobrowser;
     }
 
 	/**
@@ -98,28 +102,36 @@ class rlip_fileplugin_factory {
 	 * @param string $filename The path of the file to open
 	 * @param boolean $logging If true, the file is being opened for logging,
 	 *                         otherwise for import
+	 * @param boolean $sendtobrowser Set to true to send writes to the browser
 	 * @return object The file plugin instance
 	 */
-    static function factory($filename = '', $fieldid = NULL, $logging = false) {
+    static function factory($filename = '', $fieldid = NULL, $logging = false, $sendtobrowser = false) {
     	global $CFG;
 
-    	if ($filename == '') {
-    	    //reading a CSV file from Moodle file system
-    	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
-
-            $filename .= '.'.rlip_fileplugin_csv::get_extension();
-            return new rlip_fileplugin_csv('', $fieldid);
-    	} else if ($logging) {
-    	    //using a standard text file for logging
+    	if ($logging) {
+      	    //using a standard text file for logging
     	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log.class.php');
 
             $filename .= '.'.rlip_fileplugin_log::get_extension();
             return new rlip_fileplugin_log($filename);
+    	}
+
+    	//load the CSV file plugin definition
+  	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
+
+  	    //add file extension
+  	    if ($filename != '') {
+  	        $filename .= '.'.rlip_fileplugin_csv::get_extension();
+  	    }
+
+    	if ($sendtobrowser) {
+    	    //writing a CSV file to the browser
+            return new rlip_fileplugin_csv('', NULL, true);
+    	} else if ($filename == '') {
+    	    //reading a CSV file from Moodle file system
+            return new rlip_fileplugin_csv('', $fieldid);
     	} else {
     	    //using a csv file for import or export
-    	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
-
-            $filename .= '.'.rlip_fileplugin_csv::get_extension();
             return new rlip_fileplugin_csv($filename);
     	}
     }

@@ -45,8 +45,20 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
     	$fs = get_file_storage();
 
     	if ($mode == RLIP_FILE_WRITE) {
-    	    //we are only writing to files on the file-system
-            $this->filepointer = fopen($this->filename, 'w');
+            if ($this->sendtobrowser) {
+    	        //send directly to the browser
+    	        //todo: config
+    	        $filename = 'export.csv';
+
+                //CSV header
+                header("Content-Transfer-Encoding: ascii");
+                header("Content-Disposition: attachment; filename=$filename");
+                header("Content-Type: text/comma-separated-values");
+                $this->filepointer = fopen('php://output', 'w');
+    	    } else {
+                //we are only writing to files on the file-system
+                $this->filepointer = fopen($this->filename, 'w');
+    	    }
     	} else {
     	    if ($this->filename != '') {
     	        //read from the file system

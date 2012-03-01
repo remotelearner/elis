@@ -105,6 +105,87 @@ class rlip_fileplugin_bogus extends rlip_fileplugin_base {
 }
 
 /**
+ * File plugin that tracks whether the "file" was opened and whether it was
+ * closed
+ */
+class rlip_fileplugin_openclose extends rlip_fileplugin_base {
+    //variables for tracking status
+    var $opened = false;
+    var $closed = false;
+
+    /**
+     * Open the file
+     *
+     * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
+     *                  the mode in which the file should be opened
+     */
+    public function open($mode) {
+        $this->opened = true;
+    }
+
+    /**
+     * Read one entry from the file
+     *
+     * @return array The entry read
+     */
+    public function read() {
+        //nothing to do
+    }
+
+    /**
+     * Write one entry to the file
+     *
+     * @param array $entry The entry to write to the file
+     */
+    public function write($entry) {
+        //nothing to do
+    }
+
+    /**
+     * Close the file
+     */
+    public function close() {
+        $this->closed = true;
+    }
+
+    /**
+     * Specifies the name of the current open file
+     *
+     * @return string The file name, not including the full path
+     */
+    function get_filename() {
+        return 'bogus';
+    }
+
+    /**
+     * Specifies the extension of the current open file
+     *
+     * @return string The file extension
+     */
+    function get_extension() {
+        return 'bogus';
+    }
+
+    /**
+     * Specifies whether the file was ever opened
+     *
+     * @return boolean true if file was ever opened, otherwise false
+     */
+    function get_opened() {
+        return $this->opened;
+    }
+
+    /**
+     * Specifies whether the file was ever closed
+     *
+     * @return boolean true if file was ever closed, otherwise false
+     */
+    function get_closed() {
+        return $this->closed;
+    }
+}
+
+/**
  * Class for version 1 export correctness
  */
 class version1ExportTest extends elis_database_test {
@@ -1160,5 +1241,24 @@ class version1ExportTest extends elis_database_test {
                                                                         'fieldorder' => 2));
         $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $thirdfieldid,
                                                                         'fieldorder' => 0));
+    }
+
+    /**
+     * Validates that a standard export run, using the data plugin factory,
+     * correctly opens and closes the export file via the file plugin
+     */
+    public function testVersionExportOpensAndClosesFile() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+
+        //run run the export
+        $fileplugin = new rlip_fileplugin_openclose();
+        $instance = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin);
+        $instance->run();
+
+        //validate that the export file was opened
+        $this->assertEquals($fileplugin->get_opened(), true);
+        //validat that the export file was closed
+        $this->assertEquals($fileplugin->get_closed(), true);
     }
 }

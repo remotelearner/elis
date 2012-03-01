@@ -27,21 +27,15 @@
 require_once($CFG->dirroot.'/lib/formslib.php');
 
 /**
- * Form that displays filepickers for each available import file, plus
- * appropriate buttons, for running imports manually
+ * Form that displays a button, allowing users to run an export manually
  */
-class rlip_manualrun_form extends moodleform {
+class rlip_manualexport_form extends moodleform {
     function definition() {
         //obtain the QuickForm
         $mform = $this->_form;
 
         //used to store the plugin between form submits
         $mform->addElement('hidden', 'plugin');
-
-        //add a file picker for each label
-        for ($i = 0; $i < count($this->_customdata); $i++) {
-            $mform->addElement('filepicker', 'file'.$i, $this->_customdata[$i]);
-        }
 
         //add submit button
         $this->add_action_buttons(false, get_string('runnow', 'block_rlip'));

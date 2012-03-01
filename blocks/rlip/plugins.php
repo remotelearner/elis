@@ -38,7 +38,11 @@ admin_externalpage_setup('rlipsettingplugins');
 $PAGE->requires->css('/blocks/rlip/styles.css');
 echo $OUTPUT->header();
 
-$plugintypes = array('import', 'export');
+//the types of plugins we are considering
+$plugintypes = array('rlipimport', 'rlipexport');
+//lookup for the directory paths for plugins
+$directories = get_plugin_types();
+
 foreach ($plugintypes as $plugintype) {
     //plugin header
     echo $OUTPUT->box_start('generalbox pluginspageheading');
@@ -54,18 +58,22 @@ foreach ($plugintypes as $plugintype) {
     $table->width = '40%';
 
     //obtain plugins and iterate through them
-    $plugins = get_plugin_list("rlip{$plugintype}");
+    $plugins = get_plugin_list($plugintype);
+    //base directory
+    $directory = $directories[$plugintype];
+    $directory = str_replace($CFG->dirroot, $CFG->wwwroot, $directory);
+
     foreach ($plugins as $name => $path) {
         //get the display name from the plugin-specific language string
-        $displayname = get_string('pluginname', "rlip{$plugintype}_{$name}");
+        $displayname = get_string('pluginname', "{$plugintype}_{$name}");
 
         //configuration link
-        $url = $CFG->wwwroot."/admin/settings.php?section=rlipsettingrlip{$plugintype}_{$name}";
+        $url = $CFG->wwwroot."/admin/settings.php?section=rlipsetting{$plugintype}_{$name}";
         $attributes = array('href' => $url);
         $config_tag = html_writer::tag('a', get_string('edit'), $attributes);
 
         //manual run link
-        $url = $CFG->wwwroot."/blocks/rlip/manualrun.php?plugin=rlip{$plugintype}_{$name}";
+        $url = "{$directory}/manualrun.php?plugin={$plugintype}_{$name}";
         $attributes = array('href' => $url);
         $run_tag = html_writer::tag('a', get_string('go', 'block_rlip'), $attributes);
 

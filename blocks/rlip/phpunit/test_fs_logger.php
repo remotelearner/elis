@@ -263,7 +263,7 @@ class fsLoggerTest extends elis_database_test {
 
         //validation
         $format = get_string('logtimeformat', 'block_rlip');
-        $expected_line = '['.userdate($time, $format, -5.0).' -0500] Message'."\n";
+        $expected_line = '['.userdate($time, $format, -5.0, false).' -0500] Message'."\n";
         $this->assert_file_contents_equal($filename, array($expected_line));
     }
 
@@ -319,7 +319,7 @@ class fsLoggerTest extends elis_database_test {
 
         //validation
         $format = get_string('logtimeformat', 'block_rlip');
-        $expected_line = '['.userdate($time, $format, -5.0).' -0500] Message'."\n";
+        $expected_line = '['.userdate($time, $format, -5.0, false).' -0500] Message'."\n";
         $this->assert_file_contents_equal($filename, array($expected_line));
 
         //set default timezone
@@ -337,7 +337,7 @@ class fsLoggerTest extends elis_database_test {
         $fslogger->close();
 
         //validation
-        $expected_line = '['.userdate($time, $format, -6.0).' -0600] Message'."\n";
+        $expected_line = '['.userdate($time, $format, -6.0, false).' -0600] Message'."\n";
         $this->assert_file_contents_equal($filename, array($expected_line));
     }
 
@@ -366,7 +366,7 @@ class fsLoggerTest extends elis_database_test {
 
         //validation
         $format = get_string('logtimeformat', 'block_rlip');
-        $expected_line = '['.userdate($time, $format, -5.0).' -0500] Message'."\n";
+        $expected_line = '['.userdate($time, $format, -5.0, false).' -0500] Message'."\n";
         $this->assert_file_contents_equal($filename, array($expected_line));
 
         //set default timezone
@@ -384,7 +384,7 @@ class fsLoggerTest extends elis_database_test {
         $fslogger->close();
 
         //validation
-        $expected_line = '['.userdate($time, $format, -6.0).' -0600] Message'."\n";
+        $expected_line = '['.userdate($time, $format, -6.0, false).' -0600] Message'."\n";
         $this->assert_file_contents_equal($filename, array($expected_line));
     }
 
@@ -442,7 +442,7 @@ class fsLoggerTest extends elis_database_test {
         $offset -= date('I', $time);
         $offset_display = rlip_fslogger::offset_display($offset);
         $format = get_string('logtimeformat', 'block_rlip');
-        $expected_line = '['.userdate($time, $format).' '.$offset_display.'] Message'."\n";
+        $expected_line = '['.userdate($time, $format, 99, false).' '.$offset_display.'] Message'."\n";
         $this->assert_file_contents_equal($filename, array($expected_line));
     }
 
@@ -671,8 +671,8 @@ class fsLoggerTest extends elis_database_test {
 
         //validation
         $format = get_string('logtimeformat', 'block_rlip');
-        $expected_lines = array('['.userdate($time, $format, -5.0).' -0500] Message'."\n",
-                                '['.userdate($time, $format, -5.0).' -0500] Message 2'."\n");
+        $expected_lines = array('['.userdate($time, $format, -5.0, false).' -0500] Message'."\n",
+                                '['.userdate($time, $format, -5.0, false).' -0500] Message 2'."\n");
         $this->assert_file_contents_equal($filename, $expected_lines);
     }
 

@@ -51,8 +51,10 @@ class rlip_dataplugin_factory {
      *                       or rlipexport_*
      * @param object $importprovider The import provider to use, if obtaining
      *                               an import plugin
+     * @param object $fileplugin The file plugin to use, if obtaining an export
+     *                           plugin
      */
-    static function factory($plugin, $importprovider = NULL) {
+    static function factory($plugin, $importprovider = NULL, $fileplugin = NULL) {
         global $CFG;
 
         //split into plugin type and name
@@ -77,9 +79,11 @@ class rlip_dataplugin_factory {
 
         //obtain the plugin instance
         if ($plugintype == 'rlipimport') {
+            //import
             return new $classname($importprovider);
         } else {
-            return new $classname();
+            //export
+            return new $classname($fileplugin);
         }
     }
 }

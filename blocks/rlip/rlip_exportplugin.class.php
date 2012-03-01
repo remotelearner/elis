@@ -75,6 +75,9 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 	 * Mainline for export processing
 	 */
     function run() {
+        //open the output file for writing
+        $this->fileplugin->open(RLIP_FILE_WRITE);
+
         //perform any necessary setup
         $this->init();
 
@@ -97,6 +100,15 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
             $record = $this->next();
             $this->fileplugin->write($record);
         }
+    }
+
+    /**
+     * Getter for the file plugin used for IP by this export plugin
+     *
+     * @return object The file plugin instance used for IO by this export
+     */
+    function get_file_plugin() {
+        return $this->fileplugin;
     }
 
 }

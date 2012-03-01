@@ -24,10 +24,10 @@
  *
  */
 
-require_once('../../config.php');
+require_once('../../../config.php');
 require_once($CFG->dirroot.'/lib/adminlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/form/rlip_manualrun_form.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/form/rlip_manualimport_form.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
 
@@ -38,7 +38,7 @@ $context = get_context_instance(CONTEXT_SYSTEM);
 require_capability('moodle/site:config', $context);
 
 //need base URL for form
-$baseurl = $CFG->wwwroot.'/blocks/rlip/manualrun.php';
+$baseurl = $CFG->wwwroot.'/blocks/rlip/importplugins/manualrun.php';
 
 //determine which plugin we're using
 $plugin = required_param('plugin', PARAM_CLEAN);
@@ -54,7 +54,7 @@ $labels = $instance->get_file_labels();
 $entity_types = $instance->get_import_entities();
 
 //create our basic form
-$form = new rlip_manualrun_form(null, $labels);
+$form = new rlip_manualimport_form(null, $labels);
 $form->set_data(array('plugin' => $plugin));
 
 //need to collect the ids of the important files
