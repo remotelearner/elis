@@ -129,4 +129,52 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
         $result = rlip_sanitize_time_string('1d2h3mm');
         $this->assertEquals($result, '1d2h3m');
     }
+
+    /**
+     * Validate that converting time string to offset works for number of
+     * days
+     */
+    function testTimeStringToOffsetReturnsCorrectOffsetForDays() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        $result = rlip_time_string_to_offset('2d');
+        $this->assertEquals($result, 2 * DAYSECS);
+    }
+
+    /**
+     * Validate that converting time string to offset works for number of
+     * hours
+     */
+    function testTimeStringToOffsetReturnsCorrectOffsetForHours() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        $result = rlip_time_string_to_offset('2h');
+        $this->assertEquals($result, 2 * HOURSECS);
+    }
+
+    /**
+     * Validate that converting time string to offset works for number of
+     * minutes
+     */
+    function testTimeStringToOffsetReturnsCorrectOffsetForMinutes() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        $result = rlip_time_string_to_offset('2m');
+        $this->assertEquals($result, 2 * MINSECS);
+    }
+
+    /**
+     * Validate that converting time string to offset works for complex string
+     * with hours, minutes and seconds
+     */
+    function testTimeStringToOffsetReturnsCorrectOffsetForComplexString() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        $result = rlip_time_string_to_offset('1d2h3m');
+        $this->assertEquals($result, DAYSECS + 2 * HOURSECS + 3 * MINSECS);
+    }
 }

@@ -246,3 +246,42 @@ function rlip_sanitize_time_string($time_string, $default = '') {
 
     return $result;
 }
+
+/**
+ * Converts a sanitized time string to a numerical offset
+ *
+ * @param string $time_string A properly formatted time string
+ * @return int The equivalent offset, in seconds
+ */
+function rlip_time_string_to_offset($time_string) {
+    //valid time units - hours, minutes, seconds - plus time values
+    $valid_units = array('d' => DAYSECS,
+                         'h' => HOURSECS,
+                         'm' => MINSECS);
+
+    $result = 0;
+    //track the current "group", e.g. 2d
+    $current_group = '';
+
+    //iterate through characters
+    for ($i = 0; $i < strlen($time_string); $i++) {
+        //retrieve current character
+        $character = substr($time_string, $i, 1);
+
+        if ($character >= '0' && $character <= '9') {
+            //append digit
+            $current_group .= $character;
+        } else {
+            //look up the value of the time unit
+            $multiplier = $valid_units[$character];
+            //value based on numeric string
+            $value = (int)$current_group;
+            //add to result
+            $result += $multiplier * $value;
+
+            $current_group = '';
+        }
+    }
+
+    return $result;
+}

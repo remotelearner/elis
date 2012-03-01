@@ -5,7 +5,8 @@ $string['addprofilefield'] = 'Add profile field...';
 $string['columnheader'] = 'Column Header';
 $string['configincrementaldelta'] = 'The time delta representing how far back the export includes data from.
 This should be specified in \*d\*h\*m format, with values representing days, hours and minutes.
-This setting only takes effect when using the incremental export.';
+This setting only takes effect when using the incremental export, and is based on the time at which a user\'s course grade was
+last modified.';
 $string['confignonincremental'] = 'Include all historical data in exports';
 $string['configureheader'] = 'Profile Fields';
 $string['configurelink'] = 'Click here to configure which profile fields are included in this export';

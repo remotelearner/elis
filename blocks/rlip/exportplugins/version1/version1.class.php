@@ -46,6 +46,7 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
      */
     function init() {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //columns that are always displayed
         $columns = array(get_string('header_firstname', 'rlipexport_version1'),
@@ -134,6 +135,25 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
                 {$extra_joins}
                 WHERE itemtype = 'course'
                 AND u.deleted = 0";
+
+        /**
+         * Handle the "incremental" offset, if necessary
+         */
+        //determine if we're in incremental or non-incremental mode
+        $nonincremental = get_config('rlipexport_version1', 'nonincremental');
+
+        if (empty($nonincremental)) {
+            //incremental mode
+
+            //get string delta
+            $incrementaldelta = get_config('rlipexport_version1', 'incrementaldelta');
+            //conver to number of seconds
+            $numsecs = rlip_time_string_to_offset($incrementaldelta);
+
+            //SQL and params
+            $sql .= " AND gg.timemodified >= ?";
+            $extra_params[] = time() - $numsecs;
+        }
  
         $this->recordset = $DB->get_recordset_sql($sql, $extra_params);
 

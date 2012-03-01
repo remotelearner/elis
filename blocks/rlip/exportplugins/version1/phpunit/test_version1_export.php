@@ -224,7 +224,8 @@ class version1ExportTest extends elis_database_test {
                         'cache_flags' => 'moodle',
                         'user_info_category' => 'moodle',
                         'user_info_field' => 'moodle',
-                        'block_rlip_version1_export' => 'rlipexport_version1'
+                        'block_rlip_version1_export' => 'rlipexport_version1',
+                        'config_plugins' => 'moodle'
                      );
 
          if ($DB->record_exists('block', array('name' => 'curr_admin'))) {
@@ -402,6 +403,8 @@ class version1ExportTest extends elis_database_test {
      * Validate the export data for a simple data set
      */
     public function testVersion1ExportIncludesCorrectData() {
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         $data = $this->get_export_data();
@@ -434,6 +437,8 @@ class version1ExportTest extends elis_database_test {
             require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         }
 
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //delete the user the "correct" way
@@ -451,6 +456,9 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportExcludesMissingUsers() {
         global $DB;
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //delete the user record
@@ -467,6 +475,9 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportExcludesMissingCourses() {
         global $DB;
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //delete the course record
@@ -483,6 +494,9 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportExcludesMissingGradeItems() {
         global $DB;
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //delete the grade item record
@@ -499,6 +513,9 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportExcludesIncorrectGradeItemTypes() {
         global $DB;
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //change the grade item type
@@ -518,6 +535,9 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportExcludesMissingGrades() {
         global $DB;
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //delete the grade record
@@ -535,7 +555,10 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportIncludesCustomFieldHeaderInfo() {
         global $CFG, $DB;
+
         require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
 
         //set up necessary custom field information in the database
         $categoryid = $this->create_custom_field_category();
@@ -570,6 +593,8 @@ class version1ExportTest extends elis_database_test {
     public function testVersion1ExportIncludesCustomFieldCheckboxData() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
 
         $this->load_csv_data();
 
@@ -609,6 +634,8 @@ class version1ExportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //set up necessary custom field information in the database
@@ -645,6 +672,8 @@ class version1ExportTest extends elis_database_test {
     public function testVersion1ExportIncludesCustomFieldDatetimeData() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
 
         $this->load_csv_data();
 
@@ -689,6 +718,8 @@ class version1ExportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //set up necessary custom field information in the database
@@ -720,6 +751,8 @@ class version1ExportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //set up necessary custom field information in the database
@@ -745,6 +778,8 @@ class version1ExportTest extends elis_database_test {
     public function testVersion1ExportIncludesCustomFieldMenuDefault() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
 
         $this->load_csv_data();
 
@@ -773,6 +808,8 @@ class version1ExportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //set up necessary custom field information in the database
@@ -799,6 +836,8 @@ class version1ExportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //set up necessary custom field information in the database
@@ -823,6 +862,8 @@ class version1ExportTest extends elis_database_test {
     public function testVersion1ExportIncludesCustomFieldTextinputData() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
 
         $this->load_csv_data();
 
@@ -850,6 +891,8 @@ class version1ExportTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
         $this->load_csv_data();
 
         //set up necessary custom field information in the database
@@ -874,6 +917,8 @@ class version1ExportTest extends elis_database_test {
     public function testVersion1ExportIgnoresDeletedCustomFields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
 
         $this->load_csv_data();
 
@@ -915,6 +960,8 @@ class version1ExportTest extends elis_database_test {
     public function testVersion1ExportRespectsCustomFieldOrder() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
+
+        set_config('nonincremental', 1, 'rlipexport_version1');
 
         $this->load_csv_data();
 
@@ -1277,7 +1324,7 @@ class version1ExportTest extends elis_database_test {
     public function testVersionExportOpensAndClosesFile() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
-
+        
         //run run the export
         $fileplugin = new rlip_fileplugin_openclose();
         $instance = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin);
@@ -1287,5 +1334,73 @@ class version1ExportTest extends elis_database_test {
         $this->assertEquals($fileplugin->get_opened(), true);
         //validat that the export file was closed
         $this->assertEquals($fileplugin->get_closed(), true);
+    }
+
+    /**
+     * Validate that the export runs incrementally, only including data
+     * modified within the set time delta
+     */
+    public function testVersion1ExportRunsIncrementally() {
+        global $DB;
+
+        //set to incremental, using 1 day as the maximum delta
+        set_config('nonincremental', 0, 'rlipexport_version1');
+        set_config('incrementaldelta', '1d', 'rlipexport_version1');
+
+        $this->load_csv_data();
+
+        //this is the record we want to exclude
+        $record = new stdClass;
+        $record->id = 1;
+        $record->timemodified = 0;
+        $DB->update_record('grade_grades', $record);
+
+        //time to set on recrod to be included
+        $time = time() - 23 * HOURSECS;
+
+        //create a new export record
+        $course = new stdClass;
+        $course->shortname = 'newcourse';
+        $course->startdate = $time;
+        $course->category = 1;
+        $course->id = $DB->insert_record('course', $course);
+
+        $gradeitem = new stdClass;
+        $gradeitem->itemtype = 'course';
+        $gradeitem->courseid = $course->id;
+        $gradeitem->id = $DB->insert_record('grade_items', $gradeitem);
+
+        $gradegrade = new stdClass;
+        $gradegrade->itemid = $gradeitem->id;
+        $gradegrade->userid = 2;
+        $gradegrade->finalgrade = 80.00000;
+        $gradegrade->timemodified = $time;
+        $DB->insert_record('grade_grades', $gradegrade);
+
+        $data = $this->get_export_data();
+
+        //set up the expected output, only including the more recent record
+        $expected_header = array(get_string('header_firstname', 'rlipexport_version1'),
+                                 get_string('header_lastname', 'rlipexport_version1'),
+                                 get_string('header_username', 'rlipexport_version1'),
+                                 get_string('header_useridnumber', 'rlipexport_version1'),
+                                 get_string('header_courseidnumber', 'rlipexport_version1'),
+                                 get_string('header_startdate', 'rlipexport_version1'),
+                                 get_string('header_enddate', 'rlipexport_version1'),
+                                 get_string('header_grade', 'rlipexport_version1'),
+                                 get_string('header_letter', 'rlipexport_version1'));
+        $expected_body = array('test',
+                               'user',
+                               'testuser',
+                               'testuseridnumber',
+                               'newcourse',
+                               date('M/d/Y', $time),
+                               date('M/d/Y'),
+                               80.00000,
+                               'B-');
+        $expected_data = array($expected_header, $expected_body);
+
+        //validation
+        $this->assertEquals($data, $expected_data);
     }
 }
