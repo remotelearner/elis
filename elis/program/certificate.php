@@ -70,7 +70,8 @@ if (!isset($curass->user) || !isset($curass->curriculum)) {
                   ? elis::$config->elis_program->certificate_seal_image
                   : 'none';
 
-    $templates = (isset(elis::$config->certificate_template_file)) ? elis::$config->certificate_template_file : 'default.php';
+    $templates = (isset(elis::$config->elis_program->certificate_template_file)) ?
+                  elis::$config->elis_program->certificate_template_file : 'default.php';
 
     certificate_output_completion($curass->user->__toString(), $curass->curriculum->__toString(), $curass->certificatecode,
                                   $datecomplete, $dateexpired, $curass->curriculum->frequency, $border_image, $seal_image, $templates);

@@ -97,8 +97,8 @@ function certificate_output_completion($person_fullname, $entity_name, $certific
 
     if (file_exists($CFG->dirroot.'/elis/program/pix/certificate/templates/'.$template)) {
         include($CFG->dirroot.'/elis/program/pix/certificate/templates/'.$template);
-    } else if (file_exists($CFG->dataroot.'/elis/curriculum/pix/certificate/templates/'.$template)) {
-        include($CFG->dataroot.'/elis/curriculum/pix/certificate/templates/'.$template);
+    } else if (file_exists($CFG->dataroot.'/elis/program/pix/certificate/templates/'.$template)) {
+        include($CFG->dataroot.'/elis/program/pix/certificate/templates/'.$template);
     }
 
     $pdf->Output();
