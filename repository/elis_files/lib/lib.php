@@ -22,7 +22,7 @@
  * @subpackage curriculummanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -208,7 +208,7 @@ function elis_files_get_parent($uuid) {
 
         $type  = '';
 
-    	return elis_files_process_node($dom, $nodes->item(0), $type);
+        return elis_files_process_node($dom, $nodes->item(0), $type);
     }
 
     return false;
@@ -273,17 +273,17 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
     $return->files   = array();
 
     if (empty($uuid)) {
-		if (ELIS_files::is_version('3.2')) {
+        if (ELIS_files::is_version('3.2')) {
             $services = elis_files_get_services();
-        	$response = elis_files_request($services['root']);
+            $response = elis_files_request($services['root']);
         } else if (ELIS_files::is_version('3.4')) {
             // Force the usage of the configured Alfresco admin account, if requested.
-        	if ($useadmin) {
-            	$username = '';
+            if ($useadmin) {
+                $username = '';
             } else if (isloggedin()) {
-            	$username = $USER->username;
+                $username = $USER->username;
             } else {
-            	$username = '';
+                $username = '';
             }
             $response = elis_files_request('/cmis/p/children', $username);
         }
@@ -310,28 +310,23 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
     }
 
     $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
-
     $dom = new DOMDocument();
     $dom->preserveWhiteSpace = false;
     $dom->loadXML($response);
-//echo '<br>dom: ';
-//print_object($dom);
     $nodes = $dom->getElementsByTagName('entry');
-//echo '<br>nodes: ';
-//print_object($nodes);
+
     for ($i = 0; $i < $nodes->length; $i++) {
         $node = $nodes->item($i);
         $type = '';
-
         $contentNode = elis_files_process_node($dom, $node, $type);
 
-    	if ($type == 'folder') {
-        	$return->folders[] = $contentNode;
+        if ($type == ELIS_FILES_TYPE_FOLDER) {
+            $return->folders[] = $contentNode;
 
-    	// Only include a file in the list if it's title does not start with a period '.'
-    	} else if ($type == 'document' && !empty($contentNode->title) && $contentNode->title[0] !== '.') {
-        	$return->files[] = $contentNode;
-    	}
+        // Only include a file in the list if it's title does not start with a period '.'
+        } else if ($type == ELIS_FILES_TYPE_DOCUMENT && !empty($contentNode->title) && $contentNode->title[0] !== '.') {
+            $return->files[] = $contentNode;
+        }
     }
 
     usort($return->folders, 'elis_files_ls_sort');
@@ -413,15 +408,15 @@ function elis_files_get_uri($uuid = '', $function = '') {
  * @return string|bool A string name for the node type or, False on error.
  */
 function elis_files_get_type($uuid) {
-	if (ELIS_files::is_version('3.2')) {
+    if (ELIS_files::is_version('3.2')) {
         if (!$response = elis_files_request(elis_files_get_uri($uuid, 'self'))) {
-        	return false;
-    	}
-	} else if (ELIS_files::is_version('3.4')) {
+            return false;
+        }
+    } else if (ELIS_files::is_version('3.4')) {
         if (!$response = elis_files_request('/cmis/i/' . $uuid)) {
-        	return false;
-    	}
-	}
+            return false;
+        }
+    }
 
     $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
 
@@ -432,42 +427,42 @@ function elis_files_get_type($uuid) {
     if (ELIS_files::is_version('3.2')) {
         $entries = $dom->getElementsByTagName('propertyString');
 
-    	if ($entries->length) {
-        	for ($i = 0; $i < $entries->length; $i++) {
-            	$node = $entries->item($i);
-
-        	/// Sloppily handle strict namespacing here.
-            	if ($node->getAttribute('cmis:name') == 'BaseType' ||
-                	$node->getAttribute('name') == 'BaseType') {
-
-                	return $node->nodeValue;
-            	}
-        	}
-    	}
-	} else if (ELIS_files::is_version('3.4')) {
-        $elm = $dom->getElementsByTagNameNS('http://docs.oasis-open.org/ns/cmis/core/200908/', 'properties');
-
-		if ($elm->length === 1) {
-        	$elm = $elm->item(0);
-
-        	$properties = $elm->childNodes;
-
-       		if ($properties->length) {
-           		for ($i = 0; $i < $properties->length; $i++) {
-                	$node = $properties->item($i);
-                	if (!$node->hasAttributes()) {
-                    	continue;
-                	}
+        if ($entries->length) {
+            for ($i = 0; $i < $entries->length; $i++) {
+                $node = $entries->item($i);
 
             /// Sloppily handle strict namespacing here.
-                	if ($node->hasAttribute('propertyDefinitionId') && $node->getAttribute('propertyDefinitionId') == 'cmis:objectTypeId') {
-                    	return $node->nodeValue;
-                	}
-            	}
-        	}
-    	}
+                if ($node->getAttribute('cmis:name') == 'BaseType' ||
+                    $node->getAttribute('name') == 'BaseType') {
 
-	}
+                    return $node->nodeValue;
+                }
+            }
+        }
+    } else if (ELIS_files::is_version('3.4')) {
+        $elm = $dom->getElementsByTagNameNS('http://docs.oasis-open.org/ns/cmis/core/200908/', 'properties');
+
+        if ($elm->length === 1) {
+            $elm = $elm->item(0);
+
+            $properties = $elm->childNodes;
+
+               if ($properties->length) {
+                   for ($i = 0; $i < $properties->length; $i++) {
+                    $node = $properties->item($i);
+                    if (!$node->hasAttributes()) {
+                        continue;
+                    }
+
+            /// Sloppily handle strict namespacing here.
+                    if ($node->hasAttribute('propertyDefinitionId') && $node->getAttribute('propertyDefinitionId') == 'cmis:objectTypeId') {
+                        return $node->nodeValue;
+                    }
+                }
+            }
+        }
+
+    }
     return false;
 }
 
@@ -496,7 +491,7 @@ function elis_files_node_properties($uuid) {
     }
 
     $type  = '';
-	$node = elis_files_process_node($dom, $nodes->item(0), $type);
+    $node = elis_files_process_node($dom, $nodes->item(0), $type);
     $node->type = $type;
 
     return $node;
@@ -537,28 +532,28 @@ function elis_files_delete($uuid, $recursive = false, $repo = NULL) {
     // ELIS-1102
 
 
-	if (ELIS_files::is_version('3.2')) {
+    if (ELIS_files::is_version('3.2')) {
         elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
-    	return (true === elis_files_send(elis_files_get_uri($uuid, 'delete'), array(), 'DELETE'));
-	} else if (ELIS_files::is_version('3.4')) {
+        return (true === elis_files_send(elis_files_get_uri($uuid, 'delete'), array(), 'DELETE'));
+    } else if (ELIS_files::is_version('3.4')) {
         $result = elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
 
-    	// Get node type and use descendants delete for folders
-    	$node_type = elis_files_get_type($uuid);
+        // Get node type and use descendants delete for folders
+        $node_type = elis_files_get_type($uuid);
 
-    	if (!(strstr($node_type,'folder') === FALSE)) {
-        	if (elis_files_send('/cmis/i/' . $uuid.'/descendants', array(), 'DELETE') === false) {
-            	return false;
-        	}
-    	} else {
-       		//if ($repo->cmis->deleteObject('workspace://SpacesStore/' . $uuid) === false) {
-        	if (elis_files_send('/cmis/i/' . $uuid, array(), 'DELETE') === false) {
-            	return false;
-        	}
-    	}
+        if (!(strstr($node_type,ELIS_FILES_TYPE_FOLDER) === FALSE)) {
+            if (elis_files_send('/cmis/i/' . $uuid.'/descendants', array(), 'DELETE') === false) {
+                return false;
+            }
+        } else {
+               //if ($repo->cmis->deleteObject('workspace://SpacesStore/' . $uuid) === false) {
+            if (elis_files_send('/cmis/i/' . $uuid, array(), 'DELETE') === false) {
+                return false;
+            }
+        }
 
-    	return true;
-	}
+        return true;
+    }
 }
 
 
@@ -650,7 +645,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     }
 
     $type       = '';
-	$properties = elis_files_process_node($dom, $nodes->item(0), $type);
+    $properties = elis_files_process_node($dom, $nodes->item(0), $type);
 
     // Ensure that we set the current user to be the owner of the newly created directory.
     if (!empty($properties->uuid)) {
@@ -896,12 +891,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     }
 
     $type       = '';
-
-	if ($alfresco_version == '3.2.1') {
-    	$properties = elis_files_process_node($dom, $nodes->item(0), $type);
-	} else { // Alfresco 3.4
-    	$properties = elis_files_process_node_old($dom, $nodes->item(0), $type);
-	}
+    $properties = elis_files_process_node($dom, $nodes->item(0), $type);
 
     // Ensure that we set the current user to be the owner of the newly created directory.
     if (!empty($properties->uuid)) {
@@ -963,20 +953,11 @@ function elis_files_search($query, $page = 1, $perpage = 9999) {
 
             $type = elis_files_get_type($node->uuid);
 
-            $alfresco_version = elis_files_get_repository_version();
-
-            if ($alfresco_version == '3.2.1') {
-              if ($type == 'folder') {
+            if ($type == ELIS_FILES_TYPE_FOLDER) {
                 $return->folders[] = $node;
-              }
-              if ($type == 'document') {
+            } else if ($type == ELIS_FILES_TYPE_DOCUMENT) {
                 $return->files[] = $node;
-              }
-            } else {
-              // We only care about files for searches
-              $return->files[] = $node;
             }
-
         }
     }
 
@@ -1077,9 +1058,9 @@ function elis_files_category_search($categories) {
             $node = elis_files_node_properties($uuid);
             $type = elis_files_get_type($node->uuid);
 
-            if ($type == 'folder') {
+            if ($type == ELIS_FILES_TYPE_FOLDER) {
                 $return->folders[] = $node;
-            } else if ($type == 'document') {
+            } else if ($type == ELIS_FILES_TYPE_DOCUMENT) {
                 $return->files[] = $node;
             }
         }
@@ -1414,6 +1395,7 @@ function elis_files_process_node($dom, $node, &$type) {
 
     if ($node->hasChildNodes()) {
         $contentNode = new stdClass;
+        $contentNode->links = array();
 
         foreach ($node->childNodes as $cnode) {
             if (!isset($cnode->tagName)) {
@@ -1565,9 +1547,9 @@ function elis_files_process_node($dom, $node, &$type) {
                         break;
 
                     case 'BaseType':
-                        if ($prop->nodeValue == 'folder') {
+                        if ($prop->nodeValue == ELIS_FILES_TYPE_FOLDER) {
                             $isfolder = true;
-                        } else if ($prop->nodeValue == 'document') {
+                        } else if ($prop->nodeValue == ELIS_FILES_TYPE_DOCUMENT) {
                             $isdocument = true;
                         }
 
@@ -2093,7 +2075,7 @@ function elis_files_quota_info($username = '') {
  * @return bool True if the size will not run over the user's quota, False otherwise.
  */
 function elis_files_quota_check($filesize, $user = null) {
-	global $USER;
+    global $USER;
 
     if ($user == null) {
         $user = $USER;

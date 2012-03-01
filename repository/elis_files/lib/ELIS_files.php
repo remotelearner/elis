@@ -1852,7 +1852,7 @@ class ELIS_files {
             $end = $this->get_course_store($cid);
         } else if (!empty($uid)) {
             $end = $this->get_user_store($uid);
-    	} else if (empty($uid) && !empty($oid)) {
+        } else if (empty($uid) && !empty($oid)) {
             $end = $this->get_userset_store($oid);
         }
 
@@ -2179,7 +2179,7 @@ class ELIS_files {
     /// This file didn't come from somewhere within Moodle that we know about so access has
     /// to be determined based on the Alfresco capabilities the current user has.
         } else {
-			// Get the non context based permissions
+            // Get the non context based permissions
             $capabilities = array('repository/elis_files:viewowncontent'=> false,
                               'repository/elis_files:viewsharedcontent'=> false);
             $this->get_other_capabilities($USER, $capabilities);
@@ -2679,7 +2679,7 @@ class ELIS_files {
             }
 
             // Add to opts array
-			$cluster_context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $cluster->id);
+            $cluster_context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $cluster->id);
             $viewalfuserset = has_capability('repository/elis_files:viewusersetcontent', $cluster_context);
             $editalfuserset = has_capability('repository/elis_files:createusersetcontent', $cluster_context);
             if ($editalfuserset) {
