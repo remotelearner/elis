@@ -245,9 +245,9 @@ class curriculum extends data_object_with_custom_fields {
 
         /// Incomplete curricula:
 
-        $select  = 'SELECT cca.id as id, cca.userid, cca.curriculumid, cca.completed, cca.timecompleted,
-                    cca.credits, cca.locked, cca.timecreated, cca.timemodified,
-                    cur.id as curid, cur.timetocomplete as timetocomplete ';
+        $select  = 'SELECT cca.id as id, cca.userid, cca.curriculumid, cca.completed, cca.timecompleted, cca.credits,
+                    cca.locked, cca.timecreated, cca.certificatecode, cca.timemodified, cur.id as curid,
+                    cur.timetocomplete as timetocomplete ';
         $from    = 'FROM {'.curriculumstudent::TABLE.'} cca ';
         $join    = 'INNER JOIN {'.user::TABLE.'} cu ON cu.id = cca.userid
                     INNER JOIN {'.curriculum::TABLE.'} cur ON cca.curriculumid = cur.id
