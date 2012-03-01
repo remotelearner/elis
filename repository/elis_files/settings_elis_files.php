@@ -43,7 +43,7 @@ class setting_elis_files_root_folder extends admin_setting_configdirectory {
         }
 
     /// Validate the path, if we can.
-        if ($repo = repository_factory::factory('elis_files')) {
+        if ($repo = repository_factory::factory()) {
             if ($repo->is_configured() && $repo->verify_setup()) {
                 if (elis_files_validate_path($data)) {
 //                    $newuuid = elis_files_uuid_from_path($data);
@@ -74,7 +74,7 @@ class setting_elis_files_root_folder extends admin_setting_configdirectory {
         $repoisup = false;
 
     /// Validate the path, if we can.
-        if ($repo = repository_factory::factory('elis_files')) {
+        if ($repo = repository_factory::factory()) {
             $repoisup = $repo->is_configured() && $repo->verify_setup();
 
             if ($repoisup) {

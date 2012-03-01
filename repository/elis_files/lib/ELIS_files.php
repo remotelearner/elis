@@ -84,11 +84,9 @@ define('ELIS_FILES_CAPABILITY_ALLOWED', 'ALLOWED');
 define('ELIS_FILES_CAPABILITY_DENIED',  'DENIED');
 
 // Define constants for the default file browsing location.
-//define('ELIS_FILES_BROWSE_MOODLE_FILES',          10);
 defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
 // Was shared, now called server files
 defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
-//defined('ELIS_FILES_BROWSE_SERVER_FILES') or define('ELIS_FILES_BROWSE_SERVER_FILES', 30);
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
 defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_FILES', 60);
@@ -117,7 +115,7 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('ELIS_files()');
 
-        $this->process_config(get_config('elis_files'));
+        $this->process_config(get_config('ELIS_files'));
 
         if (!$this->is_configured()) {
             return false;

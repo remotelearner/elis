@@ -273,10 +273,10 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
     $return->files   = array();
 
     if (empty($uuid)) {
-		if (repository_plugin_elis_files::is_version('3.2')) {
+		if (ELIS_files::is_version('3.2')) {
             $services = elis_files_get_services();
         	$response = elis_files_request($services['root']);
-        } else if (repository_plugin_elis_files::is_version('3.4')) {
+        } else if (ELIS_files::is_version('3.4')) {
             // Force the usage of the configured Alfresco admin account, if requested.
         	if ($useadmin) {
             	$username = '';
@@ -298,9 +298,9 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
             $username = '';
         }
 
-        if (repository_plugin_elis_files::is_version('3.2')) {
+        if (ELIS_files::is_version('3.2')) {
             $response = elis_files_request(elis_files_get_uri($uuid, 'children'), $username);
-        } else if (repository_plugin_elis_files::is_version('3.4')) {
+        } else if (ELIS_files::is_version('3.4')) {
             $response = elis_files_request('/cmis/i/' . $uuid .'/children', $username);
         }
     }
@@ -314,9 +314,11 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
     $dom = new DOMDocument();
     $dom->preserveWhiteSpace = false;
     $dom->loadXML($response);
-
+//echo '<br>dom: ';
+//print_object($dom);
     $nodes = $dom->getElementsByTagName('entry');
-
+//echo '<br>nodes: ';
+//print_object($nodes);
     for ($i = 0; $i < $nodes->length; $i++) {
         $node = $nodes->item($i);
         $type = '';
@@ -411,11 +413,11 @@ function elis_files_get_uri($uuid = '', $function = '') {
  * @return string|bool A string name for the node type or, False on error.
  */
 function elis_files_get_type($uuid) {
-	if (repository_plugin_elis_files::is_version('3.2')) {
+	if (ELIS_files::is_version('3.2')) {
         if (!$response = elis_files_request(elis_files_get_uri($uuid, 'self'))) {
         	return false;
     	}
-	} else if (repository_plugin_elis_files::is_version('3.4')) {
+	} else if (ELIS_files::is_version('3.4')) {
         if (!$response = elis_files_request('/cmis/i/' . $uuid)) {
         	return false;
     	}
@@ -427,7 +429,7 @@ function elis_files_get_type($uuid) {
     $dom->preserverWhiteSpace = false;
     $dom->loadXML($response);
 
-    if (repository_plugin_elis_files::is_version('3.2')) {
+    if (ELIS_files::is_version('3.2')) {
         $entries = $dom->getElementsByTagName('propertyString');
 
     	if ($entries->length) {
@@ -442,7 +444,7 @@ function elis_files_get_type($uuid) {
             	}
         	}
     	}
-	} else if (repository_plugin_elis_files::is_version('3.4')) {
+	} else if (ELIS_files::is_version('3.4')) {
         $elm = $dom->getElementsByTagNameNS('http://docs.oasis-open.org/ns/cmis/core/200908/', 'properties');
 
 		if ($elm->length === 1) {
@@ -535,10 +537,10 @@ function elis_files_delete($uuid, $recursive = false, $repo = NULL) {
     // ELIS-1102
 
 
-	if (repository_plugin_elis_files::is_version('3.2')) {
+	if (ELIS_files::is_version('3.2')) {
         elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
     	return (true === elis_files_send(elis_files_get_uri($uuid, 'delete'), array(), 'DELETE'));
-	} else if (repository_plugin_elis_files::is_version('3.4')) {
+	} else if (ELIS_files::is_version('3.4')) {
         $result = elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
 
     	// Get node type and use descendants delete for folders
@@ -577,7 +579,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     $properties = elis_files_node_properties($uuid);
 
 
-    if (repository_plugin_elis_files::is_version('3.2')) {
+    if (ELIS_files::is_version('3.2')) {
         $data .= '<?xml version="1.0" encoding="utf-8"?>
                   <entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app"
                          xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">
@@ -596,7 +598,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
 
         $uri = '/api/node/workspace/SpacesStore/' . $uuid . '/descendants';
 
-    } else if (repository_plugin_elis_files::is_version('3.4')) {
+    } else if (ELIS_files::is_version('3.4')) {
         $uri = '/cmis/i/' . $uuid . '/children';
 
         $data = '<?xml version="1.0" encoding="utf-8"?>
@@ -715,12 +717,12 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 /// that will potentially overrun the maximum memory allowed to a PHP script.
     $data1 = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
 
-    if (repository_plugin_elis_files::is_version('3.2')) {
+    if (ELIS_files::is_version('3.2')) {
         $data1 .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" ' .
                   'xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">' . "\n" .
                   '  <link rel="type" href="' . elis_files_base_url() . '/api/type/document"/>' . "\n" .
                   '  <link rel="repository" href="' . elis_files_base_url() . '/api/repository"/>' . "\n";
-    } else if (repository_plugin_elis_files::is_version('3.4')) {
+    } else if (ELIS_files::is_version('3.4')) {
         $data1 .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">' . "\n";
     }
 
@@ -769,9 +771,9 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         $username = $USER->username;
     }
 
-    if (repository_plugin_elis_files::is_version('3.2')) {
+    if (ELIS_files::is_version('3.2')) {
         $serviceuri = '/api/node/workspace/SpacesStore/' . $uuid . '/descendants';
-    } else if (repository_plugin_elis_files::is_version('3.4')) {
+    } else if (ELIS_files::is_version('3.4')) {
         $serviceuri = '/cmis/i/' . $uuid . '/children';
     }
     $url        = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);

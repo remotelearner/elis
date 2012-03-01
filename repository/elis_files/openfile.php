@@ -33,7 +33,7 @@ require_once('ELIS_files_factory.class.php');
 global $USER;
 $uuid = required_param('uuid', PARAM_CLEAN);
 
-if (!$repo = repository_factory::factory('elis_files')) {
+if (!$repo = repository_factory::factory()) {
     print_error('couldnotcreaterepositoryobject', 'repository');
 }
 

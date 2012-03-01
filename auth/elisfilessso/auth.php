@@ -189,7 +189,7 @@ class auth_plugin_elisfilessso extends auth_plugin_base {
 
         require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
 
-        if (!$repo = repository_factory::factory('elis_files')) {
+        if (!$repo = repository_factory::factory()) {
             return;
         }
 
