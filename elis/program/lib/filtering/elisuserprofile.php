@@ -75,17 +75,20 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
                       'username'  => 'fld_username',
                       'language'  => 'fld_lang',
                       'inactive'  => 'fld_inactive'
-        )
+        ),
+        //'custom' => array()
     );
 
     //this defines the different sections of the report
     protected $sections = array(
-        'up' => array(), // User profile
-        'cust' => array(), // Custom field data
+        'up' => array('name' => 'user'), // User profile
+        //'cust' => array('name' => 'user'), // Custom field data
     );
 
     //this defines the main language file
     protected $languagefile = 'elis_core';
+
+    protected $_fieldids = array();
 
     /**
      * Constructor
@@ -112,47 +115,27 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
             $options['help'] = array();
         }
 
-        // Get the custom fields that belong to the user context
-        $ctxlvl = context_level_base::get_custom_context_level('user', 'block_curr_admin');
-
-        $fields = field::get_for_context_level($ctxlvl);
-        $fields = $fields ? $fields : array();
-        $this->get_custom_fields('up', $fields);
-
-        //create field listing, including display names
-        $allfields = array();
-        foreach ($options['choices'] as $choice) {
-            $choicestring = $choice;
-            if (array_key_exists($choice, $this->labels['up'])) {
-                $choicestring = get_string($this->labels['up'][$choice], $this->languagefile);
-            }
-
-            if (!strcmp($choice, 'customfields')) {
-                foreach ($fields as $field) {
-                    $allfields['customfield-'.$field->id] = $field->name;
-                }
-            } else {
-                $allfields[$choice] = $choicestring;
+        $this->_filters = array();
+        foreach ($this->_fields as $group => $fields) {
+            $this->_filters[$group] = array();
+            foreach ($fields as $userfield => $fieldlabel) {
+                //error_log("elisuserprofile.php: creating filter for {$userfield} => {$fieldlabel}");
+                // must setup select choices for specific fields
+                $myoptions = $this->make_filter_options($group, $userfield, $options['help']);
+                $filterid = $uniqueid . substr($userfield, 0, MAX_FILTER_SUFFIX_LEN);
+                $ftype = (string)$this->fieldtofiltermap[$group][$userfield];
+                $advanced = (!empty($options['advanced']) &&
+                             in_array($userfield, $options['advanced']))
+                            || (!empty($options['notadvanced']) &&
+                                !in_array($userfield, $options['notadvanced']));
+                //error_log("elisuserprofile.php: creating filter using: new generalized_filter_entry( $filterid, $talias, $dbfield, $fieldlabel, $advanced, $ftype, myoptions)");
+                // Create the filter
+                $this->_filters[$group][$userfield] =
+                    new generalized_filter_entry($filterid, $myoptions['talias'], $myoptions['dbfield'],
+                        $fieldlabel, $advanced, $ftype, $myoptions);
             }
         }
 
-        //add all fields
-        foreach ($allfields as $userfield => $fieldlabel) {
-            //calculate any necessary custom options
-            $myoptions = $this->make_filter_options('up', $userfield, $options['help'],
-                                                    $options['tables']);
-
-            //determine field type from mapping
-            $ftype = (string)$this->fieldtofiltermap['up'][$userfield];
-
-            $advanced = (!empty($options['advanced']) &&
-                         in_array($userfield, $options['advanced']))
-                        || (!empty($options['notadvanced']) &&
-                            !in_array($userfield, $options['notadvanced']));
-            //create the sub-filter object
-            $this->_filters['up'][$userfield] = new generalized_filter_entry($userfield, $myoptions['talias'],
-                                                $myoptions['dbfield'], $fieldlabel, $advanced, $ftype, $myoptions);
-        }
     }
 
     /**
@@ -168,6 +151,16 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
      */
     function make_filter_options_custom($options, $group, $name) {
         global $DB;
+
+        $options['tables'] = $this->tables[$group]; // TBD: default?
+        $options['dbfield'] = $name; // TBD: default?
+        if (isset($this->tables[$group]['crlm_user'])) {
+            $options['talias'] = $this->tables[$group]['crlm_user']; // default table?
+        } else {
+            $options['talias'] = ''; // TBD???
+            error_log("elisuserprofile::make_filter_options_custom(options, $group, $name) ... setting 'talias' empty!");
+        }
+
         switch ($name) {
             case 'fullname':
                 //combine the firstname and lastname into a fullname field
@@ -195,6 +188,13 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
                                              1 => get_string('yes'));
                 $options['numeric'] = 1;
                 break;
+        }
+
+        if (array_key_exists($name, $this->_choices)) {
+            $options['choices'] = $this->_choices[$name];
+        }
+        if (array_key_exists($name, $this->_fieldids)) {
+            $options['fieldid'] = $this->_fieldids[$name];
         }
 
         $pos = strpos($name, 'customfield-');

@@ -152,7 +152,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
     protected $_heading;
     protected $_footer;
 
-    protected $languagefile = 'elis_core';
+    protected $languagefile = 'elis_program';
 
 
     // Array $fieldtofiltermap maps fields to filter type
@@ -202,7 +202,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
     protected $labels = array(
         'curriculum' => array(
             'idnumber'          => 'fld_idnumber',
-            'name'              => 'fld_name',
+            'name'              => 'fld_curriculumname',
             'description'       => 'fld_description',
             'reqcredits'        => 'fld_reqcredits',
             'iscustom'          => 'fld_iscustom',
@@ -212,7 +212,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
             'priority'          => 'fld_priority',
         ),
         'course' => array(
-            'name'              => 'fld_name',
+            'name'              => 'fld_coursename',
             'code'              => 'fld_code',
             'idnumber'          => 'fld_idnumber',
             'syllabus'          => 'fld_syllabus',

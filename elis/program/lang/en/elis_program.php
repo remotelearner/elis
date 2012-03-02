@@ -413,6 +413,49 @@ $string['field_no_fields_defined'] = 'No fields defined';
 $string['field_resyncing'] = 'Please wait.  Resynchronizing data with Moodle.';
 $string['field_saved'] = 'Field saved';
 $string['field_syncwithmoodle'] = 'Sync with Moodle';
+$string['fld_class'] = 'Class';
+$string['fld_classstatus'] = 'Status';
+$string['fld_code'] = 'Code';
+$string['fld_completion_grade'] = 'Completion grade';
+$string['fld_cost'] = 'Cost';
+$string['fld_course'] = 'Course';
+$string['fld_coursename'] = 'Course';
+$string['fld_credits'] = 'Credits';
+$string['fld_curriculum'] = 'Program';
+$string['fld_curriculumname'] = 'Program';
+$string['fld_description'] = 'Description';
+$string['fld_enddate'] = 'End date';
+$string['fld_environment'] = 'Environment';
+$string['fld_environmentid'] = 'Environment';
+$string['fld_idnumber'] = 'ID number';
+$string['fld_idnumber_help'] = '<h1>ID number filter</h1>
+<p>This filter allows you to filter users\' ID number based on a free form text.
+The filter has the following options:</p>
+<ul>
+<li>contains - this option allows only ID numbers that contain the text entered (if no text is entered, then the filter is disabled)</li>
+<li>doesn\'t contain - this option allows only ID numbers that do not contain the text entered (if no text is entered, then the filter is disabled)</li>
+<li>is equal to - this option allows only ID numbers that are equal to the text entered (if no text is entered, then the filter is disabled)</li>
+<li>starts with - this option allows only ID numbers that start with the text entered (if no text is entered, then the filter is disabled)</li>
+<li>ends with - this option allows only ID numbers that end with the text entered (if no text is entered, then the filter is disabled)</li>
+<li>is empty - this option allows only ID numbers that are equal to the empty string (the text entered is ignored)</li>
+</ul>';
+$string['fld_inactive'] = 'Inactive filter';
+$string['fld_inactive_help'] = '<h1>Inactive filter</h1>
+<p>This filter allows you to filter users\' status as active, inactive or both.</p>';
+$string['fld_iscustom'] = 'Custom';
+$string['fld_length'] = 'Length';
+$string['fld_lengthdescription'] = 'Description';
+$string['fld_priority'] = 'Priority';
+$string['fld_reqcredits'] = 'Required credits';
+$string['fld_startdate'] = 'Start date';
+$string['fld_syllabus'] = 'Syllabus';
+$string['fld_timecreated'] = 'Time created';
+$string['fld_timemodified'] = 'Last modified';
+$string['fld_timemodified_help'] = '<h1>Last modified filter</h1>
+<p>This filter allows you to filter on the last time modified, from before and/or after selected dates. Where last modified is the date and time of the last update.</p>';
+$string['fld_timetocomplete'] = 'Time to complete';
+$string['fld_version'] = 'Version';
+
 $string['force_unenrol_in_moodle_setting'] = 'Force unenrolment in Moodle course';
 $string['force_unenrol_in_moodle_help'] = 'If this setting is set, then ELIS will forcibly unenrol users from the associated Moodle course when they are unenrolled from the ELIS class instance, regardless of which enrolment plugin they used to enrol.
 
@@ -587,6 +630,7 @@ $string['no_users_matching'] = 'No users matching {$a->match}';
 $string['noarchivedplan'] = 'You do not currently have any archived learning plans';
 $string['noclassavail'] = 'No classes available yet';
 $string['noclassyet'] = 'No Class Instance Yet';
+$string['nocoursedescassoc'] = "There is no course description associated with this program.";
 $string['nolearningplan'] = 'You do not currently have a learning plan assigned';
 $string['nomoodleuser'] = 'No moodle user found for specified user id.';
 $string['nomoodleuser_filt'] = 'Does not have an associated Moodle user';
@@ -725,6 +769,12 @@ $string['postalcode'] = 'Postal code';
 $string['prerequisites'] = 'Prerequisite';
 $string['priority'] = 'Display priority';
 $string['progman'] = 'Program Manager';
+$string['program_copy'] = 'Program Copying';
+$string['program_copy_help'] = '<p>If a Program is copied to this User Set, then a duplicate of the Program is made, and added to the User Set. This is a new Program that is only linked to this user Set, and changes made to this Program will only be available to this User Set (unless other User Sets are linked to it using the link option above).</p>';
+
+$string['program_link'] = 'Program Linking';
+$string['program_link_help'] = '<p>Linking to the program means that any changes to the Program (Classes instances added, modified, etc.) will be visible by all User Sets that are linked to the Program.</p>';
+
 $string['program'] = 'ELIS Program'; // accesslib.php::get_contextlevel_name()
 $string['program:assign_class_instructor'] = 'Manage class instance instructor assignments';
 $string['program:assign_userset_user_class_instructor'] = 'Manage User Set\'s users\' class instance instructor assignments';
@@ -806,6 +856,7 @@ $string['reports'] = 'Reports';
 $string['required'] = 'Required';
 $string['required_credits'] = 'Required Credits';
 $string['required_field'] = 'Error: {$a} is a required field';
+$string['results_engine'] = 'Results Engine';
 
 $string['save_enrolment_changes'] = 'Save Changes';
 $string['saved'] = 'saved';
@@ -820,6 +871,7 @@ $string['show_all_users'] = 'Show All Users';
 $string['showcourses'] = 'Show Courses';
 $string['showinactive'] = 'Show inactive';
 $string['site_not_defined'] = 'Site is not defined';
+$string['status_report'] = 'Status Report';
 $string['student_credits'] = 'Credits';
 $string['student_deleteconfirm'] = 'Are you sure you want to unenrol the student name: {$a->name} ?<br />'.
                                    'NOTE: This will delete all records for this student in this class instance and will unenrol them from any connected Moodle course!';
@@ -990,12 +1042,4 @@ $string['waitlist'] = 'waitlist';
 $string['waitlist_size'] = 'Waitlist Size';
 $string['waitlistcourses'] = 'Waitlist';
 $string['waitlistenrol'] = 'Auto enrol from waitlist';
-
-$string['program_link'] = 'Program Linking';
-$string['program_link_help'] = '<p>Linking to the program means that any changes to the Program (Classes instances added, modified, etc.) will be visible by all User Sets that are linked to the Program.</p>';
-
-$string['program_copy'] = 'Program Copying';
-$string['program_copy_help'] = '<p>If a Program is copied to this User Set, then a duplicate of the Program is made, and added to the User Set. This is a new Program that is only linked to this user Set, and changes made to this Program will only be available to this User Set (unless other User Sets are linked to it using the link option above).</p>';
-
-$string['nocoursedescassoc'] = "There is no course description associated with this program.";
 
