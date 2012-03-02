@@ -331,7 +331,8 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
 
     usort($return->folders, 'elis_files_ls_sort');
     usort($return->files, 'elis_files_ls_sort');
-
+//echo '<br>returning:';
+//print_object($return);
     return $return;
 }
 
@@ -570,9 +571,8 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
 
     $properties = elis_files_node_properties($uuid);
 
-
     if (ELIS_files::is_version('3.2')) {
-        $data .= '<?xml version="1.0" encoding="utf-8"?>
+        $data = '<?xml version="1.0" encoding="utf-8"?>
                   <entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app"
                          xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">
                     <link rel="type" href="' . elis_files_base_url() . '/api/type/folder"/>
@@ -1521,8 +1521,8 @@ function elis_files_process_node($dom, $node, &$type) {
     }
 
     $entries    = $xpath->query('.//cmis:properties/*', $node);
-    $isfolder   = false;
-    $isdocument = false;
+//    $isfolder   = false;
+//    $isdocument = false;
     $j          = 0;
 
     while ($prop = $entries->item($j++)) {
@@ -1545,9 +1545,9 @@ function elis_files_process_node($dom, $node, &$type) {
 
                     case 'BaseType':
                         if ($prop->nodeValue == ELIS_FILES_TYPE_FOLDER) {
-                            $isfolder = true;
+                            $type = $prop->nodeValue;
                         } else if ($prop->nodeValue == ELIS_FILES_TYPE_DOCUMENT) {
-                            $isdocument = true;
+                            $type = $prop->nodeValue;
                         }
 
                         break;
@@ -1572,12 +1572,14 @@ function elis_files_process_node($dom, $node, &$type) {
                     default:
                         break;
                 }
-            } else if ($prop->nodeValue == ELIS_FILES_TYPE_FOLDER) { // Added for Moodle 2.1 as this seems to be the only way to find folders
+            }
+
+            if (isset($prop->nodeValue) && $prop->nodeValue == ELIS_FILES_TYPE_FOLDER) { // Added for Moodle 2.1 as this seems to be the only way to find folders
                 $type = $prop->nodeValue;
-                $isfolder = true;
-            } else if ($prop->nodeValue == ELIS_FILES_TYPE_DOCUMENT) { // Added for Moodle 2.1 as this seems to be the only way to find folders
+//                $isfolder = true;
+            } else if (isset($prop->nodeValue) && $prop->nodeValue == ELIS_FILES_TYPE_DOCUMENT) { // Added for Moodle 2.1 as this seems to be the only way to find folders
                 $type = $prop->nodeValue;
-                $isdocument = true;
+//                $isdocument = true;
             }
         }
     }

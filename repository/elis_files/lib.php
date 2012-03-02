@@ -96,6 +96,11 @@ class repository_elis_files extends repository {
     public function get_listing($encodedpath = '', $path = '') {
         global $CFG, $COURSE, $DB, $SESSION, $OUTPUT, $USER;
 
+         // Verify that we have the repo!
+        if (!$this->elis_files->get_defaults()) {
+            return false;
+        }
+
         // Check for a TRUE value in the encodedpath and retrieve the location
         // If we don't have something explicitly to load and we didn't get here from the drop-down...
         if ($encodedpath === true || empty($encodedpath)) {
@@ -169,8 +174,7 @@ class repository_elis_files extends repository {
         $ret['path'] = array_reverse($return_path);
 
         $this->current_node = $this->elis_files->get_info($uuid);
-//echo '<br>current node?';
-//print_object($this->current_node);
+
         // Add current node to the return path
         // Include shared and oid parameters
         $params = array('path'=>$uuid,
@@ -189,18 +193,9 @@ class repository_elis_files extends repository {
         // Store the UUID value that we are currently browsing.
         $this->elis_files->set_repository_location($uuid, $cid, $uid, $shared, $oid);
 
-        // Verify that we have the repo!
-        if (!$this->elis_files->get_defaults()) {
-            return false;
-        }
-        if (!$this->elis_files->verify_setup()) {
-            return false;
-        }
-
         $children = elis_files_read_dir($this->current_node->uuid);
         $ret['list'] = array();
-//echo '<br>children?';
-//print_object($children);
+
         // Check that there are folders to list
         if (isset($children->folders) && is_array($children->folders)) {
             foreach ($children->folders as $child) {

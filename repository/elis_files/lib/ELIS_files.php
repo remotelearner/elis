@@ -67,11 +67,6 @@ define('ELIS_FILES_LOGIN_RESET', 5 * MINSECS);      // Reset a login after 5 min
 define('ELIS_FILES_DEBUG_TIME',  false);
 define('ELIS_FILES_DEBUG_TRACE', false);
 
-// Alfresco 3.4 type definitions
-// TODO: add type_folder and type_file to repo like in 1.9.3
-define('ELIS_FILES_TYPE_FOLDER',   'cmis:folder');
-define('ELIS_FILES_TYPE_DOCUMENT', 'cmis:document');
-
 // Define constants for the Alfresco role names.
 define('ELIS_FILES_ROLE_COORDINATOR',  'Coordinator');   // The coordinator gets all permissions and permission groups defined
 define('ELIS_FILES_ROLE_COLLABORATOR', 'Collaborator');  // Combines Editor and Contributor permission groups
@@ -2429,6 +2424,7 @@ class ELIS_files {
     function file_browse_options($cid, $uid, $shared, $oid, &$opts=array(), $createonly = false) {
         global $USER, $COURSE;
 
+        //Check defaults
         $opts = array();
 
         if (empty($cid)) {
