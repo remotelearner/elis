@@ -170,7 +170,6 @@ class generalized_filter_multifilter {
 
         // Import option fields
         foreach ($this->_optionals as $field => $option) {
-
             if (!empty($options[$option])) {
                 $this->$field = $options[$option];
             }
@@ -185,7 +184,6 @@ class generalized_filter_multifilter {
 
         // Record aliases
         foreach ($this->labels as $group => $labels) {
-
             foreach ($labels as $key => $val) {
                 $this->record_short_field_name($group .'-'. $key);
             }
@@ -195,12 +193,11 @@ class generalized_filter_multifilter {
         if (array_key_exists('tables', $options)) {
             foreach ($this->tables as $group => $tables) {
 
-                if (! array_key_exists($group, $options['tables'])) {
+                if (!array_key_exists($group, $options['tables'])) {
                     continue;
                 }
 
                 foreach ($tables as $key => $val) {
-
                     if (! empty($options['tables'][$group][$key])) {
                         // If an alias has peen specified, us that instead of default
                         $this->tables[$group][$key] = $options['tables'][$group][$key];
@@ -393,6 +390,7 @@ class generalized_filter_multifilter {
 
         // Generate the standard fields
         foreach ($groups as $group => $choices) {
+            $custom_fields = $this->_fields[$group];
             $this->_fields[$group] = array();
             foreach ($choices as $name => $alias) {
                 $label = $name;
@@ -415,6 +413,9 @@ class generalized_filter_multifilter {
             if (!empty($this->sections[$group]['custom'])) {
                 $this->_fields[$group] = array_merge($this->_fields[$group], $this->sections[$group]['custom']);
             }
+            if (!empty($custom_fields)) {
+                $this->_fields[$group] = array_merge($this->_fields[$group], $custom_fields);
+            }
         }
     }
 
@@ -435,7 +436,6 @@ class generalized_filter_multifilter {
         $is_xfield = array_key_exists($name, $section['custom']);
                     // || in_array($name, $section['custom']); // TBD
 
-        $options['datatype'] = 'text'; //TBD: default?
         if ($is_xfield) {
             if (array_key_exists($group, $this->_outerfield)) {
                 $options['dbfield'] = $this->_outerfield[$group];
@@ -446,7 +446,7 @@ class generalized_filter_multifilter {
             $options['tables'] = $this->tables[$group];
 
             if (array_key_exists($name, $this->_fields[$group])) {
-                if (property_exists($this->_fields[$group][$name], 'id') &&
+                if (isset($this->_fields[$group][$name]->id) &&
                     method_exists($this->_fields[$group][$name], 'data_type')) {
                     $options['fieldid']  = $this->_fields[$group][$name]->id;
                     $options['datatype'] = $this->_fields[$group][$name]->data_type();
@@ -508,3 +508,4 @@ class generalized_filter_multifilter {
         return $options;
     }
 }
+

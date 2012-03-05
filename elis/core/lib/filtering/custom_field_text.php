@@ -123,9 +123,7 @@ class generalized_filter_custom_field_text extends generalized_filter_text {
             //manually specified via constructor
             $this->_subqueryprefix = $options['subqueryprefix'];
         } else {
-            //default to "fieldname IN ..."
-            $full_fieldname = $this->get_full_fieldname();
-            $this->_subqueryprefix = "{$full_fieldname} IN";
+            $this->_subqueryprefix = "{$alias}.id IN ";
         }
 
         //allow for specification of extra conditions to impose on the IN/ EXISTS subquery

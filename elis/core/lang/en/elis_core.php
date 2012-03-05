@@ -122,6 +122,10 @@ The filter has the following options:</p>
 <li>ends with - this option allows only ID numbers that end with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only ID numbers that are equal to the empty string (the text entered is ignored)</li>
 </ul>';
+$string['fld_inactive'] = 'Inactive filter';
+$string['fld_inactive_help'] = '<h1>Inactive filter</h1>
+<p>This filter allows you to filter users\' status as active, inactive or both.</p>';
+
 $string['fld_lang'] = 'Preferred language';
 $string['fld_lang_help'] = '<h1>Language filter</h1>
 <p>This filter allows you to filter users\' preferred language based on a drop down list of available languages. This filter does not have any other options.</p>';
