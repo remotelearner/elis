@@ -249,7 +249,7 @@ class user_class_completion_report extends table_report {
 
         $userfilter =
             new generalized_filter_elisuserprofile(
-                'filter_up_',
+                'filter-up-',
                 get_string('filter_user_match', $this->languagefile),
                 array(
                     'choices'     => $this->_user_fields,
@@ -1094,7 +1094,7 @@ class user_class_completion_report extends table_report {
                     {$status_sql}
                        AND {$permissions_filter3}";
         }
-        error_log("UCCR::get_report_sql(): filter_clause = {$filter_clause}, sql = {$sql}");
+        //error_log("UCCR::get_report_sql(): filter_clause = {$filter_clause}, sql = {$sql}");
         return array($sql, $params);
     }
 
@@ -1951,14 +1951,14 @@ class clustertree_optional_filtering extends php_report_default_capable_filterin
                             $include_clustertree = true) {
 
         if (isset($this->secondary_filterings[$secondary_filtering_key])) {
-            error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() isset(this->secondary_filterings['{$secondary_filtering_key}'])");
+            //error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() isset(this->secondary_filterings['{$secondary_filtering_key}'])");
             //if this is not the primary filtering, use a secondary one
             return $this->secondary_filterings[$secondary_filtering_key]->get_sql_filter($extra, $exceptions, $allow_interactive_filters, $allow_configured_filters);
         }
 
         $params = array();
 
-        error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() - allow_interactive_filters = {$allow_interactive_filters}");
+        //error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() - allow_interactive_filters = {$allow_interactive_filters}");
         //interactive filters, if applicable
         if ($allow_interactive_filters) {
             list($result, $params) = parent::get_sql_filter($extra, $exceptions);
@@ -1969,7 +1969,7 @@ class clustertree_optional_filtering extends php_report_default_capable_filterin
         //if configured filters are not enabled for this report, just use interactive filtering,
         //if applicable
         if (!$allow_configured_filters) {
-            error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() - !allow_configured_filters => returning: array({$result}, params);");
+            //error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() - !allow_configured_filters => returning: array({$result}, params);");
             return array($result, $params);
         }
 
@@ -1977,13 +1977,14 @@ class clustertree_optional_filtering extends php_report_default_capable_filterin
 
         //obtain the pool of attributes to pull preferences from
         $per_filter_data = $this->get_preferences();
+        //print_object($per_filter_data);
 
         //grab the SQL filters
         foreach ($this->_fields as $shortname => $field) {
-            error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() -> {$shortname}");
             //added condition: allow for disabling of the clustertree filter type
             if (!($field instanceof generalized_filter_clustertree) ||
                 $include_clustertree) {
+                //error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() -> {$shortname}");
                 if (isset($per_filter_data[$shortname])) {
                     $formatted_data = $field->check_data((object)$per_filter_data[$shortname]);
                     if ($formatted_data != false) {
@@ -1995,10 +1996,10 @@ class clustertree_optional_filtering extends php_report_default_capable_filterin
                             }
                         }
                     } else {
-                        error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() - formatted_data == FALSE");
+                        //error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() - formatted_data == FALSE");
                     }
                 } else {
-                    error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() NOT isset(per_filter_data[{$shortname}])");
+                    //error_log("/blocks/php_report/instances/UCC::clustertree_optional_filtering::get_sql_filter() NOT isset(per_filter_data[{$shortname}])");
                 }
             }
         }
@@ -2006,7 +2007,7 @@ class clustertree_optional_filtering extends php_report_default_capable_filterin
         //combine SQL conditions
         if (!empty($sqls)) {
             $sql_piece = implode(' AND ', $sqls);
-            if ($result === '') {
+            if ($result == '') {
                 $result = $sql_piece;
             } else {
                 $result .= ' AND '. $sql_piece;

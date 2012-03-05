@@ -541,6 +541,7 @@ class php_report_default_capable_filtering extends generalized_filtering {
         if (!empty($this->preferences_source_data)) {
             //using a pre-defined pool of preferences for API-related reasons,
             //so just convert them to the necessary format
+            //error_log("/blocks/php_report/lib/filtering.php::get_preferences() ... !empty(this->preferences_source_data) -> returning");
             return php_report_filtering_get_per_filter_data($this, $this->preferences_source_data);
         }
 
@@ -551,6 +552,7 @@ class php_report_default_capable_filtering extends generalized_filtering {
 
         //go through and group accordingly
         foreach ($user_preferences as $key => $value) {
+            //error_log("/blocks/php_report/lib/filtering.php::get_preferences(); {$key} => {$value}");
 
             $parts = explode('/', $key);
             //is preference php-report related?
@@ -559,9 +561,8 @@ class php_report_default_capable_filtering extends generalized_filtering {
             $preference_prefix = 'php_report_' . $this->reportname;
 
             //is preference related to this report?
-            if (strpos($parts[0], $preference_prefix) === 0) {
+            if ($parts[0] == $preference_prefix) {
                 $element_name = $parts[1];
-
                 //calculate the group name
                 if (strpos($element_name, '_') !== FALSE) {
                     //multi-element group
@@ -578,7 +579,6 @@ class php_report_default_capable_filtering extends generalized_filtering {
                 //append the data to the current group
                 $per_filter_data[$group_name][$element_name] = $value;
             }
-
         }
 
         return $per_filter_data;
@@ -599,9 +599,12 @@ class php_report_default_capable_filtering extends generalized_filtering {
             return $this->secondary_filterings[$secondary_filtering_key]->get_sql_filter($extra, $exceptions, $allow_interactive_filters, $allow_configured_filters);
         }
 
+        //parameter values
+        $params = array();
+
         //interactive filters, if applicable
         if ($allow_interactive_filters) {
-            $result = parent::get_sql_filter($extra, $exceptions);
+            list($result, $params) = parent::get_sql_filter($extra, $exceptions);
         } else {
             $result = '';
         }
@@ -614,15 +617,12 @@ class php_report_default_capable_filtering extends generalized_filtering {
 
         $per_filter_data = array();
 
-        //resulting query
-        $result = ''; // TBD: overwrites parent::get_sql_filter() above!?!?
         //sql fragments
         $sqls = array();
-        //parameter values
-        $params = array();
 
         //obtain the pool of attributes to pull preferences from
         $per_filter_data = $this->get_preferences();
+        //print_object($per_filter_data);
 
         //grab the SQL filters
         foreach ($this->_fields as $shortname => $field) {
@@ -642,7 +642,7 @@ class php_report_default_capable_filtering extends generalized_filtering {
         //combine SQL conditions
         if (!empty($sqls)) {
             $sql_piece = implode(' AND ', $sqls);
-            if ($result === '') {
+            if ($result == '') {
                 $result = $sql_piece;
             } else {
                 $result .= ' AND ' . $sql_piece;
