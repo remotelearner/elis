@@ -120,6 +120,10 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
             $this->_filters[$group] = array();
             foreach ($fields as $userfield => $fieldlabel) {
                 //error_log("elisuserprofile.php: creating filter for {$userfield} => {$fieldlabel}");
+                if ($fieldlabel instanceof field) {
+                    $fieldlabel = $fieldlabel->name;
+                }
+
                 // must setup select choices for specific fields
                 $myoptions = $this->make_filter_options($group, $userfield, $options['help']);
                 $filterid = $uniqueid . substr($userfield, 0, MAX_FILTER_SUFFIX_LEN);
@@ -128,7 +132,7 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
                              in_array($userfield, $options['advanced']))
                             || (!empty($options['notadvanced']) &&
                                 !in_array($userfield, $options['notadvanced']));
-                //error_log("elisuserprofile.php: creating filter using: new generalized_filter_entry( $filterid, $talias, $dbfield, $fieldlabel, $advanced, $ftype, myoptions)");
+                //error_log("elisuserprofile.php: creating filter using: new generalized_filter_entry( $filterid, {$myoptions['talias']}, {$myoptions['dbfield']}, $fieldlabel, $advanced, $ftype, myoptions)");
                 // Create the filter
                 $this->_filters[$group][$userfield] =
                     new generalized_filter_entry($filterid, $myoptions['talias'], $myoptions['dbfield'],
