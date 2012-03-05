@@ -279,7 +279,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      */
     function remove_empty_fields($record) {
         foreach ($record as $key => $value) {
-            if ($value == '') {
+            if ($value === '') {
                 unset($record->$key);
             }
         }
@@ -1274,7 +1274,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         $record->action = $action;
-        if (!$this->check_required_fields('enrolment', $record, $filename)) {
+        $exceptions = array('instance' => array('context' => 'system'));
+        if (!$this->check_required_fields('enrolment', $record, $filename, $exceptions)) {
             //missing a required field
             return false;
         }

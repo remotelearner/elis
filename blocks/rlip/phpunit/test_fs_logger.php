@@ -218,7 +218,7 @@ class fsLoggerTest extends elis_database_test {
 
         //set up the file plugin for IO
         $filename = $CFG->dataroot.'/rliptest';
-        unlink($filename.'.log');
+        unlink($filename);
 
         //set up the logging object
         list($fslogger, $filename) = $this->get_fs_logger();

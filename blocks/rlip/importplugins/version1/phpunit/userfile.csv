@@ -1,2 +1,2 @@
-action,email,username,password
-create,test@user.com,testusername,Testpassword!0
+action,email,username,firstname,lastname,password,city,country
+create,test@user.com,testusername,testfirstname,testlastname,Testpassword!0,Waterloo,CA

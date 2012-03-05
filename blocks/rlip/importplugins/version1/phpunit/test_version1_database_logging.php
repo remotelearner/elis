@@ -1099,7 +1099,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         global $CFG, $DB;
 
         //set up a "user" import provider, using a single fixed file
-        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile';
+        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile.csv';
         $provider = new rlip_importprovider_userfile($file);
 
         //run the import

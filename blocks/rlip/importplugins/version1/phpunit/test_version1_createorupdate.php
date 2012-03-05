@@ -350,14 +350,18 @@ class version1CreateorupdateTest extends elis_database_test {
                                'mnethostid' => $CFG->mnet_localhost_id,
                                'firstname' => 'rlipfirstname',
                                'lastname' => 'rliplastname',
-                               'email' => 'rlipuser@rlipdomain.com');
+                               'email' => 'rlipuser@rlipdomain.com',
+                               'city' => 'rlipcity',
+                               'country' => 'CA');
         $import_data = array('entity' => 'user',
                              'action' => 'create',
                              'username' => 'rlipusername',
                              'password' => 'Rlippassword!1234',
                              'firstname' => 'rlipfirstname',
                              'lastname' => 'rliplastname',
-                             'email' => 'rlipuser@rlipdomain.com');
+                             'email' => 'rlipuser@rlipdomain.com',
+                             'city' => 'rlipcity',
+                             'country' => 'CA');
         $this->run_core_user_import($import_data);
         $this->assert_record_exists('user', $expected_data);
 
@@ -387,14 +391,18 @@ class version1CreateorupdateTest extends elis_database_test {
                                'mnethostid' => $CFG->mnet_localhost_id,
                                'firstname' => 'rlipfirstname',
                                'lastname' => 'rliplastname',
-                               'email' => 'rlipuser@rlipdomain.com');
+                               'email' => 'rlipuser@rlipdomain.com',
+                               'city' => 'rlipcity',
+                               'country' => 'CA');
         $import_data = array('entity' => 'user',
                              'action' => 'create',
                              'username' => 'rlipusername',
                              'password' => 'Rlippassword!1234',
                              'firstname' => 'rlipfirstname',
                              'lastname' => 'rliplastname',
-                             'email' => 'rlipuser@rlipdomain.com');
+                             'email' => 'rlipuser@rlipdomain.com',
+                             'city' => 'rlipcity',
+                             'country' => 'CA');
         $this->run_core_user_import($import_data);
         $this->assert_record_exists('user', $expected_data);
 
@@ -441,14 +449,18 @@ class version1CreateorupdateTest extends elis_database_test {
                                'mnethostid' => $CFG->mnet_localhost_id,
                                'firstname' => 'rlipfirstname',
                                'lastname' => 'rliplastname',
-                               'email' => 'rlipuser@rlipdomain.com');
+                               'email' => 'rlipuser@rlipdomain.com',
+                               'city' => 'rlipcity',
+                               'country' => 'CA');
         $import_data = array('entity' => 'user',
                              'customaction' => 'create',
                              'username' => 'rlipusername',
                              'password' => 'Rlippassword!1234',
                              'firstname' => 'rlipfirstname',
                              'lastname' => 'rliplastname',
-                             'email' => 'rlipuser@rlipdomain.com');
+                             'email' => 'rlipuser@rlipdomain.com',
+                             'city' => 'rlipcity',
+                             'country' => 'CA');
         $this->run_core_user_import($import_data);
         $this->assert_record_exists('user', $expected_data);
 

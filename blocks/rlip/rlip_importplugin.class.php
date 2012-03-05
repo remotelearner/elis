@@ -287,7 +287,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             } else {
                 //simple scenario
                 $field = $field_or_group;
-                if (!isset($record->$field) || $record->$field == '') {
+                if (!isset($record->$field) || $record->$field === '') {
                     //not found, so include this field as missing an required 
                     $result[] = $field;
                 }
@@ -308,9 +308,12 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * @param string $entity Type of entity, such as 'user'
      * @param object $record One data import record
      * @param string $filename The name of the import file, to use in logging
+     * @param array $exceptions A mapping from a field to a key, value pair that
+     *                          allows that missing field to be ignored - does
+     *                          not work for "1-of-n" setups
      * @return boolean true if fields ok, otherwise false
      */
-    function check_required_fields($entity, $record, $filename) {
+    function check_required_fields($entity, $record, $filename, $exceptions = array()) {
         //log line prefix
         $prefix = "[{$filename} line {$this->linenumber}]";
 
@@ -336,17 +339,36 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
             //handle absolutely required fields
             if (count($missing_fields) == 1) {
+                $append = true;
+
                 $field = reset($missing_fields);
-                $messages[] = "Required field \"{$field}\" is unspecified or empty.";
+
+                if (isset($exceptions[$field])) {
+                    //determine the dependency key and value
+                    $dependency = $exceptions[$field];
+                    $key = reset(array_keys($dependency));
+                    $value = reset(array_values($dependency));
+
+                    if (isset($record->$key) && $record->$key == $value) {
+                        //dependency applies, so no error
+                        $append = false;
+                    }
+                }
+
+                if ($append) {
+                    $messages[] = "Required field \"{$field}\" is unspecified or empty.";
+                }
             } else if (count($missing_fields) > 1) {
                 $fields = implode('", "', $missing_fields);
                 $messages[] = "Required fields \"{$fields}\" are unspecified or empty.";
             }
 
-            //combine and log
-            $message = "{$prefix} ".implode(' ', $messages);
-            $this->fslogger->log($message);
-            return false;
+            if (count($messages) > 0) {
+                //combine and log
+                $message = "{$prefix} ".implode(' ', $messages);
+                $this->fslogger->log($message);
+                return false;
+            }
         }
 
         return true;
@@ -365,7 +387,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //log prefix
         $prefix = "[{$filename} line {$this->linenumber}]";
 
-        if ($record->action == '') {
+        if ($record->action === '') {
             //not set, so error 
             $message = "{$prefix} Required field \"action\" is unspecified or empty.";
             $this->fslogger->log($message);

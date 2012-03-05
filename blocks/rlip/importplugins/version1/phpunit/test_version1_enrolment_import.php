@@ -485,7 +485,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         //run the import
         $data = $this->get_core_enrolment_data();
         $data['context'] = 'system';
-        $data['role'] = 'systemshortname';;
+        $data['role'] = 'systemshortname';
         unset($data['instance']);
         $this->run_core_enrolment_import($data, false);
 
