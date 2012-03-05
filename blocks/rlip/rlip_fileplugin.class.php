@@ -82,13 +82,6 @@ abstract class rlip_fileplugin_base {
      * @return string The file name, not including the full path
      */
     abstract function get_filename();
-
-    /**
-     * Specifies the extension of the current open file
-     *
-     * @return string The file extension
-     */
-    abstract function get_extension();
 }
 
 /**
@@ -112,17 +105,11 @@ class rlip_fileplugin_factory {
       	    //using a standard text file for logging
     	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log.class.php');
 
-            $filename .= '.'.rlip_fileplugin_log::get_extension();
             return new rlip_fileplugin_log($filename);
     	}
 
     	//load the CSV file plugin definition
   	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
-
-  	    //add file extension
-  	    if ($filename != '') {
-  	        $filename .= '.'.rlip_fileplugin_csv::get_extension();
-  	    }
 
     	if ($sendtobrowser) {
     	    //writing a CSV file to the browser

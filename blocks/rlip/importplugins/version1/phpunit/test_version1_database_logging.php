@@ -35,7 +35,7 @@ require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
 /**
- * Class that fetches import files for the course import
+ * Class that fetches import files for the user import
  */
 class rlip_importprovider_loguser extends rlip_importprovider {
     //fixed data to use as import data
@@ -1261,4 +1261,26 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertEquals($exists, true);
     }
 
+    /**
+     * Validates the standard failure message
+     */
+    public function testVersion1DBLoggingLogsFailureMessage() {
+        set_config('createorupdate', 0, 'rlipimport_version1');
+
+        $data = array('entity' => 'user',
+                      'action' => 'update',
+                      'username' => 'rlipusername',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'city' => 'rlipcity',
+                      'country' => 'CA');
+        $this->run_user_import($data);
+
+        $message = 'One or more lines from import file memoryfile failed because they contain data errors. '.
+                   'Please fix the import file and re-upload it.';
+        $exists = $this->log_with_message_exists($message);
+        $this->assertEquals($exists, true);
+    }
 }

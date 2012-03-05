@@ -190,7 +190,7 @@ class rlip_dblogger {
             $record->statusmessage = "All lines from import file {$filename} were successfully processed.";
         } else {
             //todo: implement
-            $record->statusmessage = '';
+            $record->statusmessage = "One or more lines from import file {$filename} failed because they contain data errors. Please fix the import file and re-upload it.";
         }
 
         //persist

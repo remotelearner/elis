@@ -61,6 +61,10 @@ abstract class rlip_importprovider {
 abstract class rlip_importplugin_base extends rlip_dataplugin {
     var $provider = NULL;
     var $dblogger = NULL;
+    //file-system logger object
+    var $fslogger = NULL;
+    //track which import line we are on
+    var $linenumber = 0;
 
     /**
      * Import plugin constructor
@@ -69,6 +73,10 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *                         obtain any applicable import files
      */
     function __construct($provider = NULL) {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+
         if ($provider !== NULL) {
             //note: provider is not set if only using plugin_supports
 
@@ -79,6 +87,11 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $this->provider = $provider;
             $this->dblogger = $this->provider->get_dblogger();
             $this->dblogger->set_plugin($plugin);
+
+            //set up the file-system logger
+            $filename = get_config('rlipimport_version1', 'logfilelocation');
+            $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
+            $this->fslogger = new rlip_fslogger($fileplugin);
         }
     }
 
@@ -242,17 +255,123 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     }
 
     /**
-     * Specifies whether an import record has data for all
-     * required fields
+     * Obtains a list of required fields that are missing from the supplied
+     * import record (helper method)
      *
-     * @param array $record One record of import data
-     * @param array $required_fields The fields required for the current action
-     *
-     * @return boolean true if the supplied entity has the required fields,
-     *                 otherwise false
+     * @param object $record One import record
+     * @param array $required_fields The required fields, with sub-arrays used
+     *                               in "1-of-n required" scenarios
+     * @return array An array, in the same format as $required_fields
      */
-    function record_has_required_fields($record, $required_fields) {
-        //todo: implement proper checking here
+    function get_missing_required_fields($record, $required_fields) {
+        $result = array();
+
+        foreach ($required_fields as $field_or_group) {
+            if (is_array($field_or_group)) {
+                //"1-of-n" secnario
+                $group = $field_or_group;
+
+                //determine if one or more values in the group is set
+                $found = false;
+                foreach ($group as $key => $value) {
+                    if (isset($record->$value) && $record->$value != '') {
+                        $found = true;
+                        break;
+                    }
+                }
+
+                if (!$found) {
+                    //not found, so include this group as missing and required
+                    $result[] = $group;
+                }
+            } else {
+                //simple scenario
+                $field = $field_or_group;
+                if (!isset($record->$field) || $record->$field == '') {
+                    //not found, so include this field as missing an required 
+                    $result[] = $field;
+                }
+            }
+        }
+
+        if (count($result) == 0) {
+            return false;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Validates whether all required fields are set, logging to the filesystem
+     * where not - call from child class where needed
+     *
+     * @param string $entity Type of entity, such as 'user'
+     * @param object $record One data import record
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if fields ok, otherwise false
+     */
+    function check_required_fields($entity, $record, $filename) {
+        //log line prefix
+        $prefix = "[{$filename} line {$this->linenumber}]";
+
+        //get list of required fields
+        $required_fields = $this->plugin_supports_action($entity, $record->action);
+        //figure out which are missing
+        $missing_fields = $this->get_missing_required_fields($record, $required_fields);
+
+        $messages = array();
+
+        if ($missing_fields !== false) {
+            //missing one or more fields
+
+            //process "1-of-n" type fields first
+            foreach ($missing_fields as $key => $value) {
+                if (count($value) > 1) {
+                    $fields = implode('", "', $value);
+                    $messages[] = "One of \"{$fields}\" is required but all are unspecified or empty.";
+                    //remove so we don't re-process
+                    unset($missing_fields[$key]);
+                }
+            }
+
+            //handle absolutely required fields
+            if (count($missing_fields) == 1) {
+                $field = reset($missing_fields);
+                $messages[] = "Required field \"{$field}\" is unspecified or empty.";
+            } else if (count($missing_fields) > 1) {
+                $fields = implode('", "', $missing_fields);
+                $messages[] = "Required fields \"{$fields}\" are unspecified or empty.";
+            }
+
+            //combine and log
+            $message = "{$prefix} ".implode(' ', $messages);
+            $this->fslogger->log($message);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates whether the "action" field is correctly set on a record,
+     * logging error to the file system, if necessary - call from child class
+     * when needed
+     *
+     * @param object $record One data import record
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if action field is set, otherwise false
+     */
+    function check_action_field($record, $filename) {
+        //log prefix
+        $prefix = "[{$filename} line {$this->linenumber}]";
+
+        if ($record->action == '') {
+            //not set, so error 
+            $message = "{$prefix} Required field \"action\" is unspecified or empty.";
+            $this->fslogger->log($message);
+
+            return false;
+        }
 
         return true;
     }
@@ -262,22 +381,18 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *
      * @param string $entity The type of entity
      * @param object $record One record of import data
+     * @param string $filename Import file name to user for logging
      *
      * @return boolean true on success, otherwise false
      */
-    function process_record($entity, $record) {
+    function process_record($entity, $record, $filename) {
+        //increment which record we're on
+        $this->linenumber++;
+
         $action = $record->action;
         $method = "{$entity}_action";
 
-        //todo: add checking for whether the action is supported for the
-        //entity
-        if ($required_fields = $this->plugin_supports($entity)) {
-            if ($this->record_has_required_fields($record, $required_fields)) {
-                return $this->$method($record, $action);
-            }
-        }
-
-        return false;
+        return $this->$method($record, $action, $filename);
     }
 
     /**
@@ -312,6 +427,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             return;
         }
 
+        //header read, so increment line number
+        $this->linenumber++;
+
         $this->header_read_hook($entity, $header);
 
         //main processing loop
@@ -321,7 +439,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
             //track return value
             //todo: change second parameter when in the cron
-            $result = $this->process_record($entity, $record);
+            $filename = $fileplugin->get_filename();
+            $result = $this->process_record($entity, $record, $filename);
             $this->dblogger->track_success($result, true);
         }
 
@@ -356,4 +475,14 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *               associated [entity]_action methods are defined
      */
     abstract function get_file_labels();
+
+    /**
+     * Getter for the file system logging object
+     *
+     * @return object The file system logging object
+     */
+    function get_fslogger() {
+        return $this->fslogger;
+    }
+
 }

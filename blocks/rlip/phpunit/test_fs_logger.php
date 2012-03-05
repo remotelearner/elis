@@ -106,15 +106,6 @@ class rlip_fileplugin_trackopen extends rlip_fileplugin_base {
     function was_opened() {
         return $this->was_opened;
     }
-
-    /**
-     * Specifies the extension of the current open file
-     *
-     * @return string The file extension
-     */
-    function get_extension() {
-        return 'bogus';
-    }
 }
 
 /**
@@ -164,7 +155,6 @@ class fsLoggerTest extends elis_database_test {
 
         //set up the logging object
         $fslogger = rlip_fslogger_factory::factory($fileplugin);
-        $filename .= '.'.$fileplugin->get_extension();
 
         return array($fslogger, $filename);        
     }

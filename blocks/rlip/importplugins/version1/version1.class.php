@@ -242,19 +242,28 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $createorupdate = get_config('rlipimport_version1', 'createorupdate');
 
         if (!empty($createorupdate)) {
-            //identify the user
-            $params = array('username' => $record->username,
-                            'mnethostid' => $CFG->mnet_localhost_id,
-                            'email' => $record->email);
-            if (isset($record->idnumber)) {
-                $params['idnumber'] = $record->idnumber;
-            }
+            if (isset($record->username) || isset($record->record->email) || isset($record->idnumber)) {
+                //identify the user
+                $params = array();
+                if (isset($record->username)) {
+                    $params['username'] = $record->username;
+                    $params['mnethostid'] = $CFG->mnet_localhost_id;
+                }
+                if (isset($record->email)) {
+                    $params['email'] = $record->email;
+                }
+                if (isset($record->idnumber)) {
+                    $params['idnumber'] = $record->idnumber;
+                }
 
-            if ($DB->record_exists('user', $params)) {
-                //user exists, so the action is an update
-                $action = 'update';
+                if ($DB->record_exists('user', $params)) {
+                    //user exists, so the action is an update
+                    $action = 'update';
+                } else {
+                    //user does not exist, so the action is a create
+                    $action = 'create';
+                }
             } else {
-                //user does not exist, so the action is a create
                 $action = 'create';
             }
         }
@@ -263,21 +272,55 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
+     * Removes fields equal to the empty string from the provided record
+     *
+     * @param object $record The import record
+     * @return object A version of the import record, with all empty fields removed
+     */
+    function remove_empty_fields($record) {
+        foreach ($record as $key => $value) {
+            if ($value == '') {
+                unset($record->$key);
+            }
+        }
+
+        return $record;
+    }
+
+    /**
      * Delegate processing of an import line for entity type "user"
      *
      * @param object $record One record of import data
      * @param string $action The action to perform, or use data's action if
      *                       not supplied
+     * @param string $filename The import file name, used for logging
      *
      * @return boolean true on success, otherwise false
      */
-    function user_action($record, $action = '') {
+    function user_action($record, $action = '', $filename = '') {
         if ($action === '') {
+            //set from param
             $action = $record->action;
         }
 
-        $action = $this->handle_user_createorupdate($record, $action);
+        if (!$this->check_action_field($record, $filename)) {
+            //missing an action value
+            return false;
+        }
 
+        //apply "createorupdate" flag, if necessary
+        $action = $this->handle_user_createorupdate($record, $action);
+        $record->action = $action;
+
+        if (!$this->check_required_fields('user', $record, $filename)) {
+            //missing a required field
+            return false;
+        }
+
+        //remove empty fields
+        $record = $this->remove_empty_fields($record);
+
+        //perform action
         $method = "user_{$action}";
         return $this->$method($record);
     }
@@ -636,12 +679,16 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $createorupdate = get_config('rlipimport_version1', 'createorupdate');
 
         if (!empty($createorupdate)) {
-            //identify the course
-            if ($DB->record_exists('course', array('shortname' => $record->shortname))) {
-                //course exists, so the action is an update
-                $action = 'update';
+            if (isset($record->shortname)) {
+                //identify the course
+                if ($DB->record_exists('course', array('shortname' => $record->shortname))) {
+                    //course exists, so the action is an update
+                    $action = 'update';
+                } else {
+                    //course does not exist, so the action is a create
+                    $action = 'create';
+                }
             } else {
-                //course does not exist, so the action is a create
                 $action = 'create';
             }
         }
@@ -655,16 +702,34 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @param object $record One record of import data
      * @param string $action The action to perform, or use data's action if
      *                       not supplied
+     * @param string $filename The import file name, used for logging
      *
      * @return boolean true on success, otherwise false
      */
-    function course_action($record, $action = '') {
+    function course_action($record, $action = '', $filename = '') {
         if ($action === '') {
+            //set from param
             $action = $record->action;
         }
 
+        if (!$this->check_action_field($record, $filename)) {
+            //missing an action value
+            return false;
+        }
+
+        //apply "createorupdate" flag, if necessary
         $action = $this->handle_course_createorupdate($record, $action);
 
+        $record->action = $action;
+        if (!$this->check_required_fields('course', $record, $filename)) {
+            //missing a required field
+            return false;
+        }
+
+        //remove empty fields
+        $record = $this->remove_empty_fields($record);
+
+        //perform action
         $method = "course_{$action}";
         return $this->$method($record);
     }
@@ -1193,14 +1258,31 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @param object $record One record of import data
      * @param string $action The action to perform, or use data's action if
      *                       not supplied
+     * @param string $filename The import file name, used for logging                       
      *
      * @return boolean true on success, otherwise false
      */
-    function enrolment_action($record, $action = '') {
+    function enrolment_action($record, $action = '', $filename = '') {
         if ($action === '') {
+            //set from param
             $action = $record->action;
         }
 
+        if (!$this->check_action_field($record, $filename)) {
+            //missing an action value
+            return false;
+        }
+
+        $record->action = $action;
+        if (!$this->check_required_fields('enrolment', $record, $filename)) {
+            //missing a required field
+            return false;
+        }
+
+        //remove empty fields
+        $record = $this->remove_empty_fields($record);
+
+        //perform action
         $method = "enrolment_{$action}";
         if (method_exists($this, $method)) {
             return $this->$method($record);
@@ -1566,14 +1648,15 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      *
      * @param string $entity The type of entity
      * @param object $record One record of import data
+     * @param string $filename Import file name to user for logging
      *
      * @return boolean true on success, otherwise false
      */
-    function process_record($entity, $record) {
+    function process_record($entity, $record, $filename) {
         //apply the field mapping
         $record = $this->apply_mapping($entity, $record);
 
-        return parent::process_record($entity, $record);
+        return parent::process_record($entity, $record, $filename);
     }
 
     /**

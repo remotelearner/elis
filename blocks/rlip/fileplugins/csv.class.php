@@ -125,13 +125,4 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
             return $DB->get_field('files', 'filename', $params);
         }
     }
-
-    /**
-     * Specifies the extension of the current open file
-     *
-     * @return string The file extension
-     */
-    function get_extension() {
-        return 'csv';
-    }
 }
