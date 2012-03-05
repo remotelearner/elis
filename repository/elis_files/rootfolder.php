@@ -56,6 +56,32 @@ if (!$repo = repository_factory::factory()) {
     print_error('couldnotcreaterepositoryobject', 'repository_elis_files');
 }
 
+
+
+$icon  = 'folder.gif';
+$eicon = 'folder-expanded.gif';
+$menu  = new HTML_TreeMenu();
+
+if ($nodes = $repo->make_root_folder_select_tree()) {
+    for ($i = 0; $i < count($nodes); $i++) {
+        $menu->addItem($nodes[$i]);
+    }
+}
+
+$treemenu = new HTML_TreeMenu_DHTML($menu, array(
+    'images' => $CFG->wwwroot . '/repository/elis_files/lib/HTML_TreeMenu-1.2.0/images'
+));
+
+$strrootfolder = get_string('chooserootfolder', 'repository_elis_files');
+
+$PAGE->requires->js('/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.js', true);
+
+$url = new moodle_url('/repository/elis_files/rootfolder.php');
+$PAGE->set_url($url);
+
+$PAGE->set_title($strrootfolder);
+$PAGE->set_heading($SITE->fullname);
+echo $OUTPUT->header();
 $chooseparts = explode('.', $choose);
 
 if (count($chooseparts) == 2) {
@@ -86,31 +112,6 @@ if (count($chooseparts) == 2) {
 <?php
 
 }
-
-$icon  = 'folder.gif';
-$eicon = 'folder-expanded.gif';
-$menu  = new HTML_TreeMenu();
-
-if ($nodes = $repo->make_root_folder_select_tree()) {
-    for ($i = 0; $i < count($nodes); $i++) {
-        $menu->addItem($nodes[$i]);
-    }
-}
-
-$treemenu = new HTML_TreeMenu_DHTML($menu, array(
-    'images' => $CFG->wwwroot . '/repository/elis_files/lib/HTML_TreeMenu-1.2.0/images'
-));
-
-$strrootfolder = get_string('chooserootfolder', 'repository_elis_files');
-
-$PAGE->requires->js('/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.js', true);
-
-$url = new moodle_url('/repository/elis_files/rootfolder.php');
-$PAGE->set_url($url);
-
-$PAGE->set_title($strrootfolder);
-$PAGE->set_heading($SITE->fullname);
-echo $OUTPUT->header();
 echo $OUTPUT->box_start();
 //print_simple_box_start('center', '75%');
 echo $OUTPUT->heading(get_string('chooserootfolder', 'repository_elis_files'));

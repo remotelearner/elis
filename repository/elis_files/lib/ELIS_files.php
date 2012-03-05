@@ -543,6 +543,10 @@ class ELIS_files {
         if (self::is_version('3.2')) {
             return elis_files_node_properties($uuid);
         } else if (self::is_version('3.4')) {
+            //Check that the uuid is valid before trying to get the object
+            if (!elis_files_request(elis_files_get_uri($uuid, 'self'))) {
+                return false;
+            }
             if (!$node = $this->cmis->getObject('workspace://SpacesStore/' . $uuid)) {
                 return false;
             }
@@ -735,13 +739,10 @@ class ELIS_files {
             $downloading = true;
         }
 
-        $node = $this->get_info($uuid);
+        if (!($node = $this->get_info($uuid))) {
+            return false;
+        }
 
-//        if (isloggedin()) {
-//            $username = $USER->username;
-//        } else {
-//            $username = '';
-//        }
         $username = '';
 
     /// Check for a non-text file type to just pass through to the end user.
@@ -1356,7 +1357,9 @@ class ELIS_files {
             return false;
         }
 
-        $node = $this->get_info($uuid);
+        if (!($node = $this->get_info($uuid))) {
+            return false;
+        }
 
     /// Make sure we've been pointed to a directory
         if (!$this->is_dir($node->uuid)) {
@@ -1422,7 +1425,9 @@ class ELIS_files {
 
         $this->errormsg = '';
 
-        $node = $this->get_info($uuid);
+        if (!($node = $this->get_info($uuid))) {
+            return false;
+        }
 
         if ($this->is_dir($uuid)) {
             return $this->download_dir($location, $uuid, true);
@@ -1569,7 +1574,7 @@ class ELIS_files {
             // Verify that the folder still exists and if not, delete the DB record so we can create a new one below.
             if ($this->get_info($uuid) === false) {
                 $DB->delete_records('elis_files_course_store', array('courseid'=> $cid));
-                $uuid = FALSE;
+                $uuid = false;
             } else {
                 return $uuid;
             }
@@ -1640,7 +1645,7 @@ class ELIS_files {
         if (($uuid = $DB->get_field('elis_files_userset_store', 'uuid', array('usersetid'=> $oid))) !== false) {
             // Verify that the folder still exists and if not, delete the DB record so we can create a new one below.
             if ($this->get_info($uuid) === false) {
-                delete_records('elis_files_userset_store', array('usersetid'=> $oid));
+                $DB->delete_records('elis_files_userset_store', array('usersetid'=> $oid));
                 $uuid = false;
             } else {
                 return $uuid;
@@ -1853,8 +1858,9 @@ class ELIS_files {
 
         $stack = array();
 
-
-        $node  = $this->get_info($uuid);
+        if (!($node = $this->get_info($uuid))) {
+            return false;
+        }
 
         if ($node->type == ELIS_FILES_TYPE_FOLDER) {
             // Include shared and oid parameters
@@ -2381,8 +2387,8 @@ class ELIS_files {
         foreach ($folders as $i => $folder) {
             $npath = $path . '/' . $folder['name'];
 
-            $text = ' <a href="#" onclick="set_value(\'' . $npath . '\')" title="' . $npath . '">' . $folder['name'] .
-                    (!empty(elis::$config->root_folder) && elis::$config->root_folder == $npath ?
+            $text = ' <a href="#" onclick="set_value(\\\'' . $npath . '\\\')" title="' . $npath . '">' . $folder['name'] .
+                    (!empty(elis::$config->elis_files->root_folder) && elis::$config->elis_files->root_folder == $npath ?
                     ' <span class="pathok">&#x2714;</span>' : '') . '</a>';
 
             $node = new HTML_TreeNode(array(
@@ -2659,19 +2665,19 @@ class ELIS_files {
             $clusterdata = usersetclassification::get_for_cluster($cluster);
 
             if (empty($clusterdata->params)) {
-                return false;
+                continue;
             }
 
             $clusterparams = unserialize($clusterdata->params);
 
             // Make sure this cluster has the Alfresco shared folder property defined
             if (empty($clusterparams['elis_files_shared_folder'])) {
-                return false;
+                continue;
             }
 
             // Make sure we can get the storage space from Alfresco for this userset.
             if (!$uuid = $this->get_userset_store($cluster->id)) {
-                return false;
+                continue;
             }
 
             // Add to opts array

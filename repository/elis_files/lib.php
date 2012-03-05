@@ -656,7 +656,7 @@ class repository_elis_files extends repository {
         // Need to check for settings to be saved
             $popup_settings ="height=400,width=500,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
             $url = $CFG->wwwroot .'/repository/elis_files/config-categories.php';
-            $jsondata = array('url'=>$url,'name'=>'config-categories','options'=>$popup_settings);
+            $jsondata = array('url'=>$url,'name'=>'config_categories','options'=>$popup_settings);
             $jsondata = json_encode($jsondata);
             $title = get_string('configurecategoryfilter', 'repository_elis_files');
 
