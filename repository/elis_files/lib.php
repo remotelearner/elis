@@ -30,11 +30,9 @@
 
 
 // Define constants for the default file browsing location.
-//define('ELIS_FILES_BROWSE_MOODLE_FILES',          10);
 defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
-// Were shared now called server files
+// Was shared now called server files
 defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
-//defined('ELIS_FILES_BROWSE_SERVER_FILES') or define('ELIS_FILES_BROWSE_SERVER_FILES', 30);
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
 defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_FILES', 60);
@@ -63,15 +61,11 @@ class repository_elis_files extends repository {
         } else {
             $this->context = get_context_instance_by_id($context);
         }
-//        echo " after parent construct, this context: ";
-//        print_object($this->context);
 
         /// ELIS files class
-        $this->elis_files = repository_factory::factory('elis_files');
-        $this->config = get_config('elis_files');
+        $this->elis_files = repository_factory::factory();
+        $this->config = get_config('ELIS_files');
         $this->current_node = null;
-//         echo "\n in construct, page params: ";
-//        print_object($PAGE->url->params());
 
         // jQuery files required for file picker - just for this repository
         $PAGE->requires->js('/repository/elis_files/js/jquery-1.6.2.min.js');
@@ -101,28 +95,20 @@ class repository_elis_files extends repository {
      */
     public function get_listing($encodedpath = '', $path = '') {
         global $CFG, $COURSE, $DB, $SESSION, $OUTPUT, $USER;
-//echo '<br>in get_listing';
-//ob_start();
-//echo "encoded path: ";
-//print_object($encodedpath);
 
+         // Verify that we have the repo!
+        if (!$this->elis_files->get_defaults()) {
+            return false;
+        }
 
         // Check for a TRUE value in the encodedpath and retrieve the location
         // If we don't have something explicitly to load and we didn't get here from the drop-down...
         if ($encodedpath === true || empty($encodedpath)) {
 
             // Get optional course param from url to make ELIS Files page work properly
-//            echo "\n this context id: ".$this->context->id;
             list($context, $course, $cm) = get_context_info_array($this->context->id);
             $cid = is_object($course) ? $course->id : 0;
-//            $context = get_context_instance(CONTEXT_COURSE, $courseid);
-//                    echo "\n in get_listing what is PAGE: ";
-//        print_object($PAGE->url->params());
-//         Need contectid from page url
-//        $pageparams = $PAGE->url->params();
-//        $cid = isset($pageparams['course']) ? $pageparams['course']:0;
-//            $cid = $this->course;
-//echo "\n empty encoded path and cid: $cid";
+
             // Set defaults
             $uid = 0;
             $oid = 0;
@@ -135,8 +121,7 @@ class repository_elis_files extends repository {
         } else if (!empty($encodedpath)) {
         // Decode path and retrieve parameters
             $params = unserialize(base64_decode($encodedpath));
-//echo "\n NOT empty encoded path, params: ";
-//print_object($params);
+
             if (is_array($params)) {
                 $uuid    = empty($params['path']) ? NULL : clean_param($params['path'], PARAM_PATH);
                 $shared  = empty($params['shared']) ? 0 : clean_param($params['shared'], PARAM_BOOL);
@@ -155,7 +140,7 @@ class repository_elis_files extends repository {
                 }
             }
         }
-//echo "\n after decoding etc, at beginning of get_listing, cid: $cid uid: $uid oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
+
         $ret = array();
         // Return an array of optional columns from file list to include in the details view
         // Icon and filename are always displayed
@@ -190,7 +175,6 @@ class repository_elis_files extends repository {
 
         $this->current_node = $this->elis_files->get_info($uuid);
 
-//echo "\n in get_listing and setting path and thisuuid, cid: $cid, title: ".$this->current_node->title." oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
         // Add current node to the return path
         // Include shared and oid parameters
         $params = array('path'=>$uuid,
@@ -211,7 +195,6 @@ class repository_elis_files extends repository {
 
         $children = elis_files_read_dir($this->current_node->uuid);
         $ret['list'] = array();
-//echo "\n and now, near end of get_listing, oid: ".$oid." uuid: ".$uuid." shared: ".$shared;
 
         // Check that there are folders to list
         if (isset($children->folders) && is_array($children->folders)) {
@@ -263,9 +246,6 @@ class repository_elis_files extends repository {
             }
         }
 
-// $tmp = ob_get_contents();
-// ob_end_clean();
-// error_log("values = {$tmp}");
         return $ret;
     }
 
@@ -280,13 +260,6 @@ class repository_elis_files extends repository {
 
         $node = $this->elis_files->get_info($uuid);
 
-        /*
-        if (isloggedin()) {
-            $username = $USER->username;
-        } else {
-            $username = '';
-        }
-        */
         // Test to make sure this works with, say, a teacher or someone non-admin
         $username = '';
 
@@ -343,8 +316,7 @@ class repository_elis_files extends repository {
         }
         $children = elis_files_read_dir($uuid);
         $return = array();
-//echo "\n folders found for $uuid: ";
-//print_object($children);
+
         foreach ($children->folders as $child) {
             if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
                 continue;
@@ -399,8 +371,7 @@ class repository_elis_files extends repository {
         // display list of files to delete...
         $str .= '<div>'.get_string('deletecheckfiles','repository_elis_files').'</div>';
         $filelist = array();
-//echo "\n in print_delete_popup files array: ";
-//print_object($files_array);
+
         $str .= repository_elis_files::printfilelist($files_array, $filelist);
         $str .= '<input type="hidden" name="fileslist" id="fileslist" value="'.implode(",",$filelist).'">';
         $resourcelist = false;
@@ -429,7 +400,7 @@ class repository_elis_files extends repository {
      */
     public function print_move_dialog($parentuuid, $locationparent, $cid, $uid, $shared, $oid, $selected_files) {
         global $CFG;
-//echo "\n in print move dialog shared: ".$shared." parent uuid: ".$parentuuid." oid: ".$oid." course store: ".$this->elis_files->get_userset_store($oid);
+
         $params = array('path'=>$parentuuid,
                         'shared'=>(boolean)$shared,
                         'oid'=>(int)$oid,
@@ -437,8 +408,6 @@ class repository_elis_files extends repository {
                         'uid'=>(int)$uid);
         $encodedpath = base64_encode(serialize($params));
 
-//echo "\n encoded path in print_move_dialog: ".$encodedpath." uuid: ".$parentuuid." oid: ".$oid;
-//echo "\n just serialized: ".serialize($params);
         $str = '<div>
                     <div id="repository_tabs"></div>
                     <input type="hidden" id="locationparent" name="locationparent" value="'.$locationparent.'" />
@@ -611,9 +580,16 @@ class repository_elis_files extends repository {
                                     'cid'=>(int)$cid,
                                     'uid'=>(int)$uid);
                     $encodedpath = base64_encode(serialize($params));
+
+                    $alfresco_version = elis_files_get_repository_version();
+                    if ($alfresco_version == '3.2.1') {
+                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->filename, 32))->out(false);
+                    } else {
+                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->icon, 32))->out(false);
+                    }
                     $ret['list'][] = array('title'=>$file_object->title,
                                            'path'=>$encodedpath,
-                                           'thumbnail' => $OUTPUT->pix_url(file_extension_icon($file_object->filename, 32))->out(false),
+                                           'thumbnail' => $thumbnail,
                                            'created'=>date("M. j, Y",$file_object->created),
                                            'modified'=>date("M. j, Y",$file_object->modified),
                                            'owner'=>$file_object->owner,
@@ -635,7 +611,6 @@ class repository_elis_files extends repository {
                               'server_port',        // Alfresco server port
                               'server_username',    // Alfresco server username
                               'server_password',    // Alfresco server password
-                              //'alfresco_version',   // Alfresco server version
                               'root_folder',        // Moodle root folder
                               'user_quota',         // User quota N.B. cache is now pulled from general Repository options
                               'deleteuserdir',      // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
@@ -663,7 +638,7 @@ class repository_elis_files extends repository {
         $mform->addElement('text', 'server_port', get_string('serverport', 'repository_elis_files'), array('size' => '30'));
         $mform->addElement('static', 'server_port_default', '', get_string('elis_files_default_server_port', 'repository_elis_files'));
         $mform->addElement('static', 'server_port_intro', '', get_string('elis_files_server_port', 'repository_elis_files'));
-        //$mform->addElement('static', 'elis_files_server_host_intro', '', get_string('elis_files_server_host', 'repository_elis_files'));
+
         $mform->addRule('server_port', get_string('required'), 'required', null, 'client');
         $mform->setDefault('server_port', '8080');
 
@@ -681,10 +656,10 @@ class repository_elis_files extends repository {
         // Need to check for settings to be saved
             $popup_settings ="height=400,width=500,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
             $url = $CFG->wwwroot .'/repository/elis_files/config-categories.php';
-            $jsondata = array('url'=>$url,'name'=>'config-categories','options'=>$popup_settings);
+            $jsondata = array('url'=>$url,'name'=>'config_categories','options'=>$popup_settings);
             $jsondata = json_encode($jsondata);
             $title = get_string('configurecategoryfilter', 'repository_elis_files');
-            //$disabled = (get_config('elis_files', 'alfresco_version')) == '' ? 'disabled=\'disabled\'': '';
+
             $button = "<input type='button' value='".$title."' alt='".$title."' title='".$title."' onclick='return openpopup(null,$jsondata);'>";
             $mform->addElement('static', 'category_filter', get_string('categoryfilter', 'repository_elis_files'), $button);
             $mform->addElement('static', 'category_filter_intro', '', get_string('elis_files_category_filter', 'repository_elis_files'));
@@ -694,7 +669,7 @@ class repository_elis_files extends repository {
 
         $popup_settings = "height=480,width=640,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
 
-        $root_folder = get_config('elis_files', 'root_folder');
+        $root_folder = get_config('ELIS_files', 'root_folder');
         $button = repository_elis_files::output_root_folder_html($root_folder);
 
         $rootfolderarray=array();
@@ -708,7 +683,6 @@ class repository_elis_files extends repository {
         $valid = repository_elis_files::root_folder_is_valid($root_folder);
         $mform->addElement('static', 'root_folder_default', '', $valid.'&nbsp;'.get_string('elis_files_default_root_folder', 'repository_elis_files'));
         $mform->addElement('static', 'root_folder_intro', '', get_string('elis_files_root_folder', 'repository_elis_files'));
-        //$mform->addRule('elis_files_category_filter', get_string('required'), 'required', null, 'client');
 
         // Cache time is retrieved from the common cache time and displayed here
         $mform->addElement('text', 'cache_time', get_string('cachetime', 'repository_elis_files'), array('size' => '10'));
@@ -778,17 +752,17 @@ class repository_elis_files extends repository {
         $hasadmin = $DB->record_exists('user', array('username'   => 'admin',
                                                      'mnethostid' => $CFG->mnet_localhost_id));
 
-        $admin_username = trim(get_config('admin_username','elis_files'));
+        $admin_username = trim(get_config('admin_username','ELIS_files'));
         if (empty($admin_username)) {
             $adminusername = 'moodleadmin';
-            set_config('admin_username', $adminusername, 'elis_files');
+            set_config('admin_username', $adminusername, 'ELIS_files');
         } else {
             $adminusername = $admin_username;
         }
 
         // Only proceed here if the Alfresco plug-in is actually enabled.
-        if (repository_elis_files::is_repo_visible('elis_files')) {
-            if ($repo = repository_factory::factory('elis_files')) {
+        if (repository_elis_files::is_repo_visible('ELIS_files')) {
+            if ($repo = repository_factory::factory()) {
                 if (elis_files_get_home_directory($adminusername) == false) {
                     $mform->addElement('text', 'admin_username', get_string('configadminusername', 'repository_elis_files'), array('size' => '30'));
                     $mform->addElement('static', 'admin_username_default', '', get_string('elis_files_default_admin_username', 'repository_elis_files'));
@@ -836,7 +810,7 @@ class repository_elis_files extends repository {
 
         /// Validate the path, if we can.
         require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
-        if ($repo = repository_factory::factory('elis_files')) {
+        if ($repo = repository_factory::factory()) {
             $repoisup = $repo->is_configured() && $repo->verify_setup();
         }
 
@@ -859,7 +833,7 @@ class repository_elis_files extends repository {
         $repoisup = false;
 
     /// Validate the path, if we can.
-        if ($repo = repository_factory::factory('elis_files')) {
+        if ($repo = repository_factory::factory()) {
             $repoisup = $repo->is_configured() && $repo->verify_setup();
             if ($repoisup) {
                 if (elis_files_validate_path($data)) {
@@ -1027,7 +1001,6 @@ class repository_elis_files extends repository {
                 }
             }
         }
-//echo "\n so can I edit? $canedit";
         return $canedit;
     }
 
@@ -1047,19 +1020,14 @@ class repository_elis_files extends repository {
     /// Get the "ending" UUID for the 'root' of navigation.
         if ((empty($cid) || $cid == SITEID) && empty($uid) && empty($shared) && empty($oid)) {
             $end   = $this->elis_files->get_root()->uuid;
-//            print_object('End = root: ' . $end);
         } else if (empty($uid) && $shared == true) {
             $end = $this->elis_files->suuid;
-//            print_object('End = shared: ' . $end);
         } else if (empty($uid) && empty($oid) && empty($shared) && !empty($cid) && $cid != SITEID) {
             $end = $this->elis_files->get_course_store($cid);
-//            print_object('End = course: ' . $end);
         } else if (!empty($uid)) {
             $end = $this->elis_files->get_user_store($uid);
-//            print_object('End = user: ' . $end);
         } else if (empty($uid) && !empty($oid)) {
             $end = $this->elis_files->get_userset_store($oid);
-//            print_object('End = userset: ' . $end);
         }
 
         // Need to incorporate 'end' testing into here somehow... :)
@@ -1096,7 +1064,7 @@ class repository_elis_files extends repository {
      **/
     function get_location_parent($uuid, $cid, $uid, $shared, $oid) {
         global $COURSE, $USER;
-//echo "\n for uuid: $uuid cid: $cid shared: $shared oid: $oid";
+
          // Get encoded path for uuid
         $params = array('path'=>$uuid,
                         'shared'=>(boolean)$shared,
@@ -1175,7 +1143,7 @@ class repository_elis_files extends repository {
         $fulltree = $DB->get_records('elis_files_categories');
 
         // fetch the selected categories from config
-        $catfilter_serialized = get_config('elis_files', 'catfilter');
+        $catfilter_serialized = get_config('ELIS_files', 'catfilter');
 
         if ($catfilter = unserialize($catfilter_serialized)) {
             // build the new filtered tree

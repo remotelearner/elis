@@ -67,9 +67,7 @@ switch ($action) {
     case 'createnewfolder':
         $newdirname = required_param('newdirname', PARAM_ALPHANUMEXT);
         $encodedparentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
-//        echo "\n createnewfolder and parentuuid: ".$parentuuid;
-//        echo "\n newdirname: ".$newdirname;
-//        $return = new stdClass();
+
         // Decode parentuuid to get uuid for dir_exists and create_dir
         $params = unserialize(base64_decode($encodedparentuuid));
         $parentuuid = $params['path'];
@@ -86,8 +84,6 @@ switch ($action) {
     case 'deletepopup':
         $parentuuid   = required_param('parentuuid', PARAM_ALPHANUMEXT);
         $files   = required_param('files', PARAM_ALPHANUMEXT); //array
-//echo "\n files in deletepopup: ";
-//print_object($files);
         $delete_popup = array();
         $delete_popup['form'] = $repo->print_delete_popup($parentuuid, $files);
         echo json_encode($delete_popup);
@@ -130,13 +126,13 @@ switch ($action) {
 
         $return = new stdClass();
         $file_array = explode(",",$fileslist);
+        $repo->elis_files->get_defaults();
 
-        $alfresco_version = elis_files_get_repository_version();
-        if ($alfresco_version == '3.2.1') {
+        if ($repo->elis_files->is_version('3.2')) {
             foreach($file_array as $uuid) {
                 elis_files_delete($uuid);
             }
-        } else { // Alfresco 3.4
+        } else if ($repo->elis_files->is_version('3.4')) {
             foreach($file_array as $uuid) {
                 $repo->elis_files->delete($uuid);
             }
@@ -185,31 +181,23 @@ switch ($action) {
                 $cid = 0;
             }
         }
-//echo " MOVEPOPUP current parent?$parentuuid**";
-//print_object($parentuuid);
+
         // Get the default locations...
         $locations = array();
         $createonly = true;
         $repo->elis_files->file_browse_options($cid, $uid, $shared, $oid, $locations, $createonly);
 
-//echo "\n locations found:";
-//print_object($locations);
-//echo "\n before calling get_location_parent with oid: $oid shared: $shared cid: $cid and uid: $uid";
-
         // Get the encoded location parent of the current parentuuid
         $location_parent = $repo->get_location_parent($parentuuid, $cid, $uid, $shared, $oid);
-//echo " MOVEPOPUP encoded location parent:";
-//print_object($location_parent);
+
         // Get the tabview appropriate folder listing of the location parent
         $tab_listing = array();
         foreach ($locations as $key=>$location) {
             $tab_listing[$location['path']] = $repo->get_folder_listing($location['path'], $cid, $uid, $shared, $oid);
         }
 
-//            echo " in MOVEPOPUP and tab listing: ";
-//            print_object($tab_listing);
+
         // Get the form container with an empty div for the tabs
-//        $return->form = $repo->print_move_dialog($parentuuid, $shared, $oid,$selected_files);
         $return->form = $repo->print_move_dialog($parentuuid, $location_parent['path'], $cid, $uid, $shared, $oid, $selected_files);
         $return->listing = $tab_listing;
         $return->locations = $locations;

@@ -651,7 +651,7 @@ xmlns:cmisra="http://docs.oasisopen.org/ns/cmis/restatom/200908/">
 <cmis:maxItems>{maxItems}</cmis:maxItems>
 <cmis:skipCount>{skipCount}</cmis:skipCount>
 </cmis:query>
-<?
+<?php
 
         return ob_get_clean();
     }
@@ -692,7 +692,7 @@ xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
 {CONTENT}
 <cmisra:object><cmis:properties>{PROPERTIES}</cmis:properties></cmisra:object>
 </atom:entry>
-<?
+<?php
 
         return ob_get_clean();
     }
@@ -704,7 +704,7 @@ xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
 		<cmis:property{propertyType} propertyDefinitionId="{propertyId}">
 			<cmis:value>{properties}</cmis:value>
 		</cmis:property{propertyType}>
-<?
+<?php
 
         return ob_get_clean();
     }
@@ -788,7 +788,7 @@ xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
         ob_start();
 ?>
 		<atom:summary>{summary}</atom:summary>
-<?
+<?php
 
         return ob_get_clean();
     }
@@ -805,7 +805,7 @@ xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
 				{content}
 			</cmisra:base64>
 		</cmisra:content>
-<?
+<?php
 
         return ob_get_clean();
     }

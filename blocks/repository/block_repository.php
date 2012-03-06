@@ -58,12 +58,12 @@ class block_repository extends block_base {
 
         require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
 
-        if (!$repo = repository_factory::factory('elis_files')) {
+        if (!$repo = repository_factory::factory()) {
             return $this->content;
         }
 
         // Get the ELIS Files plugin configuration values
-        $pcfg = get_config('elis_files');
+        $pcfg = get_config('ELIS_files');
 
         $username = $USER->username == 'admin' ? $pcfg->admin_username : $USER->username;
         $username = $repo->alfresco_username_fix($username);

@@ -164,7 +164,7 @@ class qqFileUploader {
 
         $uuid = required_param('uuid', PARAM_TEXT);
 
-        if ($repo = repository_factory::factory('elis_files')) {
+        if ($repo = repository_factory::factory()) {
             // look through the files in the current directory
             if ($dir = $repo->read_dir($uuid)) {
                 if (!empty($dir->files)) {

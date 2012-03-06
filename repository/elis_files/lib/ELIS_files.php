@@ -67,11 +67,6 @@ define('ELIS_FILES_LOGIN_RESET', 5 * MINSECS);      // Reset a login after 5 min
 define('ELIS_FILES_DEBUG_TIME',  false);
 define('ELIS_FILES_DEBUG_TRACE', false);
 
-// Alfresco 3.4 type definitions
-// TODO: add type_folder and type_file to repo like in 1.9.3
-define('ELIS_FILES_TYPE_FOLDER',   'cmis:folder');
-define('ELIS_FILES_TYPE_DOCUMENT', 'cmis:document');
-
 // Define constants for the Alfresco role names.
 define('ELIS_FILES_ROLE_COORDINATOR',  'Coordinator');   // The coordinator gets all permissions and permission groups defined
 define('ELIS_FILES_ROLE_COLLABORATOR', 'Collaborator');  // Combines Editor and Contributor permission groups
@@ -84,11 +79,9 @@ define('ELIS_FILES_CAPABILITY_ALLOWED', 'ALLOWED');
 define('ELIS_FILES_CAPABILITY_DENIED',  'DENIED');
 
 // Define constants for the default file browsing location.
-//define('ELIS_FILES_BROWSE_MOODLE_FILES',          10);
 defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
 // Was shared, now called server files
 defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
-//defined('ELIS_FILES_BROWSE_SERVER_FILES') or define('ELIS_FILES_BROWSE_SERVER_FILES', 30);
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
 defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_FILES', 60);
@@ -110,19 +103,24 @@ class ELIS_files {
     var $config    = '';  // Config object setting variables for Alfresco
     var $isrunning = null;
     var $alfresco_username_fix = ''; // The fixed username for Alfresco where @ is replaced with _AT_
+    public static $version   = null; // Alfresco version
 
     function ELIS_files() {
         global $CFG, $USER, $DB;
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('ELIS_files()');
 
-        $this->process_config(get_config('elis_files'));
+        $this->process_config(get_config('ELIS_files'));
 
         if (!$this->is_configured()) {
             return false;
         }
 
         if (!$this->is_running()) {
+            return false;
+        }
+
+        if (!$this->get_defaults()) {
             return false;
         }
 
@@ -250,27 +248,57 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('verify_setup()');
 
-        // TODO: save this here as $this->version and then change all alfresco_version to this->version
-        $alfresco_version = elis_files_get_repository_version();
-
-        // For Alfresco 3.4 make sure $this->cmis is not empty
-        if ($alfresco_version != '3.2.1') {
-            // Check for connection first!
-            if (empty($this->cmis)) {
-                $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
-                                           $this->config->server_username,
-                                           $this->config->server_password);
-            }
-        }
-        $root = $this->get_root();
-        if ($root == false || !isset($root->uuid)) {
+        if (!$this->get_defaults()) {
             return false;
         }
+
+        if (self::is_version('3.2')) {
+            if (!elis_files_get_services()) {
+                return false;
+            }
+
+            // Set up the root node
+            $response = elis_files_request(elis_files_get_uri('', 'sites'));
+
+            $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
+
+            $dom = new DOMDocument();
+            $dom->preserveWhiteSpace = false;
+            $dom->loadXML($response);
+
+            $nodes = $dom->getElementsByTagName('entry');
+            $type  = '';
+
+            $this->root = elis_files_process_node($dom, $nodes->item(0), $type);
+        } else if (self::is_version('3.4')) {
+            if (empty($this->cmis)) {
+                $this->cmis = new CMISService(elis_files_base_url() . '/api/cmis',
+                $this->config->server_username,
+                $this->config->server_password);
+
+                if (empty($this->cmis->authenticated)) {
+                    return false;
+                }
+
+                if (!$root = $this->cmis->getObjectByPath('/')) {
+                    return false;
+                }
+
+                $type = '';
+                $this->root = elis_files_process_node_new($root, $type);
+            }
+        }
+
 
         // If there is no root folder saved or it's set to default,
         // make sure there is a default '/moodle' folder.
         if (empty($this->config->root_folder) ||
             ($this->config->root_folder == '/moodle')) {
+
+            $root = $this->get_root();
+            if ($root == false || !isset($root->uuid)) {
+                return false;
+            }
 
             $dir = $this->read_dir($root->uuid, true);
 
@@ -379,19 +407,7 @@ class ELIS_files {
  * @return object|bool Processed node data or, False on error.
  */
     function get_root() {
-        $alfresco_version = elis_files_get_repository_version();
-
-        if ($alfresco_version == '3.2.1') {
-            return $this->root;
-        } else { // Alfresco 3.4
-            if (!$root = $this->cmis->getObjectByPath('/')) {
-                return false;
-            }
-
-            $type = '';
-
-            return elis_files_process_node_new($root, $type);
-        }
+       return $this->root;
     }
 
 
@@ -417,16 +433,6 @@ class ELIS_files {
 
         // Set the config object to what was retrieved from get_config
         $this->config = $config;
-        //TODO: for the install issue
-        //echo '<br>config:';
-        //print_object($config);
-
-        /*
-        set_config('repository_elis_files_server_host', stripslashes(trim($config->server_host)));
-        set_config('repository_elis_files_server_port', stripslashes(trim($config->server_port)));
-        set_config('repository_elis_files_server_username', stripslashes(trim($config->server_username)));
-        set_config('repository_elis_files_server_password', stripslashes(trim($config->server_password)));
-        */
 
         return true;
     }
@@ -443,7 +449,7 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_repourl()');
 
-        $repourl = $this->config->server_host;
+        $repourl = elis::$config->server_host;
 
         if ($repourl[strlen($repourl) - 1] == '/') {
             $repourl = substr($repourl, 0, strlen($repourl) - 1);
@@ -529,22 +535,27 @@ class ELIS_files {
  */
     function get_info($uuid) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_info(' . $uuid . ')');
-        $alfresco_version = elis_files_get_repository_version();
 
-        if ($alfresco_version == '3.2.1') {
+        if (!$this->get_defaults()) {
+            return false;
+        }
+
+        if (self::is_version('3.2')) {
             return elis_files_node_properties($uuid);
-        } else { // Alfresco 3.4
+        } else if (self::is_version('3.4')) {
+            //Check that the uuid is valid before trying to get the object
+            if (!elis_files_request(elis_files_get_uri($uuid, 'self'))) {
+                return false;
+            }
             if (!$node = $this->cmis->getObject('workspace://SpacesStore/' . $uuid)) {
                 return false;
             }
 
             $type = '';
+            $node = elis_files_process_node_new($node, $type);
+            $node->type = $type;
 
-            if ($alfresco_version == '3.2.1') {
-                return elis_files_process_node($node, $type);
-            } else { // Alfresco 3.4
-                return elis_files_process_node_new($node, $type);
-            }
+            return $node;
         }
     }
 
@@ -558,26 +569,12 @@ class ELIS_files {
     function is_dir($uuid) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('is_dir(' . $uuid . ')');
 
-        $alfresco_version = elis_files_get_repository_version();
-
-        if ($alfresco_version == '3.2.1') {
-            return (elis_files_get_type($uuid) == 'folder');
-        } else { // Alfresco 3.4
-            if (!$node = $this->cmis->getObject('workspace://SpacesStore/' . $uuid)) {
-                return false;
-            }
-
-            $type  = '';
-            $alfresco_version = elis_files_get_repository_version();
-
-            if ($alfresco_version == '3.2.1') {
-                $pnode = elis_files_process_node($node, $type);
-            } else { // Alfresco 3.4
-                $pnode = elis_files_process_node_new($node, $type);
-            }
-
-            return ($type == ELIS_FILES_TYPE_FOLDER);
+        // Set the file and folder type
+        if (!$this->get_defaults()) {
+            return false;
         }
+
+        return (elis_files_get_type($uuid) == ELIS_FILES_TYPE_FOLDER);
     }
 
 
@@ -674,18 +671,21 @@ class ELIS_files {
  */
     function read_dir($uuid = '', $useadmin = true) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('read_dir(' . $uuid . ', ' . ($useadmin !== true ? 'false' : 'true') . ')');
-        $alfresco_version = elis_files_get_repository_version();
 
-        if ($alfresco_version == '3.2.1') {
+        if (!$this->get_defaults()) {
+            return false;
+        }
+
+        if (self::is_version('3.2')) {
             return elis_files_read_dir($uuid, $useadmin);
-        } else { // Alfresco 3.4
+        } else if (self::is_version('3.4')) {
             if (empty($uuid)) {
-                   if ($root = $this->get_root()) {
+                if ($root = $this->get_root()) {
                     $uuid = $root->uuid;
                 }
             }
 
-            if (!$result = $this->cmis->getChildren('workspace://SpacesStore/' . $uuid)) {
+            if (!($result = $this->cmis->getChildren('workspace://SpacesStore/' . $uuid))) {
                 return false;
             }
 
@@ -696,11 +696,7 @@ class ELIS_files {
             foreach ($result->objectsById as $child) {
                 $type = '';
 
-                if ($alfresco_version == '3.2.1') {
-                    $node =  elis_files_process_node($child, $type);
-                } else { // Alfresco 3.4
-                    $node =  elis_files_process_node_new($child, $type);
-                }
+               $node =  elis_files_process_node_new($child, $type);
 
                 if ($type == ELIS_FILES_TYPE_FOLDER) {
                     $return->folders[] = $node;
@@ -743,13 +739,10 @@ class ELIS_files {
             $downloading = true;
         }
 
-        $node = $this->get_info($uuid);
+        if (!($node = $this->get_info($uuid))) {
+            return false;
+        }
 
-//        if (isloggedin()) {
-//            $username = $USER->username;
-//        } else {
-//            $username = '';
-//        }
         $username = '';
 
     /// Check for a non-text file type to just pass through to the end user.
@@ -1044,9 +1037,9 @@ class ELIS_files {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('upload_file(' . $upload . ', ' . $path . ', ' . $uuid . ')');
         if (ELIS_FILES_DEBUG_TIME) $start = microtime(true);
 
-        $alfresco_version = elis_files_get_repository_version();
+        require_once($CFG->libdir . '/filelib.php');
 
-        if ($alfresco_version == '3.2.1') {
+       if (self::is_version('3.2')) {
             if ($node = elis_files_upload_file($upload, $path, $uuid)) {
                 if (ELIS_FILES_DEBUG_TIME) {
                     $end  = microtime(true);
@@ -1057,9 +1050,7 @@ class ELIS_files {
             }
 
             return false;
-        } else { // Alfresco 3.4
-            require_once($CFG->libdir . '/filelib.php');
-
+        } else if (self::is_version('3.4')) {
             if (!empty($upload)) {
                 if (!isset($_FILES[$upload]) || !empty($_FILES[$upload]->error)) {
                     return false;
@@ -1081,21 +1072,6 @@ class ELIS_files {
             } else {
                 return false;
             }
-
-//        if (!$content = file_get_contents($filepath)) {
-//            return false;
-//        }
-
-//        $result = $this->cmis->createDocument('workspace://SpacesStore/' . $uuid, $filename, array(), $content, $filemime);
-//
-//        if ($result !== false) {
-//            $type = '';
-//            $node = elis_files_process_node($result, $type);
-//            return $node->uuid;
-//        }
-//
-//        return false;
-//    }
 
             $chunksize = 8192;
 
@@ -1280,7 +1256,7 @@ class ELIS_files {
 
             // Ensure that we set the current user to be the owner of the newly created directory.
             if (!empty($properties->uuid)) {
-                $username = alfresco_transform_username($USER->username);
+                $username = elis_files_transform_username($USER->username);
 
                 // We're not going to check the response for this right now.
                 elis_files_request('/moodle/nodeowner/' . $properties->uuid . '?username=' . $username);
@@ -1307,18 +1283,14 @@ class ELIS_files {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('upload_dir(' . $path . ', ' . $uuid . ', ' . $recurse . ')');
         if (ELIS_FILES_DEBUG_TIME) $start = microtime(true);
 
+        if (!$this->get_defaults()) {
+            return false;
+        }
     /// Make sure the location we are meant to upload files and create new
     /// directories actually exists and is a folder, not a content node.
-        $alfresco_version = elis_files_get_repository_version();
 
-        if ($alfresco_version == '3.2.1') {
-            if (elis_files_get_type($uuid) != 'folder') {
-                return false;
-            }
-        } else { // Alfresco 3.4
-            if (!$this->is_dir($uuid)) {
-                return false;
-            }
+        if (!$this->is_dir($uuid)) {
+            return false;
         }
 
     /// Make sure the local path is a directory.
@@ -1385,19 +1357,13 @@ class ELIS_files {
             return false;
         }
 
-        $node = $this->get_info($uuid);
+        if (!($node = $this->get_info($uuid))) {
+            return false;
+        }
 
     /// Make sure we've been pointed to a directory
-        $alfresco_version = elis_files_get_repository_version();
-
-        if ($alfresco_version == '3.2.1') {
-            if (elis_files_get_type($node->uuid) != 'folder') {
+        if (!$this->is_dir($node->uuid)) {
             return false;
-            }
-        } else { // Alfresco 3.4
-            if (!$this->is_dir($node->uuid)) {
-                return false;
-            }
         }
 
         $filelist = array();
@@ -1459,20 +1425,12 @@ class ELIS_files {
 
         $this->errormsg = '';
 
-        $alfresco_version = elis_files_get_repository_version();
+        if (!($node = $this->get_info($uuid))) {
+            return false;
+        }
 
-        if ($alfresco_version == '3.2.1') {
-            $node = elis_files_node_properties($uuid);
-
-            if (elis_files_get_type($uuid) == 'folder') {
-                return $this->download_dir($location, $uuid, true);
-                }
-        } else { // Alfresco 3.4
-            $node = $this->get_info($uuid);
-
-            if ($this->is_dir($uuid)) {
-                return $this->download_dir($location, $uuid, true);
-            }
+        if ($this->is_dir($uuid)) {
+            return $this->download_dir($location, $uuid, true);
         }
 
         if (substr_compare($location, '/', strlen($location) - 1) != 0) {
@@ -1529,9 +1487,7 @@ class ELIS_files {
 
         $this->errormsg = '';
 
-        $alfresco_version = elis_files_get_repository_version();
-
-        if ($alfresco_version == '3.2.1') {
+        if (self::is_version('3.2')) {
             if ($node = elis_files_create_dir($name, $uuid, $description, $useadmin)) {
                 if (ELIS_FILES_DEBUG_TIME) {
                     $end  = microtime(true);
@@ -1541,14 +1497,10 @@ class ELIS_files {
                 // was $node->uuid
                 return $node->uuid;
             }
-        } else { // Alfresco 3.4
+        } else if (self::is_version('3.4')) {
             if ($return = $this->cmis->createFolder('workspace://SpacesStore/' . $uuid, $name)) {
                 $type = '';
-                if ($alfresco_version == '3.2.1') {
-                    $node =  elis_files_process_node($return, $type);
-                } else { // Alfresco 3.4
-                    $node =  elis_files_process_node_new($return, $type);
-                }
+                $node =  elis_files_process_node_new($return, $type);
 
                 return $node->uuid;
             }
@@ -1572,22 +1524,30 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE)  print_object('repo elis_files_delete(' . $uuid . ', ' . $recursive . ')');
 
+        if (!$this->get_defaults()) {
+            return false;
+        }
+
         // Ensure that we set the configured admin user to be the owner of the deleted file before deleting.
         // This is to prevent the user's Alfresco account from having space incorrectly attributed to it.
         // ELIS-1102
-        elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . $this->config->server_username);
+        elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
 
-        if ($this->is_dir($uuid)) {
-            if (elis_files_send('/cmis/i/' . $uuid.'/descendants', array(), 'DELETE') === false) {
-                return false;
+        if (self::is_version('3.2')) {
+            return (true === alfresco_send(alfresco_get_uri($uuid, 'delete'), array(), 'DELETE'));
+        } else if (self::is_version('3.4')) {
+            if ($this->is_dir($uuid)) {
+                if (elis_files_send('/cmis/i/' . $uuid.'/descendants', array(), 'DELETE') === false) {
+                    return false;
+                }
+            } else {
+                if ($this->cmis->deleteObject('workspace://SpacesStore/' . $uuid) === false) {
+                    return false;
+                }
             }
-        } else {
-           if ($this->cmis->deleteObject('workspace://SpacesStore/' . $uuid) === false) {
-            return false;
-           }
-        }
 
-        return true;
+            return true;
+        }
     }
 
 
@@ -1614,18 +1574,17 @@ class ELIS_files {
             // Verify that the folder still exists and if not, delete the DB record so we can create a new one below.
             if ($this->get_info($uuid) === false) {
                 $DB->delete_records('elis_files_course_store', array('courseid'=> $cid));
-                // Reset uuid
-                $uuid = '';
+                $uuid = false;
             } else {
                 return $uuid;
             }
         }
 
+        $dir = $this->read_dir($this->cuuid);
+
         if (!$course = $DB->get_record('course', array('id'=> $cid), 'shortname, fullname')) {
             return false;
         }
-
-        $dir = $this->read_dir($this->cuuid);
 
         // Look at all of the course directories that exist for our course ID.
         if (!empty($dir->folders)) {
@@ -1686,9 +1645,13 @@ class ELIS_files {
         if (($uuid = $DB->get_field('elis_files_userset_store', 'uuid', array('usersetid'=> $oid))) !== false) {
             // Verify that the folder still exists and if not, delete the DB record so we can create a new one below.
             if ($this->get_info($uuid) === false) {
-                delete_records('elis_files_userset_store', array('usersetid'=> $oid));
-                $uuid = FALSE;
+                $DB->delete_records('elis_files_userset_store', array('usersetid'=> $oid));
+                $uuid = false;
+            } else {
+                return $uuid;
             }
+        } else if (!$create) {
+            return false;
         }
 
         // Make sure that the optional table we are about to check actually exists.
@@ -1723,15 +1686,13 @@ class ELIS_files {
             return false;
         }
 
-        //if (empty($uuid)) {
-            if ($node = elis_files_create_dir($userset->name, $this->ouuid, $userset->display)) {
-                $uuid = $node->uuid;
+        if ($node = elis_files_create_dir($userset->name, $this->ouuid, $userset->display)) {
+            $uuid = $node->uuid;
 
-                // Disable inheriting parent space permissions.  This can be disabled in Alfresco without being
-                // reset by the code elsewhere.
-                $this->node_inherit($uuid, false);
-            }
-        //}
+            // Disable inheriting parent space permissions.  This can be disabled in Alfresco without being
+            // reset by the code elsewhere.
+            $this->node_inherit($uuid, false);
+        }
 
         if (!empty($uuid)) {
             // Store the UUID value if it hasn't been stored already.
@@ -1757,11 +1718,13 @@ class ELIS_files {
  */
     function has_old_user_store($uid) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('has_old_user_store(' . $uid . ')');
+
         if (empty($this->uuuid)) {
             return false;
         }
 
         $dir = $this->read_dir($this->uuuid, true);
+
         // Look at all of the course directories that exist for our user ID.
         if (!empty($dir->folders)) {
             foreach ($dir->folders as $folder) {
@@ -1850,21 +1813,19 @@ class ELIS_files {
     function get_parent($uuid) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_parent(' . $uuid . ')');
 
-        $alfresco_version = elis_files_get_repository_version();
+        if (!$this->get_defaults()) {
+            return false;
+        }
 
-        if ($alfresco_version == '3.2.1') {
+        if (self::is_version('3.2')) {
             return elis_files_get_parent($uuid);
-        } else { // Alfresco 3.4
+        } else if (self::is_version('3.4')) {
              if (!$node = $this->cmis->getFolderParent('workspace://SpacesStore/' . $uuid)) {
                 return false;
             }
 
             $type = '';
-            if ($alfresco_version == '3.2.1') {
-                return elis_files_process_node($node, $type);
-            } else { // Alfresco 3.4
-                return elis_files_process_node_new($node, $type);
-            }
+            return elis_files_process_node_new($node, $type);
         }
     }
 
@@ -1885,66 +1846,39 @@ class ELIS_files {
     /// Get the "ending" UUID for the 'root' of navigation.
         if ((empty($cid) || $cid == SITEID) && empty($uid) && empty($shared) && empty($oid)) {
             $end   = $this->get_root()->uuid;
-//            print_object('End = root: ' . $end);
         } else if (empty($uid) && $shared == true) {
             $end = $this->suuid;
-//            print_object('End = shared: ' . $end);
         } else if (empty($uid) && empty($oid) && empty($shared) && !empty($cid) && $cid != SITEID) {
             $end = $this->get_course_store($cid);
-//            print_object('End = course: ' . $end);
         } else if (!empty($uid)) {
             $end = $this->get_user_store($uid);
-//            print_object('End = user: ' . $end);
-    	} else if (empty($uid) && !empty($oid)) {
+        } else if (empty($uid) && !empty($oid)) {
             $end = $this->get_userset_store($oid);
-//            print_object('End = userset: ' . $end);
         }
 
         $stack = array();
-        $alfresco_version = elis_files_get_repository_version();
 
-        if ($alfresco_version == '3.2.1') {
-            $node  = elis_files_node_properties($uuid);
+        if (!($node = $this->get_info($uuid))) {
+            return false;
+        }
 
-            if (elis_files_get_type($uuid) == 'folder') {
-                // Include shared and oid parameters
-                $params = array('path'=>$node->uuid,
-                                'shared'=>(boolean)$shared,
-                                'oid'=>(int)$oid,
-                                'cid'=>(int)$cid,
-                                'uid'=>(int)$uid);
-                $encodedpath = base64_encode(serialize($params));
-                $nav = array(
-                    'name' => $node->title,
-                    'path' => $encodedpath
-                    );
+        if ($node->type == ELIS_FILES_TYPE_FOLDER) {
+            // Include shared and oid parameters
+            $params = array('path'=>$node->uuid,
+                            'shared'=>(boolean)$shared,
+                            'oid'=>(int)$oid,
+                            'cid'=>(int)$cid,
+                            'uid'=>(int)$uid);
+            $encodedpath = base64_encode(serialize($params));
+            $nav = array(
+                'name' => $node->title,
+                'path' => $encodedpath
+                );
 
-                    array_push($stack, $nav);
+                array_push($stack, $nav);
 
-            } else if (elis_files_get_type($uuid) != 'content') {
-                return false;
-            }
-        } else { // Alfresco 3.4
-            $node  = $this->get_info($uuid);
-
-            if ($node->type == ELIS_FILES_TYPE_FOLDER) {
-                // Include shared and oid parameters
-                $params = array('path'=>$node->uuid,
-                                'shared'=>(boolean)$shared,
-                                'oid'=>(int)$oid,
-                                'cid'=>(int)$cid,
-                                'uid'=>(int)$uid);
-                $encodedpath = base64_encode(serialize($params));
-                $nav = array(
-                    'name' => $node->title,
-                    'path' => $encodedpath
-                    );
-
-                    array_push($stack, $nav);
-
-            } else if ($node->type != ELIS_FILES_TYPE_DOCUMENT) {
-                return false;
-            }
+        } else if ($node->type != ELIS_FILES_TYPE_DOCUMENT) {
+            return false;
         }
 
         if ($node->uuid == $end) {
@@ -1990,37 +1924,21 @@ class ELIS_files {
 
         $this->errormsg = '';
 
+        if (!$this->get_defaults()) {
+            return false;
+        }
+
         $stack = array();
 
-        $alfresco_version = elis_files_get_repository_version();
+        if (($node = $this->get_info($uuid)) === false) {
+            print_error('couldnotgetnodeproperties', 'repository_elis_files', '', $uuid);
+            return false;
+        }
 
-        if ($alfresco_version == '3.2.1') {
-            if (($node = elis_files_node_properties($uuid)) === false) {
-                print_error('couldnotgetnodeproperties', 'repository_elis_files', '', $uuid);
-                return false;
-            }
-
-            if (($type = elis_files_get_type($uuid)) === false) {
-                print_error('couldnotgetnodeproperties', 'repository_elis_files', '', $uuid);
-                return false;
-            }
-
-            if ($type == 'folder') {
-                array_push($stack, $node->title);
-            } else if ($type !== 'document') {
-                return false;
-            }
-        } else { // Alfresco 3.4
-            if (($node = $this->get_info($uuid)) === false) {
-                print_error('couldnotgetnodeproperties', 'repository_elis_files', '', $uuid);
-                return false;
-            }
-
-            if ($node->type == ELIS_FILES_TYPE_FOLDER) {
-                array_push($stack, $node->title);
-            } else if ($node->type !== ELIS_FILES_TYPE_DOCUMENT) {
-                return false;
-            }
+        if ($node->type == ELIS_FILES_TYPE_FOLDER) {
+            array_push($stack, $node->title);
+        } else if ($node->type !== ELIS_FILES_TYPE_DOCUMENT) {
+            return false;
         }
 
         if ($parent = $this->get_parent($node->uuid)) {
@@ -2262,7 +2180,7 @@ class ELIS_files {
     /// This file didn't come from somewhere within Moodle that we know about so access has
     /// to be determined based on the Alfresco capabilities the current user has.
         } else {
-			// Get the non context based permissions
+            // Get the non context based permissions
             $capabilities = array('repository/elis_files:viewowncontent'=> false,
                               'repository/elis_files:viewsharedcontent'=> false);
             $this->get_other_capabilities($USER, $capabilities);
@@ -2469,15 +2387,8 @@ class ELIS_files {
         foreach ($folders as $i => $folder) {
             $npath = $path . '/' . $folder['name'];
 
-            $alfresco_version = elis_files_get_repository_version();
-
-            if ($alfresco_version == '3.2.1') {
-                $root_folder = $this->config->root_folder;
-            } else { // Alfresco 3.4
-                $root_folder = get_config('elis_files','root_folder');
-            }
             $text = ' <a href="#" onclick="set_value(\\\'' . $npath . '\\\')" title="' . $npath . '">' . $folder['name'] .
-                    (!empty($root_folder) && $root_folder == $npath ?
+                    (!empty(elis::$config->elis_files->root_folder) && elis::$config->elis_files->root_folder == $npath ?
                     ' <span class="pathok">&#x2714;</span>' : '') . '</a>';
 
             $node = new HTML_TreeNode(array(
@@ -2519,8 +2430,9 @@ class ELIS_files {
     function file_browse_options($cid, $uid, $shared, $oid, &$opts=array(), $createonly = false) {
         global $USER, $COURSE;
 
+        //Check defaults
         $opts = array();
-//echo " in file_browse_option cid: $cid from COURSE: $COURSE->id uid: $uid";
+
         if (empty($cid)) {
             $cid = $COURSE->id;
         }
@@ -2548,12 +2460,7 @@ class ELIS_files {
         $this->get_other_capabilities($USER, $capabilities);
 
         // Build the option for browsing from the repository userset / course / site files.
-//        echo "\n in file browse options siteid: ".SITEID." cid: $cid viewalfsite: $viewalfsite";
-//echo '<br>in get_listing and this is: ';
-//print_object($this);
         if ($cid == SITEID && $viewalfsite) {
-//            $repoisup = $this->is_running() && $this->verify_setup();
-//            echo '<br>is repo up? '.$repoisup.'well?';
             $alfroot = $this->get_root();
             if (!empty($alfroot->uuid)) {
                 $uuid = $alfroot->uuid;
@@ -2581,14 +2488,6 @@ class ELIS_files {
             }
 
         } else if ($cid != SITEID && $viewalfcourse) {
-//            $curl        = $alfrescourl . 'id=' . $cid . '&amp;userid=0&amp;choose=' . $choose;
-//            $opts[$curl] = get_string('repositorycoursefiles', 'repository');
-
-//            if (!elis_files_has_permission($this->muuid, $USER->username)) {
-//                $this->allow_read($USER->username, $this->muuid);
-//            }
-//$repoisup = $this->is_running() && $this->verify_setup();
-//            echo '<br>is repo up? '.$repoisup.'well?';
             if (!elis_files_has_permission($this->cuuid, $USER->username)) {
                 $this->allow_read($USER->username, $this->cuuid);
             }
@@ -2623,7 +2522,6 @@ class ELIS_files {
 
         // Build the option for browsing from the repository shared files.
         if ($capabilities['repository/elis_files:viewsharedcontent'] == true) {
-//echo "\n checking for file browse options and have viewsharedcontend and createonly: $createonly";
             if (!elis_files_has_permission($this->suuid, $USER->username)) {
                 $this->allow_read($USER->username, $this->suuid);
             }
@@ -2648,8 +2546,7 @@ class ELIS_files {
                                 'path'=> $encodedpath);
             }
         }
-//echo '<br>capabilities:';
-//print_object($capabilities);
+
         // Build the option for browsing from the repository personal / user files.
         if ($capabilities['repository/elis_files:viewowncontent']) {
             if (!$createonly || ($createonly && ($capabilities['repository/elis_files:createowncontent'] == true))) {
@@ -2670,7 +2567,6 @@ class ELIS_files {
         // Assemble the default menu selection based on the information given to this method.
 //        $default = $origurl . 'id=' . $cid . (!empty($oid) ? '&amp;oid='.$oid : '') . (!empty($shared) ? '&amp;shared=true' : '') . '&amp;userid=' .
 //                   ($editalfpersonal || $viewalfpersonal ? $uid : '0') . '&amp;choose=' . $choose;
-
         // Do we need to 'select' default... hmmm...
 
         return $opts;
@@ -2685,9 +2581,8 @@ class ELIS_files {
  */
     function find_userset_folders(&$opts, $createonly) {
         global $CFG, $DB, $USER;
-//echo "\n create only? $createonly";
+
         require_once($CFG->libdir . '/ddllib.php');
-//        require_once($CFG->dirroot.'/elis/program/lib/lib.php');
 
         // Ensure that the cluster table actually exists before we query it.
         $table = new XMLDBTable('crlm_cluster');
@@ -2716,7 +2611,7 @@ class ELIS_files {
 
         // Select clusters and sub-clusters for the current user
         // to which they have the vieworganization capability
-$sql = "SELECT DISTINCT clst.id AS instanceid
+        $sql = "SELECT DISTINCT clst.id AS instanceid
             FROM {crlm_cluster} clst
             WHERE EXISTS ( SELECT 'x'
                 FROM {context} c
@@ -2745,7 +2640,6 @@ $sql = "SELECT DISTINCT clst.id AS instanceid
                         'contextlevelnum2'=>$contextlevelnum,
                         'muserid'=>$USER->id,
                         'cmuserid'=>$cmuserid);
-//        $viewable_clusters = $DB->get_records_sql($sql, $params);
         $viewable_clusters = $DB->get_recordset_sql($sql, $params);
 
         // Get user clusters
@@ -2766,29 +2660,28 @@ $sql = "SELECT DISTINCT clst.id AS instanceid
         }
 
         // There may be multiple clusters that this user is assigned to...
-        //$org_folders = array();
         foreach ($cluster_info as $cluster) {
             // Get the extra cluster data and ensure it is present before proceeding.
             $clusterdata = usersetclassification::get_for_cluster($cluster);
 
             if (empty($clusterdata->params)) {
-                return false;
+                continue;
             }
 
             $clusterparams = unserialize($clusterdata->params);
 
             // Make sure this cluster has the Alfresco shared folder property defined
             if (empty($clusterparams['elis_files_shared_folder'])) {
-                return false;
+                continue;
             }
 
             // Make sure we can get the storage space from Alfresco for this userset.
             if (!$uuid = $this->get_userset_store($cluster->id)) {
-                return false;
+                continue;
             }
 
             // Add to opts array
-			$cluster_context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $cluster->id);
+            $cluster_context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $cluster->id);
             $viewalfuserset = has_capability('repository/elis_files:viewusersetcontent', $cluster_context);
             $editalfuserset = has_capability('repository/elis_files:createusersetcontent', $cluster_context);
             if ($editalfuserset) {
@@ -2811,18 +2704,6 @@ $sql = "SELECT DISTINCT clst.id AS instanceid
                                 'path'=> $encodedpath
                                 );
             }
-//echo "\n in find_userset_folders for ".$cluster->name." encoded path: ".$encodedpath." for uuid: ".$uuid." with oid: ".$cluster->id;
-//echo "\n just serialized: ".serialize($params);
-// lets decode and see what we have... this is frustrating!!!
-//$params = unserialize(base64_decode($encodedpath));
-//            if (is_array($params)) {
-//                $uuid    = is_null($params['path']) ? NULL : clean_param($params['path'], PARAM_PATH);
-//                $shared  = is_null($params['shared']) ? '' : clean_param($params['shared'], PARAM_FILE);
-//                $oid     = is_null($params['oid']) ? '' : clean_param($params['oid'], PARAM_FILE);
-//            }
-//echo "\n after test decode for ".$cluster->name." encoded path: ".$encodedpath." for uuid: ".$uuid." with oid: ".$oid;
-            //$org_folders[$cluster->name] = $uuid;
-
         }
 
         return true;
@@ -2866,7 +2747,7 @@ $sql = "SELECT DISTINCT clst.id AS instanceid
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('update_user_password(' . $user->username . ', ' . $password . ')');
 
-        $username = alfresco_transform_username($user->username);
+        $username = elis_files_transform_username($user->username);
 
         // We need to create a new account now.
         $userdata = array(
@@ -3148,9 +3029,6 @@ echo '<br>leaving migrate_user';
  */
     function get_other_capabilities($user,&$capabilities) {
         global $CFG, $DB, $USER;
-//echo "\n ******* capabilities array: ";
-//print_object($capabilities);
-//        $root = $this->get_root();
 
         if (!empty($USER->access['rdef'])) {
             foreach ($USER->access['rdef'] as $ctx) {
@@ -3162,24 +3040,6 @@ echo '<br>leaving migrate_user';
                 }
             }
         }
-//            if ($recordset = $DB->get_recordset_sql($sql, $params)) {
-//                foreach ($recordset as $record) {
-//                    if (in_array($capabilities,$record->capability)) {
-//                        $capabilities[$record->capability] = true;
-//                    }
-//                }
-//            }
-            /*if ($DB->record_exists_sql($sql, $params)) {
-                if ($capability == 'repository/elis_files:createowncontent') {
-                    $capabilities['repository/elis_files:createowncontent'] = true;
-                } else if ($capability == 'repository/elis_files:viewowncontent') {
-                    $capabilities['repository/elis_files:viewowncontent'] = true;
-                } else if ($capability == 'repository/elis_files:createsharedcontent') {
-                    $capabilities['repository/elis_files:createsharedcontent'] = true;
-                } else if ($capability == 'repository/elis_files:viewsharedcontent') {
-                    $capabilities['repository/elis_files:viewsharedcontent'] = true;
-                }
-            }*/
     }
 
 
@@ -3285,12 +3145,7 @@ echo '<br>leaving migrate_user';
  */
     function get_repository_location(&$cid, &$uid, &$shared, &$oid) {
         global $COURSE, $USER;
-//echo "\n in get repository location: ";
-//echo " cid: $cid";
-//echo " uid: $uid";
-//print_object('$shared: ' . $shared);
-//print_object('$oid:     '.$oid);
-        // If there was no previous location stored we have nothing to return.
+
         if (!isset($USER->elis_files_repository_location)) {
             return '';
         }
@@ -3301,10 +3156,7 @@ echo '<br>leaving migrate_user';
         $capabilities = array('repository/elis_files:viewowncontent'=> false,
                               'repository/elis_files:viewsharedcontent'=> false);
         $this->get_other_capabilities($USER, $capabilities);
-//echo "\n in get_repository_location and capabilities: ";
-//print_object($capabilities);
-//echo "\n location: ";
-//print_object($location);
+
         // If the previous value comes from within a cluster that is not the current cluster, return the root
         // storage value for the current cluster directory.
 
@@ -3479,6 +3331,42 @@ echo '<br>leaving migrate_user';
         }
 
         return '';
+    }
+
+    /*
+     * This function sets version and folder_type as required
+     * @return  bool false if we cannot connect to Alfresco
+     */
+    function get_defaults() {
+        // Initialize the alfresco version
+        if (!($this->version = self::$version = elis_files_get_repository_version())) {
+            return false;
+        }
+
+        // Set the file and folder type
+        if (!defined('ELIS_FILES_TYPE_FOLDER')) {
+            if (self::is_version('3.2')) {
+                define('ELIS_FILES_TYPE_FOLDER',   'folder');
+                define('ELIS_FILES_TYPE_DOCUMENT', 'document');
+            } else if (self::is_version('3.4')) {
+                define('ELIS_FILES_TYPE_FOLDER',   'cmis:folder');
+                define('ELIS_FILES_TYPE_DOCUMENT', 'cmis:document');
+            }
+        }
+        return true;
+
+    }
+
+    /**
+     * Check if a given version of Alfresco is running with as much specificity to the version as required.
+     *
+     * Example: $vcomp = "3.2" will return true if the version is 3.2.1 and false if the version is 3.4.6.
+     *
+     * @param string $vcomp The partial or full version string to check for.
+     * @return bool True if the version matches the request, False otherwise.
+     */
+    public static function is_version($vcomp) {
+        return (strpos(self::$version, $vcomp) === 0) ? true : false;
     }
 
 
