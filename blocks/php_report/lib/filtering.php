@@ -254,15 +254,35 @@ function php_report_filtering_get_user_preferences($report_shortname) {
         if (!isset($SESSION->php_report_default_params)) {
             $SESSION->php_report_default_params = array();
         }
+        $urlparams = array();
         foreach ($_GET as $key => $val) {
             if ($key != 'report') {
-                //error_log("/blocks/php_report/lib/filtering.php::php_report_filtering_get_user_preferences($report_shortname, $force_persistent) over-riding filter values with URL param: {$key}={$val}");
-                $SESSION->php_report_default_params[$reportid.'/'.$key] = $val;
-                set_user_preferences(array($reportid.'/'.$key => $val)); // let's save URL params as persistent to avoid random session craziness issues
-
-                //flag this report as having custom parameters set up
-                php_report_filtering_flag_report_as_overridden($report_shortname);
+                if (($grppos = strpos($key, ':')) !== false) {
+                    // moodle urls no longer support arrays, new ':' syntax
+                    $idx = substr($key, $grppos + 1);
+                    $key = substr($key, 0, $grppos);
+                    if (!isset($urlparams[$key])) {
+                        $urlparams[$key] = array($idx => $val);
+                    } else {
+                        $urlparams[$key] = array_merge($urlparams[$key],
+                                                       array($idx => $val));
+                    }
+                } else {
+                    $urlparams[$key] = $val;
+                }
             }
+        }
+        foreach ($urlparams as $key => $val) {
+            ob_start();
+            var_dump($val);
+            $tmp = ob_get_contents();
+            ob_end_clean();
+            error_log("/blocks/php_report/lib/filtering.php::php_report_filtering_get_user_preferences($report_shortname) over-riding filter values with URL param: {$key} = {$tmp}");
+            $SESSION->php_report_default_params[$reportid.'/'.$key] = $val;
+            //set_user_preferences(array($reportid.'/'.$key => $val)); // let's save URL params as persistent to avoid random session craziness issues
+
+            //flag this report as having custom parameters set up
+            php_report_filtering_flag_report_as_overridden($report_shortname);
         }
         $user_prefs = array_merge($user_prefs, $SESSION->php_report_default_params);
     } else if (!empty($SESSION->php_report_default_override[$report_shortname])) {

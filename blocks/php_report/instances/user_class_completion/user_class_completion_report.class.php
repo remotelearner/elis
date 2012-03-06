@@ -144,7 +144,7 @@ class user_class_completion_report extends table_report {
         require_once($CFG->dirroot .'/elis/program/lib/filtering/curriculumclass.php');
 
         // Reference the "child" report
-        //require_once($CFG->dirroot .'/blocks/php_report/instances/user_class_completion_details/user_class_completion_details_report.class.php');
+        require_once($CFG->dirroot .'/blocks/php_report/instances/user_class_completion_details/user_class_completion_details_report.class.php');
 
         // Needed to instantiate links
         require_once($CFG->dirroot .'/elis/program/curriculumpage.class.php');
@@ -154,6 +154,22 @@ class user_class_completion_report extends table_report {
 
         // Needed for custom field handling
         require_once($CFG->dirroot .'/elis/core/lib/data/customfield.class.php');
+    }
+
+    function get_langfile() {
+        return(!empty($this->parent_langfile) ? $this->parent_langfile
+                                              : $this->languagefile);
+    }
+
+    /**
+     * Function to get_string from parent user_class_completion
+     * when string requested by user_class_completion_details report.
+     *
+     * @param  $sid  the string identifier
+     * @return the requested string
+     */
+    function get_string($sid) {
+        return get_string($sid, $this->get_langfile());
     }
 
     /**
@@ -167,12 +183,12 @@ class user_class_completion_report extends table_report {
         global $CFG;
 
         //cluster tree
-        $enable_tree_label = get_string('enable_tree', $this->languagefile);
-        $enable_dropdown_label = get_string('enable_dropdown', $this->languagefile);
-        $help_label = get_string('cluster_help', $this->languagefile);
+        $enable_tree_label     = $this->get_string('enable_tree');
+        $enable_dropdown_label = $this->get_string('enable_dropdown');
+        $help_label            = $this->get_string('cluster_help');
 
         $clustertree_help = array('user_class_completion_cluster',
-                                  $help_label, $this->languagefile);
+                                  $help_label, $this->get_langfile());
 
         $clustertree_options = array(
                 'dropdown_button_text'   => $enable_tree_label,
@@ -188,9 +204,9 @@ class user_class_completion_report extends table_report {
         $complete_key = STUSTATUS_PASSED.','.STUSTATUS_FAILED;
         $incomplete_key = STUSTATUS_NOTCOMPLETE.',NULL';
 
-        $completed_courses_label = get_string('show_completed_classes', $this->languagefile);
-        $incomplete_courses_label = get_string('show_incomplete_classes', $this->languagefile);
-        $csheading_label = get_string('completionstatus_options_heading', $this->languagefile);
+        $completed_courses_label = $this->get_string('show_completed_classes');
+        $incomplete_courses_label = $this->get_string('show_incomplete_classes');
+        $csheading_label = $this->get_string('completionstatus_options_heading');
 
         $choices = array(
                 $complete_key => $completed_courses_label,
@@ -208,10 +224,10 @@ class user_class_completion_report extends table_report {
                 'heading' => $csheading_label);
 
         //columns checkboxes
-        $curriculum_label = get_string('report_field_curriculum', $this->languagefile);
-        $status_label     = get_string('report_field_status', $this->languagefile);
-        $completion_label = get_string('report_field_completion', $this->languagefile);
-        $heading_label    = get_string('report_fields_heading', $this->languagefile);
+        $curriculum_label = $this->get_string('report_field_curriculum');
+        $status_label     = $this->get_string('report_field_status');
+        $completion_label = $this->get_string('report_field_completion');
+        $heading_label    = $this->get_string('report_fields_heading');
 
         $choices = array(
                 'curriculum' => $curriculum_label,
@@ -232,7 +248,7 @@ class user_class_completion_report extends table_report {
                 STUSTATUS_PASSED => get_string('status_passed', $this->languagefile),
                 STUSTATUS_FAILED => get_string('status_failed', $this->languagefile),
                 STUSTATUS_NOTCOMPLETE => get_string('status_notcomplete', $this->languagefile),
-                //user_class_completion_details_report::STUSTATUS_NOTSTARTED => get_string('status_notstarted', $this->languagefile)
+                user_class_completion_details_report::STUSTATUS_NOTSTARTED => get_string('status_notstarted', $this->languagefile)
                                      );
 
         $completionstatus_options = array(
@@ -250,7 +266,7 @@ class user_class_completion_report extends table_report {
         $userfilter =
             new generalized_filter_elisuserprofile(
                 'filter-up-',
-                get_string('filter_user_match', $this->languagefile),
+                $this->get_string('filter_user_match'),
                 array(
                     'choices'     => $this->_user_fields,
                     'notadvanced' => array('fullname'),
@@ -278,7 +294,7 @@ class user_class_completion_report extends table_report {
         $classfilter =
             new generalized_filter_curriculumclass(
                 'filter-ccc-',
-                get_string('filter_curriculumclass', $this->languagefile),
+                $this->get_string('filter_curriculumclass'),
                 array(
                     'choices'     => $this->_curriculumclass_fields,
                     'notadvanced' => array(
@@ -332,8 +348,8 @@ class user_class_completion_report extends table_report {
 
         $titleoptions = array(
             'help' => array('user_class_completion_reporttitle',
-                            get_string('report_title', $this->languagefile),
-                            $this->languagefile),
+                            $this->get_string('report_title'),
+                            $this->get_langfile()),
         );
 
         $summarycoloptions = array(
@@ -391,10 +407,12 @@ class user_class_completion_report extends table_report {
             ),
         );
 
-
         $filters = $userfilter->get_filters();
 
-        $filters[] = new generalized_filter_entry('filter-uid', 'u', 'id', get_string('filter_cluster', $this->languagefile), false, 'clustertree', $clustertree_options);
+        $filters[] = new generalized_filter_entry('filter-uid', 'u', 'id',
+                             $this->get_string('filter_cluster'),
+                             false, 'clustertree', $clustertree_options);
+
         $schemas = array(
                 $classfilter,
                 array('completionstatus', 'filter_completionstatus', false,
@@ -410,7 +428,7 @@ class user_class_completion_report extends table_report {
                 if ($schema[1] == '') {
                     $label = get_string($schema[0]);
                 } else {
-                    $label = get_string($schema[1], $this->languagefile);
+                    $label = $this->get_string($schema[1]);
                 }
                 $filters[] = new generalized_filter_entry('filter-'. $schema[0],
                                     '', $schema[0], $label, $schema[2],
@@ -1190,7 +1208,8 @@ class user_class_completion_report extends table_report {
                 $result .= '&';
             }
             //use syntax for group element reference
-            $effective_key = "{$groupname}[{$key}]";
+            //$effective_key = "{$groupname}[{$key}]";
+            $effective_key = "{$groupname}:{$key}";
             //url encode values just in case
             $effective_value = urlencode($value);
             $result .= "{$effective_key}={$effective_value}";
@@ -1231,7 +1250,8 @@ class user_class_completion_report extends table_report {
                                                  'action' => 'view'));
                 if ($page->can_do()) {
                     $url = $page->url;
-                    $record->name = "<a href=\"{$url}\" target=\"_blank\">{$record->name}</a>";
+                    $record->name = '<span class="external_report_link">'.
+                       "<a href=\"{$url}\" target=\"_blank\">{$record->name}</a></span>";
                 }
             }
 
@@ -1240,8 +1260,8 @@ class user_class_completion_report extends table_report {
 
             //params being passed via url
             $url_params = array('report'      => 'user_class_completion_details',
-                                'idnumber'    => urlencode($record->useridnumber),
-                                'idnumber_op' => generalized_filter_text::$OPERATOR_IS_EQUAL_TO);
+                                'filter-up-idnumber'    => urlencode($record->useridnumber),
+                                'filter-up-idnumber_op' => generalized_filter_text::$OPERATOR_IS_EQUAL_TO);
 
             //used to track whether to add a ? or a &
             $first = true;
@@ -1270,8 +1290,8 @@ class user_class_completion_report extends table_report {
             }
 
             //extra attributes we are including in the anchor tag
-            $tag_attributes = array('class'  => 'external_report_link',
-                                    'target' => 'blank_');
+            $tag_attributes = array(//'class'  => 'external_report_link',
+                                    'target' => '_blank');
 
             //build the additional attributes
             $attribute_string = '';
@@ -1289,7 +1309,9 @@ class user_class_completion_report extends table_report {
 
             if ($export_format == table_report::$EXPORT_FORMAT_HTML) {
                 //replace the empty column with the appropriate link
-                $record->id = '<a href="'.$url.'"'.$attribute_string.'>'.$link_text.'</a>';
+                $record->id = '<span class="external_report_link"><a href="'.
+                              $url .'"'. $attribute_string .'>'. $link_text
+                              .'</a></span>';
             } else {
                 //in an export, so don't show link
                 $record->id = '';
