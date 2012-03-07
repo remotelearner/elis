@@ -2123,7 +2123,7 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('permission_check(' . $uuid . ', ' . $uid . ', ' .
                                          ($useurl === true ? 'true' : 'false') . ')');
-//echo " in permission_check and checking permissions for uuid: $uuid and uid: $uid";
+
         if (empty($uid)) {
             $uid = $USER->id;
         }
@@ -2214,9 +2214,6 @@ class ELIS_files {
     /// permissions.
         $referer = get_referer(false);
 
-//echo '$$$$$$$ufile: '.$ufile.' course file: '.$cfile.' shfile: '.$shfile.' usersetfile: '.$ofile;
-//echo '####referer? ';
-//print_object($referer);
         if ($useurl && !empty($referer)) {
             $frommodule  = strpos($referer, $CFG->wwwroot . '/mod/') !== false;
             $fromblock   = strpos($referer, $CFG->wwwroot . '/blocks/') !== false;
@@ -2933,7 +2930,6 @@ $sql = "SELECT DISTINCT clst.id AS instanceid
 
         // If the user has an old-style user directory, migrate its contents and delete the directory.
         if ($this->has_old_user_store($user->id)) {
-            echo '<br>has old user store, really?';
             $uuid = $this->get_user_store($user->id, true);
 
             if (($touuid = elis_files_get_home_directory($user->username)) === false) {
@@ -2967,7 +2963,6 @@ $sql = "SELECT DISTINCT clst.id AS instanceid
                 return false;
             }
         }
-echo '<br>leaving migrate_user';
         return true;
     }
 
