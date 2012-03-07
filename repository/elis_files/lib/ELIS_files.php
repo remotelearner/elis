@@ -3292,7 +3292,7 @@ echo '<br>leaving migrate_user';
 //print_object('$oid:     '.$oid);
         // If there was no previous location stored we have nothing to return.
         if (!isset($USER->elis_files_repository_location)) {
-            return '';
+            return false;
         }
 
         $location = $USER->elis_files_repository_location;
@@ -3307,7 +3307,6 @@ echo '<br>leaving migrate_user';
 //print_object($location);
         // If the previous value comes from within a cluster that is not the current cluster, return the root
         // storage value for the current cluster directory.
-
         if (!empty($location->uuid) && !empty($oid) &&  !empty($location->oid) && ($location->oid != $oid) &&
             ($location->uid === 0) && ($location->shared == $shared) && ($location->uid == $uid)) {
 
@@ -3354,8 +3353,6 @@ echo '<br>leaving migrate_user';
                 empty($location->uuid)) {
 
                 // Check for correct permissions
-//                $personalfiles = false;
-
                 if ($capabilities['repository/elis_files:viewowncontent']) {
                     $shared = (boolean)0;
                     return $this->get_user_store($uid);
@@ -3396,18 +3393,17 @@ echo '<br>leaving migrate_user';
  * @param int  $cid      A course record ID.
  * @param int  $uid      A user record ID.
  * @param bool $shared   A flag to indicate whether the user is currently located in the shared repository area.
+ * @param int  $oid      A userset record ID.
  * @return string The UUID of the last location the user was browsing files in.
  */
-    function get_default_browsing_location(&$cid, &$uid, &$shared) {
+    function get_default_browsing_location(&$cid, &$uid, &$shared, &$oid) {
         global $CFG, $COURSE, $USER;
 
         // If the default location is not set at all, just return nothing now.
         if (!isset($this->config->default_browse)) {
-            return '';
-        // Or, handle determining if the user can actually access the chosen default location.
-        // IGNORE default browsing location for now
+            return false;
         } elseif (isset($this->config->default_browse)) {
-
+        // Handle determining if the user can actually access the chosen default location.
             if (empty($cid)) {
                 $cid = $COURSE->id;
             }
@@ -3417,17 +3413,21 @@ echo '<br>leaving migrate_user';
                 $context = get_context_instance(CONTEXT_COURSE, $cid);
             }
 
-            // Check referer - if on ELIS Files page - default to course page if we have access to it
-            $referer = get_referer(false);
-
-            if ($referer !== false) {
-                $fromelisfilescoursepage  = stristr($referer, $CFG->wwwroot . '/repository/filemanager.php') !== false;
-                if ($fromelisfilescoursepage && $cid != SITEID && (has_capability('repository/elis_files:viewcoursecontent', $context) ||
-                    has_capability('repository/elis_files:createcoursecontent', $context))) {
+            // If on ELIS Files page or in course context - default to course page if we have access to it
+            if ($cid != SITEID && (has_capability('repository/elis_files:viewcoursecontent', $context) ||
+                has_capability('repository/elis_files:createcoursecontent', $context))) {
+                    $shared = 0;
+                    $uid    = 0;
+                    return $this->get_course_store($cid);
+            } else if ($cid == SITEID && $uid == 0 && (has_capability('repository/elis_files:viewsitecontent', $context) ||
+                        has_capability('repository/elis_files:createsitecontent', $context))) {
+            // If on home page and not in user context - default to Company Home if we have access to it
+                    $root = $this->get_root();
+                    if (!empty($root->uuid)) {
                         $shared = 0;
                         $uid    = 0;
-                        return $this->get_course_store($cid);
-                }
+                        return $root->uuid;
+                    }
             }
 
             // If a user does not have permission to access the default location, fall through to the next
@@ -3474,11 +3474,11 @@ echo '<br>leaving migrate_user';
                     }
 
                 default:
-                    return '';
+                    return false;
             }
         }
 
-        return '';
+        return false;
     }
 
 
