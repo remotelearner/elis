@@ -802,6 +802,7 @@ class user_class_completion_details_report extends user_class_completion_report 
                        'filter-detailheaders', $this->filter);
 
         $headers = $filters[0]['value'];
+        $this->_userfieldids = array();
         if (!empty($headers)) {
             foreach ($headers as $field => $active) {
                 if ($active && (substr($field, 0, 7) == 'custom_')) {
