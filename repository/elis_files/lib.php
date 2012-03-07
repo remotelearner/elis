@@ -22,9 +22,9 @@
  * @since      2.0
  * @package    repository
  * @subpackage elis_files
- * @copyright  2009 Dongsheng Cai
- * @author     Dongsheng Cai <dongsheng@moodle.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  */
 
 
