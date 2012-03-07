@@ -20,7 +20,7 @@
  * @subpackage programmanager
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -125,6 +125,15 @@ $string['certificate_date'] = 'on {$a}';
 $string['certificate_expires'] = 'This certificate will expire on:';
 $string['certificate_has_completed'] = 'has completed';
 $string['certificate_seal_image'] = 'Certificate seal image';
+$string['certificate_code_error'] = 'Error assigning certificate number';
+$string['certificate_code_fail'] = 'Certificate random string failure: $a->sitename with URL $a->url';
+$string['certificate_code_fail_text'] = 'All attempts at generating a random string have failed for record containing the following data:';
+$string['certificate_code_fail_text_data'] = 'Curriculum Id: $a->curriculumid, User Id: $a->userid';
+$string['certificate_email_fail'] = 'Failed to send email to Administrator';
+$string['certificate_template_file'] = 'Certificate template';
+$string['certificate_template_file_help'] = '<p>A certificate template is a layout of text to be used when printing the user\'s certificate</p>
+
+<p>Please contact Remote-Learner to enquire about adding custom templates</p>';
 $string['certificate_title'] = 'Certificate of Achievement';
 $string['certificatelist'] = 'Certificate List';
 $string['certificates'] = 'Certificates';

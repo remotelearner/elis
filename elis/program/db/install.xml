@@ -208,8 +208,9 @@
         <FIELD NAME="timecompleted" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time of completion (timestamp)" PREVIOUS="completed" NEXT="timeexpired"/>
         <FIELD NAME="timeexpired" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time of curriculum expiry (timestamp)" PREVIOUS="timecompleted" NEXT="credits"/>
         <FIELD NAME="credits" TYPE="number" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" DECIMALS="2" COMMENT="The credits completed with." PREVIOUS="timeexpired" NEXT="locked"/>
-        <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not this completion can be changed." PREVIOUS="credits" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="locked" NEXT="timemodified"/>
+        <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not this completion can be changed." PREVIOUS="credits" NEXT="certificatecode"/>
+        <FIELD NAME="certificatecode" TYPE="char" LENGTH="40" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="locked" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="certificatecode" NEXT="timemodified"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated"/>
       </FIELDS>
       <KEYS>
@@ -217,7 +218,8 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="mdl_currcurrassi_usecurcom_ix" UNIQUE="false" FIELDS="userid, curriculumid, completed" NEXT="completed_ix"/>
-        <INDEX NAME="completed_ix" UNIQUE="false" FIELDS="completed" PREVIOUS="mdl_currcurrassi_usecurcom_ix"/>
+        <INDEX NAME="completed_ix" UNIQUE="false" FIELDS="completed" PREVIOUS="mdl_currcurrassi_usecurcom_ix" NEXT="certificatecode_ix"/>
+        <INDEX NAME="certificatecode_ix" UNIQUE="false" FIELDS="certificatecode" PREVIOUS="completed_ix"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="crlm_curriculum_course" COMMENT="crlm_curriculum_course table retrofitted from MySQL" PREVIOUS="crlm_curriculum_assignment" NEXT="crlm_environment">
@@ -398,7 +400,8 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="event_inst_user_ix" UNIQUE="false" FIELDS="userid, instance, event" COMMENT="An index based on the event, user and instance."/>
+        <INDEX NAME="event_inst_user_ix" UNIQUE="false" FIELDS="userid, instance, event" COMMENT="An index based on the event, user and instance." NEXT="event_inst_fuser_ix"/>
+        <INDEX NAME="event_inst_fuser_ix" UNIQUE="false" FIELDS="fromuserid, instance, event" COMMENT="An index based on the event, from user and instance." PREVIOUS="event_inst_user_ix"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="crlm_track" COMMENT="Track table" PREVIOUS="crlm_notification_log" NEXT="crlm_track_class">
@@ -517,9 +520,9 @@
     <TABLE NAME="crlm_user_moodle" COMMENT="Association between Moodle and CM users" PREVIOUS="crlm_wait_list" NEXT="crlm_results">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="cuserid"/>
-        <FIELD NAME="cuserid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" PREVIOUS="id" NEXT="muserid"/>
-        <FIELD NAME="muserid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" PREVIOUS="cuserid" NEXT="idnumber"/>
-        <FIELD NAME="idnumber" TYPE="char" LENGTH="255" NOTNULL="true" PREVIOUS="muserid"/>
+        <FIELD NAME="cuserid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="muserid"/>
+        <FIELD NAME="muserid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="cuserid" NEXT="idnumber"/>
+        <FIELD NAME="idnumber" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="muserid"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="cuserid_fk"/>

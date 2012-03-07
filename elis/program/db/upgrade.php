@@ -20,7 +20,7 @@
  * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -311,6 +311,16 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2011121500, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2011121501) {
+        $table = new xmldb_table('crlm_notification_log');
+        $index = new xmldb_index('event_inst_fuser_ix');
+        $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('fromuserid', 'instance', 'event'));
+
+        $dbman->add_index($table, $index);
+
+        upgrade_plugin_savepoint($result, 2011121501, 'elis', 'program');
+    }
+
     if ($result && $oldversion < 2012022400) {
         /// table
         $table = new xmldb_table('crlm_results');
@@ -408,6 +418,18 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2012022400, 'elis', 'program');
     }
 
+    if ($result && $oldversion < $plugin->version = 2012022401) {
+        // Add the new 'certificatecode' field to the curriculum_assignment table
+        $table = new xmldb_table('crlm_curriculum_assignment');
+        $field = new xmldb_field('certificatecode', XMLDB_TYPE_CHAR, '40', null, null, null, null, 'locked');
+        $dbman->add_field($table, $field);
+
+        // Add a new non-uniue index for the new field
+        $index = new xmldb_index('certificatecode_ix', XMLDB_INDEX_NOTUNIQUE, array('certificatecode'));
+        $dbman->add_index($table, $index);
+
+        upgrade_plugin_savepoint($result, 2012022401, 'elis', 'program');
+    }
+
     return $result;
 }
-

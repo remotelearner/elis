@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  * @subpackage curriculummanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -126,6 +126,7 @@ class configpage extends pm_page {
             self::config_set_value($configdata, 'disablecertificates', 0);
             self::config_set_value($configdata, 'certificate_border_image', 'Fancy1-blue.jpg');
             self::config_set_value($configdata, 'certificate_seal_image', 'none');
+            self::config_set_value($configdata, 'certificate_template_file', 'default.php');
 
             // Interface settings
             self::config_set_value($configdata, 'time_format_12h', 0);
