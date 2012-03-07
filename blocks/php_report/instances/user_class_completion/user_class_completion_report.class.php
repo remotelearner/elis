@@ -1543,7 +1543,7 @@ class user_class_completion_report extends table_report {
         if (isset($status)) {
             $status_clause = $this->get_class_status_sql($status);
             $status_sql = ' AND EXISTS (SELECT stu.userid
-                                          FROM '. student::TABLE .'} stu
+                                          FROM {'. student::TABLE .'} stu
                                      '. $this->get_class_join_sql('WHERE')
                                       ." AND stu.userid = u.id
                                         {$status_clause})";
