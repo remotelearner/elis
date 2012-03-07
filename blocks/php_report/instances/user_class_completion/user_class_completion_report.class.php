@@ -46,7 +46,8 @@ class user_class_completion_report extends table_report {
         'curriculum' => array('name'             => 'fld_curriculum'),
         'course'     => array('name'             => 'fld_course'),
         'class'      => array('idnumber'         => 'fld_class',
-                              'environmentid'    => 'fld_environment',
+                              //'environmentid'    => 'fld_environment',
+                              // Environment changed to custom field in ELIS 2.x
                               'startdate'        => 'fld_startdate',
                               'completestatusid' => 'fld_classstatus')
         );
