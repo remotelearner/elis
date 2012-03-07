@@ -230,7 +230,8 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
             'idnumber'          => 'fld_idnumber',
             'startdate'         => 'fld_startdate',
             'enddate'           => 'fld_enddate',
-            'environmentid'     => 'fld_environmentid',
+            //'environmentid'     => 'fld_environmentid',
+            // Environment changed to custom field in ELIS 2.x
         ),
     );
 
