@@ -273,12 +273,16 @@ function php_report_filtering_get_user_preferences($report_shortname) {
             }
         }
         foreach ($urlparams as $key => $val) {
+           /*
             ob_start();
             var_dump($val);
             $tmp = ob_get_contents();
             ob_end_clean();
             error_log("/blocks/php_report/lib/filtering.php::php_report_filtering_get_user_preferences($report_shortname) over-riding filter values with URL param: {$key} = {$tmp}");
+           */
             $SESSION->php_report_default_params[$reportid.'/'.$key] = $val;
+            //TBD: Must serialize arrays before storing in user preferences
+            //     and unserialize when reading back values!
             //set_user_preferences(array($reportid.'/'.$key => $val)); // let's save URL params as persistent to avoid random session craziness issues
 
             //flag this report as having custom parameters set up
