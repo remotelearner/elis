@@ -98,6 +98,12 @@ class generalized_filter_custom_field_select extends generalized_filter_simplese
      */
     function generalized_filter_custom_field_select($uniqueid, $alias, $name, $label, $advanced, $field, $options = array()) {
 
+        //ob_start();
+        //var_dump($options);
+        //$tmp = ob_get_contents();
+        //ob_end_clean();
+        //error_log("generalized_filter_custom_field_select($uniqueid, $alias, $name, $label, $advanced, $field, options = {$tmp}");
+
         parent::generalized_filter_simpleselect($uniqueid, $alias, $name, $label, $advanced, $field, $options);
 
         if (!array_key_exists('datatype', $options)) {
@@ -122,9 +128,7 @@ class generalized_filter_custom_field_select extends generalized_filter_simplese
             //manually specified via constructor
             $this->_subqueryprefix = $options['subqueryprefix'];
         } else {
-            //default to "fieldname IN ..."
-            $full_fieldname = $this->get_full_fieldname();
-            $this->_subqueryprefix = "{$full_fieldname} IN";
+            $this->_subqueryprefix = "{$alias}.id IN ";
         }
 
         //allow for specification of extra conditions to impose on the IN/ EXISTS subquery
@@ -164,16 +168,27 @@ class generalized_filter_custom_field_select extends generalized_filter_simplese
         //the data table where we can find the data we're filtering on
         $data_table = field_data::TABLE .'_'. $this->_fieldtypes[$this->_datatype];
 
+        $cmpdata = 'data';
+        if ($this->_datatype == 'text') {
+            $cmpdata = $DB->sql_compare_text($cmpdata);
+        }
+
         $check_null = '';
         $join_type  = '';
-        if ($DB->record_exists($data_table, array('fieldid' => $this->_fieldid,
-                                                  'contextid' => null,
-                                                  'data'      => $value))) {
+        $where = "fieldid = :fieldid AND contextid IS NULL
+                  AND {$cmpdata} = :data";
+        if ($DB->record_exists_select($data_table, $where,
+                        array('fieldid'   => $this->_fieldid,
+                              'data'      => $value))) {
             //filtering by the default value, so allow for null values
             $check_null = 'OR d.data IS NULL';
             $join_type = 'LEFT';
         }
 
+        $cmpdata = 'd.data';
+        if ($this->_datatype == 'text') {
+            $cmpdata = $DB->sql_compare_text($cmpdata);
+        }
         $sql = "{$this->_subqueryprefix}
                 (SELECT {$this->_innerfield}
                    FROM {$CFG->prefix}context c
@@ -181,13 +196,19 @@ class generalized_filter_custom_field_select extends generalized_filter_simplese
                      ON c.id = d.contextid
                     AND d.fieldid = :{$param_id}
                  {$this->_wrapper}
-                  WHERE (d.data = :{$param_value} {$check_null})
+                  WHERE ({$cmpdata} = :{$param_value} {$check_null})
                     AND c.contextlevel = :{$param_clevel}
                  {$this->_extraconditions})";
 
-        return array($sql, array($param_id     => $this->_fieldid,
-                                 $param_value  => $value,
-                                 $param_clevel => $this->_contextlevel));
+        $params = array($param_id     => $this->_fieldid,
+                        $param_value  => $value,
+                        $param_clevel => $this->_contextlevel);
+        //ob_start();
+        //var_dump($params);
+        //$tmp = ob_get_contents();
+        //ob_end_clean();
+        //error_log("custom_field_select::get_sql_filter(); sql = {$sql}, params = {$tmp}");
+        return array($sql, $params);
     }
 
 }
