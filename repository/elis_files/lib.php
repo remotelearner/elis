@@ -77,8 +77,13 @@ class repository_elis_files extends repository {
     private function get_url($node) {
         global $CFG;
 
+        // Verify that we have the repo!
+        if (!$this->elis_files->get_defaults()) {
+            return false;
+        }
+
         $result = null;
-        if (isset($node->type) && $node->type == "cmis:document") {
+        if (isset($node->type) && $node->type == ELIS_FILES_TYPE_DOCUMENT) {
             $result = $node->fileurl;
         } else {
             $result = $CFG->wwwroot.'/repository/elis_files/openfile.php?uuid='.$node->uuid;
@@ -105,19 +110,31 @@ class repository_elis_files extends repository {
         // If we don't have something explicitly to load and we didn't get here from the drop-down...
         if ($encodedpath === true || empty($encodedpath)) {
 
-            // Get optional course param from url to make ELIS Files page work properly
-            list($context, $course, $cm) = get_context_info_array($this->context->id);
-            $cid = is_object($course) ? $course->id : 0;
+            // Check referer to set proper cid and uid defaults
+            $referer = get_referer(false);
+            if ($referer !== false) {
+                $fromelisfilescoursepage  = stristr($referer, $CFG->wwwroot . '/repository/filemanager.php') !== false;
+                $fromcoursepage           = stristr($referer, $CFG->wwwroot . '/course/modedit.php') !== false;
+                $fromuserpage             = stristr($referer, $CFG->wwwroot . '/user/filesedit.php') !== false;
+                if (($fromelisfilescoursepage || $fromcoursepage) && $COURSE->id != SITEID) {
+                    list($context, $course, $cm) = get_context_info_array($this->context->id);
+                }
+                if ($fromuserpage) {
+                    $uid = $USER->id;
+                }
+            }
 
             // Set defaults
-            $uid = 0;
+            $cid = (isset($course) && is_object($course)) ? $course->id : 0;
+            $uid = (isset($uid)) ? $uid : 0;
             $oid = 0;
             $shared = (boolean)0;
-            if ($ruuid = $this->elis_files->get_repository_location($cid, $uid, $shared, $oid)) {
-                $uuid = $ruuid;
-            } else if ($duuid = $this->elis_files->get_default_browsing_location($cid, $uid, $shared, $oid)) {
+
+            // Get uuid for default browsing location
+            if ($duuid = $this->elis_files->get_default_browsing_location($cid, $uid, $shared, $oid)) {
                 $uuid = $duuid;
             }
+
         } else if (!empty($encodedpath)) {
         // Decode path and retrieve parameters
             $params = unserialize(base64_decode($encodedpath));
