@@ -288,6 +288,50 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
+     * Calculates a string that specifies which fields can be used to identify
+     * a user record based on the import record provided
+     *
+     * @param object $record
+     * @return string The description of identifying fields, in the form
+     * [field1] "value1", ...
+     */
+    function get_user_descriptor($record) {
+        $fields = array();
+        if (isset($record->username)) {
+            $fields[] = 'username "'.$record->username.'"';
+        }
+        if (isset($record->email)) {
+            $fields[] = 'email "'.$record->email.'"';
+        }
+        if (isset($record->idnumber)) {
+            $fields[] = 'idnumber "'.$record->idnumber.'"';
+        }
+
+        return implode(', ', $fields);
+    }
+
+    /**
+     * Calculates a string that specifies a descriptor for a context instance
+     *
+     * @param object $record The object specifying the context and instance
+     * @return string The descriptive string
+     */
+    function get_context_descriptor($record) {
+        if ($record->context == 'system') {
+            //no instance for the system context
+            $context_descriptor = 'the system context';
+        } else if ($record->context == 'coursecat') {
+            //convert "coursecat" to "course category" due to legacy 1.9 weirdness
+            $context_descriptor = "course category \"{$record->instance}\"";
+        } else {
+            //standard case
+            $context_descriptor = "{$record->context} \"{$record->instance}\"";
+        }
+
+        return $context_descriptor;
+    }
+
+    /**
      * Delegate processing of an import line for entity type "user"
      *
      * @param object $record One record of import data
@@ -322,7 +366,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //perform action
         $method = "user_{$action}";
-        return $this->$method($record);
+        return $this->$method($record, $filename);
     }
 
     /**
@@ -471,9 +515,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @todo: consider factoring this some more once other actions exist
      *
      * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function user_create($record) {
+    function user_create($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
         require_once($CFG->dirroot.'/user/profile/lib.php');
@@ -541,6 +586,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $user = $DB->get_record('user', array('id' => $record->id));
         events_trigger('user_created', $user);
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record);
+
+        //log success
+        $this->fslogger->log("[{$filename} line {$this->linenumber}] User with {$user_descriptor} successfully created.");
+
         return true;
     }
 
@@ -548,20 +599,22 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * Add a user
      *
      * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function user_add($record) {
+    function user_add($record, $filename) {
         //note: this is only here due to legacy 1.9 weirdness
-        return $this->user_create($record);
+        return $this->user_create($record, $filename);
     }
 
     /**
      * Update a user
      *
      * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function user_update($record) {
+    function user_update($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
         require_once($CFG->dirroot.'/user/profile/lib.php');
@@ -619,6 +672,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $updateduser = $DB->get_record('user', array('id' => $record->id));
         events_trigger('user_updated', $updateduser);
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record);
+
+        //log success
+        $this->fslogger->log("[{$filename} line {$this->linenumber}] User with {$user_descriptor} successfully updated.");
+
         return true;
     }
 
@@ -626,9 +685,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * Delete a user
      *
      * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function user_delete($record) {
+    function user_delete($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
 
@@ -647,6 +707,13 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make the appropriate changes
         if ($user = $DB->get_record('user', $params)) {
             user_delete_user($user);
+
+            //string to describe the user
+            $user_descriptor = $this->get_user_descriptor($record);
+
+            //log success
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] User with {$user_descriptor} successfully deleted.");
+
             return true;
         }        
 
@@ -657,9 +724,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * Create a user
      *
      * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function user_disable($record) {
+    function user_disable($record, $filename) {
         //note: this is only here due to legacy 1.9 weirdness
         return $this->user_delete($record);
     }
@@ -731,7 +799,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //perform action
         $method = "course_{$action}";
-        return $this->$method($record);
+        return $this->$method($record, $filename);
     }
 
     /**
@@ -1095,9 +1163,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @todo: consider factoring this some more once other actions exist
      *
      * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function course_create($record) {
+    function course_create($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
 
@@ -1154,9 +1223,15 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //update appropriate fields, such as shortname
             //todo: validate if this fully works with guest enrolments?
             update_course($record);
+
+            //log success
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] Course with shortname \"{$record->shortname}\" successfully created from template course with shortname \"{$record->link}\".");
         } else {
             //creating directly (not from template)
             create_course($record);
+
+            //log success
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] Course with shortname \"{$record->shortname}\" successfully created.");
         }
 
         return true;
@@ -1167,9 +1242,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @todo: consider factoring this some more once other actions exist
      *
      * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function course_update($record) {
+    function course_update($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
         require_once($CFG->dirroot.'/lib/enrollib.php');
@@ -1231,6 +1307,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
         }
 
+        //log success
+        $this->fslogger->log("[{$filename} line {$this->linenumber}] Course with shortname \"{$record->shortname}\" successfully updated.");
+
         return true;
     }
 
@@ -1238,14 +1317,19 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * Delete a course
      *
      * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function course_delete($record) {
+    function course_delete($record, $filename) {
         global $DB;
 
         if ($courseid = $DB->get_field('course', 'id', array('shortname' => $record->shortname))) {
             delete_course($courseid, false);
             fix_course_sortorder();
+
+            //log success
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] Course with shortname \"{$record->shortname}\" successfully deleted.");
+
             return true;
         }
 
@@ -1286,7 +1370,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //perform action
         $method = "enrolment_{$action}";
         if (method_exists($this, $method)) {
-            return $this->$method($record);
+            return $this->$method($record, $filename);
         } else {
             //todo: add logging
             return false;
@@ -1297,9 +1381,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * Create an enrolment
      *
      * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function enrolment_create($record) {
+    function enrolment_create($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
@@ -1397,11 +1482,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if ($record->context == 'course' && isset($record->group)) {
             $count = $DB->count_records('groups', array('name' => $record->group,
                                                         'courseid' => $courseid));
+
+            $creategroups = get_config('rlipimport_version1', 'creategroupsandgroupings');
             if ($count > 1) {
                 //ambiguous
                 return false;
-            } else if ($count == 0 && empty($CFG->bogus_rlip_creategroups)) {
-                //todo: use proper setting
+            } else if ($count == 0 && empty($creategroups)) {
                 //does not exist and not creating
                 return false;
             } else {
@@ -1415,8 +1501,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 if ($count > 1) {
                     //ambiguous
                     return false;
-                } else if ($count == 0 && empty($CFG->bogus_rlip_creategroups)) {
-                    //todo: use proper setting
+                } else if ($count == 0 && empty($creategroups)) {
                     //does not exist and not creating
                     return false;
                 } else {
@@ -1426,8 +1511,17 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
         }
 
-        //todo: add some sort of configuration for this?
-        if ($record->context == 'course' && $record->role == 'studentshortname') {
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record);
+        //string to describe the context instance
+        $context_descriptor = $this->get_context_descriptor($record);
+
+        //going to collect all messages for this action
+        $logmessages = array();
+
+        $studentroleids = explode(',', $CFG->gradebookroles);
+
+        if ($record->context == 'course' && in_array($roleid, $studentroleids)) {
             //set enrolment start time to the course start date
             $timestart = $DB->get_field('course', 'startdate', array('id' => $courseid));
 
@@ -1437,9 +1531,15 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             } else if (!is_enrolled($context, $userid)) {
                 //role assignment does not exist, so enrol and assign role
                 enrol_try_internal_enrol($courseid, $userid, $roleid, $timestart);
+
+                //collect success message for logging at end of action
+                $logmessages[] = "User with {$user_descriptor} successfully assigned role with shortname \"{$record->role}\" on {$context_descriptor}.";
             } else {
                 return false;
             }
+
+            //collect success message for logging at end of action
+            $logmessages[] = "User with {$user_descriptor} enrolled in course with shortname \"{$record->instance}\".";
         } else {
             if ($role_assignment_exists) {
                 //role assignment already exists, so this action serves no purpose
@@ -1447,6 +1547,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
 
             role_assign($roleid, $userid, $context->id);
+
+            //collect success message for logging at end of action
+            $logmessages[] = "User with {$user_descriptor} successfully assigned role with shortname \"{$record->role}\" on {$context_descriptor}.";
         }
 
         if ($record->context == 'course' && isset($record->group)) {
@@ -1461,6 +1564,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $data->name = $record->group;
     
                 $groupid = groups_create_group($data);
+
+                //collect success message for logging at end of action
+                $logmessages[] = "Group created with name \"{$record->group}\".";
             }
 
             if (groups_is_member($groupid, $userid)) {
@@ -1470,6 +1576,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 if (!groups_add_member($groupid, $userid)) {
                     //error handling - already a member
                 }
+
+                //collect success message for logging at end of action
+                $logmessages[] = "Assigned user with {$user_descriptor} to group with name \"{$record->group}\".";
             }
 
             if (isset($record->grouping)) {
@@ -1482,6 +1591,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     $data->name = $record->grouping;
     
                     $groupingid = groups_create_grouping($data);
+
+                    //collect success message for logging at end of action
+                    $logmessages[] = "Created grouping with name \"{$record->grouping}\".";
                 }
 
                 //assign the group to the grouping
@@ -1490,9 +1602,15 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     //error handling
                 } else {
                     groups_assign_grouping($groupingid, $groupid);
+
+                    //collect success message for logging at end of action
+                    $logmessages[] = "Assigned group with name \"{$record->group}\" to grouping with name \"{$record->grouping}\".";
                 }
             }
         }
+
+        //log success
+        $this->fslogger->log("[{$filename} line {$this->linenumber}] ".implode(' ', $logmessages));
 
         return true;
     }
@@ -1501,14 +1619,22 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * Add an enrolment
      *
      * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function enrolment_add($record) {
+    function enrolment_add($record, $filename) {
         //note: this is only here due to legacy 1.9 weirdness
         return $this->enrolment_create($record);
     }
 
-    function enrolment_delete($record) {
+    /**
+     * Delete an enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function enrolment_delete($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
@@ -1566,13 +1692,13 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
         } else if ($record->context == 'user') {
             //find existing user
-            if (!$userid = $DB->get_field('user', 'id', array('username' => $record->instance,
-                                                              'mnethostid' => $CFG->mnet_localhost_id))) {
+            if (!$targetuserid = $DB->get_field('user', 'id', array('username' => $record->instance,
+                                                                    'mnethostid' => $CFG->mnet_localhost_id))) {
                 return false;
             }
     
             //obtain the user context instance
-            $context = get_context_instance(CONTEXT_USER, $userid);
+            $context = get_context_instance(CONTEXT_USER, $targetuserid);
         } else {
             //currently only supporting course, system, user and category
             //context levels
@@ -1584,26 +1710,42 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                                                'contextid' => $context->id,
                                                                                'userid' => $userid));
 
-        //todo: add some sort of configuration for this?
-        if (!$role_assignment_exists && (!$enrolment_exists || $record->role != 'studentshortname')) {
+        $studentroleids = explode(',', $CFG->gradebookroles);
+        if (!$role_assignment_exists && (!$enrolment_exists || !in_array($roleid, $studentroleids))) {
             //nothing to delete
             return false;
         }
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record);
+        //string to describe the context instance
+        $context_descriptor = $this->get_context_descriptor($record);
+
+        //going to collect all messages for this action
+        $logmessages = array();
+
         if ($role_assignment_exists) {
             //unassign role
             role_unassign($roleid, $userid, $context->id);
+
+            //collect success message for logging at end of action
+            $logmessages[] = "User with {$user_descriptor} successfully unassigned role with shortname \"{$record->role}\" on {$context_descriptor}.";
         }
 
-        //todo: add some sort of configuration for this?
-        if ($enrolment_exists && $record->role == 'studentshortname') {
+        if ($enrolment_exists && in_array($roleid, $studentroleids)) {
             //remove enrolment
             if ($instance = $DB->get_record('enrol', array('enrol' => 'manual',
                                                            'courseid' => $courseid))) {
                 $plugin = enrol_get_plugin('manual');
                 $plugin->unenrol_user($instance, $userid);
+
+                //collect success message for logging at end of action
+                $logmessages[] = "User with {$user_descriptor} unenrolled from course with shortname \"{$record->instance}\".";
             }
         }
+
+        //log success
+        $this->fslogger->log("[{$filename} line {$this->linenumber}] ".implode(' ', $logmessages));
 
         return true;
     }

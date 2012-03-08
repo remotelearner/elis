@@ -37,7 +37,11 @@ class rlip_fileplugin_log extends rlip_fileplugin_base {
      */
     function open($mode) {
     	if ($mode == RLIP_FILE_WRITE) {
-            $this->filepointer = fopen($this->filename, 'w');
+  	        //todo: determine if we need to make a change to unit tests to
+  	        //remove this check
+    	    if (!empty($this->filename)) {
+                $this->filepointer = fopen($this->filename, 'w');
+    	    }
     	} else {
     	    //we never read with this class
     	}
@@ -58,8 +62,12 @@ class rlip_fileplugin_log extends rlip_fileplugin_base {
      * @param array $entry The entry to write to the file
      */
     function write($entry) {
-        $entry = reset($entry);
-        fwrite($this->filepointer, $entry."\n");
+        //todo: determine if we need to make a change to unit tests to
+        //remove this check
+        if (isset($this->filepointer)) {
+            $entry = reset($entry);
+            fwrite($this->filepointer, $entry."\n");
+        }
     }
 
     /**

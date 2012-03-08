@@ -161,6 +161,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         self::$coursecatroleid = self::create_test_role('coursecatname', 'coursecatshortname', 'coursecatdescription', array(CONTEXT_COURSECAT));
         self::$userroleid = self::create_test_role('username', 'usershortname', 'userdescription', array(CONTEXT_USER));
         self::$studentroleid = self::create_test_role('studentname', 'studentshortname', 'studentdescription');
+        set_config('gradebookroles', self::$studentroleid);
         self::$allcontextroleid = self::create_test_role('allname', 'allshortname', 'alldescription', array(CONTEXT_SYSTEM,
                                                                                                             CONTEXT_COURSE,
                                                                                                             CONTEXT_COURSECAT,
@@ -1105,8 +1106,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //enable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 1);
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         //run the import
         $data = $this->get_core_enrolment_data();
@@ -1153,8 +1153,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //enable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 1);
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         //run the import
         $this->run_core_enrolment_import(array('group' => 'rlipgroup',
@@ -1179,8 +1178,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //enable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 1);
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         //set up the "pre-existing" group
         $groupid = $this->create_test_group(self::$courseid);
@@ -1207,8 +1205,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //enable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 1);
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         //set up the "pre-existing" grouping
         $groupingid = $this->create_test_grouping(self::$courseid);
@@ -1316,8 +1313,7 @@ class version1EnrolmentImportTest extends elis_database_test {
      */
     public function testVersion1ImportInvalidGroupNamePreventsEnrolment() {
         //disable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 0);
+        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
 
         //run the import
         $this->run_core_enrolment_import(array('group' => 'rlipgroup'));
@@ -1335,8 +1331,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //enable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 1);
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         $secondcourseid = $this->create_test_course(array('shortname' => 'allowduplicategroupsacrosscourses'));
 
@@ -1370,8 +1365,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //enable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 1);
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         //setup
         $secondcourseid = $this->create_test_course(array('shortname' => 'allowduplicategroupsinaothercourse'));
@@ -1405,7 +1399,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //enable groups functionality
-        set_config('bogus_rlip_creategroups', 1);
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         //run the system-level import
         //$this->create_test_user();
@@ -1466,8 +1460,7 @@ class version1EnrolmentImportTest extends elis_database_test {
      */
     public function testVersion1ImportInvalidGroupingNamePreventsEnrolment() {
         //disable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 0);
+        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
 
         //set up the "pre-existing" grouping
         $this->create_test_grouping(self::$courseid);
@@ -1491,8 +1484,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //enable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 1);
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         //setup
         $secondcourseid = $this->create_test_course(array('shortname' => 'allowduplicategroupingsacrosscourses'));
@@ -1529,8 +1521,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //enable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 1);
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         //setup
         $secondcourseid = $this->create_test_course(array('shortname' => 'allowduplicategroupingsinanothercourse'));
@@ -1626,8 +1617,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //enable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 1);
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         //run the import
         $this->run_core_enrolment_import(array('group' => 'rlipgroup'));
@@ -1645,8 +1635,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //disable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 0);
+        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
 
         //run the import
         $this->run_core_enrolment_import(array('group' => 'rlipgroup'));
@@ -1663,8 +1652,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         //disable group / grouping creation
-        //todo: use proper setting
-        set_config('bogus_rlip_creategroups', 0);
+        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
 
         //run the import
         $this->run_core_enrolment_import(array('group' => 'rlipgroup',
