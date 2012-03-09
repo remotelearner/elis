@@ -31,6 +31,7 @@ $string['data_object_construct_invalid_source'] = 'Attempted to construct a data
 $string['data_object_validation_not_empty'] = '{$a->tablename} record cannot have empty {$a->field} field';
 $string['data_object_validation_unique'] = '{$a->tablename} record must have unique {$a->fields} fields';
 $string['date'] = 'Date filter';
+$string['date_format'] = '%d/%m/%Y';
 $string['date_help'] = '<h1>Date filter</h1>
 <p>This filter allows you to filter information from before and/or after selected dates.</p>';
 $string['display'] = 'Display';

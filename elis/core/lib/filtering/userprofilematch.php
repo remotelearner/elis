@@ -463,8 +463,8 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
                 $operator_string = '';
 
                 // Check that we are not looking at a custom field
-                if (isset($fields[$count])) {
-                    $filter_name = $fields[$count];
+                if (isset($fields['up'][$count])) {
+                    $filter_name = $fields['up'][$count];
                 }
 
                 // Check to see if this is a date and then retrieve and format appropriately
