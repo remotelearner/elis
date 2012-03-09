@@ -575,9 +575,7 @@ class generalized_filter_userprofilematch extends generalized_filter_multifilter
                            ? $start[0]['value'] : 0;
         $enddate = (!empty($end) && is_array($end))
                          ? $end[0]['value'] : 0;
-        $sdate = !empty($startdate)
-                 ? userdate($startdate, get_string('date_format', $this->languagefile))
-                 : get_string('present', $this->languagefile);
+        $sdate = userdate($startdate, get_string('date_format', $this->languagefile));
         $edate = !empty($enddate)
                  ? userdate($enddate, get_string('date_format', $this->languagefile))
                  : get_string('present', $this->languagefile);
