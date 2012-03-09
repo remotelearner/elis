@@ -103,4 +103,6 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         // block rlip savepoint reached
         upgrade_block_savepoint(true, 2012022700, 'rlip');
     }
+
+    return $result;
 }

@@ -24,10 +24,45 @@
  *
  */
 
+/**
+ * The main Integration Point block class
+ */
 class block_rlip extends block_base {
 
+    /**
+     * Block initialization method
+     */
     function init() {
         $this->title = get_string('pluginname', 'block_rlip');
     }
 
+    /**
+     * Method to fetch block contents
+     *
+     * @return object Object containing the text content of the block
+     */
+    function get_content() {
+        global $CFG;
+
+        if ($this->content !== NULL) {
+            //use cached version
+            return $this->content;
+        }
+
+        $this->content = new stdClass;
+
+        $context = get_context_instance(CONTEXT_SYSTEM);
+        if (has_capability('moodle/site:config', $context)) {
+            //add link to the IP plugins page
+            $displaystring = get_string('plugins', 'block_rlip');
+            $url = $CFG->wwwroot.'/blocks/rlip/plugins.php';
+            $this->content->text = html_writer::tag('a', $displaystring, array('href' => $url));
+        } else {
+            $this->content->text = '';
+        }
+
+        $this->content->footer = '';
+
+        return $this->content;
+    }
 }

@@ -121,4 +121,12 @@ class rlip_importplugin_multiple extends rlip_importplugin_base {
         return array('First Entity',
                      'Second Entity');
     }
+
+    /**
+     * Specifies flag for indicating that this plugin is for testing only
+     */
+    function is_test_plugin() {
+        //this plugin is for testing only
+        return true;
+    }
 }

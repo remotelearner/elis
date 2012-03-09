@@ -36,6 +36,14 @@ abstract class rlip_dataplugin {
      * Mainline for data processing
      */
     abstract function run();
+
+    /**
+     * Specifies flag for indicating that this plugin is for testing only
+     */
+    function is_test_plugin() {
+        //by default, assume the plugin is an "actual" plugin
+        return false;
+    }
 }
 
 /**

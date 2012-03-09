@@ -87,4 +87,12 @@ class rlip_importplugin_sample extends rlip_importplugin_base {
     function get_file_labels() {
         return array('Sample Entity');
     }
+
+    /**
+     * Specifies flag for indicating that this plugin is for testing only
+     */
+    function is_test_plugin() {
+        //this plugin is for testing only
+        return true;
+    }
 }

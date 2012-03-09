@@ -52,4 +52,12 @@ class rlip_importplugin_header extends rlip_importplugin_sample {
     function hook_called() {
         return $this->hook_called;
     }
+
+    /**
+     * Specifies flag for indicating that this plugin is for testing only
+     */
+    function is_test_plugin() {
+        //this plugin is for testing only
+        return true;
+    }
 }

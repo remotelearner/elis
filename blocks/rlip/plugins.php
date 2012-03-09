@@ -26,6 +26,7 @@
 
 require_once('../../config.php');
 require_once($CFG->dirroot.'/lib/adminlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
 
 //permissions checking
 require_login();
@@ -64,6 +65,12 @@ foreach ($plugintypes as $plugintype) {
     $directory = str_replace($CFG->dirroot, $CFG->wwwroot, $directory);
 
     foreach ($plugins as $name => $path) {
+        //skip plugins used for testing only
+        $instance = rlip_dataplugin_factory::factory("{$plugintype}_{$name}");
+        if ($instance->is_test_plugin()) {
+            continue;
+        }
+
         //get the display name from the plugin-specific language string
         $displayname = get_string('pluginname', "{$plugintype}_{$name}");
 
