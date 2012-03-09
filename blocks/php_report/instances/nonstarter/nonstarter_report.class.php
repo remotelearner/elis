@@ -249,9 +249,9 @@ class nonstarter_report extends table_report {
     function get_user_profile_header() {
         global $OUTPUT;
 
+        $up_headers = array();
         // Check for $this->up_headers
         if (!empty($this->up_headers) && is_array($this->up_headers)) {
-            $up_headers = array();
             $count = 0;
 
             $init_label = get_string('filtered_by', 'rlreport_nonstarter');
