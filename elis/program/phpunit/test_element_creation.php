@@ -36,6 +36,7 @@ require_once(elispm::lib('data/course.class.php'));
 require_once(elispm::lib('data/coursetemplate.class.php'));
 require_once(elispm::lib('data/pmclass.class.php'));
 require_once(elispm::lib('data/user.class.php'));
+require_once(elispm::lib('data/usermoodle.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 
 class test_element_creation extends elis_database_test {
@@ -45,12 +46,14 @@ class test_element_creation extends elis_database_test {
         return array(
             'context'             => 'moodle',
             'course'              => 'moodle',
+            'user'                => 'moodle',
             curriculum::TABLE     => 'elis_program',
             track::TABLE          => 'elis_program',
             course::TABLE         => 'elis_program',
             coursetemplate::TABLE => 'elis_program',
             pmclass::TABLE        => 'elis_program',
             user::TABLE           => 'elis_program',
+            usermoodle::TABLE     => 'elis_program',
             userset::TABLE        => 'elis_program'
         );
     }
@@ -169,6 +172,26 @@ class test_element_creation extends elis_database_test {
     }
 
     /**
+     * Initialize a new user description object
+     *
+     * @return user The new user object
+     */
+    private function initUser() {
+        $data = array(
+            'idnumber'  => 'TESTID001',
+            'username'  => 'testuser1',
+            'firstname' => 'Test',
+            'lastname'  => 'User1',
+            'email'     => 'testuser1@example.com',
+            'country'   => 'us'
+        );
+
+        $newuser = new user($data);
+
+        return $newuser;
+    }
+
+    /**
      * Test that a new Program instance can be created and saved to the database.
      */
     public function testCreateProgram() {
@@ -244,5 +267,27 @@ class test_element_creation extends elis_database_test {
         // Verify that the record returned from the database matches what was inserted
         $this->assertEquals($newobj->id, $testobj->id);
         $this->assertEquals($newobj->idnumber, $testobj->idnumber);
+    }
+
+    /**
+     * Test that a new User instance can be created and saved to the database.
+     */
+    public function testCreateUser() {
+        $newobj = $this->initUser();
+        $newobj->save();
+
+        $this->assertGreaterThan(0, $newobj->id);
+
+        // Fetch the record from the database
+        $testobj = new user($newobj->id);
+
+        // Verify that the record returned from the database matches what was inserted
+        $this->assertEquals($newobj->id, $testobj->id);
+        $this->assertEquals($newobj->idnumber, $testobj->idnumber);
+        $this->assertEquals($newobj->username, $testobj->username);
+        $this->assertEquals($newobj->firstname, $testobj->firstname);
+        $this->assertEquals($newobj->lastname, $testobj->lastname);
+        $this->assertEquals($newobj->email, $testobj->email);
+        $this->assertEquals($newobj->country, $testobj->country);
     }
 }
