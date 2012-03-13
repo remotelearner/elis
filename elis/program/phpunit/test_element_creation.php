@@ -78,10 +78,10 @@ class test_element_creation extends elis_database_test {
         );
     }
 
-//     protected function setUp() {
-//         parent::setUp();
-//         $this->setUpContextsTable();
-//     }
+    protected function setUp() {
+        parent::setUp();
+        $this->setUpContextsTable();
+    }
 
     /**
      * Set up the contexts table with the minimum that we need.
@@ -98,26 +98,75 @@ class test_element_creation extends elis_database_test {
     }
 
     /**
-     * Test that a new Program instance can be created and saved to the database.
+     * Initialize a new program object
+     *
+     * @param none
+     * @return curriculum The new program object
      */
-    public function testCreateProgram() {
-        // Create a new test program and save it to the database
-        $pdata = array(
+    private function initProgram() {
+        $data = array(
             'idnumber' => 'TESTID001',
             'name'     => 'Test Program 1'
         );
 
-        $newprogram = new curriculum($pdata);
-        $newprogram->save();
+        $newprogram = new curriculum($data);
+
+        return $newprogram;
+    }
+
+    /**
+     * Initialize a new program object
+     *
+     * @param integer $curid A curriculum record ID
+     * @return track The new track object
+     */
+    private function initTrack($curid) {
+        $data = array(
+            'curid'    => $curid,
+            'idnumber' => 'TESTID001',
+            'name'     => 'Test Track 1'
+        );
+
+        $newtrack = new track($data);
+
+        return $newtrack;
+    }
+
+    /**
+     * Test that a new Program instance can be created and saved to the database.
+     */
+    public function testCreateProgram() {
+        $newobj = $this->initProgram();
+        $newobj->save();
 
         // Verify that the object was saved to the database and the record ID was assigned to the object
-        $this->assertGreaterThan(0, $newprogram->id);
+        $this->assertGreaterThan(0, $newobj->id);
 
         // Fetch the record from the database
-        $testprogram = new curriculum($newprogram->id);
+        $testobj = new curriculum($newobj->id);
 
-        // Verify that the
-        $this->assertEquals($newprogram->idnumber, $testprogram->idnumber);
-        $this->assertEquals($newprogram->name, $testprogram->name);
+        // Verify that the record returned from the database matches what was inserted
+        $this->assertEquals($newobj->idnumber, $testobj->idnumber);
+        $this->assertEquals($newobj->name, $testobj->name);
+    }
+
+    /**
+     * Test that a new Track instance can be created and saved to the database.
+     */
+    public function testCreateTrack() {
+        $newprogram = $this->initProgram();
+        $newprogram->save();
+
+        $newobj = $this->initTrack($newprogram->id);
+        $newobj->save();
+
+        $this->assertGreaterThan(0, $newobj->id);
+
+        // Fetch the record from the database
+        $testobj = new track($newobj->id);
+
+        // Verify that the record returned from the database matches what was inserted
+        $this->assertEquals($newobj->idnumber, $testobj->idnumber);
+        $this->assertEquals($newobj->name, $testobj->name);
     }
 }
