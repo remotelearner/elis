@@ -152,6 +152,23 @@ class test_element_creation extends elis_database_test {
     }
 
     /**
+     * Initialize a new class object
+     *
+     * @param integer $courseid A course record ID
+     * @return class The new class object
+     */
+    private function initClass($courseid) {
+        $data = array(
+            'idnumber' => 'TESTID001',
+            'courseid' => $courseid
+        );
+
+        $newclass = new pmclass($data);
+
+        return $newclass;
+    }
+
+    /**
      * Test that a new Program instance can be created and saved to the database.
      */
     public function testCreateProgram() {
@@ -165,6 +182,7 @@ class test_element_creation extends elis_database_test {
         $testobj = new curriculum($newobj->id);
 
         // Verify that the record returned from the database matches what was inserted
+        $this->assertEquals($newobj->id, $testobj->id);
         $this->assertEquals($newobj->idnumber, $testobj->idnumber);
         $this->assertEquals($newobj->name, $testobj->name);
     }
@@ -185,6 +203,7 @@ class test_element_creation extends elis_database_test {
         $testobj = new track($newobj->id);
 
         // Verify that the record returned from the database matches what was inserted
+        $this->assertEquals($newobj->id, $testobj->id);
         $this->assertEquals($newobj->idnumber, $testobj->idnumber);
         $this->assertEquals($newobj->name, $testobj->name);
     }
@@ -202,7 +221,28 @@ class test_element_creation extends elis_database_test {
         $testobj = new course($newobj->id);
 
         // Verify that the record returned from the database matches what was inserted
+        $this->assertEquals($newobj->id, $testobj->id);
         $this->assertEquals($newobj->idnumber, $testobj->idnumber);
         $this->assertEquals($newobj->name, $testobj->name);
+    }
+
+    /**
+     * Test that a new Class instance can be created and saved to the database.
+     */
+    public function testCreateClass() {
+        $newcourse = $this->initCourse();
+        $newcourse->save();
+
+        $newobj = $this->initClass($newcourse->id);
+        $newobj->save();
+
+        $this->assertGreaterThan(0, $newobj->id);
+
+        // Fetch the record from the database
+        $testobj = new pmclass($newobj->id);
+
+        // Verify that the record returned from the database matches what was inserted
+        $this->assertEquals($newobj->id, $testobj->id);
+        $this->assertEquals($newobj->idnumber, $testobj->idnumber);
     }
 }
