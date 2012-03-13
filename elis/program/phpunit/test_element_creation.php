@@ -192,6 +192,22 @@ class test_element_creation extends elis_database_test {
     }
 
     /**
+     * Initialize a new user description object
+     *
+     * @return userset The new userset object
+     */
+    private function initUserset() {
+        $data = array(
+            'name'    => 'Test User Set 1',
+            'display' => 'We\'re just testing user set creation!'
+        );
+
+        $newuserset = new userset($data);
+
+        return $newuserset;
+    }
+
+    /**
      * Test that a new Program instance can be created and saved to the database.
      */
     public function testCreateProgram() {
@@ -289,5 +305,23 @@ class test_element_creation extends elis_database_test {
         $this->assertEquals($newobj->lastname, $testobj->lastname);
         $this->assertEquals($newobj->email, $testobj->email);
         $this->assertEquals($newobj->country, $testobj->country);
+    }
+
+    /**
+     * Test that a new User Set instance can be created and saved to the database.
+     */
+    public function testCreateUserset() {
+        $newobj = $this->initUserset();
+        $newobj->save();
+
+        $this->assertGreaterThan(0, $newobj->id);
+
+        // Fetch the record from the database
+        $testobj = new userset($newobj->id);
+
+        // Verify that the record returned from the database matches what was inserted
+        $this->assertEquals($newobj->id, $testobj->id);
+        $this->assertEquals($newobj->name, $testobj->name);
+        $this->assertEquals($newobj->display, $testobj->display);
     }
 }
