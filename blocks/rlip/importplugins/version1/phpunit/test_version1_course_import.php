@@ -44,7 +44,7 @@ class rlip_importprovider_mockcourse extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -295,7 +295,7 @@ class version1CourseImportTest extends elis_database_test {
     protected function tearDown() {
     }
 
-    protected function setUp() {       
+    protected function setUp() {
     }
 
     /**
@@ -313,7 +313,7 @@ class version1CourseImportTest extends elis_database_test {
 
     /**
      * Helper function that runs the course import for a sample course
-     * 
+     *
      * @param array $extradata Extra fields to set for the new course
      */
     private function run_core_course_import($extradata, $use_default_data = true) {
@@ -329,7 +329,7 @@ class version1CourseImportTest extends elis_database_test {
         foreach ($extradata as $key => $value) {
             $data[$key] = $value;
         }
-        
+
         $provider = new rlip_importprovider_mockcourse($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
@@ -447,7 +447,7 @@ class version1CourseImportTest extends elis_database_test {
      *
      * @param string A name to set for the category
      * @param int The id of the parent category, or 0 for top-level
-     * @return string The name of the created category 
+     * @return string The name of the created category
      */
     private static function create_test_category($name, $parent = 0) {
         global $DB;
@@ -513,7 +513,7 @@ class version1CourseImportTest extends elis_database_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true); 
+        $this->assertEquals($exists, true);
     }
 
     /**
@@ -607,7 +607,7 @@ class version1CourseImportTest extends elis_database_test {
                    startdate = :startdate AND
                    newsitems = :newsitems AND
                    showgrades = :showgrades AND
-                   showreports = :showreports AND 
+                   showreports = :showreports AND
                    maxbytes = :maxbytes AND ".
                    "visible = :visible AND
                    lang = :lang";
@@ -1082,7 +1082,7 @@ class version1CourseImportTest extends elis_database_test {
         $this->assertEquals($exists, true);
 
         //make sure sortorder isn't set to the supplied value
-        $exists = $DB->record_exists('course', array('shortname' => 'unsupportedcoursefieldscreate', 
+        $exists = $DB->record_exists('course', array('shortname' => 'unsupportedcoursefieldscreate',
                                                      'sortorder' => 999));
         $this->assertEquals($exists, false);
 
@@ -1318,7 +1318,7 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCreatesCourseOnlyInAbsoluteCategoryPath() {
         global $DB;
 
-        //make sure specifying an ambigious relative path does not create a course 
+        //make sure specifying an ambigious relative path does not create a course
         $data = $this->get_core_course_data('duplicateparentcategory/duplicatechildcategory');
         $data['shortname'] = 'ambiguousrelativepathcreate';
         $this->run_core_course_import($data);
@@ -1363,7 +1363,7 @@ class version1CourseImportTest extends elis_database_test {
         //make sure specifying an ambigious relative path does not move a course
         $data = array('action' => 'update',
                       'shortname' => 'absolutecategorypathupdate',
-                      'category' => 'duplicateparentcategory/duplicatechildcategory'); 
+                      'category' => 'duplicateparentcategory/duplicatechildcategory');
         $this->run_core_course_import($data, false);
 
         $exists = $DB->record_exists('course', array('shortname' => 'absolutecategorypathupdate',
@@ -2563,7 +2563,7 @@ class version1CourseImportTest extends elis_database_test {
         $enrol->enrol = 'manual';
         $enrol->courseid = $course->id;
         $enrol->status = ENROL_INSTANCE_ENABLED;
-        $DB->insert_record('enrol', $enrol); 
+        $DB->insert_record('enrol', $enrol);
 
         //create a test role
         $roleid = create_role('rolloverrole', 'rolloverrole', 'rolloverrole');
@@ -3042,5 +3042,30 @@ class version1CourseImportTest extends elis_database_test {
 
         //validate that the field was unset
         $this->assertEquals(isset($record->shortname), false);
+    }
+
+    /**
+     * Validate that an import can make a course visible
+     */
+    public function testVersion1ImportMakeCourseVisible() {
+        global $DB;
+
+        //create invisible course
+        $this->run_core_course_import(array('shortname' => 'visiblecrs', 'visible' => 0));
+
+        //data validation
+        $visible = $DB->get_field('course', 'visible', array('shortname' => 'visiblecrs'));
+        $this->assertEquals($visible, 0);
+
+        //make course visible in update action
+        $data = array('action' => 'update',
+                      'shortname' => 'visiblecrs',
+                      'visible' => 1);
+        $this->run_core_course_import($data);
+
+        //validate that course import updated the visibility
+        $visible = $DB->get_field('course', 'visible', array('shortname' => 'visiblecrs'));
+        $this->assertEquals($visible, 1);
+
     }
 }
