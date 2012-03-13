@@ -220,7 +220,7 @@ class block_curr_admin_test extends elis_database_test {
         }
 
         if ($testrole && !delete_role($testrole->id)) {
-            error_log('testelis4093.php::tearDownAfterClass() - failed deleting test role!');
+            error_log('testblock_curradmin.php::tearDownAfterClass() - failed deleting test role!');
         }
 
         parent::tearDownAfterClass();
