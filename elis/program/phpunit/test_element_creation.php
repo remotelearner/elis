@@ -58,31 +58,6 @@ class test_element_creation extends elis_database_test {
         );
     }
 
-    protected static function get_ignored_tables() {
-        return array(
-            // these aren't actually used, but userset::delete will run a query
-            // on them
-//             clustercurriculum::TABLE => 'elis_program',
-//             clustertrack::TABLE => 'elis_program',
-//             clusterassignment::TABLE => 'elis_program',
-//             userset_profile::TABLE => 'elis_program',
-//             field_data_int::TABLE => 'elis_core',
-//             field_data_num::TABLE => 'elis_core',
-//             field_data_char::TABLE => 'elis_core',
-//             field_data_text::TABLE => 'elis_core',
-//             'block_instances' => 'moodle',
-//             'block_positions' => 'moodle',
-//             'filter_active' => 'moodle',
-//             'filter_config' => 'moodle',
-//             'comments' => 'moodle',
-//             'rating' => 'moodle',
-//             'cache_flags' => 'moodle',
-//             'role_assignments' => 'moodle',
-//             'role_capabilities' => 'moodle',
-//             'role_names' => 'moodle',
-        );
-    }
-
     protected function setUp() {
         parent::setUp();
         $this->setUpContextsTable();
