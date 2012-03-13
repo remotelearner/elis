@@ -3068,4 +3068,29 @@ class version1CourseImportTest extends elis_database_test {
         $this->assertEquals($visible, 1);
 
     }
+
+    /**
+     * Validate that an import can make a course invisible
+     */
+    public function testVersion1ImportMakeCourseInvisible() {
+        global $DB;
+
+        //create a course - visible by default
+        $this->run_core_course_import(array('shortname' => 'invisiblecrs'));
+
+        //data validation
+        $visible = $DB->get_field('course', 'visible', array('shortname' => 'invisiblecrs'));
+        $this->assertEquals($visible, 1);
+
+        //make course visible in update action
+        $data = array('action' => 'update',
+                      'shortname' => 'invisiblecrs',
+                      'visible' => 0);
+        $this->run_core_course_import($data);
+
+        //validate that course import updated the visibility
+        $visible = $DB->get_field('course', 'visible', array('shortname' => 'invisiblecrs'));
+        $this->assertEquals($visible, 0);
+
+    }
 }
