@@ -52,9 +52,9 @@ foreach ($plugintypes as $plugintype) {
 
     //initialize table
     $table = new html_table();
-    $table->head = array(get_string('name'), get_string('settings'), get_string('runmanually', 'block_rlip'));
-    $table->align = array('left', 'left', 'left');
-    $table->size = array('70%', '15%', '15%');
+    $table->head = array(get_string('name'), get_string('settings'), get_string('schedule'), get_string('runmanually', 'block_rlip'));
+    $table->align = array('left', 'center', 'center', 'center');
+    $table->size = array('60%', '13%', '13%', '13%');
     $table->data = array();
     $table->width = '40%';
 
@@ -79,13 +79,18 @@ foreach ($plugintypes as $plugintype) {
         $attributes = array('href' => $url);
         $config_tag = html_writer::tag('a', get_string('edit'), $attributes);
 
+        // schedule link
+        $url = $CFG->wwwroot ."/blocks/rlip/schedulepage.php?plugin={$plugintype}_{$name}";
+        $attributes = array('href' => $url);
+        $sched_tag = html_writer::tag('a', get_string('managesched', 'block_rlip'), $attributes);
+
         //manual run link
         $url = "{$directory}/manualrun.php?plugin={$plugintype}_{$name}";
         $attributes = array('href' => $url);
         $run_tag = html_writer::tag('a', get_string('go', 'block_rlip'), $attributes);
 
         //combine into row data
-        $table->data[] = array($displayname, $config_tag, $run_tag);
+        $table->data[] = array($displayname, $config_tag, $sched_tag, $run_tag);
     }
 
     //output the table

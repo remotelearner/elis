@@ -16,12 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlip
+ * @subpackage blocks_rlip
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-$plugin->version = 2012022700;
+defined('MOODLE_INTERNAL') || die();
+
+$plugin->version = 2012031300;

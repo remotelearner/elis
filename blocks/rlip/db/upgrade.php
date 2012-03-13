@@ -104,5 +104,14 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         upgrade_block_savepoint(true, 2012022700, 'rlip');
     }
 
+    if ($result && $oldversion < 2012031300) {
+        // Create new ip_schedule table
+        $xmlfile = dirname(__FILE__) .'/install.xml';
+        $dbman->install_one_table_from_xmldb_file($xmlfile, 'ip_schedule');
+
+        // block rlip savepoint reached
+        upgrade_block_savepoint(true, 2012031300, 'rlip');
+    }
+
     return $result;
 }
