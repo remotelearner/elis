@@ -33,6 +33,7 @@ require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elispm::lib('data/track.class.php'));
 require_once(elispm::lib('data/course.class.php'));
+require_once(elispm::lib('data/coursetemplate.class.php'));
 require_once(elispm::lib('data/pmclass.class.php'));
 require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
@@ -42,14 +43,15 @@ class test_element_creation extends elis_database_test {
 
     protected static function get_overlay_tables() {
         return array(
-            'context'         => 'moodle',
-            'course'          => 'moodle',
-            curriculum::TABLE => 'elis_program',
-            track::TABLE      => 'elis_program',
-            course::TABLE     => 'elis_program',
-            pmclass::TABLE    => 'elis_program',
-            user::TABLE       => 'elis_program',
-            userset::TABLE    => 'elis_program',
+            'context'             => 'moodle',
+            'course'              => 'moodle',
+            curriculum::TABLE     => 'elis_program',
+            track::TABLE          => 'elis_program',
+            course::TABLE         => 'elis_program',
+            coursetemplate::TABLE => 'elis_program',
+            pmclass::TABLE        => 'elis_program',
+            user::TABLE           => 'elis_program',
+            userset::TABLE        => 'elis_program'
         );
     }
 
@@ -115,7 +117,7 @@ class test_element_creation extends elis_database_test {
     }
 
     /**
-     * Initialize a new program object
+     * Initialize a new track object
      *
      * @param integer $curid A curriculum record ID
      * @return track The new track object
@@ -130,6 +132,23 @@ class test_element_creation extends elis_database_test {
         $newtrack = new track($data);
 
         return $newtrack;
+    }
+
+    /**
+     * Initialize a new course description object
+     *
+     * @return course The new course object
+     */
+    private function initCourse() {
+        $data = array(
+            'idnumber' => 'TESTID001',
+            'name'     => 'Test Course 1',
+            'syllabus' => ''  // For some reason this field needs to be defined, or INSERT fails?!
+        );
+
+        $newcourse = new course($data);
+
+        return $newcourse;
     }
 
     /**
@@ -164,6 +183,23 @@ class test_element_creation extends elis_database_test {
 
         // Fetch the record from the database
         $testobj = new track($newobj->id);
+
+        // Verify that the record returned from the database matches what was inserted
+        $this->assertEquals($newobj->idnumber, $testobj->idnumber);
+        $this->assertEquals($newobj->name, $testobj->name);
+    }
+
+    /**
+     * Test that a new Course instance can be created and saved to the database.
+     */
+    public function testCreateCourse() {
+        $newobj = $this->initCourse();
+        $newobj->save();
+
+        $this->assertGreaterThan(0, $newobj->id);
+
+        // Fetch the record from the database
+        $testobj = new course($newobj->id);
 
         // Verify that the record returned from the database matches what was inserted
         $this->assertEquals($newobj->idnumber, $testobj->idnumber);
