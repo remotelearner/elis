@@ -292,22 +292,37 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * a user record based on the import record provided
      *
      * @param object $record
-     * @return string The description of identifying fields, in the form
+     * @param boolean $value_syntax true if we want to use "field" value of
+     *                              "value" syntax, otherwise use field "value"
+     *                              syntax
+     * @return string The description of identifying fields, as a
+     *                comma-separated string
      * [field1] "value1", ...
      */
-    function get_user_descriptor($record) {
-        $fields = array();
-        if (isset($record->username)) {
-            $fields[] = 'username "'.$record->username.'"';
-        }
-        if (isset($record->email)) {
-            $fields[] = 'email "'.$record->email.'"';
-        }
-        if (isset($record->idnumber)) {
-            $fields[] = 'idnumber "'.$record->idnumber.'"';
+    function get_user_descriptor($record, $value_syntax = false) {
+        $fragments = array();
+
+        //the fields we care to check
+        $possible_fields = array('username',
+                                 'email',
+                                 'idnumber');
+
+        foreach ($possible_fields as $field) {
+            if (isset($record->$field)) {
+                //data for that field
+                $value = $record->$field;
+
+                //calculate syntax fragment
+                if ($value_syntax) {
+                    $fragments[] = "\"{$field}\" value of \"{$value}\"";
+                } else {
+                    $fragments[] = "{$field} \"{$value}\"";
+                }
+            }
         }
 
-        return implode(', ', $fields);
+        //combine into string
+        return implode(', ', $fragments);
     }
 
     /**
@@ -1395,17 +1410,36 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //find existing user record
         $params = array();
+        //track how many fields identify the user
+        $num_identifiers = 0;
+
         if (isset($record->username)) {
+            $num_identifiers++;
             $params['username'] = $record->username;
             $params['mnethostid'] = $CFG->mnet_localhost_id;
         }
         if (isset($record->email)) {
+            $num_identifiers++;
             $params['email'] = $record->email;
         }
         if (isset($record->idnumber)) {
+            $num_identifiers++;
             $params['idnumber'] = $record->idnumber;
         }
+
         if (!$userid = $DB->get_field('user', 'id', $params)) {
+            //get description of identifying fields
+            $user_descriptor = $this->get_user_descriptor((object)$params, true);
+ 
+            if ($num_identifiers > 1) {
+                $does_token = 'do';
+            } else {
+                $does_token = 'does';
+            }
+
+            //log message
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] {$user_descriptor} {$does_token} not refer to a valid user.");
+
             return false;
         }
 

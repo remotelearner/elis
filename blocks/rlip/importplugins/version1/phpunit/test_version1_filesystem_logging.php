@@ -2589,7 +2589,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" successfully unassigned role with shortname \"rlipshortname\" on user \"rlipusername2\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
-
+ 
     /**
      * Validates success message for the role assignment delete action on the system context
      */
@@ -2657,5 +2657,204 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data['idnumber'] = 'rlipidnumber';
         $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" successfully unassigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+    }
+
+    /**
+     * Data provider function for invalid user info in role assignments
+     *
+     * @return array The array of data to use in test cases
+     */
+    public function roleAssignmentInvalidUserProvider() {
+        $data = array();
+
+        //invalid username
+        $username_data = array('username' => 'bogus');
+        $username_message = "[enrolment.csv line 2] \"username\" value of \"bogus\" does not refer to a valid user.\n";
+        $data[] = array($username_data, $username_message);
+
+        //invalid email
+        $email_data = array('email' => 'bogus@bogus.com');
+        $email_message = "[enrolment.csv line 2] \"email\" value of \"bogus@bogus.com\" does not refer to a valid user.\n";
+        $data[] = array($email_data, $email_message);
+
+        //invalid idnumber
+        $idnumber_data = array('idnumber' => 'bogus');
+        $idnumber_message = "[enrolment.csv line 2] \"idnumber\" value of \"bogus\" does not refer to a valid user.\n";
+        $data[] = array($idnumber_data, $idnumber_message);
+
+        //invalid combination of username, email
+        $username_email_data = array('username' => 'bogus',
+                                     'email' => 'bogus@bogus.com');
+        $username_email_message = "[enrolment.csv line 2] \"username\" value of \"bogus\", \"email\" value of \"bogus@bogus.com\" do not refer to a valid user.\n";
+        $data[] = array($idnumber_data, $idnumber_message);
+
+        //invalid combination of username, idnumber
+        $username_idnumber_data = array('username' => 'bogus',
+                                        'idnumber' => 'bogus');
+        $username_idnumber_message = "[enrolment.csv line 2] \"username\" value of \"bogus\", \"idnumber\" value of \"bogus\" do not refer to a valid user.\n";
+        $data[] = array($username_idnumber_data, $username_idnumber_message);
+
+        //invalid combination of email, idnumber
+        $email_idnumber_data = array('email' => 'bogus@bogus.com',
+                                     'idnumber' => 'bogus');
+        $email_idnumber_message = "[enrolment.csv line 2] \"email\" value of \"bogus@bogus.com\", \"idnumber\" value of \"bogus\" do not refer to a valid user.\n";
+        $data[] = array($email_idnumber_data, $email_idnumber_message);
+
+        //invalid combination of username, email, idnumber
+        $all_fields_data = array('username' => 'bogus',
+                                 'email' => 'bogus@bogus.com',
+                                 'idnumber' => 'bogus');
+        $all_fields_message = "[enrolment.csv line 2] \"username\" value of \"bogus\", \"email\" value of \"bogus@bogus.com\", \"idnumber\" value of \"bogus\" do not refer to a valid user.\n";
+        $data[] = array($all_fields_data, $all_fields_message);
+
+        return $data;
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during
+     * enrolment and role assignment action on a course
+     * 
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnCourseEnrolmentAndRoleAssignmentCreate($data, $message) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $courseid = $this->create_test_course();
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
+        set_config('gradebookroles', $roleid);
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'course',
+                          'instance' => 'rlipshortname',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during role
+     * assignment action on a course
+     * 
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnCourseRoleAssignmentCreate($data, $message) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $courseid = $this->create_test_course();
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'course',
+                          'instance' => 'rlipshortname',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during role
+     * assignment action on a course category
+     * 
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnCategoryRoleAssignmentCreate($data, $message) {
+        global $DB;
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $userid = $this->create_test_user();
+        $this->create_test_course();
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipname'));
+        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid); 
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'coursecat',
+                          'instance' => 'rlipname',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during role
+     * assignment action on a user
+     * 
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnUserRoleAssignmentCreate($data, $message) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $seconduserid = $this->create_test_user('rlipusername2', 'rlipuser@rlipdomain2.com', 'rlipidnumber2');
+        $context = get_context_instance(CONTEXT_USER, $seconduserid);
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'user',
+                          'instance' => 'rlipusername2',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during role
+     * assignment action on the system context
+     * 
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnSystemeRoleAssignmentCreate($data, $message) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $context = get_context_instance(CONTEXT_SYSTEM);
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'system',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
     }
 }
