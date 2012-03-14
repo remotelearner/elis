@@ -356,8 +356,13 @@ class pmclassform extends cmform {
         global $DB;
 
         $errors = parent::validation($data, $files);
-
-        if ($DB->record_exists_select(pmclass::TABLE, "idnumber = '{$data['idnumber']}'".($data['id'] ? " AND id != {$data['id']}" : ''))) {
+        $sql = 'idnumber = ?';
+        $params = array($data['idnumber']);
+        if ($data['id']) {
+            $sql .= ' AND id != ?';
+            $params[] = $data['id'];
+        }
+        if ($DB->record_exists_select(pmclass::TABLE, $sql, $params)) {
             $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
         }
 
