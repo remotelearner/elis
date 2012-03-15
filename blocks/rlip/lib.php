@@ -285,3 +285,171 @@ function rlip_time_string_to_offset($time_string) {
 
     return $result;
 }
+
+/**
+ * Get scheduled IP jobs
+ *
+ * @param  string $type  The IP plugin type: 'rlipimport', 'rlipexport'
+ * @param  string $name  The IP plugin name: 'version1'
+ * @uses   $CFG
+ * @uses   $DB
+ * @return mixed         Either list of scheduled jobs for IP plugin
+ *                       or false if none.
+ */
+function rlip_get_scheduled_jobs($type, $name) {
+    global $CFG, $DB;
+    $taskname =  $DB->sql_concat("'ipjob_'", 'ipjob.id');
+    $params = array('plugin' => "{$type}_{$name}");
+    $sql = "SELECT ipjob.*, usr.username, usr.firstname, usr.lastname,
+                   usr.timezone, task.lastruntime, task.nextruntime
+              FROM {$CFG->prefix}elis_scheduled_tasks task
+              JOIN {$CFG->prefix}ip_schedule ipjob
+                ON task.taskname = {$taskname}
+              JOIN {$CFG->prefix}user usr
+                ON ipjob.userid = usr.id
+             WHERE ipjob.plugin = :plugin ";
+    return $DB->get_recordset_sql($sql, $params);
+}
+
+/**
+ * Get scheduled period in minutes
+ *
+ * @param  string $period  The schedule period in: *d*h*m format
+ * @return int             The schedule period in minutes, -1 on error
+ */
+function rlip_schedule_period_minutes($period) {
+    $period_elems = array('d' => DAYSECS/60,
+                          'h' => HOURSECS/60,
+                          'm' => 1);
+    $parray = str_split($period);
+    $num = '';
+    $min = 0;
+    foreach ($parray as $char) {
+        if (ctype_digit($char)) {
+            $num .= $char;
+        } else {
+            if (!array_key_exists($char, $period_elems)) {
+                return -1; // error
+            }
+            $multiplier = $period_elems[$char];
+            $min += intval($num) * $multiplier;
+        }
+    }
+    return $min;
+}
+
+/**
+ * Add schedule job for IP
+ *
+ * @param  mixed  $data   The scheduled jobs form parameters.
+ * @uses   $DB
+ * @uses   $USER
+ * @return bool           true on success, false on error.
+ */
+function rlip_schedule_add_job($data) {
+    global $DB, $USER;
+
+    $userid = isset($data['userid']) ? $data['userid'] : $USER->id;
+    $data['timemodified'] = time();
+    $ipjob  = new stdClass;
+    $ipjob->userid = $userid;
+    $ipjob->plugin = $data['plugin'];
+    $ipjob->config = serialize($data);
+    if (!empty($data['id'])) {
+        $ipjob->id = $data['id'];
+        $DB->update_record('ip_schedule', $ipjob);
+        // Must delete any existing task records for the old schedule
+        $taskname = 'ipjob_'. $ipjob->id;
+        $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
+    } else {
+        $ipjob->id = $DB->insert_record('ip_schedule', $ipjob);
+    }
+
+    $task = new stdClass;
+    $task->plugin        = 'block/rlip';
+    $task->taskname      = 'ipjob_'. $ipjob->id;
+    $task->callfile      = '/blocks/rlip/lib.php';
+    $task->callfunction  = serialize('run_ipjob'); // TBD
+    $task->lastruntime   = 0;
+    $task->blocking      = 0;
+    $task->minute        = 0;
+    $task->hour          = 0;
+    $task->day           = '*';
+    $task->month         = '*';
+    $task->dayofweek     = '*';
+    $task->timezone      = 0;
+    $task->enddate       = null;
+    $task->runsremaining = null;
+    $task->nextruntime   = (int)(time() + rlip_schedule_period_minutes($data['period']) * 60);
+    return $DB->insert_record('elis_scheduled_tasks', $task);
+}
+
+/**
+ * Delete schedule job for IP
+ *
+ * @param  int $id  The ID of the scheduled job to delete.
+ * @uses   $DB
+ * @return bool           true on success, false on error.
+ */
+function rlip_schedule_delete_job($id) {
+    global $DB;
+    $DB->delete_records('ip_schedule', array('id' => $id));
+    $taskname = 'ipjob_'. $id;
+    $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
+    return true;
+}
+
+/**
+ *  Callback function for elis_scheduled_tasks IP jobs
+ *
+ * @param  string  $taskname  The task name, in the form ipjob_{id}, where id
+ *                            is the IP job's schedule id
+ * @return boolean            true on success, otherwise false
+ */
+function run_ipjob($taskname) {
+    global $DB;
+
+    // Get the schedule record
+    list($prefix, $id) = explode('_', $taskname);
+    $ipjob = $DB->get_record('ip_schedule', array('id' => $id));
+    if (empty($ipjob)) {
+        return false;
+    }
+
+    $plugin = $ipjob->plugin;
+    $data = unserialize($ipjob->config);
+
+    // Set the next run time
+    if ($task = $DB->get_record('elis_scheduled_tasks',
+                                array('taskname' => $taskname))) {
+        $task->nextruntime = (int)(time() + rlip_schedule_period_minutes($data['period']) * 60);
+        $DB->update_record('elis_scheduled_tasks', $task);
+    } else {
+        mtrace("run_ipjob({$taskname}): DB Error retrieving task record!");
+    }
+
+    // Perform the IP scheduled action
+    switch ($data['type']) { // TBD
+        case 'rlipimport':
+            $baseinstance = rlip_dataplugin_factory::factory($plugin);
+            $entity_types = $baseinstance->get_import_entities();
+            // TBD: fileids as serialize array OR just comma separated???
+            $fileids = unserialize(get_config($plugin, 'fileids'));
+            $importprovider = new rlip_importprovider_moodlefile($entity_types, $fileids);
+            $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);
+            break;
+
+        case 'rlipexport':
+            $fileplugin = rlip_fileplugin_factory::factory('', NULL, false, true);
+            $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin);
+            break;
+
+        default:
+            mtrace("run_ipjob({$taskname}): IP plugin '{$plugin}' not supported!");
+            return false;
+    }
+
+    $instance->run();
+    return true;
+}
+

@@ -26,14 +26,34 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['confirm_delete_ipjob'] = 'Are you sure to delete IP job #{$a}?';
 $string['dateformat'] = 'M/d/Y';
 $string['go'] = 'Go';
 $string['iptypenotsupported'] = 'IP plugin type: \'{$a}\' not supported!';
 $string['logtimeformat'] = '%b/%d/%Y:%H:%M:%S';
 $string['managesched'] = 'Manage';
 $string['manualstatus'] = '{$a->statusmessage} ({$a->filesuccesses} of {$a->total})';
+$string['na'] = 'N/A';
+$string['no_lastruntime'] = 'Never run';
 $string['pluginname'] = 'Integration Point';
 $string['plugins'] = 'Integration Point plugins';
+$string['rlip_form_export_header'] = '<b>Schedule IP job for: Export</b>';
+$string['rlip_form_import_header'] = '<b>Schedule IP job for: Import</b>';
+$string['rlip_form_label'] = 'Label:';
+$string['rlip_form_label_help'] = 'Enter a unique label for your IP schedule job.';
+$string['rlip_form_period'] = 'Period:';
+$string['rlip_form_period_error'] = 'IP schedule period must be of form: *d*h*m and greater than 5 minutes!';
+$string['rlip_form_period_help'] = 'This setting controls how often the IP schedule job is run. Values can be entered in the form \*d\*h\*m to represent days, hours, and minutes. Please set this value to five minutes or longer to allow ample time for processing.';
+$string['rlip_jobs_header_label'] = 'Label';
+$string['rlip_jobs_header_lastran'] = 'Last ran at';
+$string['rlip_jobs_header_modified'] = 'Modified';
+$string['rlip_jobs_header_nextrun'] = 'Will run next at';
+$string['rlip_jobs_header_owner'] = 'Owner';
+$string['rlip_jobs_heading_fullinstructions'] = 'Click a scheduled job\'s label to edit it or click the "New job" button below to schedule an IP job.<br/>&nbsp;';
+$string['rlip_jobs_heading_jobs'] = 'Current scheduled IP jobs for: {$a}';
+$string['rlip_jobs_heading_nojobs'] = 'There are no scheduled IP jobs for: {$a}';
+$string['rlip_jobs_heading_instructions'] = 'Click the "New job" button below to schedule an IP job.';
+$string['rlip_new_job'] = 'New job';
 $string['rlipexportplugins'] = 'Export Plugins';
 $string['rlipimportplugins'] = 'Import Plugins';
 $string['runnow'] = 'Run Now';
