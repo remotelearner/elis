@@ -1438,7 +1438,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
 
             //log message
-            $this->fslogger->log("[{$filename} line {$this->linenumber}] {$user_descriptor} {$does_token} not refer to a valid user.");
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] {$user_descriptor} ".
+                                 "{$does_token} not refer to a valid user.");
 
             return false;
         }
@@ -1450,6 +1451,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //find existing course
             if (!$courseid = $DB->get_field('course', 'id', array('shortname' => $record->instance))) {
                 //invalid shortname
+                $this->fslogger->log("[{$filename} line {$this->linenumber}] \"instance\" value ".
+                                     "of {$record->instance} does not refer to a valid instance ".
+                                     "of a course context.");
                 return false;
             }
 
@@ -1465,12 +1469,17 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $count = $DB->count_records('course_categories', array('name' => $record->instance));
             if ($count > 1) {
                 //ambiguous category name
+                $this->fslogger->log("[{$filename} line {$this->linenumber}] \"instance\" value ".
+                                     "of {$record->instance} refers to multiple course category contexts.");
                 return false;
             }
 
             //find existing course category
             if (!$categoryid = $DB->get_field('course_categories', 'id', array('name' => $record->instance))) {
                 //invalid name
+                $this->fslogger->log("[{$filename} line {$this->linenumber}] \"instance\" value ".
+                                     "of {$record->instance} does not refer to a valid instance ".
+                                     "of a course category context.");
                 return false;
             }
 
@@ -1482,6 +1491,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             if (!$targetuserid = $DB->get_field('user', 'id', array('username' => $record->instance,
                                                                     'mnethostid' => $CFG->mnet_localhost_id))) {
                 //invalid username
+                $this->fslogger->log("[{$filename} line {$this->linenumber}] \"instance\" value ".
+                                     "of {$record->instance} does not refer to a valid instance of a user context.");
                 return false;
             }
 
@@ -1491,12 +1502,18 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         } else {
             //currently only supporting course, system, user and category
             //context levels
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] \"context\" value of ".
+                                 "{$record->context} is not one of the available options ".
+                                 "(system, user, coursecat, course).");
             return false;
         }
 
         //make sure the role is assignable at the course context level
         if (!$DB->record_exists('role_context_levels', array('roleid' => $roleid,
                                                              'contextlevel' => $contextlevel))) {
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] The role with shortname ".
+                                 "{$record->role} is not assignable on the {$record->context} ".
+                                 "context level.");
             return false;
         }
 
@@ -1520,9 +1537,13 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $creategroups = get_config('rlipimport_version1', 'creategroupsandgroupings');
             if ($count > 1) {
                 //ambiguous
+                $this->fslogger->log("[{$filename} line {$this->linenumber}] \"group\" value of ".
+                                     "{$record->group} refers to multiple groups in course with shortname {$record->instance}.");
                 return false;
             } else if ($count == 0 && empty($creategroups)) {
                 //does not exist and not creating
+                $this->fslogger->log("[{$filename} line {$this->linenumber}] \"group\" value of ".
+                                     "{$record->group} does not refer to a valid group in course with shortname {$record->instance}.");
                 return false;
             } else {
                 //exact group exists
@@ -1534,9 +1555,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                                'courseid' => $courseid));
                 if ($count > 1) {
                     //ambiguous
+                    $this->fslogger->log("[{$filename} line {$this->linenumber}] \"grouping\" value of ".
+                                         "{$record->grouping} refers to multiple groupings in course with shortname {$record->instance}.");
                     return false;
                 } else if ($count == 0 && empty($creategroups)) {
                     //does not exist and not creating
+                    $this->fslogger->log("[{$filename} line {$this->linenumber}] \"grouping\" value of ".
+                                         "{$record->grouping} does not refer to a valid grouping in ".
+                                         "course with shortname {$record->instance}.");
                     return false;
                 } else {
                     //exact grouping exists

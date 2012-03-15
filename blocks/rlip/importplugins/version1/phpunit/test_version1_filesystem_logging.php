@@ -2857,4 +2857,248 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
+
+    /**
+     * Validates log message for assigning a role on a context level where it
+     * is not assignable
+     */
+    public function testVersion1ImportLogsUnassignableContextOnRoleAssignmentCreate() {
+        //set up dependencies
+        $this->create_test_user();
+        //create the role without enabling it at any context
+        create_role('rlipfullshortname', 'rlipshortname', 'rlipdescription');
+
+        //data
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'system',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] The role with shortname rlipshortname is not assignable on the system context level.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates log message for assigning a role on a context level that
+     * doesn't exist
+     */
+    public function testVersion1ImportLogsInvalidContextOnRoleAssignmentCreate() {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'bogus',
+                      'instance' => 'bogus',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"context\" value of bogus is not one of the available options (system, user, coursecat, course).\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Data provider method for logging invalid entity messages
+     *
+     * @return array An array containing information about the context
+     *               "shortname" and display name
+     */
+    public function roleAssignmentInvalidEntityProvider() {
+        return array(array('course', 'course'),
+                     array('coursecat', 'course category'),
+                     array('user', 'user'));
+    }
+
+    /**
+     * Validates that invalid identifying entity fields are logged during role
+     * assignment actions on various contexts
+     * 
+     * @param string $context The string representing the context level
+     * @param string $displayname The display name for the context level
+     *
+     * @dataProvider roleAssignmentInvalidEntityProvider
+     */
+    public function testVersion1ImportLogsInvalidEntityOnRoleAssignmentCreate($context, $displayname) {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => $context,
+                      'instance' => 'bogus',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"instance\" value of bogus does not refer to a valid instance of a {$displayname} context.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');        
+    }
+
+    /**
+     * Validate log message for ambiguous category name
+     */
+    public function testVersion1ImportLogsAmbiguousCategoryNameOnRoleAssignmentCreate() {
+        global $DB;
+
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //create the category
+        $category = new stdClass;
+        $category->name = 'rlipname';
+        $categoryid = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        //create a duplicate category
+        $categoryid = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'coursecat',
+                      'instance' => 'rlipname',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"instance\" value of rlipname refers to multiple course category contexts.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');    
+    }
+
+    /**
+     * Validate log message for invalid group name
+     */
+    public function testVersion1ImportLogsInvalidGroupNameOnRoleAssignmentCreate() {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $this->create_test_course();
+        $this->create_test_role();
+
+        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname',
+                      'group' => 'bogus');
+
+        $message = "[enrolment.csv line 2] \"group\" value of bogus does not refer to a valid group in course with shortname rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validate log message for ambiguous group name
+     */
+    public function testVersion1ImportLogsAmbiguousGroupNameOnRoleAssignmentCreate() {
+        global $CFG;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $this->create_test_role();
+
+        $group = new stdClass;
+        $group->courseid = $courseid;
+        $group->name = 'duplicate';
+        groups_create_group($group);
+        groups_create_group($group);
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname',
+                      'group' => 'duplicate');
+
+        $message = "[enrolment.csv line 2] \"group\" value of duplicate refers to multiple groups in course with shortname rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validate log message for invalid grouping name
+     */
+    public function testVersion1ImportLogsInvalidGroupingNameOnRoleAssignmentCreate() {
+        global $CFG;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $this->create_test_role();
+
+        $group = new stdClass;
+        $group->courseid = $courseid;
+        $group->name = 'rlipname';
+        groups_create_group($group);
+
+        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname',
+                      'group' => 'rlipname',
+                      'grouping' => 'bogus');
+
+        $message = "[enrolment.csv line 2] \"grouping\" value of bogus does not refer to a valid grouping in course with shortname rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validate log message for ambiguous grouping name
+     */
+    public function testVersion1ImportLogsAmbiguousGroupingNameOnRoleAssignmentCreate() {
+        global $CFG;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $this->create_test_role();
+
+        $group = new stdClass;
+        $group->courseid = $courseid;
+        $group->name = 'rlipname';
+        groups_create_group($group);
+
+        $grouping = new stdClass;
+        $grouping->name = 'duplicate';
+        $grouping->courseid = $courseid;
+        groups_create_grouping($grouping);
+        groups_create_grouping($grouping);
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname',
+                      'group' => 'rlipname',
+                      'grouping' => 'duplicate');
+
+        $message = "[enrolment.csv line 2] \"grouping\" value of duplicate refers to multiple groupings in course with shortname rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
 }
