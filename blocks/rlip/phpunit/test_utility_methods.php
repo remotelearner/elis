@@ -30,6 +30,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
+require_once($CFG->dirroot .'/blocks/rlip/lib.php');
 
 /**
  * Class for testing utility methods
@@ -41,9 +42,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * string is empty
      */
     function testSanitizeTimeStringProvidesDefault() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_sanitize_time_string('', '1d');
         $this->assertEquals($result, '1d');
     }
@@ -52,9 +50,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * Validate that time string sanitization leaves valid strings unchanged
      */
     function testSanitizeTimeStringLeavesValidStringUnchanged() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_sanitize_time_string('1d2h3m', '1d');
         $this->assertEquals($result, '1d2h3m');
     }
@@ -64,9 +59,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * the beginning of a string
      */
     function testSanitizeTimeStringRemovesInvalidPortionFromStart() {
-         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_sanitize_time_string('1x2d3h4m');
         $this->assertEquals($result, '2d3h4m');
     }
@@ -76,9 +68,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * the middle of a string
      */
     function testSanitizeTimeStringRemovesInvalidPortionFromMiddle() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_sanitize_time_string('1x2d3h4m');
         $this->assertEquals($result, '2d3h4m');
     }
@@ -88,9 +77,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * the end of a string
      */
     function testSanitizeTimeStringRemovesInvalidPortionFromEnd() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_sanitize_time_string('1x2d3h4m');
         $this->assertEquals($result, '2d3h4m');
     }
@@ -100,9 +86,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * from all parts of a time string 
      */
     function testSanitizeTimeStringRemovesNonPortionCharacters() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_sanitize_time_string('1d, 2h, 3m');
         $this->assertEquals($result, '1d2h3m');
     }
@@ -111,9 +94,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * Validate that time string sanitization converts letters to lowercase
      */
     function testSanitizeTimeStringConvertsLettersToLowercase() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_sanitize_time_string('1D2H3M');
         $this->assertEquals($result, '1d2h3m');
     }
@@ -123,9 +103,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * one another
      */
     function testSanitizeTimeStringPreventsConsecutiveUnits() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_sanitize_time_string('1d2h3mm');
         $this->assertEquals($result, '1d2h3m');
     }
@@ -135,9 +112,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * days
      */
     function testTimeStringToOffsetReturnsCorrectOffsetForDays() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_time_string_to_offset('2d');
         $this->assertEquals($result, 2 * DAYSECS);
     }
@@ -147,9 +121,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * hours
      */
     function testTimeStringToOffsetReturnsCorrectOffsetForHours() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_time_string_to_offset('2h');
         $this->assertEquals($result, 2 * HOURSECS);
     }
@@ -159,9 +130,6 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * minutes
      */
     function testTimeStringToOffsetReturnsCorrectOffsetForMinutes() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_time_string_to_offset('2m');
         $this->assertEquals($result, 2 * MINSECS);
     }
@@ -171,10 +139,32 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      * with hours, minutes and seconds
      */
     function testTimeStringToOffsetReturnsCorrectOffsetForComplexString() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
         $result = rlip_time_string_to_offset('1d2h3m');
         $this->assertEquals($result, DAYSECS + 2 * HOURSECS + 3 * MINSECS);
+    }
+
+    /**
+     * Data provider for test_rlip_schedule_period_minutes()
+     */
+    public static function period_minutes_provider() {
+        return array(
+            array('1x', -1),
+            array('1m', 1),
+            array('5m', 5),
+            array('10m', 10),
+            array('1h', HOURSECS/60),
+            array('1d', DAYSECS/60),
+            array('2d3h4m', DAYSECS/30 + (HOURSECS * 3)/60 + 4),
+            array('20d23h45m', DAYSECS/3 + (HOURSECS * 23)/60 + 45),
+            array('2a3b4c', -1)
+        );
+    }
+
+    /**
+     * Test library function: rlip_schedule_period_minutes()
+     * @dataProvider period_minutes_provider
+     */
+    function test_rlip_schedule_period_minutes($a, $b) {
+        $this->assertEquals(rlip_schedule_period_minutes($a), $b);
     }
 }
