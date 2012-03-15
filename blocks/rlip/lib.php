@@ -333,6 +333,7 @@ function rlip_schedule_period_minutes($period) {
             }
             $multiplier = $period_elems[$char];
             $min += intval($num) * $multiplier;
+            $num = '';
         }
     }
     return $min;
