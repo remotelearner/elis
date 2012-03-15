@@ -395,7 +395,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('block_instances' => 'moodle',
+        global $DB;
+        $tables = array('block_instances' => 'moodle',
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
                      'log' => 'moodle',
@@ -428,6 +429,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'event' => 'moodle',
                      'course_display' => 'moodle',
                      'backup_log' => 'moodle');
+        if ($DB->record_exists("block", array("name" => "curr_admin"))) {
+            $tables['crlm_user_moodle'] = 'elis_program';
+            $tables['crlm_user'] = 'elis_program';
+        }
+        return $tables;
     }
 
     protected $backupGlobalsBlacklist = array('DB');
@@ -2658,4 +2664,435 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" successfully unassigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
+
+    protected function load_csv_data() {
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('user', dirname(__FILE__).'/userfile.csv');
+        $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
+        load_phpunit_data_set($dataset, true, self::$overlaydb);
+    }
+
+    public function testVersion1ImportLogsUpdateEmail() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'testinvalid@user.com',
+                      'city' => 'Waterloo');
+        $expected_error = "\"email\" value of testinvalid@user.com does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateMailDigest() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'testinvalid@user.com',
+                      'city' => 'Waterloo',
+                      'maildigest' => 3);
+        $expected_error = "\"maildigest\" value of 3 is not one of the available options (0, 1, 2).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateAutoSubscribe() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'testinvalid@user.com',
+                      'city' => 'Waterloo',
+                      'maildigest' => 2,
+                      'autosubscribe' => 2);
+        $expected_error = "\"autosubscribe\" value of 2 is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateTrackingDisabled() {
+        $this->load_csv_data();
+        set_config('forum_trackreadposts', 0);
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'maildigest' => 2,
+                      'autosubscribe' => 1,
+                      'trackforums' => 0);
+        $expected_error = "Tracking unread posts is currently disabled on this site.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateTracking() {
+        $this->load_csv_data();
+        set_config('forum_trackreadposts', 1);
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'maildigest' => 2,
+                      'autosubscribe' => 1,
+                      'trackforums' => 2);
+        $expected_error = "\"trackforums\" value of 2 is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateScreenReader() {
+        $this->load_csv_data();
+        set_config('forum_trackreadposts', 1);
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'maildigest' => 2,
+                      'autosubscribe' => 1,
+                      'trackforums' => 1,
+                      'screenreader' => 2);
+        $expected_error = "\"screenreader\" value of 2 is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateUsername() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'invalidusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'idnumber',
+                      'city' => 'Waterloo');
+        $expected_error = "\"username\" value of invalidusername does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateIdNumber() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'invalidid',
+                      'city' => 'Waterloo');
+        $expected_error = "\"idnumber\" value of invalidid does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateAuth() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'idnumber',
+                      'password' => '1234567',
+                      'city' => 'Waterloo',
+                      'auth' => 'invalidauth');
+        $expected_error = "\"auth\" values of invalidauth is not a valid auth plugin.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdatePassword() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'idnumber',
+                      'password' => '1234567',
+                      'city' => 'Waterloo');
+        $expected_error = "\"password\" value of 1234567 does not conform to your site's password policy.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateLang() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'lang' => 'invalidlang');
+        $expected_error = "\"lang\" value of invalidlang is not a valid language code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateCountry() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'lang' => 'en',
+                      'country' => 'invalidcountry'
+                     );
+        $expected_error = "\"country\" value of invalidcountry is not a valid country code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsThemeDisabled() {
+        $this->load_csv_data();
+        set_config('allowuserthemes', 0);
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'email' => 'test@user.com',
+                      'lang' => 'en',
+                      'idnumber' => 'idnumber',
+                      'country' => 'CA',
+                      'theme' => 'invalidtheme',
+                     );
+        $expected_error = "User themes are currently disabled on this site.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateTheme() {
+        $this->load_csv_data();
+        set_config('allowuserthemes', 1);
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'email' => 'test@user.com',
+                      'lang' => 'en',
+                      'idnumber' => 'idnumber',
+                      'country' => 'CA',
+                      'theme' => 'invalidtheme',
+                     );
+        $expected_error = "\"theme\" value of invalidtheme is invalid.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsForceTimezone() {
+        global $CFG;
+        $this->load_csv_data();
+        $CFG->forcetimezone = 97;
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'email' => 'test@user.com',
+                      'lang' => 'en',
+                      'idnumber' => 'idnumber',
+                      'country' => 'CA',
+                      'theme' => 'invalidtheme',
+                      'timezone' => 98,
+                     );
+        $expected_error = "\"timezone\" value of 98 is not consistent with forced timezone value of {$CFG->forcetimezone} on your site.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsInvalidTimezone() {
+        global $CFG;
+        $this->load_csv_data();
+        $CFG->forcetimezone = 99;
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'email' => 'test@user.com',
+                      'lang' => 'en',
+                      'idnumber' => 'idnumber',
+                      'country' => 'CA',
+                      'timezone' => 'invalidtimezone',
+                     );
+        $expected_error = "\"timezone\" value of invalidtimezone is not a valid timezone.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateFormat() {
+        global $CFG;
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'email' => 'test@user.com',
+                      'lang' => 'en',
+                      'idnumber' => 'idnumber',
+                      'country' => 'CA',
+                      'timezone' => 'invalidtimezone',
+                      'shortname' => 'cm2',
+                      'format' => 'invalidformat'
+                     );
+        $expected_error = "\"format\" value does not refer to a valid course format.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateNumSections() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $invalidmaxsections = $maxsections + 1;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $invalidmaxsections
+                     );
+        $expected_error = "\"numsections\" value of {$invalidmaxsections} is not one of the available options (0 .. {$maxsections}).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateStartDate() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => '01/02/2012'
+                     );
+        $expected_error = "\"startdate\" value of 01/02/2012 is not a valid date in MMM/DD/YYYY format.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateNewsItems() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 100
+                     );
+        $expected_error = "\"newsitems\" value of 100 is not one of the available options (0 .. 10).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateShowGrades() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 3
+                     );
+        $expected_error = "\"showgrades\" value of 3 is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateShowReports() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 3
+                     );
+        $expected_error = "\"showreports\" value of 3 is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateMaxBytes() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        set_config('maxbytes', 100000000, 'moodlecourse');
+        $maxbytes = get_config('moodlecourse','maxbytes');
+        $invalidmaxbytes = $maxbytes + 1;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $invalidmaxbytes
+                     );
+        $expected_error = "\"maxbytes\" value of {$invalidmaxbytes} is not one of the available options.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateGuest() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $CFG->maxbytes = 100000000;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $CFG->maxbytes,
+                      'guest' => 'invalidguest'
+                     );
+        $expected_error = "\"guest\" value of invalidguest is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateVisible() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $CFG->maxbytes = 100000000;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $CFG->maxbytes,
+                      'guest' => 1,
+                      'visible' => 'invalidvisible',
+                     );
+        $expected_error = "\"visible\" value of invalidvisible is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateCourseLang() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $CFG->maxbytes = 100000000;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $CFG->maxbytes,
+                      'guest' => 1,
+                      'visible' => 1,
+                      'lang' => 'invalidlang'
+                     );
+        $expected_error = "\"lang\" value of invalidlang is not a valid language code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateGuestEnrolmentsDisabled() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        set_config('enrol_plugins_enabled', false);
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $CFG->maxbytes = 100000000;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $CFG->maxbytes,
+                      'guest' => 1,
+                      'visible' => 1,
+                      'lang' => 'en',
+                     );
+        $expected_error = "\"guest\" enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
 }
