@@ -27,7 +27,7 @@
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 
 /**
- * Original Moodle-only import 
+ * Original Moodle-only import
  */
 class rlip_importplugin_version1 extends rlip_importplugin_base {
     //required field definition
@@ -98,7 +98,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         foreach ($header as $column) {
             if (strpos($column, 'profile_field_') === 0) {
                 $shortname = substr($column, strlen('profile_field_'));
-                $this->fields[$shortname] = $DB->get_record('user_info_field', array('shortname' => $shortname)); 
+                $this->fields[$shortname] = $DB->get_record('user_info_field', array('shortname' => $shortname));
             }
         }
     }
@@ -730,7 +730,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $this->fslogger->log("[{$filename} line {$this->linenumber}] User with {$user_descriptor} successfully deleted.");
 
             return true;
-        }        
+        }
 
         return false;
     }
@@ -835,7 +835,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 unset($record->$key);
             }
         }
-        
+
         return $record;
     }
 
@@ -943,7 +943,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         $parentids = array();
 
-        //check for a leading / for the case where an absolute path is specified 
+        //check for a leading / for the case where an absolute path is specified
         if (strpos($category_string, '/') === 0) {
             $category_string = substr($category_string, 1);
             $parentids[] = 0;
@@ -987,7 +987,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     //create a new category
                     $newcategory = new stdClass;
                     $newcategory->name = $categoryname;
-                    $newcategory->parent = $parent; 
+                    $newcategory->parent = $parent;
                     $newcategory->id = $DB->insert_record('course_categories', $newcategory);
 
                     //set "parent ids" to the new category id
@@ -995,7 +995,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 } else {
                     //set "parent ids" to the current result set for our next iteration
                     $parentids = array();
-    
+
                     foreach ($records as $record) {
                         $parentids[] = $record->id;
                     }
@@ -1067,7 +1067,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //make sure showgrades is one of the available values 
+        //make sure showgrades is one of the available values
         if (!$this->validate_fixed_list($record, 'showgrades', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
             return false;
@@ -1120,7 +1120,6 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
 
             $defaultenrol = get_config('enrol_guest', 'defaultenrol');
-            
             if (empty($defaultenrol) && (!empty($record->guest) || !empty($record->password))) {
                 //enabling guest access without the guest plugin being added by default
                 return false;
@@ -1285,7 +1284,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             if ($categoryid === false) {
                 return false;
             }
-    
+
             $record->category = $categoryid;
         }
 
@@ -1357,7 +1356,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @param object $record One record of import data
      * @param string $action The action to perform, or use data's action if
      *                       not supplied
-     * @param string $filename The import file name, used for logging                       
+     * @param string $filename The import file name, used for logging
      *
      * @return boolean true on success, otherwise false
      */
@@ -1578,31 +1577,40 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //going to collect all messages for this action
         $logmessages = array();
-
         $studentroleids = explode(',', $CFG->gradebookroles);
-
         if ($record->context == 'course' && in_array($roleid, $studentroleids)) {
+
             //set enrolment start time to the course start date
             $timestart = $DB->get_field('course', 'startdate', array('id' => $courseid));
 
-            if ($role_assignment_exists) {
+            $is_enrolled = is_enrolled($context, $userid);
+            if ($role_assignment_exists && !$is_enrolled) {
+
                 //role assignment already exists, so just enrol the user
                 enrol_try_internal_enrol($courseid, $userid, null, $timestart);
-            } else if (!is_enrolled($context, $userid)) {
+            } else if (!$is_enrolled) {
+
                 //role assignment does not exist, so enrol and assign role
                 enrol_try_internal_enrol($courseid, $userid, $roleid, $timestart);
 
                 //collect success message for logging at end of action
                 $logmessages[] = "User with {$user_descriptor} successfully assigned role with shortname \"{$record->role}\" on {$context_descriptor}.";
             } else {
+
+                //duplicate enrolment attempt
+                $logmessages[] = "User with {$user_descriptor} is already assigned role with shortname \"{$record->role}\" on {$context_descriptor}. User with {$user_descriptor} is already enroled in course with shortname \"{$record->instance}\".";
+                $this->fslogger->log("[{$filename} line {$this->linenumber}] ".implode(' ', $logmessages));
                 return false;
             }
 
             //collect success message for logging at end of action
             $logmessages[] = "User with {$user_descriptor} enrolled in course with shortname \"{$record->instance}\".";
         } else {
+
             if ($role_assignment_exists) {
                 //role assignment already exists, so this action serves no purpose
+                $logmessages[] = "User with {$user_descriptor} is already assigned role with shortname \"{$record->role}\" on {$context_descriptor}.";
+                $this->fslogger->log("[{$filename} line {$this->linenumber}] ".implode(' ', $logmessages));
                 return false;
             }
 
@@ -1622,7 +1630,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $data = new stdClass;
                 $data->courseid = $courseid;
                 $data->name = $record->group;
-    
+
                 $groupid = groups_create_group($data);
 
                 //collect success message for logging at end of action
@@ -1649,7 +1657,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     $data = new stdClass;
                     $data->courseid = $courseid;
                     $data->name = $record->grouping;
-    
+
                     $groupingid = groups_create_grouping($data);
 
                     //collect success message for logging at end of action
@@ -1728,7 +1736,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             if (!$courseid = $DB->get_field('course', 'id', array('shortname' => $record->instance))) {
                 return false;
             }
-    
+
             //obtain the course context instance
             $context = get_context_instance(CONTEXT_COURSE, $courseid);
 
@@ -1756,7 +1764,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                                     'mnethostid' => $CFG->mnet_localhost_id))) {
                 return false;
             }
-    
+
             //obtain the user context instance
             $context = get_context_instance(CONTEXT_USER, $targetuserid);
         } else {

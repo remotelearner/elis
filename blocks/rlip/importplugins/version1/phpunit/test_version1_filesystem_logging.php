@@ -31,6 +31,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
@@ -119,7 +120,7 @@ class rlip_importprovider_fsloguser extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -162,7 +163,7 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -205,7 +206,7 @@ class rlip_importprovider_fslogenrolment extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -267,7 +268,7 @@ class overlay_course_database_fs extends overlay_database {
             $this->pattern = '/{('.implode('|', array_keys($this->overlaytables)).')}/';
         }
 
-        // FIXME: or should we just do nothing? 
+        // FIXME: or should we just do nothing?
         return $this->basedb->change_database_structure($sql);
     }
 
@@ -342,7 +343,7 @@ class overlay_course_database_fs extends overlay_database {
                 try {
                     $manager->drop_temp_table($table);
                 } catch (Exception $e) {
-                    
+
                 }
                 unset($this->overlaytables[$tablename]);
             }
@@ -427,7 +428,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'course_modules' => 'moodle',
                      'event' => 'moodle',
                      'course_display' => 'moodle',
-                     'backup_log' => 'moodle');
+                     'backup_log' => 'moodle',
+                     'external_tokens' => 'moodle',
+                     'forum' => 'mod_forum',
+                     'forum_subscriptions' => 'mod_forum',
+                     'forum_read' => 'mod_forum',
+                     'external_services_users' => 'moodle');
     }
 
     protected $backupGlobalsBlacklist = array('DB');
@@ -496,7 +502,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true); 
+        $this->assertEquals($exists, true);
     }
 
     /**
@@ -547,7 +553,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $course = create_course($course);
         get_context_instance(CONTEXT_COURSE, $course->id);
 
-        return $course->id; 
+        return $course->id;
     }
 
     /**
@@ -2455,7 +2461,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $userid = $this->create_test_user();
         $this->create_test_course();
         $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipname'));
-        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid); 
+        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
         $roleid = $this->create_test_role();
 
         //base data used every time
@@ -2589,7 +2595,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" successfully unassigned role with shortname \"rlipshortname\" on user \"rlipusername2\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
- 
+
     /**
      * Validates success message for the role assignment delete action on the system context
      */
@@ -2659,7 +2665,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
 
-    /**
+/**
      * Data provider function for invalid user info in role assignments
      *
      * @return array The array of data to use in test cases
@@ -2713,7 +2719,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     /**
      * Validates that invalid identifying user fields are logged during
      * enrolment and role assignment action on a course
-     * 
+     *
      * @param array $data Additional data to feed to the import
      * @param array $message The error message to expect in the log
      *
@@ -2743,7 +2749,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     /**
      * Validates that invalid identifying user fields are logged during role
      * assignment action on a course
-     * 
+     *
      * @param array $data Additional data to feed to the import
      * @param array $message The error message to expect in the log
      *
@@ -2772,7 +2778,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     /**
      * Validates that invalid identifying user fields are logged during role
      * assignment action on a course category
-     * 
+     *
      * @param array $data Additional data to feed to the import
      * @param array $message The error message to expect in the log
      *
@@ -2786,7 +2792,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $userid = $this->create_test_user();
         $this->create_test_course();
         $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipname'));
-        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid); 
+        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
         $roleid = $this->create_test_role();
 
         //base data used every time
@@ -2805,7 +2811,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     /**
      * Validates that invalid identifying user fields are logged during role
      * assignment action on a user
-     * 
+     *
      * @param array $data Additional data to feed to the import
      * @param array $message The error message to expect in the log
      *
@@ -2834,7 +2840,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     /**
      * Validates that invalid identifying user fields are logged during role
      * assignment action on the system context
-     * 
+     *
      * @param array $data Additional data to feed to the import
      * @param array $message The error message to expect in the log
      *
@@ -2917,7 +2923,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     /**
      * Validates that invalid identifying entity fields are logged during role
      * assignment actions on various contexts
-     * 
+     *
      * @param string $context The string representing the context level
      * @param string $displayname The display name for the context level
      *
@@ -2938,7 +2944,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $message = "[enrolment.csv line 2] \"instance\" value of bogus does not refer to a valid instance of a {$displayname} context.\n";
 
         //validation
-        $this->assert_data_produces_error($data, $message, 'enrolment');        
+        $this->assert_data_produces_error($data, $message, 'enrolment');
     }
 
     /**
@@ -2970,7 +2976,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $message = "[enrolment.csv line 2] \"instance\" value of rlipname refers to multiple course category contexts.\n";
 
         //validation
-        $this->assert_data_produces_error($data, $message, 'enrolment');    
+        $this->assert_data_produces_error($data, $message, 'enrolment');
     }
 
     /**
@@ -3100,5 +3106,181 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates a duplicate enrolment failure message
+     */
+    public function testVersion1ImportLogsDuplicateEnrolmentFailureMessage() {
+       global $DB;
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        // Create guest user
+        $guestuser = get_test_user('guest');
+        set_config('siteguest', $guestuser->id);
+
+        // Create admin user
+        $admiuser = get_test_user('admin');
+        set_config('siteadmins', $adminuser->id);
+
+        $userid = $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
+
+        //enable manual enrolments
+        $enrol = new stdClass;
+        $enrol->enrol = 'manual';
+        $enrol->courseid = $courseid;
+        $enrol->status = ENROL_INSTANCE_ENABLED;
+        $DB->insert_record('enrol', $enrol);
+
+        //make our role a "student" role
+        set_config('gradebookroles', $roleid);
+
+        $timestart = $DB->get_field('course', 'startdate', array('id' => $courseid));
+        enrol_try_internal_enrol($courseid, $userid, null,$timestart);
+
+        role_assign($roleid, $userid, $context->id);
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'course',
+                          'instance' => 'rlipshortname',
+                          'role' => 'rlipshortname');
+        //username
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //email
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //idnumber
+        $data = $basedata;
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, email
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, idnumber
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //email, idnumber
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, email, idnumber
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+    }
+
+    /**
+     * Validates a duplicate role assignment failure message
+    */
+    public function testVersion1ImportLogsDuplicateRoleAssignmentFailureMessage() {
+        global $DB;
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+
+        // Create guest user
+        $guestuser = get_test_user('guest');
+        set_config('siteguest', $guestuser->id);
+
+        // Create admin user
+        $admiuser = get_test_user('admin');
+        set_config('siteadmins', $adminuser->id);
+
+        //make our role NOT a "student" role
+        set_config('gradebookroles', null);
+
+        $userid = $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'course',
+                          'instance' => 'rlipshortname',
+                          'role' => 'rlipshortname');
+
+        //username
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //email
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //idnumber
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, email
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, idnumber
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //email, idnumber
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, email, idnumber
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
     }
 }
