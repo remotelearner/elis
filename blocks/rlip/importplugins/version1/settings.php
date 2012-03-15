@@ -20,6 +20,26 @@ $settings->add(new admin_setting_heading('rlipimport_version1/scheduling',
                                          get_string('scheduling', 'rlipimport_version1'),
                                          ''));
 
+//setting for schedule_files_path
+$settings->add(new admin_setting_configtext('rlipimport_version1/schedule_files_path',
+                                            get_string('schedule_files_path', 'rlipimport_version1'),
+                                            get_string('config_schedule_files_path', 'rlipimport_version1'), ''));
+
+//setting for user_schedule_file
+$settings->add(new admin_setting_configtext('rlipimport_version1/user_schedule_file',
+                                            get_string('user_schedule_file', 'rlipimport_version1'),
+                                            get_string('config_user_schedule_file', 'rlipimport_version1'), 'user.csv'));
+
+//setting for course_schedule_file
+$settings->add(new admin_setting_configtext('rlipimport_version1/course_schedule_file',
+                                            get_string('course_schedule_file', 'rlipimport_version1'),
+                                            get_string('config_course_schedule_file', 'rlipimport_version1'), 'course.csv'));
+
+//setting for enrolment_schedule_file
+$settings->add(new admin_setting_configtext('rlipimport_version1/enrolment_schedule_file',
+                                            get_string('enrolment_schedule_file', 'rlipimport_version1'),
+                                            get_string('config_enrolment_schedule_file', 'rlipimport_version1'), 'enroll.csv'));
+
 //setting for disabling in Moodle cron
 //todo: actually use this setting's value somewhere
 $settings->add(new admin_setting_configcheckbox('rlipimport_version1/disableincron',

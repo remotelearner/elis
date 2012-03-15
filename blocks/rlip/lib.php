@@ -434,9 +434,12 @@ function run_ipjob($taskname) {
         case 'rlipimport':
             $baseinstance = rlip_dataplugin_factory::factory($plugin);
             $entity_types = $baseinstance->get_import_entities();
-            // TBD: fileids as serialize array OR just comma separated???
-            $fileids = unserialize(get_config($plugin, 'fileids'));
-            $importprovider = new rlip_importprovider_moodlefile($entity_types, $fileids);
+            $files = array();
+            $path = get_config($plugin, 'schedule_files_path');
+            foreach ($entity_types as $entity) {
+                $files[$entity] = $path . get_config($plugin, $entity .'_schedule_file');
+            }
+            $importprovider = new rlip_importprovider_csv($entity_types, $files);
             $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);
             break;
 
