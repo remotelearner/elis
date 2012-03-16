@@ -47,7 +47,7 @@ class enrolment_role_sync {
         if (!($context = get_context_instance_by_id($data->contextid))) {
             $context = get_context_instance($data->contextid, $data->itemid);
         }
-        if (!empty($context) && $context->contextlevel == context_level_base::get_custom_context_level('class', 'elis_program')) {
+        if (!empty($context) && $context->contextlevel == CONTEXT_ELIS_PROGRAM) {
             //assignment is on a PM class instance
 
             //need the PM userid to create an association

@@ -65,7 +65,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
             usermoodle::TABLE => 'elis_program',
             field_owner::TABLE => 'elis_core',
             userset::TABLE => 'elis_program'
-            );
+        );
     }
 
     protected function setUp() {
@@ -90,9 +90,9 @@ class curriculumCustomFieldsTest extends elis_database_test {
                                                                   'instanceid' => SITEID));
         self::$overlaydb->import_record('context', $sitecontext);
 
-        $elis_contexts = array('curriculum','track','course','class','user','cluster');
-        foreach ($elis_contexts as $ctx) {
-            $dbfilter = array('contextlevel'=> context_level_base::get_custom_context_level($ctx, 'elis_program'));
+        $elis_contexts = context_elis_helper::get_all_levels();
+        foreach ($elis_contexts as $context_level) {
+            $dbfilter = array('contextlevel' => $context_level);
             $recs = self::$origdb->get_records('context', $dbfilter);
             foreach ($recs as $rec) {
                 self::$overlaydb->import_record('context', $rec);
@@ -159,10 +159,8 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4745: Test for assigning a user a role on a program context
      */
     public function testAssignUserforProgramCTX() {
-        $context_level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
-
         //get role to assign (we'll just take the first one returned)
-        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel'=>$context_level));
+        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel' => CONTEXT_ELIS_PROGRAM));
         foreach ($roles_ctx as $role_ctx) {
             $roleid = $role_ctx->roleid;
             break;
@@ -173,7 +171,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
         //get specific context
         $cur = new curriculum(1, null, array(), false, array(), self::$overlaydb);
-        $context = get_context_instance($context_level, $cur->id);
+        $context = context_elis_program::instance($cur->id);
 
         //assign role
         $raid = role_assign($roleid, cm_get_moodleuserid($user->id), $context->id);
@@ -186,10 +184,8 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4746: Test for assigning a user a role on a track context
      */
     public function testAssignUserforTrackCTX() {
-        $context_level = context_level_base::get_custom_context_level('track', 'elis_program');
-
         //get role to assign (we'll just take the first one returned)
-        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel'=>$context_level));
+        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel' => CONTEXT_ELIS_TRACK));
         foreach ($roles_ctx as $role_ctx) {
             $roleid = $role_ctx->roleid;
             break;
@@ -200,7 +196,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
         //get specific context
         $trk = new track(1, null, array(), false, array(), self::$overlaydb);
-        $context = get_context_instance($context_level, $trk->id);
+        $context = context_elis_track::instance($trk->id);
 
         //assign role
         $raid = role_assign($roleid, cm_get_moodleuserid($user->id), $context->id);
@@ -213,10 +209,8 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4747: Test for assigning a user a role on a course context
      */
     public function testAssignUserforCourseCTX() {
-        $context_level = context_level_base::get_custom_context_level('course', 'elis_program');
-
         //get role to assign (we'll just take the first one returned)
-        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel'=>$context_level));
+        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel' => CONTEXT_ELIS_COURSE));
         foreach ($roles_ctx as $role_ctx) {
             $roleid = $role_ctx->roleid;
             break;
@@ -227,7 +221,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
         //get specific context
         $crs = new course(100, null, array(), false, array(), self::$overlaydb);
-        $context = get_context_instance($context_level, $crs->id);
+        $context = context_elis_course::instance($crs->id);
 
         //assign role
         $raid = role_assign($roleid, cm_get_moodleuserid($user->id), $context->id);
@@ -240,10 +234,8 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4748: Test for assigning a user a role on a course context
      */
     public function testAssignUserforClassCTX() {
-        $context_level = context_level_base::get_custom_context_level('class', 'elis_program');
-
         //get role to assign (we'll just take the first one returned)
-        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel'=>$context_level));
+        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel' => CONTEXT_ELIS_CLASS));
         foreach ($roles_ctx as $role_ctx) {
             $roleid = $role_ctx->roleid;
             break;
@@ -254,7 +246,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
         //get specific context
         $cls = new pmclass(100, null, array(), false, array(), self::$overlaydb);
-        $context = get_context_instance($context_level, $cls->id);
+        $context = context_elis_class::instance($cls->id);
 
         //assign role
         $raid = role_assign($roleid, cm_get_moodleuserid($user->id), $context->id);
@@ -267,10 +259,8 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4749: Test for assigning a user a role on a user context
      */
     public function testAssignUserforUserCTX() {
-        $context_level = context_level_base::get_custom_context_level('user', 'elis_program');
-
         //get role to assign (we'll just take the first one returned)
-        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel'=>$context_level));
+        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel' => CONTEXT_ELIS_USER));
         foreach ($roles_ctx as $role_ctx) {
             $roleid = $role_ctx->roleid;
             break;
@@ -280,7 +270,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $user = new user(103, null, array(), false, array(), self::$overlaydb);
 
         //get specific context
-        $context = get_context_instance($context_level, $user->id);
+        $context = context_elis_user::instance($user->id);
 
         //assign role
         $raid = role_assign($roleid, cm_get_moodleuserid($user->id), $context->id);
@@ -293,10 +283,8 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4749: Test for assigning a user a role on a user context
      */
     public function testAssignUserforUsersetCTX() {
-        $context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-
         //get role to assign (we'll just take the first one returned)
-        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel'=>$context_level));
+        $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel' => CONTEXT_ELIS_USERSET));
         foreach ($roles_ctx as $role_ctx) {
             $roleid = $role_ctx->roleid;
             break;
@@ -307,7 +295,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
         //get specific context
         $usrset = new userset(1, null, array(), false, array(), self::$overlaydb);
-        $context = get_context_instance($context_level, $usrset->id);
+        $context = context_elis_userset::instance($usrset->id);
 
         //assign role
         $raid = role_assign($roleid, cm_get_moodleuserid($user->id), $context->id);
@@ -315,5 +303,4 @@ class curriculumCustomFieldsTest extends elis_database_test {
         //assert
         $this->assertNotEmpty($raid);
     }
-
 }
