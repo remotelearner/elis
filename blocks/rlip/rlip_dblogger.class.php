@@ -80,7 +80,7 @@ class rlip_dblogger {
 
     /**
      * Set the target (planned) start time
-     * 
+     *
      * @param int $targetstarttime The target (planned) start time
      */
     function set_targetstarttime($targetstarttime) {
@@ -111,7 +111,7 @@ class rlip_dblogger {
      * @param boolean $success true if row was successfully imported, otherwise
      *                         false
      * @param boolean $fromfile true if the action corresponds to row imported
-     *                          from a file, otherwise false 
+     *                          from a file, otherwise false
      */
     function track_success($success, $fromfile) {
         if ($fromfile && $success) {
@@ -194,7 +194,7 @@ class rlip_dblogger {
         }
 
         //persist
-        $this->logids[] = $DB->insert_record('block_rlip_summary_log', $record);
+        $this->logid = $DB->insert_record('block_rlip_summary_log', $record);
 
         //reset state
         $this->reset_state();
@@ -205,7 +205,7 @@ class rlip_dblogger {
      *
      * @return array The database record ids of the log records created
      */
-    function get_logids() {
-        return $this->logids;
+    function get_logid() {
+        return $this->logid;
     }
 }

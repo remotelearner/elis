@@ -44,7 +44,7 @@ class rlip_importprovider_mockuser extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -160,7 +160,8 @@ class version1UserImportTest extends elis_database_test {
                      'crlm_user' => 'elis_program',
                      'crlm_user_moodle' => 'elis_program',
                      'block_rlip_summary_log' => 'block_rlip',
-                     'files' => 'moodle');
+                     'files' => 'moodle',
+                     'external_tokens' => 'moodle');
     }
 
     /**
@@ -183,7 +184,7 @@ class version1UserImportTest extends elis_database_test {
 
     /**
      * Helper function that runs the user import for a sample user
-     * 
+     *
      * @param array $extradata Extra fields to set for the new user
      */
     private function run_core_user_import($extradata, $use_default_data = true) {
@@ -199,7 +200,7 @@ class version1UserImportTest extends elis_database_test {
         foreach ($extradata as $key => $value) {
             $data[$key] = $value;
         }
-        
+
         $provider = new rlip_importprovider_mockuser($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
@@ -254,7 +255,7 @@ class version1UserImportTest extends elis_database_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true); 
+        $this->assertEquals($exists, true);
     }
 
     /**
@@ -417,7 +418,7 @@ class version1UserImportTest extends elis_database_test {
                    trackforums = :trackforums AND
                    screenreader = :screenreader AND
                    timezone = :timezone AND
-                   theme = :theme AND 
+                   theme = :theme AND
                    lang = :lang AND
                    {$DB->sql_compare_text('description')} = :description AND
                    idnumber = :idnumber AND
@@ -431,7 +432,7 @@ class version1UserImportTest extends elis_database_test {
                         'trackforums' => 1,
                         'screenreader' => 1,
                         'timezone' => -5.0,
-                        'theme' => 'rlmaster', 
+                        'theme' => 'rlmaster',
                         'lang' => 'en',
                         'description' => 'rlipdescription',
                         'idnumber' => 'rlipidnumber',
@@ -478,7 +479,7 @@ class version1UserImportTest extends elis_database_test {
                    trackforums = :trackforums AND
                    screenreader = :screenreader AND
                    timezone = :timezone AND
-                   theme = :theme AND 
+                   theme = :theme AND
                    lang = :lang AND
                    {$DB->sql_compare_text('description')} = :description AND
                    institution = :institution AND
@@ -656,7 +657,7 @@ class version1UserImportTest extends elis_database_test {
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
                                                   'mnethostid' => $CFG->mnet_localhost_id,
-                                                  'autosubscribe' => 1));        
+                                                  'autosubscribe' => 1));
     }
 
     /**
@@ -893,7 +894,7 @@ class version1UserImportTest extends elis_database_test {
         //make sure the data hasn't changed
         $this->assert_record_exists('user', array('username' => 'rlipusername',
                                                   'mnethostid' => $CFG->mnet_localhost_id,
-                                                  'lang' => $CFG->lang));        
+                                                  'lang' => $CFG->lang));
     }
 
     /**
@@ -1251,7 +1252,7 @@ class version1UserImportTest extends elis_database_test {
                    trackforums = :trackforums AND
                    screenreader = :screenreader AND
                    timezone = :timezone AND
-                   theme = :theme AND 
+                   theme = :theme AND
                    lang = :lang AND
                    {$DB->sql_compare_text('description')} = :description AND
                    idnumber = :idnumber AND
@@ -1265,7 +1266,7 @@ class version1UserImportTest extends elis_database_test {
                         'trackforums' => 0,
                         'screenreader' => 0,
                         'timezone' => 99,
-                        'theme' => '', 
+                        'theme' => '',
                         'lang' => $CFG->lang,
                         'description' => '',
                         'idnumber' => '',
@@ -1669,7 +1670,7 @@ class version1UserImportTest extends elis_database_test {
         $count = $DB->count_records('user');
         $this->assertEquals($initial_count + 1, $count);
     }
- 
+
     /**
      * Validate that the plugin can update users based on any combination
      * of username, email and idnumber
