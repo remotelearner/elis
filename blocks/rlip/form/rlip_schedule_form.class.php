@@ -35,6 +35,7 @@ class rlip_base_schedule_form extends moodleform {
         $mform =& $this->_form;
 
         $mform->addElement('hidden', 'id');
+        $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'name');
         $mform->addElement('hidden', 'plugin');
         $mform->addElement('hidden', 'type');
