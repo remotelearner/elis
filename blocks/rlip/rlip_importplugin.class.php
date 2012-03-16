@@ -369,7 +369,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             if (count($messages) > 0) {
                 //combine and log
                 $message = "{$prefix} ".implode(' ', $messages);
-                $this->fslogger->log($message);
+                $this->process_error($message);
                 return false;
             }
         }
@@ -393,7 +393,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         if ($record->action === '') {
             //not set, so error
             $message = "{$prefix} Required field \"action\" is unspecified or empty.";
-            $this->fslogger->log($message);
+            $this->process_error($message);
 
             return false;
         }
@@ -451,6 +451,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         if (!$header = $fileplugin->read()) {
             return;
         }
+
+        //initialize line number
+        $this->linenumber = 0;
 
         //header read, so increment line number
         $this->linenumber++;
@@ -514,6 +517,18 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      */
     function get_fslogger() {
         return $this->fslogger;
+    }
+
+    /**
+     * Process an error message - to log and screen (if a manual run)
+     */
+    function process_error($error = NULL) {
+        if (!empty($error)) {
+            if ($this->manual) {
+                rlip_print_error($error);
+            }
+            $this->fslogger->log($error);
+        }
     }
 
 }

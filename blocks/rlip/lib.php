@@ -181,7 +181,7 @@ function rlip_print_error($error = NULL) {
 
     if (!empty($error)) {
         //display error message as passed
-        echo $OUTPUT->box($error, 'generalbox manualstatusbox');
+        echo $OUTPUT->box($error, 'generalbox warning manualstatusbox');
     }
 }
 

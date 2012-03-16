@@ -1880,16 +1880,4 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                      get_string('coursefile', 'rlipimport_version1'),
                      get_string('enrolmentfile', 'rlipimport_version1'));
     }
-
-    /**
-     * Process an error message - to log and screen (if a manual run)
-     */
-    function process_error($error = NULL) {
-        if (!empty($error)) {
-            if ($this->manual) {
-                rlip_print_error($error);
-            }
-            $this->fslogger->log($error);
-        }
-    }
 }
