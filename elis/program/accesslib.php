@@ -482,166 +482,6 @@ class context_elis_track extends context {
     }
 }
 
-
-/**
- * ELIS user context
- */
-class context_elis_user extends context {
-    /**
-     * Please use context_user::instance($userid) if you need the instance of context.
-     * Alternatively if you know only the context id use context::instance_by_id($contextid)
-     *
-     * @param stdClass $record
-     */
-    protected function __construct(stdClass $record) {
-        parent::__construct($record);
-        if ($record->contextlevel != CONTEXT_ELIS_USER) {
-            throw new coding_exception('Invalid $record->contextlevel in context_elis_user constructor.');
-        }
-    }
-
-    /**
-     * Returns human readable context level name.
-     *
-     * @static
-     * @return string the human readable context level name.
-     */
-    public static function get_level_name() {
-        return get_string('user', 'elis_program');
-    }
-
-    /**
-     * Returns human readable context identifier.
-     *
-     * @param boolean $withprefix whether to prefix the name of the context with User
-     * @param boolean $short does not apply to user context
-     * @return string the human readable context name.
-     */
-    public function get_context_name($withprefix = true, $short = false) {
-        global $DB;
-
-        $name = '';
-        if ($user = $DB->get_record(user::TABLE, array('id'=>$this->_instanceid, 'deleted'=>0))) {
-            if ($withprefix){
-                $name = get_string('user', 'elis_program').': ';
-            }
-            $name .= fullname($user);
-        }
-        return $name;
-    }
-
-    /**
-     * Returns the most relevant URL for this context.
-     *
-     * @return moodle_url
-     */
-    public function get_url() {
-        $params = array(
-            's'      => 'usr',
-            'action' => 'view',
-            'id'     => $this->_instanceid
-        );
-        return new moodle_url('/elis/program/index.php', $params);
-    }
-
-    /**
-     * Returns array of relevant context capability records.
-     *
-     * @return array
-     */
-    public function get_capabilities() {
-        global $DB;
-
-        $sort = 'ORDER BY contextlevel,component,name';   // To group them sensibly for display
-
-        $sql = "SELECT *
-                  FROM {capabilities}
-                 WHERE contextlevel = ".CONTEXT_ELIS_USER;
-
-        return $records = $DB->get_records_sql($sql.' '.$sort, $params);
-    }
-
-    /**
-     * Returns ELIS User context instance.
-     *
-     * @static
-     * @param int $instanceid
-     * @param int $strictness
-     * @return context_elis_user context instance
-     */
-    public static function instance($instanceid, $strictness = MUST_EXIST) {
-        global $DB;
-
-        if ($context = context::cache_get(CONTEXT_ELIS_USER, $instanceid)) {
-            return $context;
-        }
-
-        if (!$record = $DB->get_record('context', array('contextlevel'=>CONTEXT_ELIS_USER, 'instanceid'=>$instanceid))) {
-            if ($user = $DB->get_record(user::TABLE, array('id'=>$instanceid), 'id', $strictness)) {
-                $record = context::insert_context_record(CONTEXT_ELIS_USER, $user->id, '/'.SYSCONTEXTID, 0);
-            }
-        }
-
-        if ($record) {
-            $context = new context_elis_user($record);
-            context::cache_add($context);
-            return $context;
-        }
-
-        return false;
-    }
-
-    /**
-     * Create missing context instances at ELIS user context level
-     * @static
-     */
-    protected static function create_level_instances() {
-        global $DB;
-
-        $sql = "INSERT INTO {context} (contextlevel, instanceid)
-                SELECT ".CONTEXT_ELIS_USER.", u.id
-                  FROM {".user::TABLE."} u
-                 WHERE NOT EXISTS (SELECT 'x'
-                                     FROM {context} cx
-                                    WHERE u.id = cx.instanceid AND cx.contextlevel=".CONTEXT_ELIS_USER.")";
-        $DB->execute($sql);
-    }
-
-    /**
-     * Returns sql necessary for purging of stale context instances.
-     *
-     * @static
-     * @return string cleanup SQL
-     */
-    protected static function get_cleanup_sql() {
-        $sql = "
-                  SELECT c.*
-                    FROM {context} c
-         LEFT OUTER JOIN {".user::TABLE."} u ON c.instanceid = u.id
-                   WHERE u.id IS NULL AND c.contextlevel = ".CONTEXT_ELIS_USER."
-               ";
-
-        return $sql;
-    }
-
-    /**
-     * Rebuild context paths and depths at user context level.
-     *
-     * @static
-     * @param $force
-     */
-    protected static function build_paths($force) {
-        global $DB;
-
-        // first update normal users
-        $sql = "UPDATE {context}
-                   SET depth = 2,
-                       path = ".$DB->sql_concat("'/".SYSCONTEXTID."/'", 'id')."
-                 WHERE contextlevel=".CONTEXT_ELIS_USER;
-        $DB->execute($sql);
-    }
-}
-
 /**
  * ELIS Course Context
  */
@@ -1038,6 +878,165 @@ class context_elis_class extends context {
             $DB->delete_records('context_temp');
             $trans->allow_commit();
         }
+    }
+}
+
+/**
+ * ELIS user context
+ */
+class context_elis_user extends context {
+    /**
+     * Please use context_user::instance($userid) if you need the instance of context.
+     * Alternatively if you know only the context id use context::instance_by_id($contextid)
+     *
+     * @param stdClass $record
+     */
+    protected function __construct(stdClass $record) {
+        parent::__construct($record);
+        if ($record->contextlevel != CONTEXT_ELIS_USER) {
+            throw new coding_exception('Invalid $record->contextlevel in context_elis_user constructor.');
+        }
+    }
+
+    /**
+     * Returns human readable context level name.
+     *
+     * @static
+     * @return string the human readable context level name.
+     */
+    public static function get_level_name() {
+        return get_string('user', 'elis_program');
+    }
+
+    /**
+     * Returns human readable context identifier.
+     *
+     * @param boolean $withprefix whether to prefix the name of the context with User
+     * @param boolean $short does not apply to user context
+     * @return string the human readable context name.
+     */
+    public function get_context_name($withprefix = true, $short = false) {
+        global $DB;
+
+        $name = '';
+        if ($user = $DB->get_record(user::TABLE, array('id'=>$this->_instanceid, 'deleted'=>0))) {
+            if ($withprefix){
+                $name = get_string('user', 'elis_program').': ';
+            }
+            $name .= fullname($user);
+        }
+        return $name;
+    }
+
+    /**
+     * Returns the most relevant URL for this context.
+     *
+     * @return moodle_url
+     */
+    public function get_url() {
+        $params = array(
+            's'      => 'usr',
+            'action' => 'view',
+            'id'     => $this->_instanceid
+        );
+        return new moodle_url('/elis/program/index.php', $params);
+    }
+
+    /**
+     * Returns array of relevant context capability records.
+     *
+     * @return array
+     */
+    public function get_capabilities() {
+        global $DB;
+
+        $sort = 'ORDER BY contextlevel,component,name';   // To group them sensibly for display
+
+        $sql = "SELECT *
+                  FROM {capabilities}
+                 WHERE contextlevel = ".CONTEXT_ELIS_USER;
+
+        return $records = $DB->get_records_sql($sql.' '.$sort, $params);
+    }
+
+    /**
+     * Returns ELIS User context instance.
+     *
+     * @static
+     * @param int $instanceid
+     * @param int $strictness
+     * @return context_elis_user context instance
+     */
+    public static function instance($instanceid, $strictness = MUST_EXIST) {
+        global $DB;
+
+        if ($context = context::cache_get(CONTEXT_ELIS_USER, $instanceid)) {
+            return $context;
+        }
+
+        if (!$record = $DB->get_record('context', array('contextlevel'=>CONTEXT_ELIS_USER, 'instanceid'=>$instanceid))) {
+            if ($user = $DB->get_record(user::TABLE, array('id'=>$instanceid), 'id', $strictness)) {
+                $record = context::insert_context_record(CONTEXT_ELIS_USER, $user->id, '/'.SYSCONTEXTID, 0);
+            }
+        }
+
+        if ($record) {
+            $context = new context_elis_user($record);
+            context::cache_add($context);
+            return $context;
+        }
+
+        return false;
+    }
+
+    /**
+     * Create missing context instances at ELIS user context level
+     * @static
+     */
+    protected static function create_level_instances() {
+        global $DB;
+
+        $sql = "INSERT INTO {context} (contextlevel, instanceid)
+                SELECT ".CONTEXT_ELIS_USER.", u.id
+                  FROM {".user::TABLE."} u
+                 WHERE NOT EXISTS (SELECT 'x'
+                                     FROM {context} cx
+                                    WHERE u.id = cx.instanceid AND cx.contextlevel=".CONTEXT_ELIS_USER.")";
+        $DB->execute($sql);
+    }
+
+    /**
+     * Returns sql necessary for purging of stale context instances.
+     *
+     * @static
+     * @return string cleanup SQL
+     */
+    protected static function get_cleanup_sql() {
+        $sql = "
+                  SELECT c.*
+                    FROM {context} c
+         LEFT OUTER JOIN {".user::TABLE."} u ON c.instanceid = u.id
+                   WHERE u.id IS NULL AND c.contextlevel = ".CONTEXT_ELIS_USER."
+               ";
+
+        return $sql;
+    }
+
+    /**
+     * Rebuild context paths and depths at user context level.
+     *
+     * @static
+     * @param $force
+     */
+    protected static function build_paths($force) {
+        global $DB;
+
+        // first update normal users
+        $sql = "UPDATE {context}
+                   SET depth = 2,
+                       path = ".$DB->sql_concat("'/".SYSCONTEXTID."/'", 'id')."
+                 WHERE contextlevel=".CONTEXT_ELIS_USER;
+        $DB->execute($sql);
     }
 }
 
