@@ -60,7 +60,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
             usermoodle::TABLE => 'elis_program',
             field_owner::TABLE => 'elis_core',
             userset::TABLE => 'elis_program'
-            );
+        );
 	}
 
     protected function setUp() {
@@ -83,9 +83,9 @@ class curriculumCustomFieldsTest extends elis_database_test {
                                                                   'instanceid' => SITEID));
         self::$overlaydb->import_record('context', $sitecontext);
 
-        $elis_contexts = array('curriculum','track','course','class','user','cluster');
-        foreach ($elis_contexts as $ctx) {
-            $dbfilter = array('contextlevel'=> context_level_base::get_custom_context_level($ctx, 'elis_program'));
+        $elis_contexts = context_elis_helper::get_all_levels();
+        foreach ($elis_contexts as $context_level) {
+            $dbfilter = array('contextlevel' => $context_level);
             $recs = self::$origdb->get_records('context', $dbfilter);
             foreach ($recs as $rec) {
                 self::$overlaydb->import_record('context', $rec);
@@ -94,27 +94,23 @@ class curriculumCustomFieldsTest extends elis_database_test {
     }
 
     protected function create_field_category($context) {
-        $ctxlvl = context_level_base::get_custom_context_level($context, 'elis_program');
-
         $data = new stdClass;
-        $data->name=$context.' Test';
+        $data->name = context_elis_helper::get_class_for_level($context).' Test';
 
         $category = new field_category($data);
         $category->save();
 
         $categorycontext = new field_category_contextlevel();
-        $categorycontext->categoryid = $category->id;
-        $categorycontext->contextlevel = $ctxlvl;
+        $categorycontext->categoryid   = $category->id;
+        $categorycontext->contextlevel = $context;
         $categorycontext->save();
 
         return $category;
     }
 
     protected function create_field(field_category &$cat, $context) {
-        $ctxlvl = context_level_base::get_custom_context_level($context, 'elis_program');
-
         $data = new stdClass;
-        $data->shortname = $context.'_testfield';
+        $data->shortname = context_elis_helper::get_class_for_level($context).'_testfield';
         $data->name = ' Test Field';
         $data->categoryid = $cat->id;
         $data->description = 'Test Field';
@@ -137,8 +133,8 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $field->save();
 
         $fieldcontext = new field_contextlevel();
-        $fieldcontext->fieldid = $field->id;
-        $fieldcontext->contextlevel = $ctxlvl;
+        $fieldcontext->fieldid      = $field->id;
+        $fieldcontext->contextlevel = $context;
         $fieldcontext->save();
 
         return $field;
@@ -190,7 +186,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $field->shortname = 'user_testfield';
         $field->name = 'User Test Field';
         $field->datatype = 'char';
-        field::ensure_field_exists_for_context_level($field, 'user', $cat);
+        field::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_USER, $cat);
         field_owner::ensure_field_owner_exists($field, 'manual', $manual_owner_options);
         $owner = new field_owner();
         $owner->fieldid = $field->id;
@@ -336,20 +332,20 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4732: Unit tests for custom track field data
      */
     public function testCurriculumCustomFieldCreateCategory() {
-        $category = $this->create_field_category('curriculum');
+        $category = $this->create_field_category(CONTEXT_ELIS_PROGRAM);
         $this->assertNotEmpty($category->id);
     }
 
     public function testCurriculumCustomFieldCreate() {
-        $category = $this->create_field_category('curriculum');
-        $field = $this->create_field($category,'curriculum');
+        $category = $this->create_field_category(CONTEXT_ELIS_PROGRAM);
+        $field = $this->create_field($category, CONTEXT_ELIS_PROGRAM);
 
         $this->assertNotEmpty($field->id);
     }
 
     public function testCurriculumCustomFieldAddData() {
-        $category = $this->create_field_category('curriculum');
-        $field = $this->create_field($category,'curriculum');
+        $category = $this->create_field_category(CONTEXT_ELIS_PROGRAM);
+        $field = $this->create_field($category, CONTEXT_ELIS_PROGRAM);
         $cur = $this->create_curriculum($field);
 
         $this->assertNotEmpty($cur->id);
@@ -359,24 +355,24 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4733: Unit tests for custom track field data
      */
     public function testTrackCustomFieldCreateCategory() {
-        $category = $this->create_field_category('track');
+        $category = $this->create_field_category(CONTEXT_ELIS_TRACK);
         $this->assertNotEmpty($category->id);
     }
 
     public function testTrackCustomFieldCreate() {
-        $category = $this->create_field_category('track');
-        $field = $this->create_field($category,'track');
+        $category = $this->create_field_category(CONTEXT_ELIS_TRACK);
+        $field = $this->create_field($category, CONTEXT_ELIS_TRACK);
 
         $this->assertNotEmpty($field->id);
     }
 
     public function testTrackCustomFieldAddData() {
-        $curcat = $this->create_field_category('curriculum');
-        $curfield = $this->create_field($curcat,'curriculum');
+        $curcat = $this->create_field_category(CONTEXT_ELIS_PROGRAM);
+        $curfield = $this->create_field($curcat, CONTEXT_ELIS_PROGRAM);
         $cur = $this->create_curriculum($curfield);
 
-        $trkcat = $this->create_field_category('track');
-        $trkfield = $this->create_field($trkcat,'track');
+        $trkcat = $this->create_field_category(CONTEXT_ELIS_TRACK);
+        $trkfield = $this->create_field($trkcat, CONTEXT_ELIS_TRACK);
 
         $trk = $this->create_track($cur,$trkfield);
 
@@ -387,20 +383,20 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4734: Unit tests for custom course description field data
      */
     public function testCourseFieldCreateCategory() {
-        $category = $this->create_field_category('course');
+        $category = $this->create_field_category(CONTEXT_ELIS_COURSE);
         $this->assertNotEmpty($category->id);
     }
 
     public function testCourseCustomFieldCreate() {
-        $category = $this->create_field_category('course');
-        $field = $this->create_field($category,'course');
+        $category = $this->create_field_category(CONTEXT_ELIS_COURSE);
+        $field = $this->create_field($category, CONTEXT_ELIS_COURSE);
 
         $this->assertNotEmpty($field->id);
     }
 
     public function testCourseCustomFieldAddData() {
-        $category = $this->create_field_category('course');
-        $field = $this->create_field($category,'course');
+        $category = $this->create_field_category(CONTEXT_ELIS_COURSE);
+        $field = $this->create_field($category, CONTEXT_ELIS_COURSE);
         $course = $this->create_course($field);
 
         $this->assertNotEmpty($course->id);
@@ -410,25 +406,25 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4735: Unit tests for custom class instance field data
      */
     public function testClassFieldCreateCategory() {
-        $category = $this->create_field_category('class');
+        $category = $this->create_field_category(CONTEXT_ELIS_CLASS);
         $this->assertNotEmpty($category->id);
     }
 
     public function testClassCustomFieldCreate() {
-        $category = $this->create_field_category('class');
-        $field = $this->create_field($category,'class');
+        $category = $this->create_field_category(CONTEXT_ELIS_CLASS);
+        $field = $this->create_field($category, CONTEXT_ELIS_CLASS);
 
         $this->assertNotEmpty($field->id);
     }
 
     public function testClassCustomFieldAddData() {
         //create our course
-        $crscat = $this->create_field_category('course');
-        $crsfield = $this->create_field($crscat,'course');
+        $crscat = $this->create_field_category(CONTEXT_ELIS_COURSE);
+        $crsfield = $this->create_field($crscat,CONTEXT_ELIS_COURSE);
         $crs = $this->create_course($crsfield);
 
-        $clscat = $this->create_field_category('course');
-        $clsfield = $this->create_field($clscat,'course');
+        $clscat = $this->create_field_category(CONTEXT_ELIS_COURSE);
+        $clsfield = $this->create_field($clscat, CONTEXT_ELIS_COURSE);
         $cls = $this->create_class($crs,$clsfield);
 
         $this->assertNotEmpty($cls->id);
@@ -438,12 +434,12 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4735: Unit tests for custom user field data
      */
     public function testUserFieldCreateCategory() {
-        $category = $this->create_field_category('user');
+        $category = $this->create_field_category(CONTEXT_ELIS_USER);
         $this->assertNotEmpty($category->id);
     }
 
     public function testUserCustomFieldCreate() {
-        $category = $this->create_field_category('user');
+        $category = $this->create_field_category(CONTEXT_ELIS_USER);
         $field = $this->create_user_field($category);
 
         $this->assertNotEmpty($field->id);
@@ -451,8 +447,8 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
 
     public function testUserCustomFieldAddData() {
-        $category = $this->create_field_category('user');
-        $field = $this->create_field($category,'user');
+        $category = $this->create_field_category(CONTEXT_ELIS_USER);
+        $field = $this->create_field($category, CONTEXT_ELIS_USER);
 
         $user = $this->create_user($field);
 
@@ -463,20 +459,20 @@ class curriculumCustomFieldsTest extends elis_database_test {
      * ELIS-4737: Unit tests for custom user set field data
      */
     public function testUsersetFieldCreateCategory() {
-        $category = $this->create_field_category('cluster');
+        $category = $this->create_field_category(CONTEXT_ELIS_USERSET);
         $this->assertNotEmpty($category->id);
     }
 
     public function testUsersetCustomFieldCreate() {
-        $category = $this->create_field_category('cluster');
+        $category = $this->create_field_category(CONTEXT_ELIS_USERSET);
         $field = $this->create_user_field($category);
 
         $this->assertNotEmpty($field->id);
     }
 
     public function testUsersetCustomFieldAddData() {
-        $category = $this->create_field_category('cluster');
-        $field = $this->create_field($category,'cluster');
+        $category = $this->create_field_category(CONTEXT_ELIS_USERSET);
+        $field = $this->create_field($category, CONTEXT_ELIS_USERSET);
 
         $usrset = $this->create_userset($field);
 

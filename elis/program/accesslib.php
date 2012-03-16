@@ -70,6 +70,16 @@ class context_elis_helper extends context {
     }
 
     /**
+     * Returns a list of all context levels
+     *
+     * @static
+     * @return array int=>string (level=>level class name)
+     */
+    public static function get_all_levels() {
+        return self::$alllevels;
+    }
+
+    /**
      * not used
      */
     public function get_url() {

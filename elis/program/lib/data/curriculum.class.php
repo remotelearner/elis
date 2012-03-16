@@ -77,7 +77,7 @@ class curriculum extends data_object_with_custom_fields {
 
     public function set_from_data($data) {
 
-        $fields = field::get_for_context_level('curriculum', 'elis_program');
+        $fields = field::get_for_context_level(CONTEXT_ELIS_PROGRAM);
         $fields = $fields ? $fields : array();
         foreach ($fields as $field) {
             $fieldname = "field_{$field->shortname}";
