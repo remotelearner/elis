@@ -43,7 +43,7 @@ class rlip_importprovider_loguser extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -86,7 +86,7 @@ class rlip_importprovider_logcourse extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -129,7 +129,7 @@ class rlip_importprovider_logenrolment extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -199,7 +199,7 @@ class rlip_importprovider_multiuser extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -251,7 +251,7 @@ class rlip_importprovider_loguser_dynamic extends rlip_importprovider_loguser {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      * @param string $filename The name of the file to report
      */
@@ -377,7 +377,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     static protected function get_ignored_tables() {
         return array('log' => 'moodle',
-                     'event' => 'moodle');
+                     'event' => 'moodle',
+                     'external_tokens' => 'moodle');
     }
 
     /**
@@ -409,9 +410,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true); 
+        $this->assertEquals($exists, true);
     }
-    
+
 
     /**
      * Run the user import with a fixed set of data
@@ -1043,7 +1044,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //capture the earliest possible start time
         $mintime = time();
 
-        
+
         $data = array(array('entity' => 'user',
                             'action' => 'create',
                             'username' => 'rlipusername',
@@ -1141,7 +1142,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $fs = get_file_storage();
         $fs->create_file_from_pathname($fileinfo, "{$file_path}{$file_name}");
         $fileid = $DB->get_field_select('files', 'id', "filename != '.'");
-        
+
         //run the import
         $entity_types = array('user', 'bogus', 'bogus');
         $fileids = array($fileid, false, false);

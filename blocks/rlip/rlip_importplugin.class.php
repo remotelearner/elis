@@ -65,6 +65,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     var $fslogger = NULL;
     //track which import line we are on
     var $linenumber = 0;
+    //type of import, true if manual
+    var $manual = false;
 
     /**
      * Import plugin constructor
@@ -72,7 +74,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * @param object $provider The import file provider that will be used to
      *                         obtain any applicable import files
      */
-    function __construct($provider = NULL) {
+    function __construct($provider = NULL, $manual = false) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
@@ -80,13 +82,14 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         if ($provider !== NULL) {
             //note: provider is not set if only using plugin_supports
 
-            //convert class name to plugin name 
+            //convert class name to plugin name
             $class = get_class($this);
             $plugin = str_replace('rlip_importplugin_', 'rlipimport_', $class);
 
             $this->provider = $provider;
             $this->dblogger = $this->provider->get_dblogger();
             $this->dblogger->set_plugin($plugin);
+            $this->manual = $manual;
 
             //set up the file-system logger
             $filename = get_config('rlipimport_version1', 'logfilelocation');
@@ -217,7 +220,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * @param string $entity The type of entity
      * @param string $action The action being performed
      *
-     * @return array An array of required fields 
+     * @return array An array of required fields
      */
     function get_import_fields($entity, $action) {
         $attribute = 'import_fields_'.$entity.'_'.$action;
@@ -288,7 +291,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                 //simple scenario
                 $field = $field_or_group;
                 if (!isset($record->$field) || $record->$field === '') {
-                    //not found, so include this field as missing an required 
+                    //not found, so include this field as missing an required
                     $result[] = $field;
                 }
             }
@@ -366,7 +369,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             if (count($messages) > 0) {
                 //combine and log
                 $message = "{$prefix} ".implode(' ', $messages);
-                $this->fslogger->log($message);
+                $this->process_error($message);
                 return false;
             }
         }
@@ -388,9 +391,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         $prefix = "[{$filename} line {$this->linenumber}]";
 
         if ($record->action === '') {
-            //not set, so error 
+            //not set, so error
             $message = "{$prefix} Required field \"action\" is unspecified or empty.";
-            $this->fslogger->log($message);
+            $this->process_error($message);
 
             return false;
         }
@@ -449,6 +452,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             return;
         }
 
+        //initialize line number
+        $this->linenumber = 0;
+
         //header read, so increment line number
         $this->linenumber++;
 
@@ -474,6 +480,12 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //flush db log record
         $filename = $fileplugin->get_filename();
         $this->dblogger->flush($filename);
+
+        if ($this->manual) {
+            //display status of the file
+            $logid = $this->dblogger->get_logid();
+            rlip_print_manual_status($logid);
+        }
     }
 
     /**
@@ -505,6 +517,18 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      */
     function get_fslogger() {
         return $this->fslogger;
+    }
+
+    /**
+     * Process an error message - to log and screen (if a manual run)
+     */
+    function process_error($error = NULL) {
+        if (!empty($error)) {
+            if ($this->manual) {
+                rlip_print_error($error);
+            }
+            $this->fslogger->log($error);
+        }
     }
 
 }

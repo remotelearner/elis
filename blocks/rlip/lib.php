@@ -39,16 +39,16 @@ function rlip_admintree_setup(&$adminroot) {
         //obtain the list of plugins of the current type
         if ($plugins = get_plugin_list($plugintype)) {
             ksort($plugins);
-    
+
             foreach ($plugins as $plugin => $path) {
                 $plugsettings = $path.'/settings.php';
-    
+
                 if (file_exists($plugsettings)) {
                     //the plugin has a settings file, so add it to the tree
                     $name = "rlipsetting{$plugintype}_{$plugin}";
                     $displaystring = get_string('pluginname', "{$plugintype}_$plugin");
                     $settings = new admin_settingpage($name, $displaystring);
-    
+
                     //add the actual settings to the list
                     include($plugsettings);
                     $adminroot->add('blocksettings', $settings);
@@ -134,7 +134,7 @@ function rlip_handle_file_upload($data, $key) {
     //transfer files to a specific area
     foreach ($files as $draftfile) {
 
-        //file API seems to always upload a directory record, so ignore that 
+        //file API seems to always upload a directory record, so ignore that
         if (!$draftfile->is_directory()) {
             $exists = false;
 
@@ -172,29 +172,37 @@ function rlip_handle_file_upload($data, $key) {
 }
 
 /**
- * Displays the status of processing as represented by the supplied log ids
+ * Displays the error message passed
  *
- * @param array $logids The ids of log records to display 
+ * @param string $error The error message to display
  */
-function rlip_print_manual_status($logids) {
+function rlip_print_error($error = NULL) {
     global $DB, $OUTPUT;
 
-    if (!empty($logids)) {
-        //get IN / = clause for specific ids
-        list($select, $params) = $DB->get_in_or_equal($logids);
-        $select = "id {$select}";
+    if (!empty($error)) {
+        //display error message as passed
+        echo $OUTPUT->box($error, 'generalbox warning manualstatusbox');
+    }
+}
 
+/**
+ * Displays the status of processing as represented by the supplied log ids
+ *
+ * @param array $logids The ids of log records to display
+ */
+function rlip_print_manual_status($logid) {
+    global $DB, $OUTPUT;
+
+    if (!empty($logid)) {
         //only need a couple of fields
         $fields = 'filesuccesses, filefailures, statusmessage';
-        if ($recordset = $DB->get_recordset_select('block_rlip_summary_log', $select, $params, 'id', $fields)) {
-            foreach ($recordset as $record) {
-                //total rows = successes + failures
-                $record->total = $record->filesuccesses + $record->filefailures;
+        if ($record = $DB->get_record('block_rlip_summary_log', array('id'=>$logid), $fields)) {
+            //total rows = successes + failures
+            $record->total = $record->filesuccesses + $record->filefailures;
 
-                //display status message with successes and total records
-                $displaystring = get_string('manualstatus', 'block_rlip', $record);
-                echo $OUTPUT->box($displaystring, 'generalbox manualstatusbox');
-            }
+            //display status message with successes and total records
+            $displaystring = get_string('manualstatus', 'block_rlip', $record);
+            echo $OUTPUT->box($displaystring, 'generalbox manualstatusbox');
         }
     }
 }

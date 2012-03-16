@@ -3121,7 +3121,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         set_config('siteguest', $guestuser->id);
 
         // Create admin user
-        $admiuser = get_test_user('admin');
+        $adminuser = get_test_user('admin');
         set_config('siteadmins', $adminuser->id);
 
         $userid = $this->create_test_user();
@@ -3211,7 +3211,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         set_config('siteguest', $guestuser->id);
 
         // Create admin user
-        $admiuser = get_test_user('admin');
+        $adminuser = get_test_user('admin');
         set_config('siteadmins', $adminuser->id);
 
         //make our role NOT a "student" role
