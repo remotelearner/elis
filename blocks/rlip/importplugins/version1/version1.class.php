@@ -658,29 +658,29 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $params = array();
         if (isset($record->username)) {
             $params['username'] = $record->username;
-        }
-        $updateusername = $DB->get_record('user', array('username' => $params['username']));
-        if(!$updateusername) {
-            $this->fslogger->log("\"username\" value of {$params['username']} does not refer to a valid user.");
-            return false;
+            $updateusername = $DB->get_record('user', array('username' => $params['username']));
+            if(!$updateusername) {
+                $this->fslogger->log("\"username\" value of {$params['username']} does not refer to a valid user.");
+                return false;
+            }
         }
 
         if (isset($record->email)) {
             $params['email'] = $record->email;
-        }
-        $updateemail = $DB->get_record('user', array('email' => $params['email']));
-        if(!$updateemail) {
-            $this->fslogger->log("\"email\" value of {$params['email']} does not refer to a valid user.");
-            return false;
+            $updateemail = $DB->get_record('user', array('email' => $params['email']));
+            if(!$updateemail) {
+                $this->fslogger->log("\"email\" value of {$params['email']} does not refer to a valid user.");
+                return false;
+            }
         }
 
         if (isset($record->idnumber)) {
             $params['idnumber'] = $record->idnumber;
-        }
-        $updateidnumber = $DB->get_record('user', array('idnumber' => $params['idnumber']));
-        if(!$updateidnumber) {
-            $this->fslogger->log("\"idnumber\" value of {$params['idnumber']} does not refer to a valid user.");
-            return false;
+            $updateidnumber = $DB->get_record('user', array('idnumber' => $params['idnumber']));
+            if(!$updateidnumber) {
+                $this->fslogger->log("\"idnumber\" value of {$params['idnumber']} does not refer to a valid user.");
+                return false;
+            }
         }
 
         $record->id = $DB->get_field('user', 'id', $params);
