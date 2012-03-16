@@ -53,7 +53,8 @@ $form->set_data(array('plugin' => $plugin));
 //run the export before printing a page header
 if ($data = $form->get_data()) {
     //run the export
-    $fileplugin = rlip_fileplugin_factory::factory('', NULL, false, true);
+    $filename = rlip_get_export_filename($plugin, $USER->timezone);
+    $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, false, true);
     $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin);
     $instance->run();
 
@@ -69,3 +70,4 @@ $form->display();
 
 //footer
 echo $OUTPUT->footer();
+

@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlip
+ * @subpackage block_rlip
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
@@ -29,7 +29,7 @@
  * data
  */
 class rlip_fileplugin_csv extends rlip_fileplugin_base {
-    var $filepointer;
+    var $filepointer = false;
     var $first;
     var $header;
 
@@ -48,11 +48,11 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
             if ($this->sendtobrowser) {
     	        //send directly to the browser
     	        //todo: config
-    	        $filename = 'export.csv';
+                $filename = basename($this->filename);
 
                 //CSV header
                 header("Content-Transfer-Encoding: ascii");
-                header("Content-Disposition: attachment; filename=$filename");
+                header("Content-Disposition: attachment; filename={$filename}");
                 header("Content-Type: text/comma-separated-values");
                 $this->filepointer = fopen('php://output', 'w');
     	    } else {
@@ -80,6 +80,9 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      * @return array The entry read
      */
     function read() {
+        if ($this->filepointer === false) {
+            return false;
+        }
         $result = fgetcsv($this->filepointer);
 
         if (is_array($result) && count($result) == 1 && $result[0] == '') {
@@ -96,14 +99,18 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      * @param array $entry The entry to write to the file
      */
     function write($entry) {
-        fputcsv($this->filepointer, $entry);
+        if ($this->filepointer !== false) {
+            fputcsv($this->filepointer, $entry);
+        }
     }
 
     /**
      * Close the file
      */
     function close() {
-        fclose($this->filepointer);
+        if ($this->filepointer !== false) {
+            fclose($this->filepointer);
+        }
     }
 
     /**
@@ -126,3 +133,4 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
         }
     }
 }
+

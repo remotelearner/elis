@@ -113,10 +113,10 @@ class rlip_fileplugin_factory {
 
     	if ($sendtobrowser) {
     	    //writing a CSV file to the browser
-            return new rlip_fileplugin_csv('', NULL, true);
+            return new rlip_fileplugin_csv($filename, NULL, true);
     	} else if ($filename == '') {
     	    //reading a CSV file from Moodle file system
-            return new rlip_fileplugin_csv('', $fieldid);
+            return new rlip_fileplugin_csv($filename, $fieldid);
     	} else {
     	    //using a csv file for import or export
             return new rlip_fileplugin_csv($filename);

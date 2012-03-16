@@ -17,6 +17,15 @@ $headerstring = get_string('configureheader', 'rlipexport_version1');
 $tag = html_writer::tag('a', $displaystring, $attributes);
 $settings->add(new admin_setting_heading('rlipexport_version1_profilefields', $headerstring, $tag));
 
+// Export filename settings
+// TBD: default filename requires full path!!!
+$settings->add(new admin_setting_configtext('rlipexport_version1/export_file',
+                                            get_string('export_file', 'rlipexport_version1'),
+                                            get_string('config_export_file', 'rlipexport_version1'), 'export_version1.csv'));
+
+// timestamp export file
+$settings->add(new admin_setting_configcheckbox('rlipexport_version1/export_file_timestamp', get_string('export_file_timestamp_label', 'rlipexport_version1'), get_string('config_export_file_timestamp', 'rlipexport_version1'), 1));
+
 /**
  * Time period settings 
  */
@@ -37,3 +46,4 @@ $setting = new admin_setting_configtext('rlipexport_version1/incrementaldelta', 
 //callback to sanitize time delta
 $setting->set_updatedcallback('rlipexport_version1_incrementaldelta_updatedcallback');
 $settings->add($setting);
+

@@ -402,6 +402,22 @@ function rlip_schedule_delete_job($id) {
     return true;
 }
 
+function rlip_get_export_filename($plugin, $tz = 99) {
+    $export = get_config($plugin, 'export_file');
+    $timestamp = get_config($plugin, 'export_file_timestamp');
+    if (!empty($timestamp)) {
+        $timestamp = userdate(time(), get_string('export_file_timestamp',
+                                                 $plugin), $tz);
+        if (($extpos = strrpos($export, '.')) !== false) {
+            $export = substr($export, 0, $extpos) .
+                      "_{$timestamp}" . substr($export, $extpos);
+        } else {
+            $export .= "_{$timestamp}.csv";
+        }
+    }
+    return $export;
+}
+
 /**
  *  Callback function for elis_scheduled_tasks IP jobs
  *
@@ -413,6 +429,7 @@ function run_ipjob($taskname) {
     global $CFG, $DB;
 
     require_once($CFG->dirroot .'/blocks/rlip/rlip_dataplugin.class.php');
+    require_once($CFG->dirroot .'/blocks/rlip/rlip_fileplugin.class.php');
     require_once($CFG->dirroot .'/blocks/rlip/rlip_importprovider_csv.class.php');
 
     // Get the schedule record
@@ -441,6 +458,9 @@ function run_ipjob($taskname) {
             $entity_types = $baseinstance->get_import_entities();
             $files = array();
             $path = get_config($plugin, 'schedule_files_path');
+            if (strrpos($path, '/') !== strlen($path) - 1) {
+                $path .= '/';
+            }
             foreach ($entity_types as $entity) {
                 $files[$entity] = $path . get_config($plugin, $entity .'_schedule_file');
             }
@@ -449,7 +469,10 @@ function run_ipjob($taskname) {
             break;
 
         case 'rlipexport':
-            $fileplugin = rlip_fileplugin_factory::factory('', NULL, false, true);
+            $user = get_complete_user_data('id', $ipjob->userid);
+            $export = rlip_get_export_filename($plugin,
+                          empty($user) ? 99 : $user->timezone);
+            $fileplugin = rlip_fileplugin_factory::factory($export, NULL, false);
             $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin);
             break;
 
