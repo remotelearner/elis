@@ -358,10 +358,9 @@ class student extends elis_data_object {
             $ra->roleid       = !empty($sturole)
                                 ? $sturole
                                 : $DB->get_field('role', 'id', array('shortname' => 'student'));
-            $ra->contextid    = context_level_base::get_custom_context_level('class', 'elis_program'); // TBD
+            $ra->contextid    = context_elis_class::instance($this->classid)->id;
             $ra->userid       = cm_get_moodleuserid($this->userid);
             $ra->component    = 'enrol_elis';
-            $ra->itemid       = $this->classid; // TBD
             $ra->timemodified = time();
             $ra->modifierid   = empty($USER->id) ? 0 : $USER->id;
             events_trigger('role_assigned', $ra);

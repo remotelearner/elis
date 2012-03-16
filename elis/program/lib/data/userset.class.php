@@ -110,8 +110,7 @@ class userset extends data_object_with_custom_fields {
             parent::delete();
 
             //delete this cluster's context
-            $level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-            delete_context($level, $this->id);
+            delete_context(CONTEXT_ELIS_USERSET, $this->id);
 
             return;
         }
@@ -120,15 +119,14 @@ class userset extends data_object_with_custom_fields {
         $children = array();
         $delete_ids = array();
         $promote_ids = array();
-        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
         /// Figure out all the sub-clusters
-        $cluster_context_instance = get_context_instance($cluster_context_level, $this->id);
+        $cluster_context_instance = context_elis_userset::instance($this->id);
         $instance_id = $cluster_context_instance->id;
         $instance_path = $cluster_context_instance->path;
         $children = userset::find(new join_filter('id', 'context', 'instanceid',
                                                   new AND_filter(array(new field_filter('path', "{$instance_path}/%", field_filter::LIKE),
-                                                                       new field_filter('contextlevel', $cluster_context_level)))),
+                                                                       new field_filter('contextlevel', CONTEXT_ELIS_USERSET)))),
                                   array('id' => 'DESC'), 0, 0, $this->_db);
         $children = $children->to_array();
 
@@ -207,8 +205,7 @@ class userset extends data_object_with_custom_fields {
         parent::save();
 
         if (isset($old) && $this->parent != $old->parent) {
-            $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-            $cluster_context_instance = get_context_instance($cluster_context_level, $this->id);
+            $cluster_context_instance = context_elis_userset::instance($this->id);
 
             // find all subclusters and adjust their depth
             $delta_depth = $this->depth - $old->depth;
@@ -219,7 +216,7 @@ class userset extends data_object_with_custom_fields {
                                     FROM {context}
                                    WHERE contextlevel = ?
                                      AND {$LIKE})";
-            $this->_db->execute($sql, array($delta_depth, $cluster_context_level,
+            $this->_db->execute($sql, array($delta_depth, CONTEXT_ELIS_USERSET,
                                             "{$cluster_context_instance->path}/%"));
 
             // Blank out the depth and path for associated records and child records in context table

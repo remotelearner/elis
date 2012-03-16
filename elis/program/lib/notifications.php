@@ -484,8 +484,7 @@ function pm_assign_student_from_mdl($eventdata) {
     global $CFG, $DB;
 
     /// We get all context assigns, so check that this is a class. If not, we're done.
-    if (!($context = get_context_instance_by_id($eventdata->contextid)) &&
-        !($context = get_context_instance($eventdata->contextid, $eventdata->itemid))) {
+     if (!($context = get_context_instance_by_id($eventdata->contextid))) {
         if (in_cron()) {
             mtrace(get_string('invalidcontext'));
         } else {

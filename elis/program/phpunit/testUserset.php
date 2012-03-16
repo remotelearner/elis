@@ -154,9 +154,8 @@ class usersetTest extends elis_database_test {
         $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
-        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
         for ($i = 1; $i <= 4; $i++) {
-            $cluster_context_instance = get_context_instance($cluster_context_level, $i);
+            $cluster_context_instance = context_elis_userset::instance($i);
         }
 
         // delete a record
@@ -178,9 +177,8 @@ class usersetTest extends elis_database_test {
         $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
-        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
         for ($i = 1; $i <= 4; $i++) {
-            $cluster_context_instance = get_context_instance($cluster_context_level, $i);
+            $cluster_context_instance = context_elis_userset::instance($i);
         }
 
         // delete a record

@@ -64,7 +64,7 @@ class classmoodlecourse extends data_object_with_custom_fields {
     var $siteconfig = ''; // TBD: not a _dbfield, leave empty?
 
     protected function get_field_context_level() {
-        return context_level_base::get_custom_context_level('course', 'elis_program');
+        return CONTEXT_ELIS_COURSE;
     }
 
 	public static function delete_for_class($id) {
