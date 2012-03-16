@@ -674,7 +674,7 @@ class course extends data_object_with_custom_fields {
             coursetemplate::delete_records(new field_filter('courseid', $this->id));
         }
 
-        field_data::set_for_context_from_datarecord('course', $this);
+        field_data::set_for_context_from_datarecord(CONTEXT_ELIS_COURSE, $this);
     }
 
     public function __toString() {

@@ -383,8 +383,8 @@ class context_elis_track extends context {
         if (empty($record)) {
             $track = $DB->get_record(track::TABLE, array('id'=>$instanceid), 'id,idnumber,curid', $strictness);
             if (!empty($track)) {
-                $parentpath = '/'.SYSCONTEXTID.'/'.$track->curid;
-                $record = context::insert_context_record(CONTEXT_ELIS_TRACK, $track->id, $parentpath);
+                $parentcontext = context_elis_program::instance($track->curid);
+                $record = context::insert_context_record(CONTEXT_ELIS_TRACK, $track->id, $parentcontext->path);
             }
         }
 
@@ -782,8 +782,8 @@ class context_elis_class extends context {
         if (empty($record)) {
             $class = $DB->get_record(pmclass::TABLE, array('id'=>$instanceid), 'id,idnumber,courseid', $strictness);
             if (!empty($class)) {
-                $parentpath = '/'.SYSCONTEXTID.'/'.$class->courseid;
-                $record = context::insert_context_record(CONTEXT_ELIS_CLASS, $class->id, $parentpath);
+                $parentcontext = context_elis_course::instance($class->courseid);
+                $record = context::insert_context_record(CONTEXT_ELIS_CLASS, $class->id, $parentcontext->path);
             }
         }
 

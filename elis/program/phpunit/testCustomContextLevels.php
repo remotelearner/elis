@@ -212,6 +212,7 @@ class test_element_creation extends elis_database_test {
         $program->save();
 
         $newobj = $this->initTrack($program->id);
+        $newobj->save();
 
         $context = context_elis_track::instance($newobj->id);
 
@@ -257,6 +258,7 @@ class test_element_creation extends elis_database_test {
         $course->save();
 
         $newobj = $this->initClass($course->id);
+        $newobj->save();
 
         $context = context_elis_class::instance($newobj->id);
 
