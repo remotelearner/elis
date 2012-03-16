@@ -325,7 +325,9 @@ function rlip_schedule_period_minutes($period) {
     $num = '';
     $min = 0;
     foreach ($parray as $char) {
-        if (ctype_digit($char)) {
+        if (ctype_space($char)) {
+            continue;
+        } else if (ctype_digit($char)) {
             $num .= $char;
         } else {
             if (!array_key_exists($char, $period_elems)) {

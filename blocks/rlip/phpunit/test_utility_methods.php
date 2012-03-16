@@ -155,6 +155,10 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
             array('1h', HOURSECS/60),
             array('1d', DAYSECS/60),
             array('2d3h4m', DAYSECS/30 + (HOURSECS * 3)/60 + 4),
+            array('9m 8d 7h', (DAYSECS * 8)/60 + (HOURSECS * 7)/60 + 9),
+            array('9h  8m  7d', (DAYSECS * 7)/60 + (HOURSECS * 9)/60 + 8),
+            array('4	d 5h	6m', (DAYSECS * 4)/60 + (HOURSECS * 5)/60 + 6),
+            array('7 d 8 h 9 m', (DAYSECS * 7)/60 + (HOURSECS * 8)/60 + 9),
             array('20d23h45m', DAYSECS/3 + (HOURSECS * 23)/60 + 45),
             array('2a3b4c', -1)
         );
