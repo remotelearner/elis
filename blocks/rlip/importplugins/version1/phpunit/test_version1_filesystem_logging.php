@@ -3281,6 +3281,330 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data['idnumber'] = 'rlipidnumber';
         $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+    }
 
+    /**
+     * Validates that invalid identifying user fields are logged during
+     * role unassignment on system context
+     * 
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnSystemRoleAssignmentDelete($data, $message) {
+        //set up dependencies
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'delete',
+                          'context' => 'system',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates log message for unassigning a role from a context level that
+     * doesn't exist
+     */
+    public function testVersion1ImportLogsInvalidContextOnRoleAssignmentDelete() {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'bogus',
+                      'instance' => 'bogus',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"context\" value of bogus is not one of the available options (system, user, coursecat, course).\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates log message for unassigning a role that doesn't exist
+     */
+    public function testVersionImportLogsInvalidRoleOnRoleAssignmentDelete() {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'system',
+                      'role' => 'bogus');
+
+        $message = "[enrolment.csv line 2] \"role\" value of bogus does not refer to a valid role.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Data provider method, providing identifying user fields as well as
+     * text to describe those fields, with every combination of identifying
+     * user fields provided
+     *
+     * @return array Array of data, with each elements containing a data set
+     *               and a descriptive string
+     */
+    public function userDescriptorProvider() {
+        $data = array();
+
+        //username
+        $username_data = array('username' => 'rlipusername');
+        $username_descriptor = "username rlipusername";
+        $data[] = array($username_data, $username_descriptor);
+
+        //email
+        $email_data = array('email' => 'rlipuser@rlipdomain.com');
+        $email_descriptor = "email rlipuser@rlipdomain.com";
+        $data[] = array($email_data, $email_descriptor);
+
+        //idnumber
+        $idnumber_data = array('idnumber' => 'rlipidnumber');
+        $idnumber_descriptor = "idnumber rlipidnumber";
+        $data[] = array($idnumber_data, $idnumber_descriptor);
+
+        //username, email
+        $username_email_data = array('username' => 'rlipusername',
+                                     'email' => 'rlipuser@rlipdomain.com');
+        $username_email_descriptor = "username rlipusername, email rlipuser@rlipdomain.com";
+        $data[] = array($idnumber_data, $idnumber_descriptor);
+
+        //username, idnumber
+        $username_idnumber_data = array('username' => 'rlipusername',
+                                        'idnumber' => 'rlipidnumber');
+        $username_idnumber_descriptor = "username rlipusername, idnumber rlipidnumber";
+        $data[] = array($username_idnumber_data, $username_idnumber_descriptor);
+
+        //email, idnumber
+        $email_idnumber_data = array('email' => 'rlipuser@rlipdomain.com',
+                                     'idnumber' => 'rlipidnumber');
+        $email_idnumber_descriptor = "email rlipuser@rlipdomain.com, idnumber rlipidnumber";
+        $data[] = array($email_idnumber_data, $email_idnumber_descriptor);
+
+        //username, email, idnumber
+        $all_fields_data = array('username' => 'bogus',
+                                 'email' => 'bogus@bogus.com',
+                                 'idnumber' => 'bogus');
+        $all_fields_descriptor = "username rlipusername, email rlipuser@rlipdomain.com, idnumber rlipidnumber";
+        $data[] = array($all_fields_data, $all_fields_descriptor);
+
+        return $data;
+    }
+
+    /**
+     * Validates that deletion of nonexistent enrolments are logged
+     *
+     * @param array $data The user-specific information 
+     * @param string $descriptor Descriptor for user fields to use in message
+     *
+     * @dataProvider userDescriptorProvider
+     */
+    public function testVersion1ImportLogsNonexistentEnrolmentDelete($data, $descriptor) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $roleid = $this->create_test_role();
+        $this->create_test_course();
+        //make sure we are in the "student" scenario
+        set_config('gradebookroles', "$roleid");
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] User with username rlipusername is not assigned role with shortname rlipshortname on course rlipshortname. User with username rlipusername is not enroled in course with shortname rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that deletion of nonexistent role enrolments are logged for
+     * courses
+     *
+     * @param array $data The user-specific information 
+     * @param string $descriptor Descriptor for user fields to use in message
+     *
+     * @dataProvider userDescriptorProvider
+     */
+    public function testVersion1ImportLogsNonexistentRoleAssignmentOnCourseRoleAssignmentDelete($data, $descriptor) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $this->create_test_role();
+        $this->create_test_course();
+        //make sure we are not in the "student" scenario
+        set_config('gradebookroles', '');
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] User with username rlipusername is not assigned role with shortname rlipshortname on course rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that deletion of nonexistent role assignments are logged for
+     * course categories
+     *
+     * @param array $data The user-specific information 
+     * @param string $descriptor Descriptor for user fields to use in message
+     *
+     * @dataProvider userDescriptorProvider
+     */
+    public function testVersion1ImportLogsNonexistentRoleAssignmentOnCategoryRoleAssignmentDelete($data, $descriptor) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $this->create_test_role();
+        //also creates test category
+        $this->create_test_course();
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'coursecat',
+                      'instance' => 'rlipname',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] User with username rlipusername is not assigned role with shortname rlipshortname on course category rlipname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that deletion of nonexistent role assignments are logged for
+     * users
+     *
+     * @param array $data The user-specific information 
+     * @param string $descriptor Descriptor for user fields to use in message
+     *
+     * @dataProvider userDescriptorProvider
+     */
+    public function testVersion1ImportLogsNonexistentRoleAssignmentOnUserRoleAssignmentDelete($data, $descriptor) {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+        $this->create_test_user('rlipusername2', 'rlipuser@rlipdomain2.com', 'rlipidnumber2');
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'user',
+                      'instance' => 'rlipusername2',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] User with username rlipusername is not assigned role with shortname rlipshortname on user rlipusername2.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validate log message for ambiguous category name
+     */
+    public function testVersion1ImportLogsAmbiguousCategoryNameOnRoleAssignmentDelete() {
+        global $DB;
+
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //create the category
+        $category = new stdClass;
+        $category->name = 'rlipname';
+        $categoryid = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        //create a duplicate category
+        $categoryid = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'coursecat',
+                      'instance' => 'rlipname',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"instance\" value of rlipname refers to multiple course category contexts.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');    
+    }
+
+    /**
+     * Validates that deletion of nonexistent role assignments are logged for
+     * the system context
+     *
+     * @param array $data The user-specific information 
+     * @param string $descriptor Descriptor for user fields to use in message
+     *
+     * @dataProvider userDescriptorProvider
+     */
+    public function testVersion1ImportLogsNonexistentRoleAssignmentOnSystemRoleAssignmentDelete($data, $descriptor) {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'system',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] User with username rlipusername is not assigned role with shortname rlipshortname on the system context.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying entity fields are logged during role
+     * assignment actions on various contexts
+     * 
+     * @param string $context The string representing the context level
+     * @param string $displayname The display name for the context level
+     *
+     * @dataProvider roleAssignmentInvalidEntityProvider
+     */
+    public function testVersion1ImportLogsInvalidEntityOnRoleAssignmentDelete($context, $displayname) {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => $context,
+                      'instance' => 'bogus',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"instance\" value of bogus does not refer to a valid instance of a {$displayname} context.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');        
     }
 }
