@@ -406,6 +406,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure auth plugin refers to a valid plugin
         $auths = get_plugin_list('auth');
         if (!$this->validate_fixed_list($record, 'auth', array_keys($auths))) {
+            $this->fslogger->log("\"auth\" values of {$record->auth} is not a valid auth plugin.");
             return false;
         }
 
@@ -413,6 +414,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (isset($record->password)) {
             $errmsg = '';
             if (!check_password_policy($record->password, $errmsg)) {
+                $this->fslogger->log("\"password\" value of {$record->password} does not conform to your site's password policy.");
                 return false;
             }
         }
@@ -420,24 +422,28 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure email is in user@domain.ext format
         if ($action == 'create') {
             if (!validate_email($record->email)) {
+                $this->fslogger->log("\"email\" value of {$record->email} is not a valid email address.");
                 return false;
             }
         }
 
         //make sure maildigest is one of the available values
         if (!$this->validate_fixed_list($record, 'maildigest', array(0, 1, 2))) {
+            $this->fslogger->log("\"maildigest\" value of {$record->maildigest} is not one of the available options (0, 1, 2).");
             return false;
         }
 
         //make sure autosubscribe is one of the available values
         if (!$this->validate_fixed_list($record, 'autosubscribe', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
+            $this->fslogger->log("\"autosubscribe\" value of {$record->autosubscribe} is not one of the available options (0, 1).");
             return false;
         }
 
         //make sure trackforums can only be set if feature is enabled
         if (isset($record->trackforums)) {
             if (empty($CFG->forum_trackreadposts)) {
+                $this->fslogger->log("Tracking unread posts is currently disabled on this site.");
                 return false;
             }
         }
@@ -445,24 +451,28 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure trackforums is one of the available values
         if (!$this->validate_fixed_list($record, 'trackforums', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
+            $this->fslogger->log("\"trackforums\" value of {$record->trackforums} is not one of the available options (0, 1).");
             return false;
         }
 
         //make sure screenreader is one of the available values
         if (!$this->validate_fixed_list($record, 'screenreader', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
+            $this->fslogger->log("\"screenreader\" value of {$record->screenreader} is not one of the available options (0, 1).");
             return false;
         }
 
         //make sure country refers to a valid country code
         $countries = get_string_manager()->get_list_of_countries();
         if (!$this->validate_fixed_list($record, 'country', array_keys($countries))) {
+            $this->fslogger->log("\"country\" value of {$record->country} is not a valid country code.");
             return false;
         }
 
         //make sure timezone can only be set if feature is enabled
         if (isset($record->timezone)) {
             if ($CFG->forcetimezone != 99 && $record->timezone != $CFG->forcetimezone) {
+                $this->fslogger->log("\"timezone\" value of {$record->timezone} is not consistent with forced timezone value of {$CFG->forcetimezone} on your site.");
                 return false;
             }
         }
@@ -470,12 +480,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure timezone refers to a valid timezone offset
         $timezones = get_list_of_timezones();
         if (!$this->validate_fixed_list($record, 'timezone', array_keys($timezones))) {
+            $this->fslogger->log("\"timezone\" value of {$record->timezone} is not a valid timezone.");
             return false;
         }
 
         //make sure theme can only be set if feature is enabled
         if (isset($record->theme)) {
             if (empty($CFG->allowuserthemes)) {
+                $this->fslogger->log("User themes are currently disabled on this site.");
                 return false;
             }
         }
@@ -483,12 +495,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure theme refers to a valid theme
         $themes = get_list_of_themes();
         if (!$this->validate_fixed_list($record, 'theme', array_keys($themes))) {
+            $this->fslogger->log("\"theme\" value of {$record->theme} is invalid.");
             return false;
         }
 
         //make sure lang refers to a valid language
         $languages = get_string_manager()->get_list_of_translations();
         if (!$this->validate_fixed_list($record, 'lang', array_keys($languages))) {
+            $this->fslogger->log("\"lang\" value of {$record->lang} is not a valid language code.");
             return false;
         }
 
@@ -512,11 +526,13 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //perform type-specific validation and transformation
             if ($field->datatype == 'checkbox') {
                 if ($data != 0 && $data != 1) {
+                    $this->fslogger->log("\"{$key}\" is not one of the available options for a checkbox profile field {$shortname} (0, 1).");
                     return false;
                 }
             } else if ($field->datatype == 'menu') {
                 $options = explode("\n", $field->param1);
                 if (!in_array($data, $options)) {
+                    $this->fslogger->log("\"{$key}\" is not one of the available options for a menu of choices profile field {$shortname}.");
                     return false;
                 }
             } else if ($field->datatype == 'datetime') {
@@ -664,12 +680,29 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $params = array();
         if (isset($record->username)) {
             $params['username'] = $record->username;
+            $updateusername = $DB->get_record('user', array('username' => $params['username']));
+            if(!$updateusername) {
+                $this->fslogger->log("\"username\" value of {$params['username']} does not refer to a valid user.");
+                return false;
+            }
         }
+
         if (isset($record->email)) {
             $params['email'] = $record->email;
+            $updateemail = $DB->get_record('user', array('email' => $params['email']));
+            if(!$updateemail) {
+                $this->fslogger->log("\"email\" value of {$params['email']} does not refer to a valid user.");
+                return false;
+            }
         }
+
         if (isset($record->idnumber)) {
             $params['idnumber'] = $record->idnumber;
+            $updateidnumber = $DB->get_record('user', array('idnumber' => $params['idnumber']));
+            if(!$updateidnumber) {
+                $this->fslogger->log("\"idnumber\" value of {$params['idnumber']} does not refer to a valid user.");
+                return false;
+            }
         }
 
         $record->id = $DB->get_field('user', 'id', $params);
@@ -718,12 +751,29 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $params = array();
         if (isset($record->username)) {
             $params['username'] = $record->username;
+            $updateusername = $DB->get_record('user', array('username' => $params['username']));
+            if(!$updateusername) {
+                $this->fslogger->log("\"username\" value of {$params['username']} does not refer to a valid user.");
+                return false;
+            }
         }
+
         if (isset($record->email)) {
             $params['email'] = $record->email;
+            $updateusername = $DB->get_record('user', array('email' => $params['email']));
+            if(!$updateusername) {
+                $this->fslogger->log("\"email\" value of {$params['email']} does not refer to a valid user.");
+                return false;
+            }
         }
+
         if (isset($record->idnumber)) {
             $params['idnumber'] = $record->idnumber;
+            $updateusername = $DB->get_record('user', array('idnumber' => $params['idnumber']));
+            if(!$updateusername) {
+                $this->fslogger->log("\"idnumber\" value of {$params['idnumber']} does not refer to a valid user.");
+                return false;
+            }
         }
 
         //make the appropriate changes
@@ -1015,6 +1065,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return $parentids[0];
         } else {
             //path refers to multiple potential categories
+            $this->fslogger->log("\"category\" value of {$categorystring} refers to multiple categories.");
             return false;
         }
     }
@@ -1037,6 +1088,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $courseformats = get_plugin_list('format');
 
             if (!$this->validate_fixed_list($record, 'format', array_keys($courseformats))) {
+                $this->fslogger->log("\"format\" value does not refer to a valid course format.");
                 return false;
             }
         }
@@ -1052,6 +1104,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             $record->numsections = (int)$record->numsections;
             if ($record->numsections < 0 || $record->numsections > $maxsections) {
+                $this->fslogger->log("\"numsections\" value of {$record->numsections} is not one of the available options (0 .. {$maxsections}).");
                 //not between 0 and max
                 return false;
             }
@@ -1061,6 +1114,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (isset($record->startdate)) {
             $value = $this->parse_date($record->startdate);
             if ($value === false) {
+                $this->fslogger->log("\"startdate\" value of {$record->startdate} is not a valid date in MMM/DD/YYYY format.");
                 return false;
             }
 
@@ -1071,18 +1125,21 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure newsitems is an integer between 0 and 10
         $options = range(0, 10);
         if (!$this->validate_fixed_list($record, 'newsitems', $options)) {
+            $this->fslogger->log("\"newsitems\" value of {$record->newsitems} is not one of the available options (0 .. 10).");
             return false;
         }
 
         //make sure showgrades is one of the available values
         if (!$this->validate_fixed_list($record, 'showgrades', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
+            $this->fslogger->log("\"showgrades\" value of {$record->showgrades} is not one of the available options (0, 1).");
             return false;
         }
 
         //make sure showreports is one of the available values
         if (!$this->validate_fixed_list($record, 'showreports', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
+            $this->fslogger->log("\"showreports\" value of {$record->showreports} is not one of the available options (0, 1).");
             return false;
         }
 
@@ -1090,6 +1147,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (isset($record->maxbytes)) {
             $choices = get_max_upload_sizes($CFG->maxbytes);
             if (!$this->validate_fixed_list($record, 'maxbytes', array_keys($choices))) {
+                $this->fslogger->log("\"maxbytes\" value of {$record->maxbytes} is not one of the available options.");
                 return false;
             }
         }
@@ -1097,12 +1155,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure guest is one of the available values
         if (!$this->validate_fixed_list($record, 'guest', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
+            $this->fslogger->log("\"guest\" value of {$record->guest} is not one of the available options (0, 1).");
             return false;
         }
 
         //make sure visible is one of the available values
         if (!$this->validate_fixed_list($record, 'visible', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
+            $this->fslogger->log("\"visible\" value of {$record->visible} is not one of the available options (0, 1).");
             return false;
         }
 
@@ -1110,12 +1170,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $languages = get_string_manager()->get_list_of_translations();
         $language_codes = array_merge(array(''), array_keys($languages));
         if (!$this->validate_fixed_list($record, 'lang', $language_codes)) {
+            $this->fslogger->log("\"lang\" value of {$record->lang} is not a valid language code.");
             return false;
         }
 
         //determine if this plugin is even enabled
         $enabled = explode(',', $CFG->enrol_plugins_enabled);
         if (!in_array('guest', $enabled) && !empty($record->guest)) {
+            $this->fslogger->log("\"guest\" enrolments cannot be enabled because the guest enrolment plugin is globally disabled.");
             return false;
         }
 
@@ -1162,6 +1224,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     if (isset($record->guest) && empty($record->guest)) {
                         //guest access specifically disabled, which isn't
                         //consistent with providing a password
+                        $this->fslogger->log("guest enrolment plugin cannot be assigned a password because the guest enrolment plugin is globally disabled.");
                         return false;
                     } else if (!isset($record->guest)) {
                         $params = array('courseid' => $courseid,
@@ -1297,6 +1360,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         $record->id = $DB->get_field('course', 'id', array('shortname' => $record->shortname));
         if (empty($record->id)) {
+            $this->fslogger->log("\"shortname\" value of {$record->shortname} does not refer to a valid course.");
             return false;
         }
 
@@ -1311,6 +1375,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 //disable the plugin for the current course
                 $enrol->status = ENROL_INSTANCE_DISABLED;
                 $DB->update_record('enrol', $enrol);
+            } else {
+                $this->fslogger->log("\"guest\" enrolments cannot be enabled because the guest enrolment plugin has been removed from course {$record->shortname}.");
+                return false;
             }
         }
 
@@ -1325,6 +1392,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     $enrol->password = $record->password;
                 }
                 $DB->update_record('enrol', $enrol);
+            } else {
+                $this->fslogger->log("guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been removed from course {$record->shortname}.");
+                return false;
             }
         }
 
