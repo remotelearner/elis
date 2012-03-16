@@ -410,7 +410,10 @@ function rlip_schedule_delete_job($id) {
  * @return boolean            true on success, otherwise false
  */
 function run_ipjob($taskname) {
-    global $DB;
+    global $CFG, $DB;
+
+    require_once($CFG->dirroot .'/blocks/rlip/rlip_dataplugin.class.php');
+    require_once($CFG->dirroot .'/blocks/rlip/rlip_importprovider_csv.class.php');
 
     // Get the schedule record
     list($prefix, $id) = explode('_', $taskname);

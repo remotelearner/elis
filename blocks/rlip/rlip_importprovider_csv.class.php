@@ -61,8 +61,8 @@ class rlip_importprovider_csv extends rlip_importprovider {
 
         foreach ($this->entity_types as $key => $value) {
             if ($entity == $value) {
-                if (file_exists($this->files[$key])) {
-                    return rlip_fileplugin_factory::factory($this->files[$key]);
+                if (file_exists($this->files[$entity])) {
+                    return rlip_fileplugin_factory::factory($this->files[$entity]);
                 }
             }
         }
