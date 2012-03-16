@@ -135,7 +135,7 @@ class user extends data_object_with_custom_fields {
     static $delete_is_complex = true;
 
     protected function get_field_context_level() {
-        return context_level_base::get_custom_context_level('user', 'elis_program');
+        return CONTEXT_ELIS_USER;
     }
 
     public function delete () {
@@ -462,7 +462,7 @@ class user extends data_object_with_custom_fields {
             // synchronize profile fields
             $origrec = clone($record);
             profile_load_data($origrec);
-            $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'elis_program'));
+            $fields = field::get_for_context_level(CONTEXT_ELIS_USER);
             $mfields = $this->_db->get_records('user_info_field', array(), '', 'shortname');
             $fields = $fields ? $fields : array();
             $changed = false;

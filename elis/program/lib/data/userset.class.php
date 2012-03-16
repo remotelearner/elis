@@ -64,7 +64,7 @@ class userset extends data_object_with_custom_fields {
     const ENROL_PLUGIN_TYPE = 'usersetenrol';
 
     protected function get_field_context_level() {
-        return context_level_base::get_custom_context_level('cluster', 'elis_program');
+        return CONTEXT_ELIS_USERSET;
     }
 
     /**

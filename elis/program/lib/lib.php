@@ -802,7 +802,7 @@ function pm_moodle_user_to_pm($mu) {
 
     // synchronize custom profile fields
     profile_load_data($mu);
-    $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'elis_program'));
+    $fields = field::get_for_context_level(CONTEXT_ELIS_USER);
     $fields = $fields ? $fields : array();
     require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
     foreach ($fields as $field) {

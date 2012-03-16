@@ -72,7 +72,7 @@ class curriculum extends data_object_with_custom_fields {
     static $delete_is_complex = true;
 
     protected function get_field_context_level() {
-        return context_level_base::get_custom_context_level('curriculum', 'elis_program');
+        return CONTEXT_ELIS_PROGRAM;
     }
 
     public function set_from_data($data) {
@@ -584,7 +584,7 @@ class curriculum extends data_object_with_custom_fields {
             }
         }
 
-        field_data::set_for_context_from_datarecord('curriculum', $this);
+        field_data::set_for_context_from_datarecord(CONTEXT_ELIS_PROGRAM, $this);
     }
 
     function get_verbose_name() {

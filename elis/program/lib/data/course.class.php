@@ -93,7 +93,7 @@ class course extends data_object_with_custom_fields {
     static $delete_is_complex = true;
 
     protected function get_field_context_level() {
-        return context_level_base::get_custom_context_level('course', 'elis_program');
+        return CONTEXT_ELIS_PROGRAM;
     }
 
     /////////////////////////////////////////////////////////////////////

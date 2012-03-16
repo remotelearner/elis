@@ -305,7 +305,7 @@ class test_element_creation extends elis_database_test {
 
         // Validate that a context record was actually created with correct values
         $this->assertGreaterThan(0, $context->id);
-        $this->assertEquals(CONTEXT_ELIS_USER, $context->contextlevel);
+        $this->assertEquals(CONTEXT_ELIS_USERSET, $context->contextlevel);
         $this->assertEquals($newobj->id, $context->instanceid);
 
         // Create the context path to validate this in the returned context object
@@ -326,18 +326,19 @@ class test_element_creation extends elis_database_test {
 
         $data = array(
             'name'    => 'Test Sub User Set 1A',
-            'display' => 'We\'re just testing user set creation with child user sets!'
+            'display' => 'We\'re just testing user set creation with child user sets!',
+            'parent'  => $newobj->id
         );
 
         $subuserset = new userset($data);
         $subuserset->save();
 
-        $context = context_elis_userset::instace($subuserset->id);
+        $context = context_elis_userset::instance($subuserset->id);
 
         // Validate that a context record was actually created with correct values
         $this->assertGreaterThan(0, $context->id);
-        $this->assertEquals(CONTEXT_ELIS_USER, $context->contextlevel);
-        $this->assertEquals($newobj->id, $context->instanceid);
+        $this->assertEquals(CONTEXT_ELIS_USERSET, $context->contextlevel);
+        $this->assertEquals($subuserset->id, $context->instanceid);
 
         // Create the context path to validate this in the returned context object
         $path = '/'.SYSCONTEXTID.'/'.$ctx1->id.'/'.$context->id;

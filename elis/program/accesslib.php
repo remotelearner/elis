@@ -36,6 +36,52 @@ define('CONTEXT_ELIS_USERSET', 1006);
 
 
 
+
+class context_elis_helper extends context {
+
+    private static $alllevels = array(
+            CONTEXT_ELIS_PROGRAM => 'context_elis_program',
+            CONTEXT_ELIS_TRACK   => 'context_elis_track',
+            CONTEXT_ELIS_COURSE  => 'context_elis_course',
+            CONTEXT_ELIS_CLASS   => 'context_elis_class',
+            CONTEXT_ELIS_USER    => 'context_elis_user',
+            CONTEXT_ELIS_USERSET => 'context_elis_userset',
+    );
+
+    /**
+     * Instance does not make sense here, only static use
+     */
+    protected function __construct() {
+    }
+
+    /**
+     * Returns a class name of the context level class
+     *
+     * @static
+     * @param int $contextlevel (CONTEXT_SYSTEM, etc.)
+     * @return string class name of the context class
+     */
+    public static function get_class_for_level($contextlevel) {
+        if (isset(self::$alllevels[$contextlevel])) {
+            return self::$alllevels[$contextlevel];
+        } else {
+            throw new coding_exception('Invalid context level specified');
+        }
+    }
+
+    /**
+     * not used
+     */
+    public function get_url() {
+    }
+
+    /**
+     * not used
+     */
+    public function get_capabilities() {
+    }
+}
+
 /**
  * ELIS program context
  */
@@ -133,7 +179,7 @@ class context_elis_program extends context {
 
         if (!$record = $DB->get_record('context', array('contextlevel'=>CONTEXT_ELIS_PROGRAM, 'instanceid'=>$instanceid))) {
             if ($program = $DB->get_record(curriculum::TABLE, array('id'=>$instanceid), 'id,idnumber', $strictness)) {
-                $record = context::insert_context_record(CONTEXT_COURSECAT, $program->id, '/'.SYSCONTEXTID, 0);
+                $record = context::insert_context_record(CONTEXT_ELIS_PROGRAM, $program->id, '/'.SYSCONTEXTID, 0);
             }
         }
 
@@ -335,7 +381,7 @@ class context_elis_user extends context {
         }
 
         if ($record) {
-            $context = new context_user($record);
+            $context = new context_elis_user($record);
             context::cache_add($context);
             return $context;
         }
@@ -491,7 +537,7 @@ class context_elis_userset extends context {
         if (!$record = $DB->get_record('context', array('contextlevel'=>CONTEXT_ELIS_USERSET, 'instanceid'=>$instanceid))) {
             if ($userset = $DB->get_record(userset::TABLE, array('id'=>$instanceid), 'id,parent', $strictness)) {
                 if ($userset->parent) {
-                    $parentcontext = context_coursecat::instance($userset->parent);
+                    $parentcontext = context_elis_userset::instance($userset->parent);
                     $record = context::insert_context_record(CONTEXT_ELIS_USERSET, $userset->id, $parentcontext->path);
                 } else {
                     $record = context::insert_context_record(CONTEXT_ELIS_USERSET, $userset->id, '/'.SYSCONTEXTID, 0);
@@ -500,7 +546,7 @@ class context_elis_userset extends context {
         }
 
         if ($record) {
-            $context = new context_coursecat($record);
+            $context = new context_elis_userset($record);
             context::cache_add($context);
             return $context;
         }
