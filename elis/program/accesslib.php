@@ -798,6 +798,204 @@ class context_elis_course extends context {
 }
 
 /**
+ * ELIS Class Context
+ */
+class context_elis_class extends context {
+    /**
+     * Please use context_elis_class::instance($classid) if you need the instance of this context.
+     * Alternatively if you know only the context id use context::instance_by_id($contextid)
+     *
+     * @param stdClass $record
+     */
+    protected function __construct(stdClass $record) {
+        parent::__construct($record);
+        if ($record->contextlevel != CONTEXT_ELIS_CLASS) {
+            throw new coding_exception('Invalid $record->contextlevel in context_elis_class constructor.');
+        }
+    }
+
+    /**
+     * Returns human readable context level name.
+     *
+     * @static
+     * @return string the human readable context level name.
+     */
+    public static function get_level_name() {
+        return get_string('class', 'elis_program');
+    }
+
+    /**
+     * Returns human readable context identifier.
+     *
+     * @param boolean $withprefix whether to prefix the name of the context
+     * @param boolean $short does not apply to classes
+     * @return string the human readable context name.
+     */
+    public function get_context_name($withprefix = true, $short = false) {
+        global $DB;
+
+        $name = '';
+        $class = $DB->get_record(pmclass::TABLE, array('id'=>$this->_instanceid));
+        if (!empty($class)) {
+            if ($withprefix) {
+                $name = get_string('class', 'elis_program').': ';
+            }
+            $name .= format_string($class->idnumber, true, array('context' => $this));
+        }
+        return $name;
+    }
+
+    /**
+     * Returns the most relevant URL for this context.
+     *
+     * @return moodle_url
+     */
+    public function get_url() {
+        $params = array(
+            's'      => 'cls',
+            'action' => 'view',
+            'id'     => $this->_instanceid
+        );
+        return new moodle_url('/elis/program/index.php', $params);
+    }
+
+    /**
+     * Returns array of relevant context capability records.
+     *
+     * @return array
+     */
+    public function get_capabilities() {
+        global $DB;
+
+        $sort = 'ORDER BY contextlevel,component,name';   // To group them sensibly for display
+
+        $params = array();
+        $sql = "SELECT *
+                  FROM {capabilities}
+                 WHERE contextlevel IN (".CONTEXT_ELIS_CLASS.")";
+
+        return $DB->get_records_sql($sql.' '.$sort, $params);
+    }
+
+    /**
+     * Returns ELIS class context instance.
+     *
+     * @static
+     * @param int $instanceid
+     * @param int $strictness
+     * @return context_elis_class context instance
+     */
+    public static function instance($instanceid, $strictness = MUST_EXIST) {
+        global $DB;
+
+        if ($context = context::cache_get(CONTEXT_ELIS_CLASS, $instanceid)) {
+            return $context;
+        }
+
+        $record = $DB->get_record('context', array('contextlevel'=>CONTEXT_ELIS_CLASS, 'instanceid'=>$instanceid));
+        if (empty($record)) {
+            $class = $DB->get_record(pmclass::TABLE, array('id'=>$instanceid), 'id,idnumber,courseid', $strictness);
+            if (!empty($class)) {
+                $parentpath = '/'.SYSCONTEXTID.'/'.$class->courseid;
+                $record = context::insert_context_record(CONTEXT_ELIS_CLASS, $class->id, $parentpath);
+            }
+        }
+
+        if (!empty($record)) {
+            $context = new context_elis_class($record);
+            context::cache_add($context);
+            return $context;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns immediate child contexts of class
+     * decendents beyond immediate children are not returned.
+     *
+     * @return array
+     */
+    public function get_child_contexts() {
+        global $DB;
+
+        $sql = "SELECT ctx.*
+                  FROM {context} ctx
+                 WHERE ctx.path LIKE ? AND (ctx.depth = ? OR ctx.contextlevel = ?)";
+        $params = array($this->_path.'/%', $this->depth+1, CONTEXT_ELIS_CLASS);
+        $records = $DB->get_records_sql($sql, $params);
+
+        $result = array();
+        foreach ($records as $record) {
+            $result[$record->id] = context::create_instance_from_record($record);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Create missing context instances at ELIS class context level
+     * @static
+     */
+    protected static function create_level_instances() {
+        global $DB;
+
+        $sql = "INSERT INTO {context} (contextlevel, instanceid)
+                SELECT ".CONTEXT_ELIS_CLASS.", ep.id
+                  FROM {".pmclass::TABLE."} ep
+                 WHERE NOT EXISTS (SELECT 'x'
+                                     FROM {context} cx
+                                    WHERE ep.id = cx.instanceid AND cx.contextlevel=".CONTEXT_ELIS_CLASS.")";
+        $DB->execute($sql);
+    }
+
+    /**
+     * Returns sql necessary for purging of stale context instances.
+     *
+     * @static
+     * @return string cleanup SQL
+     */
+    protected static function get_cleanup_sql() {
+        $sql = "
+                  SELECT c.*
+                    FROM {context} c
+         LEFT OUTER JOIN {".pmclass::TABLE."} ep ON c.instanceid = cc.id
+                   WHERE ep.id IS NULL AND c.contextlevel = ".CONTEXT_ELIS_CLASS."
+               ";
+
+        return $sql;
+    }
+
+    /**
+     * Rebuild context paths and depths at ELIS class context level.
+     *
+     * @static
+     * @param $force
+     */
+    protected static function build_paths($force) {
+        global $DB;
+
+        if ($force or $DB->record_exists_select('context', "contextlevel = ".CONTEXT_ELIS_CLASS." AND (depth = 0 OR path IS NULL)")) {
+            $ctxemptyclause = ($force) ? '' : "AND (ctx.path IS NULL OR ctx.depth = 0)";
+
+            $sql = "INSERT INTO {context_temp} (id, path, depth)
+                    SELECT ctx.id, ".$DB->sql_concat('pctx.path', "'/'", 'ctx.id').", pctx.depth+1
+                      FROM {context} ctx
+                      JOIN {crlm_class} cls ON (cls.id = ctx.instanceid AND ctx.contextlevel = ".CONTEXT_ELIS_CLASS.")
+                      JOIN {context} pctx ON (pctx.instanceid = cls.courseid AND pctx.contextlevel = ".CONTEXT_ELIS_COURSE.")
+                     WHERE pctx.path IS NOT NULL AND pctx.depth > 0
+                           $ctxemptyclause";
+            $trans = $DB->start_delegated_transaction();
+            $DB->delete_records('context_temp');
+            $DB->execute($sql);
+            context::merge_context_temp_table();
+            $DB->delete_records('context_temp');
+            $trans->allow_commit();
+        }
+    }
+}
+
+/**
  * ELIS User Set context
  */
 class context_elis_userset extends context {
