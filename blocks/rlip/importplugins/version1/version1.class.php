@@ -295,12 +295,15 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @param boolean $value_syntax true if we want to use "field" value of
      *                              "value" syntax, otherwise use field "value"
      *                              syntax
+     * @param boolean $quotes use quotes in message if true
      * @return string The description of identifying fields, as a
      *                comma-separated string
      * [field1] "value1", ...
      */
-    function get_user_descriptor($record, $value_syntax = false) {
+    function get_user_descriptor($record, $value_syntax = false, $quotes = true) {
         $fragments = array();
+        //quote character
+        $quote = $quotes ? '"' : '';
 
         //the fields we care to check
         $possible_fields = array('username',
@@ -314,9 +317,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
                 //calculate syntax fragment
                 if ($value_syntax) {
-                    $fragments[] = "\"{$field}\" value of \"{$value}\"";
+                    $fragments[] = "{$quote}{$field}{$quote} value of {$quote}{$value}{$quote}";
                 } else {
-                    $fragments[] = "{$field} \"{$value}\"";
+                    $fragments[] = "{$field} {$quote}{$value}{$quote}";
                 }
             }
         }
@@ -329,18 +332,22 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * Calculates a string that specifies a descriptor for a context instance
      *
      * @param object $record The object specifying the context and instance
+     * @param boolean $quotes use quotes in message if true
      * @return string The descriptive string
      */
-    function get_context_descriptor($record) {
+    function get_context_descriptor($record, $quotes = true) {
+        //quote character
+        $quote = $quotes ? '"' : '';
+
         if ($record->context == 'system') {
             //no instance for the system context
             $context_descriptor = 'the system context';
         } else if ($record->context == 'coursecat') {
             //convert "coursecat" to "course category" due to legacy 1.9 weirdness
-            $context_descriptor = "course category \"{$record->instance}\"";
+            $context_descriptor = "course category {$quote}{$record->instance}{$quote}";
         } else {
             //standard case
-            $context_descriptor = "{$record->context} \"{$record->instance}\"";
+            $context_descriptor = "{$record->context} {$quote}{$record->instance}{$quote}";
         }
 
         return $context_descriptor;
@@ -1393,20 +1400,15 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
-     * Create an enrolment
+     * Obtains a userid from a data record, logging an error message to the
+     * file system log on failure
      *
      * @param object $record One record of import data
      * @param string $filename The import file name, used for logging
-     * @return boolean true on success, otherwise false
+     * @return mixed The user id, or false if not found
      */
-    function enrolment_create($record, $filename) {
+    function get_userid_from_record($record, $filename) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/lib/enrollib.php');
-
-        //data checking
-        if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {
-            return false;
-        }
 
         //find existing user record
         $params = array();
@@ -1428,6 +1430,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         if (!$userid = $DB->get_field('user', 'id', $params)) {
+            //failure
+
             //get description of identifying fields
             $user_descriptor = $this->get_user_descriptor((object)$params, true);
  
@@ -1444,8 +1448,20 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //track which context level the assignment is taking place at
-        $contextlevel = null;
+        //success
+        return $userid;
+    }
+
+    /**
+     * Obtains a context level and context record based on a role assignment
+     * data record, logging an error message to the file system on failure
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return mixed The user id, or 
+     */
+    function get_contextinfo_from_record($record, $filename) {
+        global $CFG, $DB;
 
         if ($record->context == 'course') {
             //find existing course
@@ -1460,10 +1476,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //obtain the course context instance
             $contextlevel = CONTEXT_COURSE;
             $context = get_context_instance($contextlevel, $courseid);
+            return array($contextlevel, $context); 
         } else if ($record->context == 'system') {
             //obtain the system context instance
             $contextlevel = CONTEXT_SYSTEM;
             $context = get_context_instance($contextlevel);
+            return array($contextlevel, $context, false);
         } else if ($record->context == 'coursecat') {
             //make sure category name is not ambiguous
             $count = $DB->count_records('course_categories', array('name' => $record->instance));
@@ -1484,8 +1502,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
 
             //obtain the course category context instance
-            $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
             $contextlevel = CONTEXT_COURSECAT;
+            $context = get_context_instance($contextlevel, $categoryid);
+            return array($contextlevel, $context, false);
         } else if ($record->context == 'user') {
             //find existing user
             if (!$targetuserid = $DB->get_field('user', 'id', array('username' => $record->instance,
@@ -1497,8 +1516,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
 
             //obtain the user context instance
-            $context = get_context_instance(CONTEXT_USER, $targetuserid);
             $contextlevel = CONTEXT_USER;
+            $context = get_context_instance($contextlevel, $targetuserid);
+            return array($contextlevel, $context, false);
         } else {
             //currently only supporting course, system, user and category
             //context levels
@@ -1507,6 +1527,35 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                  "(system, user, coursecat, course).");
             return false;
         }
+    }
+
+    /**
+     * Create an enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function enrolment_create($record, $filename) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //data checking
+        if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {
+            return false;
+        }
+
+        //find existing user record
+        if (!$userid = $this->get_userid_from_record($record, $filename)) {
+            return false;
+        }
+
+        //track context info
+        $contextinfo = $this->get_contextinfo_from_record($record, $filename);
+        if ($contextinfo == false) {
+            return false;
+        }
+        list($contextlevel, $context) = $contextinfo;
 
         //make sure the role is assignable at the course context level
         if (!$DB->record_exists('role_context_levels', array('roleid' => $roleid,
@@ -1532,7 +1581,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //duplicate group / grouping name checks and name validity checking
         if ($record->context == 'course' && isset($record->group)) {
             $count = $DB->count_records('groups', array('name' => $record->group,
-                                                        'courseid' => $courseid));
+                                                        'courseid' => $context->instanceid));
 
             $creategroups = get_config('rlipimport_version1', 'creategroupsandgroupings');
             if ($count > 1) {
@@ -1547,12 +1596,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 return false;
             } else {
                 //exact group exists
-                $groupid = groups_get_group_by_name($courseid, $record->group);
+                $groupid = groups_get_group_by_name($context->instanceid, $record->group);
             }
 
             if (isset($record->grouping)) {
                 $count = $DB->count_records('groupings', array('name' => $record->grouping,
-                                                               'courseid' => $courseid));
+                                                               'courseid' => $context->instanceid));
                 if ($count > 1) {
                     //ambiguous
                     $this->fslogger->log("[{$filename} line {$this->linenumber}] \"grouping\" value of ".
@@ -1566,7 +1615,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     return false;
                 } else {
                     //exact grouping exists
-                    $groupingid = groups_get_grouping_by_name($courseid, $record->grouping);
+                    $groupingid = groups_get_grouping_by_name($context->instanceid, $record->grouping);
                 }
             }
         }
@@ -1583,14 +1632,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         if ($record->context == 'course' && in_array($roleid, $studentroleids)) {
             //set enrolment start time to the course start date
-            $timestart = $DB->get_field('course', 'startdate', array('id' => $courseid));
+            $timestart = $DB->get_field('course', 'startdate', array('id' => $context->instanceid));
 
             if ($role_assignment_exists) {
                 //role assignment already exists, so just enrol the user
-                enrol_try_internal_enrol($courseid, $userid, null, $timestart);
+                enrol_try_internal_enrol($context->instanceid, $userid, null, $timestart);
             } else if (!is_enrolled($context, $userid)) {
                 //role assignment does not exist, so enrol and assign role
-                enrol_try_internal_enrol($courseid, $userid, $roleid, $timestart);
+                enrol_try_internal_enrol($context->instanceid, $userid, $roleid, $timestart);
 
                 //collect success message for logging at end of action
                 $logmessages[] = "User with {$user_descriptor} successfully assigned role with shortname \"{$record->role}\" on {$context_descriptor}.";
@@ -1620,7 +1669,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             if ($groupid == 0) {
                 //need to create the group
                 $data = new stdClass;
-                $data->courseid = $courseid;
+                $data->courseid = $context->instanceid;
                 $data->name = $record->group;
     
                 $groupid = groups_create_group($data);
@@ -1647,7 +1696,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 if ($groupingid == 0) {
                     //need to create the grouping
                     $data = new stdClass;
-                    $data->courseid = $courseid;
+                    $data->courseid = $context->instanceid;
                     $data->name = $record->grouping;
     
                     $groupingid = groups_create_grouping($data);
@@ -1700,69 +1749,28 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //data checking
         if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] \"role\" value of ".
+                                 "{$record->role} does not refer to a valid role.");
             return false;
         }
 
         //find existing user record
-        $params = array();
-        if (isset($record->username)) {
-            $params['username'] = $record->username;
-        }
-        if (isset($record->email)) {
-            $params['email'] = $record->email;
-        }
-        if (isset($record->idnumber)) {
-            $params['idnumber'] = $record->idnumber;
-        }
-        if (!$userid = $DB->get_field('user', 'id', $params)) {
+        if (!$userid = $this->get_userid_from_record($record, $filename)) {
             return false;
         }
 
-        //track the context instance
-        $context = null;
+        //track the context info
+        $contextinfo = $this->get_contextinfo_from_record($record, $filename);
+        if ($contextinfo == false) {
+            return false;
+        }
+        list($contextlevel, $context) = $contextinfo;
+
         //track whether an enrolment exists
         $enrolment_exists = false;
 
-        if ($record->context == 'course') {
-            //find existing course
-            if (!$courseid = $DB->get_field('course', 'id', array('shortname' => $record->instance))) {
-                return false;
-            }
-    
-            //obtain the course context instance
-            $context = get_context_instance(CONTEXT_COURSE, $courseid);
-
+        if ($contextlevel == CONTEXT_COURSE) {
             $enrolment_exists = is_enrolled($context, $userid);
-        } else if ($record->context == 'system') {
-            //obtain the course context instance
-            $context = get_context_instance(CONTEXT_SYSTEM);
-        } else if ($record->context == 'coursecat') {
-            $count = $DB->count_records('course_categories', array('name' => $record->instance));
-            if ($count > 1) {
-                //ambiguous
-                return false;
-            }
-
-            //find existing category
-            if (!$categoryid = $DB->get_field('course_categories', 'id', array('name' => $record->instance))) {
-                return false;
-            }
-
-            //obtain the category context instance
-            $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
-        } else if ($record->context == 'user') {
-            //find existing user
-            if (!$targetuserid = $DB->get_field('user', 'id', array('username' => $record->instance,
-                                                                    'mnethostid' => $CFG->mnet_localhost_id))) {
-                return false;
-            }
-    
-            //obtain the user context instance
-            $context = get_context_instance(CONTEXT_USER, $targetuserid);
-        } else {
-            //currently only supporting course, system, user and category
-            //context levels
-            return false;
         }
 
         //determine whether the role assignment and enrolment records exist
@@ -1771,9 +1779,23 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                                                'userid' => $userid));
 
         $studentroleids = explode(',', $CFG->gradebookroles);
-        if (!$role_assignment_exists && (!$enrolment_exists || !in_array($roleid, $studentroleids))) {
-            //nothing to delete
-            return false;
+        if (!$role_assignment_exists) {
+            $user_descriptor = $this->get_user_descriptor($record, false, false);
+            $context_descriptor = $this->get_context_descriptor($record, false);
+            $message = "[{$filename} line {$this->linenumber}] User with {$user_descriptor} ".
+                       "is not assigned role with shortname {$record->role} on ".
+                       "{$context_descriptor}.";
+
+            if (!in_array($roleid, $studentroleids)) {
+                //nothing to delete
+                $this->fslogger->log($message);
+                return false;
+            } else if (!$enrolment_exists) {
+                $message .= " User with {$user_descriptor} is not enroled in ".
+                            "course with shortname {$record->instance}.";
+                $this->fslogger->log($message);
+                return false;
+            }
         }
 
         //string to describe the user
@@ -1795,7 +1817,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if ($enrolment_exists && in_array($roleid, $studentroleids)) {
             //remove enrolment
             if ($instance = $DB->get_record('enrol', array('enrol' => 'manual',
-                                                           'courseid' => $courseid))) {
+                                                           'courseid' => $context->instanceid))) {
                 $plugin = enrol_get_plugin('manual');
                 $plugin->unenrol_user($instance, $userid);
 
