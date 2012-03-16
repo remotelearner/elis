@@ -2682,6 +2682,16 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
+    public function testVersion1ImportLogsDeleteEmail() {
+        $this->load_csv_data();
+        $data = array('action' => 'delete',
+                      'username' => 'testusername',
+                      'email' => 'testinvalid@user.com',
+                      'city' => 'Waterloo');
+        $expected_error = "\"email\" value of testinvalid@user.com does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
     public function testVersion1ImportLogsUpdateMailDigest() {
         $this->load_csv_data();
         $data = array('action' => 'update',
@@ -2759,9 +2769,31 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
+    public function testVersion1ImportLogsDeleteUsername() {
+        $this->load_csv_data();
+        $data = array('action' => 'delete',
+                      'username' => 'invalidusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'idnumber',
+                      'city' => 'Waterloo');
+        $expected_error = "\"username\" value of invalidusername does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
     public function testVersion1ImportLogsUpdateIdNumber() {
         $this->load_csv_data();
         $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'invalidid',
+                      'city' => 'Waterloo');
+        $expected_error = "\"idnumber\" value of invalidid does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsDeleteIdNumber() {
+        $this->load_csv_data();
+        $data = array('action' => 'delete',
                       'username' => 'testusername',
                       'email' => 'test@user.com',
                       'idnumber' => 'invalidid',

@@ -729,12 +729,29 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $params = array();
         if (isset($record->username)) {
             $params['username'] = $record->username;
+            $updateusername = $DB->get_record('user', array('username' => $params['username']));
+            if(!$updateusername) {
+                $this->fslogger->log("\"username\" value of {$params['username']} does not refer to a valid user.");
+                return false;
+            }
         }
+
         if (isset($record->email)) {
             $params['email'] = $record->email;
+            $updateusername = $DB->get_record('user', array('email' => $params['email']));
+            if(!$updateusername) {
+                $this->fslogger->log("\"email\" value of {$params['email']} does not refer to a valid user.");
+                return false;
+            }
         }
+
         if (isset($record->idnumber)) {
             $params['idnumber'] = $record->idnumber;
+            $updateusername = $DB->get_record('user', array('idnumber' => $params['idnumber']));
+            if(!$updateusername) {
+                $this->fslogger->log("\"idnumber\" value of {$params['idnumber']} does not refer to a valid user.");
+                return false;
+            }
         }
 
         //make the appropriate changes
