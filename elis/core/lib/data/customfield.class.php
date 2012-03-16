@@ -196,7 +196,7 @@ class field extends elis_data_object {
         if (!is_numeric($contextlevel)) {
             $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
         }
-        if ($contextlevel == context_level_base::get_custom_context_level('user', 'elis_program')) {
+        if ($contextlevel == CONTEXT_ELIS_USER) {
             // need to include extra fields for PM users
             $sql = 'SELECT field.*, category.name AS categoryname, mfield.id AS mfieldid, owner.exclude AS syncwithmoodle
                       FROM {'.self::TABLE.'} field
@@ -813,7 +813,9 @@ abstract class field_data extends elis_data_object {
                 return true;
             }
         }
-        $context = get_context_instance($contextlevel, $record->id);
+
+        $ctxclass = context_elis_helper::get_class_for_level($contextlevel);
+        $context = $ctxclass::instance($record->id);
         $fields = field::get_for_context_level($contextlevel);
         $fields = $fields ? $fields : array();
         foreach ($fields as $field) {
