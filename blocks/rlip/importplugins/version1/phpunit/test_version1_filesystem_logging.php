@@ -31,6 +31,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
@@ -119,7 +120,7 @@ class rlip_importprovider_fsloguser extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -162,7 +163,7 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -205,7 +206,7 @@ class rlip_importprovider_fslogenrolment extends rlip_importprovider {
 
     /**
      * Constructor
-     * 
+     *
      * @param array $data Fixed file contents
      */
     function __construct($data) {
@@ -267,7 +268,7 @@ class overlay_course_database_fs extends overlay_database {
             $this->pattern = '/{('.implode('|', array_keys($this->overlaytables)).')}/';
         }
 
-        // FIXME: or should we just do nothing? 
+        // FIXME: or should we just do nothing?
         return $this->basedb->change_database_structure($sql);
     }
 
@@ -342,7 +343,7 @@ class overlay_course_database_fs extends overlay_database {
                 try {
                     $manager->drop_temp_table($table);
                 } catch (Exception $e) {
-                    
+
                 }
                 unset($this->overlaytables[$tablename]);
             }
@@ -395,7 +396,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('block_instances' => 'moodle',
+        global $DB;
+        $tables = array('block_instances' => 'moodle',
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
                      'log' => 'moodle',
@@ -427,7 +429,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'course_modules' => 'moodle',
                      'event' => 'moodle',
                      'course_display' => 'moodle',
-                     'backup_log' => 'moodle');
+                     'backup_log' => 'moodle',
+                     'external_tokens' => 'moodle',
+                     'forum' => 'mod_forum',
+                     'forum_subscriptions' => 'mod_forum',
+                     'forum_read' => 'mod_forum',
+                     'external_services_users' => 'moodle');
+
+        if ($DB->record_exists("block", array("name" => "curr_admin"))) {
+            $tables['crlm_user_moodle'] = 'elis_program';
+            $tables['crlm_user'] = 'elis_program';
+        }
+        return $tables;
     }
 
     protected $backupGlobalsBlacklist = array('DB');
@@ -496,7 +509,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true); 
+        $this->assertEquals($exists, true);
     }
 
     /**
@@ -547,7 +560,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $course = create_course($course);
         get_context_instance(CONTEXT_COURSE, $course->id);
 
-        return $course->id; 
+        return $course->id;
     }
 
     /**
@@ -2455,7 +2468,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $userid = $this->create_test_user();
         $this->create_test_course();
         $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipname'));
-        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid); 
+        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
         $roleid = $this->create_test_role();
 
         //base data used every time
@@ -2658,4 +2671,1410 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" successfully unassigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
+
+    /**
+     * Data provider function for invalid user info in role assignments
+     *
+     * @return array The array of data to use in test cases
+     */
+    public function roleAssignmentInvalidUserProvider() {
+        $data = array();
+
+        //invalid username
+        $username_data = array('username' => 'bogus');
+        $username_message = "[enrolment.csv line 2] \"username\" value of \"bogus\" does not refer to a valid user.\n";
+        $data[] = array($username_data, $username_message);
+
+        //invalid email
+        $email_data = array('email' => 'bogus@bogus.com');
+        $email_message = "[enrolment.csv line 2] \"email\" value of \"bogus@bogus.com\" does not refer to a valid user.\n";
+        $data[] = array($email_data, $email_message);
+
+        //invalid idnumber
+        $idnumber_data = array('idnumber' => 'bogus');
+        $idnumber_message = "[enrolment.csv line 2] \"idnumber\" value of \"bogus\" does not refer to a valid user.\n";
+        $data[] = array($idnumber_data, $idnumber_message);
+
+        //invalid combination of username, email
+        $username_email_data = array('username' => 'bogus',
+                                     'email' => 'bogus@bogus.com');
+        $username_email_message = "[enrolment.csv line 2] \"username\" value of \"bogus\", \"email\" value of \"bogus@bogus.com\" do not refer to a valid user.\n";
+        $data[] = array($idnumber_data, $idnumber_message);
+
+        //invalid combination of username, idnumber
+        $username_idnumber_data = array('username' => 'bogus',
+                                        'idnumber' => 'bogus');
+        $username_idnumber_message = "[enrolment.csv line 2] \"username\" value of \"bogus\", \"idnumber\" value of \"bogus\" do not refer to a valid user.\n";
+        $data[] = array($username_idnumber_data, $username_idnumber_message);
+
+        //invalid combination of email, idnumber
+        $email_idnumber_data = array('email' => 'bogus@bogus.com',
+                                     'idnumber' => 'bogus');
+        $email_idnumber_message = "[enrolment.csv line 2] \"email\" value of \"bogus@bogus.com\", \"idnumber\" value of \"bogus\" do not refer to a valid user.\n";
+        $data[] = array($email_idnumber_data, $email_idnumber_message);
+
+        //invalid combination of username, email, idnumber
+        $all_fields_data = array('username' => 'bogus',
+                                 'email' => 'bogus@bogus.com',
+                                 'idnumber' => 'bogus');
+        $all_fields_message = "[enrolment.csv line 2] \"username\" value of \"bogus\", \"email\" value of \"bogus@bogus.com\", \"idnumber\" value of \"bogus\" do not refer to a valid user.\n";
+        $data[] = array($all_fields_data, $all_fields_message);
+
+        return $data;
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during
+     * enrolment and role assignment action on a course
+     *
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnCourseEnrolmentAndRoleAssignmentCreate($data, $message) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $courseid = $this->create_test_course();
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
+        set_config('gradebookroles', $roleid);
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'course',
+                          'instance' => 'rlipshortname',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during role
+     * assignment action on a course
+     *
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnCourseRoleAssignmentCreate($data, $message) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $courseid = $this->create_test_course();
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'course',
+                          'instance' => 'rlipshortname',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during role
+     * assignment action on a course category
+     *
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnCategoryRoleAssignmentCreate($data, $message) {
+        global $DB;
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $userid = $this->create_test_user();
+        $this->create_test_course();
+        $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipname'));
+        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'coursecat',
+                          'instance' => 'rlipname',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during role
+     * assignment action on a user
+     *
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnUserRoleAssignmentCreate($data, $message) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $seconduserid = $this->create_test_user('rlipusername2', 'rlipuser@rlipdomain2.com', 'rlipidnumber2');
+        $context = get_context_instance(CONTEXT_USER, $seconduserid);
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'user',
+                          'instance' => 'rlipusername2',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during role
+     * assignment action on the system context
+     *
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnSystemeRoleAssignmentCreate($data, $message) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $context = get_context_instance(CONTEXT_SYSTEM);
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'system',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates log message for assigning a role on a context level where it
+     * is not assignable
+     */
+    public function testVersion1ImportLogsUnassignableContextOnRoleAssignmentCreate() {
+        //set up dependencies
+        $this->create_test_user();
+        //create the role without enabling it at any context
+        create_role('rlipfullshortname', 'rlipshortname', 'rlipdescription');
+
+        //data
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'system',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] The role with shortname rlipshortname is not assignable on the system context level.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates log message for assigning a role on a context level that
+     * doesn't exist
+     */
+    public function testVersion1ImportLogsInvalidContextOnRoleAssignmentCreate() {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'bogus',
+                      'instance' => 'bogus',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"context\" value of bogus is not one of the available options (system, user, coursecat, course).\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Data provider method for logging invalid entity messages
+     *
+     * @return array An array containing information about the context
+     *               "shortname" and display name
+     */
+    public function roleAssignmentInvalidEntityProvider() {
+        return array(array('course', 'course'),
+                     array('coursecat', 'course category'),
+                     array('user', 'user'));
+    }
+
+    /**
+     * Validates that invalid identifying entity fields are logged during role
+     * assignment actions on various contexts
+     *
+     * @param string $context The string representing the context level
+     * @param string $displayname The display name for the context level
+     *
+     * @dataProvider roleAssignmentInvalidEntityProvider
+     */
+    public function testVersion1ImportLogsInvalidEntityOnRoleAssignmentCreate($context, $displayname) {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => $context,
+                      'instance' => 'bogus',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"instance\" value of bogus does not refer to a valid instance of a {$displayname} context.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validate log message for ambiguous category name
+     */
+    public function testVersion1ImportLogsAmbiguousCategoryNameOnRoleAssignmentCreate() {
+        global $DB;
+
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //create the category
+        $category = new stdClass;
+        $category->name = 'rlipname';
+        $categoryid = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        //create a duplicate category
+        $categoryid = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'coursecat',
+                      'instance' => 'rlipname',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"instance\" value of rlipname refers to multiple course category contexts.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validate log message for invalid group name
+     */
+    public function testVersion1ImportLogsInvalidGroupNameOnRoleAssignmentCreate() {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $this->create_test_course();
+        $this->create_test_role();
+
+        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname',
+                      'group' => 'bogus');
+
+        $message = "[enrolment.csv line 2] \"group\" value of bogus does not refer to a valid group in course with shortname rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validate log message for ambiguous group name
+     */
+    public function testVersion1ImportLogsAmbiguousGroupNameOnRoleAssignmentCreate() {
+        global $CFG;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $this->create_test_role();
+
+        $group = new stdClass;
+        $group->courseid = $courseid;
+        $group->name = 'duplicate';
+        groups_create_group($group);
+        groups_create_group($group);
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname',
+                      'group' => 'duplicate');
+
+        $message = "[enrolment.csv line 2] \"group\" value of duplicate refers to multiple groups in course with shortname rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validate log message for invalid grouping name
+     */
+    public function testVersion1ImportLogsInvalidGroupingNameOnRoleAssignmentCreate() {
+        global $CFG;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $this->create_test_role();
+
+        $group = new stdClass;
+        $group->courseid = $courseid;
+        $group->name = 'rlipname';
+        groups_create_group($group);
+
+        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname',
+                      'group' => 'rlipname',
+                      'grouping' => 'bogus');
+
+        $message = "[enrolment.csv line 2] \"grouping\" value of bogus does not refer to a valid grouping in course with shortname rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validate log message for ambiguous grouping name
+     */
+    public function testVersion1ImportLogsAmbiguousGroupingNameOnRoleAssignmentCreate() {
+        global $CFG;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $this->create_test_role();
+
+        $group = new stdClass;
+        $group->courseid = $courseid;
+        $group->name = 'rlipname';
+        groups_create_group($group);
+
+        $grouping = new stdClass;
+        $grouping->name = 'duplicate';
+        $grouping->courseid = $courseid;
+        groups_create_grouping($grouping);
+        groups_create_grouping($grouping);
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname',
+                      'group' => 'rlipname',
+                      'grouping' => 'duplicate');
+
+        $message = "[enrolment.csv line 2] \"grouping\" value of duplicate refers to multiple groupings in course with shortname rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates a duplicate enrolment failure message
+     */
+    public function testVersion1ImportLogsDuplicateEnrolmentFailureMessage() {
+       global $DB;
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        // Create guest user
+        $guestuser = get_test_user('guest');
+        set_config('siteguest', $guestuser->id);
+
+        // Create admin user
+        $adminuser = get_test_user('admin');
+        set_config('siteadmins', $adminuser->id);
+
+        $userid = $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
+
+        //enable manual enrolments
+        $enrol = new stdClass;
+        $enrol->enrol = 'manual';
+        $enrol->courseid = $courseid;
+        $enrol->status = ENROL_INSTANCE_ENABLED;
+        $DB->insert_record('enrol', $enrol);
+
+        //make our role a "student" role
+        set_config('gradebookroles', $roleid);
+
+        $timestart = $DB->get_field('course', 'startdate', array('id' => $courseid));
+        enrol_try_internal_enrol($courseid, $userid, null,$timestart);
+
+        role_assign($roleid, $userid, $context->id);
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'course',
+                          'instance' => 'rlipshortname',
+                          'role' => 'rlipshortname');
+        //username
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //email
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //idnumber
+        $data = $basedata;
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, email
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, idnumber
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //email, idnumber
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, email, idnumber
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+    }
+
+    /**
+     * Validates a duplicate role assignment failure message
+    */
+    public function testVersion1ImportLogsDuplicateRoleAssignmentFailureMessage() {
+        global $DB;
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+
+        // Create guest user
+        $guestuser = get_test_user('guest');
+        set_config('siteguest', $guestuser->id);
+
+        // Create admin user
+        $adminuser = get_test_user('admin');
+        set_config('siteadmins', $adminuser->id);
+
+        //make our role NOT a "student" role
+        set_config('gradebookroles', null);
+
+        $userid = $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'course',
+                          'instance' => 'rlipshortname',
+                          'role' => 'rlipshortname');
+
+        //username
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //email
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //idnumber
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, email
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, idnumber
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //email, idnumber
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        //username, email, idnumber
+        role_assign($roleid, $userid, $context->id);
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying user fields are logged during
+     * role unassignment on system context
+     * 
+     * @param array $data Additional data to feed to the import
+     * @param array $message The error message to expect in the log
+     *
+     * @dataProvider roleAssignmentInvalidUserProvider
+     */
+    public function testVersion1ImportLogsInvalidUserOnSystemRoleAssignmentDelete($data, $message) {
+        //set up dependencies
+        $roleid = $this->create_test_role();
+
+        //base data used every time
+        $basedata = array('action' => 'delete',
+                          'context' => 'system',
+                          'role' => 'rlipshortname');
+
+        //set up the exact data we need
+        $data = array_merge($basedata, $data);
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates log message for unassigning a role from a context level that
+     * doesn't exist
+     */
+    public function testVersion1ImportLogsInvalidContextOnRoleAssignmentDelete() {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'bogus',
+                      'instance' => 'bogus',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"context\" value of bogus is not one of the available options (system, user, coursecat, course).\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates log message for unassigning a role that doesn't exist
+     */
+    public function testVersionImportLogsInvalidRoleOnRoleAssignmentDelete() {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'system',
+                      'role' => 'bogus');
+
+        $message = "[enrolment.csv line 2] \"role\" value of bogus does not refer to a valid role.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Data provider method, providing identifying user fields as well as
+     * text to describe those fields, with every combination of identifying
+     * user fields provided
+     *
+     * @return array Array of data, with each elements containing a data set
+     *               and a descriptive string
+     */
+    public function userDescriptorProvider() {
+        $data = array();
+
+        //username
+        $username_data = array('username' => 'rlipusername');
+        $username_descriptor = "username rlipusername";
+        $data[] = array($username_data, $username_descriptor);
+
+        //email
+        $email_data = array('email' => 'rlipuser@rlipdomain.com');
+        $email_descriptor = "email rlipuser@rlipdomain.com";
+        $data[] = array($email_data, $email_descriptor);
+
+        //idnumber
+        $idnumber_data = array('idnumber' => 'rlipidnumber');
+        $idnumber_descriptor = "idnumber rlipidnumber";
+        $data[] = array($idnumber_data, $idnumber_descriptor);
+
+        //username, email
+        $username_email_data = array('username' => 'rlipusername',
+                                     'email' => 'rlipuser@rlipdomain.com');
+        $username_email_descriptor = "username rlipusername, email rlipuser@rlipdomain.com";
+        $data[] = array($idnumber_data, $idnumber_descriptor);
+
+        //username, idnumber
+        $username_idnumber_data = array('username' => 'rlipusername',
+                                        'idnumber' => 'rlipidnumber');
+        $username_idnumber_descriptor = "username rlipusername, idnumber rlipidnumber";
+        $data[] = array($username_idnumber_data, $username_idnumber_descriptor);
+
+        //email, idnumber
+        $email_idnumber_data = array('email' => 'rlipuser@rlipdomain.com',
+                                     'idnumber' => 'rlipidnumber');
+        $email_idnumber_descriptor = "email rlipuser@rlipdomain.com, idnumber rlipidnumber";
+        $data[] = array($email_idnumber_data, $email_idnumber_descriptor);
+
+        //username, email, idnumber
+        $all_fields_data = array('username' => 'bogus',
+                                 'email' => 'bogus@bogus.com',
+                                 'idnumber' => 'bogus');
+        $all_fields_descriptor = "username rlipusername, email rlipuser@rlipdomain.com, idnumber rlipidnumber";
+        $data[] = array($all_fields_data, $all_fields_descriptor);
+
+        return $data;
+    }
+
+    /**
+     * Validates that deletion of nonexistent enrolments are logged
+     *
+     * @param array $data The user-specific information 
+     * @param string $descriptor Descriptor for user fields to use in message
+     *
+     * @dataProvider userDescriptorProvider
+     */
+    public function testVersion1ImportLogsNonexistentEnrolmentDelete($data, $descriptor) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $roleid = $this->create_test_role();
+        $this->create_test_course();
+        //make sure we are in the "student" scenario
+        set_config('gradebookroles', "$roleid");
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] User with username rlipusername is not assigned role with shortname rlipshortname on course rlipshortname. User with username rlipusername is not enroled in course with shortname rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that deletion of nonexistent role enrolments are logged for
+     * courses
+     *
+     * @param array $data The user-specific information 
+     * @param string $descriptor Descriptor for user fields to use in message
+     *
+     * @dataProvider userDescriptorProvider
+     */
+    public function testVersion1ImportLogsNonexistentRoleAssignmentOnCourseRoleAssignmentDelete($data, $descriptor) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $this->create_test_role();
+        $this->create_test_course();
+        //make sure we are not in the "student" scenario
+        set_config('gradebookroles', '');
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] User with username rlipusername is not assigned role with shortname rlipshortname on course rlipshortname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that deletion of nonexistent role assignments are logged for
+     * course categories
+     *
+     * @param array $data The user-specific information 
+     * @param string $descriptor Descriptor for user fields to use in message
+     *
+     * @dataProvider userDescriptorProvider
+     */
+    public function testVersion1ImportLogsNonexistentRoleAssignmentOnCategoryRoleAssignmentDelete($data, $descriptor) {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $this->create_test_role();
+        //also creates test category
+        $this->create_test_course();
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'coursecat',
+                      'instance' => 'rlipname',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] User with username rlipusername is not assigned role with shortname rlipshortname on course category rlipname.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that deletion of nonexistent role assignments are logged for
+     * users
+     *
+     * @param array $data The user-specific information 
+     * @param string $descriptor Descriptor for user fields to use in message
+     *
+     * @dataProvider userDescriptorProvider
+     */
+    public function testVersion1ImportLogsNonexistentRoleAssignmentOnUserRoleAssignmentDelete($data, $descriptor) {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+        $this->create_test_user('rlipusername2', 'rlipuser@rlipdomain2.com', 'rlipidnumber2');
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'user',
+                      'instance' => 'rlipusername2',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] User with username rlipusername is not assigned role with shortname rlipshortname on user rlipusername2.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validate log message for ambiguous category name
+     */
+    public function testVersion1ImportLogsAmbiguousCategoryNameOnRoleAssignmentDelete() {
+        global $DB;
+
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //create the category
+        $category = new stdClass;
+        $category->name = 'rlipname';
+        $categoryid = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        //create a duplicate category
+        $categoryid = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'coursecat',
+                      'instance' => 'rlipname',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"instance\" value of rlipname refers to multiple course category contexts.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');    
+    }
+
+    /**
+     * Validates that deletion of nonexistent role assignments are logged for
+     * the system context
+     *
+     * @param array $data The user-specific information 
+     * @param string $descriptor Descriptor for user fields to use in message
+     *
+     * @dataProvider userDescriptorProvider
+     */
+    public function testVersion1ImportLogsNonexistentRoleAssignmentOnSystemRoleAssignmentDelete($data, $descriptor) {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'system',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] User with username rlipusername is not assigned role with shortname rlipshortname on the system context.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that invalid identifying entity fields are logged during role
+     * assignment actions on various contexts
+     * 
+     * @param string $context The string representing the context level
+     * @param string $displayname The display name for the context level
+     *
+     * @dataProvider roleAssignmentInvalidEntityProvider
+     */
+    public function testVersion1ImportLogsInvalidEntityOnRoleAssignmentDelete($context, $displayname) {
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => $context,
+                      'instance' => 'bogus',
+                      'role' => 'rlipshortname');
+
+        $message = "[enrolment.csv line 2] \"instance\" value of bogus does not refer to a valid instance of a {$displayname} context.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');        
+    }
+
+    protected function load_csv_data() {
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('user', dirname(__FILE__).'/userfile.csv');
+        $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
+        load_phpunit_data_set($dataset, true, self::$overlaydb);
+    }
+
+    public function testVersion1ImportLogsUpdateEmail() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'testinvalid@user.com',
+                      'city' => 'Waterloo');
+        $expected_error = "\"email\" value of testinvalid@user.com does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsDeleteEmail() {
+        $this->load_csv_data();
+        $data = array('action' => 'delete',
+                      'username' => 'testusername',
+                      'email' => 'testinvalid@user.com',
+                      'city' => 'Waterloo');
+        $expected_error = "\"email\" value of testinvalid@user.com does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateMailDigest() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'testinvalid@user.com',
+                      'city' => 'Waterloo',
+                      'maildigest' => 3);
+        $expected_error = "\"maildigest\" value of 3 is not one of the available options (0, 1, 2).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateAutoSubscribe() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'testinvalid@user.com',
+                      'city' => 'Waterloo',
+                      'maildigest' => 2,
+                      'autosubscribe' => 2);
+        $expected_error = "\"autosubscribe\" value of 2 is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateTrackingDisabled() {
+        $this->load_csv_data();
+        set_config('forum_trackreadposts', 0);
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'maildigest' => 2,
+                      'autosubscribe' => 1,
+                      'trackforums' => 0);
+        $expected_error = "Tracking unread posts is currently disabled on this site.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateTracking() {
+        $this->load_csv_data();
+        set_config('forum_trackreadposts', 1);
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'maildigest' => 2,
+                      'autosubscribe' => 1,
+                      'trackforums' => 2);
+        $expected_error = "\"trackforums\" value of 2 is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateScreenReader() {
+        $this->load_csv_data();
+        set_config('forum_trackreadposts', 1);
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'maildigest' => 2,
+                      'autosubscribe' => 1,
+                      'trackforums' => 1,
+                      'screenreader' => 2);
+        $expected_error = "\"screenreader\" value of 2 is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateUsername() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'invalidusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'idnumber',
+                      'city' => 'Waterloo');
+        $expected_error = "\"username\" value of invalidusername does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsDeleteUsername() {
+        $this->load_csv_data();
+        $data = array('action' => 'delete',
+                      'username' => 'invalidusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'idnumber',
+                      'city' => 'Waterloo');
+        $expected_error = "\"username\" value of invalidusername does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateIdNumber() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'invalidid',
+                      'city' => 'Waterloo');
+        $expected_error = "\"idnumber\" value of invalidid does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsDeleteIdNumber() {
+        $this->load_csv_data();
+        $data = array('action' => 'delete',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'invalidid',
+                      'city' => 'Waterloo');
+        $expected_error = "\"idnumber\" value of invalidid does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateAuth() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'idnumber',
+                      'password' => '1234567',
+                      'city' => 'Waterloo',
+                      'auth' => 'invalidauth');
+        $expected_error = "\"auth\" values of invalidauth is not a valid auth plugin.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdatePassword() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'email' => 'test@user.com',
+                      'idnumber' => 'idnumber',
+                      'password' => '1234567',
+                      'city' => 'Waterloo');
+        $expected_error = "\"password\" value of 1234567 does not conform to your site's password policy.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateLang() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'lang' => 'invalidlang');
+        $expected_error = "\"lang\" value of invalidlang is not a valid language code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateCountry() {
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'lang' => 'en',
+                      'country' => 'invalidcountry'
+                     );
+        $expected_error = "\"country\" value of invalidcountry is not a valid country code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsThemeDisabled() {
+        $this->load_csv_data();
+        set_config('allowuserthemes', 0);
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'email' => 'test@user.com',
+                      'lang' => 'en',
+                      'idnumber' => 'idnumber',
+                      'country' => 'CA',
+                      'theme' => 'invalidtheme',
+                     );
+        $expected_error = "User themes are currently disabled on this site.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateTheme() {
+        $this->load_csv_data();
+        set_config('allowuserthemes', 1);
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'email' => 'test@user.com',
+                      'lang' => 'en',
+                      'idnumber' => 'idnumber',
+                      'country' => 'CA',
+                      'theme' => 'invalidtheme',
+                     );
+        $expected_error = "\"theme\" value of invalidtheme is invalid.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsForceTimezone() {
+        global $CFG;
+        $this->load_csv_data();
+        $CFG->forcetimezone = 97;
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'email' => 'test@user.com',
+                      'lang' => 'en',
+                      'idnumber' => 'idnumber',
+                      'country' => 'CA',
+                      'theme' => 'invalidtheme',
+                      'timezone' => 98,
+                     );
+        $expected_error = "\"timezone\" value of 98 is not consistent with forced timezone value of {$CFG->forcetimezone} on your site.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsInvalidTimezone() {
+        global $CFG;
+        $this->load_csv_data();
+        $CFG->forcetimezone = 99;
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'email' => 'test@user.com',
+                      'lang' => 'en',
+                      'idnumber' => 'idnumber',
+                      'country' => 'CA',
+                      'timezone' => 'invalidtimezone',
+                     );
+        $expected_error = "\"timezone\" value of invalidtimezone is not a valid timezone.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    public function testVersion1ImportLogsUpdateFormat() {
+        global $CFG;
+        $this->load_csv_data();
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'password' => 'm0ddl3.paSs',
+                      'email' => 'test@user.com',
+                      'lang' => 'en',
+                      'idnumber' => 'idnumber',
+                      'country' => 'CA',
+                      'timezone' => 'invalidtimezone',
+                      'shortname' => 'cm2',
+                      'format' => 'invalidformat'
+                     );
+        $expected_error = "\"format\" value does not refer to a valid course format.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateNumSections() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $invalidmaxsections = $maxsections + 1;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $invalidmaxsections
+                     );
+        $expected_error = "\"numsections\" value of {$invalidmaxsections} is not one of the available options (0 .. {$maxsections}).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateStartDate() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => '01/02/2012'
+                     );
+        $expected_error = "\"startdate\" value of 01/02/2012 is not a valid date in MMM/DD/YYYY format.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateNewsItems() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 100
+                     );
+        $expected_error = "\"newsitems\" value of 100 is not one of the available options (0 .. 10).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateShowGrades() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 3
+                     );
+        $expected_error = "\"showgrades\" value of 3 is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateShowReports() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 3
+                     );
+        $expected_error = "\"showreports\" value of 3 is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateMaxBytes() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        set_config('maxbytes', 100000000, 'moodlecourse');
+        $maxbytes = get_config('moodlecourse','maxbytes');
+        $invalidmaxbytes = $maxbytes + 1;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $invalidmaxbytes
+                     );
+        $expected_error = "\"maxbytes\" value of {$invalidmaxbytes} is not one of the available options.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateGuest() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $CFG->maxbytes = 100000000;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $CFG->maxbytes,
+                      'guest' => 'invalidguest'
+                     );
+        $expected_error = "\"guest\" value of invalidguest is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateVisible() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $CFG->maxbytes = 100000000;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $CFG->maxbytes,
+                      'guest' => 1,
+                      'visible' => 'invalidvisible',
+                     );
+        $expected_error = "\"visible\" value of invalidvisible is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateCourseLang() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $CFG->maxbytes = 100000000;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $CFG->maxbytes,
+                      'guest' => 1,
+                      'visible' => 1,
+                      'lang' => 'invalidlang'
+                     );
+        $expected_error = "\"lang\" value of invalidlang is not a valid language code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testVersion1ImportLogsUpdateGuestEnrolmentsDisabled() {
+        global $CFG;
+        $this->load_csv_data();
+        set_config('maxsections', 20, 'moodlecourse');
+        set_config('enrol_plugins_enabled', false);
+        $maxsections = (int)get_config('moodlecourse', 'maxsections');
+        $CFG->maxbytes = 100000000;
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $CFG->maxbytes,
+                      'guest' => 1,
+                      'visible' => 1,
+                      'lang' => 'en',
+                     );
+        $expected_error = "\"guest\" enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
 }

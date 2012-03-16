@@ -69,13 +69,10 @@ if ($data = $form->get_data()) {
 
     //run the entire import once
     $importprovider = new rlip_importprovider_moodlefile($entity_types, $fileids);
-    $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);
+    //indicate to the factory class that this is a manual run
+    $manual = true;
+    $instance = rlip_dataplugin_factory::factory($plugin, $importprovider, NULL, $manual);
     $instance->run();
-
-    //display status of each processed file
-    $logids = $instance->dblogger->get_logids();
-    rlip_print_manual_status($logids);
-    
 }
 
 //display the form
