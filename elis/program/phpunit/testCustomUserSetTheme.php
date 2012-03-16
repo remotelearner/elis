@@ -39,6 +39,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
     protected static function get_overlay_tables() {
         return array(
             'user' => 'moodle',
+            'context' => 'moodle',
             user::TABLE => 'elis_program',
             usermoodle::TABLE => 'elis_program',
             userset::TABLE => 'elis_program',
