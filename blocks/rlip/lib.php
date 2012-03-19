@@ -364,6 +364,9 @@ function rlip_schedule_period_minutes($period) {
 function rlip_schedule_add_job($data) {
     global $DB, $USER;
 
+    //calculate the next run time, for use in both records
+    $nextruntime = (int)(time() + rlip_schedule_period_minutes($data['period']) * 60);
+
     $userid = isset($data['userid']) ? $data['userid'] : $USER->id;
     $data['timemodified'] = time();
     if (isset($data['submitbutton'])) { // formslib!
@@ -373,6 +376,10 @@ function rlip_schedule_add_job($data) {
     $ipjob->userid = $userid;
     $ipjob->plugin = $data['plugin'];
     $ipjob->config = serialize($data);
+
+    //store as a redundant copy in order to prevent elis task strangeness
+    $ipjob->nextruntime = $nextruntime;
+
     if (!empty($data['id'])) {
         $ipjob->id = $data['id'];
         $DB->update_record('ip_schedule', $ipjob);
@@ -398,7 +405,7 @@ function rlip_schedule_add_job($data) {
     $task->timezone      = 0;
     $task->enddate       = null;
     $task->runsremaining = null;
-    $task->nextruntime   = (int)(time() + rlip_schedule_period_minutes($data['period']) * 60);
+    $task->nextruntime   = $nextruntime;
     return $DB->insert_record('elis_scheduled_tasks', $task);
 }
 
@@ -457,13 +464,22 @@ function run_ipjob($taskname) {
     $plugin = $ipjob->plugin;
     $data = unserialize($ipjob->config);
 
+    //determine the "ideal" target start time
+    $targetstarttime = $ipjob->nextruntime;
+
     // Set the next run time
     if ($task = $DB->get_record('elis_scheduled_tasks',
                                 array('taskname' => $taskname))) {
+
+        //update next runtime on the scheduled task record
         $task->nextruntime = (int)(time() + rlip_schedule_period_minutes($data['period']) * 60);
         $DB->update_record('elis_scheduled_tasks', $task);
+        //update the next runtime on the ip schedule record
+        $ipjob->nextruntime = $task->nextruntime;
+        $DB->update_record('ip_schedule', $ipjob);
     } else {
         mtrace("run_ipjob({$taskname}): DB Error retrieving task record!");
+        //todo: return false?
     }
 
     // Perform the IP scheduled action
@@ -496,7 +512,8 @@ function run_ipjob($taskname) {
             return false;
     }
 
-    $instance->run();
+    //run the task, specifying the ideal start time
+    $instance->run($targetstarttime);
     return true;
 }
 

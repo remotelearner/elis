@@ -88,6 +88,15 @@ abstract class rlip_dblogger {
     }
 
     /**
+     * Get the target (planned) start time
+     *
+     * @return int The target (planned) start time
+     */
+    function get_targetstarttime() {
+        return $this->targetstarttime;
+    }
+
+    /**
      * Sets the actual start time
      *
      * @param int $starttime The actual start time
@@ -208,6 +217,7 @@ abstract class rlip_dblogger {
      * Specialization function for log records
      * @param object $record The log record, with all standard fields included
      * @param string $filename The filename for which processing is finished
+     * @return object The customized version of the record
      */
     abstract function customize_record($record, $filename);
 }
@@ -220,6 +230,7 @@ class rlip_dblogger_import extends rlip_dblogger {
      * Specialization function for log records
      * @param object $record The log record, with all standard fields included
      * @param string $filename The filename for which processing is finished
+     * @return object The customized version of the record
      */
     function customize_record($record, $filename) {
         if ($this->filefailures == 0) {
@@ -240,6 +251,7 @@ class rlip_dblogger_export extends rlip_dblogger {
      * Specialization function for log records
      * @param object $record The log record, with all standard fields included
      * @param string $filename The filename for which processing is finished
+     * @return object The customized version of the record
      */
     function customize_record($record, $filename) {
         //flag as export

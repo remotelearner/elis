@@ -83,10 +83,16 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 
     /**
      * Mainline for export processing
+     *
+     * @param int $targetstarttime The timestamp representing the theoretical
+     *                             time when this task was meant to be run
      */
-    function run() {
+    function run($targetstarttime = 0) {
         //track the start time as the current time
         $this->dblogger->set_starttime(time());
+        //track the provided target start time
+        $this->dblogger->set_targetstarttime($targetstarttime);
+
         //open the output file for writing
         $this->fileplugin->open(RLIP_FILE_WRITE);
 

@@ -110,7 +110,9 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
                      'course_categories' => 'moodle',
                      'context' => 'moodle',
                      'block_rlip_summary_log' => 'block_rlip',
-                     'config_plugins' => 'moodle');
+                     'config_plugins' => 'moodle',
+                     'ip_schedule' => 'block_rlip',
+                     'elis_scheduled_tasks' => 'elis_core');
     }
 
     /**
@@ -153,8 +155,11 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
 
     /**
      * Run the export for whatever data is currently in the database
+     *
+     * @param int $targetstarttime The timestamp representing the theoretical
+     *                             time when this task was meant to be run
      */
-    function run_export() {
+    function run_export($targetstarttime = 0) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/version1.class.php');
 
@@ -164,7 +169,7 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
 
     	//our specific export
         $exportplugin = new rlip_exportplugin_version1($fileplugin);
-        $exportplugin->run();
+        $exportplugin->run($targetstarttime);
     }
 
     /**
@@ -252,6 +257,119 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
                         'storedsuccesses' => 0,
                         'storedfailures' => 0,
                         'statusmessage' => 'Export file memoryexport successfully created.',
+                        'dbops' => -1,
+                        'unmetdependency' => 0);
+        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate that database logging logs "0" as the target start time when
+     * not specified during execution of the version 1 import plugin
+     */
+    public function testVersion1DBLoggingTargetStartTimeDefaultsToZero() {
+        global $DB;
+
+        //make sure the export is insensitive to time values
+        set_config('nonincremental', 1, 'rlipexport_version1');
+        //set up data for one course and one enroled user
+        $this->load_csv_data();
+
+        //run the export
+        $this->run_export();
+
+        //data validation
+        $exists = $DB->record_exists('block_rlip_summary_log', array('targetstarttime' => 0));
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate that database logging logs the specified value as the target
+     * start time when specified during execution of the version 1 import plugin
+     */
+    public function testVersion1DBLoggingSupportsTargetStartTimes() {
+        global $DB;
+
+        //make sure the export is insensitive to time values
+        set_config('nonincremental', 1, 'rlipexport_version1');
+        //set up data for one course and one enroled user
+        $this->load_csv_data();
+
+        //run the export
+        $this->run_export(1000000000);
+
+        //data validation
+        $exists = $DB->record_exists('block_rlip_summary_log', array('targetstarttime' => 1000000000));
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate that database logging works as specified for scheduled export
+     * tasks
+     */
+    public function testVersion1DBLoggingSetsAllFieldsDuringScheduledRun() {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //set up the export file path
+        $filename = $CFG->dataroot.'/rliptestexport.csv';
+        set_config('export_file', $filename, 'rlipexport_version1');
+
+        //set up data for one course and one enroled user
+        $this->load_csv_data();
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //change the next runtime to a known value in the past
+        $task = new stdClass;
+        $task->id = $taskid;
+        $task->nextruntime = 99;
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        $job = new stdClass;
+        $job->id = $DB->get_field('ip_schedule', 'id', array('plugin' => 'rlipexport_version1'));
+        $job->nextruntime = 99;
+        $DB->update_record('ip_schedule', $job);
+
+        //lower bound on starttime
+        $starttime = time();
+        //run the export
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname);
+        //upper bound on endtime
+        $endtime = time();
+
+        //data validation
+        $select = "export = :export AND
+                   plugin = :plugin AND
+                   userid = :userid AND
+                   targetstarttime = :targetstarttime AND
+                   starttime >= :starttime AND
+                   endtime <= :endtime AND
+                   endtime >= starttime AND
+                   filesuccesses = :filesuccesses AND
+                   filefailures = :filefailures AND
+                   storedsuccesses = :storedsuccesses AND
+                   storedfailures = :storedfailures AND
+                   {$DB->sql_compare_text('statusmessage')} = :statusmessage AND
+                   dbops = :dbops AND
+                   unmetdependency = :unmetdependency";
+        $params = array('export' => 1,
+                        'plugin' => 'rlipexport_version1',
+                        'userid' => $USER->id,
+                        'targetstarttime' => 99,
+                        'starttime' => $starttime,
+                        'endtime' => $endtime,
+                        'filesuccesses' => 0,
+                        'filefailures' => 0,
+                        'storedsuccesses' => 0,
+                        'storedfailures' => 0,
+                        'statusmessage' => 'Export file rliptestexport.csv successfully created.',
                         'dbops' => -1,
                         'unmetdependency' => 0);
         $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
