@@ -67,14 +67,26 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 	 *
 	 * @param object $fileplugin the file plugin used for output
 	 */
-	function __construct($fileplugin) {
-        $this->fileplugin = $fileplugin;
-	}
+    function __construct($fileplugin) {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
 
-	/**
-	 * Mainline for export processing
-	 */
+        $this->fileplugin = $fileplugin;
+        $this->dblogger = new rlip_dblogger_export();
+
+        //indicate to the databaes logger which plugin we're using
+        $class = get_class($this);
+        //convert export_plugin_ prefix to rlipexport_
+        $plugin = 'rlipexport_'.substr($class, strlen('rlip_exportplugin_'));
+        $this->dblogger->set_plugin($plugin);
+    }
+
+    /**
+     * Mainline for export processing
+     */
     function run() {
+        //track the start time as the current time
+        $this->dblogger->set_starttime(time());
         //open the output file for writing
         $this->fileplugin->open(RLIP_FILE_WRITE);
 
@@ -89,6 +101,12 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 
         //close the output file
         $this->fileplugin->close();
+
+        //track the end time as the current time
+        $this->dblogger->set_endtime(time());
+
+        //flush db log record
+        $this->dblogger->flush($this->fileplugin->get_filename());
     }
 
     /**
@@ -99,6 +117,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
             //fetch and write out the next record
             $record = $this->next();
             $this->fileplugin->write($record);
+            $this->dblogger->track_success(true, true);
         }
     }
 
