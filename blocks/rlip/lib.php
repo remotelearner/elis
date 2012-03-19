@@ -297,25 +297,29 @@ function rlip_time_string_to_offset($time_string) {
 /**
  * Get scheduled IP jobs
  *
- * @param  string $type  The IP plugin type: 'rlipimport', 'rlipexport'
- * @param  string $name  The IP plugin name: 'version1'
- * @uses   $CFG
+ * @param  string $plugin The IP plugin type:
+                          'rlipimport_version1', 'rlipexport_version1', ...
+ * @param  int    $userid The desired schedule owner or (default) 0 for all.
  * @uses   $DB
  * @return mixed         Either list of scheduled jobs for IP plugin
  *                       or false if none.
  */
-function rlip_get_scheduled_jobs($type, $name) {
-    global $CFG, $DB;
+function rlip_get_scheduled_jobs($plugin, $userid = 0) {
+    global $DB;
     $taskname =  $DB->sql_concat("'ipjob_'", 'ipjob.id');
-    $params = array('plugin' => "{$type}_{$name}");
+    $params = array('plugin' => $plugin);
     $sql = "SELECT ipjob.*, usr.username, usr.firstname, usr.lastname,
                    usr.timezone, task.lastruntime, task.nextruntime
-              FROM {$CFG->prefix}elis_scheduled_tasks task
-              JOIN {$CFG->prefix}ip_schedule ipjob
+              FROM {elis_scheduled_tasks} task
+              JOIN {ip_schedule} ipjob
                 ON task.taskname = {$taskname}
-              JOIN {$CFG->prefix}user usr
+              JOIN {user} usr
                 ON ipjob.userid = usr.id
              WHERE ipjob.plugin = :plugin ";
+    if ($userid) {
+        $sql .= 'AND ipjob.userid = :userid ';
+        $params['userid'] = $userid;
+    }
     return $DB->get_recordset_sql($sql, $params);
 }
 
@@ -362,6 +366,9 @@ function rlip_schedule_add_job($data) {
 
     $userid = isset($data['userid']) ? $data['userid'] : $USER->id;
     $data['timemodified'] = time();
+    if (isset($data['submitbutton'])) { // formslib!
+        unset($data['submitbutton']);
+    }
     $ipjob  = new stdClass;
     $ipjob->userid = $userid;
     $ipjob->plugin = $data['plugin'];

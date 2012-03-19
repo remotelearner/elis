@@ -84,10 +84,11 @@ class ip_schedule_page extends elis_page {
     }
 
     function display_default() {
-        global $OUTPUT;
+        global $OUTPUT, $USER;
         $this->get_base_page_params();
         $display_name = $this->get_ip_plugin(); // TBD: more user-friendly
-        $ipscheds = rlip_get_scheduled_jobs($this->type, $this->name);
+        $ipscheds = rlip_get_scheduled_jobs($this->get_ip_plugin(),
+                                            is_siteadmin() ? 0 : $USER->id);
         if (!empty($ipscheds) && $ipscheds->valid()) {
             echo $OUTPUT->notification(get_string("rlip_jobs_heading_jobs",
                                                   'block_rlip', $display_name),
