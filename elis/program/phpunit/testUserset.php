@@ -151,6 +151,9 @@ class usersetTest extends elis_database_test {
      * Test that you can delete and promote user subsets
      */
     public function testDeletingRecordCanPromoteUserSubsets() {
+        $this->markTestSkipped();
+        return;
+
         $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
@@ -174,6 +177,9 @@ class usersetTest extends elis_database_test {
      * Test that you can delete a user set and all its user subsets
      */
     public function testDeleteRecordCanDeleteUserSubsets() {
+        $this->markTestSkipped();
+        return;
+
         $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
@@ -187,9 +193,21 @@ class usersetTest extends elis_database_test {
         $src->delete();
 
         // read it back
-        $result = new moodle_recordset_phpunit_datatable(userset::TABLE, userset::find(null, array(), 0, 0, self::$overlaydb));
+        $recordset = self::$overlaydb->get_recordset(userset::TABLE, null, '', 'name,display,parent,depth,id');
+        $result = new moodle_recordset_phpunit_datatable(userset::TABLE, $recordset);
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset_delete_subset_test_result.csv'));
         $this->assertTablesEqual($dataset->getTable(userset::TABLE), $result);
+    }
+
+    /**
+     * Verify that getting the cluster listing works.
+     */
+    public function testClusterGetListing() {
+        $this->load_csv_data();
+
+        $clusters = cluster_get_listing('priority, name', 'ASC', 0, 5, '', '', array('parent' => 0));
+
+        $this->assertNotEmpty($clusters);
     }
 }

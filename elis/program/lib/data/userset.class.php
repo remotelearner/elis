@@ -517,7 +517,7 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
     $display_priority_enabled = isset($plugins['userset_display_priority']);
     if ($display_priority_enabled) {
         require_once(elis::plugin_file('pmplugins_userset_display_priority', 'lib.php'));
-        $priority_field = field::get_for_context_level_with_name('cluster', USERSET_DISPLAY_PRIORITY_FIELD);
+        $priority_field = field::get_for_context_level_with_name(CONTEXT_ELIS_USERSET, USERSET_DISPLAY_PRIORITY_FIELD);
         if (empty($priority_field->id)) {
             $display_priority_enabled = false;
         }

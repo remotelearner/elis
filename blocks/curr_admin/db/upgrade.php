@@ -941,10 +941,10 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         require_once(elispm::lib('data/customfield.class.php'));
         // make sure all ELIS users have a context
         update_capabilities('elis_program');
-        $ctxlvl = context_level_base::get_custom_context_level('user', 'elis_program');
+
         $rs = get_recordset('crlm_user');
         foreach ($rs as $rec) {
-            get_context_instance($ctxlvl, $rec->id);
+            context_elis_user::instance($rec->id);
         }
         $rs->close();
 
@@ -1148,11 +1148,10 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $dbman->create_table($table);
 
 
-        $usercontextid = context_level_base::get_custom_context_level('user', 'elis_program');
-        if ($usercontextid) {
+        if (defined('CONTEXT_ELIS_USER')) {
             $sql = "INSERT INTO {$CFG->prefix}crlm_field_category_context
                            (categoryid, contextlevel)
-                    SELECT id, $usercontextid
+                    SELECT id, ".CONTEXT_ELIS_USER."
                       FROM {$CFG->prefix}crlm_field_category";
             $result = $result && $DB->execute($sql);
         }

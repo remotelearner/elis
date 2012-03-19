@@ -330,7 +330,7 @@ function cm_determine_access($uid = false) {
         return false;
     }
 
-    $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+    $context = get_context_instance(CONTEXT_SYSTEM);
 
     //require_once($CFG->dirroot . '/curriculum/lib/cluster.class.php');
 

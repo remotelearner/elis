@@ -38,9 +38,6 @@ function xmldb_pmplugins_userset_display_priority_install() {
 
     require_once elispm::lib('setup.php');
 
-    //context level at which we are creating the new field(s)
-    $cluster_ctx_lvl = context_level_base::get_custom_context_level('cluster', 'elis_program');
-
     $field = new field();
     $field->shortname = USERSET_DISPLAY_PRIORITY_FIELD;
 
@@ -50,7 +47,7 @@ function xmldb_pmplugins_userset_display_priority_install() {
     $category = new field_category();
     $category->name = get_string('display_settings_category_name', 'pmplugins_userset_display_priority');
 
-    $field = field::ensure_field_exists_for_context_level($field, 'cluster', $category);
+    $field = field::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_USERSET, $category);
 
     // make sure 'manual' is an owner
     if (!isset($field->owners['manual'])) {
