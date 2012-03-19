@@ -377,7 +377,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     static protected function get_ignored_tables() {
         return array('log' => 'moodle',
-                     'event' => 'moodle');
+                     'event' => 'moodle',
+                     //usually written to during course delete        
+                     'grade_grades' => 'moodle',
+                     'grade_grades_history' => 'moodle');
     }
 
     /**
@@ -970,7 +973,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         global $USER;
 
         //set up the logger object
-        $logger = new rlip_dblogger();
+        $logger = new rlip_dblogger_import();
 
         //provide appropriate times
         $logger->set_plugin('plugin');

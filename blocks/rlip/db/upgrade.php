@@ -104,5 +104,17 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         upgrade_block_savepoint(true, 2012022700, 'rlip');
     }
 
+    if ($result && $oldversion < 2012031600) {
+        // Get the summary log table, so we can make its indexes nonunique
+        $table = new xmldb_table('block_rlip_summary_log');
+
+        // Add the "export" field
+        $field = new xmldb_field('export', XMLDB_TYPE_INTEGER, 1, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'id');
+        $dbman->add_field($table, $field);
+
+        // block rlip savepoint reached
+        upgrade_block_savepoint(true, 2012031600, 'rlip');
+    }
+
     return $result;
 }

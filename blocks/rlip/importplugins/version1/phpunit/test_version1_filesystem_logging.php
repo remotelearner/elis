@@ -389,7 +389,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'config' => 'moodle',
                      'backup_controllers' => 'moodle',
                      'backup_courses' => 'moodle',
-                     'enrol' => 'moodle');
+                     'enrol' => 'moodle',
+                     //needed for course delete to prevent errors / warnings
+                     'course_modules' => 'moodle',
+                     'forum' => 'mod_forum');
     }
 
     /**
@@ -433,7 +436,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'forum' => 'mod_forum',
                      'forum_subscriptions' => 'mod_forum',
                      'forum_read' => 'mod_forum',
-                     'external_services_users' => 'moodle');
+                     'external_services_users' => 'moodle',
+                     'grade_grades' => 'moodle',
+                     'grade_grades_history' => 'moodle');
     }
 
     protected $backupGlobalsBlacklist = array('DB');
@@ -2692,7 +2697,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $username_email_data = array('username' => 'bogus',
                                      'email' => 'bogus@bogus.com');
         $username_email_message = "[enrolment.csv line 2] \"username\" value of \"bogus\", \"email\" value of \"bogus@bogus.com\" do not refer to a valid user.\n";
-        $data[] = array($idnumber_data, $idnumber_message);
+        $data[] = array($username_email_data, $username_email_message);
 
         //invalid combination of username, idnumber
         $username_idnumber_data = array('username' => 'bogus',
@@ -3121,7 +3126,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         set_config('siteguest', $guestuser->id);
 
         // Create admin user
-        $admiuser = get_test_user('admin');
+        $adminuser = get_test_user('admin');
         set_config('siteadmins', $adminuser->id);
 
         $userid = $this->create_test_user();
@@ -3211,7 +3216,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         set_config('siteguest', $guestuser->id);
 
         // Create admin user
-        $admiuser = get_test_user('admin');
+        $adminuser = get_test_user('admin');
         set_config('siteadmins', $adminuser->id);
 
         //make our role NOT a "student" role
@@ -3380,7 +3385,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $username_email_data = array('username' => 'rlipusername',
                                      'email' => 'rlipuser@rlipdomain.com');
         $username_email_descriptor = "username rlipusername, email rlipuser@rlipdomain.com";
-        $data[] = array($idnumber_data, $idnumber_descriptor);
+        $data[] = array($username_email_data, $username_email_descriptor);
 
         //username, idnumber
         $username_idnumber_data = array('username' => 'rlipusername',

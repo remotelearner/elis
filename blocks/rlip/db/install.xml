@@ -6,8 +6,9 @@
   <TABLES>
     <TABLE NAME="block_rlip_summary_log" COMMENT="Storage for per-run errors and statistics">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="plugin"/>
-        <FIELD NAME="plugin" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Shortname of the plugin being run" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" COMMENT="Tracks whether the task was an import or an export" NEXT="export"/>
+        <FIELD NAME="export" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="plugin"/>
+        <FIELD NAME="plugin" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Shortname of the plugin being run" PREVIOUS="export" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Id of the user running the task" PREVIOUS="plugin" NEXT="targetstarttime"/>
         <FIELD NAME="targetstarttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The ideal scheduled start time" PREVIOUS="userid" NEXT="starttime"/>
         <FIELD NAME="starttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The actual start time" PREVIOUS="targetstarttime" NEXT="endtime"/>
