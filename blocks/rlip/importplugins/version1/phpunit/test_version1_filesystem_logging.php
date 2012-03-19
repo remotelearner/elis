@@ -389,7 +389,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'config' => 'moodle',
                      'backup_controllers' => 'moodle',
                      'backup_courses' => 'moodle',
-                     'enrol' => 'moodle');
+                     'enrol' => 'moodle',
+                     //needed for course delete to prevent errors / warnings
+                     'course_modules' => 'moodle',
+                     'forum' => 'mod_forum');
     }
 
     /**
@@ -434,6 +437,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'forum' => 'mod_forum',
                      'forum_subscriptions' => 'mod_forum',
                      'forum_read' => 'mod_forum',
+                     'external_services_users' => 'moodle',
+                     'grade_grades' => 'moodle',
+                     'grade_grades_history' => 'moodle',
                      'external_services_users' => 'moodle');
 
         if ($DB->record_exists("block", array("name" => "curr_admin"))) {
@@ -2699,7 +2705,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $username_email_data = array('username' => 'bogus',
                                      'email' => 'bogus@bogus.com');
         $username_email_message = "[enrolment.csv line 2] \"username\" value of \"bogus\", \"email\" value of \"bogus@bogus.com\" do not refer to a valid user.\n";
-        $data[] = array($idnumber_data, $idnumber_message);
+        $data[] = array($username_email_data, $username_email_message);
 
         //invalid combination of username, idnumber
         $username_idnumber_data = array('username' => 'bogus',
@@ -3387,7 +3393,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $username_email_data = array('username' => 'rlipusername',
                                      'email' => 'rlipuser@rlipdomain.com');
         $username_email_descriptor = "username rlipusername, email rlipuser@rlipdomain.com";
-        $data[] = array($idnumber_data, $idnumber_descriptor);
+        $data[] = array($username_email_data, $username_email_descriptor);
 
         //username, idnumber
         $username_idnumber_data = array('username' => 'rlipusername',

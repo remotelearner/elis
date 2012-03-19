@@ -51,7 +51,7 @@ abstract class rlip_importprovider {
         require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
 
         //for now, the only db logger
-        return new rlip_dblogger();
+        return new rlip_dblogger_import();
     }
 }
 

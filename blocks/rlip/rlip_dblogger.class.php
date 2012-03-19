@@ -28,7 +28,7 @@
  * Class for storing import / export progress and logging end result to the
  * database
  */
-class rlip_dblogger {
+abstract class rlip_dblogger {
     //this plugin that doing the work
     var $plugin = '';
     //the user running the task
@@ -185,13 +185,8 @@ class rlip_dblogger {
         $record->dbops = $this->dbops;
         $record->unmetdependency = $this->unmetdependency;
 
-        if ($this->filefailures == 0) {
-            //success message
-            $record->statusmessage = "All lines from import file {$filename} were successfully processed.";
-        } else {
-            //todo: implement
-            $record->statusmessage = "One or more lines from import file {$filename} failed because they contain data errors. Please fix the import file and re-upload it.";
-        }
+        //perform any necessary data specialization
+        $record = $this->customize_record($record, $filename);
 
         //persist
         $this->logid = $DB->insert_record('block_rlip_summary_log', $record);
@@ -207,5 +202,50 @@ class rlip_dblogger {
      */
     function get_logid() {
         return $this->logid;
+    }
+
+    /**
+     * Specialization function for log records
+     * @param object $record The log record, with all standard fields included
+     * @param string $filename The filename for which processing is finished
+     */
+    abstract function customize_record($record, $filename);
+}
+
+/**
+ * Database logging class for imports
+ */
+class rlip_dblogger_import extends rlip_dblogger {
+    /**
+     * Specialization function for log records
+     * @param object $record The log record, with all standard fields included
+     * @param string $filename The filename for which processing is finished
+     */
+    function customize_record($record, $filename) {
+        if ($this->filefailures == 0) {
+            //success message
+            $record->statusmessage = "All lines from import file {$filename} were successfully processed.";
+        } else {
+            $record->statusmessage = "One or more lines from import file {$filename} failed because they contain data errors. Please fix the import file and re-upload it.";
+        }
+        return $record;
+    }
+}
+
+/**
+ * Database logging class for exports
+ */
+class rlip_dblogger_export extends rlip_dblogger {
+    /**
+     * Specialization function for log records
+     * @param object $record The log record, with all standard fields included
+     * @param string $filename The filename for which processing is finished
+     */
+    function customize_record($record, $filename) {
+        //flag as export
+        $record->export = 1;
+        //message
+        $record->statusmessage = "Export file {$filename} successfully created.";
+        return $record;
     }
 }

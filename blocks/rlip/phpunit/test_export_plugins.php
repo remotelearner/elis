@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/rlip_exportplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
 /**
  * Mock export plugin for testing exports
@@ -275,8 +276,22 @@ class rlip_exportplugin_empty extends rlip_exportplugin_base {
 /**
  * Class for testing the base export plugin class
  */
-class exportPluginTest extends PHPUnit_Framework_TestCase {
+class exportPluginTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
+
+    /**
+     * Return the list of tables that should be overlayed.
+     */
+    static protected function get_overlay_tables() {
+        return array();
+    }
+
+    /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        return array('block_rlip_summary_log' => 'block_rlip');
+    }
 
     /**
      * Validate whether a "generic" export is working

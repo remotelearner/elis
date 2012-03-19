@@ -1696,7 +1696,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //going to collect all messages for this action
         $logmessages = array();
-        $studentroleids = explode(',', $CFG->gradebookroles);
+
+        $studentroleids = array();
+        if (isset($CFG->gradebookroles)) {
+            $studentroleids = explode(',', $CFG->gradebookroles);
+        }
+
         if ($record->context == 'course' && in_array($roleid, $studentroleids)) {
 
             //set enrolment start time to the course start date
