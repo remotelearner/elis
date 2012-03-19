@@ -114,7 +114,7 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
     }
 
     if ($result && $oldversion < 2012031600) {
-        // Get the summary log table, so we can make its indexes nonunique
+        // Get the summary log table, so we can add the "export" field
         $table = new xmldb_table('block_rlip_summary_log');
 
         // Add the "export" field
@@ -123,6 +123,28 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
 
         // block rlip savepoint reached
         upgrade_block_savepoint(true, 2012031600, 'rlip');
+    }
+
+    if ($result && $oldversion < 2012031900) {
+        // Get the ip schedule table, so we can add a "nextruntime" column
+        $table = new xmldb_table('ip_schedule');
+
+        // Add the "nextruntime" field
+        $field = new xmldb_field('nextruntime', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'config');
+        $dbman->add_field($table, $field);
+
+        // Set up initial state
+        $taskname =  $DB->sql_concat("'ipjob_'", 'ipjob.id');
+        $sql = "UPDATE {ip_schedule} ipjob
+                SET nextruntime = (
+                  SELECT nextruntime
+                  FROM {elis_scheduled_tasks} task
+                  WHERE task.taskname = {$taskname}
+                )";
+        $DB->execute($sql);
+
+        // block rlip savepoint reached
+        upgrade_block_savepoint(true, 2012031900, 'rlip');
     }
 
     return $result;

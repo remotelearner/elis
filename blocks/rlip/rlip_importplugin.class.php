@@ -490,8 +490,13 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
     /**
      * Mainline for running the import
+     *
+     * @param int $targetstarttime The timestamp representing the theoretical
+     *                             time when this task was meant to be run
      */
-    function run() {
+    function run($targetstarttime = 0) {
+        //todo: use target start time in DB logging
+
         //determine the entities that represent the different files to process
         $entities = $this->get_import_entities();
 

@@ -34,8 +34,11 @@ abstract class rlip_dataplugin {
 
     /**
      * Mainline for data processing
+     *
+     * @param int $targetstarttime The timestamp representing the theoretical
+     *                             time when this task was meant to be run
      */
-    abstract function run();
+    abstract function run($targetstarttime = 0);
 
     /**
      * Specifies flag for indicating that this plugin is for testing only

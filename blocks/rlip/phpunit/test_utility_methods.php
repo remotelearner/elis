@@ -31,11 +31,22 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot .'/blocks/rlip/lib.php');
+require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
 /**
  * Class for testing utility methods
  */
-class utilityMethodTest extends PHPUnit_Framework_TestCase {
+class utilityMethodTest extends elis_database_test {
+
+    /**
+     * Return the list of tables that should be overlayed.
+     */
+    static protected function get_overlay_tables() {
+        return array('ip_schedule' => 'block_rlip',
+                     'elis_scheduled_tasks' => 'elis_core',
+                     'config_plugins' => 'moodle',
+                     'block_rlip_summary_log' => 'block_rlip');
+    }
 
     /**
      * Validate that time string sanitization sets the default when input
@@ -170,5 +181,84 @@ class utilityMethodTest extends PHPUnit_Framework_TestCase {
      */
     function test_rlip_schedule_period_minutes($a, $b) {
         $this->assertEquals(rlip_schedule_period_minutes($a), $b);
+    }
+
+    /**
+     * Validate that adding a new job sets the right next runtime on the IP
+     * schedule record
+     */
+    function testAddingJobSetsIPNextRuntime() {
+        global $DB;
+
+        //a lower bound for the start time
+        $starttime = time();
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+
+        //obtain scheduled task info
+        $taskid = rlip_schedule_add_job($data);
+        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
+
+        //obtain IP job info
+        list($name, $jobid) = explode('_', $task->taskname);
+        $job = $DB->get_record('ip_schedule', array('id' => $jobid));
+
+        //make sure the next runtime is between 5 and 6 minutes from now
+        $this->assertGreaterThanOrEqual($starttime + 5 * MINSECS, (int)$task->nextruntime);
+        $this->assertGreaterThanOrEqual((int)$task->nextruntime, $starttime + 6 * MINSECS);
+
+        //make sure both records have the same next run time
+        $this->assertEquals((int)$task->nextruntime, (int)$job->nextruntime);
+    }
+
+    /**
+     * Validate that running a job sets the right next runtime on the IP
+     * schedule record 
+     */
+    function testRunningJobSetsIPNextRuntime() {
+        global $CFG, $DB;
+
+        //set up the export file path
+        $filename = $CFG->dataroot.'/rliptestexport.csv';
+        set_config('export_file', $filename, 'rlipexport_version1');
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //change the next runtime to a value that is out of range on both records
+        $task = new stdClass;
+        $task->id = $taskid;
+        $task->nextruntime = 99;
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        $job = new stdClass;
+        $job->id = $DB->get_field('ip_schedule', 'id', array('plugin' => 'rlipexport_version1'));
+        $job->nextruntime = 99;
+        $DB->update_record('ip_schedule', $job);
+
+        //run the job
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $starttime = time();
+        run_ipjob($taskname);
+
+        //obtain both records
+        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
+        list($name, $jobid) = explode('_', $task->taskname);
+        $job = $DB->get_record('ip_schedule', array('id' => $jobid));
+
+        //make sure the next runtime is between 5 and 6 minutes from initial value
+        $this->assertGreaterThanOrEqual($starttime + 5 * MINSECS, (int)$task->nextruntime);
+        $this->assertGreaterThanOrEqual((int)$task->nextruntime, $starttime + 6 * MINSECS);
+
+        //make sure both records have the same next run time
+        $this->assertEquals((int)$task->nextruntime, (int)$job->nextruntime);
     }
 }
