@@ -3996,9 +3996,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsUpdateGuest() {
         global $CFG;
         $this->load_csv_data();
-        set_config('maxsections', 20, 'moodlecourse');
-        $maxsections = (int)get_config('moodlecourse', 'maxsections');
-        $CFG->maxbytes = 100000000;
+
+        $maxbytes = 51200;
+        set_config('maxbytes', $maxbytes, 'moodlecourse');
+        $maxsections = 20;
+        set_config('maxsections', $maxsections, 'moodlecourse');
+
         $data = array('action' => 'update',
                       'shortname' => 'cm2',
                       'format' => 'weeks',
@@ -4007,7 +4010,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'newsitems' => 5,
                       'showgrades' => 1,
                       'showreports' => 0,
-                      'maxbytes' => $CFG->maxbytes,
+                      'maxbytes' => $maxbytes,
                       'guest' => 'invalidguest'
                      );
         $expected_error = "\"guest\" value of invalidguest is not one of the available options (0, 1).\n";
@@ -4017,9 +4020,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsUpdateVisible() {
         global $CFG;
         $this->load_csv_data();
-        set_config('maxsections', 20, 'moodlecourse');
-        $maxsections = (int)get_config('moodlecourse', 'maxsections');
-        $CFG->maxbytes = 100000000;
+
+        $maxbytes = 51200;
+        set_config('maxbytes', $maxbytes, 'moodlecourse');
+        $maxsections = 20;
+        set_config('maxsections', $maxsections, 'moodlecourse');
+
         $data = array('action' => 'update',
                       'shortname' => 'cm2',
                       'format' => 'weeks',
@@ -4028,7 +4034,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'newsitems' => 5,
                       'showgrades' => 1,
                       'showreports' => 0,
-                      'maxbytes' => $CFG->maxbytes,
+                      'maxbytes' => $maxbytes,
                       'guest' => 1,
                       'visible' => 'invalidvisible',
                      );
@@ -4039,9 +4045,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsUpdateCourseLang() {
         global $CFG;
         $this->load_csv_data();
-        set_config('maxsections', 20, 'moodlecourse');
-        $maxsections = (int)get_config('moodlecourse', 'maxsections');
-        $CFG->maxbytes = 100000000;
+
+        $maxbytes = 51200;
+        set_config('maxbytes', $maxbytes, 'moodlecourse');
+        $maxsections = 20;
+        set_config('maxsections', $maxsections, 'moodlecourse');
+
         $data = array('action' => 'update',
                       'shortname' => 'cm2',
                       'format' => 'weeks',
@@ -4050,7 +4059,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'newsitems' => 5,
                       'showgrades' => 1,
                       'showreports' => 0,
-                      'maxbytes' => $CFG->maxbytes,
+                      'maxbytes' => $maxbytes,
                       'guest' => 1,
                       'visible' => 1,
                       'lang' => 'invalidlang'
@@ -4062,10 +4071,14 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsUpdateGuestEnrolmentsDisabled() {
         global $CFG;
         $this->load_csv_data();
-        set_config('maxsections', 20, 'moodlecourse');
-        set_config('enrol_plugins_enabled', false);
-        $maxsections = (int)get_config('moodlecourse', 'maxsections');
-        $CFG->maxbytes = 100000000;
+
+        set_config('enrol_plugins_enabled', '');
+
+        $maxbytes = 51200;
+        set_config('maxbytes', $maxbytes, 'moodlecourse');
+        $maxsections = 20;
+        set_config('maxsections', $maxsections, 'moodlecourse');
+
         $data = array('action' => 'update',
                       'shortname' => 'cm2',
                       'format' => 'weeks',
@@ -4074,7 +4087,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'newsitems' => 5,
                       'showgrades' => 1,
                       'showreports' => 0,
-                      'maxbytes' => $CFG->maxbytes,
+                      'maxbytes' => $maxbytes,
                       'guest' => 1,
                       'visible' => 1,
                       'lang' => 'en',
