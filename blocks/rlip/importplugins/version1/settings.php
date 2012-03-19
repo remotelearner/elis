@@ -20,12 +20,6 @@ $settings->add(new admin_setting_heading('rlipimport_version1/scheduling',
                                          get_string('scheduling', 'rlipimport_version1'),
                                          ''));
 
-//setting for disabling in Moodle cron
-//todo: actually use this setting's value somewhere
-$settings->add(new admin_setting_configcheckbox('rlipimport_version1/disableincron',
-                                                get_string('disableincron', 'rlipimport_version1'),
-                                                get_string('configdisableincron', 'rlipimport_version1'), ''));
-
 //start of "logging" section
 $settings->add(new admin_setting_heading('rlipimport_version1/logging',
                                          get_string('logging', 'rlipimport_version1'),
