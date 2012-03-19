@@ -26,10 +26,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['configdisableincron'] = 'When configured, disable this plugin from running in the Moodle cron. Use this setting when running imports via a separate system-level cron.';
 $string['confirm_delete_ipjob'] = 'Are you sure to delete IP job #{$a}?';
 $string['dateformat'] = 'M/d/Y';
+<<<<<<< HEAD
+=======
+$string['rlipexportplugins'] = 'Export Plugins';
+$string['configdisableincron'] = 'When configured, disable this plugin from running in the Moodle cron. Use this setting when running imports via a separate system-level cron.';
+$string['confirm_delete_ipjob'] = 'Are you sure to delete IP job #{$a}?';
 $string['disableincron'] = 'Disable in Moodle cron';
+>>>>>>> origin/wip-ELIS-4107
 $string['go'] = 'Go';
 $string['iptypenotsupported'] = 'IP plugin type: \'{$a}\' not supported!';
 $string['logtimeformat'] = '%b/%d/%Y:%H:%M:%S';
@@ -60,5 +65,8 @@ $string['rlipexportplugins'] = 'Export Plugins';
 $string['rlipimportplugins'] = 'Import Plugins';
 $string['runnow'] = 'Run Now';
 $string['runmanually'] = 'Run manually';
+<<<<<<< HEAD
 $string['schedulepagetitle'] = 'Schedule IP';
 
+=======
+>>>>>>> origin/wip-ELIS-4107
