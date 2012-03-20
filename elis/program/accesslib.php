@@ -109,6 +109,16 @@ class context_elis_helper extends context {
     }
 
     /**
+     * Returns a list of legacy context names and their associated context level int
+     *
+     * @static
+     * @return array string=>int (level legacy name=>level)
+     */
+    public static function get_legacy_levels() {
+        return self::$namelevelmap;
+    }
+
+    /**
      * not used
      */
     public function get_url() {
