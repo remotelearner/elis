@@ -656,7 +656,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'username' => 'testusername',
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo');
-        $expected_error = "\"email\" value of testinvalid@user.com does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] \"email\" value of testinvalid@user.com does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -666,7 +666,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'username' => 'testusername',
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo');
-        $expected_error = "\"email\" value of testinvalid@user.com does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] \"email\" value of testinvalid@user.com does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -677,7 +677,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'maildigest' => 3);
-        $expected_error = "\"maildigest\" value of 3 is not one of the available options (0, 1, 2).\n";
+        $expected_error = "[user.csv line 2] \"maildigest\" value of 3 is not one of the available options (0, 1, 2).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -689,7 +689,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'maildigest' => 2,
                       'autosubscribe' => 2);
-        $expected_error = "\"autosubscribe\" value of 2 is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] \"autosubscribe\" value of 2 is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -703,7 +703,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'maildigest' => 2,
                       'autosubscribe' => 1,
                       'trackforums' => 0);
-        $expected_error = "Tracking unread posts is currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] Tracking unread posts is currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -717,7 +717,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'maildigest' => 2,
                       'autosubscribe' => 1,
                       'trackforums' => 2);
-        $expected_error = "\"trackforums\" value of 2 is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] \"trackforums\" value of 2 is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -732,7 +732,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'autosubscribe' => 1,
                       'trackforums' => 1,
                       'screenreader' => 2);
-        $expected_error = "\"screenreader\" value of 2 is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] \"screenreader\" value of 2 is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -743,7 +743,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'test@user.com',
                       'idnumber' => 'idnumber',
                       'city' => 'Waterloo');
-        $expected_error = "\"username\" value of invalidusername does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] \"username\" value of invalidusername does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -754,7 +754,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'test@user.com',
                       'idnumber' => 'idnumber',
                       'city' => 'Waterloo');
-        $expected_error = "\"username\" value of invalidusername does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] \"username\" value of invalidusername does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -765,7 +765,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'test@user.com',
                       'idnumber' => 'invalidid',
                       'city' => 'Waterloo');
-        $expected_error = "\"idnumber\" value of invalidid does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] \"idnumber\" value of invalidid does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -776,7 +776,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'test@user.com',
                       'idnumber' => 'invalidid',
                       'city' => 'Waterloo');
-        $expected_error = "\"idnumber\" value of invalidid does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] \"idnumber\" value of invalidid does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -789,7 +789,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'password' => '1234567',
                       'city' => 'Waterloo',
                       'auth' => 'invalidauth');
-        $expected_error = "\"auth\" values of invalidauth is not a valid auth plugin.\n";
+        $expected_error = "[user.csv line 2] \"auth\" values of invalidauth is not a valid auth plugin.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -801,7 +801,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'idnumber' => 'idnumber',
                       'password' => '1234567',
                       'city' => 'Waterloo');
-        $expected_error = "\"password\" value of 1234567 does not conform to your site's password policy.\n";
+        $expected_error = "[user.csv line 2] \"password\" value of 1234567 does not conform to your site's password policy.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -811,7 +811,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'username' => 'testusername',
                       'password' => 'm0ddl3.paSs',
                       'lang' => 'invalidlang');
-        $expected_error = "\"lang\" value of invalidlang is not a valid language code.\n";
+        $expected_error = "[user.csv line 2] \"lang\" value of invalidlang is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -823,7 +823,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'lang' => 'en',
                       'country' => 'invalidcountry'
                      );
-        $expected_error = "\"country\" value of invalidcountry is not a valid country code.\n";
+        $expected_error = "[user.csv line 2] \"country\" value of invalidcountry is not a valid country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -839,7 +839,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'country' => 'CA',
                       'theme' => 'invalidtheme',
                      );
-        $expected_error = "User themes are currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] User themes are currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -855,7 +855,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'country' => 'CA',
                       'theme' => 'invalidtheme',
                      );
-        $expected_error = "\"theme\" value of invalidtheme is invalid.\n";
+        $expected_error = "[user.csv line 2] \"theme\" value of invalidtheme is invalid.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -873,7 +873,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'theme' => 'invalidtheme',
                       'timezone' => 98,
                      );
-        $expected_error = "\"timezone\" value of 98 is not consistent with forced timezone value of {$CFG->forcetimezone} on your site.\n";
+        $expected_error = "[user.csv line 2] \"timezone\" value of 98 is not consistent with forced timezone value of {$CFG->forcetimezone} on your site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -890,7 +890,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'country' => 'CA',
                       'timezone' => 'invalidtimezone',
                      );
-        $expected_error = "\"timezone\" value of invalidtimezone is not a valid timezone.\n";
+        $expected_error = "[user.csv line 2] \"timezone\" value of invalidtimezone is not a valid timezone.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -908,7 +908,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'shortname' => 'cm2',
                       'format' => 'invalidformat'
                      );
-        $expected_error = "\"format\" value does not refer to a valid course format.\n";
+        $expected_error = "[course.csv line 2] \"format\" value does not refer to a valid course format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -923,7 +923,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'format' => 'weeks',
                       'numsections' => $invalidmaxsections
                      );
-        $expected_error = "\"numsections\" value of {$invalidmaxsections} is not one of the available options (0 .. {$maxsections}).\n";
+        $expected_error = "[course.csv line 2] \"numsections\" value of {$invalidmaxsections} is not one of the available options (0 .. {$maxsections}).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -938,7 +938,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'numsections' => $maxsections,
                       'startdate' => '01/02/2012'
                      );
-        $expected_error = "\"startdate\" value of 01/02/2012 is not a valid date in MMM/DD/YYYY format.\n";
+        $expected_error = "[course.csv line 2] \"startdate\" value of 01/02/2012 is not a valid date in MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -954,7 +954,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'startdate' => 'jan/12/2013',
                       'newsitems' => 100
                      );
-        $expected_error = "\"newsitems\" value of 100 is not one of the available options (0 .. 10).\n";
+        $expected_error = "[course.csv line 2] \"newsitems\" value of 100 is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -971,7 +971,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'newsitems' => 5,
                       'showgrades' => 3
                      );
-        $expected_error = "\"showgrades\" value of 3 is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] \"showgrades\" value of 3 is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -989,7 +989,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'showgrades' => 1,
                       'showreports' => 3
                      );
-        $expected_error = "\"showreports\" value of 3 is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] \"showreports\" value of 3 is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -1011,7 +1011,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'showreports' => 0,
                       'maxbytes' => $invalidmaxbytes
                      );
-        $expected_error = "\"maxbytes\" value of {$invalidmaxbytes} is not one of the available options.\n";
+        $expected_error = "[course.csv line 2] \"maxbytes\" value of {$invalidmaxbytes} is not one of the available options.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -1035,7 +1035,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'maxbytes' => $maxbytes,
                       'guest' => 'invalidguest'
                      );
-        $expected_error = "\"guest\" value of invalidguest is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] \"guest\" value of invalidguest is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -1060,7 +1060,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'guest' => 1,
                       'visible' => 'invalidvisible',
                      );
-        $expected_error = "\"visible\" value of invalidvisible is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] \"visible\" value of invalidvisible is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -1086,7 +1086,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'visible' => 1,
                       'lang' => 'invalidlang'
                      );
-        $expected_error = "\"lang\" value of invalidlang is not a valid language code.\n";
+        $expected_error = "[course.csv line 2] \"lang\" value of invalidlang is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -1114,7 +1114,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'visible' => 1,
                       'lang' => 'en',
                      );
-        $expected_error = "\"guest\" enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
+        $expected_error = "[course.csv line 2] \"guest\" enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
