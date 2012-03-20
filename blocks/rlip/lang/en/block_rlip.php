@@ -26,17 +26,34 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['automatic'] = 'Automatic';
 $string['configdisableincron'] = 'When configured, disable this plugin from running in the Moodle cron. Use this setting when running imports via a separate system-level cron.';
 $string['confirm_delete_ipjob'] = 'Are you sure to delete IP job #{$a}?';
 $string['dateformat'] = 'M/d/Y';
 $string['disableincron'] = 'Disable in Moodle cron';
+$string['displaytimeformat'] = '%b/%d/%Y, %I:%M:%S %P';
+$string['export'] = 'Export';
 $string['go'] = 'Go';
+$string['import'] = 'Import';
 $string['iptypenotsupported'] = 'IP plugin type: \'{$a}\' not supported!';
+$string['logs'] = 'Integration Point logs';
+$string['logend'] = 'End time';
+$string['logexecution'] = 'Execution';
+$string['logfilefailures'] = 'Records with error';
+$string['logfilesuccesses'] = 'Records successfully processed';
+$string['logplugin'] = 'Plugin';
+$string['logscheduledstart'] = 'Scheduled start time';
+$string['logstart'] = 'Actual start time';
+$string['logstatus'] = 'Status';
+$string['logtasktype'] = 'Task type';
 $string['logtimeformat'] = '%b/%d/%Y:%H:%M:%S';
+$string['loguser'] = 'User';
 $string['managesched'] = 'Manage';
+$string['manual'] = 'Manual';
 $string['manualstatus'] = '{$a->statusmessage} ({$a->filesuccesses} of {$a->total})';
 $string['na'] = 'N/A';
 $string['no_lastruntime'] = 'Never run';
+$string['nologmessage'] = 'Sorry, no logs found.';
 $string['pluginname'] = 'Integration Point';
 $string['plugins'] = 'Integration Point plugins';
 $string['rlip_form_export_header'] = '<b>Schedule IP job for: Export</b>';

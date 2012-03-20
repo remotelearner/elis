@@ -45,7 +45,47 @@ class utilityMethodTest extends elis_database_test {
         return array('ip_schedule' => 'block_rlip',
                      'elis_scheduled_tasks' => 'elis_core',
                      'config_plugins' => 'moodle',
-                     'block_rlip_summary_log' => 'block_rlip');
+                     'block_rlip_summary_log' => 'block_rlip',
+                     'user' => 'moodle',
+                     'config' => 'moodle');
+    }
+
+    /**
+     * Create test user record
+     */
+    protected function create_test_user() {
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('user', dirname(__FILE__).'/user.csv');
+        load_phpunit_data_set($dataset, true);
+    }
+
+    /**
+     * Create a test database log record
+     *
+     * @param array $extradata Extra fields / overrides to set
+     */
+    protected function create_db_log($extradata = array()) {
+        global $DB;
+
+        //calculate data
+        $basedata = array('export' => 1,
+                          'plugin' => 'rlipexport_version1',
+                          'userid' => 1,
+                          'targetstarttime' => 1000000001,
+                          'starttime' => 1000000002,
+                          'endtime' => 1000000003,
+                          'filesuccesses' => 1,
+                          'filefailures' => 2,
+                          'storedsuccesses' => 3,
+                          'storedfailures' => 4,
+                          'statusmessage' => 'testmessage',
+                          'dbops' => 10,
+                          'unmetdependency' => 1);
+        $basedata = array_merge($basedata, $extradata);
+
+        //insert record
+        $record = (object)$basedata;
+        $DB->insert_record('block_rlip_summary_log', $record);
     }
 
     /**
@@ -260,5 +300,353 @@ class utilityMethodTest extends elis_database_test {
 
         //make sure both records have the same next run time
         $this->assertEquals((int)$task->nextruntime, (int)$job->nextruntime);
+    }
+
+    /**
+     * Validate that log records without associated users are not retrieved
+     */
+    function testCountLogsRequiresUserRecord() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create log record
+        $this->create_db_log();
+
+        //validation
+        $count = rlip_count_logs();
+        $this->assertEquals($count, 0);
+    }
+
+    /**
+     * Validate that log records with associated users are retrieved
+     */
+    function testCountLogsReturnsCorrectCount() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create a test user
+        $this->create_test_user();
+
+        //create log record
+        $this->create_db_log();
+
+        //validation
+        $count = rlip_count_logs();
+        $this->assertEquals($count, 1);
+    }
+
+    /**
+     * Validates that log retrieval returns an empty recordset when no data is
+     * available
+     */
+    function testGetLogsReturnsEmptyRecordset() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //fetch supposedly empty set
+        $logs = rlip_get_logs();
+
+        //data validation
+        $this->assertFalse($logs->valid());
+    }
+
+    /**
+     * Validates that log retrieval returns a valid recordset when data is
+     * available
+     */
+    function testGetLogsReturnsValidRecordset() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create a test user
+        $this->create_test_user();
+
+        //create log record
+        $this->create_db_log();
+
+        //validate that at least one record is returned
+        $logs = rlip_get_logs();
+        $this->assertTrue($logs->valid());
+
+        //validate record data
+        $dbrecord = $logs->current();
+        unset($dbrecord->id);
+        $record = new stdClass;
+        $record->export = 1;
+        $record->plugin = 'rlipexport_version1';
+        $record->userid = 1;
+        $record->targetstarttime = 1000000001;
+        $record->starttime = 1000000002;
+        $record->endtime = 1000000003;
+        $record->filesuccesses = 1;
+        $record->filefailures = 2;
+        $record->storedsuccesses = 3;
+        $record->storedfailures = 4;
+        $record->statusmessage = 'testmessage';
+        $record->dbops = 10;
+        $record->unmetdependency = 1;
+        $record->firstname = 'Test';
+        $record->lastname = 'User';
+        $this->assertEquals($record, $dbrecord);
+    }
+
+    /**
+     * Validate that log retrieval retrieves records in the right order
+     */
+    function testeGetLogsUsesCorrectOrder() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create a test user
+        $this->create_test_user();
+
+        //create log record
+        $this->create_db_log();
+
+        //create second log record
+        $this->create_db_log(array('starttime' => 1000000003));
+
+        //validate that at least one record exists
+        $logs = rlip_get_logs();
+        $this->assertTrue($logs->valid());
+
+        //validate that the most recent record is returned first
+        $dbrecord = $logs->current();
+        $this->assertEquals($dbrecord->starttime, 1000000003);
+    }
+
+    /**
+     * Validate that log retrieval respects the paging mechanism
+     */
+    function testGetLogsRespectPaging() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create a test user
+        $this->create_test_user();
+
+        //fetch records
+        $numrecords = RLIP_LOGS_PER_PAGE + 1;
+        for ($i = 0; $i < $numrecords; $i++) {
+            $this->create_db_log(array('targetstarttime' => 1000000000 + $i,
+                                       'starttime' => 1000000000,
+                                       'endtime' => 1000000000));
+        }
+
+        //validate that the appropriate number of records are shown on page 1
+        $logs = rlip_get_logs(0);
+        $count = 0;
+        foreach ($logs as $log) {
+            $count++;
+        }
+        $this->assertEquals($count, RLIP_LOGS_PER_PAGE);
+
+        //validate that the single remaining record is shown on page 2
+        $logs = rlip_get_logs(1);
+        $count = 0;
+        foreach ($logs as $log) {
+            $count++;
+        }
+        $this->assertEquals($count, 1);
+    }
+
+    /**
+     * Validate that the log table creation method returns a valid table when
+     * data is present
+     */
+    function testGetLogTableReturnsValidTable() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //set appropriate display parameters
+        set_config('fullnamedisplay', 'firstname lastname');
+        set_config('forcetimezone', 99);
+
+        //time format used in table
+        $timeformat = get_string('displaytimeformat', 'block_rlip');
+
+        //create a test user
+        $this->create_test_user();
+
+        //create log record
+        $this->create_db_log();
+
+        //obtain table data
+        $logs = rlip_get_logs();
+        $table = rlip_get_log_table($logs);
+
+        //validate table header
+        $this->assertEquals($table->head, array(get_string('logtasktype', 'block_rlip'),
+                                                get_string('logplugin', 'block_rlip'),
+                                                get_string('logexecution', 'block_rlip'),
+                                                get_string('loguser', 'block_rlip'),
+                                                get_string('logscheduledstart', 'block_rlip'),
+                                                get_string('logstart', 'block_rlip'),
+                                                get_string('logend', 'block_rlip'),
+                                                get_string('logfilesuccesses', 'block_rlip'),
+                                                get_string('logfilefailures', 'block_rlip'),
+                                                get_string('logstatus', 'block_rlip')));
+
+        //validate table data
+        $this->assertEquals(count($table->data), 1);
+        $datum = reset($table->data);
+        $this->assertEquals($datum, array(get_string('export', 'block_rlip'),
+                                          get_string('pluginname', 'rlipexport_version1'),
+                                          get_string('automatic', 'block_rlip'),
+                                          'Test User',
+                                          userdate(1000000001, $timeformat, 99, false),
+                                          userdate(1000000002, $timeformat, 99, false),
+                                          userdate(1000000003, $timeformat, 99, false),
+                                          '1',
+                                          get_string('na', 'block_rlip'),
+                                          'testmessage'));
+    }
+
+    /**
+     * Validate that table data is correct for import plugin records
+     */
+    function testGetLogTableReturnsImportPlugin() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create a test user
+        $this->create_test_user();
+
+        //create log record
+        $this->create_db_log(array('export' => 0,
+                                   'plugin' => 'rlipimport_version1'));
+
+        //obtain table data
+        $logs = rlip_get_logs();
+        $table = rlip_get_log_table($logs);
+
+        //validate number of rows
+        $this->assertEquals(count($table->data), 1);
+
+        //validate row data related to import plugins
+        $datum = reset($table->data);
+        $this->assertEquals($datum[0], get_string('import', 'block_rlip'));
+        $this->assertEquals($datum[1], get_string('pluginname', 'rlipimport_version1'));
+    }
+
+    /**
+     * Validate that table data is correct for a manual run
+     */
+    function testGetLogTableReturnsManual() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create a test user
+        $this->create_test_user();
+
+        //create log record
+        $this->create_db_log(array('targetstarttime' => 0));
+
+        //obtain table data
+        $logs = rlip_get_logs();
+        $table = rlip_get_log_table($logs);
+
+        //validate number of rows
+        $this->assertEquals(count($table->data), 1);
+
+        //validate row data related to manual run
+        $datum = reset($table->data);
+        $this->assertEquals($datum[2], get_string('manual', 'block_rlip'));
+    }
+
+    /**
+     * Validate that table data is correct for a manual run
+     */
+    function testGetLogTableReturnsNAScheduledStartTime() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create a test user
+        $this->create_test_user();
+
+        //create log record
+        $this->create_db_log(array('targetstarttime' => 0));
+
+        //obtain table data
+        $logs = rlip_get_logs();
+        $table = rlip_get_log_table($logs);
+
+        //validate number of rows
+        $this->assertEquals(count($table->data), 1);
+
+        //validate row data related to manual run
+        $datum = reset($table->data);
+        $this->assertEquals($datum[4], get_string('na', 'block_rlip'));
+    }
+
+    /**
+     * Validate that dates in table data respect timezones
+     */
+    function testLogTableRespectsTimezones() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //force timezone to a particular value
+        set_config('forcetimezone', 10);
+
+        //time display format for all relevant fields
+        $timeformat = get_string('displaytimeformat', 'block_rlip');
+
+        //create a test user
+        $this->create_test_user();
+
+        //create a log record
+        $this->create_db_log();
+
+        //expected strings
+        $targetstartdisplay = userdate(1000000001, $timeformat, 99, false);
+        $startdisplay = userdate(1000000002, $timeformat, 99, false);
+        $enddisplay = userdate(1000000003, $timeformat, 99, false);
+
+        //obtain table data
+        $logs = rlip_get_logs();
+        $table = rlip_get_log_table($logs);
+
+        //validate number of rows
+        $this->assertEquals(count($table->data), 1);
+
+        //validate time values in row data
+        $datum = reset($table->data);
+        $this->assertEquals($datum[4], $targetstartdisplay);
+        $this->assertEquals($datum[5], $startdisplay);
+        $this->assertEquals($datum[6], $enddisplay);
+    }
+
+    /**
+     * Validate conversion of nonempty table object to HTML representation
+     */
+    function testLogTableHtml() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create table object
+        $table = new html_table();
+        $table->head = array('head1', 'head2', 'head3');
+        $table->data = array();
+        $table->data[] = array('data1', 'data2', 'data3');
+
+        //validation
+        $output = rlip_log_table_html($table);
+        $this->assertEquals($output, html_writer::table($table));
+    }
+
+    /**
+     * Validate conversion of empty table object to HTML representation
+     */
+    function testLogTableHtmlReturnsEmptyMessage() {
+        global $CFG, $OUTPUT;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create table object
+        $table = new html_table();
+        $output = rlip_log_table_html($table);
+
+        //validation
+        $this->assertEquals($output, $OUTPUT->heading(get_string('nologmessage', 'block_rlip')));
     }
 }

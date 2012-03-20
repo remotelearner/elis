@@ -24,6 +24,9 @@
  *
  */
 
+//constant for how many log records to show per page
+define('RLIP_LOGS_PER_PAGE', 20);
+
 /**
  * Add extra admintree configuration structure to the main administration menu tree.
  *
@@ -61,6 +64,13 @@ function rlip_admintree_setup(&$adminroot) {
     $displaystring = get_string('plugins', 'block_rlip');
     $url = $CFG->wwwroot.'/blocks/rlip/plugins.php';
     $page = new admin_externalpage('rlipsettingplugins', $displaystring, $url,
+                                   'moodle/site:config');
+    $adminroot->add('blocksettings', $page);
+
+    //add a link for viewing logs
+    $displaystring = get_string('logs', 'block_rlip');
+    $url = $CFG->wwwroot.'/blocks/rlip/viewlogs.php';
+    $page = new admin_externalpage('rliplogs', $displaystring, $url,
                                    'moodle/site:config');
     $adminroot->add('blocksettings', $page);
 }
@@ -515,5 +525,130 @@ function run_ipjob($taskname) {
     //run the task, specifying the ideal start time
     $instance->run($targetstarttime);
     return true;
+}
+
+/**
+ * Obtains the number of log records currently available for viewing
+ */
+function rlip_count_logs() {
+    global $DB;
+
+    //retrieve count
+    $sql = "SELECT COUNT(*)
+            FROM {block_rlip_summary_log} log
+            JOIN {user} user
+              ON log.userid = user.id
+            ORDER BY log.starttime DESC";
+    return $DB->count_records_sql($sql);
+}
+
+/**
+ * Obtains a recordset representing the log records to display for the
+ * specified page
+ *
+ * @param int $page The page to display, from 0 to n - 1
+ * @return object The recordset representing the appropriate data
+ */
+function rlip_get_logs($page = 0) {
+    global $DB;
+
+    //offset, in records
+    $offset = $page * RLIP_LOGS_PER_PAGE;
+    //retrieve data
+    $sql = "SELECT log.*,
+                   user.firstname,
+                   user.lastname
+            FROM {block_rlip_summary_log} log
+            JOIN {user} user
+              ON log.userid = user.id
+            ORDER BY log.starttime DESC";
+    return $DB->get_recordset_sql($sql, null, $offset, RLIP_LOGS_PER_PAGE);
+}
+
+/**
+ * Obtains a table object representing the current page of logs
+ *
+ * @param object $logs The recordset representing our log data
+ * @return object The html table object representing our data set
+ */
+function rlip_get_log_table($logs) {
+    global $DB;
+
+    //used for the display of all time values in this table
+    $timeformat = get_string('displaytimeformat', 'block_rlip');
+
+    $table = new html_table();
+    //column headers
+    $table->head = array(get_string('logtasktype', 'block_rlip'),
+                         get_string('logplugin', 'block_rlip'),
+                         get_string('logexecution', 'block_rlip'),
+                         get_string('loguser', 'block_rlip'),
+                         get_string('logscheduledstart', 'block_rlip'),
+                         get_string('logstart', 'block_rlip'),
+                         get_string('logend', 'block_rlip'),
+                         get_string('logfilesuccesses', 'block_rlip'),
+                         get_string('logfilefailures', 'block_rlip'),
+                         get_string('logstatus', 'block_rlip'));
+
+    $table->data = array();
+
+    //fill in table data
+    foreach ($logs as $log) {
+        $user = $DB->get_record('user', array('id' => $log->userid));
+
+        if ($log->export == 1) {
+            //export case
+
+            $plugintype = get_string('export', 'block_rlip');
+            //can't have failures in export files
+            $filefailures = get_string('na', 'block_rlip');
+        } else {
+            $plugintype = get_string('import', 'block_rlip');
+            //use tracked number of failures for display
+            $filefailures = $log->filefailures;
+        }
+
+        if ($log->targetstarttime == 0) {
+            //process was run manually
+            $executiontype = get_string('manual', 'block_rlip');
+            $targetstarttime = get_string('na', 'block_rlip'); 
+        } else {
+            //process was run automatically (cron)
+            $executiontype = get_string('automatic', 'block_rlip');
+            $targetstarttime = userdate($log->targetstarttime, $timeformat, 99, false);
+        }
+
+        //construct data row
+        $table->data[] = array($plugintype,
+                               get_string('pluginname', $log->plugin),
+                               $executiontype,
+                               fullname($user),
+                               $targetstarttime,
+                               userdate($log->starttime, $timeformat, 99, false),
+                               userdate($log->endtime, $timeformat, 99, false),
+                               $log->filesuccesses,
+                               $filefailures,
+                               $log->statusmessage);
+    }
+
+    return $table;
+}
+
+/**
+ * Convert a table of logs to html
+ *
+ * @param object $table The html table object to convert
+ * @return string The html representing the table
+ */
+function rlip_log_table_html($table) {
+    global $OUTPUT;
+
+    if (empty($table->data)) {
+        //no table data, so instead return message
+        return $OUTPUT->heading(get_string('nologmessage', 'block_rlip'));        
+    }
+
+    //obtain table html
+    return html_writer::table($table);
 }
 
