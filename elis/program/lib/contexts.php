@@ -98,7 +98,7 @@ class pm_context_set {
 
         // find all contexts at the given context level where the user has a direct
         // role assignment
-        $contextlevelnum = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+        $contextlevelnum = context_elis_helper::get_level_from_name($contextlevel);
         $sql = "SELECT c.*
                   FROM {role_assignments} ra
                   JOIN {context} c ON ra.contextid = c.id

@@ -121,7 +121,7 @@ function xmldb_pmplugins_userset_classification_upgrade($oldversion = 0) {
 	        }
 
 	        // Upgrade field owner data for the default User Set field
-	        $field = field::ensure_field_exists_for_context_level($field, 'cluster', $category);
+	        $field = field::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_USERSET, $category);
 
 	        $owners = field_owner::find(new field_filter('fieldid', $field->id));
 

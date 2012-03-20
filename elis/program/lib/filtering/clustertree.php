@@ -342,9 +342,6 @@ class generalized_filter_clustertree extends generalized_filter_type {
             $full_clrunexpanded_condition = 'FALSE';
         }
 
-        //needed in query to join context table
-        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-
         //$params = array();
         $param_cpath = 'clustree_cpath_a'. $counter;
         $param_pcpath = 'clustree_pcpath'. $counter;
@@ -370,10 +367,10 @@ class generalized_filter_clustertree extends generalized_filter_type {
         $param_ccl2 = 'clustree_context_b'. $counter;
         $param_ccl3 = 'clustree_context_c'. $counter;
         $param_ccl4 = 'clustree_context_d'. $counter;
-        $params[$param_ccl1] = $cluster_context_level;
-        $params[$param_ccl2] = $cluster_context_level;
-        $params[$param_ccl3] = $cluster_context_level;
-        $params[$param_ccl4] = $cluster_context_level;
+        $params[$param_ccl1] = CONTEXT_ELIS_USERSET;
+        $params[$param_ccl2] = CONTEXT_ELIS_USERSET;
+        $params[$param_ccl3] = CONTEXT_ELIS_USERSET;
+        $params[$param_ccl4] = CONTEXT_ELIS_USERSET;
         $counter++;
 
         //this query gives us exactly the user sets we want
@@ -699,9 +696,6 @@ class generalized_filter_clustertree extends generalized_filter_type {
         //accumulate the result here
         $results = array();
 
-        //needed for checking parent/child relationships
-        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-
         if (isset($data['specific_clusterid'])) {
             //selected a single cluster
             return $this->_label .':<br/>'. $DB->get_field(userset::TABLE, 'name', array('id' => $data['specific_clusterid'])) .'<br/>';
@@ -729,9 +723,9 @@ class generalized_filter_clustertree extends generalized_filter_type {
         if (!empty($data['unexpanded_ids'])) {
             //the specific elements we are considering
             $list = implode(',', $data['unexpanded_ids']);
-            $params['cluster_context_level1'] = $cluster_context_level;
-            $params['cluster_context_level2'] = $cluster_context_level;
-            $params['cluster_context_level3'] = $cluster_context_level;
+            $params['cluster_context_level1'] = CONTEXT_ELIS_USERSET;
+            $params['cluster_context_level2'] = CONTEXT_ELIS_USERSET;
+            $params['cluster_context_level3'] = CONTEXT_ELIS_USERSET;
             $sql = 'SELECT c.name FROM {'. userset::TABLE ."} c
                     JOIN {context} ctxt
                       ON c.id = ctxt.instanceid
@@ -761,8 +755,8 @@ class generalized_filter_clustertree extends generalized_filter_type {
         //handle individually selected clusters without child elements
         if (!empty($data['clusterids'])) {
             $list = implode(',', $data['clusterids']);
-            $params['cluster_context_level1'] = $cluster_context_level;
-            $params['cluster_context_level2'] = $cluster_context_level;
+            $params['cluster_context_level1'] = CONTEXT_ELIS_USERSET;
+            $params['cluster_context_level2'] = CONTEXT_ELIS_USERSET;
             $sql = 'SELECT c.name FROM {'. userset::TABLE ."} c
                     JOIN {context} ctxt
                       ON c.id = ctxt.instanceid

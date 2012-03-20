@@ -39,9 +39,6 @@ function xmldb_pmplugins_pre_post_test_install() {
     require_once elispm::lib('setup.php');
     require_once elis::lib('data/customfield.class.php');
 
-    //context level at which we are creating the new field(s)
-    $course_ctx_lvl = context_level_base::get_custom_context_level('course', 'elis_program');
-
     // Pre-test field
     $field = new field();
     $field->shortname = PRE_TEST_FIELD;
@@ -51,7 +48,7 @@ function xmldb_pmplugins_pre_post_test_install() {
     $category = new field_category();
     $category->name = get_string('pre_post_test_category_name', 'pmplugins_pre_post_test');
 
-    $field = field::ensure_field_exists_for_context_level($field, 'course', $category);
+    $field = field::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_COURSE, $category);
 
     // make sure 'manual' is an owner
     if (!isset($field->owners['manual'])) {
@@ -75,7 +72,7 @@ function xmldb_pmplugins_pre_post_test_install() {
     $category = new field_category();
     $category->name = get_string('pre_post_test_category_name', 'pmplugins_pre_post_test');
 
-    $field = field::ensure_field_exists_for_context_level($field, 'course', $category);
+    $field = field::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_COURSE,$category);
 
     // make sure 'manual' is an owner
     if (!isset($field->owners['manual'])) {
