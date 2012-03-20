@@ -164,8 +164,7 @@ class course_progress_summary_report extends table_report {
         // Loop through these additional parameters - new columns, will  have to eventually pass the table etc...
         if (isset($filter_params) && is_array($filter_params)) {
             // Working with custom course fields - get all course fields
-            $context = context_level_base::get_custom_context_level('course', 'elis_program');
-            $fields = field::get_for_context_level($context)->to_array();
+            $fields = field::get_for_context_level(CONTEXT_ELIS_COURSE)->to_array();
 
             foreach ($filter_params as $custom_course_id) {
                 $custom_course_field = new field($custom_course_id);
@@ -207,7 +206,7 @@ class course_progress_summary_report extends table_report {
                       JOIN {". $data_table ."} d ON d.contextid = ctxt.id
                       AND d.fieldid = {$custom_course_id}
                       WHERE
-                      ctxt.contextlevel = {$context}
+                      ctxt.contextlevel = ".CONTEXT_ELIS_COURSE."
                       AND {$view_field_filter}) custom_{$custom_course_id}
                       ON cls.courseid = custom_{$custom_course_id}.{$course_id_field}", $params);
 

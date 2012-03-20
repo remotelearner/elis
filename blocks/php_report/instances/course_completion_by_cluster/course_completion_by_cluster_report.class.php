@@ -307,7 +307,6 @@ class course_completion_by_cluster_report extends table_report {
      */
     function get_report_sql($columns) {
         $param_prefix = 'ccbcr_';
-        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
 
         //special version of the select columns used in the non-curriculum case
         $noncurriculum_columns = str_replace('curriculum.id', 'NULL', $columns);
@@ -340,8 +339,8 @@ class course_completion_by_cluster_report extends table_report {
 
         $params = array();
         $param_cluster_context = $param_prefix .'clust_context';
-        $params[$param_cluster_context .'1'] = $cluster_context_level;
-        $params[$param_cluster_context .'2'] = $cluster_context_level;
+        $params[$param_cluster_context .'1'] = CONTEXT_ELIS_USERSET;
+        $params[$param_cluster_context .'2'] = CONTEXT_ELIS_USERSET;
 
         //starting point for both cases
         $core_tables_fmt = '{'. user::TABLE .'} user
@@ -543,10 +542,10 @@ class course_completion_by_cluster_report extends table_report {
          $cluster_label = get_string('grouping_cluster', 'rlreport_course_completion_by_cluster');
          $cluster_grouping = new table_report_grouping('cluster', 'cluster.id', $cluster_label, 'ASC',
                                                        array('cluster.name'), 'above', 'path');
- 
+
          $user_grouping_fields = array('user.idnumber AS useridnumber',
                                        'user.firstname');
-         $user_grouping = new table_report_grouping('groupuseridnumber', $compare_field, '', 'ASC', 
+         $user_grouping = new table_report_grouping('groupuseridnumber', $compare_field, '', 'ASC',
                                                     $user_grouping_fields, 'below', $order_field);
 
          //these groupings will always be used
@@ -686,9 +685,6 @@ class course_completion_by_cluster_report extends table_report {
              $preferences = php_report_filtering_get_user_preferences('course_completion_by_cluster');
              if (isset($preferences['php_report_course_completion_by_cluster/clusterrole'])) {
 
-                 //context to check for role assignments
-                 $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-
                  //query to retrieve users directly assigned the configured role in the current cluster
                  $sql = 'SELECT u.* FROM {user} u
                          JOIN {role_assignments} ra
@@ -699,7 +695,7 @@ class course_completion_by_cluster_report extends table_report {
                            AND ctxt.instanceid = ?
                            AND ctxt.contextlevel = ?';
                   $params = array($preferences['php_report_course_completion_by_cluster/clusterrole'],
-                                  $datum->cluster, $cluster_context_level);
+                                  $datum->cluster, CONTEXT_ELIS_USERSET);
                   $display = '';
 
                  //append all the names together if there are multiple
