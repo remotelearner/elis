@@ -26,6 +26,11 @@ $settings->add(new admin_setting_configtext('rlipexport_version1/export_file',
 // timestamp export file
 $settings->add(new admin_setting_configcheckbox('rlipexport_version1/export_file_timestamp', get_string('export_file_timestamp_label', 'rlipexport_version1'), get_string('config_export_file_timestamp', 'rlipexport_version1'), 1));
 
+// Log file location
+$settings->add(new admin_setting_configtext('rlipexport_version1/logfilelocation',
+                                            get_string('logfilelocation', 'rlipexport_version1'),
+                                            get_string('configlogfilelocation', 'rlipexport_version1'), ''));
+
 /**
  * Time period settings 
  */

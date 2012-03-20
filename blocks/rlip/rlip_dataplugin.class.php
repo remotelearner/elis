@@ -37,8 +37,16 @@ abstract class rlip_dataplugin {
      *
      * @param int $targetstarttime The timestamp representing the theoretical
      *                             time when this task was meant to be run
+     *                             false on error, i.e. time limit exceeded.
+     * @param int $maxruntime      The max time in seconds to complete export
+     *                             default: 0 => unlimited
+     * @param object $state        Previous ran state data to continue from
+     *
+     * @return object              Current state of RLIP processing
+     *                             or null on success!
+     *         ->result            false on error, i.e. time limit exceeded.
      */
-    abstract function run($targetstarttime = 0);
+    abstract function run($targetstarttime = 0, $maxruntime = 0, $state = null);
 
     /**
      * Specifies flag for indicating that this plugin is for testing only

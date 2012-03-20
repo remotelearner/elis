@@ -92,9 +92,11 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $this->manual = $manual;
 
             //set up the file-system logger
-            $filename = get_config('rlipimport_version1', 'logfilelocation');
-            $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
-            $this->fslogger = new rlip_fslogger($fileplugin);
+            $filename = get_config($plugin, 'logfilelocation');
+            if (!empty($filename)) {
+                $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
+                $this->fslogger = new rlip_fslogger($fileplugin);
+            }
         }
     }
 
@@ -433,23 +435,38 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     /**
      * Entry point for processing an import file
      *
-     * @param string $entity The type of entity
+     * @param string $entity       The type of entity
+     * @param int    $maxruntime   The max time in seconds to complete import
+     *                             default: 0 => unlimited time
+     * @param object $state        Previous ran state data to continue from
+     * @return mixed object        Current state of import processing
+     *                             or null for success.
      */
-    function process_import_file($entity) {
+    function process_import_file($entity, $maxruntime = 0, $state = null) {
+        if (!$state) {
+            $state = new stdClass;
+        }
+
         //track the start time as the current time
         $this->dblogger->set_starttime(time());
 
         //fetch a file plugin for the current file
         $fileplugin = $this->provider->get_import_file($entity);
-
         if ($fileplugin === false) {
-            return;
+            return null; // no error cause we're just gonna skip this entity
         }
 
+        // must count import files lines in case of error
+        $filelines = 0;
         $fileplugin->open(RLIP_FILE_READ);
+        while ($fileplugin->read()) {
+            ++$filelines;
+        }
+        $fileplugin->close();
 
+        $fileplugin->open(RLIP_FILE_READ);
         if (!$header = $fileplugin->read()) {
-            return;
+            return null; // no error cause we're just gonna skip this entity
         }
 
         //initialize line number
@@ -460,8 +477,30 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
         $this->header_read_hook($entity, $header);
 
+        $starttime = time();
         //main processing loop
         while ($record = $fileplugin->read()) {
+            if (isset($state->linenumber)) {
+                if ($this->linenumber < $state->linenumber) {
+                    $this->linenumber++;
+                    continue;
+                }
+                unset($state->linenumber);
+            }
+            // check if timelimit excceeded
+            if ($maxruntime && (time() - $starttime) > $maxruntime) {
+                $state->result = false;
+                $state->entity = $entity;
+                $state->filelines = $filelines;
+                $state->linenumber = $this->linenumber;
+                // clean-up before exiting ...
+                $fileplugin->close();
+                $this->dblogger->set_endtime(time());
+                //flush db log record
+                $filename = $fileplugin->get_filename();
+                $this->dblogger->flush($filename);
+                return $state;
+            }
             //index the import record with the appropriate keys
             $record = $this->index_record($header, $record);
 
@@ -486,6 +525,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $logid = $this->dblogger->get_logid();
             rlip_print_manual_status($logid);
         }
+        return null;
     }
 
     /**
@@ -493,8 +533,19 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *
      * @param int $targetstarttime The timestamp representing the theoretical
      *                             time when this task was meant to be run
+     * @param int $maxruntime      The max time in seconds to complete import
+     *                             default: 0 => unlimited time
+     * @param object $state        Previous ran state data to continue from
+     *
+     * @return object              State data to pass back on re-entry,
+     *                             null on success!
+     *         ->result            false on error, i.e. time limit exceeded.
      */
-    function run($targetstarttime = 0) {
+    function run($targetstarttime = 0, $maxruntime = 0, $state = null) {
+        if (!$state) {
+            $state = new stdClass;
+        }
+
         //todo: use target start time in DB logging
 
         //determine the entities that represent the different files to process
@@ -502,8 +553,41 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
         //process each import file
         foreach ($entities as $entity) {
-            $this->process_import_file($entity);
+            $starttime = time();
+            if (isset($state->entity)) {
+                if ($entity != $state->entity) {
+                    continue;
+                }
+                unset($state->entity);
+            }
+            if (($result = $this->process_import_file($entity, $maxruntime,
+                                                      $state)) !== null) {
+                if ($this->fslogger) {
+                    $msg = get_string('importexceedstimelimit_b', 'block_rlip', $result);
+                    $this->fslogger->log($msg);
+                }
+                return $result;
+            }
+            if ($maxruntime) {
+                $usedtime = $starttime - time();
+                if ($usedtime  < $maxruntime) {
+                    $maxruntime -= $usedtime;
+                } else if (($nextentity = next($entities)) !== false) {
+                    // import time limit already exceeded, log & exit
+                    $state->result = false;
+                    $state->entity = $nextentity;
+                    if ($this->fslogger) {
+                        $msg = get_string('importexceedstimelimit', 'block_rlip', $state);
+                        $this->fslogger->log($msg);
+                    }
+                    return $state;
+                } else {
+                    // actually we're done, no next entities
+                    return null;
+                }
+            }
         }
+        return null;
     }
 
     /**
@@ -532,7 +616,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             if ($this->manual) {
                 rlip_print_error($error);
             }
-            $this->fslogger->log($error);
+            if ($this->fslogger) {
+                $this->fslogger->log($error);
+            }
         }
     }
 
