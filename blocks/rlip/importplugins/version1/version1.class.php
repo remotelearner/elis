@@ -517,8 +517,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      *
      * @return boolean true if the record validates, otherwise false
      */
-    function validate_user_profile_data($record) {
+    function validate_user_profile_data($record, $filename) {
         //go through each profile field in the header
+
         foreach ($this->fields as $shortname => $field) {
             $key = 'profile_field_'.$shortname;
             $data = $record->$key;
@@ -576,7 +577,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //profile field validation
-        if (!$this->validate_user_profile_data($record)) {
+        if (!$this->validate_user_profile_data($record, $filename)) {
             return false;
         }
 
@@ -672,7 +673,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //profile field validation
-        if (!$this->validate_user_profile_data($record)) {
+        if (!$this->validate_user_profile_data($record, $filename)) {
             return false;
         }
 
