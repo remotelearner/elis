@@ -32,6 +32,8 @@ require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
 abstract class rlip_exportplugin_base extends rlip_dataplugin {
     //track the file being used for export
     var $fileplugin;
+    var $fslogger = null;
+    var $plugin;
 
 	//methods to be implemented in specific export
 
@@ -70,9 +72,21 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
     function __construct($fileplugin) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
 
         $this->fileplugin = $fileplugin;
         $this->dblogger = new rlip_dblogger_export();
+
+        //convert class name to plugin name
+        $class = get_class($this);
+        $this->plugin = str_replace('rlip_exportplugin_', 'rlipexport_', $class);
+
+        //set up the file-system logger, if exists
+        $filename = get_config($this->plugin, 'logfilelocation');
+        if (!empty($filename)) {
+            $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
+            $this->fslogger = new rlip_fslogger($fileplugin);
+        }
 
         //indicate to the databaes logger which plugin we're using
         $class = get_class($this);
@@ -86,8 +100,15 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      *
      * @param int $targetstarttime The timestamp representing the theoretical
      *                             time when this task was meant to be run
+     * @param int $maxruntime      The max time in seconds to complete export
+     *                             default: 0 => unlimited
+     * @param object $state        Previous ran state data to continue from
+     *                             (currently not used for export)
+     * @return mixed object        Current state of export processing
+     *                             or null on success!
+     *         ->result            false on error, i.e. time limit exceeded.
      */
-    function run($targetstarttime = 0) {
+    function run($targetstarttime = 0, $maxruntime = 0, $state = null) {
         //track the start time as the current time
         $this->dblogger->set_starttime(time());
         //track the provided target start time
@@ -100,7 +121,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
         $this->init();
 
         //run the main export process
-        $this->export_records();
+        $result = $this->export_records($maxruntime);
 
         //clean up
         $this->close();
@@ -113,18 +134,39 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 
         //flush db log record
         $this->dblogger->flush($this->fileplugin->get_filename());
+        $obj = null;
+        if ($result !== true) {
+            $obj = new stdClass;
+            $obj->result = $result;
+            // no other state info to save for export
+        }
+        return $obj;
     }
 
     /**
      * Main loop for handling the body of the export
+     *
+     * @param int $maxruntime  The max time in seconds to complete export
+     * @return bool            true on success, false if time limit exceeded
      */
-    function export_records() {
+    function export_records($maxruntime) {
+        $starttime = time();
         while ($this->has_next()) {
+            // check if time limit exceeded
+            if ($maxruntime && (time() - $starttime) > $maxruntime) {
+                // time limit exceeded - abort with log message
+                if ($this->fslogger) {
+                    $msg = get_string('exportexceedstimelimit', 'block_rlip');
+                    $this->fslogger->log($msg);
+                }
+                return false;
+            }
             //fetch and write out the next record
             $record = $this->next();
             $this->fileplugin->write($record);
             $this->dblogger->track_success(true, true);
         }
+        return true;
     }
 
     /**

@@ -24,6 +24,10 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+define('IP_SCHEDULE_TIMELIMIT', 2 * 60); // max schedule run time in secs
+
 /**
  * Add extra admintree configuration structure to the main administration menu tree.
  *
@@ -445,10 +449,15 @@ function rlip_get_export_filename($plugin, $tz = 99) {
  *
  * @param  string  $taskname  The task name, in the form ipjob_{id}, where id
  *                            is the IP job's schedule id
+ * @todo add 2nd parameter for time already spent in: /elis/core/cron.php
+ *                            to calculate/replace const. IP_SCHEDULE_TIMELIMIT
+ *
  * @return boolean            true on success, otherwise false
  */
 function run_ipjob($taskname) {
     global $CFG, $DB;
+
+    $maxruntime = IP_SCHEDULE_TIMELIMIT; // TBD: see above
 
     require_once($CFG->dirroot .'/blocks/rlip/rlip_dataplugin.class.php');
     require_once($CFG->dirroot .'/blocks/rlip/rlip_fileplugin.class.php');
@@ -458,11 +467,13 @@ function run_ipjob($taskname) {
     list($prefix, $id) = explode('_', $taskname);
     $ipjob = $DB->get_record('ip_schedule', array('id' => $id));
     if (empty($ipjob)) {
+        mtrace("run_ipjob({$taskname}): DB Error retrieving IP schedule record - aborting!");
         return false;
     }
 
     $plugin = $ipjob->plugin;
     $data = unserialize($ipjob->config);
+    $state = isset($data['state']) ? $data['state'] : null;
 
     //determine the "ideal" target start time
     $targetstarttime = $ipjob->nextruntime;
@@ -472,7 +483,7 @@ function run_ipjob($taskname) {
                                 array('taskname' => $taskname))) {
 
         //update next runtime on the scheduled task record
-        $task->nextruntime = (int)(time() + rlip_schedule_period_minutes($data['period']) * 60);
+        $task->nextruntime = (int)($ipjob->nextruntime + rlip_schedule_period_minutes($data['period']) * 60);
         $DB->update_record('elis_scheduled_tasks', $task);
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
@@ -480,6 +491,12 @@ function run_ipjob($taskname) {
     } else {
         mtrace("run_ipjob({$taskname}): DB Error retrieving task record!");
         //todo: return false?
+    }
+
+    $disabledincron = get_config('rlip', 'disableincron');
+    if (!empty($disabledincron)) {
+        mtrace("run_ipjob({$taskname}): IP cron disabled by settings - aborting!");
+        return false;
     }
 
     // Perform the IP scheduled action
@@ -512,8 +529,23 @@ function run_ipjob($taskname) {
             return false;
     }
 
-    //run the task, specifying the ideal start time
-    $instance->run($targetstarttime);
+    //run the task, specifying the ideal start time, maximum run time & state
+    if (($newstate = $instance->run($targetstarttime, $maxruntime, $state)) !== null) {
+        // Task did not complete - RESET nextruntime back & save new state!
+        mtrace("run_ipjob({$taskname}): IP scheduled task exceeded time limit of {$maxruntime} secs");
+        //update next runtime on the scheduled task record
+        $task->nextruntime = $targetstarttime;
+        $DB->update_record('elis_scheduled_tasks', $task);
+        //update the next runtime on the ip schedule record
+        $ipjob->nextruntime = $task->nextruntime;
+        $data['state'] = $newstate;
+        $ipjob->config = serialize($data);
+        $DB->update_record('ip_schedule', $ipjob);
+    } else if ($state !== null) {
+        unset($data['state']);
+        $ipjob->config = serialize($data);
+        $DB->update_record('ip_schedule', $ipjob);
+    }
     return true;
 }
 
