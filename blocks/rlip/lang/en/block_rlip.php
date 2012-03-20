@@ -26,7 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['configdisableincron'] = 'When configured, disable this plugin from running in the Moodle cron. Use this setting when running imports via a separate system-level cron.';
+$string['configdisableincron'] = 'When configured, the setting disables this plugin from running in the Moodle cron. Use this setting when running imports via a separate system-level cron.';
 $string['confirm_delete_ipjob'] = 'Are you sure to delete IP job #{$a}?';
 $string['dateformat'] = 'M/d/Y';
 $string['disableincron'] = 'Disable in Moodle cron';
@@ -46,6 +46,7 @@ $string['rlip_form_label_help'] = 'Enter a unique label for your IP schedule job
 $string['rlip_form_period'] = 'Period:';
 $string['rlip_form_period_error'] = 'IP schedule period must be of form: *d*h*m and greater than 5 minutes!';
 $string['rlip_form_period_help'] = 'This setting controls how often the IP schedule job is run. Values can be entered in the form \*d\*h\*m to represent days, hours, and minutes. Please set this value to five minutes or longer to allow ample time for processing.';
+$string['rlip_global_scheduling'] = 'Scheduling';
 $string['rlip_jobs_header_label'] = 'Label';
 $string['rlip_jobs_header_lastran'] = 'Last ran at';
 $string['rlip_jobs_header_modified'] = 'Modified';

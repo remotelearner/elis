@@ -995,7 +995,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      *                                and / as a category separator
      * @return mixed Returns false on error, or the integer category id otherwise
      */
-    function get_category_id($category_string) {
+    function get_category_id($category_string, $filename) {
         global $DB;
 
         $parentids = array();
@@ -1065,7 +1065,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return $parentids[0];
         } else {
             //path refers to multiple potential categories
-            $this->fslogger->log("\"category\" value of {$categorystring} refers to multiple categories.");
+            $this->process_error("[{$filename} line {$this->linenumber}] \"category\" value of {$category_string} refers to multiple categories.");
             return false;
         }
     }
@@ -1269,7 +1269,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //validate and set up the category
-        $categoryid = $this->get_category_id($record->category);
+        $categoryid = $this->get_category_id($record->category, $filename);
         if ($categoryid === false) {
             return false;
         }
@@ -1350,7 +1350,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //validate and set up the category
         if (isset($record->category)) {
-            $categoryid = $this->get_category_id($record->category);
+            $categoryid = $this->get_category_id($record->category, $filename);
             if ($categoryid === false) {
                 return false;
             }
@@ -1527,7 +1527,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      *
      * @param object $record One record of import data
      * @param string $filename The import file name, used for logging
-     * @return mixed The user id, or 
+     * @return mixed The user id, or
      */
     function get_contextinfo_from_record($record, $filename) {
         global $CFG, $DB;
@@ -1545,7 +1545,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //obtain the course context instance
             $contextlevel = CONTEXT_COURSE;
             $context = get_context_instance($contextlevel, $courseid);
-            return array($contextlevel, $context); 
+            return array($contextlevel, $context);
         } else if ($record->context == 'system') {
             //obtain the system context instance
             $contextlevel = CONTEXT_SYSTEM;

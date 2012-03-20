@@ -379,9 +379,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
         return array('log' => 'moodle',
                      'event' => 'moodle',
                      'external_tokens' => 'moodle',
-                     //usually written to during course delete        
+                     //usually written to during course delete
                      'grade_grades' => 'moodle',
-                     'grade_grades_history' => 'moodle');
+                     'grade_grades_history' => 'moodle',
+                     'external_services_users' => 'moodle');
     }
 
     /**
