@@ -38,12 +38,12 @@ define('CONTEXT_ELIS_USERSET', 1006);
 class context_elis_helper extends context {
 
     private static $alllevels = array(
-            CONTEXT_ELIS_PROGRAM => 'context_elis_program',
-            CONTEXT_ELIS_TRACK   => 'context_elis_track',
-            CONTEXT_ELIS_COURSE  => 'context_elis_course',
-            CONTEXT_ELIS_CLASS   => 'context_elis_class',
-            CONTEXT_ELIS_USER    => 'context_elis_user',
-            CONTEXT_ELIS_USERSET => 'context_elis_userset',
+        CONTEXT_ELIS_PROGRAM => 'context_elis_program',
+        CONTEXT_ELIS_TRACK   => 'context_elis_track',
+        CONTEXT_ELIS_COURSE  => 'context_elis_course',
+        CONTEXT_ELIS_CLASS   => 'context_elis_class',
+        CONTEXT_ELIS_USER    => 'context_elis_user',
+        CONTEXT_ELIS_USERSET => 'context_elis_userset',
     );
 
     /**
@@ -52,12 +52,12 @@ class context_elis_helper extends context {
      * @var type
      */
     private static $namelevelmap = array(
-            'curriculum'        => CONTEXT_ELIS_PROGRAM,
-            'track'             => CONTEXT_ELIS_TRACK,
-            'course'            => CONTEXT_ELIS_COURSE,
-            'class'             => CONTEXT_ELIS_CLASS,
-            'user'              => CONTEXT_ELIS_USER,
-            'cluster'           => CONTEXT_ELIS_USERSET
+        'curriculum'        => CONTEXT_ELIS_PROGRAM,
+        'track'             => CONTEXT_ELIS_TRACK,
+        'course'            => CONTEXT_ELIS_COURSE,
+        'class'             => CONTEXT_ELIS_CLASS,
+        'user'              => CONTEXT_ELIS_USER,
+        'cluster'           => CONTEXT_ELIS_USERSET
     );
 
     /**
