@@ -479,6 +479,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
 
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
+
         //set up the plugin
         $provider = new rlip_importprovider_fsloguser(array());
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);

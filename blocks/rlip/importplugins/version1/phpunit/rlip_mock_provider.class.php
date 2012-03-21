@@ -80,6 +80,9 @@ class rlip_importprovider_mock extends rlip_importprovider {
     }
 }
 
+/**
+ * Mock provider that specifies a filename and writes to a real log file
+ */
 class rlip_importprovider_withname_mock extends rlip_importprovider {
     //fixed data to use as import data
     var $data;
@@ -113,16 +116,6 @@ class rlip_importprovider_withname_mock extends rlip_importprovider {
         }
 
         return new rlip_fileplugin_readmemorywithname($rows, $name);
-    }
-
-    /**
-     * Valid fslogger required for phpunit tests
-     * @param string  $plugin
-     * @return object The fslogger instance
-     */
-    function get_fslogger($plugin) {
-        $fileplugin = rlip_fileplugin_factory::factory('', NULL, true);
-        return new rlip_fslogger($fileplugin);
     }
 }
 
