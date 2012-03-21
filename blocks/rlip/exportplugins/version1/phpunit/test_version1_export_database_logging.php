@@ -39,6 +39,19 @@ require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
     //stored data
     private $data;
+    private $writedelay;
+
+    /**
+     * Base file plugin constructor
+     *
+     * @param int   $writedelay  Number of seconds to delay write calls
+     *                           default: 0 (no delay)
+     * Call parent constructor using all defaults
+     */
+    function __construct($writedelay = 0) {
+        $this->writedelay = $writedelay;
+        parent::__construct();
+    }
 
     /**
      * Open the file
@@ -65,6 +78,9 @@ class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
      * @param array $entry The entry to write to the file
      */
     public function write($entry) {
+        if (!empty($this->writedelay)) {
+            sleep($this->writedelay);
+        }
         $this->data[] = $entry;
     }
 
@@ -154,22 +170,43 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
     }
 
     /**
+     * Load in our test data from CSV files
+     */
+    protected function load_csv_data2() {
+	    $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+	    $dataset->addTable('grade_items', dirname(__FILE__).'/phpunit_gradeitems.csv');
+	    $dataset->addTable('grade_grades', dirname(__FILE__).'/phpunit_gradegrades2.csv');
+	    $dataset->addTable('user', dirname(__FILE__).'/phpunit_user2.csv');
+	    $dataset->addTable('course', dirname(__FILE__).'/phpunit_course.csv');
+	    $dataset->addTable('course_categories', dirname(__FILE__).'/phpunit_course_categories.csv');
+        load_phpunit_data_set($dataset, true, self::$overlaydb);
+    }
+
+    /**
      * Run the export for whatever data is currently in the database
      *
      * @param int $targetstarttime The timestamp representing the theoretical
      *                             time when this task was meant to be run
+     * @param int $writedelay      The number of seconds delay each write call
+     *                             (passed to rlip_fileplugin_memoryexport)
+     * @param int $maxruntime      The max time in seconds to complete export
+     *                             default: 0 => unlimited
+     * @param object $state        Previous ran state data to continue from
+     * @uses  $CFG
+     * @return object              state object on error (time limit exceeded)
+     *                             null on success!
      */
-    function run_export($targetstarttime = 0) {
+    function run_export($targetstarttime = 0, $writedelay = 0, $maxruntime = 0, $state = null) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/version1.class.php');
 
         //plugin for file IO
-    	$fileplugin = new rlip_fileplugin_memoryexport();
-    	$fileplugin->open(RLIP_FILE_WRITE);
+        $fileplugin = new rlip_fileplugin_memoryexport($writedelay);
+        $fileplugin->open(RLIP_FILE_WRITE);
 
     	//our specific export
         $exportplugin = new rlip_exportplugin_version1($fileplugin);
-        $exportplugin->run($targetstarttime);
+        return $exportplugin->run($targetstarttime, $maxruntime, $state);
     }
 
     /**
@@ -181,9 +218,11 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
         //lower bound on starttime
         $starttime = time();
         //run the export
-        $this->run_export();
+        $result = $this->run_export();
         //upper bound on endtime
         $endtime = time();
+
+        $this->assertNull($result);
 
         //data validation
         $select = "export = :export AND
@@ -229,9 +268,11 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
         //lower bound on starttime
         $starttime = time();
         //run the export
-        $this->run_export();
+        $result = $this->run_export();
         //upper bound on endtime
         $endtime = time();
+
+        $this->assertNull($result);
 
         //data validation
         $select = "export = :export AND
@@ -276,7 +317,8 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
         $this->load_csv_data();
 
         //run the export
-        $this->run_export();
+        $result = $this->run_export();
+        $this->assertNull($result);
 
         //data validation
         $exists = $DB->record_exists('block_rlip_summary_log', array('targetstarttime' => 0));
@@ -296,11 +338,28 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
         $this->load_csv_data();
 
         //run the export
-        $this->run_export(1000000000);
+        $result = $this->run_export(1000000000);
+        $this->assertNull($result);
 
         //data validation
         $exists = $DB->record_exists('block_rlip_summary_log', array('targetstarttime' => 1000000000));
         $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate that export restricts run time to value specified
+     */
+    public function testVersion1ExportObeysRunTime() {
+        global $DB;
+
+        //make sure the export is insensitive to time values
+        set_config('nonincremental', 1, 'rlipexport_version1');
+        //set up data for one course and one enroled user
+        $this->load_csv_data2();
+
+        //run the export
+        $result = $this->run_export(1000000000, 3, 1);
+        $this->assertNotNull($result); // state object should be returned
     }
 
     /**

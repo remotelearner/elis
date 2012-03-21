@@ -3484,7 +3484,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('user', dirname(__FILE__).'/userfile.csv');
+        $dataset->addTable('user', dirname(__FILE__).'/usertable.csv');
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
