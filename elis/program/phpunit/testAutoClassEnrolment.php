@@ -103,6 +103,6 @@ class testAutoClassEnrolment extends elis_database_test {
 
 	    //make sure the student has the right class id
 	    $student = $student->current();
-	    $this->assertEquals(0, $student->classid);
+	    $this->assertEquals(100, $student->classid);
 	}
 }
