@@ -96,18 +96,50 @@ class pm_context_set {
 
         $contexts = array($contextlevel => array());
 
+        switch ($contextlevel) {
+            case 'curriculum':
+                $ctxclass = 'context_elis_program';
+                $ctxlevel = CONTEXT_ELIS_PROGRAM;
+                break;
+            case 'track':
+                $ctxclass = 'context_elis_track';
+                $ctxlevel = CONTEXT_ELIS_TRACK;
+                break;
+            case 'course':
+                $ctxclass = 'context_elis_course';
+                $ctxlevel = CONTEXT_ELIS_COURSE;
+                break;
+            case 'class':
+                $ctxclass = 'context_elis_class';
+                $ctxlevel = CONTEXT_ELIS_CLASS;
+                break;
+            case 'user':
+                $ctxclass = 'context_elis_user';
+                $ctxlevel = CONTEXT_ELIS_USER;
+                break;
+            case 'cluster':
+                $ctxclass = 'context_elis_userset';
+                $ctxlevel = CONTEXT_ELIS_USERSET;
+                break;
+            default:
+                return $obj;
+                break;
+        }
+
         // find all contexts at the given context level where the user has a direct
         // role assignment
-        $contextlevelnum = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
-        $sql = "SELECT c.*
+        $sql = "SELECT c.id, c.instanceid
                   FROM {role_assignments} ra
                   JOIN {context} c ON ra.contextid = c.id
                  WHERE ra.userid = $userid
-                   AND c.contextlevel = $contextlevelnum";
+                   AND c.contextlevel = ".$ctxlevel;
+
         $possiblecontexts = $DB->get_recordset_sql($sql);
         foreach ($possiblecontexts as $c) {
-            if (has_capability($capability, $c, $userid, $doanything)) {
-                $contexts[$contextlevel][] = $c->instanceid;
+            $context = $ctxclass::instance($c->instanceid);
+
+            if (has_capability($capability, $context, $userid, $doanything)) {
+                $contexts[$contextlevel][] = $context->__get('instanceid');
             }
         }
         if (empty($contexts[$contextlevel])) {
@@ -376,8 +408,38 @@ function pm_get_users_by_capability($contextlevel, $instance_id, $capability) {
     static $pm_context_extra_parents = array('course' => array('curriculum'),
                                              'class' => array('track'),
                                              'user' => array('cluster'));
-    $contextlevelnum = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
-    $context = get_context_instance($contextlevelnum, $instance_id);
+
+    switch ($contextlevel) {
+        case 'curriculum':
+            $ctxclass = 'context_elis_program';
+            $ctxlevel = CONTEXT_ELIS_PROGRAM;
+            break;
+        case 'track':
+            $ctxclass = 'context_elis_track';
+            $ctxlevel = CONTEXT_ELIS_TRACK;
+            break;
+        case 'course':
+            $ctxclass = 'context_elis_course';
+            $ctxlevel = CONTEXT_ELIS_COURSE;
+            break;
+        case 'class':
+            $ctxclass = 'context_elis_class';
+            $ctxlevel = CONTEXT_ELIS_CLASS;
+            break;
+        case 'user':
+            $ctxclass = 'context_elis_user';
+            $ctxlevel = CONTEXT_ELIS_USER;
+            break;
+        case 'cluster':
+            $ctxclass = 'context_elis_userset';
+            $ctxlevel = CONTEXT_ELIS_USERSET;
+            break;
+        default:
+            return $obj;
+            break;
+    }
+
+    $context = $ctxclass::instance($instance_id);
     $users = get_users_by_capability($context, $capability);
     $users = $users ? $users : array();
 

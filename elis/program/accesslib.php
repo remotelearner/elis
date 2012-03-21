@@ -35,8 +35,6 @@ define('CONTEXT_ELIS_USER',    1005);
 define('CONTEXT_ELIS_USERSET', 1006);
 
 
-
-
 class context_elis_helper extends context {
 
     private static $alllevels = array(
