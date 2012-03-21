@@ -29,6 +29,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 }
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
@@ -38,18 +39,7 @@ require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 /**
  * Class that fetches import files for the user import
  */
-class rlip_importprovider_emptyuser extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     * 
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_emptyuser extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -62,45 +52,14 @@ class rlip_importprovider_emptyuser extends rlip_importprovider {
         if ($entity != 'user') {
             return false;
         }
-
-        //sort out the header
-        $rows = array();
-        $rows[] = array();
-        $datum = reset($this->data);
-        foreach (array_keys($datum) as $key) {
-            $rows[0][] = $key;
-        }
-
-        //iterate through each user
-        foreach ($this->data as $datum) {
-            $index = count($rows);
-
-            //turn an associative array into rows of data
-            $rows[] = array();
-            foreach (array_values($datum) as $value) {
-                $rows[$index][] = $value;
-            }
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 
 /**
  * Class that fetches import files for the course import
  */
-class rlip_importprovider_emptycourse extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     * 
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_emptycourse extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -113,45 +72,14 @@ class rlip_importprovider_emptycourse extends rlip_importprovider {
         if ($entity != 'course') {
             return false;
         }
-
-        //sort out the header
-        $rows = array();
-        $rows[] = array();
-        $datum = reset($this->data);
-        foreach (array_keys($datum) as $key) {
-            $rows[0][] = $key;
-        }
-
-        //iterate through each user
-        foreach ($this->data as $datum) {
-            $index = count($rows);
-
-            //turn an associative array into rows of data
-            $rows[] = array();
-            foreach (array_values($datum) as $value) {
-                $rows[$index][] = $value;
-            }
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 
 /**
  * Class that fetches import files for the enrolment import
  */
-class rlip_importprovider_emptyenrolment extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     * 
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_emptyenrolment extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -164,27 +92,7 @@ class rlip_importprovider_emptyenrolment extends rlip_importprovider {
         if ($entity != 'enrolment') {
             return false;
         }
-
-        //sort out the header
-        $rows = array();
-        $rows[] = array();
-        $datum = reset($this->data);
-        foreach (array_keys($datum) as $key) {
-            $rows[0][] = $key;
-        }
-
-        //iterate through each user
-        foreach ($this->data as $datum) {
-            $index = count($rows);
-
-            //turn an associative array into rows of data
-            $rows[] = array();
-            foreach (array_values($datum) as $value) {
-                $rows[$index][] = $value;
-            }
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 
