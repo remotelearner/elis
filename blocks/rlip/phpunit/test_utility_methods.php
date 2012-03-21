@@ -233,15 +233,16 @@ class utilityMethodTest extends elis_database_test {
                       'type' => 'rlipexport');
         $taskid = rlip_schedule_add_job($data);
 
+        $timenow = time();
         //change the next runtime to a value that is out of range on both records
         $task = new stdClass;
         $task->id = $taskid;
-        $task->nextruntime = 99;
+        $task->nextruntime = $timenow;
         $DB->update_record('elis_scheduled_tasks', $task);
 
         $job = new stdClass;
         $job->id = $DB->get_field('ip_schedule', 'id', array('plugin' => 'rlipexport_version1'));
-        $job->nextruntime = 99;
+        $job->nextruntime = $timenow;
         $DB->update_record('ip_schedule', $job);
 
         //run the job
@@ -255,6 +256,7 @@ class utilityMethodTest extends elis_database_test {
         $job = $DB->get_record('ip_schedule', array('id' => $jobid));
 
         //make sure the next runtime is between 5 and 6 minutes from initial value
+        //echo "\nStartTime={$starttime}; nextruntime={$task->nextruntime}\n";
         $this->assertGreaterThanOrEqual($starttime + 5 * MINSECS, (int)$task->nextruntime);
         $this->assertGreaterThanOrEqual((int)$task->nextruntime, $starttime + 6 * MINSECS);
 
