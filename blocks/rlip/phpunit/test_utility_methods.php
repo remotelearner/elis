@@ -769,7 +769,7 @@ class utilityMethodTest extends elis_database_test {
         $data = array('value' => '= 0');
         $info = $filter->get_sql_filter($data);
         $this->assertEquals(count($info), 2);
-        $this->assertEquals($info[0], 'field =');
+        $this->assertEquals(substr($info[0], 0, 7), 'field =');
         $value = reset($info[1]);
         $this->assertEquals($value, 0);
 
@@ -777,7 +777,7 @@ class utilityMethodTest extends elis_database_test {
         $data = array('value' => '> 0');
         $info = $filter->get_sql_filter($data);
         $this->assertEquals(count($info), 2);
-        $this->assertEquals($info[0], 'field >');
+        $this->assertEquals(substr($info[0], 0, 7), 'field >');
         $value = reset($info[1]);
         $this->assertEquals($value, 0);
     }

@@ -49,7 +49,7 @@ class rlip_log_filter_operationselect extends user_filter_simpleselect {
         }
 
         list($operation, $data_value) = explode(' ', $value);
-        return array("$field $operation", array($name => $data_value));
+        return array("$field $operation :{$name}", array($name => $data_value));
     }
 }
 
