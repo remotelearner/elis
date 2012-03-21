@@ -404,7 +404,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //log prefix
         $prefix = "[{$filename} line {$this->linenumber}]";
 
-        if ($record->action === '') {
+        if (!isset($record->action) || $record->action === '') {
             //not set, so error
             $message = "{$prefix} Required field \"action\" is unspecified or empty.";
             $this->process_error($message);
@@ -428,7 +428,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //increment which record we're on
         $this->linenumber++;
 
-        $action = $record->action;
+        $action = isset($record->action) ? $record->action : '';
         $method = "{$entity}_action";
 
         return $this->$method($record, $action, $filename);

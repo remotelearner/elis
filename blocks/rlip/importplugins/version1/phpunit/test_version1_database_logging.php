@@ -127,7 +127,7 @@ class rlip_fileplugin_readmemory_dynamic extends rlip_fileplugin_readmemory {
  * Import provider that allow for multiple user records to be passed to the
  * import plugin
  */
-class rlip_importprovider_multiuser extends rlip_importprovider_mock {
+class rlip_importprovider_multiuser extends rlip_importprovider_multi_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -950,7 +950,6 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //capture the earliest possible start time
         $mintime = time();
 
-
         $data = array(array('entity' => 'user',
                             'action' => 'create',
                             'username' => 'rlipusername',
@@ -1005,6 +1004,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingStoresCorrectFilenameOnRun() {
         global $CFG, $DB;
 
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
+
         //set up a "user" import provider, using a single fixed file
         $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile.csv';
         $provider = new rlip_importprovider_userfile($file);
@@ -1027,6 +1030,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingStoresCorrectFilenameOnRunWithMoodleFile() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
+
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
 
         //store it at the system context
         $context = get_context_instance(CONTEXT_SYSTEM);
