@@ -25,8 +25,10 @@
  */
 
 require_once(dirname(__FILE__) .'/../../../../../config.php');
+global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 
 /**
  * Class that fetches import files for the course import
