@@ -31,9 +31,24 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
+require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+
+/**
+ * Class that delays reading import file
+ */
+class rlip_fileplugin_csv_mock extends rlip_fileplugin_csv {
+    private $writedelay = 3; // TBD
+
+    function read() {
+        if (!empty($this->writedelay)) {
+            sleep($this->writedelay);
+        }
+        return parent::read();
+    }
+}
 
 /**
  * Class that fetches import files for the user import
@@ -213,6 +228,29 @@ class rlip_importprovider_userfile extends rlip_importprovider {
     }
 }
 
+class rlip_importprovider_userfile2 extends rlip_importprovider {
+    var $filename;
+
+    function __construct($filename) {
+        $this->filename = $filename;
+    }
+
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'user') {
+            return false;
+        }
+
+        return new rlip_fileplugin_csv_mock($this->filename);
+    }
+}
+
 /**
  * Class for testing database logging with the version 1 plugin
  */
@@ -333,7 +371,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_loguser($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
-        $importplugin->run();
+        return $importplugin->run();
     }
 
     /**
@@ -348,7 +386,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_logcourse($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
-        $importplugin->run();
+        return $importplugin->run();
     }
 
     /**
@@ -363,7 +401,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_logenrolment($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
-        $importplugin->run();
+        return $importplugin->run();
     }
 
     /**
@@ -380,7 +418,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'rlipcity',
                       'country' => 'CA');
-        $this->run_user_import($data);
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, true);
@@ -400,7 +439,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'rlipcity',
                       'country' => 'boguscountry');
-        $this->run_user_import($data);
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, false);
@@ -422,7 +462,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'rlipcity',
                       'country' => 'CA');
-        $this->run_user_import($data);
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
 
         //prevent db conflicts
         $DB->delete_records('block_rlip_summary_log');
@@ -431,7 +472,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'action' => 'update',
                       'username' => 'rlipusername',
                       'firstname' => 'rlipfirstname2');
-        $this->run_user_import($data);
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, true);
@@ -446,7 +488,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'action' => 'update',
                       'username' => 'rlipusername',
                       'firstname' => 'rlipfirstname2');
-        $this->run_user_import($data);
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, false);
@@ -468,7 +511,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'rlipcity',
                       'country' => 'CA');
-        $this->run_user_import($data);
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
 
         //prevent db conflicts
         $DB->delete_records('block_rlip_summary_log');
@@ -476,7 +520,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $data = array('entity' => 'user',
                       'action' => 'delete',
                       'username' => 'rlipusername');
-        $this->run_user_import($data);
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, true);
@@ -490,7 +535,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $data = array('entity' => 'user',
                       'action' => 'delete',
                       'username' => 'rlipusername');
-        $this->run_user_import($data);
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, false);
@@ -522,7 +568,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory');
-        $this->run_course_import($data);
+        $result = $this->run_course_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, true);
@@ -542,7 +589,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory',
                       'format' => 'bogusformat');
-        $this->run_course_import($data);
+        $result = $this->run_course_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, false);
@@ -579,7 +627,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory');
-        $this->run_course_import($data);
+        $result = $this->run_course_import($data);
+        $this->assertNull($result);
 
         //prevent db conflicts
         $DB->delete_records('block_rlip_summary_log');
@@ -588,7 +637,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'action' => 'update',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname2');
-        $this->run_course_import($data);
+        $result = $this->run_course_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, true);
@@ -605,7 +655,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'action' => 'update',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname2');
-        $this->run_course_import($data);
+        $result = $this->run_course_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, false);
@@ -641,7 +692,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory');
-        $this->run_course_import($data);
+        $result = $this->run_course_import($data);
+        $this->assertNull($result);
 
         //prevent db conflicts
         $DB->delete_records('block_rlip_summary_log');
@@ -649,7 +701,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $data = array('entity' => 'course',
                       'action' => 'delete',
                       'shortname' => 'rlipshortname');
-        $this->run_course_import($data);
+        $result = $this->run_course_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, true);
@@ -666,7 +719,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $data = array('entity' => 'course',
                       'action' => 'delete',
                       'shortname' => 'rlipshortname');
-        $this->run_course_import($data);
+        $result = $this->run_course_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, false);
@@ -718,7 +772,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        $this->run_enrolment_import($data);
+        $result = $this->run_enrolment_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, true);
@@ -737,7 +792,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        $this->run_enrolment_import($data);
+        $result = $this->run_enrolment_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, false);
@@ -794,7 +850,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        $this->run_enrolment_import($data);
+        $result = $this->run_enrolment_import($data);
+        $this->assertNull($result);
 
         //prevent db conflicts
         $DB->delete_records('block_rlip_summary_log');
@@ -805,7 +862,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        $this->run_enrolment_import($data);
+        $result = $this->run_enrolment_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, true);
@@ -825,7 +883,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        $this->run_enrolment_import($data);
+        $result = $this->run_enrolment_import($data);
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, false);
@@ -850,7 +909,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_loguser_dynamic($data, 'fileone');
 
         $importplugin = new rlip_importplugin_version1($provider);
-        $importplugin->run();
+        $result = $importplugin->run();
+        $this->assertNull($result);
 
         $message = 'All lines from import file fileone were successfully processed.';
         $exists = $this->log_with_message_exists($message);
@@ -863,7 +923,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_loguser_dynamic($data, 'filetwo');
 
         $importplugin = new rlip_importplugin_version1($provider);
-        $importplugin->run();
+        $result = $importplugin->run();
+        $this->assertNull($result);
 
         $message = 'All lines from import file filetwo were successfully processed.';
         $exists = $this->log_with_message_exists($message);
@@ -974,7 +1035,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_multiuser($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
-        $importplugin->run();
+        $result = $importplugin->run();
+        $this->assertNull($result);
 
         //capture the latest possible end time
         $maxtime = time();
@@ -1015,13 +1077,34 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider);
-        $importplugin->run();
+        $result = $importplugin->run();
+        $this->assertNull($result);
 
         //data validation
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
         $params = array('message' => 'All lines from import file userfile.csv were successfully processed.');
         $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
         $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that import obeys maxruntime
+     */
+    public function testVersionImportObeysMaxRunTime() {
+        global $CFG, $DB;
+
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
+
+        //set up a "user" import provider, using a single fixed file
+        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
+        $provider = new rlip_importprovider_userfile2($file);
+
+        //run the import
+        $importplugin = new rlip_importplugin_version1($provider);
+        $result = $importplugin->run(0, 1);
+        $this->assertNotNull($result);
     }
 
     /**
@@ -1063,7 +1146,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_moodlefile($entity_types, $fileids);
 
         $importplugin = new rlip_importplugin_version1($provider);
-        $importplugin->run();
+        $result = $importplugin->run();
+        $this->assertNull($result);
 
         //data validation
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
@@ -1100,7 +1184,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_multiuser($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
-        $importplugin->run();
+        $result = $importplugin->run();
+        $this->assertNull($result);
 
         $exists = $this->log_with_message_exists();
         $this->assertEquals($exists, false);
@@ -1144,7 +1229,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_multiuser($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
-        $importplugin->run();
+        $result = $importplugin->run();
+        $this->assertNull($result);
 
         $exists = $DB->record_exists('block_rlip_summary_log', array('filesuccesses' => 1,
                                                                      'filefailures' => 2));
@@ -1170,7 +1256,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'rlipcity',
                       'country' => 'CA');
-        $this->run_user_import($data);
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
 
         $exists = $DB->record_exists('block_rlip_summary_log', array('userid' => $USER->id));
         $this->assertEquals($exists, true);
@@ -1191,7 +1278,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'rlipcity',
                       'country' => 'CA');
-        $this->run_user_import($data);
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
 
         $message = 'One or more lines from import file memoryfile failed because they contain data errors. '.
                    'Please fix the import file and re-upload it.';

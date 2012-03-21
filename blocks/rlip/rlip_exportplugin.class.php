@@ -149,7 +149,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      * @param int $maxruntime  The max time in seconds to complete export
      * @return bool            true on success, false if time limit exceeded
      */
-    function export_records($maxruntime) {
+    function export_records($maxruntime = 0) {
         $starttime = time();
         while ($this->has_next()) {
             // check if time limit exceeded
