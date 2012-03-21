@@ -52,7 +52,7 @@ class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
      *                  the mode in which the file should be opened
      */
     function open($mode) {
-        //nothing to do
+        $this->index = 0;
     }
 
     /**
@@ -98,3 +98,4 @@ class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
         return 'memoryfile';
     }
 }
+

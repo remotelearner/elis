@@ -449,15 +449,16 @@ function rlip_get_export_filename($plugin, $tz = 99) {
  *
  * @param  string  $taskname  The task name, in the form ipjob_{id}, where id
  *                            is the IP job's schedule id
- * @todo add 2nd parameter for time already spent in: /elis/core/cron.php
- *                            to calculate/replace const. IP_SCHEDULE_TIMELIMIT
+ * @param  int   $maxruntime  Maximum number of secs allowed to process job
  *
  * @return boolean            true on success, otherwise false
  */
-function run_ipjob($taskname) {
+function run_ipjob($taskname, $maxruntime = 0) {
     global $CFG, $DB;
 
-    $maxruntime = IP_SCHEDULE_TIMELIMIT; // TBD: see above
+    if (empty($maxruntme)) {
+        $maxruntime = IP_SCHEDULE_TIMELIMIT;
+    }
 
     require_once($CFG->dirroot .'/blocks/rlip/rlip_dataplugin.class.php');
     require_once($CFG->dirroot .'/blocks/rlip/rlip_fileplugin.class.php');
