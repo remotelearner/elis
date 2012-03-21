@@ -222,7 +222,10 @@ class version1ExportTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('block_rlip_summary_log' => 'block_rlip');
+        return array('block_rlip_summary_log'  => 'block_rlip',
+                     'external_tokens'         => 'moodle',
+                     'external_services_users' => 'moodle',
+                     'log'                     => 'moodle');
     }
 
     /**
