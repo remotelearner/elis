@@ -29,6 +29,7 @@ global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemorywithname.class.php');
 
 /**
  * Class that fetches import files for the course import
@@ -111,7 +112,7 @@ class rlip_importprovider_withname_mock extends rlip_importprovider {
             $rows[1][] = $value;
         }
 
-        return new rlip_fileplugin_readmemorywthname($rows, $name);
+        return new rlip_fileplugin_readmemorywithname($rows, $name);
     }
 
     /**
