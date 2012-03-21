@@ -79,3 +79,103 @@ class rlip_importprovider_mock extends rlip_importprovider {
     }
 }
 
+class rlip_importprovider_withname_mock extends rlip_importprovider {
+    //fixed data to use as import data
+    var $data;
+
+    /**
+     * Constructor
+     *
+     * @param array $data Fixed file contents
+     */
+    function __construct($data) {
+        $this->data = $data;
+    }
+
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity, $name = '') {
+        //turn an associative array into rows of data
+        $rows = array();
+        $rows[] = array();
+        foreach (array_keys($this->data) as $key) {
+            $rows[0][] = $key;
+        }
+        $rows[] = array();
+        foreach (array_values($this->data) as $value) {
+            $rows[1][] = $value;
+        }
+
+        return new rlip_fileplugin_readmemorywthname($rows, $name);
+    }
+
+    /**
+     * Valid fslogger required for phpunit tests
+     * @param string  $plugin
+     * @return object The fslogger instance
+     */
+    function get_fslogger($plugin) {
+        $fileplugin = rlip_fileplugin_factory::factory('', NULL, true);
+        return new rlip_fslogger($fileplugin);
+    }
+}
+
+class rlip_importprovider_multi_mock extends rlip_importprovider {
+    //fixed data to use as import data
+    var $data;
+
+    /**
+     * Constructor
+     *
+     * @param array $data Fixed file contents
+     */
+    function __construct($data) {
+        $this->data = $data;
+    }
+
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        //turn an associative array into rows of data
+        $rows = array();
+        $rows[] = array();
+        $datum = reset($this->data);
+        foreach (array_keys($datum) as $key) {
+            $rows[0][] = $key;
+        }
+
+        //iterate through each user
+        foreach ($this->data as $datum) {
+            $index = count($rows);
+
+            //turn an associative array into rows of data
+            $rows[] = array();
+            foreach (array_values($datum) as $value) {
+                $rows[$index][] = $value;
+            }
+        }
+
+        return new rlip_fileplugin_readmemory($rows);
+    }
+
+    /**
+     * Valid fslogger required for phpunit tests
+     * @param string  $plugin
+     * @return object The fslogger instance
+     */
+    function get_fslogger($plugin) {
+        $fileplugin = rlip_fileplugin_factory::factory('', NULL, true);
+        return new rlip_fslogger($fileplugin);
+    }
+}
+

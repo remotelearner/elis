@@ -39,7 +39,7 @@ require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 /**
  * Class that fetches import files for the user import
  */
-class rlip_importprovider_emptyuser extends rlip_importprovider_mock {
+class rlip_importprovider_emptyuser extends rlip_importprovider_multi_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -59,7 +59,7 @@ class rlip_importprovider_emptyuser extends rlip_importprovider_mock {
 /**
  * Class that fetches import files for the course import
  */
-class rlip_importprovider_emptycourse extends rlip_importprovider_mock {
+class rlip_importprovider_emptycourse extends rlip_importprovider_multi_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -79,7 +79,7 @@ class rlip_importprovider_emptycourse extends rlip_importprovider_mock {
 /**
  * Class that fetches import files for the enrolment import
  */
-class rlip_importprovider_emptyenrolment extends rlip_importprovider_mock {
+class rlip_importprovider_emptyenrolment extends rlip_importprovider_multi_mock {
 
     /**
      * Hook for providing a file plugin for a particular

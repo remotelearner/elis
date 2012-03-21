@@ -418,6 +418,7 @@ class version1UserImportTest extends elis_database_test {
                         'institution' => 'rlipinstitution',
                         'department' => 'rlipdepartment');
 
+        print_object($DB->get_records('user'));
         $exists = $DB->record_exists_select('user', $select, $params);
 
         $this->assertEquals($exists, true);

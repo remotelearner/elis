@@ -115,7 +115,7 @@ class rlip_fileplugin_readmemorywithname extends rlip_fileplugin_base {
 /**
  * Class that fetches import files for the user import
  */
-class rlip_importprovider_fsloguser extends rlip_importprovider_mock {
+class rlip_importprovider_fsloguser extends rlip_importprovider_withname_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -128,14 +128,14 @@ class rlip_importprovider_fsloguser extends rlip_importprovider_mock {
         if ($entity != 'user') {
             return false;
         }
-        return parent::get_import_file($entity);
+        return parent::get_import_file($entity, 'user.csv');
     }
 }
 
 /**
  * Class that fetches import files for the course import
  */
-class rlip_importprovider_fslogcourse extends rlip_importprovider_mock {
+class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -148,14 +148,14 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider_mock {
         if ($entity != 'course') {
             return false;
         }
-        return parent::get_import_file($entity);
+        return parent::get_import_file($entity, 'course.csv');
     }
 }
 
 /**
  * Class that fetches import files for the enrolment import
  */
-class rlip_importprovider_fslogenrolment extends rlip_importprovider_mock {
+class rlip_importprovider_fslogenrolment extends rlip_importprovider_withname_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -168,7 +168,7 @@ class rlip_importprovider_fslogenrolment extends rlip_importprovider_mock {
         if ($entity != 'enrolment') {
             return false;
         }
-        return parent::get_import_file($entity);
+        return parent::get_import_file($entity, 'enrolment.csv');
     }
 }
 
