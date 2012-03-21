@@ -397,5 +397,12 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2011091401, 'elis', 'core');
     }
 
+    if ($result && $oldversion < 2012032100) {
+        $table = new xmldb_table('context_levels');
+        $dbman->drop_table($table);
+
+        upgrade_plugin_savepoint(true, 2012032100, 'elis', 'core');
+    }
+
     return $result;
 }
