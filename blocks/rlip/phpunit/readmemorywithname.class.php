@@ -26,10 +26,7 @@
 
 require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
 
-/**
- * Mock file plugin that provides a fixed set of data
- */
-class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
+class rlip_fileplugin_readmemorywithname extends rlip_fileplugin_base {
     //current file position
     var $index;
     //file data
@@ -40,7 +37,9 @@ class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
      *
      * @param array $data The data represented by this file
      */
-    function __construct($data) {
+    function __construct($data, $filename = '', $fileid = NULL, $sendtobrowser = false) {
+        parent::__construct($filename, $fileid, $sendtobrowser);
+
         $this->index = 0;
         $this->data = $data;
     }
@@ -95,7 +94,9 @@ class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
      * @return string The file name, not including the full path
      */
     function get_filename() {
-        return 'memoryfile';
+        //physical file, so obtain filename from full path
+        $parts = explode('/', $this->filename);
+        $count = count($parts);
+        return $parts[$count - 1];
     }
 }
-

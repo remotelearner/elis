@@ -29,6 +29,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 }
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
@@ -38,18 +39,7 @@ require_once(elis::lib('testlib.php'));
 /**
  * Class that fetches import files for the user import
  */
-class rlip_importprovider_createorupdateuser extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     * 
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_createorupdateuser extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -62,37 +52,14 @@ class rlip_importprovider_createorupdateuser extends rlip_importprovider {
         if ($entity != 'user') {
             return false;
         }
-
-        //turn an associative array into rows of data
-        $rows = array();
-        $rows[] = array();
-        foreach (array_keys($this->data) as $key) {
-            $rows[0][] = $key;
-        }
-        $rows[] = array();
-        foreach (array_values($this->data) as $value) {
-            $rows[1][] = $value;
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 
 /**
  * Class that fetches import files for the course import
  */
-class rlip_importprovider_createorupdatecourse extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     * 
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_createorupdatecourse extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -105,37 +72,14 @@ class rlip_importprovider_createorupdatecourse extends rlip_importprovider {
         if ($entity != 'course') {
             return false;
         }
-
-        //turn an associative array into rows of data
-        $rows = array();
-        $rows[] = array();
-        foreach (array_keys($this->data) as $key) {
-            $rows[0][] = $key;
-        }
-        $rows[] = array();
-        foreach (array_values($this->data) as $value) {
-            $rows[1][] = $value;
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 
 /**
  * Class that fetches import files for the enrolment import
  */
-class rlip_importprovider_createorupdateenrolment extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     * 
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_createorupdateenrolment extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -148,19 +92,7 @@ class rlip_importprovider_createorupdateenrolment extends rlip_importprovider {
         if ($entity != 'enrolment') {
             return false;
         }
-
-        //turn an associative array into rows of data
-        $rows = array();
-        $rows[] = array();
-        foreach (array_keys($this->data) as $key) {
-            $rows[0][] = $key;
-        }
-        $rows[] = array();
-        foreach (array_values($this->data) as $value) {
-            $rows[1][] = $value;
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 

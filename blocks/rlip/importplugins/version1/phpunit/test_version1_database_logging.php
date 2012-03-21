@@ -29,6 +29,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 }
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
@@ -37,18 +38,7 @@ require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 /**
  * Class that fetches import files for the user import
  */
-class rlip_importprovider_loguser extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     *
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_loguser extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -62,36 +52,14 @@ class rlip_importprovider_loguser extends rlip_importprovider {
             return false;
         }
 
-        //turn an associative array into rows of data
-        $rows = array();
-        $rows[] = array();
-        foreach (array_keys($this->data) as $key) {
-            $rows[0][] = $key;
-        }
-        $rows[] = array();
-        foreach (array_values($this->data) as $value) {
-            $rows[1][] = $value;
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 
 /**
  * Class that fetches import files for the course import
  */
-class rlip_importprovider_logcourse extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     *
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_logcourse extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -105,36 +73,14 @@ class rlip_importprovider_logcourse extends rlip_importprovider {
             return false;
         }
 
-        //turn an associative array into rows of data
-        $rows = array();
-        $rows[] = array();
-        foreach (array_keys($this->data) as $key) {
-            $rows[0][] = $key;
-        }
-        $rows[] = array();
-        foreach (array_values($this->data) as $value) {
-            $rows[1][] = $value;
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 
 /**
  * Class that fetches import files for the course import
  */
-class rlip_importprovider_logenrolment extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     *
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_logenrolment extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -147,19 +93,7 @@ class rlip_importprovider_logenrolment extends rlip_importprovider {
         if ($entity != 'enrolment') {
             return false;
         }
-
-        //turn an associative array into rows of data
-        $rows = array();
-        $rows[] = array();
-        foreach (array_keys($this->data) as $key) {
-            $rows[0][] = $key;
-        }
-        $rows[] = array();
-        foreach (array_values($this->data) as $value) {
-            $rows[1][] = $value;
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 
@@ -193,18 +127,7 @@ class rlip_fileplugin_readmemory_dynamic extends rlip_fileplugin_readmemory {
  * Import provider that allow for multiple user records to be passed to the
  * import plugin
  */
-class rlip_importprovider_multiuser extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     *
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_multiuser extends rlip_importprovider_multi_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -217,27 +140,7 @@ class rlip_importprovider_multiuser extends rlip_importprovider {
         if ($entity != 'user') {
             return false;
         }
-
-        //sort out the header
-        $rows = array();
-        $rows[] = array();
-        $datum = reset($this->data);
-        foreach (array_keys($datum) as $key) {
-            $rows[0][] = $key;
-        }
-
-        //iterate through each user
-        foreach ($this->data as $datum) {
-            $index = count($rows);
-
-            //turn an associative array into rows of data
-            $rows[] = array();
-            foreach (array_values($datum) as $value) {
-                $rows[$index][] = $value;
-            }
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 
@@ -1048,7 +951,6 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //capture the earliest possible start time
         $mintime = time();
 
-
         $data = array(array('entity' => 'user',
                             'action' => 'create',
                             'username' => 'rlipusername',
@@ -1103,6 +1005,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingStoresCorrectFilenameOnRun() {
         global $CFG, $DB;
 
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
+
         //set up a "user" import provider, using a single fixed file
         $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile.csv';
         $provider = new rlip_importprovider_userfile($file);
@@ -1125,6 +1031,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingStoresCorrectFilenameOnRunWithMoodleFile() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
+
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
 
         //store it at the system context
         $context = get_context_instance(CONTEXT_SYSTEM);

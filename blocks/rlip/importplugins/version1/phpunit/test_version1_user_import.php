@@ -29,6 +29,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 }
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
@@ -38,18 +39,7 @@ require_once(elis::lib('testlib.php'));
 /**
  * Class that fetches import files for the user import
  */
-class rlip_importprovider_mockuser extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     *
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_mockuser extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -63,18 +53,7 @@ class rlip_importprovider_mockuser extends rlip_importprovider {
             return false;
         }
 
-        //turn an associative array into rows of data
-        $rows = array();
-        $rows[] = array();
-        foreach (array_keys($this->data) as $key) {
-            $rows[0][] = $key;
-        }
-        $rows[] = array();
-        foreach (array_values($this->data) as $value) {
-            $rows[1][] = $value;
-        }
-
-        return new rlip_fileplugin_readmemory($rows);
+        return parent::get_import_file($entity);
     }
 }
 
@@ -440,6 +419,7 @@ class version1UserImportTest extends elis_database_test {
                         'institution' => 'rlipinstitution',
                         'department' => 'rlipdepartment');
 
+        //print_object($DB->get_records('user'));
         $exists = $DB->record_exists_select('user', $select, $params);
 
         $this->assertEquals($exists, true);

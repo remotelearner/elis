@@ -29,6 +29,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 }
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
@@ -36,96 +37,10 @@ require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 
-class rlip_fileplugin_readmemorywithname extends rlip_fileplugin_base {
-    //current file position
-    var $index;
-    //file data
-    var $data;
-
-    /**
-     * Mock file plugin constructor
-     *
-     * @param array $data The data represented by this file
-     */
-    function __construct($data, $filename = '', $fileid = NULL, $sendtobrowser = false) {
-        parent::__construct($filename, $fileid, $sendtobrowser);
-
-        $this->index = 0;
-        $this->data = $data;
-    }
-
-    /**
-     * Open the file
-     *
-     * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
-     *                  the mode in which the file should be opened
-     */
-    function open($mode) {
-        //nothing to do
-    }
-
-    /**
-     * Read one entry from the file
-     *
-     * @return array The entry read
-     */
-    function read() {
-        if ($this->index < count($this->data)) {
-            //more lines to read, fetch next one
-            $result = $this->data[$this->index];
-            //move "line pointer"
-            $this->index++;
-            return $result;
-        }
-
-        //out of lines
-        return false;
-    }
-
-    /**
-     * Write one entry to the file
-     *
-     * @param array $entry The entry to write to the file
-     */
-    function write($entry) {
-        //nothing to do
-    }
-
-    /**
-     * Close the file
-     */
-    function close() {
-        //nothing to do
-    }
-
-    /**
-     * Specifies the name of the current open file
-     *
-     * @return string The file name, not including the full path
-     */
-    function get_filename() {
-        //physical file, so obtain filename from full path
-        $parts = explode('/', $this->filename);
-        $count = count($parts);
-        return $parts[$count - 1];
-    }
-}
-
 /**
  * Class that fetches import files for the user import
  */
-class rlip_importprovider_fsloguser extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     *
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_fsloguser extends rlip_importprovider_withname_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -138,37 +53,14 @@ class rlip_importprovider_fsloguser extends rlip_importprovider {
         if ($entity != 'user') {
             return false;
         }
-
-        //turn an associative array into rows of data
-        $rows = array();
-        $rows[] = array();
-        foreach (array_keys($this->data) as $key) {
-            $rows[0][] = $key;
-        }
-        $rows[] = array();
-        foreach (array_values($this->data) as $value) {
-            $rows[1][] = $value;
-        }
-
-        return new rlip_fileplugin_readmemorywithname($rows, 'user.csv');
+        return parent::get_import_file($entity, 'user.csv');
     }
 }
 
 /**
  * Class that fetches import files for the course import
  */
-class rlip_importprovider_fslogcourse extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     *
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -181,37 +73,14 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider {
         if ($entity != 'course') {
             return false;
         }
-
-        //turn an associative array into rows of data
-        $rows = array();
-        $rows[] = array();
-        foreach (array_keys($this->data) as $key) {
-            $rows[0][] = $key;
-        }
-        $rows[] = array();
-        foreach (array_values($this->data) as $value) {
-            $rows[1][] = $value;
-        }
-
-        return new rlip_fileplugin_readmemorywithname($rows, 'course.csv');
+        return parent::get_import_file($entity, 'course.csv');
     }
 }
 
 /**
  * Class that fetches import files for the enrolment import
  */
-class rlip_importprovider_fslogenrolment extends rlip_importprovider {
-    //fixed data to use as import data
-    var $data;
-
-    /**
-     * Constructor
-     *
-     * @param array $data Fixed file contents
-     */
-    function __construct($data) {
-        $this->data = $data;
-    }
+class rlip_importprovider_fslogenrolment extends rlip_importprovider_withname_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -224,19 +93,7 @@ class rlip_importprovider_fslogenrolment extends rlip_importprovider {
         if ($entity != 'enrolment') {
             return false;
         }
-
-        //turn an associative array into rows of data
-        $rows = array();
-        $rows[] = array();
-        foreach (array_keys($this->data) as $key) {
-            $rows[0][] = $key;
-        }
-        $rows[] = array();
-        foreach (array_values($this->data) as $value) {
-            $rows[1][] = $value;
-        }
-
-        return new rlip_fileplugin_readmemorywithname($rows, 'enrolment.csv');
+        return parent::get_import_file($entity, 'enrolment.csv');
     }
 }
 
@@ -621,6 +478,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
 
         //set up the plugin
         $provider = new rlip_importprovider_fsloguser(array());

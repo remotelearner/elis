@@ -53,6 +53,25 @@ abstract class rlip_importprovider {
         //for now, the only db logger
         return new rlip_dblogger_import();
     }
+
+    /**
+     * Provides the object used to log information to the file system logfile
+     *
+     * @param  string $plugin  the plugin
+     * @return object the fslogger
+     */
+    function get_fslogger($plugin) {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+
+        //set up the file-system logger
+        $filename = get_config($plugin, 'logfilelocation');
+        if (!empty($filename)) {
+            $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
+            return new rlip_fslogger($fileplugin);
+        }
+        return null;
+    }
 }
 
 /**
@@ -77,7 +96,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     function __construct($provider = NULL, $manual = false) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
 
         if ($provider !== NULL) {
             //note: provider is not set if only using plugin_supports
@@ -90,13 +108,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $this->dblogger = $this->provider->get_dblogger();
             $this->dblogger->set_plugin($plugin);
             $this->manual = $manual;
-
-            //set up the file-system logger
-            $filename = get_config($plugin, 'logfilelocation');
-            if (!empty($filename)) {
-                $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
-                $this->fslogger = new rlip_fslogger($fileplugin);
-            }
+            $this->fslogger = $this->provider->get_fslogger($plugin);
         }
     }
 
@@ -392,7 +404,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //log prefix
         $prefix = "[{$filename} line {$this->linenumber}]";
 
-        if ($record->action === '') {
+        if (!isset($record->action) || $record->action === '') {
             //not set, so error
             $message = "{$prefix} Required field \"action\" is unspecified or empty.";
             $this->process_error($message);
@@ -416,7 +428,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //increment which record we're on
         $this->linenumber++;
 
-        $action = $record->action;
+        $action = isset($record->action) ? $record->action : '';
         $method = "{$entity}_action";
 
         return $this->$method($record, $action, $filename);
@@ -542,11 +554,11 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *         ->result            false on error, i.e. time limit exceeded.
      */
     function run($targetstarttime = 0, $maxruntime = 0, $state = null) {
+        //todo: use target start time in DB logging
+
         if (!$state) {
             $state = new stdClass;
         }
-
-        //todo: use target start time in DB logging
 
         //determine the entities that represent the different files to process
         $entities = $this->get_import_entities();
@@ -574,6 +586,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                     $maxruntime -= $usedtime;
                 } else if (($nextentity = next($entities)) !== false) {
                     // import time limit already exceeded, log & exit
+                    $state = new stdClass;
                     $state->result = false;
                     $state->entity = $nextentity;
                     if ($this->fslogger) {
