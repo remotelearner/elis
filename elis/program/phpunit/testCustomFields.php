@@ -32,6 +32,8 @@ require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elis::lib('data/customfield.class.php'));
 require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
+ini_set('error_reporting',1);
+ini_set('display_errors',1);
 
 class curriculumCustomFieldsTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
@@ -197,7 +199,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
         return $field;
     }
 
-    public function create_curriculum(field &$field) {
+    public function create_curriculum(field &$field = null) {
         $data = new stdClass;
         $data->courseid='';
         $data->idnumber='testprg';
@@ -208,8 +210,10 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $data->timetocomplete='';
         $data->frequency='';
 
-        $fieldvar = 'field_'.$field->shortname;
-        $data->$fieldvar='test field data';
+        if (!empty($field)) {
+            $fieldvar = 'field_'.$field->shortname;
+            $data->$fieldvar='test field data';
+        }
 
         $cur = new curriculum();
         $cur->set_from_data($data);
@@ -477,5 +481,50 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $usrset = $this->create_userset($field);
 
         $this->assertNotEmpty($usrset->id);
+    }
+
+    /**
+     * ELIS-4797: Test Various Custom Field Operations
+     */
+    public function testCustomFieldOperations() {
+        $context_levels = context_elis_helper::get_legacy_levels();
+        foreach ($context_levels as $ctxname=>$ctxlvl) {
+
+            $category = $this->create_field_category($ctxlvl);
+            $field = $this->create_field($category,$ctxlvl);
+
+            $field_fetched = field::get_for_context_level($ctxlvl);
+            $field_fetched = $field_fetched->current();
+            $this->assertEquals($field->shortname,$field_fetched->shortname);
+
+            $field_fetched = field::get_for_context_level_with_name($ctxlvl, $field->shortname);
+            $this->assertEquals($field->shortname,$field_fetched->shortname);
+
+            $field_fetched = field::ensure_field_exists_for_context_level($field, $ctxlvl, $category);
+            $this->assertEquals($field->shortname,$field_fetched->shortname);
+
+            $cat_fetched = field_category::get_for_context_level($ctxlvl);
+            $cat_fetched = $cat_fetched->current();
+            $this->assertEquals($category->id,$cat_fetched->id);
+
+            if ($ctxlvl === CONTEXT_ELIS_PROGRAM) {
+                $cur = $this->create_curriculum();
+                $field_data = field_data::get_for_context_and_field(null,$field);
+                $field_data = $field_data->current();
+                $res = $field_data->set_for_context_from_datarecord($ctxlvl, $cur);
+                $this->assertTrue($res);
+            }
+        }
+    }
+
+    /**
+     *ELIS-4797: Test Moodle Profile Custom Field Operations
+     */
+    public function testMoodleProfileCustomFieldOperations() {
+        $category = $this->create_field_category(CONTEXT_ELIS_USER);
+        $field = $this->create_user_field($category);
+
+        sync_profile_field_to_moodle($field);
+        sync_profile_field_from_moodle($field);
     }
 }

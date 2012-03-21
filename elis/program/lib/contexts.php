@@ -96,38 +96,10 @@ class pm_context_set {
 
         $contexts = array($contextlevel => array());
 
-        switch ($contextlevel) {
-            case 'curriculum':
-                $ctxclass = 'context_elis_program';
-                $ctxlevel = CONTEXT_ELIS_PROGRAM;
-                break;
-            case 'track':
-                $ctxclass = 'context_elis_track';
-                $ctxlevel = CONTEXT_ELIS_TRACK;
-                break;
-            case 'course':
-                $ctxclass = 'context_elis_course';
-                $ctxlevel = CONTEXT_ELIS_COURSE;
-                break;
-            case 'class':
-                $ctxclass = 'context_elis_class';
-                $ctxlevel = CONTEXT_ELIS_CLASS;
-                break;
-            case 'user':
-                $ctxclass = 'context_elis_user';
-                $ctxlevel = CONTEXT_ELIS_USER;
-                break;
-            case 'cluster':
-                $ctxclass = 'context_elis_userset';
-                $ctxlevel = CONTEXT_ELIS_USERSET;
-                break;
-            default:
-                return $obj;
-                break;
-        }
-
         // find all contexts at the given context level where the user has a direct
         // role assignment
+
+        $contextlevelnum = context_elis_helper::get_level_from_name($contextlevel);
         $sql = "SELECT c.id, c.instanceid
                   FROM {role_assignments} ra
                   JOIN {context} c ON ra.contextid = c.id

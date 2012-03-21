@@ -47,6 +47,20 @@ class context_elis_helper extends context {
     );
 
     /**
+     * This map array is used for historical purposes - where the context level names are ingrained into code.
+     * These names should not be used going forward, you should instead use the constants directly.
+     * @var type
+     */
+    private static $namelevelmap = array(
+            'curriculum'        => CONTEXT_ELIS_PROGRAM,
+            'track'             => CONTEXT_ELIS_TRACK,
+            'course'            => CONTEXT_ELIS_COURSE,
+            'class'             => CONTEXT_ELIS_CLASS,
+            'user'              => CONTEXT_ELIS_USER,
+            'cluster'           => CONTEXT_ELIS_USERSET
+    );
+
+    /**
      * Instance does not make sense here, only static use
      */
     protected function __construct() {
@@ -68,6 +82,21 @@ class context_elis_helper extends context {
     }
 
     /**
+     * Returns a context level given a context 'name'
+     *
+     * @static
+     * @param string $contextname ('curriculum', 'track', etc)
+     * @return int context level
+     */
+    public static function get_level_from_name($ctxname) {
+        if (isset(self::$namelevelmap[$ctxname])) {
+            return self::$namelevelmap[$ctxname];
+        } else {
+            throw new coding_exception('Invalid context level specified');
+        }
+    }
+
+    /**
      * Returns a list of all context levels
      *
      * @static
@@ -75,6 +104,16 @@ class context_elis_helper extends context {
      */
     public static function get_all_levels() {
         return self::$alllevels;
+    }
+
+    /**
+     * Returns a list of legacy context names and their associated context level int
+     *
+     * @static
+     * @return array string=>int (level legacy name=>level)
+     */
+    public static function get_legacy_levels() {
+        return self::$namelevelmap;
     }
 
     /**

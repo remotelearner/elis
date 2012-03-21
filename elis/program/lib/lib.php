@@ -1169,7 +1169,7 @@ function pm_migrate_tags() {
     foreach ($contextlevels as $instancetype => $contextname) {
 
         //calculate the context level integer
-        $contextlevel = context_level_base::get_custom_context_level($contextname, 'elis_program');
+        $contextlevel = context_elis_helper::get_level_from_name($contextname);
 
         //make sure one or more tags are used at the current context level
         if ($DB->record_exists('crlm_tag_instance', array('instancetype' => $instancetype))) {
