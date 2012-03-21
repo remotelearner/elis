@@ -57,6 +57,12 @@ class block_rlip extends block_base {
             $displaystring = get_string('plugins', 'block_rlip');
             $url = $CFG->wwwroot.'/blocks/rlip/plugins.php';
             $this->content->text = html_writer::tag('a', $displaystring, array('href' => $url));
+            $this->content->text .= html_writer::empty_tag('br');
+
+            //add link to the log viewing page
+            $displaystring = get_string('logs', 'block_rlip');
+            $url = $CFG->wwwroot.'/blocks/rlip/viewlogs.php';
+            $this->content->text .= html_writer::tag('a', $displaystring, array('href' => $url));
         } else {
             $this->content->text = '';
         }
