@@ -27,6 +27,7 @@
 require_once('../../config.php');
 require_once($CFG->dirroot.'/lib/adminlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+require_once($CFG->dirroot.'/blocks/rlip/rlip_log_filtering.class.php');
 
 //permissions checking
 require_login();
@@ -47,8 +48,14 @@ echo $OUTPUT->header();
 $numrecords = rlip_count_logs();
 echo $OUTPUT->paging_bar($numrecords, $page, RLIP_LOGS_PER_PAGE, $baseurl);
 
+//filters
+$filtering = new rlip_log_filtering();
+$filtering->display_add();
+$filtering->display_active();
+list($extrasql, $params) = $filtering->get_sql_filter();
+
 //display main table
-$logs = rlip_get_logs($page);
+$logs = rlip_get_logs($extrasql, $params, $page);
 $table = rlip_get_log_table($logs);
 echo rlip_log_table_html($table);
 

@@ -416,6 +416,103 @@ class utilityMethodTest extends elis_database_test {
     }
 
     /**
+     * Validate that log retrieval respects the task type filter
+     */
+    function testGetLogsRespectsTaskTypeFilter() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create a test user
+        $this->create_test_user();
+
+        //create log records
+        $this->create_db_log();
+        $this->create_db_log(array('export' => 0));
+
+        //validate count when filtering for "import"
+        $where = 'export = :param0';
+        $params = array('param0' => 0);
+        $logs = rlip_get_logs($where, $params);
+        $count = 0;
+        foreach ($logs as $log) {
+            $count++;
+        }
+        $this->assertEquals($count, 1);
+
+        //validate count when filtering for "export"
+        $where = 'export = :param0';
+        $params = array('param0' => 1);
+        $logs = rlip_get_logs($where, $params);
+        $count = 0;
+        foreach ($logs as $log) {
+            $count++;
+        }
+        $this->assertEquals($count, 1);
+    }
+
+    /**
+     * Validate that log retrieval respects the execution filter
+     */
+    function testGetLogsRespectsExecutionFilter() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create a test user
+        $this->create_test_user();
+
+        //create log records
+        $this->create_db_log();
+        $this->create_db_log(array('targetstarttime' => 0));
+
+        //validate count when filtering for "manual"
+        $where = 'targetstarttime = 0';
+        $logs = rlip_get_logs($where);
+        $count = 0;
+        foreach ($logs as $log) {
+            $count++;
+        }
+        $this->assertEquals($count, 1);
+
+        //validate count when filtering for "scheduled"
+        $where = 'targetstarttime > 0';
+        $logs = rlip_get_logs($where);
+        $count = 0;
+        foreach ($logs as $log) {
+            $count++;
+        }
+        $this->assertEquals($count, 1);
+    }
+
+    /**
+     * Validate that log retrieval respects the start time filter
+     */
+    function testGetLogsRespectsActualStartTimeFilter() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create a test user
+        $this->create_test_user();
+
+        //calculate the start time of the current day
+        $starttime = mktime(0, 0, 0);
+        
+        //create log records
+        $this->create_db_log(array('starttime' => 0));
+        $this->create_db_log(array('starttime' => $starttime + 12 * HOURSECS));
+
+        //validate count when filtering for a particular day
+        $where = 'starttime >= :param0 AND starttime < :param1';
+        $params = array('param0' => $starttime,
+                        'param1' => $starttime + DAYSECS);
+        $logs = rlip_get_logs($where, $params);
+        $count = 0;
+        foreach ($logs as $log) {
+            $count++;
+        }
+        $this->assertEquals($count, 1);
+    }
+
+    /**
      * Validate that log retrieval respects the paging mechanism
      */
     function testGetLogsRespectPaging() {
@@ -434,7 +531,7 @@ class utilityMethodTest extends elis_database_test {
         }
 
         //validate that the appropriate number of records are shown on page 1
-        $logs = rlip_get_logs(0);
+        $logs = rlip_get_logs('', array(), 0);
         $count = 0;
         foreach ($logs as $log) {
             $count++;
@@ -442,7 +539,7 @@ class utilityMethodTest extends elis_database_test {
         $this->assertEquals($count, RLIP_LOGS_PER_PAGE);
 
         //validate that the single remaining record is shown on page 2
-        $logs = rlip_get_logs(1);
+        $logs = rlip_get_logs('', array(), 1);
         $count = 0;
         foreach ($logs as $log) {
             $count++;
@@ -648,5 +745,40 @@ class utilityMethodTest extends elis_database_test {
 
         //validation
         $this->assertEquals($output, $OUTPUT->heading(get_string('nologmessage', 'block_rlip')));
+    }
+
+    /**
+     * Validate that the "operation select" custom filter type returns the
+     * correct SQL fragment
+     */
+    function testOperationSelectReturnsCorrectSQLFilter() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/rlip_log_filtering.class.php');
+
+        //create filter class
+        $options = array('= 0' => 'label1',
+                         '> 0' => 'label2');
+        $filter = new rlip_log_filter_operationselect('testname', 'testlabel', 0, 'field', $options);
+
+        //validate case when not filtering
+        $data = array('value' => '');
+        $info = $filter->get_sql_filter($data);
+        $this->assertEquals($info, '');
+
+        //validate first option
+        $data = array('value' => '= 0');
+        $info = $filter->get_sql_filter($data);
+        $this->assertEquals(count($info), 2);
+        $this->assertEquals($info[0], 'field =');
+        $value = reset($info[1]);
+        $this->assertEquals($value, 0);
+
+        //validate second option
+        $data = array('value' => '> 0');
+        $info = $filter->get_sql_filter($data);
+        $this->assertEquals(count($info), 2);
+        $this->assertEquals($info[0], 'field >');
+        $value = reset($info[1]);
+        $this->assertEquals($value, 0);
     }
 }

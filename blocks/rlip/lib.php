@@ -546,12 +546,19 @@ function rlip_count_logs() {
  * Obtains a recordset representing the log records to display for the
  * specified page
  *
+ * @param string $where Additional SQL condition to add
+ * @param array $params Parameters needed in additional SQL condition
  * @param int $page The page to display, from 0 to n - 1
  * @return object The recordset representing the appropriate data
  */
-function rlip_get_logs($page = 0) {
+function rlip_get_logs($where = '', $params = array(), $page = 0) {
     global $DB;
 
+    //where clause
+    $where_clause = '';
+    if (!empty($where)) {
+        $where_clause = "WHERE {$where}";
+    }
     //offset, in records
     $offset = $page * RLIP_LOGS_PER_PAGE;
     //retrieve data
@@ -561,8 +568,9 @@ function rlip_get_logs($page = 0) {
             FROM {block_rlip_summary_log} log
             JOIN {user} user
               ON log.userid = user.id
+            {$where_clause}
             ORDER BY log.starttime DESC";
-    return $DB->get_recordset_sql($sql, null, $offset, RLIP_LOGS_PER_PAGE);
+    return $DB->get_recordset_sql($sql, $params, $offset, RLIP_LOGS_PER_PAGE);
 }
 
 /**
@@ -578,6 +586,9 @@ function rlip_get_log_table($logs) {
     $timeformat = get_string('displaytimeformat', 'block_rlip');
 
     $table = new html_table();
+    //alignment
+    $table->align = array('left', 'left', 'left', 'left', 'left',
+                          'left', 'left', 'right', 'right', 'left');
     //column headers
     $table->head = array(get_string('logtasktype', 'block_rlip'),
                          get_string('logplugin', 'block_rlip'),
