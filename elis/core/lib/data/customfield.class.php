@@ -194,7 +194,7 @@ class field extends elis_data_object {
             return array();
         }
         if (!is_numeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
         if ($contextlevel == CONTEXT_ELIS_USER) {
             // need to include extra fields for PM users
@@ -230,7 +230,7 @@ class field extends elis_data_object {
             return false;
         }
         if (!is_numeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
         $select = 'id IN (SELECT fctx.fieldid
                             FROM {'.field_contextlevel::TABLE."} fctx
@@ -336,7 +336,7 @@ class field extends elis_data_object {
      */
     public static function ensure_field_exists_for_context_level(field $field, $contextlevel, field_category $category) {
         if (!is_numeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+            $contextlevel = elis_context_helper::get_level_from_name($contextlevel);
         }
 
         // see if we need to create a new field
@@ -396,7 +396,7 @@ class field extends elis_data_object {
     }
 }
 
-class elis_field_filter extends data_filter {
+class elis_field_filter extends field_filter {
     /**
      * @param field $field the elis field to check
      * @param string $idfield the name of the field that stores the object's ID
@@ -431,14 +431,16 @@ class elis_field_filter extends data_filter {
         }
         $sql = "SELECT ctx.id
                   FROM {context} ctx
-             LEFT JOIN {{$field->data_table()}} fdata ON fdata.contextid = ctx.id AND fdata.fieldid = {$field->id}
-             LEFT JOIN {{$field->data_table()}} fdefault ON fdefault.contextid IS NULL AND fdefault.fieldid = {$field->id}
+             LEFT JOIN {{$this->field->data_table()}} fdata ON fdata.contextid = ctx.id AND fdata.fieldid = {$this->field->id}
+             LEFT JOIN {{$this->field->data_table()}} fdefault ON fdefault.contextid IS NULL AND fdefault.fieldid = {$this->field->id}
                  WHERE ctx.contextlevel = {$paramname}";
         $params = array($paramindex => $this->contextlevel);
 
         if (isset($field_filter['where'])) {
-            $sql .= " AND {$fieldfilter['where']}";
-            $params = array_merge($params, $fieldfilter['where_paremeters']);
+            $sql .= " AND {$field_filter['where']}";
+            if (!empty($field_filter['where_parameters']) && is_array($field_filter['where_parameters'])) {
+                $params = array_merge($params, $field_filter['where_parameters']);
+            }
         }
 
         if ($tablename) {
@@ -579,7 +581,7 @@ class field_category extends elis_data_object {
             return array();
         }
         if (!is_numeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
         return self::find(new join_filter('id',
                                           field_category_contextlevel::TABLE, 'categoryid',
@@ -806,7 +808,7 @@ abstract class field_data extends elis_data_object {
      */
     public function set_for_context_from_datarecord($contextlevel, $record) {
         if (!is_numeric($contextlevel)) {
-            $contextlevel = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
             if (!$contextlevel) {
                 // context levels not set up -- we must be in initial installation,
                 // so no fields set up
