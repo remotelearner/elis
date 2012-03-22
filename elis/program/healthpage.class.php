@@ -51,7 +51,7 @@ class healthpage extends pm_page {
         $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
         $baseurl = $this->url;
         $baseurl->remove_all_params();
-        $this->navbar->add(get_string('healthcenter'),
+        $this->navbar->add(get_string('pluginname', 'tool_health'),
                            $baseurl->out(true, array('s' => $this->pagename)));
     }
 
@@ -68,7 +68,7 @@ class healthpage extends pm_page {
     }
 
     function get_page_title_default() {
-        return get_string('healthcenter');
+        return get_string('pluginname', 'tool_health');
     }
 
     function display_default() {
@@ -133,10 +133,10 @@ class healthpage extends pm_page {
 
         if($problems == 0) {
             echo '<div id="healthnoproblemsfound">';
-            echo get_string('healthnoproblemsfound');
+            echo get_string('healthnoproblemsfound', 'tool_health');
             echo '</div>';
         } else {
-            echo $OUTPUT->heading(get_string('healthproblemsdetected'));
+            echo $OUTPUT->heading(get_string('healthproblemsdetected', 'tool_health'));
             foreach($issues as $severity => $healthissues) {
                 if(!empty($issues[$severity])) {
                     echo '<dl class="healthissues '.$severity.'">';
@@ -146,7 +146,7 @@ class healthpage extends pm_page {
                         echo '<form action="index.php#solution" method="get">';
                         echo '<input type="hidden" name="s" value="health" />';
                         echo '<input type="hidden" name="action" value="solution" />';
-                        echo '<input type="hidden" name="problem" value="'.$classname.'" /><input type="submit" value="'.get_string('viewsolution').'" />';
+                        echo '<input type="hidden" name="problem" value="'.$classname.'" /><input type="submit" value="'.get_string('healthsolution', 'tool_health').'" />';
                         echo '</form></dd>';
                     }
                     echo '</dl>';
@@ -180,16 +180,16 @@ class healthpage extends pm_page {
             'solution'    => $problem->solution()
             );
 
-        $OUTPUT->heading(get_string('healthcenter'));
-        $OUTPUT->heading(get_string('healthproblemsolution'));
+        $OUTPUT->heading(get_string('pluginname', 'tool_health'));
+        $OUTPUT->heading(get_string('healthproblemsolution', 'tool_health'));
         echo '<dl class="healthissues '.$data['severity'].'">';
         echo '<dt>'.$data['title'].'</dt>';
         echo '<dd>'.$data['description'].'</dd>';
-        echo '<dt id="solution" class="solution">'.get_string('healthsolution').'</dt>';
+        echo '<dt id="solution" class="solution">'.get_string('healthsolution', 'tool_health').'</dt>';
         echo '<dd class="solution">'.$data['solution'].'</dd></dl>';
         echo '<form id="healthformreturn" action="index.php#'.$classname.'" method="get">';
         echo '<input type="hidden" name="s" value="health" />';
-        echo '<input type="submit" value="'.get_string('healthreturntomain').'" />';
+        echo '<input type="submit" value="'.get_string('healthreturntomain', 'tool_health').'" />';
         echo '</form>';
     }
 }
