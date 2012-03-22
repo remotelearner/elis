@@ -309,6 +309,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
                      'role' => 'moodle',
                      'role_context_levels' => 'moodle',
                      'files' => 'moodle',
+                     'config' => 'moodle',
+                     'ip_schedule' => 'block_rlip',
+                     'elis_scheduled_tasks' => 'elis_core',
                      //this prevents createorupdate from being used
                      'config_plugins' => 'moodle',
                      'elis_scheduled_tasks' => 'elis_core',
@@ -1352,6 +1355,93 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $message = 'One or more lines from import file memoryfile failed because they contain data errors. '.
                    'Please fix the import file and re-upload it.';
         $exists = $this->log_with_message_exists($message);
+        $this->assertEquals($exists, true);
+    }
+/**
+     * Validate that database logging works as specified for scheduled import
+     * tasks
+     */
+    public function testVersion1DBLoggingSetsAllFieldsDuringScheduledImportRun() {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
+
+        //store it at the system context
+        $context = get_context_instance(CONTEXT_SYSTEM);
+
+        //file path and name
+        $file_path = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/';
+        $file_name = 'userscheduledimport.csv';
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipimport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipimport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //change the next runtime to a known value in the past
+        $task = new stdClass;
+        $task->id = $taskid;
+        $task->nextruntime = 99;
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        $job = new stdClass;
+        $job->id = $DB->get_field('ip_schedule', 'id', array('plugin' => 'rlipimport_version1'));
+        $job->nextruntime = 99;
+        $DB->update_record('ip_schedule', $job);
+
+        //lower bound on starttime
+        $starttime = time();
+
+        //set up config for plugin so the scheduler knows about our csv file
+        set_config('schedule_files_path', $file_path, 'rlipimport_version1');
+        set_config('user_schedule_file',$file_name, 'rlipimport_version1');
+        set_config('type', 'user', 'rlipimport_version1');
+
+        //run the import
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname);
+
+        $message = 'One or more lines from import file userscheduledimport.csv failed because they contain data errors. '.
+                   'Please fix the import file and re-upload it.';
+
+        //upper bound on endtime
+        $endtime = time();
+
+        //data validation
+        $select = "export = :export AND
+                   plugin = :plugin AND
+                   userid = :userid AND
+                   targetstarttime = :targetstarttime AND
+                   starttime >= :starttime AND
+                   endtime <= :endtime AND
+                   endtime >= starttime AND
+                   filesuccesses = :filesuccesses AND
+                   filefailures = :filefailures AND
+                   storedsuccesses = :storedsuccesses AND
+                   storedfailures = :storedfailures AND
+                   {$DB->sql_compare_text('statusmessage')} = :statusmessage AND
+                   dbops = :dbops AND
+                   unmetdependency = :unmetdependency";
+        $params = array('export' => 0,
+                        'plugin' => 'rlipimport_version1',
+                        'userid' => $USER->id,
+                        'targetstarttime' => 0,
+                        'starttime' => $starttime,
+                        'endtime' => $endtime,
+                        'filesuccesses' => 2,
+                        'filefailures' => 2,
+                        'storedsuccesses' => 0,
+                        'storedfailures' => 0,
+                        'statusmessage' => $message,
+                        'dbops' => -1,
+                        'unmetdependency' => 0);
+        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
         $this->assertEquals($exists, true);
     }
 }
