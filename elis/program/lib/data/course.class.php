@@ -93,7 +93,7 @@ class course extends data_object_with_custom_fields {
     static $delete_is_complex = true;
 
     protected function get_field_context_level() {
-        return CONTEXT_ELIS_PROGRAM;
+        return CONTEXT_ELIS_COURSE;
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -616,8 +616,8 @@ class course extends data_object_with_custom_fields {
 
         parent::delete();
 
-        $level = context_level_base::get_custom_context_level('course', 'elis_program');
-        delete_context($level,$this->id);
+        $context = context_elis_course::instance($this->id);
+        $context->delete();
     }
 
     public static function find($filter=null, array $sort=array(), $limitfrom=0, $limitnum=0, moodle_database $db=null) {

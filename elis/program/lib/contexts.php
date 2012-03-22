@@ -222,14 +222,13 @@ class pm_context_set {
         $where = array();
         if (isset($this->contexts['cluster'])) {
             $where[] = new in_list_filter($idfieldname, $this->contexts['cluster']);
-            $ctxlvl = context_level_base::get_custom_context_level('cluster', 'elis_program');
             // cross fingers and hope that the user doesn't have too many clusters
             foreach ($this->contexts['cluster'] as $cluster) {
-                $context = get_context_instance($ctxlvl, $cluster);
+                $context = context_elis_userset::instance($cluster);
                 $pattern = $context->path . '/%';
                 $where[] = new join_filter($idfieldname, 'context', 'instanceid',
                                            new AND_filter(array(new field_filter('path', $pattern, field_filter::LIKE),
-                                                                new field_filter('contextlevel', $ctxlvl))));
+                                                                new field_filter('contextlevel', CONTEXT_ELIS_USERSET))));
             }
         }
         return $where;

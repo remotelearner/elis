@@ -106,8 +106,8 @@ class curriculum extends data_object_with_custom_fields {
         parent::delete();
 
         //clean up the curriculum context instance
-        $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
-        delete_context($level,$this->id);
+        $context = context_elis_program::instance($this->id);
+        $context->delete();
     }
 
     function __toString() {

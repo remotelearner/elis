@@ -464,9 +464,7 @@ class curriculum_rolepage extends rolepage {
     protected function get_context() {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
-
-            $context_level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
-            $context_instance = get_context_instance($context_level, $id);
+            $context_instance = context_elis_program::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;

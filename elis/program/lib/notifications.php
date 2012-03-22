@@ -484,7 +484,7 @@ function pm_assign_student_from_mdl($eventdata) {
     global $CFG, $DB;
 
     /// We get all context assigns, so check that this is a class. If not, we're done.
-     if (!($context = get_context_instance_by_id($eventdata->contextid))) {
+     if (!($context = context_elis::instance_by_id($eventdata->contextid,IGNORE_MISSING))) {
         if (in_cron()) {
             mtrace(get_string('invalidcontext'));
         } else {
@@ -613,7 +613,7 @@ function pm_notify_role_assign_handler($eventdata){
         }
         return true;
     } else {
-        if (empty($course) && $eventdata->contextid != context_level_base::get_custom_context_level('class', 'elis_program')) { // TBD
+        if (empty($course) && $eventdata->contextid != CONTEXT_ELIS_CLASS) { // TBD
             //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(); eventdata->contextid != context_level_base::get_custom_context_level('class', 'elis_program')");
             return true;
         }

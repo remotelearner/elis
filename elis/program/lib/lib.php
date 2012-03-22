@@ -1287,7 +1287,7 @@ function pm_migrate_environments() {
     foreach ($contextlevels as $instancetable => $contextname) {
 
         //calculate the context level integer
-        $contextlevel = context_level_base::get_custom_context_level($contextname, 'elis_program');
+        $contextlevel = context_elis_helper::get_level_from_name($contextname);
 
         //make sure one or more environments are used at the current context level
         $select = 'environmentid != 0';

@@ -53,6 +53,52 @@ class context_elis extends context {
      */
     public function get_capabilities() {
     }
+
+    /**
+    * Get a context instance as an object, from a given context id.
+    *
+    * @static
+    * @param int $id context id
+    * @param int $strictness IGNORE_MISSING means compatible mode, false returned if record not found, debug message if more found;
+    *                        MUST_EXIST means throw exception if no record found
+    * @return context|bool the context object or false if not found
+    */
+    public static function instance_by_id($id, $strictness = MUST_EXIST) {
+        global $DB;
+
+        if (is_array($id) or is_object($id) or empty($id)) {
+            throw new coding_exception('Invalid context id specified context::instance_by_id()');
+        }
+
+        if ($context = context::cache_get_by_id($id)) {
+            return $context;
+        }
+
+        if ($record = $DB->get_record('context', array('id'=>$id), '*', $strictness)) {
+            return context_elis::create_instance_from_record($record);
+        }
+
+        return false;
+    }
+
+    /**
+     * Creates a context instance from a context record
+     * @static
+     * @param stdClass $record
+     * @return context instance
+     */
+    protected static function create_instance_from_record(stdClass $record) {
+        $classname = context_elis_helper::get_class_for_level($record->contextlevel);
+
+        if ($context = context::cache_get_by_id($record->id)) {
+            return $context;
+        }
+
+        $context = new $classname($record);
+        context::cache_add($context);
+
+        return $context;
+    }
 }
 
 

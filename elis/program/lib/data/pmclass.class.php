@@ -256,8 +256,8 @@ class pmclass extends data_object_with_custom_fields {
 
             parent::delete();
 
-            $level = context_level_base::get_custom_context_level('class', 'elis_program');
-            $result = delete_context($level,$this->id);
+            $context = context_elis_class::instance($this->id);
+            $context->delete();
         }
     }
 

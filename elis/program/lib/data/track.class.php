@@ -288,8 +288,8 @@ class track extends data_object_with_custom_fields {
         parent::delete();
 
         //Delete this leve's context
-        $level = context_level_base::get_custom_context_level('track', 'elis_program');
-        delete_context($level,$this->id);
+        $context = context_elis_track::instance($this->id);
+        $context->delete();
     }
 
     function __toString() {

@@ -106,7 +106,7 @@ class cmCurriculaForm extends cmform {
 
         $lastcat = null;
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $this->_customdata['obj']->id)
+            ? context_elis_program::instance($this->_customdata['obj']->id)
             : get_context_instance(CONTEXT_SYSTEM);
         require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
 

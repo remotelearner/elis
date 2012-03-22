@@ -166,8 +166,8 @@ class user extends data_object_with_custom_fields {
 
             parent::delete();
 
-            $level = context_level_base::get_custom_context_level('user', 'elis_program');
-            delete_context($level,$this->id);
+            $context = context_elis_user::instance($this->id);
+            $context->delete();
         }
     }
 
@@ -670,7 +670,7 @@ class user extends data_object_with_custom_fields {
             //^pre-ELIS-3615 WAS: if ($usercurs = curriculumstudent::get_curricula($this->id)) {
             foreach ($usercurs as $usercur) {
                 // Check if this curricula is set as archived and whether we want to display it
-                $crlm_context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $usercur->curid);
+                $crlm_context = context_elis_program::instance($usercur->curid);
                 $data_array = field_data::get_for_context_and_field($crlm_context, $archive_var);
                 $crlm_archived = 0;
                 if (!empty($data_array) && is_object($data_array->rs) && !empty($data_array->rs)) {
@@ -1078,11 +1078,10 @@ class pm_custom_field_filter extends user_filter_type {
 
         static $counter = 0;
         $name = 'ex_elisfield'.$counter++;
-        $level = context_level_base::get_custom_context_level('user', 'elis_program');
         $sql = 'EXISTS (SELECT * FROM {'. $this->_field->data_table() ."} data
                         JOIN {context} ctx ON ctx.id = data.contextid
                         WHERE ctx.instanceid = {crlm_user}.id
-                          AND ctx.contextlevel = {$level}
+                          AND ctx.contextlevel = ".CONTEXT_ELIS_USER."
                           AND data.fieldid = {$this->_field->id}
                           AND ". $DB->sql_like('data.data', ":{$name}", false) .')';
         $params = array($name => "%{$DB->sql_like_escape($data['value'])}%");
@@ -1288,7 +1287,7 @@ class pm_user_filtering extends user_filtering {
             	'inactive' => 1,
                 );
 
-            $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'elis_program'));
+            $fields = field::get_for_context_level(CONTEXT_ELIS_USER);
             $fields = $fields ? $fields : array();
             foreach ($fields as $field) {
                 $fieldnames["field_{$field->shortname}"] = 1;
