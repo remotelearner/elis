@@ -506,7 +506,10 @@ function run_ipjob($taskname, $maxruntime = 0) {
 
     $disabledincron = get_config('rlip', 'disableincron');
     if (!empty($disabledincron)) {
-        mtrace("run_ipjob({$taskname}): IP cron disabled by settings - aborting!");
+        mtrace("run_ipjob({$taskname}): Internal IP cron disabled by settings - executing external script ...");
+        $cmdline = "{$CFG->dirroot}/blocks/rlip/rlip_ext_cron.php {$plugin} {$ipjob->userid} {$targetstarttime} 0 &";
+        mtrace("> $cmdline");
+        exec($cmdline);
         return false;
     }
 
