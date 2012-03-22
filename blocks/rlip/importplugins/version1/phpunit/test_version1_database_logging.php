@@ -1431,7 +1431,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $params = array('export' => 0,
                         'plugin' => 'rlipimport_version1',
                         'userid' => $USER->id,
-                        'targetstarttime' => 0,
+                        'targetstarttime' => 99,
                         'starttime' => $starttime,
                         'endtime' => $endtime,
                         'filesuccesses' => 2,

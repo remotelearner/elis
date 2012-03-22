@@ -554,7 +554,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *         ->result            false on error, i.e. time limit exceeded.
      */
     function run($targetstarttime = 0, $maxruntime = 0, $state = null) {
-        //todo: use target start time in DB logging
+        //track the provided target start time
+        $this->dblogger->set_targetstarttime($targetstarttime);
 
         if (!$state) {
             $state = new stdClass;
