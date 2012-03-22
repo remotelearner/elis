@@ -44,8 +44,6 @@ class pmclass extends data_object_with_custom_fields {
 
     var $verbose_name = 'class';
     var $autocreate;
-    var $startdate;
-    var $enddate;
     var $moodlecourseid;
     var $track;
     var $oldmax;
