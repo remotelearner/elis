@@ -1,2 +1,2 @@
-id,idnumber,name,description
-1,1,currname,currdesc
+id,idnumber,name,description,reqcredits
+1,myprognum,myprogname,myprogdesc,0.00
