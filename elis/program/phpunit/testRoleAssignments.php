@@ -348,7 +348,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $this->assertEquals($managerroleid, pm_ensure_role_assignable('manager'));
 
         foreach ($context_levels as $ctxlevel => $ctxclass) {
-            $params = array('roleid' => $managerroleid, 'context_level' => $ctxlevel);
+            $params = array('roleid' => $managerroleid, 'contextlevel' => $ctxlevel);
             $this->assertTrue($DB->record_exists('role_context_levels', $params));
         }
 
@@ -356,7 +356,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $this->assertEquals($programadminroleid, pm_ensure_role_assignable('curriculumadmin'));
 
         foreach ($context_levels as $ctxlevel => $ctxclass) {
-            $params = array('roleid' => $programadminroleid, 'context_level' => $ctxlevel);
+            $params = array('roleid' => $programadminroleid, 'contextlevel' => $ctxlevel);
             $this->assertTrue($DB->record_exists('role_context_levels', $params));
         }
     }
