@@ -35,7 +35,28 @@ define('CONTEXT_ELIS_USER',    1005);
 define('CONTEXT_ELIS_USERSET', 1006);
 
 
-class context_elis_helper extends context {
+class context_elis extends context {
+    private static $component = 'elis_program';
+
+    public static function get_component() {
+        return self::$component;
+    }
+
+    /**
+     * not used
+     */
+    public function get_url() {
+    }
+
+    /**
+     * not used
+     */
+    public function get_capabilities() {
+    }
+}
+
+
+class context_elis_helper extends context_elis {
 
     private static $alllevels = array(
         CONTEXT_ELIS_PROGRAM => 'context_elis_program',
@@ -132,7 +153,7 @@ class context_elis_helper extends context {
 /**
  * ELIS program context
  */
-class context_elis_program extends context {
+class context_elis_program extends context_elis {
     /**
      * Please use context_elis_program::instance($programid) if you need the instance of this context.
      * Alternatively if you know only the context id use context::instance_by_id($contextid)
@@ -330,7 +351,7 @@ class context_elis_program extends context {
 /**
  * ELIS track context
  */
-class context_elis_track extends context {
+class context_elis_track extends context_elis {
     /**
      * Please use context_elis_track::instance($trackid) if you need the instance of this context.
      * Alternatively if you know only the context id use context::instance_by_id($contextid)
@@ -532,7 +553,7 @@ class context_elis_track extends context {
 /**
  * ELIS Course Context
  */
-class context_elis_course extends context {
+class context_elis_course extends context_elis {
     /**
      * Please use context_elis_course::instance($courseid) if you need the instance of this context.
      * Alternatively if you know only the context id use context::instance_by_id($contextid)
@@ -733,7 +754,7 @@ class context_elis_course extends context {
 /**
  * ELIS Class Context
  */
-class context_elis_class extends context {
+class context_elis_class extends context_elis {
     /**
      * Please use context_elis_class::instance($classid) if you need the instance of this context.
      * Alternatively if you know only the context id use context::instance_by_id($contextid)
@@ -931,7 +952,7 @@ class context_elis_class extends context {
 /**
  * ELIS user context
  */
-class context_elis_user extends context {
+class context_elis_user extends context_elis {
     /**
      * Please use context_user::instance($userid) if you need the instance of context.
      * Alternatively if you know only the context id use context::instance_by_id($contextid)
@@ -1090,7 +1111,7 @@ class context_elis_user extends context {
 /**
  * ELIS User Set context
  */
-class context_elis_userset extends context {
+class context_elis_userset extends context_elis {
     /**
      * Please use context_coursecat::instance($usersetid) if you need the instance of context.
      * Alternatively if you know only the context id use context::instance_by_id($contextid)

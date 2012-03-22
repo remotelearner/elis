@@ -1354,16 +1354,13 @@ function pm_ensure_role_assignable($role) {
         $roleid = $role;
     }
     if ($roleid) {
-        $sql = "INSERT INTO {role_context_levels}
-                       (roleid, contextlevel)
-                SELECT $roleid AS roleid, ctxlvl.id + 1000 AS contextlevel
-                  FROM {context_levels} ctxlvl
-             LEFT JOIN {role_context_levels} rcl
-                       ON rcl.contextlevel = ctxlvl.id + 1000
-                       AND rcl.roleid = $roleid
-                 WHERE ctxlvl.component='elis_program'
-                   AND rcl.id IS NULL";
-        $DB->execute($sql);
+        $rcl = new stdClass;
+        $rcl->roleid = $roleid;
+
+        foreach (context_elis_helper::get_all_levels() as $ctxlevel => $ctxclass) {
+            $rcl->contextlevel = $ctxlevel;
+            $DB->insert_record('role_context_levels', $rcl);
+        }
     }
     return $roleid;
 }

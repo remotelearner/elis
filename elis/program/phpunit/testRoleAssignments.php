@@ -33,6 +33,7 @@ require_once(elis::lib('data/customfield.class.php'));
 require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
+require_once($CFG->dirroot.'/admin/roles/lib.php');
 
 class curriculumCustomFieldsTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
@@ -302,5 +303,67 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
         //assert
         $this->assertNotEmpty($raid);
+    }
+
+    /**
+     * Test the role assignment interface to determine if it is properly finding our custom contexts
+     */
+    public function testRoleTableContexts() {
+        $context = get_context_instance(CONTEXT_SYSTEM);
+        $roleTable = new roleTable($context, 3);
+
+        $allcontextlevels = array(
+            CONTEXT_SYSTEM => get_string('coresystem'),
+            CONTEXT_USER => get_string('user'),
+            CONTEXT_COURSECAT => get_string('category'),
+            CONTEXT_COURSE => get_string('course'),
+            CONTEXT_MODULE => get_string('activitymodule'),
+            CONTEXT_BLOCK => get_string('block'),
+            1001 => get_string('curriculum', 'elis_program'),
+            1002 => get_string('track', 'elis_program'),
+            1003 => get_string('course', 'elis_program'),
+            1004 => get_string('class', 'elis_program'),
+            1005 => get_string('context_level_user', 'elis_program'),
+            1006 => get_string('cluster', 'elis_program')
+        );
+
+        $this->assertEquals($allcontextlevels, $roleTable->get_all_context_levels());
+    }
+
+    /**
+     * Test that the pm_ensure_role_assignable function works correctly
+     */
+    public function testPmEnsureRoleAssignable() {
+        global $DB;
+
+        // This test needs to have the role_context_levels table completely empty before beginning
+        $DB->delete_records('role_context_levels');
+
+        $context_levels = context_elis_helper::get_all_levels();
+
+        $managerroleid      = $DB->get_field('role', 'id', array('shortname' => 'manager'));
+        $programadminroleid = $DB->get_field('role', 'id', array('shortname' => 'curriculumadmin'));
+
+        // Test that the function works with the 'manager' role
+        $this->assertEquals($managerroleid, pm_ensure_role_assignable('manager'));
+
+        foreach ($context_levels as $ctxlevel => $ctxclass) {
+            $params = array('roleid' => $managerroleid, 'context_level' => $ctxlevel);
+            $this->assertTrue($DB->record_exists('role_context_levels', $params));
+        }
+
+        // Test that the function works with the 'curriculumadmin' role
+        $this->assertEquals($programadminroleid, pm_ensure_role_assignable('curriculumadmin'));
+
+        foreach ($context_levels as $ctxlevel => $ctxclass) {
+            $params = array('roleid' => $programadminroleid, 'context_level' => $ctxlevel);
+            $this->assertTrue($DB->record_exists('role_context_levels', $params));
+        }
+    }
+}
+
+class roleTable extends define_role_table_advanced {
+    public function get_all_context_levels() {
+        return $this->allcontextlevels;
     }
 }
