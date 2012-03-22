@@ -40,11 +40,11 @@ require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
  * Class that delays reading import file
  */
 class rlip_fileplugin_csv_mock extends rlip_fileplugin_csv {
-    private $writedelay = 3; // TBD
+    private $readdelay = 3; // 3 sec delay before reads
 
     function read() {
-        if (!empty($this->writedelay)) {
-            sleep($this->writedelay);
+        if (!empty($this->readdelay)) {
+            sleep($this->readdelay);
         }
         return parent::read();
     }
@@ -310,7 +310,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
                      'role_context_levels' => 'moodle',
                      'files' => 'moodle',
                      //this prevents createorupdate from being used
-                     'config_plugins' => 'moodle');
+                     'config_plugins' => 'moodle',
+                     'elis_scheduled_tasks' => 'elis_core',
+                     'ip_schedule' => 'block_rlip');
     }
 
     /**
@@ -1090,7 +1092,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
     /**
      * Validate that import obeys maxruntime
      */
-    public function testVersionImportObeysMaxRunTime() {
+    public function testVersion1ImportObeysMaxRunTime() {
         global $CFG, $DB;
 
         //set the log file name to a fixed value
@@ -1103,8 +1105,74 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider);
-        $result = $importplugin->run(0, 1);
+        $result = $importplugin->run(0, 1); // maxruntime 1 sec
         $this->assertNotNull($result);
+        if (!empty($result)) {
+            //print_object($result);
+            $this->assertFalse($result->result);
+            $this->assertEquals($result->entity, 'user');
+            $this->assertEquals($result->filelines, 4);
+            $this->assertEquals($result->linenumber, 1);
+        }
+    }
+
+    /**
+     * Validate that import starts from saved state
+     */
+    public function testVersion1ImportFromSavedState() {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //set up the import file path & entities filenames
+        set_config('schedule_files_path', dirname(__FILE__),
+                   'rlipimport_version1');
+        set_config('user_schedule_file', 'userfile2.csv',
+                   'rlipimport_version1');
+        set_config('course_schedule_file', 'course.csv',
+                   'rlipimport_version1');
+        set_config('enrolment_schedule_file', 'enroll.csv',
+                   'rlipimport_version1');
+        // log file
+        set_config('logfilelocation',
+                   $CFG->dataroot .'/rlipimport_testVersion1ImportFromSavedState.log',
+                   'rlipimport_version1');
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipimport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipimport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //change the next runtime to a known value in the past
+        $task = new stdClass;
+        $task->id = $taskid;
+        $task->id = $taskid;
+        $task->nextruntime = 99;
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        $job = $DB->get_record('ip_schedule', array('plugin' => 'rlipimport_version1'));
+        $job->nextruntime = 99;
+        $state = new stdClass;
+        $state->result = false;
+        $state->entity = 'user';
+        $state->filelines = 4;
+        $state->linenumber = 3; // Should start at line 3 of userfile2.csv
+        $ipjobdata = unserialize($job->config);
+        $ipjobdata['state'] = $state;
+        $job->config = serialize($ipjobdata);
+        $DB->update_record('ip_schedule', $job);
+
+        //run the import
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname);
+        // verify the 1st & 2nd lines were NOT processed
+        $notexists1 = $DB->record_exists('user', array('username' => 'testusername'));
+        $this->assertFalse($notexists1);
+        $notexists2 = $DB->record_exists('user', array('username' => 'testusername2'));
+        $this->assertFalse($notexists2);
+        $exists = $DB->record_exists('user', array('username' => 'testusername3'));
+        $this->assertTrue($exists);
     }
 
     /**
