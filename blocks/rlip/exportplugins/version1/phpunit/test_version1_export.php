@@ -1395,4 +1395,41 @@ class version1ExportTest extends elis_database_test {
         //validation
         $this->assertEquals($data, $expected_data);
     }
+
+    /**
+     * Validate that the export generates the correct filename
+     */
+    public function testVersion1ExportCreatesCorrectFilename() {
+        global $USER;
+        if (empty($USER->timezone)) {
+            $USER->timezone = 99;
+        }
+        $plugin = 'rlipexport_version1';
+        $baseexportfile = 'export_version1.csv';
+        set_config('export_file', $baseexportfile, $plugin);
+        set_config('export_file_timestamp', false, $plugin);
+        // base export file w/o timestamp
+        $exportfile = rlip_get_export_filename($plugin, $USER->timezone);
+        $this->assertEquals($exportfile, $baseexportfile);
+
+        set_config('export_file_timestamp', true, $plugin);
+        // export file WITH timestamp
+        $exportfile = rlip_get_export_filename($plugin, $USER->timezone);
+        $parts = explode('_', $exportfile);
+        $this->assertEquals($parts[0], 'export');
+        $this->assertEquals($parts[1], 'version1');
+        $timestamp = userdate(time(), // $string['export_file_timestamp']
+                              get_string('export_file_timestamp', $plugin),
+                              $USER->timezone);
+        $date_parts = explode('_', $timestamp);
+        //echo 'Date parts = ';
+        //print_object($date_parts);
+        if (count($date_parts) == 4) {
+            $this->assertEquals($parts[2], $date_parts[0]); // MMM
+            $this->assertEquals($parts[3], $date_parts[1]); // DD
+            $this->assertEquals($parts[4], $date_parts[2]); // YYYY
+            $this->assertLessThanOrEqual($parts[5], $date_parts[3]); // hhmmss
+            // TBD^^^ intval($parts[5]), intval($date_parts[3])
+        }
+    }
 }
