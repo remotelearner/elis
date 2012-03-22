@@ -140,7 +140,8 @@ class version1UserImportTest extends elis_database_test {
                      'crlm_user_moodle' => 'elis_program',
                      'block_rlip_summary_log' => 'block_rlip',
                      'files' => 'moodle',
-                     'external_tokens' => 'moodle');
+                     'external_tokens' => 'moodle',
+                     'external_services_users' => 'moodle');
     }
 
     /**
