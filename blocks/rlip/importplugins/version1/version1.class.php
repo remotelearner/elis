@@ -1940,14 +1940,16 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $customfieldname = $entry->customfieldname;
                 $standardfieldname = $entry->standardfieldname;
 
-                if (isset($record->$customfieldname)) {
-                    //do the conversion
-                    $record->$standardfieldname = $record->$customfieldname;
-                    unset($record->$customfieldname);
-                } else if (isset($record->$standardfieldname)) {
-                    //remove the standard field because it should have been
-                    //provided as a mapped value
-                    unset($record->$standardfieldname);
+                if ($standardfieldname != $customfieldname) {
+                    if (isset($record->$customfieldname)) {
+                        //do the conversion
+                        $record->$standardfieldname = $record->$customfieldname;
+                        unset($record->$customfieldname);
+                    } else if (isset($record->$standardfieldname)) {
+                        //remove the standard field because it should have been
+                        //provided as a mapped value
+                        unset($record->$standardfieldname);
+                    }
                 }
             }
         }
