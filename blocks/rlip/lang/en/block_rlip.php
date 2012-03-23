@@ -59,6 +59,7 @@ $string['no_lastruntime'] = 'Never run';
 $string['nologmessage'] = 'Sorry, no logs found.';
 $string['pluginname'] = 'Integration Point';
 $string['plugins'] = 'Integration Point plugins';
+$string['restoredefaults'] = 'Restore defaults';
 $string['rlip_form_export_header'] = '<b>Schedule IP job for: Export</b>';
 $string['rlip_form_import_header'] = '<b>Schedule IP job for: Import</b>';
 $string['rlip_form_label'] = 'Label:';

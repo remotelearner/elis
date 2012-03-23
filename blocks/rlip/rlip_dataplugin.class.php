@@ -55,6 +55,16 @@ abstract class rlip_dataplugin {
         //by default, assume the plugin is an "actual" plugin
         return false;
     }
+
+    /**
+     * Add custom entries to the Settings block tree menu
+     *
+     * @param object $adminroot The main admin tree root object
+     * @param string $parentname The name of the parent node to add children to
+     */
+    function admintree_setup(&$adminroot, $parentname) {
+        //by default, do nothing
+    }
 }
 
 /**

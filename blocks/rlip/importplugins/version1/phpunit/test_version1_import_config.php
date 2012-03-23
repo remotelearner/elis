@@ -1,0 +1,327 @@
+<?php
+/**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    elis
+ * @subpackage core
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ */
+
+if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+    define('CLI_SCRIPT', true);
+}
+
+require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+global $CFG;
+require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+require_once(elis::lib('testlib.php'));
+
+/**
+ * Class for validating import configuration
+ */
+class version1ImportConfigTest extends elis_database_test {
+    /**
+     * Return the list of tables that should be overlayed.
+     */
+    static protected function get_overlay_tables() {
+        return array('block_rlip_version1_fieldmap' => 'rlipimport_version1');
+    }
+
+    /**
+     * Data provider for tab validation
+     *
+     * @return array Data, containing tab position and entity type
+     */
+    public function getTabsProvider() {
+        return array(array(0, 'user'),
+                     array(1, 'course'),
+                     array(2, 'enrolment'));
+    }
+
+    /**
+     * Validate that the method to get tabs works correctly
+     *
+     * @param $index Position in the tabs array to use
+     * @param $entitytype The type of entity that tab represents
+     *
+     * @dataProvider getTabsProvider
+     */
+    public function testGetTabsReturnsValidObjects($index, $entitytype) {
+        global $CFG;
+
+        //get collection of tabs
+        $baseurl = 'base';
+        $tabs = rlipimport_version1_get_tabs($baseurl);
+        $this->assertEquals(count($tabs), 3);
+
+        //the string displayed on the tab
+        $displaystring = get_string($entitytype.'tab', 'rlipimport_version1');
+
+        //data validation
+        $tab = $tabs[$index];
+        $this->assertEquals($tab->link->out(), $baseurl.'?tab='.$entitytype);
+        $this->assertEquals($tab->text, $displaystring);
+        $this->assertEquals($tab->title, $displaystring);
+    }
+
+    /**
+     * Data provider for validating which import fields are valid for all
+     * three entity types
+     */
+    public function availableFieldsProvider() {
+        //actual data
+        $user_fields = array('entity', 'action', 'username', 'auth',
+                             'password', 'firstname', 'lastname', 'email',
+                             'maildigest', 'autosubscribe', 'trackforums',
+                             'screenreader', 'city', 'country', 'timezone',
+                             'theme', 'lang', 'description', 'idnumber',
+                             'institution', 'department');
+        $course_fields = array('entity', 'action','shortname', 'fullname',
+                               'idnumber', 'summary', 'format', 'numsections',
+                               'startdate', 'newsitems', 'showgrades', 'showreports',
+                               'maxbytes', 'guest', 'password', 'visible',
+                               'lang', 'category', 'link');
+        $enrolment_fields =  array('entity', 'action', 'username', 'email',
+                                   'idnumber', 'context', 'instance', 'role');
+
+        //necessary data structure
+        return array(array('user', $user_fields),
+                     array('course', $course_fields),
+                     array('enrolment', $enrolment_fields));
+    }
+
+    /**
+     * Validate that available import fields are reported correctly
+     *
+     * @param $entitytype
+     * @param $fields
+     *
+     * @dataProvider availableFieldsProvider
+     */
+    public function testGetAvailableFieldsReturnsValidData($entitytype, $fields) {
+        //obtain available fields
+        $plugin = new rlip_importplugin_version1(NULL, false);
+        $fields = $plugin->get_available_fields($entitytype);
+
+        //validation
+        $this->assertEquals($fields, $fields);
+    }
+
+    /**
+     * Validate that false is returned when obtaining available fields for an
+     * invalid entity type  
+     */
+    public function testGetAvailableFieldsReturnsFalseForInvalidEntityType() {
+        //obtain data
+        $plugin = new rlip_importplugin_version1(NULL, false);
+        $fields = $plugin->get_available_fields('bogus');
+
+        //data validation
+        $this->assertEquals($fields, false);
+    }
+
+    /**
+     * Data provider for test mapping data
+     *
+     * @return array Info specifying entity types and a valid field to test
+     */
+    public function getMappingProvider() {
+        return array(array('user', 'username'),
+                     array('course', 'shortname'),
+                     array('enrolment', 'username'));
+    }
+
+    /**
+     * Validate that mapping retrieval works as needed
+     *
+     * @param $entitytype The type of entity
+     * @param $field A field that is valid for the supplied entity type
+     *
+     * @dataProvider getMappingProvider
+     */
+    public function testGetMappingReturnsValidData($entitytype, $field) {
+        global $DB;
+
+        //obtain the entire list of fields
+        $plugin = new rlip_importplugin_version1(NULL, false);
+        $available_fields = $plugin->get_available_fields($entitytype);
+        //obtain mapping in default state
+        $fields = rlipimport_version1_get_mapping($entitytype);
+        //validate that the two match
+        $this->assertEquals(array_keys($fields), $available_fields);
+        $this->assertEquals(array_values($fields), $available_fields);
+
+        //create a mapping record
+        $mapping = new stdClass;
+        $mapping->entitytype = $entitytype;
+        $mapping->standardfieldname = $field;
+        $mapping->customfieldname = 'custom'.$field;
+        $DB->insert_record('block_rlip_version1_fieldmap', $mapping);
+
+        //data validation
+        $fields = rlipimport_version1_get_mapping($entitytype);
+        $this->assertEquals(array_keys($fields), $available_fields);
+        $this->assertEquals($fields[$field], 'custom'.$field);
+    }
+
+    /**
+     * Validate that false is returned when obtaining field mapping for an
+     * invalid entity type 
+     */
+    public function testGetMappingReturnsFalseForInvalidEntityType() {
+        //obtain data
+        $fields = rlipimport_version1_get_mapping('bogus');
+
+        //data validation
+        $this->assertEquals($fields, false);
+    }
+
+    /**
+     * Validate that all fields are persisted when saving mapping info
+     *
+     * @param $entitytype The type of entity
+     * @param $field A field that is valid for the supplied entity type
+     *
+     * @dataProvider getMappingProvider
+     */
+    public function testSaveMappingPersistsAllData($entitytype, $field) {
+        global $DB;
+
+        //obtain available fields
+        $plugin = new rlip_importplugin_version1(NULL, false);
+        $options = $plugin->get_available_fields($entitytype);
+
+        //set up mapping data with all fields as defaults
+        $data = array();
+        foreach ($options as $option) {
+            $data[$option] = $option;
+        }
+
+        //create a nonstandard mapping value
+        $data[$field] = 'custom'.$field;
+
+        //persist
+        rlipimport_version1_save_mapping($entitytype, $options, $data);
+ 
+        //construct expected data
+        $i = 1;
+        $expected_data = array();
+        foreach ($data as $key => $value) {
+            $record = new stdClass;
+            $record->id = $i;
+            $record->entitytype = $entitytype;
+            $record->standardfieldname = $key;
+            $record->customfieldname = $value;
+            $expected_data[$i] = $record;
+            $i++;
+        }
+
+        //data validation
+        $params = array('entitytype' => $entitytype);
+        $this->assertEquals($DB->get_records('block_rlip_version1_fieldmap', $params, 'id'), $expected_data);
+    }
+
+    /**
+     * Validate that saving field mappings updates existing records
+     */
+    public function testSaveMappingUpdatesExistingRecords() {
+        global $DB;
+
+        //obtain the available fields
+        $plugin = new rlip_importplugin_version1(NULL, false);
+        $options = $plugin->get_available_fields('user');
+
+        //persist the default state
+        rlipimport_version1_save_mapping('user', $options, array());
+
+        //update all fields
+        $data = array();
+        foreach ($options as $option) {
+            $data[$option] = $option.'updated';
+        }
+
+        //save the updated values
+        rlipimport_version1_save_mapping('user', $options, $data);
+
+        //data validation
+        $select = $DB->sql_like('customfieldname', ':suffix');
+        $params = array('suffix' => '%updated');
+        $count = $DB->count_records_select('block_rlip_version1_fieldmap', $select, $params);
+        $this->assertEquals($count, count($data));
+    }
+
+    /**
+     * Validate that only valid field mappings can be saved
+     */
+    public function testSaveMappingDoesNotSaveInvalidFields() {
+        global $DB;
+
+        //obtain available fields
+        $plugin = new rlip_importplugin_version1(NULL, false);
+        $options = $plugin->get_available_fields('user');
+
+        //persist, with additonal bogus field
+        rlipimport_version1_save_mapping('user', $options, array('bogus' => 'bogus'));
+
+        //data validation
+        $count = $DB->count_records('block_rlip_version1_fieldmap');
+        $this->assertEquals($count, count($options));
+    }
+
+    /**
+     * Validate restoring default field mappings
+     */
+    public function testRestoreDefaultMappingUpdatesRecords() {
+        global $DB;
+
+        //obtain available fields
+        $plugin = new rlip_importplugin_version1(NULL, false);
+        $options = $plugin->get_available_fields('user');
+
+        //persist default field
+        rlipimport_version1_save_mapping('user', $options, array());
+
+        //setup validation
+        $select = 'standardfieldname = customfieldname';
+        $count = $DB->count_records_select('block_rlip_version1_fieldmap', $select);
+        $this->assertEquals($count, count($options));
+
+        //update all mapping values
+        $data = array();
+        foreach ($options as $option) {
+            $data[$option] = $option.'updated';
+        }
+
+        //persist updated values and validate
+        rlipimport_version1_save_mapping('user', $options, $data);
+        $select = 'standardfieldname != customfieldname';
+        $count = $DB->count_records_select('block_rlip_version1_fieldmap', $select);
+        $this->assertEquals($count, count($options));
+
+        //reset and validate state
+        rlipimport_version1_reset_mappings('user');
+        $select = 'standardfieldname = customfieldname';
+        $count = $DB->count_records_select('block_rlip_version1_fieldmap', $select);
+        $this->assertEquals($count, count($options));
+        
+    }
+}

@@ -392,6 +392,22 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     }
 
     /**
+     * Obtains the listing of fields that are available for the specified
+     * entity type
+     *
+     * @param string $entitytype The type of entity
+     */
+    function get_available_fields($entitytype) {
+        if ($this->plugin_supports($entitytype) !== false) {
+            $attribute = 'available_fields_'.$entitytype;
+
+            return static::$$attribute;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Validates whether the "action" field is correctly set on a record,
      * logging error to the file system, if necessary - call from child class
      * when needed

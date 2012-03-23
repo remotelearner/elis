@@ -80,6 +80,21 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                   'instance',
                                                   'role');
 
+    //available fields
+    static $available_fields_user = array('entity', 'action', 'username', 'auth',
+                                          'password', 'firstname', 'lastname', 'email',
+                                          'maildigest', 'autosubscribe', 'trackforums',
+                                          'screenreader', 'city', 'country', 'timezone',
+                                          'theme', 'lang', 'description', 'idnumber',
+                                          'institution', 'department');
+    static $available_fields_course = array('entity', 'action','shortname', 'fullname',
+                                            'idnumber', 'summary', 'format', 'numsections',
+                                            'startdate', 'newsitems', 'showgrades', 'showreports',
+                                            'maxbytes', 'guest', 'password', 'visible',
+                                            'lang', 'category', 'link');
+    static $available_fields_enrolment = array('entity', 'action', 'username', 'email',
+                                               'idnumber', 'context', 'instance', 'role');
+
     /**
      * Hook run after a file header is read
      *
@@ -183,12 +198,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @return object The user record with the invalid fields removed
      */
     function remove_invalid_user_fields($record) {
-        $allowed_fields = array('entity', 'action', 'username', 'auth',
-                                'password', 'firstname', 'lastname', 'email',
-                                'maildigest', 'autosubscribe', 'trackforums',
-                                'screenreader', 'city', 'country', 'timezone',
-                                'theme', 'lang', 'description', 'idnumber',
-                                'institution', 'department');
+        $allowed_fields = $this->get_available_fields('user');
         foreach ($record as $key => $value) {
             if (!in_array($key, $allowed_fields) && strpos($key, 'profile_field_') !== 0) {
                 unset($record->$key);
@@ -883,11 +893,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @return object The course record with the invalid fields removed
      */
     function remove_invalid_course_fields($record) {
-        $allowed_fields = array('entity', 'action','shortname', 'fullname',
-                                'idnumber', 'summary', 'format', 'numsections',
-                                'startdate', 'newsitems', 'showgrades', 'showreports',
-                                'maxbytes', 'guest', 'password', 'visible',
-                                'lang', 'category', 'link');
+        $allowed_fields = $this->get_available_fields('course');
         foreach ($record as $key => $value) {
             if (!in_array($key, $allowed_fields)) {
                 unset($record->$key);
@@ -1976,5 +1982,23 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         return array(get_string('userfile', 'rlipimport_version1'),
                      get_string('coursefile', 'rlipimport_version1'),
                      get_string('enrolmentfile', 'rlipimport_version1'));
+    }
+
+    /**
+     * Add custom entries to the Settings block tree menu
+     *
+     * @param object $adminroot The main admin tree root object
+     * @param string $parentname The name of the parent node to add children to
+     */
+    function admintree_setup(&$adminroot, $parentname) {
+        global $CFG;
+
+        //create a link to the page for configuring field mappings
+        $displaystring = get_string('configfieldstreelink', 'rlipimport_version1');
+        $url = $CFG->wwwroot.'/blocks/rlip/importplugins/version1/config_fields.php';
+        $page = new admin_externalpage("{$parentname}_fields", $displaystring, $url);
+
+        //add it to the tree
+        $adminroot->add($parentname, $page);
     }
 }
