@@ -81,19 +81,17 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                   'role');
 
     //available fields
-    static $available_fields_user = array('entity', 'action', 'username', 'auth',
-                                          'password', 'firstname', 'lastname', 'email',
-                                          'maildigest', 'autosubscribe', 'trackforums',
-                                          'screenreader', 'city', 'country', 'timezone',
-                                          'theme', 'lang', 'description', 'idnumber',
-                                          'institution', 'department');
-    static $available_fields_course = array('entity', 'action','shortname', 'fullname',
-                                            'idnumber', 'summary', 'format', 'numsections',
-                                            'startdate', 'newsitems', 'showgrades', 'showreports',
-                                            'maxbytes', 'guest', 'password', 'visible',
-                                            'lang', 'category', 'link');
-    static $available_fields_enrolment = array('entity', 'action', 'username', 'email',
-                                               'idnumber', 'context', 'instance', 'role');
+    static $available_fields_user = array('username', 'auth', 'password', 'firstname',
+                                          'lastname', 'email', 'maildigest', 'autosubscribe',
+                                          'trackforums', 'screenreader', 'city', 'country',
+                                          'timezone', 'theme', 'lang', 'description',
+                                          'idnumber', 'institution', 'department');
+    static $available_fields_course = array('shortname', 'fullname', 'idnumber', 'summary',
+                                            'format', 'numsections', 'startdate', 'newsitems',
+                                            'showgrades', 'showreports', 'maxbytes', 'guest',
+                                            'password', 'visible', 'lang', 'category', 'link');
+    static $available_fields_enrolment = array('username', 'email', 'idnumber', 'context',
+                                               'instance', 'role');
 
     /**
      * Hook run after a file header is read

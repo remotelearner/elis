@@ -401,7 +401,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         if ($this->plugin_supports($entitytype) !== false) {
             $attribute = 'available_fields_'.$entitytype;
 
-            return static::$$attribute;
+            return array_merge(array('action'), static::$$attribute);
         } else {
             return false;
         }

@@ -271,6 +271,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
                      'role' => 'moodle',
                      'role_context_levels' => 'moodle',
                      'files' => 'moodle',
+                     'block_rlip_version1_fieldmap' => 'rlipimport_version1',
                      //this prevents createorupdate from being used
                      'config_plugins' => 'moodle');
     }

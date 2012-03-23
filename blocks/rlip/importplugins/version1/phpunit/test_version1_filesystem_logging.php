@@ -249,7 +249,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'enrol' => 'moodle',
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
-                     'forum' => 'mod_forum');
+                     'forum' => 'mod_forum',
+                     'block_rlip_version1_fieldmap' => 'rlipimport_version1');
     }
 
     /**
