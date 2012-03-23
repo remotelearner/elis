@@ -484,7 +484,12 @@ function run_ipjob($taskname, $maxruntime = 0) {
                                 array('taskname' => $taskname))) {
 
         //update next runtime on the scheduled task record
-        $task->nextruntime = (int)($ipjob->nextruntime + rlip_schedule_period_minutes($data['period']) * 60);
+        $nextruntime = $ipjob->nextruntime;
+        $timenow = time();
+        do {
+            $nextruntime += (int)rlip_schedule_period_minutes($data['period']) * 60;
+        } while ($nextruntime <= $timenow);
+        $task->nextruntime = $nextruntime;
         $DB->update_record('elis_scheduled_tasks', $task);
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
