@@ -312,10 +312,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
                      'config' => 'moodle',
                      'ip_schedule' => 'block_rlip',
                      'elis_scheduled_tasks' => 'elis_core',
+                     'block_rlip_version1_fieldmap' => 'rlipimport_version1',
                      //this prevents createorupdate from being used
-                     'config_plugins' => 'moodle',
-                     'elis_scheduled_tasks' => 'elis_core',
-                     'ip_schedule' => 'block_rlip');
+                     'config_plugins' => 'moodle');
     }
 
     /**

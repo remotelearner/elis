@@ -31,6 +31,30 @@ define('IP_SCHEDULE_TIMELIMIT', 2 * 60); // max schedule run time in secs
 //constant for how many log records to show per page
 define('RLIP_LOGS_PER_PAGE', 20);
 
+require_once($CFG->dirroot.'/lib/adminlib.php');
+
+/**
+ * Settings page that can have child pages
+ *
+ * Note: This class must implement parentable_part_of_admin_tree in order for
+ * children to show up
+ */
+class rlip_category_settingpage extends admin_settingpage implements parentable_part_of_admin_tree {
+    /**
+     * Method that satisfies requirements of parent interface but delegates to
+     * the admin_settingpage functionality, depsite methods being
+     * non-equivalent
+     *
+     * @param object $setting is the admin_setting object you want to add
+     * @param string $bogus only defined to satisfy interface
+     * @return bool true if successful, false if not
+     */
+    public function add($setting, $bogus = '') {
+        //note: this is only called as is done for admin_settingpage 
+        return parent::add($setting);
+    }
+}
+
 /**
  * Add extra admintree configuration structure to the main administration menu tree.
  *
@@ -40,6 +64,7 @@ define('RLIP_LOGS_PER_PAGE', 20);
  */
 function rlip_admintree_setup(&$adminroot) {
     global $CFG;
+    require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
 
     $plugintypes = array('rlipimport', 'rlipexport');
     foreach ($plugintypes as $plugintype) {
@@ -54,11 +79,15 @@ function rlip_admintree_setup(&$adminroot) {
                     //the plugin has a settings file, so add it to the tree
                     $name = "rlipsetting{$plugintype}_{$plugin}";
                     $displaystring = get_string('pluginname', "{$plugintype}_$plugin");
-                    $settings = new admin_settingpage($name, $displaystring);
+                    $settings = new rlip_category_settingpage($name, $displaystring);
 
                     //add the actual settings to the list
                     include($plugsettings);
                     $adminroot->add('blocksettings', $settings);
+
+                    //perform any customization required by the plugin
+                    $instance = rlip_dataplugin_factory::factory("{$plugintype}_{$plugin}");
+                    $instance->admintree_setup($adminroot, "rlipsetting{$plugintype}_{$plugin}");
                 }
             }
         }

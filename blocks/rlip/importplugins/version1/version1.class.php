@@ -80,6 +80,19 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                   'instance',
                                                   'role');
 
+    //available fields
+    static $available_fields_user = array('username', 'auth', 'password', 'firstname',
+                                          'lastname', 'email', 'maildigest', 'autosubscribe',
+                                          'trackforums', 'screenreader', 'city', 'country',
+                                          'timezone', 'theme', 'lang', 'description',
+                                          'idnumber', 'institution', 'department');
+    static $available_fields_course = array('shortname', 'fullname', 'idnumber', 'summary',
+                                            'format', 'numsections', 'startdate', 'newsitems',
+                                            'showgrades', 'showreports', 'maxbytes', 'guest',
+                                            'password', 'visible', 'lang', 'category', 'link');
+    static $available_fields_enrolment = array('username', 'email', 'idnumber', 'context',
+                                               'instance', 'role');
+
     /**
      * Hook run after a file header is read
      *
@@ -183,12 +196,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @return object The user record with the invalid fields removed
      */
     function remove_invalid_user_fields($record) {
-        $allowed_fields = array('entity', 'action', 'username', 'auth',
-                                'password', 'firstname', 'lastname', 'email',
-                                'maildigest', 'autosubscribe', 'trackforums',
-                                'screenreader', 'city', 'country', 'timezone',
-                                'theme', 'lang', 'description', 'idnumber',
-                                'institution', 'department');
+        $allowed_fields = $this->get_available_fields('user');
         foreach ($record as $key => $value) {
             if (!in_array($key, $allowed_fields) && strpos($key, 'profile_field_') !== 0) {
                 unset($record->$key);
@@ -196,6 +204,35 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         return $record;
+    }
+
+    /**
+     * Obtains the listing of fields that are available for the specified
+     * entity type
+     *
+     * @param string $entitytype The type of entity
+     */
+    function get_available_fields($entitytype) {
+        global $DB;
+
+        if ($this->plugin_supports($entitytype) !== false) {
+            $attribute = 'available_fields_'.$entitytype;
+
+            $result = array_merge(array('action'), static::$$attribute);
+
+            //add user profile fields
+            if ($entitytype == 'user') {
+                if ($fields = $DB->get_records('user_info_field')) {
+                    foreach ($fields as $field) {
+                        $result[] = 'profile_field_'.$field->shortname;
+                    }
+                }
+            }
+
+            return $result;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -883,11 +920,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @return object The course record with the invalid fields removed
      */
     function remove_invalid_course_fields($record) {
-        $allowed_fields = array('entity', 'action','shortname', 'fullname',
-                                'idnumber', 'summary', 'format', 'numsections',
-                                'startdate', 'newsitems', 'showgrades', 'showreports',
-                                'maxbytes', 'guest', 'password', 'visible',
-                                'lang', 'category', 'link');
+        $allowed_fields = $this->get_available_fields('course');
         foreach ($record as $key => $value) {
             if (!in_array($key, $allowed_fields)) {
                 unset($record->$key);
@@ -1934,14 +1967,16 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $customfieldname = $entry->customfieldname;
                 $standardfieldname = $entry->standardfieldname;
 
-                if (isset($record->$customfieldname)) {
-                    //do the conversion
-                    $record->$standardfieldname = $record->$customfieldname;
-                    unset($record->$customfieldname);
-                } else if (isset($record->$standardfieldname)) {
-                    //remove the standard field because it should have been
-                    //provided as a mapped value
-                    unset($record->$standardfieldname);
+                if ($standardfieldname != $customfieldname) {
+                    if (isset($record->$customfieldname)) {
+                        //do the conversion
+                        $record->$standardfieldname = $record->$customfieldname;
+                        unset($record->$customfieldname);
+                    } else if (isset($record->$standardfieldname)) {
+                        //remove the standard field because it should have been
+                        //provided as a mapped value
+                        unset($record->$standardfieldname);
+                    }
                 }
             }
         }
@@ -1976,5 +2011,23 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         return array(get_string('userfile', 'rlipimport_version1'),
                      get_string('coursefile', 'rlipimport_version1'),
                      get_string('enrolmentfile', 'rlipimport_version1'));
+    }
+
+    /**
+     * Add custom entries to the Settings block tree menu
+     *
+     * @param object $adminroot The main admin tree root object
+     * @param string $parentname The name of the parent node to add children to
+     */
+    function admintree_setup(&$adminroot, $parentname) {
+        global $CFG;
+
+        //create a link to the page for configuring field mappings
+        $displaystring = get_string('configfieldstreelink', 'rlipimport_version1');
+        $url = $CFG->wwwroot.'/blocks/rlip/importplugins/version1/config_fields.php';
+        $page = new admin_externalpage("{$parentname}_fields", $displaystring, $url);
+
+        //add it to the tree
+        $adminroot->add($parentname, $page);
     }
 }

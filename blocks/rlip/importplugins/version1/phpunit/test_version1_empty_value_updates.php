@@ -111,7 +111,8 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
                      'role_context_levels' => 'moodle',
                      'context' => 'moodle',
                      'config_plugins' => 'moodle',
-                     'role_assignments' => 'moodle');
+                     'role_assignments' => 'moodle',
+                     'block_rlip_version1_fieldmap' => 'rlipimport_version1');
     }
 
     /**
