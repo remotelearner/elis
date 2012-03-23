@@ -80,8 +80,8 @@ class studentpage extends associationpage {
     }
 
     function can_do_add() {
-        $id = $this->required_param('id');
-        $users = optional_param('users', array(), PARAM_CLEAN);
+        $id    = $this->required_param('id');
+        $users = pm_process_user_enrolment_data(); // ELIS-4089 -- JJF
 
         foreach($users as $uid => $user) {
             if(!student::can_manage_assoc($uid, $id)) {
@@ -209,7 +209,7 @@ class studentpage extends associationpage {
 
     function display_savenew() { // action_savenew
         $clsid = $this->required_param('id', PARAM_INT);
-        $users = $this->optional_param('users', array(), PARAM_CLEAN);
+        $users = pm_process_user_enrolment_data();  // ELIS-4089 -- JJF
 
         if (!empty($users)) {
             $this->attempt_enrol($clsid, $users);
@@ -368,7 +368,7 @@ class studentpage extends associationpage {
     function do_updatemultiple() { // action_updatemultiple
         global $DB;
         $clsid = $this->required_param('id', PARAM_INT);
-        $users = $this->optional_param('users', array(), PARAM_CLEAN);
+        $users = pm_process_user_enrolment_data();  // ELIS-4089 -- JJF
 
         foreach($users as $uid => $user) {
             $sturecord            = array();

@@ -134,19 +134,25 @@ class pmclasspage extends managementpage {
         if ($cached !== null) {
             return $cached;
         }
-        $context = get_context_instance(context_level_base::get_custom_context_level('class', 'elis_program'), $id);
+        $context = context_elis_class::instance($id);
         return has_capability($capability, $context);
     }
 
     public function _get_page_context() {
+        global $DB;
+
         $id = $this->optional_param('id', 0, PARAM_INT);
+
         $action = $this->optional_param('action', 'default', PARAM_ACTION);
 
         if ($id) {
             if ($action == 'default') {
-                return get_context_instance(context_level_base::get_custom_context_level('course', 'elis_program'), $id);
+                // ELIS-4089 -- if action = 'default' and id > 0, the id is actually a classid (strange, I know) - JJF
+                if ($courseid = $DB->get_field(pmclass::TABLE, 'courseid', array('id' => $id))) {
+                    return context_elis_course::instance($courseid);
+                }
             } else {
-                return get_context_instance(context_level_base::get_custom_context_level('class', 'elis_program'), $id);
+                return context_elis_class::instance($id);
             }
         } else {
             return parent::_get_page_context();
@@ -410,8 +416,7 @@ class pmclasspage extends managementpage {
         if(!empty(elis::$config->elis_program->default_class_role_id) && $DB->record_exists('role', array('id' => elis::$config->elis_program->default_class_role_id))) {
 
             //get the context instance for capability checking
-            $context_level = context_level_base::get_custom_context_level('class', 'elis_program');
-            $context_instance = get_context_instance($context_level, $cm_entity->id);
+            $context_instance = context_elis_class::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
             if(!has_capability('elis/program:class_edit', $context_instance)) {

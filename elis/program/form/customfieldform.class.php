@@ -51,7 +51,7 @@ class customfieldform extends cmform {
         $form->setType('name', PARAM_MULTILANG);
 
         $level = $this->_customdata->required_param('level', PARAM_ACTION);
-        $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
+        $ctxlvl = context_elis_helper::get_level_from_name($level);
         $categories = field_category::get_for_context_level($ctxlvl);
         $choices = array();
         foreach ($categories as $category) {

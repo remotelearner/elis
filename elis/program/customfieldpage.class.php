@@ -49,14 +49,15 @@ class customfieldpage extends pm_page {
     function display_default() {
         global $CFG, $DB, $OUTPUT;
         $level = $this->required_param('level', PARAM_ACTION);
-        $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
-        if (!$ctxlvl) {
+
+        if (!$ctxlvl = context_elis_helper::get_level_from_name($level)) {
             print_error('invalid_context_level', 'elis_program');
         }
 
         $tmppage = new moodle_url($this->url);
         $tabs = array();
-        require $CFG->dirroot.'/elis/program/db/access.php';
+
+        $contextlevels = context_elis_helper::get_legacy_levels();
         foreach($contextlevels as $contextlevel => $val) {
             $tmppage->param('level', $contextlevel);
             $tabs[] = new tabobject($contextlevel, $tmppage->out(), get_string($contextlevel, 'elis_program'));
@@ -186,11 +187,7 @@ class customfieldpage extends pm_page {
                                   $buttoncontinue, $buttoncancel);
         } else {
             print_string('field_resyncing', 'elis_program');
-            $ctxlvl = context_level_base::get_custom_context_level('user', 'elis_program');
-            if (!$ctxlvl) {
-                print_error('invalid_context_level', 'elis_program');
-            }
-            $fields = field::get_for_context_level($ctxlvl);
+            $fields = field::get_for_context_level(CONTEXT_ELIS_USER);
             $fields = $fields ? $fields : array();
             require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
             foreach ($fields as $field) {
@@ -206,7 +203,7 @@ class customfieldpage extends pm_page {
         require_once elispm::file('form/fieldcategoryform.class.php');
 
         $level = $this->required_param('level', PARAM_ACTION);
-        $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
+        $ctxlvl = context_elis_helper::get_level_from_name($level);
         if (!$ctxlvl) {
             print_error('invalid_context_level', 'elis_program');
         }
@@ -287,7 +284,7 @@ class customfieldpage extends pm_page {
         global $CFG, $DB;
 
         $level = $this->required_param('level', PARAM_ACTION);
-        $ctxlvl = context_level_base::get_custom_context_level($level, 'elis_program');
+        $ctxlvl = context_elis_helper::get_level_from_name($level);
         if (!$ctxlvl) {
             print_error('invalid_context_level', 'elis_program');
         }

@@ -1735,3 +1735,35 @@ function pm_migrate_certificate_files() {
     return $result;
 }
 
+/**
+ * As of Moodle 2.2 optional_param() calls optional_param_array() if the input data is an array but that new function
+ * can only handle single-dimensional arrays, not 2-dimensional arrays like the ones used for data submission on the
+ * ELIS PM class student enrolment / instructor assignment pages.
+ *
+ * This function basically abstracts out that process and does it manually.
+ *
+ * Expected data input:
+ *
+ *     array(
+ *         [userid] => array(array of properties from editing table)
+ *     )
+ *
+ * @param none
+ * @return array An array of sanitised user data
+ */
+function pm_process_user_enrolment_data() {
+    $users = array();
+
+    // ELIS-4089 -- Moodle 2.2 can only handle single-dimensional arrays via optional_param =(
+    if (isset($_POST['users'] )&& ($userdata = $_POST['users']) && is_array($userdata)) {
+        foreach ($userdata as $i => $userdatum) {
+            if (is_array($userdatum)) {
+                foreach ($userdatum as $key => $val) {
+                    $users[$i][$key] = clean_param($val, PARAM_CLEAN);
+                }
+            }
+        }
+    }
+
+    return $users;
+}

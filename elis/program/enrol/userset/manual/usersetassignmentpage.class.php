@@ -95,7 +95,7 @@ class userclusterpage extends userclusterbasepage {
     public function _get_page_context() {
         $id = $this->required_param('id', PARAM_INT);
 
-        return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
+        return context_elis_user::instance($id);
     }
 
     function can_do_default() {
@@ -232,7 +232,7 @@ class clusteruserpage extends userclusterbasepage {
     public function _get_page_context() {
         $id = $this->required_param('id', PARAM_INT);
 
-        return get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $id);
+        return context_elis_userset::instance($id);
     }
 
     function can_do_default() {

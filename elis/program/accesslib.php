@@ -1033,7 +1033,7 @@ class context_elis_user extends context_elis {
         global $DB;
 
         $name = '';
-        if ($user = $DB->get_record(user::TABLE, array('id'=>$this->_instanceid, 'deleted'=>0))) {
+        if ($user = $DB->get_record(user::TABLE, array('id'=>$this->_instanceid))) {
             if ($withprefix){
                 $name = get_string('user', 'elis_program').': ';
             }

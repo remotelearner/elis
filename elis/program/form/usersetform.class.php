@@ -81,8 +81,8 @@ class usersetform extends cmform {
 
         $lastcat = null;
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $this->_customdata['obj']->id)
-            : get_context_instance(CONTEXT_SYSTEM);
+            ? context_elis_userset::instance($this->_customdata['obj']->id)
+            : context_system::instance();
         require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
 
         foreach ($fields as $rec) {

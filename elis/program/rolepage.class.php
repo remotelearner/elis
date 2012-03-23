@@ -489,8 +489,7 @@ class track_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $context_level = context_level_base::get_custom_context_level('track', 'elis_program');
-            $context_instance = get_context_instance($context_level, $id);
+            $context_instance = context_elis_track::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;
@@ -518,8 +517,7 @@ class course_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $context_level = context_level_base::get_custom_context_level('course', 'elis_program');
-            $context_instance = get_context_instance($context_level, $id);
+            $context_instance = context_elis_course::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;
@@ -544,8 +542,7 @@ class class_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $context_level = context_level_base::get_custom_context_level('class', 'elis_program');
-            $context_instance = get_context_instance($context_level, $id);
+            $context_instance = context_elis_class::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;
@@ -570,8 +567,7 @@ class user_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $context_level = context_level_base::get_custom_context_level('user', 'elis_program');
-            $context_instance = get_context_instance($context_level, $id);
+            $context_instance = context_elis_user::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;
@@ -596,8 +592,7 @@ class cluster_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-            $context_instance = get_context_instance($context_level, $id);
+            $context_instance = context_elis_userset::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;

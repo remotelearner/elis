@@ -60,7 +60,7 @@ $url = new moodle_url('/elis/program/usertrackpopup.php',
                      'perpage'    => $perpage));
 $PAGE->set_url($url);
 require_login();
-$context = get_context_instance(context_level_base::get_custom_context_level('track', 'elis_program'), $trackid);
+$context = context_elis_track::instance($trackid);
 $PAGE->set_context($context);
 
 //todo: integrate this better with user-track page?

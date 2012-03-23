@@ -100,7 +100,7 @@ class userpage extends managementpage {
         $id = $this->optional_param('id', 0, PARAM_INT);
 
         if ($id) {
-            return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
+            return context_elis_user::instance($id);
         } else {
             return parent::_get_page_context();
         }
