@@ -148,7 +148,7 @@ function rlipimport_version1_save_mapping($entitytype, $options, $formdata) {
 
     //clear out previous values
     $params = array('entitytype' => $entitytype);
-    $DB->delete_records('block_rlip_version1_fieldmap');
+    $DB->delete_records('block_rlip_version1_fieldmap', $params);
 
     //write to database
     foreach ($data as $key => $value) {

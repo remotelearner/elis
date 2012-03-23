@@ -398,10 +398,14 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * @param string $entitytype The type of entity
      */
     function get_available_fields($entitytype) {
+        global $DB;
+
         if ($this->plugin_supports($entitytype) !== false) {
             $attribute = 'available_fields_'.$entitytype;
 
-            return array_merge(array('action'), static::$$attribute);
+            $result = array_merge(array('action'), static::$$attribute);
+
+            return $result;
         } else {
             return false;
         }

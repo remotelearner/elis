@@ -32,6 +32,7 @@ $string['configdisableincron'] = 'When configured, the setting disables this plu
 $string['dateformat'] = 'M/d/Y';
 $string['disableincron'] = 'Disable in Moodle cron';
 $string['displaytimeformat'] = '%b/%d/%Y, %I:%M:%S %P';
+$string['duplicate'] = 'Please enter a unique value';
 $string['export'] = 'Export';
 $string['exportexceedstimelimit'] = 'Export processing aborted due to time restrictions. Export will be attempted again at next cron.';
 $string['go'] = 'Go';

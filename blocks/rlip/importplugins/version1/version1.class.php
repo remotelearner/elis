@@ -207,6 +207,35 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
+     * Obtains the listing of fields that are available for the specified
+     * entity type
+     *
+     * @param string $entitytype The type of entity
+     */
+    function get_available_fields($entitytype) {
+        global $DB;
+
+        if ($this->plugin_supports($entitytype) !== false) {
+            $attribute = 'available_fields_'.$entitytype;
+
+            $result = array_merge(array('action'), static::$$attribute);
+
+            //add user profile fields
+            if ($entitytype == 'user') {
+                if ($fields = $DB->get_records('user_info_field')) {
+                    foreach ($fields as $field) {
+                        $result[] = 'profile_field_'.$field->shortname;
+                    }
+                }
+            }
+
+            return $result;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Check the lengths of fields from a user record
      * @todo: consider generalizing
      *

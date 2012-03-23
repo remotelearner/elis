@@ -33,6 +33,7 @@ global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+require_once($CFG->dirroot.'/user/profile/definelib.php');
 require_once(elis::lib('testlib.php'));
 
 /**
@@ -43,7 +44,9 @@ class version1ImportConfigTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
-        return array('block_rlip_version1_fieldmap' => 'rlipimport_version1');
+        return array('block_rlip_version1_fieldmap' => 'rlipimport_version1',
+                     'user_info_category' => 'moodle',
+                     'user_info_field' => 'moodle');
     }
 
     /**
@@ -55,6 +58,58 @@ class version1ImportConfigTest extends elis_database_test {
         return array(array(0, 'user'),
                      array(1, 'course'),
                      array(2, 'enrolment'));
+    }
+
+    /**
+     * Create a custom field category
+     *
+     * @return int The database id of the new category
+     */
+    private function create_custom_field_category() {
+        global $DB;
+
+        $category = new stdClass;
+        $category->sortorder = $DB->count_records('user_info_category') + 1;
+        $category->id = $DB->insert_record('user_info_category', $category);
+
+        return $category->id;
+    }
+
+    /**
+     * Helper function for creating a Moodle user profile field
+     *
+     * @param string $name Profile field shortname
+     * @param string $datatype Profile field data type
+     * @param int $categoryid Profile field category id
+     * @param string $param1 Extra parameter, used for select options
+     * @param string $defaultdata Default value
+     * @return int The id of the created profile field
+     */
+    private function create_profile_field($name, $datatype, $categoryid, $param1 = NULL, $defaultdata = NULL) {
+        global $CFG;
+        require_once($CFG->dirroot.'/user/profile/field/'.$datatype.'/define.class.php');
+
+        //core fields
+        $class = "profile_define_{$datatype}";
+        $field = new $class();
+        $data = new stdClass;
+        $data->shortname = $name;
+        $data->name = $name;
+        $data->datatype = $datatype;
+        $data->categoryid = $categoryid;
+
+        if ($param1 !== NULL) {
+            //set the select options
+            $data->param1 = $param1;
+        }
+
+        if ($defaultdata !== NULL) {
+            //set the default value
+            $data->defaultdata = $defaultdata;
+        }
+
+        $field->define_save($data);
+        return $data->id;
     }
 
     /**
@@ -184,6 +239,26 @@ class version1ImportConfigTest extends elis_database_test {
     }
 
     /**
+     * Validate that profile fields are supported in the mapping system
+     */
+    public function testGetMappingIncludesProfileField() {
+        //create a test profile field
+        $categoryid = $this->create_custom_field_category();
+        $this->create_profile_field('text', 'text', $categoryid);
+
+        //obtain the entire list of fields
+        $plugin = new rlip_importplugin_version1(NULL, false);
+        $available_fields = $plugin->get_available_fields('user');
+        //obtain mapping in default state
+        $fields = rlipimport_version1_get_mapping('user');
+
+        //validation
+        $shortname = 'profile_field_text';
+        $exists = isset($fields[$shortname]) && $fields[$shortname] == $shortname;
+        $this->assertTrue($exists);
+    }
+
+    /**
      * Validate that false is returned when obtaining field mapping for an
      * invalid entity type 
      */
@@ -270,6 +345,32 @@ class version1ImportConfigTest extends elis_database_test {
     }
 
     /**
+     * Validate that clearing values during configuration save only happens for
+     * the specified entity type
+     */
+    public function testSaveMappingDoesNotDeleteMappingsForOtherEntities() {
+        global $DB;
+
+        //create a user mapping record
+        $mapping = new stdClass;
+        $mapping->entitytype = 'user';
+        $mapping->standardfieldname = 'test';
+        $mapping->customfieldname = 'customtest';
+        $DB->insert_record('block_rlip_version1_fieldmap', $mapping);
+
+        //obtain the available fields for course mappings
+        $plugin = new rlip_importplugin_version1(NULL, false);
+        $options = $plugin->get_available_fields('user');
+
+        //store course mapping
+        rlipimport_version1_save_mapping('course', $options, array());
+
+        //data validation
+        $exists = $DB->record_exists('block_rlip_version1_fieldmap', array('entitytype' => 'user'));
+        $this->assertTrue($exists);
+    }
+
+    /**
      * Validate that only valid field mappings can be saved
      */
     public function testSaveMappingDoesNotSaveInvalidFields() {
@@ -322,6 +423,5 @@ class version1ImportConfigTest extends elis_database_test {
         $select = 'standardfieldname = customfieldname';
         $count = $DB->count_records_select('block_rlip_version1_fieldmap', $select);
         $this->assertEquals($count, count($options));
-        
     }
 }
