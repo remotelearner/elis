@@ -35,7 +35,7 @@ require_once($CFG->dirroot . '/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 
 /**
- * File plugin that just stores read records in memory 
+ * File plugin that just stores read records in memory
  */
 class rlip_fileplugin_bogus extends rlip_fileplugin_base {
     //stored data
@@ -246,7 +246,7 @@ class version1ExportTest extends elis_database_test {
      *
      * @return array The export data
      */
-    protected function get_export_data() {
+    protected function get_export_data($manual = true, $targetstarttime = 0, $lastruntime = 0) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/version1.class.php');
 
@@ -255,15 +255,15 @@ class version1ExportTest extends elis_database_test {
     	$fileplugin->open(RLIP_FILE_WRITE);
 
     	//our specific export
-        $exportplugin = new rlip_exportplugin_version1($fileplugin);
-        $exportplugin->init();
+        $exportplugin = new rlip_exportplugin_version1($fileplugin, $manual);
+        $exportplugin->init($targetstarttime, $lastruntime);
         $exportplugin->export_records(0);
         $exportplugin->close();
 
         $fileplugin->close();
 
         return $fileplugin->get_data();
-    } 
+    }
 
     /**
      * Create a custom field category
@@ -366,7 +366,7 @@ class version1ExportTest extends elis_database_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true); 
+        $this->assertEquals($exists, true);
     }
 
     /**
@@ -1316,7 +1316,7 @@ class version1ExportTest extends elis_database_test {
     public function testVersionExportOpensAndClosesFile() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
-        
+
         //run run the export
         $fileplugin = new rlip_fileplugin_openclose();
         $instance = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin);
@@ -1370,6 +1370,76 @@ class version1ExportTest extends elis_database_test {
         $DB->insert_record('grade_grades', $gradegrade);
 
         $data = $this->get_export_data();
+
+        //set up the expected output, only including the more recent record
+        $expected_header = array(get_string('header_firstname', 'rlipexport_version1'),
+                                 get_string('header_lastname', 'rlipexport_version1'),
+                                 get_string('header_username', 'rlipexport_version1'),
+                                 get_string('header_useridnumber', 'rlipexport_version1'),
+                                 get_string('header_courseidnumber', 'rlipexport_version1'),
+                                 get_string('header_startdate', 'rlipexport_version1'),
+                                 get_string('header_enddate', 'rlipexport_version1'),
+                                 get_string('header_grade', 'rlipexport_version1'),
+                                 get_string('header_letter', 'rlipexport_version1'));
+        $expected_body = array('test',
+                               'user',
+                               'testuser',
+                               'testuseridnumber',
+                               'newcourse',
+                               date('M/d/Y', $time),
+                               date('M/d/Y'),
+                               80.00000,
+                               'B-');
+        $expected_data = array($expected_header, $expected_body);
+
+        //validation
+        $this->assertEquals($data, $expected_data);
+    }
+
+    /**
+     * Validate that the export runs incrementally, only including data
+     * modified within the set time delta
+     */
+    public function testVersion1ExportRunsIncrementallyScheduled() {
+        global $DB;
+
+        set_config('nonincremental', 0, 'rlipexport_version1');
+
+        $this->load_csv_data();
+
+        //this is the record we want to exclude
+        $record = new stdClass;
+        $record->id = 1;
+        $record->timemodified = 0;
+        $DB->update_record('grade_grades', $record);
+
+        //time to set on recrod to be included
+        $time = time() - 23 * HOURSECS;
+
+        //create a new export record
+        $course = new stdClass;
+        $course->shortname = 'newcourse';
+        $course->startdate = $time;
+        $course->category = 1;
+        $course->id = $DB->insert_record('course', $course);
+
+        $gradeitem = new stdClass;
+        $gradeitem->itemtype = 'course';
+        $gradeitem->courseid = $course->id;
+        $gradeitem->id = $DB->insert_record('grade_items', $gradeitem);
+
+        $gradegrade = new stdClass;
+        $gradegrade->itemid = $gradeitem->id;
+        $gradegrade->userid = 2;
+        $gradegrade->finalgrade = 80.00000;
+        $gradegrade->timemodified = $time;
+        $DB->insert_record('grade_grades', $gradegrade);
+
+        //get export data with manual set to false as this is a scheduled incremental export
+        $targetstarttime = time(); //today
+        $lastruntime = time() - 86400; //yesterday
+
+        $data = $this->get_export_data(false, $targetstarttime, $lastruntime);
 
         //set up the expected output, only including the more recent record
         $expected_header = array(get_string('header_firstname', 'rlipexport_version1'),

@@ -518,9 +518,12 @@ function run_ipjob($taskname, $maxruntime = 0) {
     //determine the "ideal" target start time
     $targetstarttime = $ipjob->nextruntime;
 
-    // Set the next run time
+    // Set the next run time & lastruntime
     if ($task = $DB->get_record('elis_scheduled_tasks',
                                 array('taskname' => $taskname))) {
+
+        //record last runtime
+        $lastruntime = (int)($ipjob->lastruntime);
 
         //update next runtime on the scheduled task record
         $nextruntime = $ipjob->nextruntime;
@@ -530,6 +533,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
         } while ($nextruntime <= $timenow);
         $task->nextruntime = $nextruntime;
         $DB->update_record('elis_scheduled_tasks', $task);
+
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
         $DB->update_record('ip_schedule', $ipjob);
@@ -574,23 +578,26 @@ function run_ipjob($taskname, $maxruntime = 0) {
             return false;
     }
 
+    $ipjob->lastruntime = $task->lastruntime;
+
     //run the task, specifying the ideal start time, maximum run time & state
-    if (($newstate = $instance->run($targetstarttime, $maxruntime, $state)) !== null) {
+    if (($newstate = $instance->run($targetstarttime, $lastruntime, $maxruntime, $state)) !== null) {
         // Task did not complete - RESET nextruntime back & save new state!
         mtrace("run_ipjob({$taskname}): IP scheduled task exceeded time limit of {$maxruntime} secs");
         //update next runtime on the scheduled task record
         $task->nextruntime = $targetstarttime;
+        $task->lastruntime = $ipjob->lastruntime = $lastruntime;
         $DB->update_record('elis_scheduled_tasks', $task);
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
         $data['state'] = $newstate;
         $ipjob->config = serialize($data);
-        $DB->update_record('ip_schedule', $ipjob);
     } else if ($state !== null) {
         unset($data['state']);
         $ipjob->config = serialize($data);
-        $DB->update_record('ip_schedule', $ipjob);
     }
+    $DB->update_record('ip_schedule', $ipjob);
+
     return true;
 }
 
@@ -689,7 +696,7 @@ function rlip_get_log_table($logs) {
         if ($log->targetstarttime == 0) {
             //process was run manually
             $executiontype = get_string('manual', 'block_rlip');
-            $targetstarttime = get_string('na', 'block_rlip'); 
+            $targetstarttime = get_string('na', 'block_rlip');
         } else {
             //process was run automatically (cron)
             $executiontype = get_string('automatic', 'block_rlip');
@@ -723,7 +730,7 @@ function rlip_log_table_html($table) {
 
     if (empty($table->data)) {
         //no table data, so instead return message
-        return $OUTPUT->heading(get_string('nologmessage', 'block_rlip'));        
+        return $OUTPUT->heading(get_string('nologmessage', 'block_rlip'));
     }
 
     //obtain table html

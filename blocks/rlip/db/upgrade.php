@@ -147,5 +147,27 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         upgrade_block_savepoint(true, 2012031900, 'rlip');
     }
 
+    if ($result && $oldversion < 2012032300) {
+        // Get the ip schedule table, so we can add a "lastruntime" column
+        $table = new xmldb_table('ip_schedule');
+
+        // Add the "lastruntime" field
+        $field = new xmldb_field('lastruntime', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'config');
+        $dbman->add_field($table, $field);
+
+        // Set up initial state
+        $taskname =  $DB->sql_concat("'ipjob_'", 'ipjob.id');
+        $sql = "UPDATE {ip_schedule} ipjob
+                SET lastruntime = (
+                  SELECT lastruntime
+                  FROM {elis_scheduled_tasks} task
+                  WHERE task.taskname = {$taskname}
+                )";
+        $DB->execute($sql);
+
+        // block rlip savepoint reached
+        upgrade_block_savepoint(true, 2012032300, 'rlip');
+    }
+
     return $result;
 }

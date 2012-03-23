@@ -34,7 +34,7 @@ require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
 /**
- * File plugin that just stores read records in memory 
+ * File plugin that just stores read records in memory
  */
 class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
     //stored data
@@ -189,6 +189,8 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
      *                             time when this task was meant to be run
      * @param int $writedelay      The number of seconds delay each write call
      *                             (passed to rlip_fileplugin_memoryexport)
+     * @param int $lastruntime     The last time the export was run
+     *                             (required for incremental scheduled export)
      * @param int $maxruntime      The max time in seconds to complete export
      *                             default: 0 => unlimited
      * @param object $state        Previous ran state data to continue from
@@ -196,7 +198,7 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
      * @return object              state object on error (time limit exceeded)
      *                             null on success!
      */
-    function run_export($targetstarttime = 0, $writedelay = 0, $maxruntime = 0, $state = null) {
+    function run_export($targetstarttime = 0, $writedelay = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/version1.class.php');
 
@@ -206,7 +208,7 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
 
     	//our specific export
         $exportplugin = new rlip_exportplugin_version1($fileplugin);
-        return $exportplugin->run($targetstarttime, $maxruntime, $state);
+        return $exportplugin->run($targetstarttime, $lastruntime, $maxruntime, $state);
     }
 
     /**
@@ -358,7 +360,7 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
         $this->load_csv_data2();
 
         //run the export
-        $result = $this->run_export(1000000000, 3, 1);
+        $result = $this->run_export(1000000000, 3, 0, 1);
         $this->assertNotNull($result); // state object should be returned
     }
 

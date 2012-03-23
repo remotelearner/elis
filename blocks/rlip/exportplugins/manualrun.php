@@ -55,7 +55,9 @@ if ($data = $form->get_data()) {
     //run the export
     $filename = rlip_get_export_filename($plugin, $USER->timezone);
     $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, false, true);
-    $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin);
+    //indicate to the factory class that this is a manual run
+    $manual = true;
+    $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin, $manual);
     $instance->run();
 
     //stop page output so that HTML isn't included in the export file

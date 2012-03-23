@@ -92,6 +92,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *
      * @param object $provider The import file provider that will be used to
      *                         obtain any applicable import files
+     * @param boolean $manual  Set to true if a manual run
      */
     function __construct($provider = NULL, $manual = false) {
         global $CFG;
@@ -565,6 +566,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *
      * @param int $targetstarttime The timestamp representing the theoretical
      *                             time when this task was meant to be run
+     * @param int $lastruntime     The last time the export was run
+     *                             (N/A for import)
      * @param int $maxruntime      The max time in seconds to complete import
      *                             default: 0 => unlimited time
      * @param object $state        Previous ran state data to continue from
@@ -573,7 +576,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *                             null on success!
      *         ->result            false on error, i.e. time limit exceeded.
      */
-    function run($targetstarttime = 0, $maxruntime = 0, $state = null) {
+    function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         //track the provided target start time
         $this->dblogger->set_targetstarttime($targetstarttime);
 
