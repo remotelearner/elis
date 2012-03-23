@@ -380,8 +380,7 @@ class generalized_filter_multifilter {
             // UPM filter uses Moodle profile, we should obey 'extra' option
             // Generate a list of custom fields
             foreach ($this->sections as $group => $section) {
-                $ctxtlvl = context_level_base::get_custom_context_level(
-                               $section['name'], 'elis_program');
+                $ctxtlvl = context_elis_helper::get_level_from_name($section['name']);
 
                 $this->sections[$group]['contextlevel'] = $ctxtlvl;
 
