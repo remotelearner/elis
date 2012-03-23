@@ -42,8 +42,7 @@ if (empty($CFG->extramemorylimit)) {
     raise_memory_limit($CFG->extramemorylimit);
 }
 
-$timenow = time();
-mtrace('Server Time: '.date('r', $timenow)."\n\n");
+mtrace('RLIP external cron start - Server Time: '.date('r', time())."\n\n");
 
 $filename = basename($argv[0]);
 // Get command-line args: <plugin> <userid> <targetstarttime> <lastruntime>
@@ -98,9 +97,6 @@ switch ($type) {
         exit;
 }
 $instance->run($targetstarttime);
-
-// Get performance data and display that in with the standard output
-$perfinfo = get_performance_info();
-mtrace("\n\n". $perfinfo['txt']);
+mtrace('RLIP external cron end - Server Time: '.date('r', time())."\n\n");
 
 // end of file
