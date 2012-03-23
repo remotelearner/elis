@@ -320,12 +320,11 @@ class pm_context_set {
     function _cluster_allowed($id) {
         global $DB;
         if (isset($this->contexts['cluster'])) {
-            $ctxlvl = context_level_base::get_custom_context_level('cluster', 'elis_program');
-            $context = get_context_instance($ctxlvl, $id);
+            $context = context_elis_userset::instance($id);
             $ancestorids = substr(str_replace('/',',',$context->path),1);
             $select = "id IN ($ancestorids)
                    AND instanceid IN (".implode(',',$this->contexts['cluster']).")
-                   AND contextlevel = $ctxlvl";
+                   AND contextlevel = ".CONTEXT_ELIS_USERSET;
             return $DB->record_exists_select('context', $select);
         }
         return false;

@@ -614,7 +614,7 @@ function pm_notify_role_assign_handler($eventdata){
         return true;
     } else {
         if (empty($course) && $eventdata->contextid != CONTEXT_ELIS_CLASS) { // TBD
-            //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(); eventdata->contextid != context_level_base::get_custom_context_level('class', 'elis_program')");
+            //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(); eventdata->contextid != CONTEXT_ELIS_CLASS");
             return true;
         }
         $name = !empty($course) ? $course->fullname

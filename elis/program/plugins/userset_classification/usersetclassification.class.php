@@ -42,10 +42,6 @@ class usersetclassification extends elis_data_object {
 
     var $verbose_name = 'userset_classification';
 
-    protected function get_field_context_level() {
-        return context_level_base::get_custom_context_level('cluster', 'elis_program');
-    }
-
     function __get($name) {
         if (strncmp($name,'param_',6) == 0) {
             $paramname = substr($name,6);

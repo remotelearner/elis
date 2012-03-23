@@ -73,10 +73,6 @@ class curriculumstudent extends elis_data_object {
 }
 ';
 
-    protected function get_field_context_level() {
-        return context_level_base::get_custom_context_level('curriculum', 'elis_program');
-    }
-
     /////////////////////////////////////////////////////////////////////
     //                                                                 //
     //  STANDARD FUNCTIONS:                                            //
