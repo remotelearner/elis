@@ -483,8 +483,16 @@ function pm_assign_instructor_from_mdl($eventdata) {
 function pm_assign_student_from_mdl($eventdata) {
     global $CFG, $DB;
 
+    // First check if this is a standard Moodle context
+    $context = context::instance_by_id($eventdata->contextid, IGNORE_MISSING);
+
+    // If not, try checking to see if this is a custom ELIS context
+    if (!$context) {
+        $context = context_elis::instance_by_id($eventdata->contextid, IGNORE_MISSING);
+    }
+
     /// We get all context assigns, so check that this is a class. If not, we're done.
-     if (!($context = context_elis::instance_by_id($eventdata->contextid,IGNORE_MISSING))) {
+     if (!$context) {
         if (in_cron()) {
             mtrace(get_string('invalidcontext'));
         } else {
