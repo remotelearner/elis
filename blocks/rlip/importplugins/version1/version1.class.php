@@ -279,17 +279,23 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $createorupdate = get_config('rlipimport_version1', 'createorupdate');
 
         if (!empty($createorupdate)) {
-            if (isset($record->username) || isset($record->record->email) || isset($record->idnumber)) {
+            //determine if any identifying fields are set
+            $username_set = isset($record->username) && $record->username !== '';
+            $email_set = isset($record->email) && $record->email !== '';
+            $idnumber_set = isset($record->idnumber) && $record->idnumber !== '';
+
+            //make sure at least one identifying field is set
+            if ($username_set || $email_set || $idnumber_set) {
                 //identify the user
                 $params = array();
-                if (isset($record->username)) {
+                if ($username_set) {
                     $params['username'] = $record->username;
                     $params['mnethostid'] = $CFG->mnet_localhost_id;
                 }
-                if (isset($record->email)) {
+                if ($email_set) {
                     $params['email'] = $record->email;
                 }
-                if (isset($record->idnumber)) {
+                if ($idnumber_set) {
                     $params['idnumber'] = $record->idnumber;
                 }
 
@@ -857,7 +863,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $createorupdate = get_config('rlipimport_version1', 'createorupdate');
 
         if (!empty($createorupdate)) {
-            if (isset($record->shortname)) {
+            if (isset($record->shortname) && $record->shortname !== '') {
                 //identify the course
                 if ($DB->record_exists('course', array('shortname' => $record->shortname))) {
                     //course exists, so the action is an update
