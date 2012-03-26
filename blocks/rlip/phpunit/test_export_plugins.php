@@ -57,8 +57,13 @@ class rlip_exportplugin_mock extends rlip_exportplugin_base {
     /**
      * Perform initialization that should
      * be done at the beginning of the export
+     *
+     * @param int $targetstarttime The timestamp representing the theoretical
+     *                             time when this task was meant to be run
+     * @param int $lastruntime     The last time the export was run
+     *                             (required for incremental scheduled export)
      */
-    function init() {
+    function init($targetstarttime = 0, $lastruntime = 0) {
         //nothing to do
     }
 
@@ -200,8 +205,13 @@ class rlip_exportplugin_empty extends rlip_exportplugin_base {
     /**
      * Perform initialization that should
      * be done at the beginning of the export
+     *
+     * @param int $targetstarttime The timestamp representing the theoretical
+     *                             time when this task was meant to be run
+     * @param int $lastruntime     The last time the export was run
+     *                             (required for incremental scheduled export)
      */
-    function init() {
+    function init($targetstarttime = 0, $lastruntime = 0) {
         $this->num_init_calls++;
     }
 

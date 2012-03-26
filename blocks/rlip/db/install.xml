@@ -37,8 +37,9 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="schedule owner" PREVIOUS="id" NEXT="plugin"/>
         <FIELD NAME="plugin" TYPE="char" LENGTH="63" NOTNULL="true" SEQUENCE="false" COMMENT="The IP plugin type" PREVIOUS="userid" NEXT="config"/>
-        <FIELD NAME="config" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" COMMENT="Serialized configuration for the scheduled task" PREVIOUS="plugin" NEXT="nextruntime"/>
-        <FIELD NAME="nextruntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Mirror of elis scheduled task next runtime" PREVIOUS="config"/>
+        <FIELD NAME="config" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" COMMENT="Serialized configuration for the scheduled task" PREVIOUS="plugin" NEXT="lastruntime"/>
+        <FIELD NAME="lastruntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Mirror of elis scheduled task last runtime" PREVIOUS="config" NEXT="nextruntime"/>
+        <FIELD NAME="nextruntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Mirror of elis scheduled task next runtime" PREVIOUS="lastruntime"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
