@@ -894,12 +894,12 @@ function pm_update_enrolment_status() {
 
 
     /// Get all classes with unlocked enrolments.
-    $select = 'SELECT cce.classid as classid, COUNT(cce.userid) as numusers ';
-    $from   = 'FROM {'.student::TABLE.'} cce ';
-    $where  = 'WHERE cce.locked = 0 ';
-    $group  = 'GROUP BY classid ';
-    $order  = 'ORDER BY classid ASC ';
-    $sql    = $select . $from . $where . $group . $order;
+    $sql = 'SELECT cce.classid as classid, COUNT(cce.userid) as numusers
+            FROM {'.student::TABLE.'} cce
+            INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = cce.classid
+            WHERE cce.locked = 0
+            GROUP BY cce.classid
+            ORDER BY cce.classid ASC';
 
     $rs = $DB->get_recordset_sql($sql);
     foreach ($rs as $rec) {

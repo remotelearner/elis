@@ -97,4 +97,52 @@ class autoClassCompletionTest extends elis_database_test {
         $this->assertEquals(STUSTATUS_PASSED, $sturecord->completestatusid);
         $this->assertEquals(1, $sturecord->locked);
     }
+
+    public function testEnrolmentWithInvalidClassID() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('lib.php'));
+
+        $this->load_csv_data();
+
+        $enrolment = new stdClass;
+        $enrolment->classid          = 1000; // Invalid class ID
+        $enrolment->userid           = 103;
+        $enrolment->enrolmenttime    = time();
+        $enrolment->completetime     = 0;
+        $enrolment->endtime          = 0;
+        $enrolment->completestatusid = 0;
+        $enrolment->grade            = 0;
+        $enrolment->credits          = 0.0;
+        $enrolment->locked           = 0;
+
+        // Directly insert the record to bypass 'student' class validation on the classid
+        $this->assertGreaterThan(0, $DB->insert_record(student::TABLE, $enrolment));
+
+        //attempt to update status before the required learning objective is
+        //satisfied
+
+        // ELIS-4955 -- This should ignore the bad data and proceed without error
+        pm_update_enrolment_status();
+
+        //validate that the enrolment is still in progress
+        $sturecord = new student(100);
+        $this->assertEquals(STUSTATUS_NOTCOMPLETE, $sturecord->completestatusid);
+        $this->assertEquals(0, $sturecord->locked);
+
+        //satisfy the required learning objective
+        $graderecord = new student_grade(1);
+        $graderecord->grade = 80;
+        $graderecord->save();
+
+        //attempt to update status now that the required learning objective is
+        //satisfied
+        pm_update_enrolment_status();
+
+        //validate that the enrolment is passed
+        $sturecord = new student(100);
+        $this->assertEquals(STUSTATUS_PASSED, $sturecord->completestatusid);
+        $this->assertEquals(1, $sturecord->locked);
+    }
+
 }
