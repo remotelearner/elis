@@ -139,6 +139,10 @@ class ip_schedule_page extends elis_page {
                                  );
             }
             echo html_writer::table($table);
+
+            echo $OUTPUT->notification(get_string('schedulingtime',
+                                                  'block_rlip', $display_name),
+                                       'rlip_italic_header', 'left');
         } else {
             echo $OUTPUT->notification(get_string('rlip_jobs_heading_nojobs',
                                                   'block_rlip', $display_name),
