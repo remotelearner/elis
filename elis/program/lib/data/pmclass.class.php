@@ -335,6 +335,10 @@ class pmclass extends data_object_with_custom_fields {
      * records where applicable based on class grade and required completion elements
      */
     function update_enrolment_status() {
+        //information about which course this belongs to may not have been
+        //loaded due to lazy-loading        
+        $this->load();
+
 //        if (isset($this->course) && (get_class($this->course) == 'course')) {
         if (isset($this->courseid)) {
             $course = new course($this->courseid);
