@@ -128,6 +128,27 @@ function elis_files_get_services() {
 
     return $services;
 }
+
+function RLsimpleXMLelement($resp, $displayerrors = true) {
+    //echo "RLsimpleXMLelement() => resp = {$resp}";
+    $details = $resp;
+    if (($preend = strpos($resp, '<title><!DOCTYPE')) !== false &&
+        ($lastentry = strrpos($resp, "<entry>")) !== false) {
+        $details = substr($resp, $preend + 7, -7);
+        $resp = substr($resp, 0, $lastentry - 1) ."\n</feed>";
+        error_log("repository/elis_files/lib/lib.php:: WARNING - Alfresco Server Error: {$details}");
+    }
+    $resp = preg_replace('/&nbsp;/', ' ', $resp); // TBD?
+    libxml_use_internal_errors(true);
+    try {
+        $sxml = new SimpleXMLElement($resp);
+    } catch (Exception $e) {
+        error_log("repository/elis_files/lib/lib.php:: WARNING - Alfresco Server Error: BAD XML => {$details}");
+        return false;
+    }
+    return $sxml;
+}
+
 /**
  * Determine the current repository version.
  *
@@ -139,10 +160,8 @@ function elis_files_get_services() {
 function elis_files_get_repository_version($versioncheck = '') {
     $response = elis_files_request('/moodle/repoversion');
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -919,10 +938,8 @@ function elis_files_search($query, $page = 1, $perpage = 9999) {
     $return->folders = array();
     $return->files   = array();
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -947,6 +964,8 @@ function elis_files_search($query, $page = 1, $perpage = 9999) {
 
             $value = $entry->xpath('relevance:score');
             $node->score = (float)$value[0][0];
+            $value = $entry->xpath('alf:noderef');
+            $node->noderef = $value[0][0];
 
             $type = elis_files_get_type($node->uuid);
 
@@ -1036,10 +1055,8 @@ function elis_files_category_search($categories) {
         $cattitle = str_replace($search, $replace, $category->title);
         $response = elis_files_utils_invoke_service('/moodle/categorysearch/' . $cattitle);
 
-        try {
-            $sxml = new SimpleXMLElement($response);
-        } catch (Exception $e) {
-            debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+        $sxml = RLsimpleXMLelement($response);
+        if (empty($sxml)) {
             return false;
         }
 
@@ -1090,10 +1107,8 @@ function elis_files_get_node_categories($noderef = '', $uuid = '') {
 
     $response = elis_files_request('/moodle/nodecategory?nodeRef=' . $noderef);
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -1146,10 +1161,8 @@ function elis_files_process_categories($sxml) {
 function elis_files_get_categories() {
     $response = elis_files_request('/moodle/categories');
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -1213,10 +1226,8 @@ function elis_files_folder_structure() {
 
     $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -1597,10 +1608,8 @@ function elis_files_process_node($dom, $node, &$type) {
 function elis_files_root_move($fromuuid, $touuid) {
     $response = elis_files_request('/moodle/movenode/' . $fromuuid . '/' . $touuid);
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -1623,10 +1632,8 @@ function elis_files_root_move($fromuuid, $touuid) {
 function elis_files_move_node($fromuuid, $touuid) {
     $response = elis_files_request('/moodle/movenode/' . $fromuuid . '/' . $touuid);
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -1682,10 +1689,8 @@ function elis_files_create_user($user, $password = '') {
         return false;
     }
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -1775,10 +1780,8 @@ function elis_files_has_permission($uuid, $username = '', $edit = false) {
 
     $response = elis_files_request('/moodle/getpermissions/' . $uuid . '?username=' . $username);
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -1840,10 +1843,8 @@ function elis_files_get_permissions($uuid, $username = '') {
 
     $response = elis_files_request('/moodle/getpermissions/' . $uuid . (!empty($username) ? '?username=' . $username : ''));
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -1942,10 +1943,8 @@ function elis_files_set_permission($username, $uuid, $role, $capability) {
 
     $response = elis_files_send('/moodle/setpermissions/' . $uuid, $postdata, 'POST');
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -2012,10 +2011,8 @@ function elis_files_node_rename($uuid, $newname) {
 
     $response = elis_files_send('/moodle/noderename/' . $uuid, array('name' => $newname), 'POST');
 
-    try {
-        $sxml = new SimpleXMLElement($response);
-    } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+    $sxml = RLsimpleXMLelement($response);
+    if (empty($sxml)) {
         return false;
     }
 
@@ -2353,7 +2350,10 @@ function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
         curl_close($session);
 
         if ($httpcode == 200 || $httpcode == 201) {
-            $sxml       = new SimpleXMLElement($return_data);
+            $sxml = RLsimpleXMLelement($return_data);
+            if (empty($sxml)) {
+                return false;
+            }
             $alf_ticket = current($sxml);
         } else {
             return false;
