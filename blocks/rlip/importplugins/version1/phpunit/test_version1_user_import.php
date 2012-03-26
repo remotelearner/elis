@@ -549,10 +549,22 @@ class version1UserImportTest extends elis_database_test {
                                                   'auth' => 'manual'));
     }
 
+    protected function set_password_policy_for_tests() {
+        global $CFG;
+        $CFG->passwordpolicy = true;
+        $CFG->minpasswordlength = 8;
+        $CFG->minpassworddigits = 1;
+        $CFG->minpasswordlower = 1;
+        $CFG->minpasswordupper = 1;
+        $CFG->minpasswordnonalphanum = 1;
+        $CFG->maxconsecutiveidentchars = 0;
+    }
+
     /**
      * Validate that supplied passwords must match the site's password policy on user creation
      */
     public function testVersion1ImportPreventsInvalidUserPasswordOnCreate() {
+        $this->set_password_policy_for_tests();
         $this->run_core_user_import(array('password' => 'asdf'));
         $this->assert_core_user_does_not_exist();
     }
@@ -562,7 +574,7 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportPreventsInvalidUserPasswordOnUpdate() {
         global $CFG, $DB;
-
+        $this->set_password_policy_for_tests();
         $this->run_core_user_import(array());
 
         $data = array('action' => 'update',

@@ -501,7 +501,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //make sure country refers to a valid country code
         $countries = get_string_manager()->get_list_of_countries();
-        if (!$this->validate_fixed_list($record, 'country', array_keys($countries))) {
+        if (!$this->validate_fixed_list($record, 'country',
+                        array_keys($countries), array_flip($countries))) {
             $this->process_error("[$filename line $this->linenumber] \"country\" value of {$record->country} is not a valid country code.");
             return false;
         }
