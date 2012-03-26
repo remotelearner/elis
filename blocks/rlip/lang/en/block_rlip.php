@@ -72,7 +72,7 @@ $string['rlip_global_scheduling'] = 'Scheduling';
 $string['rlip_jobs_header_label'] = 'Label';
 $string['rlip_jobs_header_lastran'] = 'Last ran at';
 $string['rlip_jobs_header_modified'] = 'Modified';
-$string['rlip_jobs_header_nextrun'] = 'Will run next at';
+$string['rlip_jobs_header_nextrun'] = 'Will run next at*';
 $string['rlip_jobs_header_owner'] = 'Owner';
 $string['rlip_jobs_heading_fullinstructions'] = 'Click a scheduled job\'s label to edit it or click the "New job" button below to schedule an IP job.<br/>&nbsp;';
 $string['rlip_jobs_heading_jobs'] = 'Current scheduled IP jobs for: {$a}';
@@ -84,4 +84,4 @@ $string['rlipimportplugins'] = 'Import Plugins';
 $string['runnow'] = 'Run Now';
 $string['runmanually'] = 'Run manually';
 $string['schedulepagetitle'] = 'Schedule IP';
-
+$string['schedulingtime'] = "*Scheduled jobs may not run exactly at the specified time.";
