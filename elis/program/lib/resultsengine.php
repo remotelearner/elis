@@ -26,6 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once dirname(__FILE__).'/setup.php';
 require_once elispm::lib('data/usertrack.class.php');
 require_once elis::lib('data/customfield.class.php');
 
