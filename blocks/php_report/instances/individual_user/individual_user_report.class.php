@@ -298,7 +298,7 @@ class individual_user_report extends table_report {
                                  $datum->credits, $export_format);
              $result[] = $this->add_grouping_header(
                                  get_string('transform_grade', $this->lang_file) . ': ',
-                                 $datum->grade, $export_format);
+                                 pm_display_grade($datum->grade), $export_format);
              $result[] = $this->add_grouping_header($grouping->label,
                                  $grouping_current[$grouping->field],
                                  $export_format);
@@ -467,7 +467,7 @@ class individual_user_report extends table_report {
 
         $record->score = (empty($record->score))
                        ? get_string('na', $this->lang_file)
-                       : $record->score .
+                       : pm_display_grade($record->score) .
                          (($export_format == php_report::$EXPORT_FORMAT_CSV)
                          ? '' :  get_string('percent_symbol', $this->lang_file));
         if (!$init_column_width && $export_format == php_report::$EXPORT_FORMAT_PDF) {

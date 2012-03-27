@@ -202,7 +202,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         //query that calculates total number completed
         $num_complete_sql = $this->get_report_sql('COUNT(ccg.id)');
         //query that calculates average final course grade
-        $avg_score_sql = $this->get_report_sql('AVG(gg.finalgrade)');
+        $avg_score_sql = $this->get_report_sql('AVG(stu.grade)');
 
         //CM class idnumber
         $class_heading = get_string('column_class', 'rlreport_course_completion_gas_gauge');
@@ -318,7 +318,7 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
             $columns .= ", {$lastname}";
         }
         $sql = "SELECT {$columns}, COUNT(cc.id) AS numcompletionelements,
-                u.id AS cmuserid, gi.grademax
+                u.id AS cmuserid, gi.grademax, stu.grade AS elisgrade
                 FROM {". user::TABLE .'} u
                 JOIN {'. student::TABLE .'} stu
                   ON u.id = stu.userid
@@ -393,10 +393,15 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         $record->numcompleted = get_string('completed_tally', 'rlreport_course_completion_gas_gauge', $record);
 
         //format the Moodle gradebook course score
-        if ($record->score === NULL || empty($record->grademax)) {
-            $record->score = get_string('na', 'rlreport_course_completion_gas_gauge');
+        // ELIS-4916(ELIS-4439): now using ELIS grade!
+        //if ($record->score === NULL || empty($record->grademax)) {
+        if (!empty($record->elisgrade)) {
+            $record->score = pm_display_grade($record->elisgrade);
+            if (is_numeric($record->score) && $export_format != php_report::$EXPORT_FORMAT_CSV) {
+                $record->score .= get_string('percent_symbol', 'rlreport_course_completion_gas_gauge');
+            }
         } else {
-            $record->score = number_format($record->score/$record->grademax*100, 1);
+            $record->score = get_string('na', 'rlreport_course_completion_gas_gauge');
         }
 
         return $record;
@@ -420,7 +425,8 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
         if ($record->score === NULL) {
             $record->score = get_string('na', 'rlreport_course_completion_gas_gauge');
         } else {
-            $record->score = number_format($record->score, 1);
+            $record->score = pm_display_grade($record->score);
+            // TBD: NO $export_format passed to append '%'
         }
 
         return $record;
