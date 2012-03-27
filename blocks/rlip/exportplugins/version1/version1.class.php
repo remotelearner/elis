@@ -28,7 +28,7 @@ require_once($CFG->dirroot.'/blocks/rlip/rlip_exportplugin.class.php');
 
 /**
  * Moodle course grade export compatible with the original Moodle-only grade
- * export for Moodle 1.9 
+ * export for Moodle 1.9
  */
 class rlip_exportplugin_version1 extends rlip_exportplugin_base {
     //mapping of profile field ids to data types
@@ -43,8 +43,13 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
     /**
      * Perform initialization that should
      * be done at the beginning of the export
+     *
+     * @param int $targetstarttime The timestamp representing the theoretical
+     *                             time when this task was meant to be run
+     * @param int $lastruntime     The last time the export was run
+     *                             (required for incremental scheduled export)
      */
-    function init() {
+    function init($targetstarttime = 0, $lastruntime = 0) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
@@ -142,19 +147,28 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         //determine if we're in incremental or non-incremental mode
         $nonincremental = get_config('rlipexport_version1', 'nonincremental');
 
+
         if (empty($nonincremental)) {
-            //incremental mode
+            if($this->manual) {
+                //manual export incremental mode
 
-            //get string delta
-            $incrementaldelta = get_config('rlipexport_version1', 'incrementaldelta');
-            //conver to number of seconds
-            $numsecs = rlip_time_string_to_offset($incrementaldelta);
+                //get string delta
+                $incrementaldelta = get_config('rlipexport_version1', 'incrementaldelta');
+                //conver to number of seconds
+                $numsecs = rlip_time_string_to_offset($incrementaldelta);
 
-            //SQL and params
-            $sql .= " AND gg.timemodified >= ?";
+            } else if (!$this->manual) {
+                //scheduled export incremental mode
+
+                //calculate number of seconds
+                $numsecs = $targetstarttime - $lastruntime;
+            }
+
             $extra_params[] = time() - $numsecs;
+           //SQL and params
+            $sql .= " AND gg.timemodified >= ?";
         }
- 
+
         $this->recordset = $DB->get_recordset_sql($sql, $extra_params);
 
         //write out header

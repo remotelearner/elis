@@ -312,10 +312,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
                      'config' => 'moodle',
                      'ip_schedule' => 'block_rlip',
                      'elis_scheduled_tasks' => 'elis_core',
+                     'block_rlip_version1_fieldmap' => 'rlipimport_version1',
                      //this prevents createorupdate from being used
-                     'config_plugins' => 'moodle',
-                     'elis_scheduled_tasks' => 'elis_core',
-                     'ip_schedule' => 'block_rlip');
+                     'config_plugins' => 'moodle');
     }
 
     /**
@@ -1108,7 +1107,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider);
-        $result = $importplugin->run(0, 1); // maxruntime 1 sec
+        $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
         $this->assertNotNull($result);
         if (!empty($result)) {
             //print_object($result);
@@ -1266,7 +1265,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
      * Validate that DB logging records the correct number of successes and
      * failues from import file
      */
-    public function tesVersion1tDBLoggingLogsCorrectCountsForManualImport() {
+    public function tesVersion1DBLoggingLogsCorrectCountsForManualImport() {
         global $DB;
 
         $data = array(array('entity' => 'user',
@@ -1306,6 +1305,31 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $exists = $DB->record_exists('block_rlip_summary_log', array('filesuccesses' => 1,
                                                                      'filefailures' => 2));
         $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate import accepts full country name in addition to country code
+     */
+    public function testVersion1AcceptsFullCountryOnImport() {
+        global $DB;
+
+        $data = array('entity'    => 'user',
+                      'action'    => 'create',
+                      'username'  => 'rlipusername',
+                      'password'  => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname'  => 'rliplastname',
+                      'email'     => 'rlipuser@rlipdomain.com',
+                      'city'      => 'rlipcity',
+                      'country'   => 'Canada'
+                );
+
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
+
+        $newuser = $DB->get_record('user', array('username' => $data['username']));
+        $this->assertFalse(empty($newuser));
+        $this->assertTrue($newuser->country == 'CA');
     }
 
     /**

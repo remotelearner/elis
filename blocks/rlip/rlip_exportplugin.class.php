@@ -34,14 +34,21 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
     var $fileplugin;
     var $fslogger = null;
     var $plugin;
+    //type of import, true if manual
+    var $manual = false;
 
 	//methods to be implemented in specific export
 
 	/**
      * Hook for performing any initialization that should
      * be done at the beginning of the export
+     *
+     * @param int $targetstarttime The timestamp representing the theoretical
+     *                             time when this task was meant to be run
+     * @param int $lastruntime     The last time the export was run
+     *                             (required for incremental scheduled export)
      */
-	abstract function init();
+	abstract function init($targetstarttime = 0, $lastruntime = 0);
 
     /**
      * Hook for specifiying whether more data remains to be exported
@@ -68,14 +75,16 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 	 * Default export plugin constructor
 	 *
 	 * @param object $fileplugin the file plugin used for output
+     * @param boolean $manual  Set to true if a manual run
 	 */
-    function __construct($fileplugin) {
+    function __construct($fileplugin, $manual = false) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
 
         $this->fileplugin = $fileplugin;
         $this->dblogger = new rlip_dblogger_export();
+        $this->manual = $manual;
 
         //convert class name to plugin name
         $class = get_class($this);
@@ -84,7 +93,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
         //set up the file-system logger, if exists
         $filename = get_config($this->plugin, 'logfilelocation');
         if (!empty($filename)) {
-            $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
+            $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true, $manual);
             $this->fslogger = new rlip_fslogger($fileplugin);
         }
 
@@ -100,6 +109,8 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      *
      * @param int $targetstarttime The timestamp representing the theoretical
      *                             time when this task was meant to be run
+     * @param int $lastruntime     The last time the export was run
+     *                             (required for incremental scheduled export)
      * @param int $maxruntime      The max time in seconds to complete export
      *                             default: 0 => unlimited
      * @param object $state        Previous ran state data to continue from
@@ -108,7 +119,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      *                             or null on success!
      *         ->result            false on error, i.e. time limit exceeded.
      */
-    function run($targetstarttime = 0, $maxruntime = 0, $state = null) {
+    function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         //track the start time as the current time
         $this->dblogger->set_starttime(time());
         //track the provided target start time
@@ -118,7 +129,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
         $this->fileplugin->open(RLIP_FILE_WRITE);
 
         //perform any necessary setup
-        $this->init();
+        $this->init($targetstarttime, $lastruntime);
 
         //run the main export process
         $result = $this->export_records($maxruntime);

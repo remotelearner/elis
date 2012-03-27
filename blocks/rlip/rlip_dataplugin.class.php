@@ -38,6 +38,8 @@ abstract class rlip_dataplugin {
      * @param int $targetstarttime The timestamp representing the theoretical
      *                             time when this task was meant to be run
      *                             false on error, i.e. time limit exceeded.
+     * @param int $lastruntime     The last time the export was run
+     *                             (required for incremental scheduled export)
      * @param int $maxruntime      The max time in seconds to complete export
      *                             default: 0 => unlimited
      * @param object $state        Previous ran state data to continue from
@@ -46,7 +48,7 @@ abstract class rlip_dataplugin {
      *                             or null on success!
      *         ->result            false on error, i.e. time limit exceeded.
      */
-    abstract function run($targetstarttime = 0, $maxruntime = 0, $state = null);
+    abstract function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null);
 
     /**
      * Specifies flag for indicating that this plugin is for testing only
@@ -54,6 +56,16 @@ abstract class rlip_dataplugin {
     function is_test_plugin() {
         //by default, assume the plugin is an "actual" plugin
         return false;
+    }
+
+    /**
+     * Add custom entries to the Settings block tree menu
+     *
+     * @param object $adminroot The main admin tree root object
+     * @param string $parentname The name of the parent node to add children to
+     */
+    function admintree_setup(&$adminroot, $parentname) {
+        //by default, do nothing
     }
 }
 
@@ -103,7 +115,7 @@ class rlip_dataplugin_factory {
             return new $classname($importprovider, $manual);
         } else {
             //export
-            return new $classname($fileplugin);
+            return new $classname($fileplugin, $manual);
         }
     }
 }

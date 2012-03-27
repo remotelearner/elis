@@ -92,6 +92,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *
      * @param object $provider The import file provider that will be used to
      *                         obtain any applicable import files
+     * @param boolean $manual  Set to true if a manual run
      */
     function __construct($provider = NULL, $manual = false) {
         global $CFG;
@@ -392,6 +393,26 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     }
 
     /**
+     * Obtains the listing of fields that are available for the specified
+     * entity type
+     *
+     * @param string $entitytype The type of entity
+     */
+    function get_available_fields($entitytype) {
+        global $DB;
+
+        if ($this->plugin_supports($entitytype) !== false) {
+            $attribute = 'available_fields_'.$entitytype;
+
+            $result = array_merge(array('action'), static::$$attribute);
+
+            return $result;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Validates whether the "action" field is correctly set on a record,
      * logging error to the file system, if necessary - call from child class
      * when needed
@@ -545,6 +566,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *
      * @param int $targetstarttime The timestamp representing the theoretical
      *                             time when this task was meant to be run
+     * @param int $lastruntime     The last time the export was run
+     *                             (N/A for import)
      * @param int $maxruntime      The max time in seconds to complete import
      *                             default: 0 => unlimited time
      * @param object $state        Previous ran state data to continue from
@@ -553,7 +576,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *                             null on success!
      *         ->result            false on error, i.e. time limit exceeded.
      */
-    function run($targetstarttime = 0, $maxruntime = 0, $state = null) {
+    function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         //track the provided target start time
         $this->dblogger->set_targetstarttime($targetstarttime);
 

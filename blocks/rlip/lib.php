@@ -31,6 +31,30 @@ define('IP_SCHEDULE_TIMELIMIT', 2 * 60); // max schedule run time in secs
 //constant for how many log records to show per page
 define('RLIP_LOGS_PER_PAGE', 20);
 
+require_once($CFG->dirroot.'/lib/adminlib.php');
+
+/**
+ * Settings page that can have child pages
+ *
+ * Note: This class must implement parentable_part_of_admin_tree in order for
+ * children to show up
+ */
+class rlip_category_settingpage extends admin_settingpage implements parentable_part_of_admin_tree {
+    /**
+     * Method that satisfies requirements of parent interface but delegates to
+     * the admin_settingpage functionality, depsite methods being
+     * non-equivalent
+     *
+     * @param object $setting is the admin_setting object you want to add
+     * @param string $bogus only defined to satisfy interface
+     * @return bool true if successful, false if not
+     */
+    public function add($setting, $bogus = '') {
+        //note: this is only called as is done for admin_settingpage 
+        return parent::add($setting);
+    }
+}
+
 /**
  * Add extra admintree configuration structure to the main administration menu tree.
  *
@@ -40,6 +64,7 @@ define('RLIP_LOGS_PER_PAGE', 20);
  */
 function rlip_admintree_setup(&$adminroot) {
     global $CFG;
+    require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
 
     $plugintypes = array('rlipimport', 'rlipexport');
     foreach ($plugintypes as $plugintype) {
@@ -54,11 +79,15 @@ function rlip_admintree_setup(&$adminroot) {
                     //the plugin has a settings file, so add it to the tree
                     $name = "rlipsetting{$plugintype}_{$plugin}";
                     $displaystring = get_string('pluginname', "{$plugintype}_$plugin");
-                    $settings = new admin_settingpage($name, $displaystring);
+                    $settings = new rlip_category_settingpage($name, $displaystring);
 
                     //add the actual settings to the list
                     include($plugsettings);
                     $adminroot->add('blocksettings', $settings);
+
+                    //perform any customization required by the plugin
+                    $instance = rlip_dataplugin_factory::factory("{$plugintype}_{$plugin}");
+                    $instance->admintree_setup($adminroot, "rlipsetting{$plugintype}_{$plugin}");
                 }
             }
         }
@@ -495,13 +524,22 @@ function run_ipjob($taskname, $maxruntime = 0) {
     //determine the "ideal" target start time
     $targetstarttime = $ipjob->nextruntime;
 
-    // Set the next run time
+    // Set the next run time & lastruntime
     if ($task = $DB->get_record('elis_scheduled_tasks',
                                 array('taskname' => $taskname))) {
 
+        //record last runtime
+        $lastruntime = (int)($ipjob->lastruntime);
+
         //update next runtime on the scheduled task record
-        $task->nextruntime = (int)($ipjob->nextruntime + rlip_schedule_period_minutes($data['period']) * 60);
+        $nextruntime = $ipjob->nextruntime;
+        $timenow = time();
+        do {
+            $nextruntime += (int)rlip_schedule_period_minutes($data['period']) * 60;
+        } while ($nextruntime <= $timenow);
+        $task->nextruntime = $nextruntime;
         $DB->update_record('elis_scheduled_tasks', $task);
+
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
         $DB->update_record('ip_schedule', $ipjob);
@@ -540,23 +578,26 @@ function run_ipjob($taskname, $maxruntime = 0) {
             return false;
     }
 
+    $ipjob->lastruntime = $task->lastruntime;
+
     //run the task, specifying the ideal start time, maximum run time & state
-    if (($newstate = $instance->run($targetstarttime, $maxruntime, $state)) !== null) {
+    if (($newstate = $instance->run($targetstarttime, $lastruntime, $maxruntime, $state)) !== null) {
         // Task did not complete - RESET nextruntime back & save new state!
         mtrace("run_ipjob({$taskname}): IP scheduled task exceeded time limit of {$maxruntime} secs");
         //update next runtime on the scheduled task record
         $task->nextruntime = $targetstarttime;
+        $task->lastruntime = $ipjob->lastruntime = $lastruntime;
         $DB->update_record('elis_scheduled_tasks', $task);
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
         $data['state'] = $newstate;
         $ipjob->config = serialize($data);
-        $DB->update_record('ip_schedule', $ipjob);
     } else if ($state !== null) {
         unset($data['state']);
         $ipjob->config = serialize($data);
-        $DB->update_record('ip_schedule', $ipjob);
     }
+    $DB->update_record('ip_schedule', $ipjob);
+
     return true;
 }
 
@@ -655,7 +696,7 @@ function rlip_get_log_table($logs) {
         if ($log->targetstarttime == 0) {
             //process was run manually
             $executiontype = get_string('manual', 'block_rlip');
-            $targetstarttime = get_string('na', 'block_rlip'); 
+            $targetstarttime = get_string('na', 'block_rlip');
         } else {
             //process was run automatically (cron)
             $executiontype = get_string('automatic', 'block_rlip');
@@ -689,7 +730,7 @@ function rlip_log_table_html($table) {
 
     if (empty($table->data)) {
         //no table data, so instead return message
-        return $OUTPUT->heading(get_string('nologmessage', 'block_rlip'));        
+        return $OUTPUT->heading(get_string('nologmessage', 'block_rlip'));
     }
 
     //obtain table html

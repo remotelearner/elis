@@ -249,7 +249,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'enrol' => 'moodle',
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
-                     'forum' => 'mod_forum');
+                     'forum' => 'mod_forum',
+                     'block_rlip_version1_fieldmap' => 'rlipimport_version1');
     }
 
     /**
@@ -3693,7 +3694,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'lang' => 'en',
                       'country' => 'invalidcountry'
                      );
-        $expected_error = "[user.csv line 2] \"country\" value of invalidcountry is not a valid country code.\n";
+        $expected_error = "[user.csv line 2] \"country\" value of invalidcountry is not a valid country or country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 

@@ -42,3 +42,135 @@ function rlipimport_version1_supports($feature) {
     //delegate to class method
     return $data_plugin->plugin_supports($feature);
 }
+
+/**
+ * Performs page setup work needed on the page for configuring field mapping
+ * for the import
+ *
+ * @param string $baseurl The page's base url
+ */
+function rlipimport_version1_page_setup($baseurl) {
+    global $PAGE, $SITE;
+
+    //set up the basic page info
+    $PAGE->set_url($baseurl);
+    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+    $displaystring = get_string('configuretitle', 'rlipimport_version1');
+    $PAGE->set_title("$SITE->shortname: ".$displaystring);
+    $PAGE->set_heading($SITE->fullname);
+
+    //use the default admin layout
+    $PAGE->set_pagelayout('admin');
+}
+
+/**
+ * Performs tab setup work needed on the page for configuring field mapping
+ * for the import
+ *
+ * @param string $baseurl The page's base url
+ * @return array An array of appropriate tab objects
+ */
+function rlipimport_version1_get_tabs($baseurl) {
+    $entitytypes = array('user', 'course', 'enrolment');
+
+    $tabs = array();
+
+    foreach ($entitytypes as $entitytype) {
+        $url = new moodle_url($baseurl, array('tab' => $entitytype));
+        $displaystring = get_string("{$entitytype}tab", 'rlipimport_version1');
+
+        $tabs[] = new tabobject($entitytype, $url, $displaystring);
+    }
+    return $tabs;
+}
+
+/**
+ * Retrieves a complete mapping from standard import field names to custom
+ * field names
+ *
+ * @param string $entitytype The entity type to retrieve the mapping for
+ * @return array The appropriate mapping
+ */
+function rlipimport_version1_get_mapping($entitytype) {
+    global $CFG, $DB;
+    require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+
+    //obtain the list of supported fields
+    $plugin = rlip_dataplugin_factory::factory('rlipimport_version1');
+    $fields = $plugin->get_available_fields($entitytype);
+
+    if ($fields == false) {
+        //invalid entitytype was supplied
+        return false;
+    }
+
+    //by default, map each field to itself
+    $result = array();
+    foreach ($fields as $field) {
+        $result[$field] = $field;
+    }
+
+    //apply mapping info from the database
+    $params = array('entitytype' => $entitytype);
+    if ($mappings = $DB->get_recordset('block_rlip_version1_fieldmap', $params)) {
+        foreach ($mappings as $mapping) {
+            $result[$mapping->standardfieldname] = $mapping->customfieldname;
+        }
+    }
+
+    return $result;
+}
+
+/**
+ * Saves field mappings to the database
+ *
+ * @param string $entitytype The type of entity was are saving mappings for
+ * @param array $options The list of available fields that are supported
+ * @param array $data The data submitted by the form
+ */
+function rlipimport_version1_save_mapping($entitytype, $options, $formdata) {
+    global $DB;
+
+    //need to collect data from our defaults and form data
+    $data = array();
+
+    //defaults
+    foreach ($options as $option) {
+        $data[$option] = $option;
+    }
+
+    //form data
+    foreach ($formdata as $key => $value) {
+        if (in_array($key, $options)) {
+            $data[$key] = $value;
+        }
+    }
+
+    //clear out previous values
+    $params = array('entitytype' => $entitytype);
+    $DB->delete_records('block_rlip_version1_fieldmap', $params);
+
+    //write to database
+    foreach ($data as $key => $value) {
+        $record = new stdClass;
+        $record->entitytype = $entitytype;
+        $record->standardfieldname = $key;
+        $record->customfieldname = $value;
+        $DB->insert_record('block_rlip_version1_fieldmap', $record);
+    }
+}
+
+/**
+ * Resets field mappings to their default state
+ *
+ * @param string $entitytype The type of entity we are resetting mappings for
+ */
+function rlipimport_version1_reset_mappings($entitytype) {
+    global $DB;
+
+    $sql = "UPDATE {block_rlip_version1_fieldmap}
+            SET customfieldname = standardfieldname
+            WHERE entitytype = ?";
+    $DB->execute($sql, array($entitytype));
+}
+

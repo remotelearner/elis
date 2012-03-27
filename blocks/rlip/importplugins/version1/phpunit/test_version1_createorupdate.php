@@ -572,4 +572,32 @@ class version1CreateorupdateTest extends elis_database_test {
         $this->run_core_enrolment_import($import_data);
         $this->assertEquals($DB->count_records('role_assignments'), 0);
     }
+
+    /**
+     * Validate that the "create or update" flag doesn't accidentally trigger a
+     * user mis-match when a required field is empty
+     */
+    public function testVersion1CreateorupdateIgnoresEmptyUserFields() {
+        //set up initial conditions
+        set_config('createorupdate', 1, 'rlipimport_version1');
+        $this->init_contexts_and_site_course();
+
+        //initial data setup
+        $this->create_test_user();
+
+        //update with empty fields
+        $import_data = array('entity' => 'user',
+                             'action' => 'update',
+                             'username' => 'rlipusername',
+                             'firstname' => 'updatedfirst',
+                             'email' => '');
+        $this->run_core_user_import($import_data);
+        
+        //validate that the record was updated and not created due to the
+        //"create or update" logic thinking it's a non-existent user
+        $data = array('username' => 'rlipusername',
+                      'firstname' => 'updatedfirst',
+                      'email' => 'rlipuser@rlipdomain.com');
+        $this->assert_record_exists('user', $data);
+    }
 }
