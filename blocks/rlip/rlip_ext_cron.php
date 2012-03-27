@@ -59,10 +59,11 @@ $tasks = $DB->get_recordset_select('elis_scheduled_tasks', 'nextruntime <= :time
 if ($tasks && $tasks->valid()) {
     foreach ($tasks as $task) {
         // Make sure we have an import/export task
-        list($prefix, $id) = explode('_', $taskname);
-        if ($prefix !== 'ipjob') {
+        $taskparts = explode('_', $task->taskname);
+        if (count($taskparts) < 2 || $taskparts[0] !== 'ipjob') {
             continue;
         }
+        $id = $taskparts[1];
 
         // Get ipjob from ip_schedule
         $ipjob = $DB->get_record('ip_schedule', array('id' => $id));
