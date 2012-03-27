@@ -348,8 +348,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             //process "1-of-n" type fields first
             foreach ($missing_fields as $key => $value) {
                 if (count($value) > 1) {
-                    $fields = implode('", "', $value);
-                    $messages[] = "One of \"{$fields}\" is required but all are unspecified or empty.";
+                    $fields = implode(', ', $value);
+                    $messages[] = "One of {$fields} is required but all are unspecified or empty.";
                     //remove so we don't re-process
                     unset($missing_fields[$key]);
                 }
@@ -374,11 +374,11 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                 }
 
                 if ($append) {
-                    $messages[] = "Required field \"{$field}\" is unspecified or empty.";
+                    $messages[] = "Required field {$field} is unspecified or empty.";
                 }
             } else if (count($missing_fields) > 1) {
-                $fields = implode('", "', $missing_fields);
-                $messages[] = "Required fields \"{$fields}\" are unspecified or empty.";
+                $fields = implode(', ', $missing_fields);
+                $messages[] = "Required fields {$fields} are unspecified or empty.";
             }
 
             if (count($messages) > 0) {
@@ -427,7 +427,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
         if (!isset($record->action) || $record->action === '') {
             //not set, so error
-            $message = "{$prefix} Required field \"action\" is unspecified or empty.";
+            $message = "{$prefix} Required field action is unspecified or empty.";
             $this->process_error($message);
 
             return false;

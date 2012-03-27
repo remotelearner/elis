@@ -3537,7 +3537,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that username validation works on user create
      */
     public function testVersion1ImportLogsInvalidUsernameOnUserCreate() {
+        global $CFG, $DB;
+
+        //data setup
         $this->load_csv_data();
+        //make sure the user belongs to "localhost"
+        $user = new stdClass;
+        $user->id = 3;
+        $user->mnethostid = $CFG->mnet_localhost_id;
+        $DB->update_record('user', $user);
 
         $data = array('action' => 'create',
                       'username' => 'testusername',
@@ -3588,25 +3596,6 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'country' => 'CA',
                       'idnumber' => 'idnumber');
         $expected_error = "[user.csv line 2] idnumber value of \"idnumber\" refers to a user that already exists.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
-    }
-
-    /**
-     * Validate that validation of multiple identifying fields works on user create
-     */
-    public function testVersion1ImportLogsInvalidUsernameEmailIdnumberOnUserCreate() {
-        $this->load_csv_data();
-
-        $data = array('action' => 'create',
-                      'username' => 'testusername',
-                      'password' => 'Rlippassword!0',
-                      'firstname' => 'rlipfirstname',
-                      'lastname' => 'test@user.com',
-                      'email' => 'test@user.com',
-                      'city' => 'Waterloo',
-                      'country' => 'CA',
-                      'idnumber' => 'idnumber');
-        $expected_error = "[user.csv line 2] username value of \"testusername\", email value of \"test@user.com\", idnumber value of \"idnumber\" refer to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3855,7 +3844,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //create category and custom fields
         $categoryid = $this->create_custom_field_category();
         $this->create_profile_field('checkbox', 'checkbox', $categoryid);
-        $this->create_profile_field('manu', 'menu', $categoryid, 'option1');
+        $this->create_profile_field('menu', 'menu', $categoryid, 'option1');
 
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
@@ -3866,12 +3855,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'profile_field_checkbox' => 2);
-        $expected_error = "[user.csv line 2] \"2\" is not one of the available options for profile field checkbox (0, 1).\n";
+        $expected_error = "[user.csv line 2] \"2\" is not one of the available options for a checkbox profile field checkbox (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         unset($data['profile_field_checkbox']);
         $data['profile_field_menu'] = 'option2';
-        $expected_error = "[user.csv line 2] \"option2\" is not one of the available options for profile field menu.\n";
+        $expected_error = "[user.csv line 2] \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4087,7 +4076,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'country' => 'CA',
                       'theme' => 'invalidtheme',
                      );
-        $expected_error = "[user.csv line 2] theme value of \"invalidtheme\" is invalid.\n";
+        $expected_error = "[user.csv line 2] theme value of \"invalidtheme\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4125,7 +4114,6 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_error = "[user.csv line 2] timezone value of \"invalidtimezone\" is not a valid timezone.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
-
 
     /**
      * Validate that format validation works on course create
@@ -4266,6 +4254,16 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
+    /**
+     * Validate that shortname validation works on course update
+     */
+    public function testVersion1ImportLogsInvalidShortnameOnCourseUpdate() {
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname');
+        $expected_error = "[course.csv line 2] shortname value of \"rlipshortname\" does not refer to a valid course.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
     public function testVersion1ImportLogsUpdateFormat() {
         global $CFG;
         $this->load_csv_data();
@@ -4389,7 +4387,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
     public function testVersion1ImportLogsUpdateGuest() {
         global $CFG;
+        $this->create_contexts_and_site_course();
         $this->load_csv_data();
+        $this->create_test_course();
 
         $maxbytes = 51200;
         set_config('maxbytes', $maxbytes, 'moodlecourse');
@@ -4397,7 +4397,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         set_config('maxsections', $maxsections, 'moodlecourse');
 
         $data = array('action' => 'update',
-                      'shortname' => 'cm2',
+                      'shortname' => 'rlipshortname',
                       'format' => 'weeks',
                       'numsections' => $maxsections,
                       'startdate' => 'jan/12/2013',
@@ -4408,7 +4408,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'guest' => 'invalidguest'
                      );
         $expected_error = "[course.csv line 2] guest value of \"invalidguest\" is not one of the available options (0, 1).\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $this->assert_data_produces_error($data, $expected_error, 'course');        
     }
 
     public function testVersion1ImportLogsUpdateVisible() {
