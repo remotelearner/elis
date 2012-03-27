@@ -39,7 +39,7 @@
         <FIELD NAME="completetime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="enrolmenttime" NEXT="endtime"/>
         <FIELD NAME="endtime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="the date the course must be completed by" PREVIOUS="completetime" NEXT="completestatusid"/>
         <FIELD NAME="completestatusid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="endtime" NEXT="grade"/>
-        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="completestatusid" NEXT="credits"/>
+        <FIELD NAME="grade" TYPE="number" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" DECIMALS="5" PREVIOUS="completestatusid" NEXT="credits"/>
         <FIELD NAME="credits" TYPE="number" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" DECIMALS="2" COMMENT="Credits awarded for this class." PREVIOUS="grade" NEXT="locked"/>
         <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Lock the enrolment value." PREVIOUS="credits"/>
       </FIELDS>
@@ -59,7 +59,7 @@
         <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key id of crlm_class." PREVIOUS="id" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key if of crlm_user." PREVIOUS="classid" NEXT="completionid"/>
         <FIELD NAME="completionid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key id of crlm_course_completion." PREVIOUS="userid" NEXT="grade"/>
-        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="The numeric grade (0-100)." PREVIOUS="completionid" NEXT="locked"/>
+        <FIELD NAME="grade" TYPE="number" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" DECIMALS="5" COMMENT="The numeric grade (0-100)." PREVIOUS="completionid" NEXT="locked"/>
         <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="If locked, will not be updated by external systems." PREVIOUS="grade" NEXT="timegraded"/>
         <FIELD NAME="timegraded" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time that the activity was graded in Moodle" PREVIOUS="locked" NEXT="timemodified"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last time stamp the grade was changed." PREVIOUS="timegraded"/>

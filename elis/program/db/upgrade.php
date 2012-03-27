@@ -313,6 +313,91 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('fromuserid', 'instance', 'event'));
 
         $dbman->add_index($table, $index);
+        upgrade_plugin_savepoint($result, 2011121501, 'elis', 'program');
+    }
+
+    if ($result && $oldversion < 2012032700) {
+        $table = new xmldb_table('crlm_class_enrolment');
+        $field = new xmldb_field('grade');
+        $field->set_attributes(XMLDB_TYPE_NUMBER, '10,5', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'completestatusid');
+        $dbman->change_field_type($table, $field);
+
+        $table = new xmldb_table('crlm_class_graded');
+        $field = new xmldb_field('grade');
+        $field->set_attributes(XMLDB_TYPE_NUMBER, '10,5', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'completionid');
+        $dbman->change_field_type($table, $field);
+
+        // Attempt to handle different DBs in the most efficient way possible
+        if ($CFG->dbfamily == 'postgres') {
+            $sql = "DELETE FROM {crlm_class_graded}
+                          WHERE id IN (
+                                SELECT ccg.id
+                                  FROM {crlm_user} cu
+                            INNER JOIN {crlm_class_enrolment} cce ON cce.userid = cu.id
+                            INNER JOIN {crlm_class_graded} ccg ON (ccg.userid = cce.userid AND ccg.classid = cce.classid)
+                            INNER JOIN {crlm_course_completion} ccc ON ccc.id = ccg.completionid
+                            INNER JOIN {crlm_class_moodle} ccm ON ccm.classid = ccg.classid
+                            INNER JOIN {user} u ON u.idnumber = cu.idnumber
+                            INNER JOIN {course} c ON c.id = ccm.moodlecourseid
+                            INNER JOIN {grade_items} gi ON (gi.courseid = c.id AND gi.idnumber = ccc.idnumber)
+                            INNER JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = u.id)
+                                 WHERE ccg.locked = 0
+                                   AND ccc.idnumber != ''
+                                   AND gi.itemtype != 'course'
+                                   AND ccg.grade != gg.finalgrade
+                                   AND gg.finalgrade IS NOT NULL
+                    )";
+            $DB->execute($sql);
+        } else if ($CFG->dbfamily == 'mysql') {
+            $sql = "    DELETE ccg
+                          FROM {crlm_user} cu
+                    INNER JOIN {crlm_class_enrolment} cce ON cce.userid = cu.id
+                    INNER JOIN {crlm_class_graded} ccg ON (ccg.userid = cce.userid AND ccg.classid = cce.classid)
+                    INNER JOIN {crlm_course_completion} ccc ON ccc.id = ccg.completionid
+                    INNER JOIN {crlm_class_moodle} ccm ON ccm.classid = ccg.classid
+                    INNER JOIN {user} u ON u.idnumber = cu.idnumber
+                    INNER JOIN {course} c ON c.id = ccm.moodlecourseid
+                    INNER JOIN {grade_items} gi ON (gi.courseid = c.id AND gi.idnumber = ccc.idnumber)
+                    INNER JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = u.id)
+                         WHERE ccg.locked = 0
+                           AND ccc.idnumber != ''
+                           AND gi.itemtype != 'course'
+                           AND ccg.grade != gg.finalgrade
+                           AND gg.finalgrade IS NOT NULL";
+
+            $DB->execute($sql);
+        } else {
+            $sql = "    SELECT ccg.id, ccg.grade
+                          FROM {crlm_user} cu
+                    INNER JOIN {crlm_class_enrolment} cce ON cce.userid = cu.id
+                    INNER JOIN {crlm_class_graded} ccg ON (ccg.userid = cce.userid AND ccg.classid = cce.classid)
+                    INNER JOIN {crlm_course_completion} ccc ON ccc.id = ccg.completionid
+                    INNER JOIN {crlm_class_moodle} ccm ON ccm.classid = ccg.classid
+                    INNER JOIN {user} u ON u.idnumber = cu.idnumber
+                    INNER JOIN {course} c ON c.id = ccm.moodlecourseid
+                    INNER JOIN {grade_items} gi ON (gi.courseid = c.id AND gi.idnumber = ccc.idnumber)
+                    INNER JOIN {grade_grades} gg ON (gg.itemid = gi.id AND gg.userid = u.id)
+                         WHERE ccg.locked = 0
+                           AND ccc.idnumber != ''
+                           AND gi.itemtype != 'course'
+                           AND ccg.grade != gg.finalgrade
+                           AND gg.finalgrade IS NOT NULL";
+
+            $rs = $DB->get_recordset_sql($sql);
+            if ($rs && $rs->valid()) {
+                foreach($rs as $cg) {
+                    $DB->delete_records('crlm_class_graded',
+                                        array('id' => $cg->id));
+                }
+                $rs->close();
+            }
+        }
+
+        // Force a re-synchronization of ELIS class grade data
+        require_once($CFG->dirroot .'/elis/program/lib/lib.php');
+        pm_synchronize_moodle_class_grades();
+
+        upgrade_plugin_savepoint($result, 2012032700, 'elis', 'program');
     }
 
     return $result;
