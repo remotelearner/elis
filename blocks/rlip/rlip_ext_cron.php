@@ -37,7 +37,7 @@ require_once($CFG->dirroot .'/blocks/rlip/rlip_importprovider_csv.class.php');
 $filename = basename(__FILE__);
 $disabledincron = get_config('rlip', 'disableincron');
 if (empty($disabledincron)) {
-    exit 0;
+    exit(0);
 }
 
 // TBD: adjust some php variables for the execution of this script
@@ -68,22 +68,22 @@ if ($tasks && $tasks->valid()) {
         $ipjob = $DB->get_record('ip_schedule', array('id' => $id));
         if (empty($ipjob)) {
             mtrace("{$filename}: DB Error retrieving IP schedule record for taskname '{$task->taskname}' - aborting!");
-            exit 1;
+            exit(1);
         }
 
         // validate plugin
         $plugin = $ipjob->plugin;
         $plugparts = explode('_', $plugin);
-        if (!in_array(plugparts[0], $pluginstorun)) {
+        if (!in_array($plugparts[0], $pluginstorun)) {
             mtrace("{$filename}: RLIP plugin '{$plugin}' not configured to run externally - aborting!");
-            exit 1;
+            exit(1);
         }
 
         $rlip_plugins = get_plugin_list($plugparts[0]);
         //print_object($rlip_plugins);
         if (!array_key_exists($plugparts[1], $rlip_plugins)) {
             mtrace("{$filename}: RLIP plugin '{$plugin}' unknown!");
-            exit 1;
+            exit(1);
         }
 
         mtrace("{$filename}: Processing external cron function for: {$plugin}, taskname: {$task->taskname} ...");
