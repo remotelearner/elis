@@ -466,6 +466,12 @@ function rlip_get_export_filename($plugin, $tz = 99) {
 function run_ipjob($taskname, $maxruntime = 0) {
     global $CFG, $DB;
 
+    $disabledincron = get_config('rlip', 'disableincron');
+    if (!empty($disabledincron)) {
+        mtrace("run_ipjob({$taskname}): Internal IP cron disabled by settings - aborting job!");
+        return false; // TBD
+    }
+
     if (empty($maxruntme)) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;
     }
@@ -502,24 +508,6 @@ function run_ipjob($taskname, $maxruntime = 0) {
     } else {
         mtrace("run_ipjob({$taskname}): DB Error retrieving task record!");
         //todo: return false?
-    }
-
-    $disabledincron = get_config('rlip', 'disableincron');
-    if (!empty($disabledincron)) {
-        mtrace("run_ipjob({$taskname}): Internal IP cron disabled by settings - executing external script ...");
-        $iswindows = (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN');
-        $extcronlog = get_config($plugin, 'logfilelocation');
-        if (empty($extcronlog)) { // TBD: better test file/path accessible
-            $extcronlog = $iswindows ? 'NUL' : '/dev/null';
-        }
-        if ($iswindows) {
-            $cmdline = "start C:\PHP5\php.exe -f {$CFG->dirroot}/blocks/rlip/rlip_ext_cron.php -- -{$plugin} -{$ipjob->userid} -{$targetstarttime} -0 >> {$extcronlog}";
-        } else {
-            $cmdline = "php {$CFG->dirroot}/blocks/rlip/rlip_ext_cron.php {$plugin} {$ipjob->userid} {$targetstarttime} 0 >> {$extcronlog} 2>&1 &";
-        }
-        mtrace("> $cmdline");
-        exec($cmdline);
-        return false; // TBD
     }
 
     // Perform the IP scheduled action
