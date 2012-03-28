@@ -171,12 +171,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                         'sep', 'oct', 'nov', 'dec');
         $pos = array_search(strtolower($month), $months);
         if ($pos === false) {
-            //invalid month
-            return false;
+            //legacy format (zero values handled below by checkdate)
+            $month = (int)$month;
+        } else {
+            //new "text" format
+            $month = $pos + 1;
         }
 
         //make sure the combination of date components is valid
-        $month = $pos + 1;
         $day = (int)$day;
         $year = (int)$year;
         if (!checkdate($month, $day, $year)) {
@@ -576,6 +578,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             } else if ($field->datatype == 'datetime') {
                 $value = $this->parse_date($data);
                 if ($value === false) {
+                    $this->process_error("[$filename line $this->linenumber] profile_field_{$shortname} ".
+                                         "value of \"{$data}\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.");
                     return false;
                 }
 
@@ -1151,7 +1155,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (isset($record->startdate)) {
             $value = $this->parse_date($record->startdate);
             if ($value === false) {
-                $this->process_error("[$filename line $this->linenumber] startdate value of \"{$record->startdate}\" is not a valid date in MMM/DD/YYYY format.");
+                $this->process_error("[$filename line $this->linenumber] startdate value of \"{$record->startdate}\" ".
+                                     "is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.");
                 return false;
             }
 

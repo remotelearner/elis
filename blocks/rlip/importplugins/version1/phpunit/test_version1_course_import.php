@@ -694,11 +694,13 @@ class version1CourseImportTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'legacystartdatecreate',
                       'fullname' => 'legacystartdatecreate',
-                      'startdate' => '01/02/2010');
+                      'category' => 'childcategory',
+                      'startdate' => '01/02/2012');
         $this->run_core_course_import($data, false);
 
         //data validation
         unset($data['action']);
+        unset($data['category']);
         $data['startdate'] = mktime(0, 0, 0, 1, 2, 2012);
 
         $this->assert_record_exists('course', $data);
@@ -712,13 +714,15 @@ class version1CourseImportTest extends elis_database_test {
         //create the course
         $data = array('action' => 'create',
                       'shortname' => 'legacystartdateupdate',
-                      'fullname' => 'legacystartdateupdate');
+                      'fullname' => 'legacystartdateupdate',
+                      'category' => 'childcategory');
         $this->run_core_course_import($data, false);
 
         //update the course
         $data = array('action' => 'update',
                       'shortname' => 'legacystartdateupdate',
-                      'startdate' => '01/02/2012');
+                      'startdate' => '01/02/2012',
+                      'category' => 'childcategory');
         $this->run_core_course_import($data, false);
 
         //data validation

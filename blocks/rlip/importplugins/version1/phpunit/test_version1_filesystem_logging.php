@@ -3866,7 +3866,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         unset($data['profile_field_menu']);
         $data['profile_field_date'] = 'bogus';
-        $expected_error = "[user.csv line 2] profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.";
+        $expected_error = "[user.csv line 2] profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4147,7 +4147,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         unset($data['profile_field_menu']);
         $data['profile_field_date'] = 'bogus';
-        $expected_error = "[user.csv line 2] profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.";
+        $expected_error = "[user.csv line 2] profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4342,9 +4342,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'shortname' => 'cm2',
                       'format' => 'weeks',
                       'numsections' => $maxsections,
-                      'startdate' => '01/02/2012'
+                      'startdate' => 'bogus'
                      );
-        $expected_error = "[course.csv line 2] startdate value of \"01/02/2012\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
+        $expected_error = "[course.csv line 2] startdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
