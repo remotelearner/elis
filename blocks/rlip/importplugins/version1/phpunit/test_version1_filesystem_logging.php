@@ -3706,7 +3706,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'bogus');
-        $expected_error = "[user.csv line 2] country value of \"bogus\" is not a valid country code.\n";
+        $expected_error = "[user.csv line 2] country value of \"bogus\" is not a valid country or country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4044,7 +4044,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'lang' => 'en',
                       'country' => 'invalidcountry'
                      );
-        $expected_error = "[user.csv line 2] country value of \"invalidcountry\" is not a valid country code.\n";
+        $expected_error = "[user.csv line 2] country value of \"invalidcountry\" is not a valid country or country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
