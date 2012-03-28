@@ -1477,6 +1477,7 @@ class version1UserImportTest extends elis_database_test {
         //create custom profile fields
         $this->create_profile_field('rlipcheckbox', 'checkbox', $category->id);
         $this->create_profile_field('rlipdatetime', 'datetime', $category->id);
+        $this->create_profile_field('rliplegacydatetime', 'datetime', $category->id);
         $this->create_profile_field('rlipmenu', 'menu', $category->id, 'rlipoption1');
         $this->create_profile_field('rliptextarea', 'textarea', $category->id);
         $this->create_profile_field('rliptext', 'text', $category->id);
@@ -1485,6 +1486,7 @@ class version1UserImportTest extends elis_database_test {
         $data = array();
         $data['profile_field_rlipcheckbox'] = '1';
         $data['profile_field_rlipdatetime'] = 'jan/12/2011';
+        $data['profile_field_rliplegacydatetime'] = '1/12/2011';
         $data['profile_field_rlipmenu'] = 'rlipoption1';
         $data['profile_field_rliptextarea'] = 'rliptextarea';
         $data['profile_field_rliptext'] = 'rliptext';
@@ -1501,6 +1503,8 @@ class version1UserImportTest extends elis_database_test {
         $this->assertEquals($user->profile_field_rlipcheckbox, 1);
         $this->assertEquals(isset($user->profile_field_rlipdatetime), true);
         $this->assertEquals($user->profile_field_rlipdatetime, mktime(0, 0, 0, 1, 12, 2011));
+        $this->assertEquals(isset($user->profile_field_rliplegacydatetime), true);
+        $this->assertEquals($user->profile_field_rliplegacydatetime, mktime(0, 0, 0, 1, 12, 2011));
         $this->assertEquals(isset($user->profile_field_rlipmenu), true);
         $this->assertEquals($user->profile_field_rlipmenu, 'rlipoption1');
         $this->assertEquals(isset($user->profile_field_rliptextarea['text']), true);
@@ -1526,6 +1530,7 @@ class version1UserImportTest extends elis_database_test {
         //create custom profile fields
         $this->create_profile_field('rlipcheckbox', 'checkbox', $category->id);
         $this->create_profile_field('rlipdatetime', 'datetime', $category->id);
+        $this->create_profile_field('rliplegacydatetime', 'datetime', $category->id);
         $this->create_profile_field('rlipmenu', 'menu', $category->id, 'rlipoption1');
         $this->create_profile_field('rliptextarea', 'textarea', $category->id);
         $this->create_profile_field('rliptext', 'text', $category->id);
@@ -1536,6 +1541,7 @@ class version1UserImportTest extends elis_database_test {
         $data['username'] = 'rlipusername';
         $data['profile_field_rlipcheckbox'] = '1';
         $data['profile_field_rlipdatetime'] = 'jan/12/2011';
+        $data['profile_field_rliplegacydatetime'] = '1/12/2011';
         $data['profile_field_rlipmenu'] = 'rlipoption1';
         $data['profile_field_rliptextarea'] = 'rliptextarea';
         $data['profile_field_rliptext'] = 'rliptext';
@@ -1552,6 +1558,8 @@ class version1UserImportTest extends elis_database_test {
         $this->assertEquals($user->profile_field_rlipcheckbox, 1);
         $this->assertEquals(isset($user->profile_field_rlipdatetime), true);
         $this->assertEquals($user->profile_field_rlipdatetime, mktime(0, 0, 0, 1, 12, 2011));
+        $this->assertEquals(isset($user->profile_field_rliplegacydatetime), true);
+        $this->assertEquals($user->profile_field_rliplegacydatetime, mktime(0, 0, 0, 1, 12, 2011));
         $this->assertEquals(isset($user->profile_field_rlipmenu), true);
         $this->assertEquals($user->profile_field_rlipmenu, 'rlipoption1');
         $this->assertEquals(isset($user->profile_field_rliptextarea['text']), true);

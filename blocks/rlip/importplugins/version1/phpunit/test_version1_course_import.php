@@ -686,6 +686,49 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     /**
+     * Validate that the legacy date format is support for course startdate
+     * during creates
+     */
+    public function testVersion1ImportSupportsLegacyStartdateOnCourseCreate() {
+        //create the course
+        $data = array('action' => 'create',
+                      'shortname' => 'legacystartdatecreate',
+                      'fullname' => 'legacystartdatecreate',
+                      'startdate' => '01/02/2010');
+        $this->run_core_course_import($data, false);
+
+        //data validation
+        unset($data['action']);
+        $data['startdate'] = mktime(0, 0, 0, 1, 2, 2012);
+
+        $this->assert_record_exists('course', $data);
+    }
+
+    /**
+     * Validate that the legacy date format is supported for course startdate
+     * during updates
+     */
+    public function testVersion1ImportSupportsLegacyStartdateOnCourseUpdate() {
+        //create the course
+        $data = array('action' => 'create',
+                      'shortname' => 'legacystartdateupdate',
+                      'fullname' => 'legacystartdateupdate');
+        $this->run_core_course_import($data, false);
+
+        //update the course
+        $data = array('action' => 'update',
+                      'shortname' => 'legacystartdateupdate',
+                      'startdate' => '01/02/2012');
+        $this->run_core_course_import($data, false);
+
+        //data validation
+        $data = array('shortname' => 'legacystartdateupdate',
+                      'startdate' => mktime(0, 0, 0, 1, 2, 2012));
+
+        $this->assert_record_exists('course', $data);
+    }
+
+    /**
      * Validate that fields are mapped from 'yes', 'no' values to integer values during course update
      */
     public function testVersion1ImportMapsFieldsOnCourseUpdate() {

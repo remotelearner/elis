@@ -3845,6 +3845,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $categoryid = $this->create_custom_field_category();
         $this->create_profile_field('checkbox', 'checkbox', $categoryid);
         $this->create_profile_field('menu', 'menu', $categoryid, 'option1');
+        $this->create_profile_field('date', 'datetime', $categoryid);
 
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
@@ -3861,6 +3862,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         unset($data['profile_field_checkbox']);
         $data['profile_field_menu'] = 'option2';
         $expected_error = "[user.csv line 2] \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        unset($data['profile_field_menu']);
+        $data['profile_field_date'] = 'bogus';
+        $expected_error = "[user.csv line 2] profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4116,6 +4122,36 @@ class version1FilesystemLoggingTest extends elis_database_test {
     }
 
     /**
+     * Validate that profile field validation works on user update
+     */
+    public function testVersion1ImportLogsInvalidProfileFieldDataOnUserUpdate() {
+        //create category and custom fields
+        $categoryid = $this->create_custom_field_category();
+        $this->create_profile_field('checkbox', 'checkbox', $categoryid);
+        $this->create_profile_field('menu', 'menu', $categoryid, 'option1');
+        $this->create_profile_field('date', 'datetime', $categoryid);
+
+        //setup
+        $this->create_test_user();
+
+        $data = array('action' => 'update',
+                      'username' => 'rlipusername',
+                      'profile_field_checkbox' => 2);
+        $expected_error = "[user.csv line 2] \"2\" is not one of the available options for a checkbox profile field checkbox (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        unset($data['profile_field_checkbox']);
+        $data['profile_field_menu'] = 'option2';
+        $expected_error = "[user.csv line 2] \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        unset($data['profile_field_menu']);
+        $data['profile_field_date'] = 'bogus';
+        $expected_error = "[user.csv line 2] profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
      * Validate that format validation works on course create
      */
     public function testVersion1ImportLogsInvalidFormatOnCourseCreate() {
@@ -4152,7 +4188,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
                       'startdate' => 'bogus');
-        $expected_error = "[course.csv line 2] startdate value of \"bogus\" is not a valid date in MMM/DD/YYYY format.\n";
+        $expected_error = "[course.csv line 2] startdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4308,7 +4344,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'numsections' => $maxsections,
                       'startdate' => '01/02/2012'
                      );
-        $expected_error = "[course.csv line 2] startdate value of \"01/02/2012\" is not a valid date in MMM/DD/YYYY format.\n";
+        $expected_error = "[course.csv line 2] startdate value of \"01/02/2012\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
