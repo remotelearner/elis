@@ -300,7 +300,13 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'external_services_users' => 'moodle',
                      'grade_grades' => 'moodle',
                      'grade_grades_history' => 'moodle',
-                     'external_services_users' => 'moodle');
+                     'external_services_users' => 'moodle',
+                     'quiz_attempts' => 'mod_quiz',
+                     'quiz_grades' => 'mod_quiz',
+                     'quiz_question_instances' => 'mod_quiz',
+                     'quiz_feedback' => 'mod_quiz',
+                     'quiz' => 'mod_quiz',
+                     'url' => 'moodle');
 
         if ($DB->record_exists("block", array("name" => "curr_admin"))) {
             $tables['crlm_user_moodle'] = 'elis_program';

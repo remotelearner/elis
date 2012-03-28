@@ -106,6 +106,10 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
     static function get_overlay_tables() {
         global $CFG;
 
+        //custom fields in "elis core"
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+
         $tables = array(
             'user' => 'moodle',
             'course' => 'moodle',
@@ -115,7 +119,10 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
             'context' => 'moodle',
             'config_plugins' => 'moodle',
             'role_assignments' => 'moodle',
-            'block_rlip_version1_fieldmap' => 'rlipimport_version1'
+            'block_rlip_version1_fieldmap' => 'rlipimport_version1',
+            field_data_int::TABLE => 'elis_core',
+            field_data_char::TABLE => 'elis_core',
+            field_data_text::TABLE => 'elis_core'
         );
 
         // Detect if we are running this test on a site with the ELIS PM system in place

@@ -191,6 +191,10 @@ class version1CreateorupdateTest extends elis_database_test {
     protected static function get_overlay_tables() {
         global $CFG;
 
+        //custom fields in "elis core"
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+
         $tables = array(
             'config_plugins' => 'moodle',
             'user' => 'moodle',
@@ -200,7 +204,10 @@ class version1CreateorupdateTest extends elis_database_test {
             'role' => 'moodle',
             'role_context_levels' => 'moodle',
             'role_assignments' => 'moodle',
-            'block_rlip_version1_fieldmap' => 'rlipimport_version1'
+            'block_rlip_version1_fieldmap' => 'rlipimport_version1',
+            field_data_int::TABLE => 'elis_core',
+            field_data_char::TABLE => 'elis_core',
+            field_data_text::TABLE => 'elis_core'
         );
 
         // Detect if we are running this test on a site with the ELIS PM system in place
