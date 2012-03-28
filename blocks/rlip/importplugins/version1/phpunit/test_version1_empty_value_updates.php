@@ -104,15 +104,31 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static function get_overlay_tables() {
-        return array('user' => 'moodle',
-                     'course' => 'moodle',
-                     'course_categories' => 'moodle',
-                     'role' => 'moodle',
-                     'role_context_levels' => 'moodle',
-                     'context' => 'moodle',
-                     'config_plugins' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'block_rlip_version1_fieldmap' => 'rlipimport_version1');
+        global $CFG;
+
+        $tables = array(
+            'user' => 'moodle',
+            'course' => 'moodle',
+            'course_categories' => 'moodle',
+            'role' => 'moodle',
+            'role_context_levels' => 'moodle',
+            'context' => 'moodle',
+            'config_plugins' => 'moodle',
+            'role_assignments' => 'moodle',
+            'block_rlip_version1_fieldmap' => 'rlipimport_version1'
+        );
+
+        // Detect if we are running this test on a site with the ELIS PM system in place
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/user.class.php'));
+            require_once(elispm::lib('data/usermoodle.class.php'));
+
+            $tables[user::TABLE] = 'elis_program';
+            $tables[usermoodle::TABLE] = 'elis_program';
+        }
+
+        return $tables;
     }
 
     /**
@@ -137,7 +153,7 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true); 
+        $this->assertEquals($exists, true);
     }
 
     /**
@@ -169,7 +185,7 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
                             'email' => '',
                             'city' => '',
                             'country' => '',
-                            'idnumber' => '')); 
+                            'idnumber' => ''));
         $provider = new rlip_importprovider_emptyuser($data);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
@@ -224,7 +240,7 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
                             'action' => 'update',
                             'shortname' => 'rlipshortname',
                             'fullname' => '',
-                            'category' => 'updatedrlipcategory')); 
+                            'category' => 'updatedrlipcategory'));
         $provider = new rlip_importprovider_emptycourse($data);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
@@ -392,6 +408,6 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
                                                   'idnumber' => 'rlipidnumber',
                                                   'email' => 'rlipuser@rlipdomain.com',
                                                   'firstname' => 'updatedrlipfirstname2'));
-        
+
     }
 }

@@ -609,6 +609,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
         //prevent problem with cached contexts
+        $UNITTEST = new stdClass;
         $UNITTEST->running = true;
         accesslib_clear_all_caches_for_unit_testing();
         unset($UNITTEST->running);

@@ -67,68 +67,74 @@ class version1UserImportTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        global $DB;
+        global $CFG;
 
-        $result = array('user' => 'moodle',
-                        'context' => 'moodle',
-                        'config' => 'moodle',
-                        'config_plugins' => 'moodle',
-                        'user_info_field' => 'moodle',
-                        'user_info_category' => 'moodle',
-                        'user_info_data' => 'moodle',
-                        'user_enrolments' => 'moodle',
-                        'cohort_members' => 'moodle',
-                        'groups_members' => 'moodle',
-                        'user_preferences' => 'moodle',
-                        'user_lastaccess' => 'moodle',
-                        'block_positions' => 'moodle',
-                        'block_instances' => 'moodle',
-                        'filter_active' => 'moodle',
-                        'filter_config' => 'moodle',
-                        'comments' => 'moodle',
-                        'rating' => 'moodle',
-                        'role_assignments' => 'moodle',
-                        'role_capabilities' => 'moodle',
-                        'role_names' => 'moodle',
-                        'cache_flags' => 'moodle',
-                        'events_queue' => 'moodle',
-                        'groups' => 'moodle',
-                        'course' => 'moodle',
-                        'course_sections' => 'moodle',
-                        'course_categories' => 'moodle',
-                        'enrol' => 'moodle',
-                        'role' => 'moodle',
-                        'role_context_levels' => 'moodle',
-                        'message' => 'moodle',
-                        'message_read' => 'moodle',
-                        'message_working' => 'moodle',
-                        'grade_items' => 'moodle',
-                        'grade_items_history' => 'moodle',
-                        'grade_grades' => 'moodle',
-                        'grade_grades_history' => 'moodle',
-                        'grade_categories' => 'moodle',
-                        'grade_categories_history' => 'moodle',
-                        'tag' => 'moodle',
-                        'tag_instance' => 'moodle',
-                        'tag_correlation' => 'moodle',
-                        'elis_field_categories' => 'elis_core',
-                        'elis_field_category_contexts' => 'elis_core',
-                        'elis_field' => 'elis_core',
-                        'elis_field_contextlevels' => 'elis_core',
-                        'elis_field_owner' => 'elis_core',
-                        'elis_field_data_text' => 'elis_core',
-                        'block_rlip_version1_fieldmap' => 'rlipimport_version1',
-                        //not writing to this one but prevent events from
-                        //being fired during testing
-                        'events_queue_handlers' => 'moodle');
+        $tables = array(
+            'user' => 'moodle',
+            'context' => 'moodle',
+            'config' => 'moodle',
+            'config_plugins' => 'moodle',
+            'user_info_field' => 'moodle',
+            'user_info_category' => 'moodle',
+            'user_info_data' => 'moodle',
+            'user_enrolments' => 'moodle',
+            'cohort_members' => 'moodle',
+            'groups_members' => 'moodle',
+            'user_preferences' => 'moodle',
+            'user_lastaccess' => 'moodle',
+            'block_positions' => 'moodle',
+            'block_instances' => 'moodle',
+            'filter_active' => 'moodle',
+            'filter_config' => 'moodle',
+            'comments' => 'moodle',
+            'rating' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'role_names' => 'moodle',
+            'cache_flags' => 'moodle',
+            'events_queue' => 'moodle',
+            'groups' => 'moodle',
+            'course' => 'moodle',
+            'course_sections' => 'moodle',
+            'course_categories' => 'moodle',
+            'enrol' => 'moodle',
+            'role' => 'moodle',
+            'role_context_levels' => 'moodle',
+            'message' => 'moodle',
+            'message_read' => 'moodle',
+            'message_working' => 'moodle',
+            'grade_items' => 'moodle',
+            'grade_items_history' => 'moodle',
+            'grade_grades' => 'moodle',
+            'grade_grades_history' => 'moodle',
+            'grade_categories' => 'moodle',
+            'grade_categories_history' => 'moodle',
+            'tag' => 'moodle',
+            'tag_instance' => 'moodle',
+            'tag_correlation' => 'moodle',
+            'elis_field_categories' => 'elis_core',
+            'elis_field_category_contexts' => 'elis_core',
+            'elis_field' => 'elis_core',
+            'elis_field_contextlevels' => 'elis_core',
+            'elis_field_owner' => 'elis_core',
+            'elis_field_data_text' => 'elis_core',
+            'block_rlip_version1_fieldmap' => 'rlipimport_version1',
+            //not writing to this one but prevent events from
+            //being fired during testing
+            'events_queue_handlers' => 'moodle'
+        );
 
-        if ($DB->record_exists('block', array('name' => 'curr_admin'))) {
-            //add PM-related tables
-            $result['crlm_user'] = 'elis_program';
-            $result['crlm_user_moodle'] = 'elis_program';
+        // Detect if we are running this test on a site with the ELIS PM system in place
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/user.class.php'));
+            require_once(elispm::lib('data/usermoodle.class.php'));
+
+            $tables[user::TABLE] = 'elis_program';
+            $tables[usermoodle::TABLE] = 'elis_program';
         }
 
-        return $result;
+        return $tables;
     }
 
     /**

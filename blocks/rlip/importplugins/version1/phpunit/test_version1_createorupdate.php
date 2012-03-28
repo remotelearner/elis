@@ -104,7 +104,7 @@ class version1CreateorupdateTest extends elis_database_test {
 
     /**
      * Helper function that runs the user import for a sample user
-     * 
+     *
      * @param array $data Fields to set in the import
      */
     private function run_core_user_import($data) {
@@ -119,7 +119,7 @@ class version1CreateorupdateTest extends elis_database_test {
 
     /**
      * Helper function that runs the course import for a sample user
-     * 
+     *
      * @param array $data Fields to set in the import
      */
     private function run_core_course_import($data) {
@@ -134,7 +134,7 @@ class version1CreateorupdateTest extends elis_database_test {
 
     /**
      * Helper function that runs the enrolment import for a sample user
-     * 
+     *
      * @param array $data Fields to set in the import
      */
     private function run_core_enrolment_import($data) {
@@ -157,7 +157,7 @@ class version1CreateorupdateTest extends elis_database_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true); 
+        $this->assertEquals($exists, true);
     }
 
     /**
@@ -189,15 +189,31 @@ class version1CreateorupdateTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        return array('config_plugins' => 'moodle',
-                     'user' => 'moodle',
-                     'course' => 'moodle',
-                     'course_categories' => 'moodle',
-                     'context' => 'moodle',
-                     'role' => 'moodle',
-                     'role_context_levels' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'block_rlip_version1_fieldmap' => 'rlipimport_version1');
+        global $CFG;
+
+        $tables = array(
+            'config_plugins' => 'moodle',
+            'user' => 'moodle',
+            'course' => 'moodle',
+            'course_categories' => 'moodle',
+            'context' => 'moodle',
+            'role' => 'moodle',
+            'role_context_levels' => 'moodle',
+            'role_assignments' => 'moodle',
+            'block_rlip_version1_fieldmap' => 'rlipimport_version1'
+        );
+
+        // Detect if we are running this test on a site with the ELIS PM system in place
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/user.class.php'));
+            require_once(elispm::lib('data/usermoodle.class.php'));
+
+            $tables[user::TABLE] = 'elis_program';
+            $tables[usermoodle::TABLE] = 'elis_program';
+        }
+
+        return $tables;
     }
 
     /**
@@ -592,7 +608,7 @@ class version1CreateorupdateTest extends elis_database_test {
                              'firstname' => 'updatedfirst',
                              'email' => '');
         $this->run_core_user_import($import_data);
-        
+
         //validate that the record was updated and not created due to the
         //"create or update" logic thinking it's a non-existent user
         $data = array('username' => 'rlipusername',
