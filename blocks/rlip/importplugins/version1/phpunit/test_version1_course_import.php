@@ -166,6 +166,7 @@ class version1CourseImportTest extends elis_database_test {
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
                      'context' => 'moodle',
+                     'context_temp' => 'moodle',
                      'enrol' => 'moodle',
                      'role_assignments' => 'moodle',
                      'user_enrolments' => 'moodle',
@@ -244,13 +245,14 @@ class version1CourseImportTest extends elis_database_test {
 
         //use our custom overlay database type that supports temporary tables
         self::$overlaydb = new overlay_course_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
+        self::create_admin_user();
+
         $DB = self::$overlaydb;
 
         //create data we need for many test cases
         self::create_guest_user();
         self::init_contexts_and_site_course();
         self::set_up_category_structure(true);
-        self::create_admin_user();
 
         set_config('defaultenrol', 1, 'enrol_guest');
         set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
@@ -323,8 +325,7 @@ class version1CourseImportTest extends elis_database_test {
         //created user is the guest user
         if ($record = self::$origdb->get_record('user', array('username' => 'guest',
                                                 'mnethostid' => $CFG->mnet_localhost_id))) {
-            unset($record->id);
-            $DB->insert_record('user', $record);
+            self::$overlaydb->import_record('user', $record);
         }
     }
 
@@ -346,8 +347,7 @@ class version1CourseImportTest extends elis_database_test {
                       WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
         //set up the site course record
         if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
-            unset($record->id);
-            $DB->insert_record('course', $record);
+            self::$overlaydb->import_record('course', $record);
         }
 
         build_context_path();
@@ -448,26 +448,32 @@ class version1CourseImportTest extends elis_database_test {
         global $USER, $DB, $CFG;
 
         //create the user record
-        $admin = new stdClass();
-        $admin->auth         = 'manual';
-        $admin->firstname    = get_string('admin');
-        $admin->lastname     = get_string('user');
-        $admin->username     = 'admin';
-        $admin->password     = 'adminsetuppending';
-        $admin->email        = '';
-        $admin->confirmed    = 1;
-        $admin->mnethostid   = $CFG->mnet_localhost_id;
-        $admin->lang         = $CFG->lang;
-        $admin->maildisplay  = 1;
-        $admin->timemodified = time();
-        $admin->lastip       = CLI_SCRIPT ? '0.0.0.0' : getremoteaddr(); // installation hijacking prevention
-        $admin->id = $DB->insert_record('user', $admin);
+//         $admin = new stdClass();
+//         $admin->auth         = 'manual';
+//         $admin->firstname    = get_string('admin');
+//         $admin->lastname     = get_string('user');
+//         $admin->username     = 'admin';
+//         $admin->password     = 'adminsetuppending';
+//         $admin->email        = '';
+//         $admin->confirmed    = 1;
+//         $admin->mnethostid   = $CFG->mnet_localhost_id;
+//         $admin->lang         = $CFG->lang;
+//         $admin->maildisplay  = 1;
+//         $admin->timemodified = time();
+//         $admin->lastip       = CLI_SCRIPT ? '0.0.0.0' : getremoteaddr(); // installation hijacking prevention
+//         $admin->id = $DB->insert_record('user', $admin);
+
+        //set up the guest user to prevent enrolment plugins from thinking the
+        //created user is the guest user
+        if ($admin = get_admin()) {
+            self::$overlaydb->import_record('user', $admin);
+        }
 
         //register as site admin
         set_config('siteadmins', $admin->id);
 
         //set up user global
-        $USER = get_admin();
+        $USER = self::$overlaydb->get_record('user', array('id' => $admin->id));
     }
 
     /**
