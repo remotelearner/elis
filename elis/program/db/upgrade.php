@@ -313,6 +313,8 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('fromuserid', 'instance', 'event'));
 
         $dbman->add_index($table, $index);
+
+        upgrade_plugin_savepoint($result, 2011121501, 'elis', 'program');
     }
 
     return $result;

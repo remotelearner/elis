@@ -35,6 +35,10 @@ define('CONTEXT_ELIS_USER',    1005);
 define('CONTEXT_ELIS_USERSET', 1006);
 
 
+/**
+ * Override the base Moodle 'context' class to allow for defining the component name and for overriding a couple core
+ * Moodle methods that will only work with core context classes.
+ */
 class context_elis extends context {
     private static $component = 'elis_program';
 
@@ -102,6 +106,10 @@ class context_elis extends context {
 }
 
 
+/**
+ * Implement some of the methods from the Moodle 'context_helper' class that are specific to the properties defined
+ * within this class.
+ */
 class context_elis_helper extends context_elis {
 
     private static $alllevels = array(
