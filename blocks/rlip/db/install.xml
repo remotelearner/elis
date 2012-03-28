@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="block_rlip_summary_log" COMMENT="Storage for per-run errors and statistics" NEXT="ip_schedule">
+    <TABLE NAME="block_rlip_summary_logs" COMMENT="Storage for per-run errors and statistics" NEXT="block_rlip_schedule">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" COMMENT="Tracks whether the task was an import or an export" NEXT="export"/>
         <FIELD NAME="export" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="plugin"/>
@@ -32,7 +32,7 @@
         <INDEX NAME="endtime_ix" UNIQUE="false" FIELDS="endtime" PREVIOUS="starttime_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="ip_schedule" COMMENT="Scheduled IP imports and exports" PREVIOUS="block_rlip_summary_log">
+    <TABLE NAME="block_rlip_schedule" COMMENT="Scheduled IP imports and exports" PREVIOUS="block_rlip_summary_logs">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="schedule owner" PREVIOUS="id" NEXT="plugin"/>
