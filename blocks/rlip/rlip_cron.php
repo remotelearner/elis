@@ -69,7 +69,7 @@ if ($tasks && $tasks->valid()) {
         $id = $taskparts[1];
 
         // Get ipjob from ip_schedule
-        $ipjob = $DB->get_record('ip_schedule', array('id' => $id));
+        $ipjob = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $id));
         if (empty($ipjob)) {
             mtrace("{$filename}: DB Error retrieving IP schedule record for taskname '{$task->taskname}' - aborting!");
             continue;
@@ -114,7 +114,7 @@ if ($tasks && $tasks->valid()) {
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
         $ipjob->lastruntime = $timenow;
-        $DB->update_record('ip_schedule', $ipjob);
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
 
         switch ($plugparts[0]) {
             case 'rlipimport':
