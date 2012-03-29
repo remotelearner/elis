@@ -30,7 +30,8 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+$file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+require_once($file);
 
 /**
  * Class for testing utility methods in the version 1 import plugin

@@ -31,7 +31,8 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv/csv.class.php');
+$file = get_plugin_directory('rlipfile', 'csv').'/csv.class.php';
+require_once($file);
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
@@ -263,7 +264,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         return array(RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
@@ -375,7 +377,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     private function run_user_import($data) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_loguser($data);
 
@@ -390,7 +393,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     private function run_course_import($data) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_logcourse($data);
 
@@ -405,7 +409,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     private function run_enrolment_import($data) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_logenrolment($data);
 
@@ -559,7 +564,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseCreate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //set up the site course context
         $prefix = self::$origdb->get_prefix();
@@ -592,7 +598,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingDoesNotLogSuccessMessageOnFailedCourseCreate() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $data = array('entity' => 'course',
                       'action' => 'create',
@@ -614,7 +621,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseUpdate() {
         global $CFG, $DB, $UNITTEST;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //prevent problem with cached contexts
         $UNITTEST = new stdClass;
@@ -682,7 +690,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseDelete() {
         global $CFG, $DB, $UNITTEST;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //prevent problem with cached contexts
         $UNITTEST->running = true;
@@ -728,7 +737,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingDoesNotLogSuccessMessageOnFailedCourseDelete() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $data = array('entity' => 'course',
                       'action' => 'delete',
@@ -1356,7 +1366,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingLogsCorrectUseridForManualImport() {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $USER->id = 9999;
 

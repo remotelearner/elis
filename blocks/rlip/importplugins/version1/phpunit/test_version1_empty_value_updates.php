@@ -110,7 +110,8 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
         require_once($CFG->dirroot.'/elis/core/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
 
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         $tables = array(
             'user' => 'moodle',

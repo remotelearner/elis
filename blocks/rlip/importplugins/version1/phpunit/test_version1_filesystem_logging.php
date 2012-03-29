@@ -226,7 +226,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
     static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         return array(RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',

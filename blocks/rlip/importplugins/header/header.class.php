@@ -25,7 +25,8 @@
  */
 
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/sample/sample.class.php');
+$file = get_plugin_directory('rlipimport', 'sample').'/sample.class.php';
+require_once($file);
 
 /**
  * Test plugin used to test a simple entity and action

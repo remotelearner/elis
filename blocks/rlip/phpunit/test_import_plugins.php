@@ -217,7 +217,8 @@ class importPluginTest extends elis_database_test {
      */
     public function testValidInputTriggersAction() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/sample/sample.class.php');
+        $file = get_plugin_directory('rlipimport', 'sample').'/sample.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_mock();
 
@@ -234,7 +235,8 @@ class importPluginTest extends elis_database_test {
      */
     public function testImportClosesFile() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/sample/sample.class.php');
+        $file = get_plugin_directory('rlipimport', 'sample').'/sample.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_inputclosed();
 
@@ -250,7 +252,8 @@ class importPluginTest extends elis_database_test {
      */
     public function testImportPluginsSupportMultipleFiles() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/multiple/multiple.class.php');
+        $file = get_plugin_directory('rlipimport', 'multiple').'/multiple.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_multiple();
 
@@ -266,7 +269,8 @@ class importPluginTest extends elis_database_test {
      */
     public function testImportTriggersHeaderReadHook() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/header/header.class.php');
+        $file = get_plugin_directory('rlipimport', 'header').'/header.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_mock();
 

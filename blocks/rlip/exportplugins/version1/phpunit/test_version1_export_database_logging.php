@@ -203,7 +203,8 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
      */
     function run_export($targetstarttime = 0, $writedelay = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //plugin for file IO
         $fileplugin = new rlip_fileplugin_memoryexport($writedelay);

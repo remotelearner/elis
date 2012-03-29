@@ -68,7 +68,8 @@ class version1UserImportTest extends elis_database_test {
      */
     protected static function get_overlay_tables() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         $tables = array(
             'user' => 'moodle',
@@ -179,7 +180,8 @@ class version1UserImportTest extends elis_database_test {
      */
     private function run_core_user_import($extradata, $use_default_data = true) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         if ($use_default_data) {
             $data = $this->get_core_user_data();
@@ -332,7 +334,8 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportSetsRequiredUserFieldsOnCreate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $data = $this->get_core_user_data();
         $provider = new rlip_importprovider_mockuser($data);
@@ -357,7 +360,8 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportSetsRequiredUserFieldsOnAdd() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $data = $this->get_core_user_data();
         $data['action'] = 'add';
@@ -2387,7 +2391,8 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportUsesUserFieldMappings() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up our mapping of standard field names to custom field names
         $mapping = array('action' => 'action1',
@@ -2495,8 +2500,9 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportUserFieldImportPreventsStandardFieldUse() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $plugin_dir = get_plugin_directory('rlipimport', 'version1');
+        require_once($plugin_dir.'/version1.class.php');
+        require_once($plugin_dir.'/lib.php');
 
         //create the mapping record
         $record = new stdClass;

@@ -1964,7 +1964,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      */
     function apply_mapping($entity, $record) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //fetch all records for the current entity type (not using recordset
         //since there are a fixed number of fields)

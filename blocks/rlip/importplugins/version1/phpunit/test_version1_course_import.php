@@ -161,7 +161,8 @@ class version1CourseImportTest extends elis_database_test {
      */
     protected static function get_overlay_tables() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         return array('course_categories' => 'moodle',
                      'course' => 'moodle',
@@ -303,7 +304,8 @@ class version1CourseImportTest extends elis_database_test {
      */
     private function run_core_course_import($extradata, $use_default_data = true) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         if ($use_default_data) {
             $data = $this->get_core_course_data('childcategory');
@@ -541,7 +543,8 @@ class version1CourseImportTest extends elis_database_test {
      */
     public function testVersion1ImportSetsRequiredCourseFieldsOnCreate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //run the import
         $data = $this->get_core_course_data('childcategory');
@@ -2952,7 +2955,8 @@ class version1CourseImportTest extends elis_database_test {
      */
     public function testVersion1ImportUsesCourseFieldMappings() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //setup
         set_config('maxsections', 20, 'moodlecourse');
@@ -3056,8 +3060,9 @@ class version1CourseImportTest extends elis_database_test {
      */
     public function testVersion1ImportCourseFieldImportPreventsStandardFieldUse() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $plugin_dir = get_plugin_directory('rlipimport', 'version1');
+        require_once($plugin_dir.'/version1.class.php');
+        require_once($plugin_dir.'/lib.php');
 
         //create the mapping record
         $record = new stdClass;

@@ -178,7 +178,8 @@ class version1ExportTest extends elis_database_test {
      */
     protected static function get_overlay_tables() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         $result = array('grade_items' => 'moodle',
                         'grade_grades' => 'moodle',
@@ -252,7 +253,8 @@ class version1ExportTest extends elis_database_test {
      */
     protected function get_export_data($manual = true, $targetstarttime = 0, $lastruntime = 0) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //plugin for file IO
     	$fileplugin = new rlip_fileplugin_bogus();
@@ -330,7 +332,8 @@ class version1ExportTest extends elis_database_test {
      */
     private function create_field_mapping($fieldid, $header = 'Header', $fieldorder = 0) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up and insert the record
         $mapping = new stdClass;
@@ -1009,7 +1012,8 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportDeletesField() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up the category and field, along with the export mapping
         $categoryid = $this->create_custom_field_category();
@@ -1034,7 +1038,8 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportAddsField() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up the category and field
         $categoryid = $this->create_custom_field_category();
@@ -1053,7 +1058,8 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportMovesFieldUp() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up the category and field, along with the export mapping
         $categoryid = $this->create_custom_field_category();
@@ -1081,7 +1087,8 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportMovesFieldDown() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up the category and field, along with the export mapping
         $categoryid = $this->create_custom_field_category();
@@ -1109,7 +1116,8 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportUpdatesHeader() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up the category and field, along with the export mapping
         $categoryid = $this->create_custom_field_category();
@@ -1131,7 +1139,8 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportUpdatesHeaders() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up the category and field, along with the export mapping
         $categoryid = $this->create_custom_field_category();
@@ -1164,7 +1173,8 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportReportsConfiguredFields() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up the category and field, along with the export mapping
         $categoryid = $this->create_custom_field_category();
@@ -1215,7 +1225,8 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportReportsAvailableFields() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up the category and field, along with the export mapping
         $categoryid = $this->create_custom_field_category();
@@ -1257,7 +1268,8 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportHandlesDeletedFieldsWhenMovingUp() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up the category and field, along with the export mapping
         $categoryid = $this->create_custom_field_category();
@@ -1289,7 +1301,8 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersion1ExportHandlesDeletedFieldsWhenMovingDown() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up the category and field, along with the export mapping
         $categoryid = $this->create_custom_field_category();
