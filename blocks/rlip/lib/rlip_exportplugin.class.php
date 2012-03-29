@@ -24,7 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
 /**
  * Base class for Integration Point export plugins
@@ -79,8 +79,8 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 	 */
     function __construct($fileplugin, $manual = false) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 
         $this->fileplugin = $fileplugin;
         $this->dblogger = new rlip_dblogger_export();

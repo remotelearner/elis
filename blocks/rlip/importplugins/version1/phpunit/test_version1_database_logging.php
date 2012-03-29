@@ -32,7 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
@@ -1199,7 +1199,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingStoresCorrectFilenameOnRunWithMoodleFile() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
 
         //set the log file name to a fixed value
         $filename = $CFG->dataroot.'/rliptestfile.log';
@@ -1405,7 +1405,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingSetsAllFieldsDuringScheduledImportRun() {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //set the log file name to a fixed value

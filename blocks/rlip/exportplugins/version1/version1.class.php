@@ -24,7 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/rlip_exportplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
 
 /**
  * Moodle course grade export compatible with the original Moodle-only grade

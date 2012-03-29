@@ -30,8 +30,8 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 

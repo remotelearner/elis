@@ -34,8 +34,8 @@ global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once(elis::lib('testlib.php'));
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -338,8 +338,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
      */
     protected function assert_data_produces_error($data, $expected_error, $entitytype) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
         //cleanup from previous run
         $filename = $CFG->dataroot.'/rliptestfile.log';
@@ -488,9 +488,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      */
     public function testVersion1ImportInstanceHasFsLogger() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 
         //set the log file name to a fixed value
         $filename = $CFG->dataroot.'/rliptestfile.log';

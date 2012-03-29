@@ -24,7 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
 /**
  * Mock file plugin that provides a fixed set of data

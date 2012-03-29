@@ -30,7 +30,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot . '/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 
@@ -1321,7 +1321,7 @@ class version1ExportTest extends elis_database_test {
      */
     public function testVersionExportOpensAndClosesFile() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
         //run run the export
         $fileplugin = new rlip_fileplugin_openclose();

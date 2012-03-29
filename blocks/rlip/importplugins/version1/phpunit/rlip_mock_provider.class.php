@@ -26,8 +26,8 @@
 
 require_once(dirname(__FILE__) .'/../../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemorywithname.class.php');
 

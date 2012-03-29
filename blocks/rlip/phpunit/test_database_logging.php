@@ -31,7 +31,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 
 /**
  * DB logging class used to test the bare minimum functionality of the DB

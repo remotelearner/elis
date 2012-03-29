@@ -24,7 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/sample/sample.class.php');
 
 /**

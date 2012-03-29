@@ -96,7 +96,7 @@ function rlipimport_version1_get_tabs($baseurl) {
  */
 function rlipimport_version1_get_mapping($entitytype) {
     global $CFG, $DB;
-    require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+    require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
     require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
     //obtain the list of supported fields

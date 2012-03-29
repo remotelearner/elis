@@ -42,8 +42,8 @@ class pluginFactoriesTest extends PHPUnit_Framework_TestCase {
      */
     public function testDatapluginFactorySetsCorrectFilepluginForExport() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
         //setup
         $fileplugin = rlip_fileplugin_factory::factory('bogus');
@@ -58,7 +58,7 @@ class pluginFactoriesTest extends PHPUnit_Framework_TestCase {
      */ 
     public function testFilepluginFactorySetsBrowserFlag() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
         //setup
         $fileplugin = rlip_fileplugin_factory::factory('', NULL, false, true);

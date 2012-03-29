@@ -30,8 +30,8 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_exportplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
 /**

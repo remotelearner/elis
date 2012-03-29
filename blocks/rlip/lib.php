@@ -89,7 +89,7 @@ class rlip_category_externalpage extends admin_externalpage implements parentabl
  */
 function rlip_admintree_setup(&$adminroot) {
     global $CFG;
-    require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+    require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
     $plugintypes = array('rlipimport', 'rlipexport');
 
@@ -527,9 +527,9 @@ function run_ipjob($taskname, $maxruntime = 0) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;
     }
 
-    require_once($CFG->dirroot .'/blocks/rlip/rlip_dataplugin.class.php');
-    require_once($CFG->dirroot .'/blocks/rlip/rlip_fileplugin.class.php');
-    require_once($CFG->dirroot .'/blocks/rlip/rlip_importprovider_csv.class.php');
+    require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_dataplugin.class.php');
+    require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_fileplugin.class.php');
+    require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
 
     // Get the schedule record
     list($prefix, $id) = explode('_', $taskname);

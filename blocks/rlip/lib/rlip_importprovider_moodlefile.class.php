@@ -24,7 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 
 /**
  * Class that provides file plugins reading from the Moodle file API in a
@@ -55,7 +55,7 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
      */
     function get_import_file($entity) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
         foreach ($this->entity_types as $key => $value) {
             if ($entity == $value) {

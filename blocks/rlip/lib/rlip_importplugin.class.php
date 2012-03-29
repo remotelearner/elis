@@ -24,7 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
 /**
  * Base class for a provider that instantiates a file plugin
@@ -48,7 +48,7 @@ abstract class rlip_importprovider {
      */
     function get_dblogger() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 
         //for now, the only db logger
         return new rlip_dblogger_import();
@@ -62,7 +62,7 @@ abstract class rlip_importprovider {
      */
     function get_fslogger($plugin) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 
         //set up the file-system logger
         $filename = get_config($plugin, 'logfilelocation');
@@ -96,7 +96,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      */
     function __construct($provider = NULL, $manual = false) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
         if ($provider !== NULL) {
             //note: provider is not set if only using plugin_supports
