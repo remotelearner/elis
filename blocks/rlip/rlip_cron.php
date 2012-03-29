@@ -49,7 +49,7 @@ if (empty($CFG->extramemorylimit)) {
     raise_memory_limit($CFG->extramemorylimit);
 }
 
-mtrace('RLIP external cron start - Server Time: '.date('r', time())."\n\n");
+mtrace('RLIP external cron start - Server Time: '. date('r', time()) ."\n");
 
 $pluginstorun = array('rlipimport', 'rlipexport');
 
@@ -147,6 +147,6 @@ if ($tasks && $tasks->valid()) {
     }
 }
 
-mtrace('RLIP external cron end - Server Time: '.date('r', time())."\n\n");
+mtrace("\nRLIP external cron end - Server Time: ". date('r', time()) ."\n\n");
 
 // end of file
