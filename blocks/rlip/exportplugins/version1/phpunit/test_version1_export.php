@@ -229,7 +229,10 @@ class version1ExportTest extends elis_database_test {
         return array(RLIP_LOG_TABLE            => 'block_rlip',
                      'external_tokens'         => 'moodle',
                      'external_services_users' => 'moodle',
-                     'log'                     => 'moodle');
+                     'log'                     => 'moodle',
+                     'message'                 => 'moodle',
+                     'message_read'            => 'moodle',
+                     'message_working'         => 'moodle');
     }
 
     /**

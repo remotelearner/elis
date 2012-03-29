@@ -237,8 +237,13 @@ class version1CourseImportTest extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        return array('event' => 'moodle',
-                     RLIP_LOG_TABLE => 'block_rlip');
+        return array('event'                   => 'moodle',
+                     'quiz'                    => 'moodle',
+                     'quiz_attempts'           => 'moodle',
+                     'quiz_feedback'           => 'moodle',
+                     'quiz_grades'             => 'moodle',
+                     'quiz_question_instances' => 'moodle',
+                     RLIP_LOG_TABLE            => 'block_rlip');
     }
 
     /**
