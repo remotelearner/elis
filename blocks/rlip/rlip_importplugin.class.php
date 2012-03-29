@@ -605,7 +605,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                 return $result;
             }
             if ($maxruntime) {
-                $usedtime = $starttime - time();
+                $usedtime = time() - $starttime;
                 if ($usedtime  < $maxruntime) {
                     $maxruntime -= $usedtime;
                 } else if (($nextentity = next($entities)) !== false) {
