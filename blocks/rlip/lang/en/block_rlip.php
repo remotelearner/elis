@@ -35,6 +35,7 @@ $string['displaytimeformat'] = '%b/%d/%Y, %I:%M:%S %P';
 $string['duplicate'] = 'Please enter a unique value';
 $string['export'] = 'Export';
 $string['exportexceedstimelimit'] = 'Export processing aborted due to time restrictions. Export will be attempted again at next cron.';
+$string['ext_cron_usage'] = 'requires 4 parameters: <plugin> <userid> <targetstarttime> <lastruntime> - only got {$a} parameter(s).';
 $string['go'] = 'Go';
 $string['import'] = 'Import';
 $string['importexceedstimelimit'] = 'Import processing of entity \'{$a->entity}\' aborted due to time restrictions. Import will continue at next cron.';

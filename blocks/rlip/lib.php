@@ -523,6 +523,12 @@ function rlip_get_export_filename($plugin, $tz = 99) {
 function run_ipjob($taskname, $maxruntime = 0) {
     global $CFG, $DB;
 
+    $disabledincron = get_config('rlip', 'disableincron');
+    if (!empty($disabledincron)) {
+        mtrace("run_ipjob({$taskname}): Internal IP cron disabled by settings - aborting job!");
+        return false; // TBD
+    }
+
     if (empty($maxruntme)) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;
     }
@@ -558,7 +564,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
         $timenow = time();
         do {
             $nextruntime += (int)rlip_schedule_period_minutes($data['period']) * 60;
-        } while ($nextruntime <= $timenow);
+        } while ($nextruntime <= ($timenow + 59));
         $task->nextruntime = $nextruntime;
         $DB->update_record('elis_scheduled_tasks', $task);
 
@@ -568,12 +574,6 @@ function run_ipjob($taskname, $maxruntime = 0) {
     } else {
         mtrace("run_ipjob({$taskname}): DB Error retrieving task record!");
         //todo: return false?
-    }
-
-    $disabledincron = get_config('rlip', 'disableincron');
-    if (!empty($disabledincron)) {
-        mtrace("run_ipjob({$taskname}): IP cron disabled by settings - aborting!");
-        return false;
     }
 
     // Perform the IP scheduled action
@@ -594,9 +594,10 @@ function run_ipjob($taskname, $maxruntime = 0) {
             break;
 
         case 'rlipexport':
-            $user = get_complete_user_data('id', $ipjob->userid);
+            $tz = $DB->get_field('user', 'timezone',
+                                 array('id' => $ipjob->userid));
             $export = rlip_get_export_filename($plugin,
-                          empty($user) ? 99 : $user->timezone);
+                          ($tz === false) ? 99 : $tz);
             $fileplugin = rlip_fileplugin_factory::factory($export, NULL, false);
             $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin);
             break;
