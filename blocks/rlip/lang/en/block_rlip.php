@@ -81,6 +81,7 @@ $string['rlip_jobs_heading_instructions'] = 'Click the "New job" button below to
 $string['rlip_new_job'] = 'New job';
 $string['rlipexportplugins'] = 'Export Plugins';
 $string['rlipimportplugins'] = 'Import Plugins';
+$string['rlipmanageplugins'] = 'Manage plugins';
 $string['runnow'] = 'Run Now';
 $string['runmanually'] = 'Run manually';
 $string['schedulepagetitle'] = 'Schedule IP';

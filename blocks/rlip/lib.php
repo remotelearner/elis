@@ -56,6 +56,27 @@ class rlip_category_settingpage extends admin_settingpage implements parentable_
 }
 
 /**
+ * External page that can have child pages
+ *
+ * Note: This class must implement parentable_part_of_admin_tree in order for
+ * children to show up
+ */
+class rlip_category_externalpage extends admin_externalpage implements parentable_part_of_admin_tree {
+    /**
+    * Method that satisfies requirements of parent interface but delegates to
+    * the admin_externalpage functionality, depsite methods being non-equivalent
+    *
+    * @param object $external is the admin_external object you want to add
+    * @param string $bogus only defined to satisfy interface
+    * @return bool true if successful, false if not
+    */
+    public function add($external, $bogus = '') {
+        //note: this is only called as is done for admin_externalpage
+        return parent::add($external);
+    }
+}
+
+/**
  * Add extra admintree configuration structure to the main administration menu tree.
  *
  * @uses $CFG
@@ -67,6 +88,16 @@ function rlip_admintree_setup(&$adminroot) {
     require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
 
     $plugintypes = array('rlipimport', 'rlipexport');
+
+    $displaystring = get_string('rlipmanageplugins', 'block_rlip');
+    $externcat = new admin_category('rlipmanageplugins', $displaystring);
+    $adminroot->add('blocksettings', $externcat);
+
+    $displaystring = get_string('plugins', 'block_rlip');
+    $url = $CFG->wwwroot.'/blocks/rlip/plugins.php';
+    $page = new admin_externalpage('rlipsettingplugins', $displaystring, $url, 'moodle/site:config');
+    $adminroot->add('rlipmanageplugins', $page);
+
     foreach ($plugintypes as $plugintype) {
         //obtain the list of plugins of the current type
         if ($plugins = get_plugin_list($plugintype)) {
@@ -83,7 +114,7 @@ function rlip_admintree_setup(&$adminroot) {
 
                     //add the actual settings to the list
                     include($plugsettings);
-                    $adminroot->add('blocksettings', $settings);
+                    $adminroot->add('rlipmanageplugins', $settings);
 
                     //perform any customization required by the plugin
                     $instance = rlip_dataplugin_factory::factory("{$plugintype}_{$plugin}");
@@ -93,19 +124,12 @@ function rlip_admintree_setup(&$adminroot) {
         }
     }
 
-    //add a link for viewing all plugins
-    $displaystring = get_string('plugins', 'block_rlip');
-    $url = $CFG->wwwroot.'/blocks/rlip/plugins.php';
-    $page = new admin_externalpage('rlipsettingplugins', $displaystring, $url,
-                                   'moodle/site:config');
-    $adminroot->add('blocksettings', $page);
-
     //add a link for viewing logs
     $displaystring = get_string('logs', 'block_rlip');
     $url = $CFG->wwwroot.'/blocks/rlip/viewlogs.php';
     $page = new admin_externalpage('rliplogs', $displaystring, $url,
                                    'moodle/site:config');
-    $adminroot->add('blocksettings', $page);
+    $adminroot->add('reports', $page);
 }
 
 /**
