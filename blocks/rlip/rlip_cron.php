@@ -40,6 +40,9 @@ if (empty($disabledincron)) {
     exit(0);
 }
 
+global $USER;
+$USER = get_admin();
+
 // TBD: adjust some php variables for the execution of this script
 set_time_limit(0);
 @ini_set('max_execution_time', '3000');
