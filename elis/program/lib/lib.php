@@ -1209,7 +1209,10 @@ function pm_migrate_tags() {
                     foreach ($tagids as $k => $v) {
                         $tagids[$k] = $tag_lookup[$v];
                     }
-                    $context = get_context_instance($contextlevel, $record->instanceid);
+
+                    $contextlevel = context_elis_helper::get_level_from_name($contextname);
+                    $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+                    $context     = $contextclass::instance($record->instanceid);
 
                     field_data::set_for_context_and_field($context, $field, $tagids);
                 }
@@ -1247,7 +1250,10 @@ function pm_migrate_tags() {
                     if ($field = $DB->get_record(field::TABLE, array('shortname' => "_19upgrade_{$contextname}_tag_data_{$tagname}"))) {
                         $field = new field($field->id);
 
-                        $context = get_context_instance($contextlevel, $record->instanceid);
+                        $contextlevel = context_elis_helper::get_level_from_name($contextname);
+                        $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+                        $context     = $contextclass::instance($record->instanceid);
+
                         field_data::set_for_context_and_field($context, $field, $record->data);
                     }
                 }
@@ -1324,7 +1330,9 @@ function pm_migrate_environments() {
                     WHERE environmentid != 0";
             if ($records = $DB->get_recordset_sql($sql)) {
                 foreach ($records as $record) {
-                    $context = get_context_instance($contextlevel, $record->id);
+                    $contextlevel = context_elis_helper::get_level_from_name($contextname);
+                    $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+                    $context     = $contextclass::instance($record->id);
 
                     $environmentid = $environment_lookup[$record->environmentid];
                     field_data::set_for_context_and_field($context, $field, $environmentid);
