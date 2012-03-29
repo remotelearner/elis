@@ -103,13 +103,13 @@ class rlip_fileplugin_factory {
 
     	if ($logging) {
       	    //using a standard text file for logging
-    	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log.class.php');
+    	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
 
             return new rlip_fileplugin_log($filename);
     	}
 
     	//load the CSV file plugin definition
-  	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
+  	    require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv/csv.class.php');
 
     	if ($sendtobrowser) {
     	    //writing a CSV file to the browser
