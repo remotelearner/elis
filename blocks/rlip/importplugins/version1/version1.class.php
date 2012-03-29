@@ -1963,12 +1963,13 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @return object The record, with the field mapping applied
      */
     function apply_mapping($entity, $record) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //fetch all records for the current entity type (not using recordset
         //since there are a fixed number of fields)
         $params = array('entitytype' => $entity);
-        if ($mapping = $DB->get_records('block_rlip_version1_fieldmap', $params)) {
+        if ($mapping = $DB->get_records(RLIPIMPORT_VERSION1_MAPPING_TABLE, $params)) {
             foreach ($mapping as $entry) {
                 //get the custom and standard field names from the mapping
                 //record

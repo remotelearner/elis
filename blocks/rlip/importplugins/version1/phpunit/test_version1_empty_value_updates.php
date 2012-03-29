@@ -110,6 +110,8 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
         require_once($CFG->dirroot.'/elis/core/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
 
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+
         $tables = array(
             'user' => 'moodle',
             'course' => 'moodle',
@@ -119,7 +121,7 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
             'context' => 'moodle',
             'config_plugins' => 'moodle',
             'role_assignments' => 'moodle',
-            'block_rlip_version1_fieldmap' => 'rlipimport_version1',
+            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
             field_data_int::TABLE => 'elis_core',
             field_data_char::TABLE => 'elis_core',
             field_data_text::TABLE => 'elis_core'
@@ -142,7 +144,10 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('block_rlip_summary_log' => 'block_rlip',
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        return array(RLIP_LOG_TABLE => 'block_rlip',
                      'block_instances' => 'moodle',
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',

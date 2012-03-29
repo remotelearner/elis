@@ -44,7 +44,10 @@ class version1ImportConfigTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
-        return array('block_rlip_version1_fieldmap' => 'rlipimport_version1',
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+
+        return array(RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle');
     }
@@ -214,7 +217,8 @@ class version1ImportConfigTest extends elis_database_test {
      * @dataProvider getMappingProvider
      */
     public function testGetMappingReturnsValidData($entitytype, $field) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //obtain the entire list of fields
         $plugin = new rlip_importplugin_version1(NULL, false);
@@ -230,7 +234,7 @@ class version1ImportConfigTest extends elis_database_test {
         $mapping->entitytype = $entitytype;
         $mapping->standardfieldname = $field;
         $mapping->customfieldname = 'custom'.$field;
-        $DB->insert_record('block_rlip_version1_fieldmap', $mapping);
+        $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $mapping);
 
         //data validation
         $fields = rlipimport_version1_get_mapping($entitytype);
@@ -279,7 +283,8 @@ class version1ImportConfigTest extends elis_database_test {
      * @dataProvider getMappingProvider
      */
     public function testSaveMappingPersistsAllData($entitytype, $field) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //obtain available fields
         $plugin = new rlip_importplugin_version1(NULL, false);
@@ -312,14 +317,15 @@ class version1ImportConfigTest extends elis_database_test {
 
         //data validation
         $params = array('entitytype' => $entitytype);
-        $this->assertEquals($DB->get_records('block_rlip_version1_fieldmap', $params, 'id'), $expected_data);
+        $this->assertEquals($DB->get_records(RLIPIMPORT_VERSION1_MAPPING_TABLE, $params, 'id'), $expected_data);
     }
 
     /**
      * Validate that saving field mappings updates existing records
      */
     public function testSaveMappingUpdatesExistingRecords() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //obtain the available fields
         $plugin = new rlip_importplugin_version1(NULL, false);
@@ -340,7 +346,7 @@ class version1ImportConfigTest extends elis_database_test {
         //data validation
         $select = $DB->sql_like('customfieldname', ':suffix');
         $params = array('suffix' => '%updated');
-        $count = $DB->count_records_select('block_rlip_version1_fieldmap', $select, $params);
+        $count = $DB->count_records_select(RLIPIMPORT_VERSION1_MAPPING_TABLE, $select, $params);
         $this->assertEquals($count, count($data));
     }
 
@@ -349,14 +355,15 @@ class version1ImportConfigTest extends elis_database_test {
      * the specified entity type
      */
     public function testSaveMappingDoesNotDeleteMappingsForOtherEntities() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //create a user mapping record
         $mapping = new stdClass;
         $mapping->entitytype = 'user';
         $mapping->standardfieldname = 'test';
         $mapping->customfieldname = 'customtest';
-        $DB->insert_record('block_rlip_version1_fieldmap', $mapping);
+        $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $mapping);
 
         //obtain the available fields for course mappings
         $plugin = new rlip_importplugin_version1(NULL, false);
@@ -366,7 +373,7 @@ class version1ImportConfigTest extends elis_database_test {
         rlipimport_version1_save_mapping('course', $options, array());
 
         //data validation
-        $exists = $DB->record_exists('block_rlip_version1_fieldmap', array('entitytype' => 'user'));
+        $exists = $DB->record_exists(RLIPIMPORT_VERSION1_MAPPING_TABLE, array('entitytype' => 'user'));
         $this->assertTrue($exists);
     }
 
@@ -374,7 +381,8 @@ class version1ImportConfigTest extends elis_database_test {
      * Validate that only valid field mappings can be saved
      */
     public function testSaveMappingDoesNotSaveInvalidFields() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //obtain available fields
         $plugin = new rlip_importplugin_version1(NULL, false);
@@ -384,7 +392,7 @@ class version1ImportConfigTest extends elis_database_test {
         rlipimport_version1_save_mapping('user', $options, array('bogus' => 'bogus'));
 
         //data validation
-        $count = $DB->count_records('block_rlip_version1_fieldmap');
+        $count = $DB->count_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
         $this->assertEquals($count, count($options));
     }
 
@@ -392,7 +400,8 @@ class version1ImportConfigTest extends elis_database_test {
      * Validate restoring default field mappings
      */
     public function testRestoreDefaultMappingUpdatesRecords() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //obtain available fields
         $plugin = new rlip_importplugin_version1(NULL, false);
@@ -403,7 +412,7 @@ class version1ImportConfigTest extends elis_database_test {
 
         //setup validation
         $select = 'standardfieldname = customfieldname';
-        $count = $DB->count_records_select('block_rlip_version1_fieldmap', $select);
+        $count = $DB->count_records_select(RLIPIMPORT_VERSION1_MAPPING_TABLE, $select);
         $this->assertEquals($count, count($options));
 
         //update all mapping values
@@ -415,13 +424,13 @@ class version1ImportConfigTest extends elis_database_test {
         //persist updated values and validate
         rlipimport_version1_save_mapping('user', $options, $data);
         $select = 'standardfieldname != customfieldname';
-        $count = $DB->count_records_select('block_rlip_version1_fieldmap', $select);
+        $count = $DB->count_records_select(RLIPIMPORT_VERSION1_MAPPING_TABLE, $select);
         $this->assertEquals($count, count($options));
 
         //reset and validate state
         rlipimport_version1_reset_mappings('user');
         $select = 'standardfieldname = customfieldname';
-        $count = $DB->count_records_select('block_rlip_version1_fieldmap', $select);
+        $count = $DB->count_records_select(RLIPIMPORT_VERSION1_MAPPING_TABLE, $select);
         $this->assertEquals($count, count($options));
     }
 }

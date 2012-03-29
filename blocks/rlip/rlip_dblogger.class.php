@@ -24,6 +24,8 @@
  *
  */
 
+require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
 /**
  * Class for storing import / export progress and logging end result to the
  * database
@@ -198,7 +200,7 @@ abstract class rlip_dblogger {
         $record = $this->customize_record($record, $filename);
 
         //persist
-        $this->logid = $DB->insert_record('block_rlip_summary_log', $record);
+        $this->logid = $DB->insert_record(RLIP_LOG_TABLE, $record);
 
         //reset state
         $this->reset_state();

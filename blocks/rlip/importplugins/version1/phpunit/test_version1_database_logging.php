@@ -261,7 +261,11 @@ class version1DatabaseLoggingTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
-        return array('block_rlip_summary_log' => 'block_rlip',
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+
+        return array(RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
                      'context' => 'moodle',
                      'user_enrolments' => 'moodle',
@@ -310,9 +314,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
                      'role_context_levels' => 'moodle',
                      'files' => 'moodle',
                      'config' => 'moodle',
-                     'ip_schedule' => 'block_rlip',
+                     RLIP_SCHEDULE_TABLE => 'block_rlip',
                      'elis_scheduled_tasks' => 'elis_core',
-                     'block_rlip_version1_fieldmap' => 'rlipimport_version1',
+                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      //this prevents createorupdate from being used
                      'config_plugins' => 'moodle');
     }
@@ -338,7 +342,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      * @return boolean true if found, otherwise false
      */
     private function log_with_message_exists($message = NULL) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         if ($message === NULL) {
             $message = 'All lines from import file memoryfile were successfully processed.';
@@ -346,7 +351,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
         $params = array('statusmessage' => $message);
-        return $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        return $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
     }
 
     /**
@@ -455,7 +460,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      * update
      */
     public function testVersion1DBLoggingLogsSuccessMessageOnUserUpdate() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         $data = array('entity' => 'user',
                       'action' => 'create',
@@ -470,7 +476,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertNull($result);
 
         //prevent db conflicts
-        $DB->delete_records('block_rlip_summary_log');
+        $DB->delete_records(RLIP_LOG_TABLE);
 
         $data = array('entity' => 'user',
                       'action' => 'update',
@@ -504,7 +510,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      * delete
      */
     public function testVersion1DBLoggingLogsSuccessMessageOnUserDelete() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         $data = array('entity' => 'user',
                       'action' => 'create',
@@ -519,7 +526,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertNull($result);
 
         //prevent db conflicts
-        $DB->delete_records('block_rlip_summary_log');
+        $DB->delete_records(RLIP_LOG_TABLE);
 
         $data = array('entity' => 'user',
                       'action' => 'delete',
@@ -606,6 +613,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseUpdate() {
         global $CFG, $DB, $UNITTEST;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
         //prevent problem with cached contexts
@@ -636,7 +644,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertNull($result);
 
         //prevent db conflicts
-        $DB->delete_records('block_rlip_summary_log');
+        $DB->delete_records(RLIP_LOG_TABLE);
 
         $data = array('entity' => 'course',
                       'action' => 'update',
@@ -673,6 +681,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseDelete() {
         global $CFG, $DB, $UNITTEST;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
         //prevent problem with cached contexts
@@ -701,7 +710,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertNull($result);
 
         //prevent db conflicts
-        $DB->delete_records('block_rlip_summary_log');
+        $DB->delete_records(RLIP_LOG_TABLE);
 
         $data = array('entity' => 'course',
                       'action' => 'delete',
@@ -811,6 +820,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingLogsSuccessMessageOnEnrolmentDelete() {
         global $CFG, $DB, $UNITTEST;
         require_once($CFG->dirroot.'/user/lib.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //prevent problem with cached contexts
         $UNITTEST->running = true;
@@ -859,7 +869,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertNull($result);
 
         //prevent db conflicts
-        $DB->delete_records('block_rlip_summary_log');
+        $DB->delete_records(RLIP_LOG_TABLE);
 
         $data = array('entity' => 'enrolment',
                       'action' => 'delete',
@@ -900,7 +910,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      * success summary log message
      */
     public function testVersion1DBLoggingLogsCorrectFileNameOnSuccess() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         $data = array('entity' => 'user',
                       'action' => 'create',
@@ -922,7 +933,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertEquals($exists, true);
 
         //prevent db conflicts
-        $DB->delete_records('block_rlip_summary_log');
+        $DB->delete_records(RLIP_LOG_TABLE);
         $DB->delete_records('user');
 
         $provider = new rlip_importprovider_loguser_dynamic($data, 'filetwo');
@@ -941,7 +952,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      * when flushing data to the DB
      */
     public function testVersion1DBLoggingSuccessTrackingStoresCorrectValuesViaAPI() {
-        global $USER;
+        global $CFG, $USER;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //set up the logger object
         $logger = new rlip_dblogger_import();
@@ -991,7 +1003,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
                         'storedfailures' => 1,
                         'dbops' => 5,
                         'unmetdependency' => 1);
-        $this->assert_record_exists('block_rlip_summary_log', $params);
+        $this->assert_record_exists(RLIP_LOG_TABLE, $params);
 
         //validate that the state is reset
         $this->assertEquals($logger->plugin, 'plugin');
@@ -1012,7 +1024,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      * "version 1" import
      */
     public function testVersion1DBLoggingStoresCorrectValuesOnRun() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //capture the earliest possible start time
         $mintime = time();
@@ -1061,7 +1074,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
                         'maxstarttime' => $maxtime,
                         'minendtime' => $mintime,
                         'maxendtime' => $maxtime);
-        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertEquals($exists, true);
     }
 
@@ -1071,6 +1084,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingStoresCorrectFilenameOnRun() {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //set the log file name to a fixed value
         $filename = $CFG->dataroot.'/rliptestfile.log';
@@ -1088,7 +1102,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //data validation
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
         $params = array('message' => 'All lines from import file userfile.csv were successfully processed.');
-        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertEquals($exists, true);
     }
 
@@ -1154,7 +1168,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $task->nextruntime = 99;
         $DB->update_record('elis_scheduled_tasks', $task);
 
-        $job = $DB->get_record('ip_schedule', array('plugin' => 'rlipimport_version1'));
+        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('plugin' => 'rlipimport_version1'));
         $job->nextruntime = 99;
         $state = new stdClass;
         $state->result = false;
@@ -1164,7 +1178,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $ipjobdata = unserialize($job->config);
         $ipjobdata['state'] = $state;
         $job->config = serialize($ipjobdata);
-        $DB->update_record('ip_schedule', $job);
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         //run the import
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
@@ -1184,6 +1198,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingStoresCorrectFilenameOnRunWithMoodleFile() {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
 
         //set the log file name to a fixed value
@@ -1223,7 +1238,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //data validation
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
         $params = array('message' => 'All lines from import file userfile.csv were successfully processed.');
-        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertEquals($exists, true);
     }
 
@@ -1266,8 +1281,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
      * Validate that DB logging records the correct number of successes and
      * failues from import file
      */
-    public function tesVersion1DBLoggingLogsCorrectCountsForManualImport() {
-        global $DB;
+    public function testVersion1DBLoggingLogsCorrectCountsForManualImport() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         $data = array(array('entity' => 'user',
                             'action' => 'create',
@@ -1303,8 +1319,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $result = $importplugin->run();
         $this->assertNull($result);
 
-        $exists = $DB->record_exists('block_rlip_summary_log', array('filesuccesses' => 1,
-                                                                     'filefailures' => 2));
+        $exists = $DB->record_exists(RLIP_LOG_TABLE, array('filesuccesses' => 1,
+                                                           'filefailures' => 2));
         $this->assertEquals($exists, true);
     }
 
@@ -1339,6 +1355,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingLogsCorrectUseridForManualImport() {
         global $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
         $USER->id = 9999;
@@ -1355,7 +1372,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $result = $this->run_user_import($data);
         $this->assertNull($result);
 
-        $exists = $DB->record_exists('block_rlip_summary_log', array('userid' => $USER->id));
+        $exists = $DB->record_exists(RLIP_LOG_TABLE, array('userid' => $USER->id));
         $this->assertEquals($exists, true);
     }
 
@@ -1416,9 +1433,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $DB->update_record('elis_scheduled_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field('ip_schedule', 'id', array('plugin' => 'rlipimport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipimport_version1'));
         $job->nextruntime = 99;
-        $DB->update_record('ip_schedule', $job);
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         //lower bound on starttime
         $starttime = time();
@@ -1466,7 +1483,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
                         'statusmessage' => $message,
                         'dbops' => -1,
                         'unmetdependency' => 0);
-        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertEquals($exists, true);
     }
 }

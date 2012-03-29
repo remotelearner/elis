@@ -52,6 +52,7 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
     function init($targetstarttime = 0, $lastruntime = 0) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
 
         //columns that are always displayed
         $columns = array(get_string('header_firstname', 'rlipexport_version1'),
@@ -75,7 +76,7 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
                        field.datatype,
                        field.defaultdata,
                        field.param3
-                FROM {block_rlip_version1_export} export
+                FROM {".RLIPEXPORT_VERSION1_FIELD_TABLE."} export
                 JOIN {user_info_field} field
                   ON export.fieldid = field.id
                 ORDER BY export.fieldorder";

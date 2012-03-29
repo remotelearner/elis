@@ -300,7 +300,10 @@ class exportPluginTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('block_rlip_summary_log' => 'block_rlip');
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        return array(RLIP_LOG_TABLE => 'block_rlip');
     }
 
     /**

@@ -93,6 +93,9 @@ class version1EnrolmentImportTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+
         return array('context' => 'moodle',
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
@@ -112,15 +115,18 @@ class version1EnrolmentImportTest extends elis_database_test {
                      'user_lastaccess' => 'moodle',
                      'config' => 'moodle',
                      'config_plugins' => 'moodle',
-                     'block_rlip_version1_fieldmap' => 'rlipimport_version1');
+                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1');
     }
 
     /**
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
         return array('log' => 'moodle',
-                     'block_rlip_summary_log' => 'block_rlip');
+                     RLIP_LOG_TABLE => 'block_rlip');
     }
 
     /**
@@ -2394,7 +2400,8 @@ class version1EnrolmentImportTest extends elis_database_test {
      * on enrolment creation
      */
     public function testVersion1ImportUsesEnrolmentFieldMappings() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //set up our mapping of standard field names to custom field names
         $mapping = array('action' => 'action1',
@@ -2411,7 +2418,7 @@ class version1EnrolmentImportTest extends elis_database_test {
             $record->entitytype = 'enrolment';
             $record->standardfieldname = $standardfieldname;
             $record->customfieldname = $customfieldname;
-            $DB->insert_record('block_rlip_version1_fieldmap', $record);
+            $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
         }
 
         //run the import
@@ -2432,7 +2439,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         $data['contextid'] = $course_context->id;
         $data['userid'] = self::$userid;
 
-        $DB->delete_records('block_rlip_version1_fieldmap');
+        $DB->delete_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
 
         $this->assert_record_exists('role_assignments', $data);
     }
@@ -2443,6 +2450,7 @@ class version1EnrolmentImportTest extends elis_database_test {
      */
     public function testVersion1ImportEnrolmentFieldImportPreventsStandardFieldUse() {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
         //create the mapping record
@@ -2450,7 +2458,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         $record->entitytype = 'enrolment';
         $record->standardfieldname = 'context';
         $record->customfieldname = 'context2';
-        $DB->insert_record('block_rlip_version1_fieldmap', $record);
+        $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
 
         //get the import plugin set up
         $data = array();
@@ -2462,7 +2470,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         $record->context = 'course';
         $record = $importplugin->apply_mapping('enrolment', $record);
 
-        $DB->delete_records('block_rlip_version1_fieldmap');
+        $DB->delete_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
 
         //validate that the field was unset
         $this->assertEquals(isset($record->context), false);

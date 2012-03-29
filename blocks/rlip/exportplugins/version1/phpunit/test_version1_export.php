@@ -177,7 +177,8 @@ class version1ExportTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
 
         $result = array('grade_items' => 'moodle',
                         'grade_grades' => 'moodle',
@@ -206,7 +207,7 @@ class version1ExportTest extends elis_database_test {
                         'cache_flags' => 'moodle',
                         'user_info_category' => 'moodle',
                         'user_info_field' => 'moodle',
-                        'block_rlip_version1_export' => 'rlipexport_version1',
+                        RLIPEXPORT_VERSION1_FIELD_TABLE => 'rlipexport_version1',
                         'config_plugins' => 'moodle'
                      );
 
@@ -222,7 +223,10 @@ class version1ExportTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('block_rlip_summary_log'  => 'block_rlip',
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        return array(RLIP_LOG_TABLE            => 'block_rlip',
                      'external_tokens'         => 'moodle',
                      'external_services_users' => 'moodle',
                      'log'                     => 'moodle');
@@ -325,14 +329,15 @@ class version1ExportTest extends elis_database_test {
      * @param int $fieldorder A number used to order fields in the export
      */
     private function create_field_mapping($fieldid, $header = 'Header', $fieldorder = 0) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
 
         //set up and insert the record
         $mapping = new stdClass;
         $mapping->fieldid = $fieldid;
         $mapping->header = $header;
         $mapping->fieldorder = $fieldorder;
-        $DB->insert_record('block_rlip_version1_export', $mapping);
+        $DB->insert_record(RLIPEXPORT_VERSION1_FIELD_TABLE, $mapping);
     }
 
     /**
@@ -1012,14 +1017,14 @@ class version1ExportTest extends elis_database_test {
         $this->create_field_mapping($fieldid);
 
         //verify setup
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $fieldid));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $fieldid));
 
         //remove the field from the export
-        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $fieldid));
+        $id = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $fieldid));
         rlipexport_version1_config::delete_field_from_export($id);
 
         //validation
-        $exists = $DB->record_exists('block_rlip_version1_export', array('fieldid' => $fieldid));
+        $exists = $DB->record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $fieldid));
         $this->assertEquals($exists, false);
     }
 
@@ -1039,7 +1044,7 @@ class version1ExportTest extends elis_database_test {
         rlipexport_version1_config::add_field_to_export($fieldid);
 
         //validation
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $fieldid));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $fieldid));
     }
 
     /**
@@ -1060,14 +1065,14 @@ class version1ExportTest extends elis_database_test {
         $this->create_field_mapping($secondfieldid, 'Header2', 1);
 
         //move the second field up
-        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $secondfieldid));
+        $id = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $secondfieldid));
         rlipexport_version1_config::move_field($id, rlipexport_version1_config::DIR_UP);
 
         //validation
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $firstfieldid,
-                                                                        'fieldorder' => 1));
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $secondfieldid,
-                                                                        'fieldorder' => 0));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $firstfieldid,
+                                                                           'fieldorder' => 1));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $secondfieldid,
+                                                                           'fieldorder' => 0));
     }
 
     /**
@@ -1088,14 +1093,14 @@ class version1ExportTest extends elis_database_test {
         $this->create_field_mapping($secondfieldid, 'Header2', 1);
 
         //move the first field down
-        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $firstfieldid));
+        $id = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $firstfieldid));
         rlipexport_version1_config::move_field($id, rlipexport_version1_config::DIR_DOWN);
 
         //validation
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $firstfieldid,
-                                                                        'fieldorder' => 1));
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $secondfieldid,
-                                                                        'fieldorder' => 0));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $firstfieldid,
+                                                                           'fieldorder' => 1));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $secondfieldid,
+                                                                           'fieldorder' => 0));
     }
 
     /**
@@ -1112,12 +1117,12 @@ class version1ExportTest extends elis_database_test {
         $this->create_field_mapping($fieldid);
 
         //update the header
-        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $fieldid));
+        $id = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $fieldid));
         rlipexport_version1_config::update_field_header($id, 'Updatedvalue');
 
         //validation
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $fieldid,
-                                                                        'header' => 'Updatedvalue'));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $fieldid,
+                                                                           'header' => 'Updatedvalue'));
     }
 
     /**
@@ -1138,8 +1143,8 @@ class version1ExportTest extends elis_database_test {
         $this->create_field_mapping($secondfieldid, 'Header2', 1);
 
         //obtain DB record ids
-        $firstid = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $firstfieldid));
-        $secondid = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $secondfieldid));
+        $firstid = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $firstfieldid));
+        $secondid = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $secondfieldid));
 
         //update the headers
         $data = array('header_'.$firstid => 'Updatedvalue1',
@@ -1147,10 +1152,10 @@ class version1ExportTest extends elis_database_test {
         rlipexport_version1_config::update_field_headers($data);
 
         //validation
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $firstfieldid,
-                                                                        'header' => 'Updatedvalue1'));
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $secondfieldid,
-                                                                        'header' => 'Updatedvalue2'));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $firstfieldid,
+                                                                           'header' => 'Updatedvalue1'));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $secondfieldid,
+                                                                           'header' => 'Updatedvalue2'));
     }
 
     /**
@@ -1268,14 +1273,14 @@ class version1ExportTest extends elis_database_test {
         $this->create_field_mapping($thirdfieldid, 'Header3', 2);
 
         //move the third field up
-        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $thirdfieldid));
+        $id = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $thirdfieldid));
         rlipexport_version1_config::move_field($id, rlipexport_version1_config::DIR_UP);
 
         //validate that the first and third fields swapped, ignoring the second field
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $firstfieldid,
-                                                                        'fieldorder' => 2));
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $thirdfieldid,
-                                                                        'fieldorder' => 0));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $firstfieldid,
+                                                                           'fieldorder' => 2));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $thirdfieldid,
+                                                                           'fieldorder' => 0));
     }
 
     /**
@@ -1283,7 +1288,8 @@ class version1ExportTest extends elis_database_test {
      * position deals with deleted user profile fields correctly
      */
     public function testVersion1ExportHandlesDeletedFieldsWhenMovingDown() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
 
         //set up the category and field, along with the export mapping
         $categoryid = $this->create_custom_field_category();
@@ -1299,14 +1305,14 @@ class version1ExportTest extends elis_database_test {
         $this->create_field_mapping($thirdfieldid, 'Header3', 2);
 
         //move the first field down
-        $id = $DB->get_field('block_rlip_version1_export', 'id', array('fieldid' => $firstfieldid));
+        $id = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $firstfieldid));
         rlipexport_version1_config::move_field($id, rlipexport_version1_config::DIR_DOWN);
 
         //validate that the first and third fields swapped, ignoring the second field
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $firstfieldid,
-                                                                        'fieldorder' => 2));
-        $this->assert_record_exists('block_rlip_version1_export', array('fieldid' => $thirdfieldid,
-                                                                        'fieldorder' => 0));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $firstfieldid,
+                                                                           'fieldorder' => 2));
+        $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $thirdfieldid,
+                                                                           'fieldorder' => 0));
     }
 
     /**

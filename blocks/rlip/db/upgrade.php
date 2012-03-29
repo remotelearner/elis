@@ -169,5 +169,12 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         upgrade_block_savepoint(true, 2012032300, 'rlip');
     }
 
+    if ($result && $oldversion < 2012032800) {
+        // Make block naming more consistent
+        // Will throw an exception if problem is encountered
+        $dbman->rename_table(new xmldb_table('block_rlip_summary_log'), 'block_rlip_summary_logs');
+        $dbman->rename_table(new xmldb_table('ip_schedule'), 'block_rlip_schedule');
+    }
+
     return $result;
 }

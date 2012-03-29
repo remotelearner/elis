@@ -51,7 +51,7 @@ $table->data = array();
 
 //information used to track first / last rows
 $first = true;
-$max_order = $DB->get_field('block_rlip_version1_export', 'MAX(fieldorder)', array());
+$max_order = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'MAX(fieldorder)', array());
 
 if ($recordset = rlipexport_version1_config::get_configured_fields()) {
     foreach ($recordset as $record) {
