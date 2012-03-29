@@ -1281,8 +1281,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
      * Validate that DB logging records the correct number of successes and
      * failues from import file
      */
-    public function tesVersion1DBLoggingLogsCorrectCountsForManualImport() {
-        global $DB;
+    public function testVersion1DBLoggingLogsCorrectCountsForManualImport() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         $data = array(array('entity' => 'user',
                             'action' => 'create',
@@ -1318,8 +1319,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $result = $importplugin->run();
         $this->assertNull($result);
 
-        $exists = $DB->record_exists('block_rlip_summary_log', array('filesuccesses' => 1,
-                                                                     'filefailures' => 2));
+        $exists = $DB->record_exists(RLIP_LOG_TABLE, array('filesuccesses' => 1,
+                                                           'filefailures' => 2));
         $this->assertEquals($exists, true);
     }
 

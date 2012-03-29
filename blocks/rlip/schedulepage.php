@@ -194,7 +194,7 @@ class ip_schedule_page extends elis_page {
                         'type' => $this->type,
                         'name' => $this->name,
                         'id'   => $id);
-        if (!empty($id) && ($ipjob = $DB->get_record('ip_schedule',
+        if (!empty($id) && ($ipjob = $DB->get_record(RLIP_SCHEDULE_TABLE,
                                                array('id' => $id)))) {
             $data = unserialize($ipjob->config);
             unset($data['id']);

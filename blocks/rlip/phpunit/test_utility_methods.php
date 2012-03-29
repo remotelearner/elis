@@ -256,6 +256,92 @@ class utilityMethodTest extends elis_database_test {
     }
 
     /**
+     * Validate that the "add job" method also supports updates 
+     */
+    function testUpdatingJob() {
+        global $DB;
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+        $data['id'] = rlip_schedule_add_job($data);
+
+        //update the job
+        $data['plugin'] = 'bogusplugin';
+        $data['userid'] = 9999;
+        rlip_schedule_add_job($data);
+
+        //data validation
+        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $data['id']));
+        $this->assertEquals($job->plugin, 'bogusplugin');
+        $this->assertEquals($job->userid, 9999);
+    }
+
+    /**
+     * Validate that the "delete job" method works
+     */
+    public function testDeletingJob() {
+        global $DB;
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+        $jobid = rlip_schedule_add_job($data);
+
+        //setup validation
+        $this->assertEquals($DB->count_records(RLIP_SCHEDULE_TABLE), 1);
+        $this->assertEquals($DB->count_records('elis_scheduled_tasks'), 1);
+
+        //delete the job
+        rlip_schedule_delete_job($jobid);
+
+        //data validation
+        $this->assertEquals($DB->count_records(RLIP_SCHEDULE_TABLE), 0);
+        $this->assertEquals($DB->count_records('elis_scheduled_tasks'), 0);
+    }
+
+    /**
+     * Validate that scheduled jobs are retrieved via API call
+     */
+    public function testGetScheduledJobs() {
+        global $CFG;
+
+        //create a user
+        require_once($CFG->dirroot.'/user/lib.php');
+
+        $user = new stdClass;
+        $user->username = 'rlipusername';
+        $user->mnethostid = $CFG->mnet_localhost_id;
+        $user->email = 'rlipuser@rlipdomain.com';
+        $user->password = 'Rlippassword!1234';
+
+        return user_create_user($user);
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+        rlip_schedule_add_job($data);
+
+        //fetch jobs
+        $recordset = rlip_get_scheduled_jobs($data['plugin']);
+
+        //data validation
+        $this->assertTrue($recordset->valid());
+        
+        $current = $recordset->current();
+        $this->assertEquals($current->plugin, $data['plugin']);
+        $this->assertEquals($current->period, $data['period']);
+        $this->assertEquals($current->label, $data['label']);
+        $this->assertEquals($current->type, $data['type']);
+    }
+
+    /**
      * Validate that running a job sets the right next runtime on the IP
      * schedule record 
      */

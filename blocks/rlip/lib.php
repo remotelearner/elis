@@ -243,7 +243,7 @@ function rlip_print_manual_status($logid) {
     if (!empty($logid)) {
         //only need a couple of fields
         $fields = 'filesuccesses, filefailures, statusmessage';
-        if ($record = $DB->get_record('block_rlip_summary_log', array('id'=>$logid), $fields)) {
+        if ($record = $DB->get_record(RLIP_LOG_TABLE, array('id'=>$logid), $fields)) {
             //total rows = successes + failures
             $record->total = $record->filesuccesses + $record->filefailures;
 
@@ -358,7 +358,7 @@ function rlip_get_scheduled_jobs($plugin, $userid = 0) {
     $sql = "SELECT ipjob.*, usr.username, usr.firstname, usr.lastname,
                    usr.timezone, task.lastruntime, task.nextruntime
               FROM {elis_scheduled_tasks} task
-              JOIN {ip_schedule} ipjob
+              JOIN {".RLIP_SCHEDULE_TABLE."} ipjob
                 ON task.taskname = {$taskname}
               JOIN {user} usr
                 ON ipjob.userid = usr.id
@@ -429,7 +429,7 @@ function rlip_schedule_add_job($data) {
 
     if (!empty($data['id'])) {
         $ipjob->id = $data['id'];
-        $DB->update_record('ip_schedule', $ipjob);
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
         // Must delete any existing task records for the old schedule
         $taskname = 'ipjob_'. $ipjob->id;
         $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
@@ -465,7 +465,7 @@ function rlip_schedule_add_job($data) {
  */
 function rlip_schedule_delete_job($id) {
     global $DB;
-    $DB->delete_records('ip_schedule', array('id' => $id));
+    $DB->delete_records(RLIP_SCHEDULE_TABLE, array('id' => $id));
     $taskname = 'ipjob_'. $id;
     $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
     return true;
