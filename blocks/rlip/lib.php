@@ -31,6 +31,10 @@ define('IP_SCHEDULE_TIMELIMIT', 2 * 60); // max schedule run time in secs
 //constant for how many log records to show per page
 define('RLIP_LOGS_PER_PAGE', 20);
 
+//database table constant
+define('RLIP_LOG_TABLE', 'block_rlip_summary_logs');
+define('RLIP_SCHEDULE_TABLE', 'block_rlip_schedule');
+
 require_once($CFG->dirroot.'/lib/adminlib.php');
 
 /**
@@ -430,7 +434,7 @@ function rlip_schedule_add_job($data) {
         $taskname = 'ipjob_'. $ipjob->id;
         $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
     } else {
-        $ipjob->id = $DB->insert_record('ip_schedule', $ipjob);
+        $ipjob->id = $DB->insert_record(RLIP_SCHEDULE_TABLE, $ipjob);
     }
 
     $task = new stdClass;
@@ -505,7 +509,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
 
     // Get the schedule record
     list($prefix, $id) = explode('_', $taskname);
-    $ipjob = $DB->get_record('ip_schedule', array('id' => $id));
+    $ipjob = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $id));
     if (empty($ipjob)) {
         mtrace("run_ipjob({$taskname}): DB Error retrieving IP schedule record - aborting!");
         return false;
@@ -536,7 +540,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
 
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
-        $DB->update_record('ip_schedule', $ipjob);
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
     } else {
         mtrace("run_ipjob({$taskname}): DB Error retrieving task record!");
         //todo: return false?
@@ -596,7 +600,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
         unset($data['state']);
         $ipjob->config = serialize($data);
     }
-    $DB->update_record('ip_schedule', $ipjob);
+    $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
 
     return true;
 }
@@ -609,7 +613,7 @@ function rlip_count_logs() {
 
     //retrieve count
     $sql = "SELECT COUNT(*)
-            FROM {block_rlip_summary_log} log
+            FROM {".RLIP_LOG_TABLE."} log
             JOIN {user} user
               ON log.userid = user.id
             ORDER BY log.starttime DESC";
@@ -639,7 +643,7 @@ function rlip_get_logs($where = '', $params = array(), $page = 0) {
     $sql = "SELECT log.*,
                    user.firstname,
                    user.lastname
-            FROM {block_rlip_summary_log} log
+            FROM {".RLIP_LOG_TABLE."} log
             JOIN {user} user
               ON log.userid = user.id
             {$where_clause}

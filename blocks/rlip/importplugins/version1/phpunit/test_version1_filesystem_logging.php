@@ -224,7 +224,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static function get_overlay_tables() {
-        return array('block_rlip_summary_log' => 'block_rlip',
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+
+        return array(RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
                      'config_plugins' => 'moodle',
                      'course' => 'moodle',
@@ -250,7 +254,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
-                     'block_rlip_version1_fieldmap' => 'rlipimport_version1',
+                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle');
     }

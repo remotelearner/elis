@@ -24,6 +24,9 @@
  *
  */
 
+//database table constants
+define('RLIPEXPORT_VERSION1_FIELD_TABLE', 'rlipexport_version1_field');
+
 /**
  * Helper class that is used for configuring the Version 1 format export
  */
@@ -41,13 +44,13 @@ class rlipexport_version1_config {
         global $DB;
 
         //determine the current position in the list
-        $order = $DB->get_field('block_rlip_version1_export', 'fieldorder', array('id' => $exportid));
+        $order = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'fieldorder', array('id' => $exportid));
 
         //remove the record
-        $DB->delete_records('block_rlip_version1_export', array('id' => $exportid));
+        $DB->delete_records(RLIPEXPORT_VERSION1_FIELD_TABLE, array('id' => $exportid));
 
         //shift the records after the deleted record
-        $sql = "UPDATE {block_rlip_version1_export}
+        $sql = "UPDATE {".RLIPEXPORT_VERSION1_FIELD_TABLE."}
                 SET fieldorder = fieldorder - 1
                 WHERE fieldorder > ?";
         $params = array($order);
@@ -70,11 +73,11 @@ class rlipexport_version1_config {
         $record->header = $DB->get_field('user_info_field', 'name', array('id' => $fieldid));
 
         //field order defaults to the end of the list
-        $max_order = $DB->get_field('block_rlip_version1_export', 'MAX(fieldorder)', array());
+        $max_order = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'MAX(fieldorder)', array());
         $record->fieldorder = $max_order + 1;
 
         //insert our data record
-        $DB->insert_record('block_rlip_version1_export', $record);
+        $DB->insert_record(RLIPEXPORT_VERSION1_FIELD_TABLE, $record);
     }
 
     /**
@@ -89,7 +92,7 @@ class rlipexport_version1_config {
 
         //determine the current field order for the field being moved
         $params = array('id' => $exportid);
-        $currentorder = $DB->get_field('block_rlip_version1_export', 'fieldorder', $params);
+        $currentorder = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'fieldorder', $params);
 
         //specific setup depending on the move direction
         if ($direction == self::DIR_UP) {
@@ -103,7 +106,7 @@ class rlipexport_version1_config {
         //find the next field order value in the right direction that
         //corresponds to a user profile field that is not deleted
         $sql = "SELECT {$operator}(export.fieldorder)
-                FROM {block_rlip_version1_export} export
+                FROM {".RLIPEXPORT_VERSION1_FIELD_TABLE."} export
                   WHERE EXISTS (
                     SELECT 'x'
                     FROM {user_info_field} field
@@ -113,12 +116,12 @@ class rlipexport_version1_config {
 
         //change the fieldorder on the record being moved
         $params = array('id' => $exportid);
-        $DB->set_field('block_rlip_version1_export', 'fieldorder', $neworder, $params);
+        $DB->set_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'fieldorder', $neworder, $params);
 
         //change the field that is "one away" to use the field order
         $select = "fieldorder = ? AND id != ?";
         $params = array($neworder, $exportid);
-        $DB->set_field_select('block_rlip_version1_export', 'fieldorder', $currentorder, $select, $params);
+        $DB->set_field_select(RLIPEXPORT_VERSION1_FIELD_TABLE, 'fieldorder', $currentorder, $select, $params);
     }
 
     /**
@@ -134,7 +137,7 @@ class rlipexport_version1_config {
         $record->id = $exportid;
         $record->header = $header;
 
-        $DB->update_record('block_rlip_version1_export', $record);
+        $DB->update_record(RLIPEXPORT_VERSION1_FIELD_TABLE, $record);
     }
 
     /**
@@ -169,7 +172,7 @@ class rlipexport_version1_config {
                        export.header,
                        export.fieldorder
                 FROM {user_info_field} field
-                JOIN {block_rlip_version1_export} export
+                JOIN {".RLIPEXPORT_VERSION1_FIELD_TABLE."} export
                   ON field.id = export.fieldid
                 ORDER BY export.fieldorder";
 
@@ -192,7 +195,7 @@ class rlipexport_version1_config {
                   ON category.id = field.categoryid
                 WHERE NOT EXISTS (
                   SELECT 'x'
-                  FROM {block_rlip_version1_export} export
+                  FROM {".RLIPEXPORT_VERSION1_FIELD_TABLE."} export
                   WHERE field.id = export.fieldid
                 )
                 ORDER BY category.sortorder, field.sortorder";

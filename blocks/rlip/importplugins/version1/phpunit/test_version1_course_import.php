@@ -160,6 +160,9 @@ class version1CourseImportTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+
         return array('course_categories' => 'moodle',
                      'course' => 'moodle',
                      'block_instances' => 'moodle',
@@ -224,15 +227,18 @@ class version1CourseImportTest extends elis_database_test {
                      'question_hints' => 'moodle',
                      'backup_controllers' => 'moodle',
                      'log' => 'moodle',
-                     'block_rlip_version1_fieldmap' => 'rlipimport_version1');
+                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1');
     }
 
     /**
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
         return array('event' => 'moodle',
-                     'block_rlip_summary_log' => 'block_rlip');
+                     RLIP_LOG_TABLE => 'block_rlip');
     }
 
     /**
@@ -2945,7 +2951,8 @@ class version1CourseImportTest extends elis_database_test {
      * on course creation
      */
     public function testVersion1ImportUsesCourseFieldMappings() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //setup
         set_config('maxsections', 20, 'moodlecourse');
@@ -2978,7 +2985,7 @@ class version1CourseImportTest extends elis_database_test {
             $record->entitytype = 'course';
             $record->standardfieldname = $standardfieldname;
             $record->customfieldname = $customfieldname;
-            $DB->insert_record('block_rlip_version1_fieldmap', $record);
+            $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
         }
 
         //run the import
@@ -3032,7 +3039,7 @@ class version1CourseImportTest extends elis_database_test {
                         'lang' => 'en',
                         'category' => $categoryid);
         $exists = $DB->record_exists_select('course', $select, $params);
-        $DB->delete_records('block_rlip_version1_fieldmap');
+        $DB->delete_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
         $this->assertEquals($exists, true);
 
         //validate enrolment record
@@ -3050,13 +3057,14 @@ class version1CourseImportTest extends elis_database_test {
     public function testVersion1ImportCourseFieldImportPreventsStandardFieldUse() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //create the mapping record
         $record = new stdClass;
         $record->entitytype = 'course';
         $record->standardfieldname = 'shortname';
         $record->customfieldname = 'shortname2';
-        $DB->insert_record('block_rlip_version1_fieldmap', $record);
+        $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
 
         //get the import plugin set up
         $data = array();
@@ -3068,7 +3076,7 @@ class version1CourseImportTest extends elis_database_test {
         $record->shortname = 'shortname';
         $record = $importplugin->apply_mapping('course', $record);
 
-        $DB->delete_records('block_rlip_version1_fieldmap');
+        $DB->delete_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
 
         //validate that the field was unset
         $this->assertEquals(isset($record->shortname), false);

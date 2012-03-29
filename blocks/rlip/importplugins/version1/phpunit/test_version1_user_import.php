@@ -68,6 +68,7 @@ class version1UserImportTest extends elis_database_test {
      */
     protected static function get_overlay_tables() {
         global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         $tables = array(
             'user' => 'moodle',
@@ -118,7 +119,7 @@ class version1UserImportTest extends elis_database_test {
             'elis_field_contextlevels' => 'elis_core',
             'elis_field_owner' => 'elis_core',
             'elis_field_data_text' => 'elis_core',
-            'block_rlip_version1_fieldmap' => 'rlipimport_version1',
+            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
             //not writing to this one but prevent events from
             //being fired during testing
             'events_queue_handlers' => 'moodle'
@@ -141,10 +142,13 @@ class version1UserImportTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
         return array('log' => 'moodle',
                      'crlm_user' => 'elis_program',
                      'crlm_user_moodle' => 'elis_program',
-                     'block_rlip_summary_log' => 'block_rlip',
+                     RLIP_LOG_TABLE => 'block_rlip',
                      'files' => 'moodle',
                      'external_tokens' => 'moodle',
                      'external_services_users' => 'moodle');
@@ -2383,6 +2387,7 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportUsesUserFieldMappings() {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //set up our mapping of standard field names to custom field names
         $mapping = array('action' => 'action1',
@@ -2412,7 +2417,7 @@ class version1UserImportTest extends elis_database_test {
             $record->entitytype = 'user';
             $record->standardfieldname = $standardfieldname;
             $record->customfieldname = $customfieldname;
-            $DB->insert_record('block_rlip_version1_fieldmap', $record);
+            $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
         }
 
         //run the import
@@ -2491,13 +2496,14 @@ class version1UserImportTest extends elis_database_test {
     public function testVersion1ImportUserFieldImportPreventsStandardFieldUse() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         //create the mapping record
         $record = new stdClass;
         $record->entitytype = 'user';
         $record->standardfieldname = 'username';
         $record->customfieldname = 'username2';
-        $DB->insert_record('block_rlip_version1_fieldmap', $record);
+        $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
 
         //get the import plugin set up
         $data = array();
@@ -2509,7 +2515,7 @@ class version1UserImportTest extends elis_database_test {
         $record->username = 'username';
         $record = $importplugin->apply_mapping('user', $record);
 
-        $DB->delete_records('block_rlip_version1_fieldmap');
+        $DB->delete_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
 
         //validate that the field was unset
         $this->assertEquals(isset($record->username), false);

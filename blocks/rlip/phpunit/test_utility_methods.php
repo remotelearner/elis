@@ -42,10 +42,10 @@ class utilityMethodTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
-        return array('ip_schedule' => 'block_rlip',
+        return array(RLIP_SCHEDULE_TABLE => 'block_rlip',
                      'elis_scheduled_tasks' => 'elis_core',
                      'config_plugins' => 'moodle',
-                     'block_rlip_summary_log' => 'block_rlip',
+                     RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
                      'config' => 'moodle');
     }
@@ -85,7 +85,7 @@ class utilityMethodTest extends elis_database_test {
 
         //insert record
         $record = (object)$basedata;
-        $DB->insert_record('block_rlip_summary_log', $record);
+        $DB->insert_record(RLIP_LOG_TABLE, $record);
     }
 
     /**
@@ -245,7 +245,7 @@ class utilityMethodTest extends elis_database_test {
 
         //obtain IP job info
         list($name, $jobid) = explode('_', $task->taskname);
-        $job = $DB->get_record('ip_schedule', array('id' => $jobid));
+        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $jobid));
 
         //make sure the next runtime is between 5 and 6 minutes from now
         $this->assertGreaterThanOrEqual($starttime + 5 * MINSECS, (int)$task->nextruntime);
@@ -281,9 +281,9 @@ class utilityMethodTest extends elis_database_test {
         $DB->update_record('elis_scheduled_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field('ip_schedule', 'id', array('plugin' => 'rlipexport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
         $job->nextruntime = $timenow;
-        $DB->update_record('ip_schedule', $job);
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         //run the job
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
@@ -293,7 +293,7 @@ class utilityMethodTest extends elis_database_test {
         //obtain both records
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
         list($name, $jobid) = explode('_', $task->taskname);
-        $job = $DB->get_record('ip_schedule', array('id' => $jobid));
+        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $jobid));
 
         //make sure the next runtime is between 5 and 6 minutes from initial value
         //echo "\nStartTime={$starttime}; nextruntime={$task->nextruntime}\n";

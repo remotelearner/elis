@@ -24,6 +24,9 @@
  *
  */
 
+//database table constants
+define('RLIPIMPORT_VERSION1_MAPPING_TABLE', 'rlipimport_version1_mapping');
+
 /**
  * Determines whether the current plugin supports the supplied feature
  *
@@ -94,6 +97,7 @@ function rlipimport_version1_get_tabs($baseurl) {
 function rlipimport_version1_get_mapping($entitytype) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+    require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
     //obtain the list of supported fields
     $plugin = rlip_dataplugin_factory::factory('rlipimport_version1');
@@ -112,7 +116,7 @@ function rlipimport_version1_get_mapping($entitytype) {
 
     //apply mapping info from the database
     $params = array('entitytype' => $entitytype);
-    if ($mappings = $DB->get_recordset('block_rlip_version1_fieldmap', $params)) {
+    if ($mappings = $DB->get_recordset(RLIPIMPORT_VERSION1_MAPPING_TABLE, $params)) {
         foreach ($mappings as $mapping) {
             $result[$mapping->standardfieldname] = $mapping->customfieldname;
         }
@@ -129,7 +133,7 @@ function rlipimport_version1_get_mapping($entitytype) {
  * @param array $data The data submitted by the form
  */
 function rlipimport_version1_save_mapping($entitytype, $options, $formdata) {
-    global $DB;
+    global $CFG, $DB;
 
     //need to collect data from our defaults and form data
     $data = array();
@@ -148,7 +152,7 @@ function rlipimport_version1_save_mapping($entitytype, $options, $formdata) {
 
     //clear out previous values
     $params = array('entitytype' => $entitytype);
-    $DB->delete_records('block_rlip_version1_fieldmap', $params);
+    $DB->delete_records(RLIPIMPORT_VERSION1_MAPPING_TABLE, $params);
 
     //write to database
     foreach ($data as $key => $value) {
@@ -156,7 +160,7 @@ function rlipimport_version1_save_mapping($entitytype, $options, $formdata) {
         $record->entitytype = $entitytype;
         $record->standardfieldname = $key;
         $record->customfieldname = $value;
-        $DB->insert_record('block_rlip_version1_fieldmap', $record);
+        $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
     }
 }
 
@@ -166,9 +170,10 @@ function rlipimport_version1_save_mapping($entitytype, $options, $formdata) {
  * @param string $entitytype The type of entity we are resetting mappings for
  */
 function rlipimport_version1_reset_mappings($entitytype) {
-    global $DB;
+    global $CFG, $DB;
+    require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
-    $sql = "UPDATE {block_rlip_version1_fieldmap}
+    $sql = "UPDATE {".RLIPIMPORT_VERSION1_MAPPING_TABLE."}
             SET customfieldname = standardfieldname
             WHERE entitytype = ?";
     $DB->execute($sql, array($entitytype));

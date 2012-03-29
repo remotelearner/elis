@@ -119,15 +119,18 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
         return array('grade_items' => 'moodle',
                      'grade_grades' => 'moodle',
                      'user' => 'moodle',
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
                      'context' => 'moodle',
-                     'block_rlip_summary_log' => 'block_rlip',
+                     RLIP_LOG_TABLE => 'block_rlip',
                      'config_plugins' => 'moodle',
-                     'ip_schedule' => 'block_rlip',
+                     RLIP_SCHEDULE_TABLE => 'block_rlip',
                      'elis_scheduled_tasks' => 'elis_core');
     }
 
@@ -215,7 +218,8 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
      * Validate that empty exports still logs to the database
      */
     public function testVersion1DBLoggingLogsEmptyExport() {
-        global $USER, $DB;
+        global $CFG, $USER, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //lower bound on starttime
         $starttime = time();
@@ -252,7 +256,7 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
                         'statusmessage' => 'Export file memoryexport successfully created.',
                         'dbops' => -1,
                         'unmetdependency' => 0);
-        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }
 
@@ -260,7 +264,8 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
      * Validate that non-empty exports log number of records to the database
      */
     public function testVersion1DBLoggingLogsNonemptyExport() {
-        global $USER, $DB;
+        global $CFG, $USER, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //make sure the export is insensitive to time values
         set_config('nonincremental', 1, 'rlipexport_version1');
@@ -302,7 +307,7 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
                         'statusmessage' => 'Export file memoryexport successfully created.',
                         'dbops' => -1,
                         'unmetdependency' => 0);
-        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }
 
@@ -311,7 +316,8 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
      * not specified during execution of the version 1 import plugin
      */
     public function testVersion1DBLoggingTargetStartTimeDefaultsToZero() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //make sure the export is insensitive to time values
         set_config('nonincremental', 1, 'rlipexport_version1');
@@ -323,7 +329,7 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
         $this->assertNull($result);
 
         //data validation
-        $exists = $DB->record_exists('block_rlip_summary_log', array('targetstarttime' => 0));
+        $exists = $DB->record_exists(RLIP_LOG_TABLE, array('targetstarttime' => 0));
         $this->assertTrue($exists);
     }
 
@@ -332,7 +338,8 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
      * start time when specified during execution of the version 1 import plugin
      */
     public function testVersion1DBLoggingSupportsTargetStartTimes() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //make sure the export is insensitive to time values
         set_config('nonincremental', 1, 'rlipexport_version1');
@@ -344,7 +351,7 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
         $this->assertNull($result);
 
         //data validation
-        $exists = $DB->record_exists('block_rlip_summary_log', array('targetstarttime' => 1000000000));
+        $exists = $DB->record_exists(RLIP_LOG_TABLE, array('targetstarttime' => 1000000000));
         $this->assertTrue($exists);
     }
 
@@ -393,9 +400,9 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
         $DB->update_record('elis_scheduled_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field('ip_schedule', 'id', array('plugin' => 'rlipexport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
         $job->nextruntime = 99;
-        $DB->update_record('ip_schedule', $job);
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         //lower bound on starttime
         $starttime = time();
@@ -433,7 +440,7 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
                         'statusmessage' => 'Export file rliptestexport.csv successfully created.',
                         'dbops' => -1,
                         'unmetdependency' => 0);
-        $exists = $DB->record_exists_select('block_rlip_summary_log', $select, $params);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }
 }
