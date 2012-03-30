@@ -572,28 +572,27 @@ function pm_notify_role_assign_handler($eventdata){
     $sendtosupervisor = !empty(elis::$config->elis_program->notify_classenrol_supervisor) ?
                       elis::$config->elis_program->notify_classenrol_supervisor : 0;
 
-  /*
-    ob_start();
-    var_dump($eventdata);
-    $tmp = ob_get_contents();
-    ob_end_clean();
-    error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(eventdata) => $tmp");
-  */
-
     /// If nobody receives a notification, we're done.
     if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
         return true;
     }
 
+    // First check if this is a standard Moodle context
+    $context = context::instance_by_id($eventdata->contextid, IGNORE_MISSING);
+
+    // If not, try checking to see if this is a custom ELIS context
+    if (!$context) {
+        $context = context_elis::instance_by_id($eventdata->contextid, IGNORE_MISSING);
+    }
+
     /// We get all context assigns, so check that this is a class. If not, we're done.
-    if (!($context = get_context_instance_by_id($eventdata->contextid)) &&
-        !($context = get_context_instance($eventdata->contextid, $eventdata->itemid))
-    ) {
-       if (in_cron()) {
-           mtrace(getstring('invalidcontext'));
-       } else {
-           print_error('invalidcontext');
-       }
+    if (!$context) {
+        if (in_cron()) {
+            mtrace(getstring('invalidcontext'));
+        } else {
+            print_error('invalidcontext');
+        }
+
         return true;
     } else if ($context->contextlevel == CONTEXT_SYSTEM) {
         // TBD: ^above was != CONTEXT_COURSE
@@ -621,13 +620,13 @@ function pm_notify_role_assign_handler($eventdata){
         }
         return true;
     } else {
-        if (empty($course) && $eventdata->contextid != CONTEXT_ELIS_CLASS) { // TBD
-            //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(); eventdata->contextid != CONTEXT_ELIS_CLASS");
+        if (empty($course) && $context->contextlevel != CONTEXT_ELIS_CLASS) { // TBD
+             //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(); eventdata->contextid != CONTEXT_ELIS_CLASS");
             return true;
         }
         $name = !empty($course) ? $course->fullname
                                 : $DB->get_field(pmclass::TABLE, 'idnumber',
-                                          array('id' => $eventdata->itemid));
+                                          array('id' => $context->instanceid));
         if (empty($name)) {
             return true;
         }
