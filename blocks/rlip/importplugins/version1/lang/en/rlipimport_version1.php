@@ -26,7 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['config_schedule_files_path'] = 'The directory path to the location of import files.';
+$string['config_schedule_files_path'] = 'The directory path, relative to moodledata, to the location of import files.';
 $string['config_course_schedule_file'] = 'The filename of the \'course\' IP import file.';
 $string['config_enrolment_schedule_file'] = 'The filename of the \'enrolment\' IP import file.';
 $string['config_user_schedule_file'] = 'The filename of the \'user\' IP import file.';

@@ -599,9 +599,9 @@ function run_ipjob($taskname, $maxruntime = 0) {
             $baseinstance = rlip_dataplugin_factory::factory($plugin);
             $entity_types = $baseinstance->get_import_entities();
             $files = array();
-            $path = get_config($plugin, 'schedule_files_path');
-            $path = rtrim($path, DIRECTORY_SEPARATOR);
-            $path .= DIRECTORY_SEPARATOR;
+            $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
+            $path = $dataroot . DIRECTORY_SEPARATOR . get_config($plugin, 'schedule_files_path');
+            $path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
             $temppath = sprintf($CFG->dataroot . RLIP_IMPORT_TEMPDIR, $plugin);
             if (!file_exists($temppath) && !mkdir($temppath, 0777, true)) {
                 mtrace("run_ipjob({$taskname}): Error creating directory '{$temppath}' ... using '{$path}'");

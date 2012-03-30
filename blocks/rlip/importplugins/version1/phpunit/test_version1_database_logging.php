@@ -1141,14 +1141,20 @@ class version1DatabaseLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //set up the import file path & entities filenames
-        set_config('schedule_files_path', dirname(__FILE__),
-                   'rlipimport_version1');
-        set_config('user_schedule_file', 'userfile2.csv',
-                   'rlipimport_version1');
-        set_config('course_schedule_file', 'course.csv',
-                   'rlipimport_version1');
-        set_config('enrolment_schedule_file', 'enroll.csv',
-                   'rlipimport_version1');
+        // Note: schedule_files_path now relative to $CFG->dataroot
+        //       must copy them there.
+        $relimportpath = '/phpunit/rlip/importplugins/version1/';
+        set_config('schedule_files_path', $relimportpath, 'rlipimport_version1');
+        set_config('user_schedule_file', 'userfile2.csv', 'rlipimport_version1');
+        set_config('course_schedule_file', 'course.csv', 'rlipimport_version1');
+        set_config('enrolment_schedule_file', 'enroll.csv', 'rlipimport_version1');
+        @copy(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'userfile2.csv',
+              $CFG->dataroot . $relimportpath . 'userfile2.csv');
+        @copy(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'course.csv',
+              $CFG->dataroot . $relimportpath . 'course.csv');
+        @copy(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'enroll.csv',
+              $CFG->dataroot . $relimportpath . 'enroll.csv');
+
         // log file
         set_config('logfilelocation',
                    $CFG->dataroot .'/rlipimport_testVersion1ImportFromSavedState.log',
@@ -1424,9 +1430,11 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //file path and name
         $file_name = 'userscheduledimport.csv';
         // File WILL BE DELETED after import so must copy to moodledata area
-        $file_path = $CFG->dataroot .'/phpunit/rlip/importplugins/version1/';
+        // Note: file_path now relative to moodledata ($CFG->dataroot)
+        $file_path = '/phpunit/rlip/importplugins/version1/';
         @mkdir($file_path, 0777, true);
-        @copy(dirname(__FILE__) ."/{$file_name}", $file_path . $file_name);
+        @copy(dirname(__FILE__) ."/{$file_name}",
+              $CFG->dataroot . $file_path . $file_name);
 
         //create a scheduled job
         $data = array('plugin' => 'rlipimport_version1',

@@ -28,7 +28,7 @@ $settings->add(new admin_setting_heading('rlipimport_version1/scheduling',
 //setting for schedule_files_path
 $settings->add(new admin_setting_configtext('rlipimport_version1/schedule_files_path',
                                             get_string('schedule_files_path', 'rlipimport_version1'),
-                                            get_string('config_schedule_files_path', 'rlipimport_version1'), ''));
+                                            get_string('config_schedule_files_path', 'rlipimport_version1'), '/rlip/rlipimport_version1'));
 
 //setting for user_schedule_file
 $settings->add(new admin_setting_configtext('rlipimport_version1/user_schedule_file',
