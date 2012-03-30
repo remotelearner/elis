@@ -99,7 +99,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @param string $entity The type of entity
      * @param array $header The header record
      */
-    function header_read_hook($entity, $header) {
+    function header_read_hook($entity, $header, $filename) {
         global $DB;
 
         if ($entity !== 'user') {
@@ -107,12 +107,23 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         $this->fields = array();
+        $shortnames = array();
+        $errors = false;
 
         foreach ($header as $column) {
             if (strpos($column, 'profile_field_') === 0) {
                 $shortname = substr($column, strlen('profile_field_'));
-                $this->fields[$shortname] = $DB->get_record('user_info_field', array('shortname' => $shortname));
+                if ($result = $DB->get_record('user_info_field', array('shortname' => $shortname))) {
+                    $this->fields[$shortname] = $result;
+                } else {
+                    $shortnames[] = "${shortname}";
+                    $errors = true;
+                }
             }
+        }
+
+        if ($errors) {
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] Import file contains the following invalid user profile field(s): " . implode(', ', $shortnames));
         }
     }
 

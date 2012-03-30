@@ -364,17 +364,22 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         //fetch log line
         $pointer = fopen($filename, 'r');
-        $line = fgets($pointer);
-        fclose($pointer);
 
-        if ($line == false) {
-            //no line found
-            $this->assertEquals(0, 1);
+        $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
+
+        while (!feof($pointer)) {
+            $error = fgets($pointer);
+            if (!empty($error)) { // could be an empty new line
+                if (is_array($expected_error)) {
+                    $actual_error[] = substr($error, $prefix_length);
+                } else {
+                    $actual_error = substr($error, $prefix_length);
+                }
+            }
         }
 
-        //data validation
-        $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
-        $actual_error = substr($line, $prefix_length);
+        fclose($pointer);
+
         $this->assertEquals($expected_error, $actual_error);
     }
 
@@ -3886,6 +3891,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('user', dirname(__FILE__).'/usertable.csv');
+        $dataset->addTable('user_info_field', dirname(__FILE__).'/user_info_field.csv');
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
@@ -4537,6 +4543,29 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      );
         $expected_error = "[course.csv line 2] guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    public function testUserProfileFields() {
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'city' => 'rlipcity',
+                      'country' => 'CA',
+                      'profile_field_user_profile_field_1' => 'my user profile field value',
+                      'profile_field_invalid_user_profile_field_1' => 'my user profile field value',
+                      'profile_field_user_profile_field_2' => 'my user profile field value',
+                      'profile_field_invalid_user_profile_field_2' => 'my user profile field value',
+                      );
+
+        $expected_error = array();
+        $expected_error[] = "[user.csv line 1] Import file contains the following invalid user profile field(s): invalid_user_profile_field_1, invalid_user_profile_field_2\n";
+        $expected_error[] = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" successfully created.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
 }

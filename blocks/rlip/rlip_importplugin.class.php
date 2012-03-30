@@ -508,7 +508,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //header read, so increment line number
         $this->linenumber++;
 
-        $this->header_read_hook($entity, $header);
+        $this->header_read_hook($entity, $header, $fileplugin->get_filename());
 
         $starttime = time();
         //main processing loop
