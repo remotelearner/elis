@@ -132,5 +132,14 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
             return $DB->get_field('files', 'filename', $params);
         }
     }
+
+    /**
+     * Hook for deleting the file
+     * @return bool   true on success, false on error
+     */
+    function delete() {
+        return @unlink($this->get_filename());
+    }
+
 }
 

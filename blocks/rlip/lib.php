@@ -35,6 +35,10 @@ define('RLIP_LOGS_PER_PAGE', 20);
 define('RLIP_LOG_TABLE', 'block_rlip_summary_logs');
 define('RLIP_SCHEDULE_TABLE', 'block_rlip_schedule');
 
+//constants for temporary import & export directories (wildcard for plugin)
+define('RLIP_EXPORT_TEMPDIR', '/rlip/%s/temp/');
+define('RLIP_IMPORT_TEMPDIR', '/rlip/%s/temp/');
+
 require_once($CFG->dirroot.'/lib/adminlib.php');
 
 /**
@@ -495,8 +499,18 @@ function rlip_schedule_delete_job($id) {
     return true;
 }
 
+/**
+ * Get Export filename with optional timestamp in RLIP_EXPORT_TEMPDIR location
+ *
+ * @param  string         $plugin The RLIP plugin
+ * @param  int or string  $tz     The exporting user's timezone
+ * @uses   $CFG
+ * @return string         The export filename with temp path.
+ */
 function rlip_get_export_filename($plugin, $tz = 99) {
-    $export = get_config($plugin, 'export_file');
+    global $CFG;
+    $tempexportdir = $CFG->dataroot . sprintf(RLIP_EXPORT_TEMPDIR, $plugin);
+    $export = basename(get_config($plugin, 'export_file'));
     $timestamp = get_config($plugin, 'export_file_timestamp');
     if (!empty($timestamp)) {
         $timestamp = userdate(time(), get_string('export_file_timestamp',
@@ -508,7 +522,10 @@ function rlip_get_export_filename($plugin, $tz = 99) {
             $export .= "_{$timestamp}.csv";
         }
     }
-    return $export;
+    if (!file_exists($tempexportdir) && !mkdir($tempexportdir, 0777, true)) {
+        error_log("/blocks/rlip/lib.php::rlip_get_export_filename('{$plugin}', {$tz}) - Error creating directory: '{$tempexportdir}'");
+    }
+    return $tempexportdir . $export;
 }
 
 /**
@@ -583,11 +600,35 @@ function run_ipjob($taskname, $maxruntime = 0) {
             $entity_types = $baseinstance->get_import_entities();
             $files = array();
             $path = get_config($plugin, 'schedule_files_path');
-            if (strrpos($path, '/') !== strlen($path) - 1) {
-                $path .= '/';
+            $path = rtrim($path, DIRECTORY_SEPARATOR);
+            $path .= DIRECTORY_SEPARATOR;
+            $temppath = sprintf($CFG->dataroot . RLIP_IMPORT_TEMPDIR, $plugin);
+            if (!file_exists($temppath) && !mkdir($temppath, 0777, true)) {
+                mtrace("run_ipjob({$taskname}): Error creating directory '{$temppath}' ... using '{$path}'");
+                //TBD*** just use main directory???
+                $temppath = $path;
             }
+            $continuing = false;
             foreach ($entity_types as $entity) {
-                $files[$entity] = $path . get_config($plugin, $entity .'_schedule_file');
+                if (!$continuing && $state !== null &&
+                    (!isset($state->entity) || $state->entity == $entity)) {
+                    $continuing = true;
+                }
+                $entity_filename = get_config($plugin, $entity .'_schedule_file');
+                if (empty($entity_filename)) {
+                    // TBD: need dummy so we're not testing directories!
+                    $entity_filename = $entity .'.csv';
+                }
+                //echo "\n get_config('{$plugin}', '{$entity}_schedule_file') => {$entity_filename}";
+                $files[$entity] = $temppath . $entity_filename;
+                if (!$continuing && $path !== $temppath &&
+                    file_exists($path . $entity_filename) &&
+                    !@rename($path . $entity_filename,
+                             $temppath . $entity_filename)) {
+                    mtrace("run_ipjob({$taskname}): Error moving '".
+                           $path . $entity_filename . "' to '".
+                           $temppath . $entity_filename . "'");
+                }
             }
             $importprovider = new rlip_importprovider_csv($entity_types, $files);
             $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);

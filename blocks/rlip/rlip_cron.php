@@ -100,6 +100,7 @@ if ($tasks && $tasks->valid()) {
         $lastruntime = $ipjob->lastruntime;
 
         $data = unserialize($ipjob->config);
+        $state = isset($data['state']) ? $data['state'] : null;
 
         //update next runtime on the scheduled task record
         $nextruntime = $ipjob->nextruntime;
@@ -122,11 +123,35 @@ if ($tasks && $tasks->valid()) {
                 $entity_types = $baseinstance->get_import_entities();
                 $files = array();
                 $path = get_config($plugin, 'schedule_files_path');
-                if (strrpos($path, '/') !== strlen($path) - 1) {
-                    $path .= '/';
+                $path = rtrim($path, DIRECTORY_SEPARATOR);
+                $path .= DIRECTORY_SEPARATOR;
+                $temppath = sprintf($CFG->dataroot . RLIP_IMPORT_TEMPDIR, $plugin);
+                if (!file_exists($temppath) && !mkdir($temppath, 0777, true)) {
+                    mtrace("run_ipjob({$taskname}): Error creating directory '{$temppath}' ... using '{$path}'");
+                    //TBD*** just use main directory???
+                    $temppath = $path;
                 }
+                $continuing = false;
                 foreach ($entity_types as $entity) {
-                    $files[$entity] = $path . get_config($plugin, $entity .'_schedule_file');
+                    if (!$continuing && $state !== null &&
+                        (!isset($state->entity) || $state->entity == $entity)) {
+                        $continuing = true;
+                    }
+                    $entity_filename = get_config($plugin, $entity .'_schedule_file');
+                    if (empty($entity_filename)) {
+                        // TBD: need dummy so we're not testing directories!
+                        $entity_filename = $entity .'.csv';
+                    }
+                    //echo "\n get_config('{$plugin}', '{$entity}_schedule_file') => {$entity_filename}";
+                    $files[$entity] = $temppath . $entity_filename;
+                    if (!$continuing && $path !== $temppath &&
+                        file_exists($path . $entity_filename) &&
+                        !@rename($path . $entity_filename,
+                                 $temppath . $entity_filename)) {
+                        mtrace("run_ipjob({$taskname}): Error moving '".
+                               $path . $entity_filename . "' to '".
+                               $temppath . $entity_filename . "'");
+                    }
                 }
                 $importprovider = new rlip_importprovider_csv($entity_types, $files);
                 $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);

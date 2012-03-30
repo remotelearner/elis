@@ -3,8 +3,9 @@
 $string['addfieldinstructions'] = 'Please add a profile field using the dropdown below.';
 $string['addprofilefield'] = 'Add profile field...';
 $string['columnheader'] = 'Column Header';
-$string['config_export_file'] = 'Enter the filename with full path to use for exporting data.';
+$string['config_export_file'] = 'Enter the filename template to use for exporting data.';
 $string['config_export_file_timestamp'] = 'If enabled, adds timestamp to export filename.';
+$string['config_export_path'] = 'Enter the relative path, from moodledata, to store export files.';
 $string['configincrementaldelta'] = 'This setting is not used in a scheduled incremental backup. The scheduled incremental backup uses the schedule. The time delta representing how far back the manual export includes data from.
 This should be specified in \*d\*h\*m format, with values representing days, hours and minutes.
 This setting only takes effect when using the incremental manual export, and is based on the time at which a user\'s course grade was
@@ -17,6 +18,7 @@ $string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Export Fields';
 $string['export_file'] = 'Export filename';
 $string['export_file_timestamp'] = '%b_%d_%Y_%H%M%S';
 $string['export_file_timestamp_label'] = 'Timestamp export file';
+$string['export_path'] = 'Export path';
 $string['exportfields'] = 'Version 1 export fields';
 $string['header_courseidnumber'] = 'Course Idnumber';
 $string['header_enddate'] = 'End Date';

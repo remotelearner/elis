@@ -1180,6 +1180,12 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $job->config = serialize($ipjobdata);
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
+        // MUST copy the userfile2.csv file to process into temp location
+        // ... where it would be left if state != NULL
+        $temppath = sprintf($CFG->dataroot . RLIP_IMPORT_TEMPDIR,
+                            'rlipimport_version1');
+        @copy(dirname(__FILE__) .'/userfile2.csv', $temppath .'/userfile2.csv');
+
         //run the import
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
@@ -1416,8 +1422,11 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $context = get_context_instance(CONTEXT_SYSTEM);
 
         //file path and name
-        $file_path = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/';
         $file_name = 'userscheduledimport.csv';
+        // File WILL BE DELETED after import so must copy to moodledata area
+        $file_path = $CFG->dataroot .'/phpunit/rlip/importplugins/version1/';
+        @mkdir($file_path, 0777, true);
+        @copy(dirname(__FILE__) ."/{$file_name}", $file_path . $file_name);
 
         //create a scheduled job
         $data = array('plugin' => 'rlipimport_version1',
@@ -1442,8 +1451,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         //set up config for plugin so the scheduler knows about our csv file
         set_config('schedule_files_path', $file_path, 'rlipimport_version1');
-        set_config('user_schedule_file',$file_name, 'rlipimport_version1');
-        set_config('type', 'user', 'rlipimport_version1');
+        set_config('user_schedule_file', $file_name, 'rlipimport_version1');
+        //set_config('course_schedule_file', 'course.csv', 'rlipimport_version1');
+        //set_config('enrolment_schedule_file', 'enroll.csv', 'rlipimport_version1');
+        //set_config('type', 'user', 'rlipimport_version1');
 
         //run the import
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
@@ -1485,5 +1496,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
                         'unmetdependency' => 0);
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertEquals($exists, true);
+        // Verify completed import deletes input csv file
+        $this->assertFalse(file_exists($file_path . $file_name));
     }
 }
