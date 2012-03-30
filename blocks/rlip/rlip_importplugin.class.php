@@ -557,6 +557,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             //display status of the file
             $logid = $this->dblogger->get_logid();
             rlip_print_manual_status($logid);
+        } else {
+            // delete processed import file - TBD: check return
+            $fileplugin->delete();
         }
         return null;
     }
