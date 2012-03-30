@@ -106,8 +106,21 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
 
     if ($result && $oldversion < 2012031300) {
         // Create new ip_schedule table
-        $xmlfile = dirname(__FILE__) .'/install.xml';
-        $dbman->install_one_table_from_xmldb_file($xmlfile, 'ip_schedule');
+        $table = new xmldb_table('ip_schedule');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('plugin', XMLDB_TYPE_CHAR, '63', null, XMLDB_NOTNULL);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL);
+        $table->add_field('config', XMLDB_TYPE_TEXT, 'medium', NULL, XMLDB_NOTNULL);
+
+        // Adding keys to the scheduling table
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Add indexes to the scheduling table
+        $table->add_index('plugin_ix', XMLDB_INDEX_NOTUNIQUE, array('plugin'));
+        $table->add_index('userid_ix', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+
+        // Launch create table for schedule table
+        $dbman->create_table($table);
 
         // block rlip savepoint reached
         upgrade_block_savepoint(true, 2012031300, 'rlip');
