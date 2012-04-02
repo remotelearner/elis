@@ -203,7 +203,7 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         //query that calculates total number completed
         $num_complete_sql = $this->get_report_sql('COUNT(ccg.id)');
         //query that calculates average final course grade
-        $avg_score_sql = $this->get_report_sql('AVG(gg.finalgrade)');
+        $avg_score_sql = $this->get_report_sql('AVG(stu.grade)');
 
         return array(new table_report_column('stu.completestatusid AS completestatus',
                                              get_string('column_completestatus', $this->lang_file),
@@ -256,6 +256,8 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         $inactive_options = array('choices' => array(get_string('filter_inactive_yes', $this->lang_file) => array(0, 1),
                                                      get_string('filter_inactive_no',  $this->lang_file) => array(0)),
                                   'numeric' => true,
+                                  'default'  => array(0),
++                                  //'anyvalue' => array(0, 1),
                                   'help' => array('class_completion_gas_gauge_inactive',
                                                   get_string('filter_inactive', $this->lang_file),
                                                   $this->lang_file)
@@ -306,7 +308,7 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         if (stripos($columns, $lastname) === FALSE) {
             $columns .= ", {$lastname}";
         }
-        $sql = "SELECT {$columns}, COUNT(cc.id) AS numcompletionelements, u.id AS cmuserid, gi.grademax
+        $sql = "SELECT {$columns}, COUNT(cc.id) AS numcompletionelements, u.id AS cmuserid, gi.grademax, stu.grade AS elisgrade
                 FROM {". user::TABLE .'} u
                 JOIN {'. student::TABLE .'} stu
                     ON u.id = stu.userid
@@ -383,11 +385,15 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         //$record->numcompleted = $record->numcompleted . ' / ' . $record->numcompletionelements;
         $record->numcompleted = get_string('completed_tally', $this->lang_file, $record);
 
-        //format the Moodle gradebook course score
-        if ($record->score === NULL || empty($record->grademax)) {
-            $record->score = get_string('na', $this->lang_file);
+        // ELIS-4916(ELIS-4439): now using ELIS grade!
+        //if ($record->score === NULL || empty($record->grademax)) {
+        if (!empty($record->elisgrade)) {
+            $record->score = pm_display_grade($record->elisgrade);
+            if (is_numeric($record->score) && $export_format != php_report::$EXPORT_FORMAT_CSV) {
+                $record->score .= get_string('percent_symbol', $this->lang_file);
+            }
         } else {
-            $record->score = number_format($record->score/$record->grademax*100, 1);
+            $record->score = get_string('na', $this->lang_file);
         }
 
         return $record;
@@ -411,7 +417,8 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         if ($record->score === NULL) {
             $record->score = get_string('na', $this->lang_file);
         } else {
-            $record->score = number_format($record->score, 1);
+            $record->score = pm_display_grade($record->score);
+            // TBD: NO $export_format passed to append '%'
         }
 
         return $record;
