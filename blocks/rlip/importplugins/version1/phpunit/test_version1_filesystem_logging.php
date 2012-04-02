@@ -4568,4 +4568,20 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
+   public function testCourseThemes() {
+        set_config('allowcoursethemes', 0);
+        $data = array('action' => 'create',
+                      'shortname' => 'shortname',
+                      'fullname' => 'fullname',
+                      'theme' => 'splash',
+                      'category' => 'category');
+        $expected_error = "[course.csv line 2] Course themes are currently disabled on this site.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        set_config('allowcoursethemes', 1);
+        $data['theme'] = 'invalidtheme';
+        $expected_error = "[course.csv line 2] theme value of \"invalidtheme\" is not a valid theme.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
 }

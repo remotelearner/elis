@@ -89,7 +89,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     static $available_fields_course = array('shortname', 'fullname', 'idnumber', 'summary',
                                             'format', 'numsections', 'startdate', 'newsitems',
                                             'showgrades', 'showreports', 'maxbytes', 'guest',
-                                            'password', 'visible', 'lang', 'category', 'link');
+                                            'password', 'visible', 'lang', 'category', 'link',
+                                            'theme');
     static $available_fields_enrolment = array('username', 'email', 'idnumber', 'context',
                                                'instance', 'role');
 
@@ -1134,6 +1135,21 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     function validate_core_course_data($action, $record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //make sure theme can only be set if feature is enabled
+        if (isset($record->theme)) {
+             if (empty($CFG->allowcoursethemes)) {
+               $this->process_error("[$filename line $this->linenumber] Course themes are currently disabled on this site.");
+               return false;
+           }
+        }
+
+        //make sure theme refers to a valid theme
+        $themes = get_list_of_themes();
+        if (!$this->validate_fixed_list($record, 'theme', array_keys($themes))) {
+            $this->process_error("[$filename line $this->linenumber] theme value of \"{$record->theme}\" is not a valid theme.");
+            return false;
+        }
 
         //make sure format refers to a valid course format
         if (isset($record->format)) {
