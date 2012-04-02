@@ -77,6 +77,14 @@ class databaseLoggingTest extends elis_database_test {
     }
 
     /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        return array('user' => 'moodle',
+                     'context' => 'moodle');
+    }
+
+    /**
      * Validate that the DB logger uses "0" as the default target start time
      */
     public function testDBLoggeringTargetStartTimeDefaultsToZero() {
