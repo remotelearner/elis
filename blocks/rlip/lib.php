@@ -257,28 +257,6 @@ function rlip_print_error($error = NULL) {
 }
 
 /**
- * Displays the status of processing as represented by the supplied log ids
- *
- * @param array $logids The ids of log records to display
- */
-function rlip_print_manual_status($logid) {
-    global $DB, $OUTPUT;
-
-    if (!empty($logid)) {
-        //only need a couple of fields
-        $fields = 'filesuccesses, filefailures, statusmessage';
-        if ($record = $DB->get_record(RLIP_LOG_TABLE, array('id'=>$logid), $fields)) {
-            //total rows = successes + failures
-            $record->total = $record->filesuccesses + $record->filefailures;
-
-            //display status message with successes and total records
-            $displaystring = get_string('manualstatus', 'block_rlip', $record);
-            echo $OUTPUT->box($displaystring, 'generalbox manualstatusbox');
-        }
-    }
-}
-
-/**
  * Sanitizes time strings and applies a default value if necessary
  *
  * @param string $time_string A user-entered time string

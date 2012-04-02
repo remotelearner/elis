@@ -83,8 +83,8 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 
         $this->fileplugin = $fileplugin;
-        $this->dblogger = new rlip_dblogger_export();
         $this->manual = $manual;
+        $this->dblogger = new rlip_dblogger_export($this->manual);
 
         //convert class name to plugin name
         $class = get_class($this);

@@ -69,6 +69,20 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
     }
 
     /**
+     * Provides the object used to log information to the database to the
+     * import
+     *
+     * @return object the DB logger
+     */
+    function get_dblogger() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
+
+        //for now, this is only used in manual runs
+        return new rlip_dblogger_import(true);
+    }
+
+    /**
      * Provides the object used to log information to the file system logfile
      *
      * @param  string $plugin  the plugin

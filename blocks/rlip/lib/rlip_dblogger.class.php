@@ -58,17 +58,21 @@ abstract class rlip_dblogger {
     //tracks whether an unmet dependency was encountered
     var $unmetdependency = 0;
 
-    //track the ids of the log records created
-    var $logids = array();
+    //tracks whether we're performing a manual or scheduled run
+    var $manual;
 
     /**
      * DB logger constructor
+     *
+     * @param boolean $manual true if manual, otherwise false
      */
-    function __construct() {
+    function __construct($manual = false) {
         global $USER;
 
         //set the userid to the global user id
         $this->userid = $USER->id;
+
+        $this->manual = $manual;
     }
 
     /**
@@ -200,19 +204,13 @@ abstract class rlip_dblogger {
         $record = $this->customize_record($record, $filename);
 
         //persist
-        $this->logid = $DB->insert_record(RLIP_LOG_TABLE, $record);
+        $DB->insert_record(RLIP_LOG_TABLE, $record);
+        
+        //display, if appropriate
+        $this->display_log($record, $filename);
 
         //reset state
         $this->reset_state();
-    }
-
-    /**
-     * Obtains the record ids of the log records created
-     *
-     * @return array The database record ids of the log records created
-     */
-    function get_logid() {
-        return $this->logid;
     }
 
     /**
@@ -222,6 +220,14 @@ abstract class rlip_dblogger {
      * @return object The customized version of the record
      */
     abstract function customize_record($record, $filename);
+
+    /**
+     * Specialization function for displaying log records in the UI
+     *
+     * @param object $record The log record, with all standard fields included
+     * @param string $filename The filename for which processing is finished
+     */
+    abstract function display_log($record, $filename); 
 }
 
 /**
@@ -243,6 +249,25 @@ class rlip_dblogger_import extends rlip_dblogger {
         }
         return $record;
     }
+
+    /**
+     * Specialization function for displaying log records in the UI
+     *
+     * @param object $record The log record, with all standard fields included
+     * @param string $filename The filename for which processing is finished
+     */
+    function display_log($record, $filename) {
+        global $OUTPUT;
+
+        if ($this->manual) {
+            //total rows = successes + failures
+            $record->total = $record->filesuccesses + $record->filefailures;
+
+            //display status message with successes and total records
+            $displaystring = get_string('manualstatus', 'block_rlip', $record);
+            echo $OUTPUT->box($displaystring, 'generalbox manualstatusbox');            
+        }
+    }
 }
 
 /**
@@ -261,5 +286,15 @@ class rlip_dblogger_export extends rlip_dblogger {
         //message
         $record->statusmessage = "Export file {$filename} successfully created.";
         return $record;
+    }
+
+    /**
+     * Specialization function for displaying log records in the UI
+     *
+     * @param object $record The log record, with all standard fields included
+     * @param string $filename The filename for which processing is finished
+     */
+    function display_log($record, $filename) {
+        //do nothing
     }
 }

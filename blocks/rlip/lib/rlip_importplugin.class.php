@@ -50,8 +50,8 @@ abstract class rlip_importprovider {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 
-        //for now, the only db logger
-        return new rlip_dblogger_import();
+        //for now, the only db logger, and assume scheduled
+        return new rlip_dblogger_import(false);
     }
 
     /**
@@ -549,11 +549,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         $filename = $fileplugin->get_filename();
         $this->dblogger->flush($filename);
 
-        if ($this->manual) {
-            //display status of the file
-            $logid = $this->dblogger->get_logid();
-            rlip_print_manual_status($logid);
-        }
         return null;
     }
 
