@@ -275,11 +275,10 @@ class context_elis_program extends context_elis {
 
         $sort = 'ORDER BY contextlevel,component,name';   // To group them sensibly for display
 
-        // TODO: Are these context levels correct in the following query?
         $params = array();
         $sql = "SELECT *
                   FROM {capabilities}
-                 WHERE contextlevel IN (".CONTEXT_ELIS_PROGRAM.",".CONTEXT_ELIS_TRACK.",".CONTEXT_ELIS_COURSE.",".CONTEXT_ELIS_CLASS.")";
+                 WHERE contextlevel = ".CONTEXT_ELIS_PROGRAM;
 
         return $DB->get_records_sql($sql.' '.$sort, $params);
     }
@@ -301,7 +300,7 @@ class context_elis_program extends context_elis {
 
         if (!$record = $DB->get_record('context', array('contextlevel'=>CONTEXT_ELIS_PROGRAM, 'instanceid'=>$instanceid))) {
             if ($program = $DB->get_record(curriculum::TABLE, array('id'=>$instanceid), 'id,idnumber', $strictness)) {
-                $record = context::insert_context_record(CONTEXT_ELIS_PROGRAM, $program->id, '/'.SYSCONTEXTID, 0);
+                $record = context::insert_context_record(CONTEXT_ELIS_PROGRAM, $program->id, '/'.SYSCONTEXTID);
             }
         }
 

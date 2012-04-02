@@ -37,7 +37,7 @@ ini_set('error_reporting',1);
 ini_set('display_errors',1);
 
 class curriculumCustomFieldsTest extends elis_database_test {
-    protected $backupGlobalsBlacklist = array('DB');
+//     protected $backupGlobalsBlacklist = array('DB');
 
 	protected static function get_overlay_tables() {
 		return array(
@@ -163,14 +163,16 @@ class curriculumCustomFieldsTest extends elis_database_test {
     }
 
     private function importContextsTable() {
+        global $SITE;
+
         $syscontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_SYSTEM));
         self::$overlaydb->import_record('context', $syscontext);
 
-        $site = self::$origdb->get_record('course', array('id' => SITEID));
+        $site = self::$origdb->get_record('course', array('id' => $SITE->id));
         self::$overlaydb->import_record('course', $site);
 
 
-        $sitecontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_COURSE,'instanceid' => SITEID));
+        $sitecontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_COURSE,'instanceid' => $SITE->id));
         self::$overlaydb->import_record('context', $sitecontext);
 
         $elis_contexts = context_elis_helper::get_all_levels();
@@ -352,61 +354,62 @@ class curriculumCustomFieldsTest extends elis_database_test {
         // elis/program/lib/data/userset.class.php:616
         // elis/program/lib/data/userset.class.php:721
         // elis/program/lib/data/userset.class.php:755
-            $cat = $this->create_field_category(CONTEXT_ELIS_USERSET);
-            $field = $this->create_field(USERSET_CLASSIFICATION_FIELD,$cat,CONTEXT_ELIS_USERSET);
-            $userset = $this->create_userset($field);
+        $cat = $this->create_field_category(CONTEXT_ELIS_USERSET);
+        $field = $this->create_field(USERSET_CLASSIFICATION_FIELD,$cat,CONTEXT_ELIS_USERSET);
+        $userset = $this->create_userset($field);
 
-            //get a role to assign
-            $roles_ctx = self::$overlaydb->get_records('role_context_levels',array('contextlevel' => CONTEXT_ELIS_USERSET));
-            foreach ($roles_ctx as $i => $role_ctx) {
-                $roleid = $role_ctx->roleid;
-            }
+        //get a role to assign
+        $roles_ctx = $DB->get_records('role_context_levels',array('contextlevel' => CONTEXT_ELIS_USERSET));
+        foreach ($roles_ctx as $i => $role_ctx) {
+            $roleid = $role_ctx->roleid;
+        }
 
-            //add userset_view capability to our role
-            $userset_context = context_elis_userset::instance($userset->id);
-            $rc = new stdClass;
-            $rc->contextid = $userset_context->id;
-            $rc->roleid = $roleid;
-            $rc->capability = 'elis/program:userset_view';
-            $rc->permission = 1;
-            $rc->timemodified = time();
-            $rc->modifierid = 0;
-            $DB->insert_record('role_capabilities', $rc);
-            $rc = new stdClass;
-            $rc->contextid = $userset_context->id;
-            $rc->roleid = $roleid;
-            $rc->capability = 'elis/program:userset_enrol_userset_user';
-            $rc->permission = 1;
-            $rc->timemodified = time();
-            $rc->modifierid = 0;
-            $DB->insert_record('role_capabilities', $rc);
+        //add userset_view capability to our role
+        $userset_context = context_elis_userset::instance($userset->id);
+        $rc = new stdClass;
+        $rc->contextid = $userset_context->id;
+        $rc->roleid = $roleid;
+        $rc->capability = 'elis/program:userset_view';
+        $rc->permission = 1;
+        $rc->timemodified = time();
+        $rc->modifierid = 0;
+        $DB->insert_record('role_capabilities', $rc);
+        $rc = new stdClass;
+        $rc->contextid = $userset_context->id;
+        $rc->roleid = $roleid;
+        $rc->capability = 'elis/program:userset_enrol_userset_user';
+        $rc->permission = 1;
+        $rc->timemodified = time();
+        $rc->modifierid = 0;
+        $DB->insert_record('role_capabilities', $rc);
 
-            //assign role
-            $user = new user(103, null, array(), false, array(), self::$overlaydb);
-            $raid = role_assign($roleid, cm_get_moodleuserid($user->id), $userset_context->id);
-            $user_id_backup = $USER->id;
-            $USER->id = 100;
+        //assign role
+        $user  = new user(103);
+        $muser = $user->get_moodleuser();
+        $raid = role_assign($roleid, $muser->id, $userset_context->id);
+        $user_id_backup = $USER->id;
+        $USER->id = 100;
 
-            //assign other user to userset
-            $clst = new clusterassignment;
-            $clst->clusterid = $userset->id;
-            $clst->userid = 104;
-            $clst->plugin = 'manual';
-            $clst->save();
+        //assign other user to userset
+        $clst = new clusterassignment;
+        $clst->clusterid = $userset->id;
+        $clst->userid = 104;
+        $clst->plugin = 'manual';
+        $clst->save();
 
-            //get cluster listing
-            $capability = 'elis/program:userset_view';
-            $contexts = get_contexts_by_capability_for_user('cluster', $capability, $USER->id);
-            $extrafilters = array(
-                'contexts' => $contexts,
-                'classification' => 'test field data'
-            );
+        //get cluster listing
+        $capability = 'elis/program:userset_view';
+        $contexts = get_contexts_by_capability_for_user('cluster', $capability, $USER->id);
+        $extrafilters = array(
+            'contexts' => $contexts,
+            'classification' => 'test field data'
+        );
 
-            $res = cluster_get_listing('name','ASC',0,0,'','',$extrafilters,104);
+        $res = cluster_get_listing('name','ASC',0,0,'','',$extrafilters,104);
 
-            $res = cluster_count_records('','',$extrafilters);
+        $res = cluster_count_records('','',$extrafilters);
 
-            $USER->id = $user_id_backup;
+        $USER->id = $user_id_backup;
 
         //TEST elis/program/lib/data/userset.class.php:847
         cluster_get_non_child_clusters(1);
@@ -481,16 +484,6 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
     /**
      * Covers:
-     * elis/program/lib/lib.php:1172
-     * elis/program/lib/lib.php:1290
-     */
-    public function testElisPMLib() {
-        pm_migrate_tags();
-        pm_migrate_environments();
-    }
-
-    /**
-     * Covers:
      * elis/program/lib/notifications.php:616
      * elis/program/lib/notifications.php:617
      */
@@ -508,14 +501,15 @@ class curriculumCustomFieldsTest extends elis_database_test {
         }
 
         //get user to assign role
-        $user = new user(103);
+        $user  = new user(103);
+        $muser = $user->get_moodleuser();
 
         //get specific context
         $cur = $this->create_curriculum();
         $context = context_elis_program::instance($cur->id);
 
         //assign role
-        $raid = role_assign($roleid, cm_get_moodleuserid($user->id), $context);
+        $raid = role_assign($roleid, $muser->id, $context);
     }
 
     /**

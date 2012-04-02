@@ -492,7 +492,7 @@ function pm_assign_student_from_mdl($eventdata) {
     }
 
     /// We get all context assigns, so check that this is a class. If not, we're done.
-     if (!$context) {
+    if (!$context) {
         if (in_cron()) {
             mtrace(get_string('invalidcontext'));
         } else {
@@ -586,6 +586,7 @@ function pm_notify_role_assign_handler($eventdata){
     }
 
     /// We get all context assigns, so check that this is a class. If not, we're done.
+//     if (!$context = context::instance_by_id($eventdata->contextid)) {
     if (!$context) {
         if (in_cron()) {
             mtrace(getstring('invalidcontext'));

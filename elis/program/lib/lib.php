@@ -1212,7 +1212,7 @@ function pm_migrate_tags() {
 
                     $contextlevel = context_elis_helper::get_level_from_name($contextname);
                     $contextclass = context_elis_helper::get_class_for_level($contextlevel);
-                    $context     = $contextclass::instance($record->instanceid);
+                    $context      = $contextclass::instance($record->instanceid);
 
                     field_data::set_for_context_and_field($context, $field, $tagids);
                 }
@@ -1352,10 +1352,11 @@ function pm_migrate_environments() {
 function pm_ensure_role_assignable($role) {
     global $DB;
     if (!is_numeric($role)) {
-        if ( !($roleid = $DB->get_field('role', 'id', array('shortname' => $role)))
-            && !($roleid = create_role(get_string($role .'name', 'elis_program'),
-                               $role, get_string($role .'description', 'elis_program'),
-                               get_string($role .'archetype', 'elis_program')))) {
+        if (!($roleid = $DB->get_field('role', 'id', array('shortname' => $role)))
+            && !($roleid = create_role(get_string($role .'name', 'elis_program'), $role,
+                                       get_string($role .'description', 'elis_program'),
+                                       get_string($role .'archetype', 'elis_program')))) {
+
             mtrace("\n pm_ensure_role_assignable(): Error creating role '{$role}'\n");
         }
     } else {
@@ -1367,7 +1368,9 @@ function pm_ensure_role_assignable($role) {
 
         foreach (context_elis_helper::get_all_levels() as $ctxlevel => $ctxclass) {
             $rcl->contextlevel = $ctxlevel;
-            $DB->insert_record('role_context_levels', $rcl);
+            if (!$DB->record_exists('role_context_levels', array('roleid' => $roleid, 'contextlevel' => $ctxlevel))) {
+                $DB->insert_record('role_context_levels', $rcl);
+            }
         }
     }
     return $roleid;

@@ -28,6 +28,7 @@ require_once(dirname(__FILE__) . '/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot . '/elis/program/lib/setup.php');
 require_once(elis::lib('testlib.php'));
+require_once(elis::lib('data/customfield.class.php'));
 require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 require_once(elispm::lib('data/pmclass.class.php'));
@@ -50,23 +51,29 @@ class curriculumCustomFieldsTest extends elis_database_test {
         return array(
             'cache_flags' => 'moodle',
             'context' => 'moodle',
+            'context_temp' => 'moodle',
+            'course' => 'moodle',
+            'message' => 'moodle',
+            'message_read' => 'moodle',
             'role_assignments' => 'moodle',
             'role_capabilities' => 'moodle',
-            'course' => 'moodle',
             'user' => 'moodle',
+            field::TABLE => 'elis_core',
             curriculum::TABLE => 'elis_program',
             track::TABLE => 'elis_program',
             course::TABLE => 'elis_program',
             coursetemplate::TABLE => 'elis_program',
             pmclass::TABLE => 'elis_program',
             userset::TABLE => 'elis_program',
+            clusterassignment::TABLE => 'elis_program',
+            'crlm_cluster_profile' => 'elis_program',
             user::TABLE => 'elis_program',
             usermoodle::TABLE => 'elis_program',
         );
     }
 
     protected function setUp() {
-        global $DB;
+        global $DB, $ACCESSLIB_PRIVATE;
 
         parent::setUp();
         $DB = self::$origdb; // setUpContextsTable needs $DB to be the real
@@ -75,8 +82,12 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $DB = self::$overlaydb;
 
         // Ensure that the editing teacher role has a specific capapbility enabled
+        $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
+
+        accesslib_clear_all_caches(true);
+
         $syscontext = context_system::instance();
-        assign_capability('elis/program:userset_enrol_userset_user', CAP_ALLOW, 3, $syscontext);
+        assign_capability('elis/program:userset_enrol_userset_user', CAP_ALLOW, $role->id, $syscontext, true);
         $syscontext->mark_dirty();
 
         // Initialise testing data
@@ -105,13 +116,19 @@ class curriculumCustomFieldsTest extends elis_database_test {
                 'instanceid' => SITEID));
         self::$overlaydb->import_record('context', $sitecontext);
 
+        // Guest user
+        if ($guest = self::$origdb->get_record('user', array('username' => 'guest', 'mnethostid' => $CFG->mnet_localhost_id))) {
+            self::$overlaydb->import_record('user', $guest);
+            $usercontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_USER, 'instanceid' => $guest->id));
+            self::$overlaydb->import_record('context', $usercontext);
+        }
+
         // primary admin user
         $admin = get_admin();
         if ($admin) {
             self::$overlaydb->import_record('user', $admin);
             $CFG->siteadmins = $admin->id;
-            $usercontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_USER,
-                    'instanceid' => $admin->id));
+            $usercontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_USER, 'instanceid' => $admin->id));
             self::$overlaydb->import_record('context', $usercontext);
 
             // copy admin user's ELIS user (if available)
@@ -221,6 +238,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
         // Setup the global user to be this new test user we have created
         $USER = $DB->get_record('user', array('id' => $this->mdluserid));
+        $USER->access = get_user_accessdata($USER->id);
     }
 
     /**
@@ -238,11 +256,14 @@ class curriculumCustomFieldsTest extends elis_database_test {
     }
 
     public function testProgramCapabilityCheck() {
-        global $USER;
+        global $DB, $USER;
 
+        $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
+
+        // Assign the test user the editing teacher role on a test program
         $ctx = context_elis_program::instance($this->tprogramid);
-        $this->assertGreaterThan(0, role_assign(3, $this->mdluserid, $ctx->id));
-        load_role_access_by_context(3, $ctx, $USER->access); // We need to force the accesslib cache to refresh
+        $this->assertGreaterThan(0, role_assign($role->id, $this->mdluserid, $ctx->id));
+        load_role_access_by_context($role->id, $ctx, $USER->access); // We need to force the accesslib cache to refresh
 
         // Validate the return value when looking at the 'curriculum' level
         $contexts_curriculum = new pm_context_set();
@@ -251,7 +272,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
         );
         $contexts_curriculum->contextlevel = 'curriculum';
 
-        $contexts = pm_context_set::for_user_with_capability('curriculum', 'elis/program:userset_enrol_userset_user', $this->mdluserid);
+        $contexts = pm_context_set::for_user_with_capability('curriculum', 'elis/program:userset_enrol_userset_user', $this->mdluserid, false);
         $this->assertEquals($contexts_curriculum, $contexts);
 
         // Validate the return value when looking at the 'track' level
@@ -290,12 +311,14 @@ class curriculumCustomFieldsTest extends elis_database_test {
     }
 
     public function testTrackCapabilityCheck() {
-        global $USER;
+        global $DB, $USER;
 
-        // Assign the test user the editing teacher role on a test curriculum
+        $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
+
+        // Assign the test user the editing teacher role on a test track
         $ctx = context_elis_track::instance($this->ttrackid);
-        $this->assertNotEmpty(role_assign(3, $this->mdluserid, $ctx->id));
-        load_role_access_by_context(3, $ctx, $USER->access); // We need to force the accesslib cache to refresh
+        $this->assertNotEmpty(role_assign($role->id, $this->mdluserid, $ctx->id));
+        load_role_access_by_context($role->id, $ctx, $USER->access); // We need to force the accesslib cache to refresh
 
         // Validate the return value when looking at the 'track' level
         $contexts_track = new pm_context_set();
@@ -323,12 +346,14 @@ class curriculumCustomFieldsTest extends elis_database_test {
     }
 
     public function testCourseCapabilityCheck() {
-        global $USER;
+        global $DB, $USER;
+
+        $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
 
         // Assign the test user the editing teacher role on a test curriculum
         $ctx = context_elis_course::instance($this->tcourseid);
-        $this->assertNotEmpty(role_assign(3, $this->mdluserid, $ctx->id));
-        load_role_access_by_context(3, $ctx, $USER->access); // We need to force the accesslib cache to refresh
+        $this->assertNotEmpty(role_assign($role->id, $this->mdluserid, $ctx->id));
+        load_role_access_by_context($role->id, $ctx, $USER->access); // We need to force the accesslib cache to refresh
 
         // Validate the return value when looking at the 'course' level
         $contexts_course = new pm_context_set();
@@ -356,12 +381,14 @@ class curriculumCustomFieldsTest extends elis_database_test {
     }
 
     public function testClassCapabilityCheck() {
-        global $USER;
+        global $DB, $USER;
+
+        $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
 
         // Assign the test user the editing teacher role on a test curriculum
         $ctx = context_elis_class::instance($this->tclassid);
-        $this->assertNotEmpty(role_assign(3, $this->mdluserid, $ctx->id));
-        load_role_access_by_context(3, $ctx, $USER->access); // We need to force the accesslib cache to refresh
+        $this->assertNotEmpty(role_assign($role->id, $this->mdluserid, $ctx->id));
+        load_role_access_by_context($role->id, $ctx, $USER->access); // We need to force the accesslib cache to refresh
 
         // Validate the return value when looking at the 'class' level
         $contexts_class = new pm_context_set();
@@ -379,12 +406,14 @@ class curriculumCustomFieldsTest extends elis_database_test {
     }
 
     public function testUsersetCapabilityCheck() {
-        global $USER;
+        global $DB, $USER;
+
+        $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
 
         // Assign the test user the editing teacher role on a test cluster
         $ctx = context_elis_userset::instance($this->tusersetid);
-        $this->assertNotEmpty(role_assign(3, $this->mdluserid, $ctx->id));
-        load_role_access_by_context(3, $ctx, $USER->access); // We need to force the accesslib cache to refresh
+        $this->assertNotEmpty(role_assign($role->id, $this->mdluserid, $ctx->id));
+        load_role_access_by_context($role->id, $ctx, $USER->access); // We need to force the accesslib cache to refresh
 
          // Validate the return value when looking at the 'cluster' level
         $contexts_cluster = new pm_context_set();
@@ -412,12 +441,14 @@ class curriculumCustomFieldsTest extends elis_database_test {
     }
 
     public function testUserCapabilityCheck() {
-        global $USER;
+        global $DB, $USER;
+
+        $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
 
         // Assign the test user the editing teacher role on a test cluster
         $ctx = context_elis_user::instance($this->tuserid);
-        $this->assertNotEmpty(role_assign(3, $this->mdluserid, $ctx->id));
-        load_role_access_by_context(3, $ctx, $USER->access); // We need to force the accesslib cache to refresh
+        $this->assertNotEmpty(role_assign($role->id, $this->mdluserid, $ctx->id));
+        load_role_access_by_context($role->id, $ctx, $USER->access); // We need to force the accesslib cache to refresh
 
          // Validate the return value when looking at the 'user' level
         $contexts_user = new pm_context_set();

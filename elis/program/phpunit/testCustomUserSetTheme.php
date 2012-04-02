@@ -90,12 +90,12 @@ class curriculumCustomFieldsTest extends elis_database_test {
     }
 
     public function testCustomUsersetThemeCTX() {
-
         //elis user with the associated moodle user
-        $user = new user(103, null, array(), false, array(), self::$overlaydb);
+        $user  = new user(103);
+        $muser = $user->get_moodleuser();
 
         //userset with a custom theme
-        $userset = new userset(1, null, array(), false, array(), self::$overlaydb);
+        $userset = new userset(1);
         $userset->field__elis_userset_theme = 'formal_white';
         $userset->field__elis_userset_themepriority = 1;
         $userset->save();
@@ -109,7 +109,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
         //pretend to be that user
         $USER_bkup = $GLOBALS['USER'];
         $GLOBALS['USER'] = new stdClass;
-        $GLOBALS['USER']->id = cm_get_moodleuserid($user->id);;
+        $GLOBALS['USER']->id = $muser->id;
         $GLOBALS['USER']->mnethostid = 1;
 
         //initialize page
