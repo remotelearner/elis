@@ -36,20 +36,8 @@ require_once($file);
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
-
-/**
- * Class that delays reading import file
- */
-class rlip_fileplugin_csv_mock extends rlip_fileplugin_csv {
-    private $readdelay = 3; // 3 sec delay before reads
-
-    function read() {
-        if (!empty($this->readdelay)) {
-            sleep($this->readdelay);
-        }
-        return parent::read();
-    }
-}
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -226,29 +214,6 @@ class rlip_importprovider_userfile extends rlip_importprovider {
         }
 
         return rlip_fileplugin_factory::factory($this->filename);
-    }
-}
-
-class rlip_importprovider_userfile2 extends rlip_importprovider {
-    var $filename;
-
-    function __construct($filename) {
-        $this->filename = $filename;
-    }
-
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'user') {
-            return false;
-        }
-
-        return new rlip_fileplugin_csv_mock($this->filename);
     }
 }
 
@@ -1128,7 +1093,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         //set up a "user" import provider, using a single fixed file
         $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
-        $provider = new rlip_importprovider_userfile2($file);
+        $provider = new rlip_importprovider_userfile_delay($file);
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider);

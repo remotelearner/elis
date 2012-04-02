@@ -51,6 +51,13 @@ class utilityMethodTest extends elis_database_test {
     }
 
     /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        return array('context' => 'moodle');
+    }
+
+    /**
      * Create test user record
      */
     protected function create_test_user() {

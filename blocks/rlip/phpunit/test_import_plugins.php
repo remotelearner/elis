@@ -154,7 +154,7 @@ class importPluginTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        return array();
+        return array('config_plugins' => 'moodle');
     }
 
     /**
@@ -278,5 +278,43 @@ class importPluginTest extends elis_database_test {
         $importplugin->run();
 
         $this->assertEquals($importplugin->hook_called(), true);
+    }
+
+    /**
+     * Validates that the file-system logging object provided for direct CSV
+     * file input is in "scheduled" mode
+     */
+    public function testCSVImportProviderProvidesLoggerInScheduledMode() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
+
+        //construct our provider
+        $provider = new rlip_importprovider_csv(array(), array());
+
+        //obtain its logging object
+        set_config('logfilelocation', $CFG->dataroot.'/bogus', 'rlipimport_version1');
+        $fslogger = $provider->get_fslogger('rlipimport_version1');
+
+        //validation
+        $this->assertFalse($fslogger->get_manual());
+    }
+
+    /**
+     * Validates that the file-system logging object provided for Moodle file
+     * input is in "manual" mode
+     */
+    public function testMoodlefileImportProviderProvidesLoggerInManualMode() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
+
+        //construct our provider
+        $provider = new rlip_importprovider_moodlefile(array(), array());
+
+        //obtain its logging object
+        set_config('logfilelocation', $CFG->dataroot.'/bogus', 'rlipimport_version1');
+        $fslogger = $provider->get_fslogger('rlipimport_version1');
+
+        //validation
+        $this->assertTrue($fslogger->get_manual());
     }
 }

@@ -68,7 +68,8 @@ abstract class rlip_importprovider {
         $filename = get_config($plugin, 'logfilelocation');
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
-            return new rlip_fslogger($fileplugin);
+            //for now, default to scheduled runs
+            return rlip_fslogger_factory::factory($fileplugin);
         }
         return null;
     }
@@ -332,8 +333,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * @return boolean true if fields ok, otherwise false
      */
     function check_required_fields($entity, $record, $filename, $exceptions = array()) {
-        //log line prefix
-        $prefix = "[{$filename} line {$this->linenumber}]";
 
         //get list of required fields
         $required_fields = $this->plugin_supports_action($entity, $record->action);
@@ -383,8 +382,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
             if (count($messages) > 0) {
                 //combine and log
-                $message = "{$prefix} ".implode(' ', $messages);
-                $this->process_error($message);
+                $message = implode(' ', $messages);
+                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
                 return false;
             }
         }
@@ -422,13 +421,10 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * @return boolean true if action field is set, otherwise false
      */
     function check_action_field($record, $filename) {
-        //log prefix
-        $prefix = "[{$filename} line {$this->linenumber}]";
-
         if (!isset($record->action) || $record->action === '') {
             //not set, so error
-            $message = "{$prefix} Required field action is unspecified or empty.";
-            $this->process_error($message);
+            $message = "Required field action is unspecified or empty.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
 
             return false;
         }
@@ -600,7 +596,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                                                       $state)) !== null) {
                 if ($this->fslogger) {
                     $msg = get_string('importexceedstimelimit_b', 'block_rlip', $result);
-                    $this->fslogger->log($msg);
+                    $this->fslogger->log_failure($msg);
                 }
                 return $result;
             }
@@ -615,7 +611,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                     $state->entity = $nextentity;
                     if ($this->fslogger) {
                         $msg = get_string('importexceedstimelimit', 'block_rlip', $state);
-                        $this->fslogger->log($msg);
+                        $this->fslogger->log_failure($msg);
                     }
                     return $state;
                 } else {
@@ -644,19 +640,4 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     function get_fslogger() {
         return $this->fslogger;
     }
-
-    /**
-     * Process an error message - to log and screen (if a manual run)
-     */
-    function process_error($error = NULL) {
-        if (!empty($error)) {
-            if ($this->manual) {
-                rlip_print_error($error);
-            }
-            if ($this->fslogger) {
-                $this->fslogger->log($error);
-            }
-        }
-    }
-
 }

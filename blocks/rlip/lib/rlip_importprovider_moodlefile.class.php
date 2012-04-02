@@ -67,4 +67,24 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
 
         return false;
     }
+
+    /**
+     * Provides the object used to log information to the file system logfile
+     *
+     * @param  string $plugin  the plugin
+     * @return object the fslogger
+     */
+    function get_fslogger($plugin) {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+
+        //set up the file-system logger
+        $filename = get_config($plugin, 'logfilelocation');
+        if (!empty($filename)) {
+            $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
+            //for now, this is only used in manual runs
+            return rlip_fslogger_factory::factory($fileplugin, true);
+        }
+        return null;
+    }
 }

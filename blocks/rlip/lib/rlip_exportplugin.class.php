@@ -94,7 +94,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
         $filename = get_config($this->plugin, 'logfilelocation');
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true, $manual);
-            $this->fslogger = new rlip_fslogger($fileplugin);
+            $this->fslogger = rlip_fslogger_factory::factory($fileplugin, $this->manual);
         }
 
         //indicate to the databaes logger which plugin we're using
@@ -168,7 +168,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
                 // time limit exceeded - abort with log message
                 if ($this->fslogger) {
                     $msg = get_string('exportexceedstimelimit', 'block_rlip');
-                    $this->fslogger->log($msg);
+                    $this->fslogger->log_failure($msg);
                 }
                 return false;
             }

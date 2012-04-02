@@ -36,6 +36,8 @@ require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -4537,4 +4539,44 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
+    /**
+     * Validate that the correct error message is logged when an import runs
+     * too long
+     */
+    public function testVersion1ImportLogsRuntimeError() {
+        global $CFG;
+
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
+
+        //set up a "user" import provider, using a single fixed file
+        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
+        $provider = new rlip_importprovider_userfile_delay($file);
+
+        //run the import
+        $importplugin = new rlip_importplugin_version1($provider);
+        $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
+
+        //expected error
+        $expected_error = get_string('importexceedstimelimit_b', 'block_rlip', $result)."\n";
+
+        //validate that a log file was created
+        $this->assertTrue(file_exists($filename));
+
+        //fetch log line
+        $pointer = fopen($filename, 'r');
+        $line = fgets($pointer);
+        fclose($pointer);
+
+        if ($line == false) {
+            //no line found
+            $this->assertEquals(0, 1);
+        }
+
+        //data validation
+        $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
+        $actual_error = substr($line, $prefix_length);
+        $this->assertEquals($expected_error, $actual_error);
+    }
 }

@@ -65,4 +65,18 @@ class pluginFactoriesTest extends PHPUnit_Framework_TestCase {
         //validation
         $this->assertEquals($fileplugin->sendtobrowser, true);
     }
+
+    /**
+     * Validate that the file-system logger factory constructs an object of the
+     * correct type
+     */
+    public function testFsloggerFactoryInstantiatesCorrectClass() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+
+        //setup
+        $fslogger = rlip_fslogger_factory::factory(NULL);
+        //validation
+        $this->assertInstanceOf('rlip_fslogger_linebased', $fslogger);
+    }
 }
