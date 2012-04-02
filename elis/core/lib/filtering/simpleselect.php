@@ -35,8 +35,6 @@ class generalized_filter_simpleselect extends generalized_filter_type {
     /**
      * options for the list values
      */
-    var $_options = array();
-
     var $_field;
 
     var $_options  = array();  // Select options
@@ -164,7 +162,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
         $value = $data['value'];
 
         $a = new object();
-        $a->label    = $this->_label;
+        $a->label = $this->_label;
 
         if (is_array($value)) {
             foreach ($value as $key => $subvalue) {
@@ -173,7 +171,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
             }
             $a->value = implode(get_string('or', 'elis_core'), $value);
         } else {
-            $a->value = '"'.s($this->_options[$value]).'"';
+            $a->value = '"'. s($this->_options[$value]) .'"';
         }
         $a->operator = get_string('isequalto', 'filters');
 
