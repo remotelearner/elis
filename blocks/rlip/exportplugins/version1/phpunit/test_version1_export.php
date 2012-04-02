@@ -230,7 +230,10 @@ class version1ExportTest extends elis_database_test {
         return array(RLIP_LOG_TABLE            => 'block_rlip',
                      'external_tokens'         => 'moodle',
                      'external_services_users' => 'moodle',
-                     'log'                     => 'moodle');
+                     'log'                     => 'moodle',
+                     'message'                 => 'moodle',
+                     'message_read'            => 'moodle',
+                     'message_working'         => 'moodle');
     }
 
     /**
@@ -1499,12 +1502,12 @@ class version1ExportTest extends elis_database_test {
         set_config('export_file_timestamp', false, $plugin);
         // base export file w/o timestamp
         $exportfile = rlip_get_export_filename($plugin, $USER->timezone);
-        $this->assertEquals($exportfile, $baseexportfile);
+        $this->assertEquals(basename($exportfile), $baseexportfile);
 
         set_config('export_file_timestamp', true, $plugin);
         // export file WITH timestamp
         $exportfile = rlip_get_export_filename($plugin, $USER->timezone);
-        $parts = explode('_', $exportfile);
+        $parts = explode('_', basename($exportfile));
         $this->assertEquals($parts[0], 'export');
         $this->assertEquals($parts[1], 'version1');
         $timestamp = userdate(time(), // $string['export_file_timestamp']

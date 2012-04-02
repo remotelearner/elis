@@ -77,6 +77,16 @@ abstract class rlip_fileplugin_base {
     abstract function close();
 
     /**
+     * Hook for deleting the file
+     * TBD: determine if this method should be abstract???
+     * @return bool   true on success, false on error
+     */
+    function delete() {
+        //TBD: do nothing
+        return true;
+    }
+
+    /**
      * Specifies the name of the current open file
      *
      * @return string The file name, not including the full path

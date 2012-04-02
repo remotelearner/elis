@@ -18,7 +18,10 @@ $tag = html_writer::tag('a', $displaystring, $attributes);
 $settings->add(new admin_setting_heading('rlipexport_version1_profilefields', $headerstring, $tag));
 
 // Export filename settings
-// TBD: default filename requires full path!!!
+$settings->add(new admin_setting_configtext('rlipexport_version1/export_path',
+                                            get_string('export_path', 'rlipexport_version1'),
+                                            get_string('config_export_path', 'rlipexport_version1'), '/rlip/rlipexport_version1'));
+
 $settings->add(new admin_setting_configtext('rlipexport_version1/export_file',
                                             get_string('export_file', 'rlipexport_version1'),
                                             get_string('config_export_file', 'rlipexport_version1'), 'export_version1.csv'));
@@ -29,7 +32,7 @@ $settings->add(new admin_setting_configcheckbox('rlipexport_version1/export_file
 // Log file location
 $settings->add(new admin_setting_configtext('rlipexport_version1/logfilelocation',
                                             get_string('logfilelocation', 'rlipexport_version1'),
-                                            get_string('configlogfilelocation', 'rlipexport_version1'), ''));
+                                            get_string('configlogfilelocation', 'rlipexport_version1'), $CFG->dataroot .'/rlip/logs/rlipexport_version1/export.log'));
 
 /**
  * Time period settings 

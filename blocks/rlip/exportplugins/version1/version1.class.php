@@ -295,4 +295,31 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         $this->recordset = null;
     }
 
+    /**
+     * Hook for performing any final actions depending on export result
+     * @param   bool  $result   The state of the export, true => success
+     * @return  mixed           State info on failure or null for success.
+     */
+    function finish($result) {
+        $obj = null;
+        if ($result == true) {
+            // Export successfull, move temp. file (if exists) to export path
+            $tempfile = $this->fileplugin->get_filename();
+            if (file_exists($tempfile)) {
+                $exportbase = basename($tempfile);
+                $exportpath = get_config($this->plugin, 'export_path');
+                $exportpath = rtrim($exportpath, DIRECTORY_SEPARATOR);
+                $outfile = $exportpath . DIRECTORY_SEPARATOR . $exportbase;
+                if (!@rename($tempfile, $outfile)) {
+                    error_log("/blocks/rlip/exportplugins/version1/version1.class.php::finish() - Error renaming: '{$tempfile}' to '{$outfile}'");
+                }
+            }
+        } else {
+            $obj = new stdClass;
+            $obj->result = $result;
+            // no other state info to save for export
+        }
+        return $obj;
+    }
+
 }

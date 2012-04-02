@@ -271,6 +271,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
                      'log' => 'moodle',
+                     'message'            => 'moodle',
+                     'message_read'       => 'moodle',
+                     'message_working'    => 'moodle',
                      'cohort_members' => 'moodle',
                      'user_preferences' => 'moodle',
                      'user_info_data' => 'moodle',
@@ -364,17 +367,22 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         //fetch log line
         $pointer = fopen($filename, 'r');
-        $line = fgets($pointer);
-        fclose($pointer);
 
-        if ($line == false) {
-            //no line found
-            $this->assertEquals(0, 1);
+        $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
+
+        while (!feof($pointer)) {
+            $error = fgets($pointer);
+            if (!empty($error)) { // could be an empty new line
+                if (is_array($expected_error)) {
+                    $actual_error[] = substr($error, $prefix_length);
+                } else {
+                    $actual_error = substr($error, $prefix_length);
+                }
+            }
         }
 
-        //data validation
-        $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
-        $actual_error = substr($line, $prefix_length);
+        fclose($pointer);
+
         $this->assertEquals($expected_error, $actual_error);
     }
 
@@ -3886,6 +3894,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('user', dirname(__FILE__).'/usertable.csv');
+        $dataset->addTable('user_info_field', dirname(__FILE__).'/user_info_field.csv');
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
@@ -4579,4 +4588,44 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $actual_error = substr($line, $prefix_length);
         $this->assertEquals($expected_error, $actual_error);
     }
+
+    public function testUserProfileFields() {
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'city' => 'rlipcity',
+                      'country' => 'CA',
+                      'profile_field_user_profile_field_1' => 'my user profile field value',
+                      'profile_field_invalid_user_profile_field_1' => 'my user profile field value',
+                      'profile_field_user_profile_field_2' => 'my user profile field value',
+                      'profile_field_invalid_user_profile_field_2' => 'my user profile field value',
+                      );
+
+        $expected_error = array();
+        $expected_error[] = "[user.csv line 1] Import file contains the following invalid user profile field(s): invalid_user_profile_field_1, invalid_user_profile_field_2\n";
+        $expected_error[] = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" successfully created.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+   public function testCourseThemes() {
+        set_config('allowcoursethemes', 0);
+        $data = array('action' => 'create',
+                      'shortname' => 'shortname',
+                      'fullname' => 'fullname',
+                      'theme' => 'splash',
+                      'category' => 'category');
+        $expected_error = "[course.csv line 2] Course themes are currently disabled on this site.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        set_config('allowcoursethemes', 1);
+        $data['theme'] = 'invalidtheme';
+        $expected_error = "[course.csv line 2] theme value of \"invalidtheme\" is not a valid theme.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
 }

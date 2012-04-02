@@ -89,7 +89,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     static $available_fields_course = array('shortname', 'fullname', 'idnumber', 'summary',
                                             'format', 'numsections', 'startdate', 'newsitems',
                                             'showgrades', 'showreports', 'maxbytes', 'guest',
-                                            'password', 'visible', 'lang', 'category', 'link');
+                                            'password', 'visible', 'lang', 'category', 'link',
+                                            'theme');
     static $available_fields_enrolment = array('username', 'email', 'idnumber', 'context',
                                                'instance', 'role');
 
@@ -99,7 +100,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @param string $entity The type of entity
      * @param array $header The header record
      */
-    function header_read_hook($entity, $header) {
+    function header_read_hook($entity, $header, $filename) {
         global $DB;
 
         if ($entity !== 'user') {
@@ -107,12 +108,23 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         $this->fields = array();
+        $shortnames = array();
+        $errors = false;
 
         foreach ($header as $column) {
             if (strpos($column, 'profile_field_') === 0) {
                 $shortname = substr($column, strlen('profile_field_'));
-                $this->fields[$shortname] = $DB->get_record('user_info_field', array('shortname' => $shortname));
+                if ($result = $DB->get_record('user_info_field', array('shortname' => $shortname))) {
+                    $this->fields[$shortname] = $result;
+                } else {
+                    $shortnames[] = "${shortname}";
+                    $errors = true;
+                }
             }
+        }
+
+        if ($errors) {
+            $this->fslogger->log("[{$filename} line {$this->linenumber}] Import file contains the following invalid user profile field(s): " . implode(', ', $shortnames));
         }
     }
 
@@ -1124,6 +1136,21 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     function validate_core_course_data($action, $record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //make sure theme can only be set if feature is enabled
+        if (isset($record->theme)) {
+             if (empty($CFG->allowcoursethemes)) {
+               $this->process_error("[$filename line $this->linenumber] Course themes are currently disabled on this site.");
+               return false;
+           }
+        }
+
+        //make sure theme refers to a valid theme
+        $themes = get_list_of_themes();
+        if (!$this->validate_fixed_list($record, 'theme', array_keys($themes))) {
+            $this->process_error("[$filename line $this->linenumber] theme value of \"{$record->theme}\" is not a valid theme.");
+            return false;
+        }
 
         //make sure format refers to a valid course format
         if (isset($record->format)) {

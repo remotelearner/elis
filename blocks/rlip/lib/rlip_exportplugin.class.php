@@ -37,9 +37,9 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
     //type of import, true if manual
     var $manual = false;
 
-	//methods to be implemented in specific export
+    //methods to be implemented in specific export
 
-	/**
+    /**
      * Hook for performing any initialization that should
      * be done at the beginning of the export
      *
@@ -48,7 +48,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      * @param int $lastruntime     The last time the export was run
      *                             (required for incremental scheduled export)
      */
-	abstract function init($targetstarttime = 0, $lastruntime = 0);
+    abstract function init($targetstarttime = 0, $lastruntime = 0);
 
     /**
      * Hook for specifiying whether more data remains to be exported
@@ -56,27 +56,37 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      *
      * @return boolean true if there is more data, otherwise false
      */
-	abstract function has_next();
+    abstract function has_next();
 
-	/**
-	 * Hook for exporting the next data record in-place
-	 *
-	 * @return array The next record to be exported
-	 */
-	abstract function next();
+    /**
+     * Hook for exporting the next data record in-place
+     *
+     * @return array The next record to be exported
+     */
+    abstract function next();
 
     /**
      * Hook for performing any cleanup that should
      * be done at the end of the export
      */
-	abstract function close();
+    abstract function close();
 
-	/**
-	 * Default export plugin constructor
-	 *
-	 * @param object $fileplugin the file plugin used for output
+    /**
+     * Hook for performing any final actions depending on export result
+     * @param   bool  $result   The state of the export, true => success
+     * @return  mixed           State info on failure, or null for success.
+     */
+    function finish($result) {
+        // default no actions, overload in derived classes as needed.
+        return null;
+    }
+
+    /**
+     * Default export plugin constructor
+     *
+     * @param object $fileplugin the file plugin used for output
      * @param boolean $manual  Set to true if a manual run
-	 */
+     */
     function __construct($fileplugin, $manual = false) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
@@ -97,11 +107,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
             $this->fslogger = rlip_fslogger_factory::factory($fileplugin, $this->manual);
         }
 
-        //indicate to the databaes logger which plugin we're using
-        $class = get_class($this);
-        //convert export_plugin_ prefix to rlipexport_
-        $plugin = 'rlipexport_'.substr($class, strlen('rlip_exportplugin_'));
-        $this->dblogger->set_plugin($plugin);
+        $this->dblogger->set_plugin($this->plugin);
     }
 
     /**
@@ -145,13 +151,9 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 
         //flush db log record
         $this->dblogger->flush($this->fileplugin->get_filename());
-        $obj = null;
-        if ($result !== true) {
-            $obj = new stdClass;
-            $obj->result = $result;
-            // no other state info to save for export
-        }
-        return $obj;
+
+        //perform any final actions depending on export outcome
+        return $this->finish($result);
     }
 
     /**

@@ -1,0 +1,3 @@
+id,shortname,name,datatype,categoryid,sortorder,required,locked,visible,forceunique,signup,defaultdata,param1,param2,param3,param4,param5
+1,user_profile_field_1,user_profile_field_name_1,text,1,1,0,0,1,0,0,,20,30,0,0,
+2,user_profile_field_2,user_profile_field_name_2,text,1,1,0,0,1,0,0,,20,30,0,0,

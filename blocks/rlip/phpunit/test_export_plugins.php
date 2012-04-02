@@ -293,7 +293,9 @@ class exportPluginTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
-        return array();
+        return array('config'         => 'moodle',
+                     'config_plugins' => 'moodle'
+               );
     }
 
     /**
@@ -304,6 +306,19 @@ class exportPluginTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         return array(RLIP_LOG_TABLE => 'block_rlip');
+    }
+
+    /**
+     * Validate export file specifies RLIP_EXPORT_TEMPDIR as path
+     */
+    public function testExportFilenameInCorrectTempDir() {
+        global $CFG;
+        require_once($CFG->dirroot .'/blocks/rlip/lib.php');
+        $plugin = 'test_rlipexport_version1';
+        set_config('export_file', "/tmp/{$plugin}/{$plugin}.csv", $plugin);
+        $export_filename = rlip_get_export_filename($plugin, 99);
+        $target_path = $CFG->dataroot . sprintf(RLIP_EXPORT_TEMPDIR, $plugin);
+        $this->assertEquals($target_path, dirname($export_filename) .'/');
     }
 
     /**

@@ -35,6 +35,10 @@ define('RLIP_LOGS_PER_PAGE', 20);
 define('RLIP_LOG_TABLE', 'block_rlip_summary_logs');
 define('RLIP_SCHEDULE_TABLE', 'block_rlip_schedule');
 
+//constants for temporary import & export directories (wildcard for plugin)
+define('RLIP_EXPORT_TEMPDIR', '/rlip/%s/temp/');
+define('RLIP_IMPORT_TEMPDIR', '/rlip/%s/temp/');
+
 require_once($CFG->dirroot.'/lib/adminlib.php');
 
 /**
@@ -473,8 +477,18 @@ function rlip_schedule_delete_job($id) {
     return true;
 }
 
+/**
+ * Get Export filename with optional timestamp in RLIP_EXPORT_TEMPDIR location
+ *
+ * @param  string         $plugin The RLIP plugin
+ * @param  int or string  $tz     The exporting user's timezone
+ * @uses   $CFG
+ * @return string         The export filename with temp path.
+ */
 function rlip_get_export_filename($plugin, $tz = 99) {
-    $export = get_config($plugin, 'export_file');
+    global $CFG;
+    $tempexportdir = $CFG->dataroot . sprintf(RLIP_EXPORT_TEMPDIR, $plugin);
+    $export = basename(get_config($plugin, 'export_file'));
     $timestamp = get_config($plugin, 'export_file_timestamp');
     if (!empty($timestamp)) {
         $timestamp = userdate(time(), get_string('export_file_timestamp',
@@ -486,7 +500,10 @@ function rlip_get_export_filename($plugin, $tz = 99) {
             $export .= "_{$timestamp}.csv";
         }
     }
-    return $export;
+    if (!file_exists($tempexportdir) && !mkdir($tempexportdir, 0777, true)) {
+        error_log("/blocks/rlip/lib.php::rlip_get_export_filename('{$plugin}', {$tz}) - Error creating directory: '{$tempexportdir}'");
+    }
+    return $tempexportdir . $export;
 }
 
 /**
@@ -500,6 +517,12 @@ function rlip_get_export_filename($plugin, $tz = 99) {
  */
 function run_ipjob($taskname, $maxruntime = 0) {
     global $CFG, $DB;
+
+    $disabledincron = get_config('rlip', 'disableincron');
+    if (!empty($disabledincron)) {
+        mtrace("run_ipjob({$taskname}): Internal IP cron disabled by settings - aborting job!");
+        return false; // TBD
+    }
 
     if (empty($maxruntme)) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;
@@ -536,7 +559,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
         $timenow = time();
         do {
             $nextruntime += (int)rlip_schedule_period_minutes($data['period']) * 60;
-        } while ($nextruntime <= $timenow);
+        } while ($nextruntime <= ($timenow + 59));
         $task->nextruntime = $nextruntime;
         $DB->update_record('elis_scheduled_tasks', $task);
 
@@ -548,33 +571,47 @@ function run_ipjob($taskname, $maxruntime = 0) {
         //todo: return false?
     }
 
-    $disabledincron = get_config('rlip', 'disableincron');
-    if (!empty($disabledincron)) {
-        mtrace("run_ipjob({$taskname}): IP cron disabled by settings - aborting!");
-        return false;
-    }
-
     // Perform the IP scheduled action
     switch ($data['type']) { // TBD
         case 'rlipimport':
             $baseinstance = rlip_dataplugin_factory::factory($plugin);
             $entity_types = $baseinstance->get_import_entities();
             $files = array();
-            $path = get_config($plugin, 'schedule_files_path');
-            if (strrpos($path, '/') !== strlen($path) - 1) {
-                $path .= '/';
+            $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
+            $path = $dataroot . DIRECTORY_SEPARATOR . get_config($plugin, 'schedule_files_path');
+            $path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            $temppath = sprintf($CFG->dataroot . RLIP_IMPORT_TEMPDIR, $plugin);
+            if (!file_exists($temppath) && !mkdir($temppath, 0777, true)) {
+                mtrace("run_ipjob({$taskname}): Error creating directory '{$temppath}' ... using '{$path}'");
+                //TBD*** just use main directory???
+                $temppath = $path;
             }
             foreach ($entity_types as $entity) {
-                $files[$entity] = $path . get_config($plugin, $entity .'_schedule_file');
+                $entity_filename = get_config($plugin, $entity .'_schedule_file');
+                if (empty($entity_filename)) {
+                    // TBD: need dummy so we're not testing directories!
+                    $entity_filename = $entity .'.csv';
+                }
+                //echo "\n get_config('{$plugin}', '{$entity}_schedule_file') => {$entity_filename}";
+                $files[$entity] = $temppath . $entity_filename;
+                if ($state == null && $path !== $temppath &&
+                    file_exists($path . $entity_filename) &&
+                    !@rename($path . $entity_filename,
+                             $temppath . $entity_filename)) {
+                    mtrace("run_ipjob({$taskname}): Error moving '".
+                           $path . $entity_filename . "' to '".
+                           $temppath . $entity_filename . "'");
+                }
             }
             $importprovider = new rlip_importprovider_csv($entity_types, $files);
             $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);
             break;
 
         case 'rlipexport':
-            $user = get_complete_user_data('id', $ipjob->userid);
+            $tz = $DB->get_field('user', 'timezone',
+                                 array('id' => $ipjob->userid));
             $export = rlip_get_export_filename($plugin,
-                          empty($user) ? 99 : $user->timezone);
+                          ($tz === false) ? 99 : $tz);
             $fileplugin = rlip_fileplugin_factory::factory($export, NULL, false);
             $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin);
             break;

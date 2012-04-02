@@ -504,7 +504,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //header read, so increment line number
         $this->linenumber++;
 
-        $this->header_read_hook($entity, $header);
+        $this->header_read_hook($entity, $header, $fileplugin->get_filename());
 
         $starttime = time();
         //main processing loop
@@ -548,6 +548,11 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //flush db log record
         $filename = $fileplugin->get_filename();
         $this->dblogger->flush($filename);
+
+        if (!$this->manual) {
+            // delete processed import file - TBD: check return
+            $fileplugin->delete();
+        }
 
         return null;
     }
@@ -596,7 +601,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                 return $result;
             }
             if ($maxruntime) {
-                $usedtime = $starttime - time();
+                $usedtime = time() - $starttime;
                 if ($usedtime  < $maxruntime) {
                     $maxruntime -= $usedtime;
                 } else if (($nextentity = next($entities)) !== false) {
