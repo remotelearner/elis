@@ -291,15 +291,14 @@ function pm_synchronize_moodle_class_grades() {
             $relatedcontextsstring = get_related_contexts_string($context);
             $sql = "SELECT DISTINCT u.id AS muid, u.username, cu.id AS cmid, stu.*
                       FROM {user} u
-                INNER JOIN {role_assignments} ra ON u.id = ra.userid
-                INNER JOIN {".user::TABLE."} cu ON cu.idnumber = u.idnumber
-                INNER JOIN {".student::TABLE."} stu on stu.userid = cu.id AND stu.classid = :classid
-                     WHERE ra.roleid in (:roles)
+                      JOIN {role_assignments} ra ON u.id = ra.userid
+                LEFT JOIN {".user::TABLE."} cu ON cu.idnumber = u.idnumber
+                LEFT JOIN {".student::TABLE."} stu on stu.userid = cu.id AND stu.classid = {$pmclass->id}
+                     WHERE ra.roleid in ({$CFG->gradebookroles})
                        AND ra.contextid {$relatedcontextsstring}
                   ORDER BY muid ASC";
 
-            $causers = $DB->get_recordset_sql($sql, array('classid' => $pmclass->id,
-                                                          'roles' => $CFG->gradebookroles));
+            $causers = $DB->get_recordset_sql($sql);
 
             if (empty($causers)) {
                 // nothing to see here, move on
@@ -807,7 +806,9 @@ function pm_moodle_user_to_pm($mu) {
     require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
     foreach ($fields as $field) {
         $field = new field($field);
-        if (isset($field->owners['moodle_profile']) && $field->owners['moodle_profile']->exclude == pm_moodle_profile::sync_from_moodle) {
+        if (isset($field->owners['moodle_profile']) &&
+            $field->owners['moodle_profile']->exclude == pm_moodle_profile::sync_from_moodle
+            && isset($mu->{"profile_field_{$field->shortname}"})) {
             $fieldname = "field_{$field->shortname}";
             $cu->$fieldname = $mu->{"profile_field_{$field->shortname}"};
         }
@@ -895,12 +896,12 @@ function pm_update_enrolment_status() {
 
 
     /// Get all classes with unlocked enrolments.
-    $select = 'SELECT cce.classid as classid, COUNT(cce.userid) as numusers ';
-    $from   = 'FROM {'.student::TABLE.'} cce ';
-    $where  = 'WHERE cce.locked = 0 ';
-    $group  = 'GROUP BY classid ';
-    $order  = 'ORDER BY classid ASC ';
-    $sql    = $select . $from . $where . $group . $order;
+    $sql = 'SELECT cce.classid as classid, COUNT(cce.userid) as numusers
+            FROM {'.student::TABLE.'} cce
+            INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = cce.classid
+            WHERE cce.locked = 0
+            GROUP BY cce.classid
+            ORDER BY cce.classid ASC';
 
     $rs = $DB->get_recordset_sql($sql);
     foreach ($rs as $rec) {
@@ -1723,10 +1724,11 @@ function pm_migrate_certificate_files() {
     global $CFG;
     $result = true;
     // Migrate directories: olddir => newdir
-    $dirs = array('1/curriculum/pix/certificate/borders'
-                  => 'elis/program/pix/certificate/borders',
-                  '1/curriculum/pix/certificate/seals'
-                  => 'elis/program/pix/certificate/seals');
+    $dirs = array(
+        '1/curriculum/pix/certificate/borders'  => 'elis/program/pix/certificate/borders',
+        '1/curriculum/pix/certificate/seals'    => 'elis/program/pix/certificate/seals',
+        'curriculum/pix/certificates/templates' => 'elis/program/pix/certificates/templates'
+    );
     foreach ($dirs as $olddir => $newdir) {
         $oldpath = $CFG->dataroot .'/'. $olddir;
         $newpath = $CFG->dataroot .'/'. $newdir;
@@ -1777,4 +1779,23 @@ function pm_process_user_enrolment_data() {
     }
 
     return $users;
+}
+
+/**
+ * Given a float grade value, return a representation of the number meant for UI display
+ *
+ * An integer value will be returned without any decimals included and a true floating point value
+ * will be reduced to only displaying two decimal digits without any rounding.
+ *
+ * @param float $grade The floating point grade value
+ * @return string The grade value formatted for display
+ */
+function pm_display_grade($grade) {
+    if (preg_match('/([0-9]+)([\.[0-9]+|\.0+])/', $grade, $matches)) {
+        if (count($matches) == 3) {
+            return ($matches[2] == 0 ? $matches[1] : sprintf("%0.2f", $matches[0]));
+        }
+    }
+
+    return $grade; // This probably isn't a float value
 }

@@ -44,8 +44,6 @@ class pmclass extends data_object_with_custom_fields {
 
     var $verbose_name = 'class';
     var $autocreate;
-    var $startdate;
-    var $enddate;
     var $moodlecourseid;
     var $track;
     var $oldmax;
@@ -335,6 +333,10 @@ class pmclass extends data_object_with_custom_fields {
      * records where applicable based on class grade and required completion elements
      */
     function update_enrolment_status() {
+        //information about which course this belongs to may not have been
+        //loaded due to lazy-loading        
+        $this->load();
+
 //        if (isset($this->course) && (get_class($this->course) == 'course')) {
         if (isset($this->courseid)) {
             $course = new course($this->courseid);
@@ -1005,7 +1007,8 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     }
 
     if ($id) {
-        $where[] = "(crs.id = $id)";
+        $where[] = is_array($id) ? '(crs.id IN ('. implode(', ', $id) .'))'
+                                 : "(crs.id = $id)";
     }
 
     if ($onlyopen) {

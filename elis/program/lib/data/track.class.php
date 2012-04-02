@@ -1139,12 +1139,12 @@ function track_assignment_count_records($trackid, $namesearch = '', $alpha = '',
     if (!empty($namesearch)) {
         $namesearch = trim($namesearch);
         $where .= (!empty($where) ? ' AND ' : '') . $NAMESEARCH_LIKE;
-        $params['search_namesearch'] = '%$namesearch%';
+        $params['search_namesearch'] = "%{$namesearch}%";
     }
 
     if ($alpha) {
         $where .= (!empty($where) ? ' AND ' : '') . $ALPHA_LIKE;
-        $params['search_alpha'] = '$alpha%';
+        $params['search_alpha'] = "{$alpha}%";
     }
 
     if (!empty($extrafilters['contexts'])) {
