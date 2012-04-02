@@ -30,8 +30,10 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
+require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+//require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
 /**
  * File plugin that just stores read records in memory
@@ -114,7 +116,7 @@ class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
  * Class for testing export database logging for the "version 1" plugin
  * @author brendan
  */
-class version1ExportDatabaseLoggingTest extends elis_database_test {
+class version1ExportDatabaseLoggingTest extends rlip_test {
     /**
      * Return the list of tables that should be overlayed.
      */
@@ -205,9 +207,16 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/version1.class.php');
 
+        //set the log file location to the dataroot
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipexport_version1');
+
         //plugin for file IO
         $fileplugin = new rlip_fileplugin_memoryexport($writedelay);
         $fileplugin->open(RLIP_FILE_WRITE);
+
+        //cleanup log files first
+        self::cleanup_log_files();
 
     	//our specific export
         $exportplugin = new rlip_exportplugin_version1($fileplugin);

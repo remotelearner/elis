@@ -108,7 +108,6 @@ class rlip_dataplugin_factory {
 
         //load class definition
         require_once($path);
-
         //obtain the plugin instance
         if ($plugintype == 'rlipimport') {
             //import
@@ -117,5 +116,6 @@ class rlip_dataplugin_factory {
             //export
             return new $classname($fileplugin, $manual);
         }
+
     }
 }

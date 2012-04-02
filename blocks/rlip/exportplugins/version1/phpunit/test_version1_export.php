@@ -30,9 +30,10 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
+require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-require_once($CFG->dirroot . '/elis/core/lib/setup.php');
-require_once(elis::lib('testlib.php'));
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+//require_once(elis::lib('testlib.php'));
 
 /**
  * File plugin that just stores read records in memory
@@ -170,7 +171,7 @@ class rlip_fileplugin_openclose extends rlip_fileplugin_base {
 /**
  * Class for version 1 export correctness
  */
-class version1ExportTest extends elis_database_test {
+class version1ExportTest extends rlip_test {
     protected $backupGlobalsBlacklist = array('DB');
 
     /**

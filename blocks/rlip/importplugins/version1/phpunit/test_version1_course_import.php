@@ -33,7 +33,7 @@ require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
-require_once(elis::lib('testlib.php'));
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
 /**
  * Class that fetches import files for the course import
@@ -153,7 +153,7 @@ class overlay_course_database extends overlay_database {
 /**
  * Class for version 1 course import correctness
  */
-class version1CourseImportTest extends elis_database_test {
+class version1CourseImportTest extends rlip_test {
     protected $backupGlobalsBlacklist = array('DB', 'USER');
 
     /**
@@ -268,6 +268,8 @@ class version1CourseImportTest extends elis_database_test {
         set_config('defaultenrol', 1, 'enrol_guest');
         set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
         set_config('enrol_plugins_enabled', 'manual,guest');
+
+        self::$existing_logfiles = static::get_logfilelocation_files();
     }
 
     /**
@@ -286,6 +288,10 @@ class version1CourseImportTest extends elis_database_test {
     }
 
     protected function setUp() {
+        global $CFG;
+        //make sure that the logfile location is set
+        set_config('logfilelocation', $CFG->dataroot, 'rlipimport_version1');
+        set_config('logfilelocation', $CFG->dataroot, 'rlipexport_version1');
     }
 
     /**

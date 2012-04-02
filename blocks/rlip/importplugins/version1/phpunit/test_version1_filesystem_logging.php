@@ -33,7 +33,8 @@ require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
-require_once(elis::lib('testlib.php'));
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 
@@ -219,7 +220,8 @@ class overlay_course_database_fs extends overlay_database {
     */
 }
 
-class version1FilesystemLoggingTest extends elis_database_test {
+class version1FilesystemLoggingTest extends rlip_test {
+
     /**
      * Return the list of tables that should be overlayed.
      */
@@ -254,7 +256,13 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
+<<<<<<< Updated upstream
                      RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+=======
+                     'block_rlip_version1_fieldmap' => 'rlipimport_version1',
+                     'ip_schedule' => 'block_rlip',
+                     'elis_scheduled_tasks' => 'elis_core',
+>>>>>>> Stashed changes
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle');
     }
@@ -329,6 +337,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         global $DB;
         self::$origdb = $DB;
         self::$overlaydb = new overlay_course_database_fs($DB, static::get_overlay_tables(), static::get_ignored_tables());
+        parent::$existing_logfiles = static::get_logfilelocation_files();
         //self::$overlaydb = new overlay_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
     }
 
@@ -340,26 +349,40 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * @param user $entitytype One of 'user', 'course', 'enrolment'
      */
     protected function assert_data_produces_error($data, $expected_error, $entitytype) {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
 
-        //cleanup from previous run
-        $filename = $CFG->dataroot.'/rliptestfile.log';
-        if (file_exists($filename)) {
-            unlink($filename);
-        }
-
-        //set the log file name to a fixed value
-        set_config('logfilelocation', $filename, 'rlipimport_version1');
+        //set the log file location
+        $filepath = $CFG->dataroot;
+        self::cleanup_log_files();
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //run the import
         $classname = "rlip_importprovider_fslog{$entitytype}";
         $provider = new $classname($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, true);
+        //suppress output for now
+        ob_start();
         $instance->run();
+        ob_end_clean();
 
         //validate that a log file was created
+        $manual = true;
+        //get first summary record - at times, multiple summary records are created and this handles that problem
+        $records = $DB->get_records('block_rlip_summary_log', null, 'starttime DESC');
+        foreach ($records as $record) {
+            $starttime = $record->starttime;
+            break;
+        }
+
+        //get logfile name
+        $plugin_type = 'import';
+        $plugin = 'rlipimport_version1';
+        $format = get_string('logfile_timestamp','block_rlip');
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
+        //get most recent logfile
+        $filename = self::get_current_logfile($testfilename);
         $this->assertTrue(file_exists($filename));
 
         //fetch log line
@@ -500,14 +523,13 @@ class version1FilesystemLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
 
-        //set the log file name to a fixed value
-        $filename = $CFG->dataroot.'/rliptestfile.log';
-        set_config('logfilelocation', $filename, 'rlipimport_version1');
+        //set the log file location
+        $file_path = $CFG->dataroot;
+        set_config('logfilelocation', $file_path, 'rlipimport_version1');
 
         //set up the plugin
         $provider = new rlip_importprovider_fsloguser(array());
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
-
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, true);
         //validation
         $fslogger = $instance->get_fslogger();
         $this->assertEquals($fslogger instanceof rlip_fslogger, true);
@@ -917,6 +939,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         //actually create using update
+        self::cleanup_log_files();
         $data = array('action' => 'update',
                       'username' => 'rlipusername',
                       'password' => 'Rlippassword!0',
@@ -926,8 +949,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'rlipcity',
                       'country' => 'CA');
         $provider = new rlip_importprovider_fsloguser($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, true);
+        ob_start();
         $instance->run();
+        ob_end_clean();
 
         unset($data['action']);
         $data['mnethostid'] = $CFG->mnet_localhost_id;
@@ -940,12 +965,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         //actually update using create
+        self::cleanup_log_files();
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
                       'firstname' => 'updatedrlipfirstname');
         $provider = new rlip_importprovider_fsloguser($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, true);
+        ob_start();
         $instance->run();
+        ob_end_clean();
 
         $data = array('username' => 'rlipusername',
                       'mnethostid' => $CFG->mnet_localhost_id,
@@ -975,13 +1003,16 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         //actually create using update
+        self::cleanup_log_files();
         $data = array('action' => 'update',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory');
         $provider = new rlip_importprovider_fslogcourse($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, true);
+        ob_start();
         $instance->run();
+        ob_end_clean();
 
         unset($data['action']);
         $data['category'] = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
@@ -993,12 +1024,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         //actually update using create
+        self::cleanup_log_files();
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'updatedrlipfullname');
         $provider = new rlip_importprovider_fslogcourse($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, true);
+        ob_start();
         $instance->run();
+        ob_end_clean();
 
         $data = array('shortname' => 'rlipshortname',
                       'fullname' => 'updatedrlipfullname',
@@ -4177,7 +4211,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'format' => 'bogus');
         $expected_error = "[course.csv line 2] format value of \"bogus\" does not refer to a valid course format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4192,7 +4226,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'numsections' => '11');
         $expected_error = "[course.csv line 2] numsections value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4205,7 +4239,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'startdate' => 'bogus');
         $expected_error = "[course.csv line 2] startdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4218,7 +4252,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'newsitems' => '11');
         $expected_error = "[course.csv line 2] newsitems value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4231,7 +4265,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'showgrades' => '2');
         $expected_error = "[course.csv line 2] showgrades value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4244,7 +4278,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'showreports' => '2');
         $expected_error = "[course.csv line 2] showreports value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4257,7 +4291,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'maxbytes' => 'bogus');
         $expected_error = "[course.csv line 2] maxbytes value of \"bogus\" is not one of the available options.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4272,14 +4306,14 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'guest' => '1');
         $expected_error = "[course.csv line 2] guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         set_config('enrol_plugins_enabled', 'guest');
         $data['guest'] = '2';
-        $expected_error = "[course.csv line 2] guest value of \"2\" is not one of the available options (0, 1).\n";        
+        $expected_error = "[course.csv line 2] guest value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4290,7 +4324,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'visible' => '2');
         $expected_error = "[course.csv line 2] visible value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4303,7 +4337,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'lang' => 'bogus');
         $expected_error = "[course.csv line 2] lang value of \"bogus\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4463,7 +4497,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'guest' => 'invalidguest'
                      );
         $expected_error = "[course.csv line 2] guest value of \"invalidguest\" is not one of the available options (0, 1).\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');        
+        $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     public function testVersion1ImportLogsUpdateVisible() {
@@ -4543,6 +4577,200 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      );
         $expected_error = "[course.csv line 2] guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate that a manual import log file generates the proper name
+     */
+    function testVersionImportLogName() {
+        global $CFG;
+
+        //pass manual and then scheduled and a timestamp and verify that the name is correct
+        $filepath = $CFG->dataroot;
+        $plugin_type = 'import';
+        $plugin = 'rlipimport_version1';
+        $manual = true;
+        $timestamp = time();
+        $format = get_string('logfile_timestamp','block_rlip');
+
+        $filename = rlip_log_file_name($plugin_type, $plugin, $filepath, $manual, $timestamp);
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($timestamp, $format).'.log';
+        //get most recent logfile +1 as that is what is returned by rlip_log_file_name
+        $testfilename = self::get_next_logfile($testfilename);
+
+        $this->assertEquals($filename, $testfilename);
+    }
+
+    /**
+     * Validate that a manual import log file generates the correct log file
+     */
+    function testVersionImportLogManual() {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+
+        //set the log file location to the dataroot
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
+
+        $USER->id = 9999;
+        self::cleanup_log_files();
+
+        $data = array('entity' => 'user',
+                      'action' => 'create',
+                      'username' => 'rlipusername',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'city' => 'rlipcity',
+                      'country' => 'CA');
+
+        $provider = new rlip_importprovider_fsloguser($data);
+        $manual = true;
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
+        //for now suppress output generated
+        ob_start();
+        $instance->run();
+        ob_end_clean();
+
+        //create filename to check for existence
+        $plugin_type = 'import';
+        $plugin = 'rlipimport_version1';
+        $manual = true;
+        $format = get_string('logfile_timestamp','block_rlip');
+        $starttime = $DB->get_field('block_rlip_summary_log','starttime',array('id'=>'1'));
+//        $testfilename = rlip_log_file_name('import', 'rlipimport_version1', $filepath, $manual, $starttime);
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
+        $testfilename = self::get_current_logfile($testfilename);
+//echo "\n 1 looking for filename: ".$testfilename;
+
+        $exists = file_exists($testfilename);
+        $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that a scheduled import log file exists with the proper name
+     */
+    function testVersionImportLogScheduled() {
+        global $CFG, $DB, $USER;
+//        require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
+//        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //set the log file location to the dataroot
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
+
+        //store it at the system context
+//        $context = get_context_instance(CONTEXT_SYSTEM);
+
+        //import file path and name
+        $file_path = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/';
+        $file_name = 'userscheduledimport.csv';
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipimport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipimport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //lower bound on starttime
+        $starttime = time();
+
+        //change the next runtime to a known value in the past
+        $task = new stdClass;
+        $task->id = $taskid;
+        $task->nextruntime = $starttime+86400; //tomorrow?
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        $job = new stdClass;
+        $job->id = $DB->get_field('ip_schedule', 'id', array('plugin' => 'rlipimport_version1'));
+        $job->nextruntime = $starttime+86400; //tomorrow?
+        $DB->update_record('ip_schedule', $job);
+
+        //set up config for plugin so the scheduler knows about our csv file
+        set_config('schedule_files_path', $file_path, 'rlipimport_version1');
+        set_config('user_schedule_file',$file_name, 'rlipimport_version1');
+        set_config('type', 'user', 'rlipimport_version1');
+
+        //run the import
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname);
+
+        //get timestamp from summary log
+        $records = $DB->get_records('block_rlip_summary_log', array('userid' => $USER->id),'starttime DESC');
+        $starttime = $records[1]->starttime;
+        $format = get_string('logfile_timestamp','block_rlip');
+
+        $plugin_type = 'import';
+        $plugin = 'rlipimport_version1';
+        $manual = true;
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.userdate($starttime, $format).'.log';
+//        $testfilename = rlip_log_file_name($plugin_type, $plugin, $filepath, $manual, $starttime);
+        $testfilename = self::get_current_logfile($testfilename);
+//echo "\n 2 looking for filename: ".$testfilename;
+
+        $exists = file_exists($testfilename);
+        $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Validate that a manual import log file generates the correct log file
+     */
+    function testVersionImportLogSequentialLogFiles() {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+
+        //set the log file location to the dataroot
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
+
+        $USER->id = 9999;
+        self::cleanup_log_files();
+
+        $data = array('entity' => 'user',
+                      'action' => 'create',
+                      'username' => 'rlipusername',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'city' => 'rlipcity',
+                      'country' => 'CA');
+
+        $provider = new rlip_importprovider_fsloguser($data);
+        $manual = true;
+
+        //loop through w/o deleting logs and see what happens
+        for($i=0;$i<=15;$i++) {
+            $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
+            //for now suppress output generated
+            ob_start();
+            $instance->run();
+            ob_end_clean();
+
+            //create filename to check for existence
+            $plugin_type = 'import';
+            $plugin = 'rlipimport_version1';
+            $manual = true;
+            $format = get_string('logfile_timestamp','block_rlip');
+            //get most recent record
+            $records = $DB->get_records('block_rlip_summary_log', null, 'starttime DESC');
+            foreach ($records as $record) {
+                $starttime = $record->starttime;
+                break;
+            }
+
+            //get base filename
+            $basefilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
+            //get calculated filename
+            $testfilename = self::get_current_logfile($basefilename);
+
+            $exists = file_exists($testfilename);
+            $this->assertEquals($exists, true);
+
+        }
+        $this->assertEquals($i, 16);
     }
 
     public function testUserProfileFields() {

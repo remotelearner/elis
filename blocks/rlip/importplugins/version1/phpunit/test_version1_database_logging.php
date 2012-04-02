@@ -1087,8 +1087,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //set the log file name to a fixed value
-        $filename = $CFG->dataroot.'/rliptestfile.log';
-        set_config('logfilelocation', $filename, 'rlipimport_version1');
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
         $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile.csv';
@@ -1113,8 +1113,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         global $CFG, $DB;
 
         //set the log file name to a fixed value
-        $filename = $CFG->dataroot.'/rliptestfile.log';
-        set_config('logfilelocation', $filename, 'rlipimport_version1');
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
         $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
@@ -1125,7 +1125,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
         $this->assertNotNull($result);
         if (!empty($result)) {
-            //print_object($result);
+//            print_object($result);
             $this->assertFalse($result->result);
             $this->assertEquals($result->entity, 'user');
             $this->assertEquals($result->filelines, 4);
@@ -1157,7 +1157,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         // log file
         set_config('logfilelocation',
-                   $CFG->dataroot .'/rlipimport_testVersion1ImportFromSavedState.log',
+                   $CFG->dataroot,
                    'rlipimport_version1');
 
         //create a scheduled job
@@ -1214,8 +1214,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
 
         //set the log file name to a fixed value
-        $filename = $CFG->dataroot.'/rliptestfile.log';
-        set_config('logfilelocation', $filename, 'rlipimport_version1');
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //store it at the system context
         $context = get_context_instance(CONTEXT_SYSTEM);
@@ -1411,7 +1411,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $exists = $this->log_with_message_exists($message);
         $this->assertEquals($exists, true);
     }
-/**
+
+    /**
      * Validate that database logging works as specified for scheduled import
      * tasks
      */
@@ -1421,8 +1422,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //set the log file name to a fixed value
-        $filename = $CFG->dataroot.'/rliptestfile.log';
-        set_config('logfilelocation', $filename, 'rlipimport_version1');
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //store it at the system context
         $context = get_context_instance(CONTEXT_SYSTEM);

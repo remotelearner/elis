@@ -34,7 +34,8 @@ global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
-require_once(elis::lib('testlib.php'));
+//require_once(elis::lib('testlib.php'));
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
 /**
  * Class that fetches import files for the user import

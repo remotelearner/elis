@@ -25,6 +25,7 @@
  */
 
 require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
 /**
  * Base class for a provider that instantiates a file plugin
@@ -58,14 +59,18 @@ abstract class rlip_importprovider {
      * Provides the object used to log information to the file system logfile
      *
      * @param  string $plugin  the plugin
+     * @param boolean $manual  Set to true if a manual run
      * @return object the fslogger
      */
-    function get_fslogger($plugin) {
+    function get_fslogger($plugin, $manual = false, $starttime = 0) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
 
         //set up the file-system logger
-        $filename = get_config($plugin, 'logfilelocation');
+        $filepath = get_config($plugin, 'logfilelocation');
+
+        //get filename
+        $filename = rlip_log_file_name('import', $plugin, $filepath, $manual, $starttime);
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
             return new rlip_fslogger($fileplugin);
@@ -109,7 +114,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $this->dblogger = $this->provider->get_dblogger();
             $this->dblogger->set_plugin($plugin);
             $this->manual = $manual;
-            $this->fslogger = $this->provider->get_fslogger($plugin);
+            $this->fslogger = $this->provider->get_fslogger($plugin, $manual, $this->dblogger->starttime);
         }
     }
 

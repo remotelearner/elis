@@ -44,7 +44,7 @@ class rlip_fileplugin_trackopen extends rlip_fileplugin_base {
 
     function __construct() {
     }
-    
+
     /**
 	 * Hook for opening the file
 	 *
@@ -156,7 +156,7 @@ class fsLoggerTest extends elis_database_test {
         //set up the logging object
         $fslogger = rlip_fslogger_factory::factory($fileplugin);
 
-        return array($fslogger, $filename);        
+        return array($fslogger, $filename);
     }
 
     /**
@@ -268,7 +268,7 @@ class fsLoggerTest extends elis_database_test {
         set_config('forcetimezone', -5.0);
         set_config('nofixday', 1);
 
-        //validate that day "1" is displayed as "01" when "nofixday" is enabled 
+        //validate that day "1" is displayed as "01" when "nofixday" is enabled
         $time = strtotime("1 September 2000 12:00");
         $expected_result = "Sep/01/2000";
         $converted_string = rlip_fslogger::time_display($time, 99);
@@ -465,7 +465,7 @@ class fsLoggerTest extends elis_database_test {
         $record->dst_time = '-3:00';
         $record->std_month = 11;
         $record->std_startday = 1;
-        $record->std_weekday = 0; 
+        $record->std_weekday = 0;
         $record->std_skipweeks = 0;
         $record->std_time = '-4.00';
         $DB->insert_record('timezone', $record);
@@ -528,7 +528,7 @@ class fsLoggerTest extends elis_database_test {
         $record->dst_time = '-4:00';
         $record->std_month = 4;
         $record->std_startday = 4;
-        $record->std_weekday = 8; 
+        $record->std_weekday = 8;
         $record->std_skipweeks = 0;
         $record->std_time = '-5.00';
         $DB->insert_record('timezone', $record);
@@ -591,7 +591,7 @@ class fsLoggerTest extends elis_database_test {
         $record->dst_time = '00:00';
         $record->std_month = 0;
         $record->std_startday = 0;
-        $record->std_weekday = 0; 
+        $record->std_weekday = 0;
         $record->std_skipweeks = 0;
         $record->std_time = '00.00';
         $DB->insert_record('timezone', $record);

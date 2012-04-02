@@ -58,7 +58,7 @@ class rlip_category_settingpage extends admin_settingpage implements parentable_
      * @return bool true if successful, false if not
      */
     public function add($setting, $bogus = '') {
-        //note: this is only called as is done for admin_settingpage 
+        //note: this is only called as is done for admin_settingpage
         return parent::add($setting);
     }
 }
@@ -668,6 +668,10 @@ function run_ipjob($taskname, $maxruntime = 0) {
     }
     $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
 
+    // check that last runtime was yesterday? and create zip file if so?
+
+    $DB->update_record('ip_schedule', $ipjob);
+
     return true;
 }
 
@@ -805,5 +809,79 @@ function rlip_log_table_html($table) {
 
     //obtain table html
     return html_writer::table($table);
+}
+
+/**
+ * Return the properly formatted log file name
+ * @param string $plugin_type Import or Export
+ * @param string $plugin The name of the plugin
+ * @param string $filepath The path of the log to append to the standardized filename
+ * @param boolean $manual True if this is a manual import
+ * @param string $timestamp The timestamp used for this import
+ * @param string $timeformat The format to use
+ * @param string $timezone The timezone being used
+ * @return string $logfilename The name of the log file
+ */
+function rlip_log_file_name($plugin_type, $plugin, $filepath, $manual = false, $timestamp = 0, $format = null, $timezone = 99) {
+
+    //if no timeformat is set, set it to logfile timestamp format
+    $format = empty($format) ? get_string('logfile_timestamp','block_rlip'):$format;
+    //add scheduled/manual to the logfile name
+    $scheduling = empty($manual) ? strtolower(get_string('scheduled','block_rlip')) : strtolower(get_string('manual','block_rlip'));
+    //use timestamp passed or time()
+    $timestamp  = empty($timestamp) ? time():$timestamp;
+    //check for proper filepath
+    if (strrpos($filepath, '/') !== strlen($filepath) - 1) {
+        $filepath .= '/';
+    }
+    //create filename
+    $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.userdate($timestamp, $format, $timezone).'.log';
+
+    //make sure the filename is unique
+    $count = 0;
+    $unique_filename = $filename;
+    while (file_exists($unique_filename)) {
+        $filename_prefix = explode('.',$filename);
+        $filename_part = explode('_',$filename_prefix[0]);
+        $unique_filename = $filename_prefix[0].'_'.$count.'.log';
+        $count++;
+    }
+    return $unique_filename;
+}
+
+/**
+ * Create a zip file from today's log file
+ * @param string plugin The name of IP plugin
+ *
+ */
+function rlip_zip_log_file($plugin) {
+    $logfile = get_config('logfilelocation', $filename, $plugin);
+    if ($logfile) {
+        //set archive name
+        $timestamp = userdate(time(), get_string('export_file_timestamp',
+                                                 $plugin), $tz);
+        if (($extpos = strrpos($logfile, '.')) !== false) {
+            $zipfile = substr($logfile, 0, $extpos) .
+                      "_{$timestamp}" . substr($logfile, $extpos);
+        } else {
+            $zipfile .= "_{$timestamp}.zip";
+        }
+
+        //create the archive
+        $zip = new ZipArchive();
+        if($zip->open($zipfile,$overwrite ? ZIPARCHIVE::OVERWRITE : ZIPARCHIVE::CREATE) !== true) {
+            return false;
+        }
+        //add the file
+        $zip->addFile($logfile,$logfile);
+        //debug
+        echo 'The zip archive contains ',$zip->numFiles,' files with a status of ',$zip->status;
+
+        //close the zip -- done!
+        $zip->close();
+
+        //check to make sure the file exists
+        return file_exists($zipfile);
+    }
 }
 

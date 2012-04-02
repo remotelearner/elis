@@ -34,12 +34,12 @@ require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 require_once($CFG->dirroot.'/user/profile/definelib.php');
-require_once(elis::lib('testlib.php'));
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
 /**
  * Class for validating import configuration
  */
-class version1ImportConfigTest extends elis_database_test {
+class version1ImportConfigTest extends rlip_test {
     /**
      * Return the list of tables that should be overlayed.
      */
@@ -48,6 +48,7 @@ class version1ImportConfigTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
 
         return array(RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+                     'config_plugins' => 'moodle',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle');
     }
@@ -186,7 +187,7 @@ class version1ImportConfigTest extends elis_database_test {
 
     /**
      * Validate that false is returned when obtaining available fields for an
-     * invalid entity type  
+     * invalid entity type
      */
     public function testGetAvailableFieldsReturnsFalseForInvalidEntityType() {
         //obtain data
@@ -264,7 +265,7 @@ class version1ImportConfigTest extends elis_database_test {
 
     /**
      * Validate that false is returned when obtaining field mapping for an
-     * invalid entity type 
+     * invalid entity type
      */
     public function testGetMappingReturnsFalseForInvalidEntityType() {
         //obtain data
@@ -301,7 +302,7 @@ class version1ImportConfigTest extends elis_database_test {
 
         //persist
         rlipimport_version1_save_mapping($entitytype, $options, $data);
- 
+
         //construct expected data
         $i = 1;
         $expected_data = array();
