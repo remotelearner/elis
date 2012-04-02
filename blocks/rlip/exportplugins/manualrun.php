@@ -58,7 +58,7 @@ if ($data = $form->get_data()) {
     //indicate to the factory class that this is a manual run
     $manual = true;
     $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin, $manual);
-    $instance->run();
+    $instance->run(0, 0, rlip_get_maxruntime());
 
     //stop page output so that HTML isn't included in the export file
     die;

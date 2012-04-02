@@ -780,3 +780,18 @@ function rlip_log_table_html($table) {
     return html_writer::table($table);
 }
 
+/**
+ * Get the maxruntime for MANUAL import/export runs
+ *
+ * @return int  The allowed maxruntime (php.ini::max_execution_time - 2)
+ *              in seconds
+ */
+function rlip_get_maxruntime() {
+    $maxruntime = (int)ini_get('max_execution_time');
+    $maxruntime -= 2; // TBD: MUST STOP BEFORE time limit is reached!
+    if ($maxruntime < 28) {
+        $maxruntime = 28; // TBD: default???
+    }
+    return $maxruntime;
+}
+
