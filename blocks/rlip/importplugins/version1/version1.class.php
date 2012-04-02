@@ -124,7 +124,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         if ($errors) {
-            $this->fslogger->log("[{$filename} line {$this->linenumber}] Import file contains the following invalid user profile field(s): " . implode(', ', $shortnames));
+            $this->fslogger->log_failure("Import file contains the following invalid user profile field(s): " . implode(', ', $shortnames), 0, $filename, $this->linenumber);
         }
     }
 
@@ -1140,7 +1140,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure theme can only be set if feature is enabled
         if (isset($record->theme)) {
              if (empty($CFG->allowcoursethemes)) {
-               $this->process_error("[$filename line $this->linenumber] Course themes are currently disabled on this site.");
+               $this->fslogger->log_failure("Course themes are currently disabled on this site.", 0, $filename, $this->linenumber);
                return false;
            }
         }
@@ -1148,7 +1148,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure theme refers to a valid theme
         $themes = get_list_of_themes();
         if (!$this->validate_fixed_list($record, 'theme', array_keys($themes))) {
-            $this->process_error("[$filename line $this->linenumber] theme value of \"{$record->theme}\" is not a valid theme.");
+            $this->fslogger->log_failure("theme value of \"{$record->theme}\" is not a valid theme.", 0, $filename, $this->linenumber);
             return false;
         }
 

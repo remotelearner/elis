@@ -1219,7 +1219,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_moodlefile($entity_types, $fileids);
 
         $importplugin = new rlip_importplugin_version1($provider);
+        //buffer output due to summary display
+        ob_start();
         $result = $importplugin->run();
+        ob_end_clean();
         $this->assertNull($result);
 
         //data validation
@@ -1408,7 +1411,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         // File WILL BE DELETED after import so must copy to moodledata area
         // Note: file_path now relative to moodledata ($CFG->dataroot)
         $file_path = '/phpunit/rlip/importplugins/version1/';
-        @mkdir($file_path, 0777, true);
+        @mkdir($CFG->dataroot.$file_path, 0777, true);
         @copy(dirname(__FILE__) ."/{$file_name}",
               $CFG->dataroot . $file_path . $file_name);
 
