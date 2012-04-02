@@ -608,12 +608,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
                 //TBD*** just use main directory???
                 $temppath = $path;
             }
-            $continuing = false;
             foreach ($entity_types as $entity) {
-                if (!$continuing && $state !== null &&
-                    (!isset($state->entity) || $state->entity == $entity)) {
-                    $continuing = true;
-                }
                 $entity_filename = get_config($plugin, $entity .'_schedule_file');
                 if (empty($entity_filename)) {
                     // TBD: need dummy so we're not testing directories!
@@ -621,7 +616,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
                 }
                 //echo "\n get_config('{$plugin}', '{$entity}_schedule_file') => {$entity_filename}";
                 $files[$entity] = $temppath . $entity_filename;
-                if (!$continuing && $path !== $temppath &&
+                if ($state == null && $path !== $temppath &&
                     file_exists($path . $entity_filename) &&
                     !@rename($path . $entity_filename,
                              $temppath . $entity_filename)) {
