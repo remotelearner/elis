@@ -3080,6 +3080,7 @@ class version1CourseImportTest extends elis_database_test {
         $data = array();
         $provider = new rlip_importprovider_mockcourse($data);
         $importplugin = new rlip_importplugin_version1($provider);
+        $importplugin->mappings = rlipimport_version1_get_mapping('course');
 
         //transform a sample record
         $record = new stdClass;

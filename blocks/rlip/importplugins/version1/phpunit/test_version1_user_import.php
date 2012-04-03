@@ -2515,6 +2515,7 @@ class version1UserImportTest extends elis_database_test {
         $data = array();
         $provider = new rlip_importprovider_mockuser($data);
         $importplugin = new rlip_importplugin_version1($provider);
+        $importplugin->mappings = rlipimport_version1_get_mapping('user');
 
         //transform a sample record
         $record = new stdClass;

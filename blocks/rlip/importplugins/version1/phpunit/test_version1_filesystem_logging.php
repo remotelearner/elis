@@ -507,7 +507,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         require_once($file);
 
         $record = new stdClass;
-        $record->entitytype = 'course';
+        $record->entitytype = $entitytype;
         $record->standardfieldname = $standardfieldname;
         $record->customfieldname = $customfieldname;
         $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
@@ -1062,10 +1062,14 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
         $instance->run();
 
-        unset($data['action']);
-        $data['mnethostid'] = $CFG->mnet_localhost_id;
-        $data['password'] = hash_internal_user_password($data['password']);
-        //todo: apply mapping to make fields line up
+        $data = array('mnethostid' => $CFG->mnet_localhost_id,
+                      'username' => $data['customusername'],
+                      'password' => hash_internal_user_password($data['custompassword']),
+                      'firstname' => $data['customfirstname'],
+                      'lastname' => $data['customlastname'],
+                      'email' => $data['customemail'],
+                      'city' => $data['customcity'],
+                      'country' => $data['customcountry']);
         $this->assert_record_exists('user', $data);
 
         //update validation using create
@@ -1122,9 +1126,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
         $instance->run();
 
-        unset($data['action']);
-        $data['customcategory'] = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
-        //todo: apply mapping to make fields line up
+        $data = array('shortname' => $data['customshortname'],
+                      'fullname' => $data['customfullname']);
+        $data['category'] = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
         $this->assert_record_exists('course', $data);
 
         //update validation using create
@@ -1140,9 +1144,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
         $instance->run();
 
-        $data = array('customshortname' => 'rlipshortname',
-                      'customfullname' => 'updatedrlipfullname',
-                      'customcategory' => $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory')));
+        $data = array('shortname' => 'rlipshortname',
+                      'fullname' => 'updatedrlipfullname',
+                      'category' => $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory')));
         $this->assert_record_exists('course', $data);
     }
 
@@ -2800,6 +2804,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_contexts_and_site_course();
         $courseid = $this->create_test_course();
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
 
         //create mapping records
         $this->create_mapping_record('enrolment', 'username', 'customusername');
@@ -3408,7 +3413,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //data
         $data = array('action' => 'delete',
                       'username' => 'rlipusername',
-                      'context' => 'bogus',
+                      'customcontext' => 'bogus',
                       'instance' => 'bogus',
                       'role' => 'rlipshortname');
 
@@ -3433,7 +3438,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'delete',
                       'username' => 'rlipusername',
                       'context' => 'system',
-                      'role' => 'bogus');
+                      'customrole' => 'bogus');
 
         $message = "[enrolment.csv line 2] customrole value of \"bogus\" does not refer to a valid role.\n";
 
@@ -3716,7 +3721,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_role();
 
         //create mapping record
-        $this->create_mapping_record('enrolment', 'category', 'customcategory');
+        $this->create_mapping_record('course', 'category', 'customcategory');
 
         //create the category
         $category = new stdClass;
@@ -3919,7 +3924,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('forum_trackreadposts', 1);
-        $data['trackforums'] = 2;
+        $data['customtrackforums'] = 2;
         $expected_error = "[user.csv line 2] customtrackforums value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
@@ -4017,11 +4022,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'customtheme' => 'bartik');
-        $expected_error = "[user.csv line 2] User customthemes are currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] User themes are currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('allowuserthemes', 1);
-        $data['theme'] = 'bogus';
+        $data['customtheme'] = 'bogus';
         $expected_error = "[user.csv line 2] customtheme value of \"bogus\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
@@ -4109,6 +4114,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_profile_field('menu', 'menu', $categoryid, 'option1');
         $this->create_profile_field('date', 'datetime', $categoryid);
 
+        //create mapping records
+        $this->create_mapping_record('user', 'profile_field_checkbox', 'customprofile_field_checkbox');
+        $this->create_mapping_record('user', 'profile_field_menu', 'customprofile_field_menu');
+        $this->create_mapping_record('user', 'profile_field_date', 'customprofile_field_date');
+
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
                       'password' => 'RLippassword!0',
@@ -4117,18 +4127,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'profile_field_checkbox' => 2);
+                      'customprofile_field_checkbox' => 2);
         $expected_error = "[user.csv line 2] \"2\" is not one of the available options for a checkbox profile field checkbox (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
-        unset($data['profile_field_checkbox']);
-        $data['profile_field_menu'] = 'option2';
+        unset($data['customprofile_field_checkbox']);
+        $data['customprofile_field_menu'] = 'option2';
         $expected_error = "[user.csv line 2] \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
-        unset($data['profile_field_menu']);
-        $data['profile_field_date'] = 'bogus';
-        $expected_error = "[user.csv line 2] profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
+        unset($data['customprofile_field_menu']);
+        $data['customprofile_field_date'] = 'bogus';
+        $expected_error = "[user.csv line 2] customprofile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4447,23 +4457,28 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_profile_field('menu', 'menu', $categoryid, 'option1');
         $this->create_profile_field('date', 'datetime', $categoryid);
 
+        //create mapping record
+        $this->create_mapping_record('user', 'profile_field_checkbox', 'customprofile_field_checkbox');
+        $this->create_mapping_record('user', 'profile_field_menu', 'customprofile_field_menu');
+        $this->create_mapping_record('user', 'profile_field_date', 'customprofile_field_date');
+
         //setup
         $this->create_test_user();
 
         $data = array('action' => 'update',
                       'username' => 'rlipusername',
-                      'profile_field_checkbox' => 2);
+                      'customprofile_field_checkbox' => 2);
         $expected_error = "[user.csv line 2] \"2\" is not one of the available options for a checkbox profile field checkbox (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
-        unset($data['profile_field_checkbox']);
-        $data['profile_field_menu'] = 'option2';
+        unset($data['customprofile_field_checkbox']);
+        $data['customprofile_field_menu'] = 'option2';
         $expected_error = "[user.csv line 2] \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
-        unset($data['profile_field_menu']);
-        $data['profile_field_date'] = 'bogus';
-        $expected_error = "[user.csv line 2] profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
+        unset($data['customprofile_field_menu']);
+        $data['customprofile_field_date'] = 'bogus';
+        $expected_error = "[user.csv line 2] customprofile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4684,9 +4699,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'update',
                       'shortname' => 'cm2',
                       'format' => 'weeks',
-                      'numsections' => $invalidmaxsections
+                      'customnumsections' => $invalidmaxsections
                      );
-        $expected_error = "[course.csv line 2] numsections value of \"{$invalidmaxsections}\" is not one of the available options (0 .. {$maxsections}).\n";
+        $expected_error = "[course.csv line 2] customnumsections value of \"{$invalidmaxsections}\" is not one of the available options (0 .. {$maxsections}).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 

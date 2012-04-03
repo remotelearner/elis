@@ -347,7 +347,10 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             //process "1-of-n" type fields first
             foreach ($missing_fields as $key => $value) {
                 if (count($value) > 1) {
-                    $fields = implode(', ', $value);
+                    //use helper to do any display-related field name transformation
+                    $display_value = $this->get_required_field_display($value); 
+                    $fields = implode(', ', $display_value);
+
                     $messages[] = "One of {$fields} is required but all are unspecified or empty.";
                     //remove so we don't re-process
                     unset($missing_fields[$key]);
@@ -373,10 +376,14 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                 }
 
                 if ($append) {
-                    $messages[] = "Required field {$field} is unspecified or empty.";
+                    //use helper to do any display-related field name transformation
+                    $field_display = $this->get_required_field_display($field);
+                    $messages[] = "Required field {$field_display} is unspecified or empty.";
                 }
             } else if (count($missing_fields) > 1) {
-                $fields = implode(', ', $missing_fields);
+                //use helper to do any display-related field name transformation
+                $missing_fields_display = $this->get_required_field_display($missing_fields);
+                $fields = implode(', ', $missing_fields_display);
                 $messages[] = "Required fields {$fields} are unspecified or empty.";
             }
 
@@ -389,6 +396,18 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         }
 
         return true;
+    }
+
+    /**
+     * Perform any necessary transformation on required fields
+     * for display purposes
+     *
+     * @param mixed $fieldorgroup a single field name string, or an array
+     *                            of them
+     * @return mixed the field or array of fields to display
+     */
+    function get_required_field_display($fieldorgroup) {
+        return $fieldorgroup;
     }
 
     /**
@@ -423,7 +442,10 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     function check_action_field($record, $filename) {
         if (!isset($record->action) || $record->action === '') {
             //not set, so error
-            $message = "Required field action is unspecified or empty.";
+
+            //use helper to do any display-related field name transformation
+            $field_display = $this->get_required_field_display('action');
+            $message = "Required field {$field_display} is unspecified or empty.";
             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
 
             return false;
