@@ -27,8 +27,8 @@
 require_once('../../../config.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/form/rlip_manualexport_form.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
 //permissions checking
 require_login();

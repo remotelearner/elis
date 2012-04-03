@@ -96,8 +96,9 @@ function rlipimport_version1_get_tabs($baseurl) {
  */
 function rlipimport_version1_get_mapping($entitytype) {
     global $CFG, $DB;
-    require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
-    require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+    require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+    $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+    require_once($file);
 
     //obtain the list of supported fields
     $plugin = rlip_dataplugin_factory::factory('rlipimport_version1');
@@ -171,7 +172,8 @@ function rlipimport_version1_save_mapping($entitytype, $options, $formdata) {
  */
 function rlipimport_version1_reset_mappings($entitytype) {
     global $CFG, $DB;
-    require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+    $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+    require_once($file);
 
     $sql = "UPDATE {".RLIPIMPORT_VERSION1_MAPPING_TABLE."}
             SET customfieldname = standardfieldname

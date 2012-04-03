@@ -33,10 +33,11 @@ require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
-require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -228,7 +229,8 @@ class version1FilesystemLoggingTest extends rlip_test {
     static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         return array(RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
@@ -256,13 +258,9 @@ class version1FilesystemLoggingTest extends rlip_test {
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
-<<<<<<< Updated upstream
                      RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
-=======
-                     'block_rlip_version1_fieldmap' => 'rlipimport_version1',
                      'ip_schedule' => 'block_rlip',
                      'elis_scheduled_tasks' => 'elis_core',
->>>>>>> Stashed changes
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle');
     }
@@ -349,9 +347,9 @@ class version1FilesystemLoggingTest extends rlip_test {
      * @param user $entitytype One of 'user', 'course', 'enrolment'
      */
     protected function assert_data_produces_error($data, $expected_error, $entitytype) {
-        global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
         //set the log file location
         $filepath = $CFG->dataroot;
@@ -519,9 +517,9 @@ class version1FilesystemLoggingTest extends rlip_test {
      */
     public function testVersion1ImportInstanceHasFsLogger() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 
         //set the log file location
         $file_path = $CFG->dataroot;
@@ -4771,6 +4769,47 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         }
         $this->assertEquals($i, 16);
+}
+
+/**
+     * Validate that the correct error message is logged when an import runs
+     * too long
+     */
+    public function testVersion1ImportLogsRuntimeError() {
+        global $CFG;
+
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
+
+        //set up a "user" import provider, using a single fixed file
+        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
+        $provider = new rlip_importprovider_userfile_delay($file);
+
+        //run the import
+        $importplugin = new rlip_importplugin_version1($provider);
+        $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
+
+        //expected error
+        $expected_error = get_string('importexceedstimelimit_b', 'block_rlip', $result)."\n";
+
+        //validate that a log file was created
+        $this->assertTrue(file_exists($filename));
+
+        //fetch log line
+        $pointer = fopen($filename, 'r');
+        $line = fgets($pointer);
+        fclose($pointer);
+
+        if ($line == false) {
+            //no line found
+            $this->assertEquals(0, 1);
+        }
+
+        //data validation
+        $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
+        $actual_error = substr($line, $prefix_length);
+        $this->assertEquals($expected_error, $actual_error);
     }
 
     public function testUserProfileFields() {
@@ -4794,6 +4833,22 @@ class version1FilesystemLoggingTest extends rlip_test {
         $expected_error[] = "[user.csv line 1] Import file contains the following invalid user profile field(s): invalid_user_profile_field_1, invalid_user_profile_field_2\n";
         $expected_error[] = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" successfully created.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+   public function testCourseThemes() {
+        set_config('allowcoursethemes', 0);
+        $data = array('action' => 'create',
+                      'shortname' => 'shortname',
+                      'fullname' => 'fullname',
+                      'theme' => 'splash',
+                      'category' => 'category');
+        $expected_error = "[course.csv line 2] Course themes are currently disabled on this site.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        set_config('allowcoursethemes', 1);
+        $data['theme'] = 'invalidtheme';
+        $expected_error = "[course.csv line 2] theme value of \"invalidtheme\" is not a valid theme.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
 }

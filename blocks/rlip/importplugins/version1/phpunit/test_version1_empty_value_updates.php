@@ -32,8 +32,8 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
@@ -111,7 +111,8 @@ class version1EmptyValueUpdatesTest extends rlip_test {
         require_once($CFG->dirroot.'/elis/core/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
 
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         $tables = array(
             'user' => 'moodle',

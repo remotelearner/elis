@@ -24,26 +24,19 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
-
 /**
- * Class that provides file plugins reading from the Moodle file API in a
- * generic way
+ * Import provider that constructs a file plugin which delays on reading
  */
-class rlip_importprovider_moodlefile extends rlip_importprovider {
-    var $entity_types;
-    var $fileids;
+class rlip_importprovider_userfile_delay extends rlip_importprovider {
+    var $filename;
 
     /**
      * Constructor
      *
-     * @param array $fieldids Array of file records' database ids
-     * @param array $entity_types Array of strings representing the entity
-     *                            types of import files
+     * @param string $filename The filename to usefor import
      */
-    function __construct($entity_types, $fieldids) {
-        $this->entity_types = $entity_types;
-        $this->fileids = $fieldids;
+    function __construct($filename) {
+        $this->filename = $filename;
     }
 
     /**
@@ -54,17 +47,11 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
      * @return object The file plugin instance, or false if not applicable
      */
     function get_import_file($entity) {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-
-        foreach ($this->entity_types as $key => $value) {
-            if ($entity == $value) {
-                if ($this->fileids[$key] !== false) {
-                    return rlip_fileplugin_factory::factory('', $this->fileids[$key]);
-                }
-            }
+        if ($entity != 'user') {
+            return false;
         }
 
-        return false;
+        //use a file plugin that delays on read
+        return new rlip_fileplugin_csv_delay($this->filename);
     }
 }

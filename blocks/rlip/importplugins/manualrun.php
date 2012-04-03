@@ -28,8 +28,8 @@ require_once('../../../config.php');
 require_once($CFG->dirroot.'/lib/adminlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/form/rlip_manualimport_form.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
 
 //permissions checking
 require_login();

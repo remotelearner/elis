@@ -31,7 +31,8 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
+require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
 /**
  * DB logging class used to test the bare minimum functionality of the DB
@@ -48,12 +49,41 @@ class rlip_dblogger_test extends rlip_dblogger {
         //no transformation
         return $record;
     }
+
+    /**
+     * Specialization function for displaying log records in the UI
+     *
+     * @param object $record The log record, with all standard fields included
+     * @param string $filename The filename for which processing is finished
+     */
+    function display_log($record, $filename) {
+        //do nothing
+    }
 }
 
 /**
  * Class for validating generic database logging functionality
  */
-class version1ExportDatabaseLoggingTest extends PHPUnit_Framework_TestCase {
+class databaseLoggingTest extends elis_database_test {
+   /**
+     * Return the list of tables that should be overlayed.
+     */
+    static protected function get_overlay_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        return array(RLIP_LOG_TABLE => 'block_rlip',
+                     'files' => 'moodle');
+    }
+
+    /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        return array('user' => 'moodle',
+                     'context' => 'moodle');
+    }
+
     /**
      * Validate that the DB logger uses "0" as the default target start time
      */
@@ -80,5 +110,188 @@ class version1ExportDatabaseLoggingTest extends PHPUnit_Framework_TestCase {
         //data validation
         $targetstarttime = $dblogger->get_targetstarttime();
         $this->assertEquals($targetstarttime, 1000000000);
+    }
+
+    /**
+     * Validate that DB logging produces output as the result of a manual import
+     */
+    public function testDBLoggingProducesOutputForManualImport() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+
+        //store it at the system context
+        $context = get_context_instance(CONTEXT_SYSTEM);
+
+        //file path and name
+        $file_path = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/';
+        $file_name = 'userfile.csv';
+
+        //file information
+        $fileinfo = array('contextid' => $context->id,
+                          'component' => 'system',
+                          'filearea'  => 'draft',
+                          'itemid'    => 9999,
+                          'filepath'  => $file_path,
+                          'filename'  => $file_name
+                    );
+
+        //create a file in the Moodle file system with the right content
+        $fs = get_file_storage();
+        $fs->create_file_from_pathname($fileinfo, "{$file_path}{$file_name}");
+        $fileid = $DB->get_field_select('files', 'id', "filename != '.'");
+
+        //set up the import
+        $entity_types = array('user', 'bogus', 'bogus');
+        $fileids = array($fileid, false, false);
+        $importprovider = new rlip_importprovider_moodlefile($entity_types, $fileids);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $importprovider, NULL, true);
+
+        //run the import, collecting output
+        ob_start();
+        $instance->run();
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertNotEquals($output, '');
+    }
+
+    /**
+     * Validate that DB logging does not produce output as the result of a scheduled import
+     */
+    public function testDBLoggingDoesNotProduceOutputForScheduledImport() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+
+        //set up the import
+        $entity_types = array('user');
+        $files = array('user' => get_plugin_directory('rlipimport', 'version1').'/phpunit/userfile.csv');
+        $importprovider = new rlip_importprovider_csv($entity_types, $files);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $importprovider);
+
+        //run the import, collecting output
+        ob_start();
+        $instance->run();
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertEquals($output, '');
+    }
+
+    /**
+     * Validate that DB logging does not produce output as the result of a manual export
+     */
+    public function testDBLoggingDoesNotProduceOutputForManualExport() {
+        global $CFG;
+        require_once(get_plugin_directory('rlipexport', 'version1').'/phpunit/rlip_fileplugin_nowrite.class.php');
+
+        //set up the export
+        $fileplugin = new rlip_fileplugin_nowrite();
+        $instance = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin, true);
+
+        //run the export, collecting output
+        ob_start();
+        $instance->run();
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertEquals($output, '');
+    }
+
+    /**
+     * Validate that DB logging does not produce output as the result of a scheduled export
+     */
+    public function testDBLoggingDoesNotProduceOutputForScheduledExport() {
+        global $CFG;
+        require_once(get_plugin_directory('rlipexport', 'version1').'/phpunit/rlip_fileplugin_nowrite.class.php');
+
+        //set up the export
+        $fileplugin = new rlip_fileplugin_nowrite();
+        $instance = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin);
+
+        //run the export, collecting output
+        ob_start();
+        $instance->run();
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertEquals($output, '');
+    }
+
+    /**
+     * Validate that the DB logger produces output when flushing data related to
+     * a manual import
+     */
+    public function testDBLoggerObjectProducesOutputForManualImport() {
+        //obtain logging object
+        $dblogger = new rlip_dblogger_import(true);
+
+        //flush, collecting output
+        ob_start();
+        $dblogger->flush('bogus');
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertNotEquals($output, '');
+    }
+
+    /**
+     * Validate that the DB logger does not produce output when flushing data
+     * related to a scheduled import
+     */
+    public function testDBLoggerObjectDoesNotProduceOutputForScheduledImport() {
+        //obtain logging object
+        $dblogger = new rlip_dblogger_import(false);
+
+        //flush, collecting output
+        ob_start();
+        $dblogger->flush('bogus');
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertEquals($output, '');
+    }
+
+    /**
+     * Validate that the DB logger does not produce output when flushing data
+     * related to a manual export
+     */
+    public function testDBLoggerObjectDoesNotProduceOutputForManualExport() {
+        //obtain logging object
+        $dblogger = new rlip_dblogger_export(true);
+
+        //flush, collecting output
+        ob_start();
+        $dblogger->flush('bogus');
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertEquals($output, '');
+    }
+
+    /**
+     * Validate that the DB logger does not produce output when flushing data
+     * related to a scheduled export
+     */
+    public function testDBLoggerObjectDoesNotProduceOutputForScheduledExport() {
+        //obtain logging object
+        $dblogger = new rlip_dblogger_export(false);
+
+        //flush, collecting output
+        ob_start();
+        $dblogger->flush('bogus');
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertEquals($output, '');
     }
 }

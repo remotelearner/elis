@@ -115,6 +115,8 @@ if ($tasks && $tasks->valid()) {
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
         $ipjob->lastruntime = $timenow;
+        unset($data['state']);
+        $ipjob->config = serialize($data);
         $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
 
         switch ($plugparts[0]) {
@@ -131,12 +133,7 @@ if ($tasks && $tasks->valid()) {
                     //TBD*** just use main directory???
                     $temppath = $path;
                 }
-                $continuing = false;
                 foreach ($entity_types as $entity) {
-                    if (!$continuing && $state !== null &&
-                        (!isset($state->entity) || $state->entity == $entity)) {
-                        $continuing = true;
-                    }
                     $entity_filename = get_config($plugin, $entity .'_schedule_file');
                     if (empty($entity_filename)) {
                         // TBD: need dummy so we're not testing directories!
@@ -144,7 +141,7 @@ if ($tasks && $tasks->valid()) {
                     }
                     //echo "\n get_config('{$plugin}', '{$entity}_schedule_file') => {$entity_filename}";
                     $files[$entity] = $temppath . $entity_filename;
-                    if (!$continuing && $path !== $temppath &&
+                    if ($state == null && $path !== $temppath &&
                         file_exists($path . $entity_filename) &&
                         !@rename($path . $entity_filename,
                                  $temppath . $entity_filename)) {
@@ -171,7 +168,8 @@ if ($tasks && $tasks->valid()) {
                 continue;
         }
 
-        $instance->run($targetstarttime, $lastruntime);
+        $instance->run($targetstarttime, $lastruntime, 0, $state);
+        //^TBD: since this should run 'til complete, no state should be returned
     }
 }
 

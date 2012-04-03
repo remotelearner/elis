@@ -40,8 +40,9 @@ class filepluginCSVTest extends PHPUnit_Framework_TestCase {
      */
     function testFilepluginCSVHandlesEmptyLines() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+        $file = get_plugin_directory('rlipfile', 'csv').'/csv.class.php';
+        require_once($file);
 
         //fileplugin instance
         $inputfile = $CFG->dirroot.'/blocks/rlip/fileplugins/phpunit/blankline.csv';

@@ -31,8 +31,9 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+$plugin_dir = get_plugin_directory('rlipimport', 'version1');
+require_once($plugin_dir.'/version1.class.php');
+require_once($plugin_dir.'/lib.php');
 require_once($CFG->dirroot.'/user/profile/definelib.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
@@ -45,7 +46,8 @@ class version1ImportConfigTest extends rlip_test {
      */
     static protected function get_overlay_tables() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         return array(RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      'config_plugins' => 'moodle',
@@ -219,7 +221,8 @@ class version1ImportConfigTest extends rlip_test {
      */
     public function testGetMappingReturnsValidData($entitytype, $field) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //obtain the entire list of fields
         $plugin = new rlip_importplugin_version1(NULL, false);
@@ -285,7 +288,8 @@ class version1ImportConfigTest extends rlip_test {
      */
     public function testSaveMappingPersistsAllData($entitytype, $field) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //obtain available fields
         $plugin = new rlip_importplugin_version1(NULL, false);
@@ -326,7 +330,8 @@ class version1ImportConfigTest extends rlip_test {
      */
     public function testSaveMappingUpdatesExistingRecords() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //obtain the available fields
         $plugin = new rlip_importplugin_version1(NULL, false);
@@ -357,7 +362,8 @@ class version1ImportConfigTest extends rlip_test {
      */
     public function testSaveMappingDoesNotDeleteMappingsForOtherEntities() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //create a user mapping record
         $mapping = new stdClass;
@@ -383,7 +389,8 @@ class version1ImportConfigTest extends rlip_test {
      */
     public function testSaveMappingDoesNotSaveInvalidFields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //obtain available fields
         $plugin = new rlip_importplugin_version1(NULL, false);
@@ -402,7 +409,8 @@ class version1ImportConfigTest extends rlip_test {
      */
     public function testRestoreDefaultMappingUpdatesRecords() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //obtain available fields
         $plugin = new rlip_importplugin_version1(NULL, false);

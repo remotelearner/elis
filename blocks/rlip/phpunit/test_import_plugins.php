@@ -30,8 +30,8 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
@@ -154,7 +154,7 @@ class importPluginTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        return array();
+        return array('config_plugins' => 'moodle');
     }
 
     /**
@@ -217,7 +217,8 @@ class importPluginTest extends elis_database_test {
      */
     public function testValidInputTriggersAction() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/sample/sample.class.php');
+        $file = get_plugin_directory('rlipimport', 'sample').'/sample.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_mock();
 
@@ -234,7 +235,8 @@ class importPluginTest extends elis_database_test {
      */
     public function testImportClosesFile() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/sample/sample.class.php');
+        $file = get_plugin_directory('rlipimport', 'sample').'/sample.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_inputclosed();
 
@@ -250,7 +252,8 @@ class importPluginTest extends elis_database_test {
      */
     public function testImportPluginsSupportMultipleFiles() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/multiple/multiple.class.php');
+        $file = get_plugin_directory('rlipimport', 'multiple').'/multiple.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_multiple();
 
@@ -266,7 +269,8 @@ class importPluginTest extends elis_database_test {
      */
     public function testImportTriggersHeaderReadHook() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/header/header.class.php');
+        $file = get_plugin_directory('rlipimport', 'header').'/header.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_mock();
 
@@ -274,5 +278,43 @@ class importPluginTest extends elis_database_test {
         $importplugin->run();
 
         $this->assertEquals($importplugin->hook_called(), true);
+    }
+
+    /**
+     * Validates that the file-system logging object provided for direct CSV
+     * file input is in "scheduled" mode
+     */
+    public function testCSVImportProviderProvidesLoggerInScheduledMode() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
+
+        //construct our provider
+        $provider = new rlip_importprovider_csv(array(), array());
+
+        //obtain its logging object
+        set_config('logfilelocation', $CFG->dataroot.'/bogus', 'rlipimport_version1');
+        $fslogger = $provider->get_fslogger('rlipimport_version1');
+
+        //validation
+        $this->assertFalse($fslogger->get_manual());
+    }
+
+    /**
+     * Validates that the file-system logging object provided for Moodle file
+     * input is in "manual" mode
+     */
+    public function testMoodlefileImportProviderProvidesLoggerInManualMode() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
+
+        //construct our provider
+        $provider = new rlip_importprovider_moodlefile(array(), array());
+
+        //obtain its logging object
+        set_config('logfilelocation', $CFG->dataroot.'/bogus', 'rlipimport_version1');
+        $fslogger = $provider->get_fslogger('rlipimport_version1');
+
+        //validation
+        $this->assertTrue($fslogger->get_manual());
     }
 }

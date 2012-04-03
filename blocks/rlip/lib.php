@@ -93,7 +93,7 @@ class rlip_category_externalpage extends admin_externalpage implements parentabl
  */
 function rlip_admintree_setup(&$adminroot) {
     global $CFG;
-    require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+    require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
     $plugintypes = array('rlipimport', 'rlipexport');
 
@@ -257,28 +257,6 @@ function rlip_print_error($error = NULL) {
     if (!empty($error)) {
         //display error message as passed
         echo $OUTPUT->box($error, 'generalbox warning manualstatusbox');
-    }
-}
-
-/**
- * Displays the status of processing as represented by the supplied log ids
- *
- * @param array $logids The ids of log records to display
- */
-function rlip_print_manual_status($logid) {
-    global $DB, $OUTPUT;
-
-    if (!empty($logid)) {
-        //only need a couple of fields
-        $fields = 'filesuccesses, filefailures, statusmessage';
-        if ($record = $DB->get_record(RLIP_LOG_TABLE, array('id'=>$logid), $fields)) {
-            //total rows = successes + failures
-            $record->total = $record->filesuccesses + $record->filefailures;
-
-            //display status message with successes and total records
-            $displaystring = get_string('manualstatus', 'block_rlip', $record);
-            echo $OUTPUT->box($displaystring, 'generalbox manualstatusbox');
-        }
     }
 }
 
@@ -550,9 +528,9 @@ function run_ipjob($taskname, $maxruntime = 0) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;
     }
 
-    require_once($CFG->dirroot .'/blocks/rlip/rlip_dataplugin.class.php');
-    require_once($CFG->dirroot .'/blocks/rlip/rlip_fileplugin.class.php');
-    require_once($CFG->dirroot .'/blocks/rlip/rlip_importprovider_csv.class.php');
+    require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_dataplugin.class.php');
+    require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_fileplugin.class.php');
+    require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
 
     // Get the schedule record
     list($prefix, $id) = explode('_', $taskname);
@@ -608,12 +586,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
                 //TBD*** just use main directory???
                 $temppath = $path;
             }
-            $continuing = false;
             foreach ($entity_types as $entity) {
-                if (!$continuing && $state !== null &&
-                    (!isset($state->entity) || $state->entity == $entity)) {
-                    $continuing = true;
-                }
                 $entity_filename = get_config($plugin, $entity .'_schedule_file');
                 if (empty($entity_filename)) {
                     // TBD: need dummy so we're not testing directories!
@@ -621,7 +594,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
                 }
                 //echo "\n get_config('{$plugin}', '{$entity}_schedule_file') => {$entity_filename}";
                 $files[$entity] = $temppath . $entity_filename;
-                if (!$continuing && $path !== $temppath &&
+                if ($state == null && $path !== $temppath &&
                     file_exists($path . $entity_filename) &&
                     !@rename($path . $entity_filename,
                              $temppath . $entity_filename)) {

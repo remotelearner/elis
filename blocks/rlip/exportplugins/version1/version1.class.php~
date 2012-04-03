@@ -24,8 +24,12 @@
  *
  */
 
+<<<<<<< HEAD
+require_once($CFG->dirroot.'/blocks/rlip/rlip_exportplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+=======
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
+>>>>>>> origin/ELIS_INT_2.0.2
 
 /**
  * Moodle course grade export compatible with the original Moodle-only grade

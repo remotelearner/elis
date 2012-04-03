@@ -42,8 +42,8 @@ class pluginFactoriesTest extends PHPUnit_Framework_TestCase {
      */
     public function testDatapluginFactorySetsCorrectFilepluginForExport() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
         //setup
         $fileplugin = rlip_fileplugin_factory::factory('bogus');
@@ -58,11 +58,25 @@ class pluginFactoriesTest extends PHPUnit_Framework_TestCase {
      */ 
     public function testFilepluginFactorySetsBrowserFlag() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
         //setup
         $fileplugin = rlip_fileplugin_factory::factory('', NULL, false, true);
         //validation
         $this->assertEquals($fileplugin->sendtobrowser, true);
+    }
+
+    /**
+     * Validate that the file-system logger factory constructs an object of the
+     * correct type
+     */
+    public function testFsloggerFactoryInstantiatesCorrectClass() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+
+        //setup
+        $fslogger = rlip_fslogger_factory::factory(NULL);
+        //validation
+        $this->assertInstanceOf('rlip_fslogger_linebased', $fslogger);
     }
 }

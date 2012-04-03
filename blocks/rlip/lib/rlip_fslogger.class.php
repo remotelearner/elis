@@ -29,10 +29,28 @@
  */
 class rlip_fslogger {
     var $fileplugin;
+    var $manual;
     var $opened = false;
 
-    function __construct($fileplugin) {
+    /**
+     * Filesystem logger constructor
+     *
+     * @param object $fileplugin The file plugin used to write data out
+     * @param boolean $manual true if a manual run, otherwise false for
+     *                        scheduled 
+     */
+    function __construct($fileplugin, $manual = false) {
         $this->fileplugin = $fileplugin;
+        $this->manual = $manual;
+    }
+
+    /**
+     * Specifies whether this logging object is for a manual run
+     *
+     * @return boolean true if for a manual run, otherwise false
+     */
+    function get_manual() {
+        return $this->manual;
     }
 
     /**
@@ -101,14 +119,56 @@ class rlip_fslogger {
     }
 
     /**
-     * Log a message to the log file
+     * Log a success message to the log file
      *
      * @param string $message The message to long
      * @param int $timestamp The timestamp to associate the message with, or 0
      *                       for the current time
+     * @param string $filename The name of the import / export file we are
+     *                         reporting on
+     * @param int $entitydescriptor A descriptor of which entity from an import file
+     *                              we are handling, if applicable
      */
-    function log($message, $timestamp = 0) {
-        global $CFG;
+    function log_success($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL) {
+        //re-delegate to the main logging function
+        $this->log($message, $timestamp, $filename, $entitydescriptor, true);
+    }
+
+    /**
+     * Log a failure message to the log file, and potentially the screen
+     *
+     * @param string $message The message to long
+     * @param int $timestamp The timestamp to associate the message with, or 0
+     *                       for the current time
+     * @param string $filename The name of the import / export file we are
+     *                         reporting on
+     * @param int $entitydescriptor A descriptor of which entity from an import file
+     *                              we are handling, if applicable
+     */
+    function log_failure($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL) {
+        //re-delegate to the main logging function
+        $this->log($message, $timestamp, $filename, $entitydescriptor, false);
+    }
+
+    /**
+     * Log a message to the log file - used internally only (use log_success or
+     * log_failure instead for external calls)
+     *
+     * @param string $message The message to long
+     * @param int $timestamp The timestamp to associate the message with, or 0
+     *                       for the current time
+     * @param string $filename The name of the import / export file we are
+     *                         reporting on
+     * @param int $entitydescriptor A descriptor of which entity from an import file
+     *                              we are handling, if applicable
+     * @param boolean $success true if the operation was a success, otherwise
+     *                         false
+     */
+    protected function log($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL,
+                           $success = false) {
+        global $CFG, $OUTPUT;
+
+        $message = $this->customize_record($message, $timestamp, $filename, $entitydescriptor, $success);
 
         if (!$this->opened) {
             //open the file for writing if it hasn't been opened yet
@@ -155,6 +215,29 @@ class rlip_fslogger {
         //construct and write the log line
         $line = '['.$date.' '.$offset.'] '.$message;
         $this->fileplugin->write(array($line));
+
+        if (!$success && $this->manual) {
+            echo $OUTPUT->box($message, 'generalbox warning manualstatusbox');
+        }
+    }
+
+    /**
+     * API hook for customizing the contents for a file-system log line / record
+     *
+     * @param string $message The message to long
+     * @param int $timestamp The timestamp to associate the message with, or 0
+     *                       for the current time
+     * @param string $filename The name of the import / export file we are
+     *                         reporting on
+     * @param int $entitydescriptor A descriptor of which entity from an import file
+     *                              we are handling, if applicable
+     * @param boolean $success true if the operation was a success, otherwise
+     *                         false
+     */
+    function customize_record($message, $timestamp = 0, $filename = NULL,
+                              $entitytnum = NULL, $success = false) {
+        //no customization by default
+        return $message;
     }
 
     /**
@@ -169,6 +252,37 @@ class rlip_fslogger {
 }
 
 /**
+ * Filesystem logging class that represents file / import types with
+ * line-by-line data
+ */
+class rlip_fslogger_linebased extends rlip_fslogger {
+    /**
+     * API hook for customizing the contents for a file-system log line / record
+     *
+     * @param string $message The message to long
+     * @param int $timestamp The timestamp to associate the message with, or 0
+     *                       for the current time
+     * @param string $filename The name of the import / export file we are
+     *                         reporting on
+     * @param int $entitydescriptor A descriptor of which entity from an import file
+     *                              we are handling, if applicable
+     * @param boolean $success true if the operation was a success, otherwise
+     *                         false
+     */
+    function customize_record($message, $timestamp = 0, $filename = NULL,
+                              $entitydescriptor = NULL, $success = false) {
+
+        if ($filename !== NULL && $entitydescriptor !== NULL) {
+            //add filename and line number
+            $prefix = "[{$filename} line {$entitydescriptor}] ";
+            return $prefix.$message;
+        }
+
+        return $message;
+    }
+}
+
+/**
  * Factory class for the file system logger
  */
 class rlip_fslogger_factory {
@@ -178,8 +292,8 @@ class rlip_fslogger_factory {
      * @param object $fileplugin The file plugin that should be used to write
      *                           out log data
      */
-    static function factory($fileplugin) {
+    static function factory($fileplugin, $manual = false) {
         //only one type of file system logger for now
-        return new rlip_fslogger($fileplugin);
+        return new rlip_fslogger_linebased($fileplugin, $manual);
     }
 }

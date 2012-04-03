@@ -23,70 +23,46 @@
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
-
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
 /**
- * Mock file plugin that provides a fixed set of data
+ * Dummy file plugin that ignores write actions
  */
-class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
-    //current file position
-    var $index;
-    //file data
-    var $data;
-
+class rlip_fileplugin_nowrite extends rlip_fileplugin_base {
     /**
-     * Mock file plugin constructor
-     *
-     * @param array $data The data represented by this file
-     */
-    function __construct($data) {
-        $this->index = 0;
-        $this->data = $data;
-    }
-
-    /**
-     * Open the file
+     * Hook for opening the file
      *
      * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
      *                  the mode in which the file should be opened
      */
     function open($mode) {
-        $this->index = 0;
+        //do nothing
     }
 
     /**
-     * Read one entry from the file
+     * Hook for reading one entry from the file
      *
      * @return array The entry read
      */
     function read() {
-        if ($this->index < count($this->data)) {
-            //more lines to read, fetch next one
-            $result = $this->data[$this->index];
-            //move "line pointer"
-            $this->index++;
-            return $result;
-        }
-
-        //out of lines
-        return false;
+        //do nothing
+        return array();
     }
 
     /**
-     * Write one entry to the file
+     * Hook for writing one entry to the file
      *
-     * @param array $entry The entry to write to the file
+     * @param array $line The entry to write to the file
      */
     function write($entry) {
-        //nothing to do
+        //do nothing
     }
 
     /**
-     * Close the file
+     * Hook for closing the file
      */
     function close() {
-        //nothing to do
+        //do nothing
     }
 
     /**
@@ -95,7 +71,7 @@ class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
      * @return string The file name, not including the full path
      */
     function get_filename() {
-        return 'memoryfile';
+        //bogus filename
+        return 'bogus';
     }
 }
-

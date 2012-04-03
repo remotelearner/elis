@@ -24,8 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
 /**
  * Base class for Integration Point export plugins
@@ -90,12 +89,12 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      */
     function __construct($fileplugin, $manual = false) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 
         $this->fileplugin = $fileplugin;
-        $this->dblogger = new rlip_dblogger_export();
         $this->manual = $manual;
+        $this->dblogger = new rlip_dblogger_export($this->manual);
 
         //convert class name to plugin name
         $class = get_class($this);
@@ -109,7 +108,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
         $filename = rlip_log_file_name('export', $this->plugin, $filepath, $manual, $this->dblogger->starttime);
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true, $manual);
-            $this->fslogger = new rlip_fslogger($fileplugin);
+            $this->fslogger = rlip_fslogger_factory::factory($fileplugin, $this->manual);
         }
 
         $this->dblogger->set_plugin($this->plugin);
@@ -173,7 +172,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
                 // time limit exceeded - abort with log message
                 if ($this->fslogger) {
                     $msg = get_string('exportexceedstimelimit', 'block_rlip');
-                    $this->fslogger->log($msg);
+                    $this->fslogger->log_failure($msg);
                 }
                 return false;
             }

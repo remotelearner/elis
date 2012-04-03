@@ -27,7 +27,7 @@
 require_once(dirname(__FILE__) .'/../../config.php');
 require_once($CFG->dirroot .'/elis/core/lib/setup.php');
 require_once($CFG->dirroot .'/blocks/rlip/lib.php');
-require_once($CFG->dirroot .'/blocks/rlip/rlip_dataplugin.class.php');
+require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_dataplugin.class.php');
 require_once($CFG->dirroot .'/blocks/rlip/form/rlip_schedule_form.class.php');
 
 require_once elis::lib('page.class.php');
