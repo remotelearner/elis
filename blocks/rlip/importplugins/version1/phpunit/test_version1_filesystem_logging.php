@@ -494,6 +494,26 @@ class version1FilesystemLoggingTest extends elis_database_test {
     }
 
     /**
+     * Creates an import field mapping record in the database
+     *
+     * @param string $entitytype The type of entity, such as user or course
+     * @param string $standardfieldname The typical import field name
+     * @param string $customfieldname The custom import field name
+     */
+    private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
+        global $DB;
+
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
+
+        $record = new stdClass;
+        $record->entitytype = 'course';
+        $record->standardfieldname = $standardfieldname;
+        $record->customfieldname = $customfieldname;
+        $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
+    }
+
+    /**
      * Validate that version 1 import plugin instances are set up with file-system
      * loggers
      */
@@ -520,9 +540,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty user action field
      */
     public function testVersion1ImportLogsEmptyUserAction() {
+        //create mapping record
+        $this->create_mapping_record('user', 'action', 'customaction');
+
         //validation for an empty action field
-        $data = array('action' => '');
-        $expected_error = "[user.csv line 2] Required field action is unspecified or empty.\n";
+        $data = array('customaction' => '');
+        $expected_error = "[user.csv line 2] Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -530,16 +553,19 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty username field on user create
      */
     public function testVersionImportLogsEmptyUserUsernameOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
         //validation for an empty username field
         $data = array('action' => 'create',
-                      'username' => '',
+                      'customusername' => '',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'Rlipfirstname',
                       'lastname' => 'Rliplastname',
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Rlipcity',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field username is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] Required field customusername is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -547,16 +573,19 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty password field on user create
      */
     public function testVersion1ImportLogsEmptyUserPasswordOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'password', 'custompassword');
+
         //validation for an empty password field
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
-                      'password' => '',
+                      'custompassword' => '',
                       'firstname' => 'Rlipfirstname',
                       'lastname' => 'Rliplastname',
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Rlipcity',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field password is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] Required field custompassword is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -564,16 +593,19 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty firstname field on user create
      */
     public function testVersion1ImportLogsEmptyUserFirstnameOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'firstname', 'customfirstname');
+
         //validation for an empty firstname field
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
                       'password' => 'Rlippassword!0',
-                      'firstname' => '',
+                      'customfirstname' => '',
                       'lastname' => 'Rliplastname',
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Rlipcity',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field firstname is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] Required field customfirstname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -581,16 +613,19 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty lastname field on user create
      */
     public function testVersion1ImportLogsEmptyUserLastnameOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'lastname', 'customlastname');
+
         //validation for an empty lastname field
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'Rlipfirstname',
-                      'lastname' => '',
+                      'customlastname' => '',
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Rlipcity',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field lastname is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] Required field customlastname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -598,16 +633,19 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty email field on user create
      */
     public function testVersion1ImportLogsEmptyUserEmailOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'email', 'customemail');
+
         //validation for an empty email field
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'Rlipfirstname',
                       'lastname' => 'Rliplastname',
-                      'email' => '',
+                      'customemail' => '',
                       'city' => 'Rlipcity',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field email is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] Required field customemail is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -615,6 +653,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty city field on user create
      */
     public function testVersion1ImportLogsEmptyUserCityOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'city', 'customcity');
+
         //validation for an empty city field
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
@@ -622,9 +663,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'firstname' => 'Rlipfirstname',
                       'lastname' => 'Rliplastname',
                       'email' => 'rlipuser@rlipdomain.com',
-                      'city' => '',
+                      'customcity' => '',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field city is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] Required field customcity is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -632,6 +673,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty country field on user create
      */
     public function testVersion1ImportLogsEmptyUserCountryOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'country', 'customcountry');
+
         //validation for an empty country field
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
@@ -640,8 +684,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'lastname' => 'Rliplastname',
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Rlipcity',
-                      'country' => '');
-        $expected_error = "[user.csv line 2] Required field country is unspecified or empty.\n";
+                      'customcountry' => '');
+        $expected_error = "[user.csv line 2] Required field customcountry is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -649,10 +693,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty username field on user update
      */
     public function testVersionImportLogsEmptyUserUsernameOnUpdate() {
+        //create mapping records
+        $this->create_mapping_record('user', 'username', 'customusername');
+        $this->create_mapping_record('user', 'email', 'customemail');
+        $this->create_mapping_record('user', 'idnumber', 'customidnumber');
+
         //validation for an empty username field
         $data = array('action' => 'update',
-                      'username' => '');
-        $expected_error = "[user.csv line 2] One of username, email, idnumber is required but all are unspecified or empty.\n";
+                      'customusername' => '');
+        $expected_error = "[user.csv line 2] One of customusername, customemail, customidnumber is required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -660,10 +709,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty username field on user delete
      */
     public function testVersionImportLogsEmptyUserUsernameOnDelete() {
+        //create mapping records
+        $this->create_mapping_record('user', 'username', 'customusername');
+        $this->create_mapping_record('user', 'email', 'customemail');
+        $this->create_mapping_record('user', 'idnumber', 'customidnumber');
+
         //validation for an empty username field
         $data = array('action' => 'update',
-                      'username' => '');
-        $expected_error = "[user.csv line 2] One of username, email, idnumber is required but all are unspecified or empty.\n";
+                      'customusername' => '');
+        $expected_error = "[user.csv line 2] One of customusername, customemail, customidnumber is required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -671,9 +725,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty user action field
      */
     public function testVersion1ImportLogsEmptyCourseAction() {
+        //create mapping record
+        $this->create_mapping_record('course', 'action', 'customaction');
+
         //validation for an empty action field
-        $data = array('action' => '');
-        $expected_error = "[course.csv line 2] Required field action is unspecified or empty.\n";
+        $data = array('customaction' => '');
+        $expected_error = "[course.csv line 2] Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -681,12 +738,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty shortname field on course create
      */
     public function testVersion1ImportLogsEmptyCourseShortnameOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
         //validation for an empty shortname field
         $data = array('action' => 'create',
-                      'shortname' => '',
+                      'customshortname' => '',
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory');
-        $expected_error = "[course.csv line 2] Required field shortname is unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Required field customshortname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -694,12 +754,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty fullname field on course create
      */
     public function testVersion1ImportLogsEmptyCourseFullnameOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'fullname', 'customfullname');
+
         //validation for an empty fullname field
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
-                      'fullname' => '',
+                      'customfullname' => '',
                       'category' => 'rlipcategory');
-        $expected_error = "[course.csv line 2] Required field fullname is unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Required field customfullname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -707,12 +770,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty category field on course create
      */
     public function testVersion1ImportLogsEmptyCourseCategoryOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'category', 'customcategory');
+
         //validation for an empty category field
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname',
-                      'category' => '');
-        $expected_error = "[course.csv line 2] Required field category is unspecified or empty.\n";
+                      'customcategory' => '');
+        $expected_error = "[course.csv line 2] Required field customcategory is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -720,10 +786,13 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty shortname field on course update
      */
     public function testVersion1ImportLogsEmptyCourseShortnameOnUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
         //validation for an empty shortname field
         $data = array('action' => 'update',
-                      'shortname' => '');
-        $expected_error = "[course.csv line 2] Required field shortname is unspecified or empty.\n";
+                      'customshortname' => '');
+        $expected_error = "[course.csv line 2] Required field customshortname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -731,10 +800,13 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty shortname field on course delete
      */
     public function testVersion1ImportLogsEmptyCourseShortnameOnDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
         //validation for an empty shortname field
         $data = array('action' => 'delete',
-                      'shortname' => '');
-        $expected_error = "[course.csv line 2] Required field shortname is unspecified or empty.\n";
+                      'customshortname' => '');
+        $expected_error = "[course.csv line 2] Required field customshortname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -742,9 +814,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty enrolment action field
      */
     public function testVersion1ImportLogsEmptyEnrolmentAction() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'action', 'customaction');
+
         //validation for an empty action field
-        $data = array('action' => '');
-        $expected_error = "[enrolment.csv line 2] Required field action is unspecified or empty.\n";
+        $data = array('customaction' => '');
+        $expected_error = "[enrolment.csv line 2] Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -752,13 +827,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty username field on enrolment create
      */
     public function testVersion1ImportLogsEmptyEnrolmentUsernameOnCreate() {
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+        $this->create_mapping_record('enrolment', 'email', 'customemail');
+        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
+
         //validation for an empty username field
         $data = array('action' => 'create',
-                      'username' => '',
+                      'customusername' => '',
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] One of username, email, idnumber is required but all are unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] One of customusername, customemail, customidnumber is required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -766,13 +846,16 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty context field on enrolment create
      */
     public function testVersion1ImportLogsEmptyEnrolmentContextOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'context', 'customcontext');
+
         //validation for an empty context field
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
-                      'context' => '',
+                      'customcontext' => '',
                       'instance' => 'rlipshortname',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] Required field context is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] Required field customcontext is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -780,13 +863,16 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty instance field on enrolment create
      */
     public function testVersion1ImportLogsEmptyEnrolmentInstanceOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'instance', 'custominstance');
+
         //validation for an empty instance field
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
                       'context' => 'course',
-                      'instance' => '',
+                      'custominstance' => '',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] Required field instance is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] Required field custominstance is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -794,13 +880,16 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty role field on enrolment create
      */
     public function testVersion1ImportLogsEmptyEnrolmentRoleOnCreate() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'role', 'customrole');
+
         //validation for an empty role field
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
                       'context' => 'course',
                       'instance' => 'rlipshortname',
-                      'role' => '');
-        $expected_error = "[enrolment.csv line 2] Required field role is unspecified or empty.\n";
+                      'customrole' => '');
+        $expected_error = "[enrolment.csv line 2] Required field customrole is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -808,13 +897,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty username field on enrolment delete
      */
     public function testVersion1ImportLogsEmptyEnrolmentUsernameOnDelete() {
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+        $this->create_mapping_record('enrolment', 'email', 'customemail');
+        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
+
         //validation fo an empty username field
         $data = array('action' => 'delete',
-                      'username' => '',
+                      'customusername' => '',
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] One of username, email, idnumber is required but all are unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] One of customusername, customemail, customidnumber is required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -822,13 +916,16 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty context field on enrolment delete
      */
     public function testVersion1ImportLogsEmptyEnrolmentContextOnDelete() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'context', 'customcontext');
+
         //validation for an empty context field
         $data = array('action' => 'delete',
                       'username' => 'rlipusername',
-                      'context' => '',
+                      'customcontext' => '',
                       'instance' => 'rlipshortname',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] Required field context is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] Required field customcontext is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -836,13 +933,16 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty instance field on enrolment delete
      */
     public function testVersion1ImportLogsEmptyEnrolmentInstanceOnDelete() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'instance', 'custominstance');
+
         //validation for an empty instance field
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
                       'context' => 'course',
-                      'instance' => '',
+                      'custominstance' => '',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] Required field instance is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] Required field custominstance is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -850,13 +950,16 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an error is logged for an empty role field on enrolment delete
      */
     public function testVersion1ImportLogsEmptyEnrolmentRoleOnDelete() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'role', 'customrole');
+
         //validation for an empty role field
-        $data = array('action' => 'create',
+        $data = array('action' => 'delete',
                       'username' => 'rlipusername',
                       'context' => 'course',
                       'instance' => 'rlipshortname',
-                      'role' => '');
-        $expected_error = "[enrolment.csv line 2] Required field role is unspecified or empty.\n";
+                      'customrole' => '');
+        $expected_error = "[enrolment.csv line 2] Required field customrole is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -864,12 +967,17 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates that an appropriate error is logged when multiple required fields are empty
      */
     public function testVersion1ImportLogsMultipleEmptyFields() {
+        //create mapping records
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+        $this->create_mapping_record('course', 'fullname', 'customfullname');
+        $this->create_mapping_record('course', 'category', 'customcategory');
+
         //validation for three empty required fields
         $data = array('action' => 'create',
-                      'shortname' => '',
-                      'fullname' => '',
-                      'category' => '');
-        $expected_error = "[course.csv line 2] Required fields shortname, fullname, category are unspecified or empty.\n";
+                      'customshortname' => '',
+                      'customfullname' => '',
+                      'customcategory' => '');
+        $expected_error = "[course.csv line 2] Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -878,9 +986,14 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * some of which are only required in a "1 of n"-fashion
      */
     public function testVersion1ImportLogsMultipleMissingFieldsWithOption() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+        $this->create_mapping_record('enrolment', 'email', 'customemail');
+        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
+
         //validation for "1 of 3", plus 3 required fields
         $data = array('action' => 'create');
-        $expected_error = "[enrolment.csv line 2] One of username, email, idnumber is required but all are unspecified or empty. Required fields context, instance, role are unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] One of customusername, customemail, customidnumber is required but all are unspecified or empty. Required fields context, instance, role are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -889,9 +1002,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * the import file
      */
     public function testVersion1ImportLogsMissingField() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
         //validation for unspecified field "shortname"
         $data = array('action' => 'update');
-        $expected_error = "[course.csv line 2] Required field shortname is unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Required field customshortname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -900,9 +1016,14 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * fields that are absolutely necessary
      */
     public function testVersion1ImportLogsMultipleMissingFields() {
+        //create mapping records
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+        $this->create_mapping_record('course', 'fullname', 'customfullname');
+        $this->create_mapping_record('course', 'category', 'customcategory');
+
         //validation for missing fields shortname, fullname, category
         $data = array('action' => 'create');
-        $expected_error = "[course.csv line 2] Required fields shortname, fullname, category are unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -914,20 +1035,29 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         set_config('createorupdate', 1, 'rlipimport_version1');
 
+        //create mapping records
+        $this->create_mapping_record('user', 'username', 'customusername');
+        $this->create_mapping_record('user', 'password', 'custompassword');
+        $this->create_mapping_record('user', 'firstname', 'customfirstname');
+        $this->create_mapping_record('user', 'lastname', 'customlastname');
+        $this->create_mapping_record('user', 'email', 'customemail');
+        $this->create_mapping_record('user', 'city', 'customcity');
+        $this->create_mapping_record('user', 'country', 'customcountry');
+
         //create validation using update
         $data = array('action' => 'update');
-        $expected_error = "[user.csv line 2] Required fields username, password, firstname, lastname, email, city, country are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] Required fields customusername, custompassword, customfirstname, customlastname, customemail, customcity, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         //actually create using update
         $data = array('action' => 'update',
-                      'username' => 'rlipusername',
-                      'password' => 'Rlippassword!0',
-                      'firstname' => 'rlipfirstname',
-                      'lastname' => 'rliplastname',
-                      'email' => 'rlipuser@rlipdomain.com',
-                      'city' => 'rlipcity',
-                      'country' => 'CA');
+                      'customusername' => 'rlipusername',
+                      'custompassword' => 'Rlippassword!0',
+                      'customfirstname' => 'rlipfirstname',
+                      'customlastname' => 'rliplastname',
+                      'customemail' => 'rlipuser@rlipdomain.com',
+                      'customcity' => 'rlipcity',
+                      'customcountry' => 'CA');
         $provider = new rlip_importprovider_fsloguser($data);
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
         $instance->run();
@@ -935,17 +1065,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
         unset($data['action']);
         $data['mnethostid'] = $CFG->mnet_localhost_id;
         $data['password'] = hash_internal_user_password($data['password']);
+        //todo: apply mapping to make fields line up
         $this->assert_record_exists('user', $data);
 
         //update validation using create
         $data = array('action' => 'create');
-        $expected_error = "[user.csv line 2] Required fields username, password, firstname, lastname, email, city, country are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] Required fields customusername, custompassword, customfirstname, customlastname, customemail, customcity, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         //actually update using create
         $data = array('action' => 'create',
-                      'username' => 'rlipusername',
-                      'firstname' => 'updatedrlipfirstname');
+                      'customusername' => 'rlipusername',
+                      'customfirstname' => 'updatedrlipfirstname');
         $provider = new rlip_importprovider_fsloguser($data);
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
         $instance->run();
@@ -969,43 +1100,49 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         set_config('createorupdate', 1, 'rlipimport_version1');
 
+        //create mapping records
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+        $this->create_mapping_record('course', 'fullname', 'customfullname');
+        $this->create_mapping_record('course', 'category', 'customcategory');
+
         //set up the site course record
         $this->create_contexts_and_site_course();
 
         //create validation using update
         $data = array('action' => 'update');
-        $expected_error = "[course.csv line 2] Required fields shortname, fullname, category are unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         //actually create using update
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname',
-                      'fullname' => 'rlipfullname',
-                      'category' => 'rlipcategory');
+                      'customshortname' => 'rlipshortname',
+                      'customfullname' => 'rlipfullname',
+                      'customcategory' => 'rlipcategory');
         $provider = new rlip_importprovider_fslogcourse($data);
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
         $instance->run();
 
         unset($data['action']);
-        $data['category'] = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
+        $data['customcategory'] = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
+        //todo: apply mapping to make fields line up
         $this->assert_record_exists('course', $data);
 
         //update validation using create
         $data = array('action' => 'update');
-        $expected_error = "[course.csv line 2] Required fields shortname, fullname, category are unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         //actually update using create
         $data = array('action' => 'create',
-                      'shortname' => 'rlipshortname',
-                      'fullname' => 'updatedrlipfullname');
+                      'customshortname' => 'rlipshortname',
+                      'customfullname' => 'updatedrlipfullname');
         $provider = new rlip_importprovider_fslogcourse($data);
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
         $instance->run();
 
-        $data = array('shortname' => 'rlipshortname',
-                      'fullname' => 'updatedrlipfullname',
-                      'category' => $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory')));
+        $data = array('customshortname' => 'rlipshortname',
+                      'customfullname' => 'updatedrlipfullname',
+                      'customcategory' => $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory')));
         $this->assert_record_exists('course', $data);
     }
 
@@ -2572,43 +2709,43 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array();
 
         //invalid username
-        $username_data = array('username' => 'bogus');
-        $username_message = "[enrolment.csv line 2] username value of \"bogus\" does not refer to a valid user.\n";
+        $username_data = array('customusername' => 'bogus');
+        $username_message = "[enrolment.csv line 2] customusername value of \"bogus\" does not refer to a valid user.\n";
         $data[] = array($username_data, $username_message);
 
         //invalid email
-        $email_data = array('email' => 'bogus@bogus.com');
-        $email_message = "[enrolment.csv line 2] email value of \"bogus@bogus.com\" does not refer to a valid user.\n";
+        $email_data = array('customemail' => 'bogus@bogus.com');
+        $email_message = "[enrolment.csv line 2] customemail value of \"bogus@bogus.com\" does not refer to a valid user.\n";
         $data[] = array($email_data, $email_message);
 
         //invalid idnumber
-        $idnumber_data = array('idnumber' => 'bogus');
-        $idnumber_message = "[enrolment.csv line 2] idnumber value of \"bogus\" does not refer to a valid user.\n";
+        $idnumber_data = array('customidnumber' => 'bogus');
+        $idnumber_message = "[enrolment.csv line 2] customidnumber value of \"bogus\" does not refer to a valid user.\n";
         $data[] = array($idnumber_data, $idnumber_message);
 
         //invalid combination of username, email
-        $username_email_data = array('username' => 'bogus',
-                                     'email' => 'bogus@bogus.com');
-        $username_email_message = "[enrolment.csv line 2] username value of \"bogus\", email value of \"bogus@bogus.com\" do not refer to a valid user.\n";
+        $username_email_data = array('customusername' => 'bogus',
+                                     'customemail' => 'bogus@bogus.com');
+        $username_email_message = "[enrolment.csv line 2] customusername value of \"bogus\", customemail value of \"bogus@bogus.com\" do not refer to a valid user.\n";
         $data[] = array($username_email_data, $username_email_message);
 
         //invalid combination of username, idnumber
-        $username_idnumber_data = array('username' => 'bogus',
-                                        'idnumber' => 'bogus');
-        $username_idnumber_message = "[enrolment.csv line 2] username value of \"bogus\", idnumber value of \"bogus\" do not refer to a valid user.\n";
+        $username_idnumber_data = array('customusername' => 'bogus',
+                                        'customidnumber' => 'bogus');
+        $username_idnumber_message = "[enrolment.csv line 2] customusername value of \"bogus\", customidnumber value of \"bogus\" do not refer to a valid user.\n";
         $data[] = array($username_idnumber_data, $username_idnumber_message);
 
         //invalid combination of email, idnumber
-        $email_idnumber_data = array('email' => 'bogus@bogus.com',
-                                     'idnumber' => 'bogus');
-        $email_idnumber_message = "[enrolment.csv line 2] email value of \"bogus@bogus.com\", idnumber value of \"bogus\" do not refer to a valid user.\n";
+        $email_idnumber_data = array('customemail' => 'bogus@bogus.com',
+                                     'customidnumber' => 'bogus');
+        $email_idnumber_message = "[enrolment.csv line 2] customemail value of \"bogus@bogus.com\", customidnumber value of \"bogus\" do not refer to a valid user.\n";
         $data[] = array($email_idnumber_data, $email_idnumber_message);
 
         //invalid combination of username, email, idnumber
-        $all_fields_data = array('username' => 'bogus',
-                                 'email' => 'bogus@bogus.com',
-                                 'idnumber' => 'bogus');
-        $all_fields_message = "[enrolment.csv line 2] username value of \"bogus\", email value of \"bogus@bogus.com\", idnumber value of \"bogus\" do not refer to a valid user.\n";
+        $all_fields_data = array('customusername' => 'bogus',
+                                 'customemail' => 'bogus@bogus.com',
+                                 'customidnumber' => 'bogus');
+        $all_fields_message = "[enrolment.csv line 2] customusername value of \"bogus\", customemail value of \"bogus@bogus.com\", customidnumber value of \"bogus\" do not refer to a valid user.\n";
         $data[] = array($all_fields_data, $all_fields_message);
 
         return $data;
@@ -2630,6 +2767,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
         $roleid = $this->create_test_role();
         set_config('gradebookroles', $roleid);
+
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+        $this->create_mapping_record('enrolment', 'email', 'customemail');
+        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
 
         //base data used every time
         $basedata = array('action' => 'create',
@@ -2658,7 +2800,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_contexts_and_site_course();
         $courseid = $this->create_test_course();
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
-        $roleid = $this->create_test_role();
+
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+        $this->create_mapping_record('enrolment', 'email', 'customemail');
+        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
 
         //base data used every time
         $basedata = array('action' => 'create',
@@ -2693,6 +2839,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
         $roleid = $this->create_test_role();
 
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+        $this->create_mapping_record('enrolment', 'email', 'customemail');
+        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
+
         //base data used every time
         $basedata = array('action' => 'create',
                           'context' => 'coursecat',
@@ -2722,6 +2873,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $context = get_context_instance(CONTEXT_USER, $seconduserid);
         $roleid = $this->create_test_role();
 
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+        $this->create_mapping_record('enrolment', 'email', 'customemail');
+        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
+
         //base data used every time
         $basedata = array('action' => 'create',
                           'context' => 'user',
@@ -2749,6 +2905,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_contexts_and_site_course();
         $context = get_context_instance(CONTEXT_SYSTEM);
         $roleid = $this->create_test_role();
+
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+        $this->create_mapping_record('enrolment', 'email', 'customemail');
+        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
 
         //base data used every time
         $basedata = array('action' => 'create',
@@ -2793,14 +2954,17 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_user();
         $this->create_test_role();
 
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'context', 'customcontext');
+
         //data
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
-                      'context' => 'bogus',
+                      'customcontext' => 'bogus',
                       'instance' => 'bogus',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] context value of \"bogus\" is not one of the available options (system, user, coursecat, course).\n";
+        $message = "[enrolment.csv line 2] customcontext value of \"bogus\" is not one of the available options (system, user, coursecat, course).\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -2832,14 +2996,17 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_user();
         $this->create_test_role();
 
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'instance', 'custominstance');
+
         //data
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
                       'context' => $context,
-                      'instance' => 'bogus',
+                      'custominstance' => 'bogus',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] instance value of \"bogus\" does not refer to a valid instance of a {$displayname} context.\n";
+        $message = "[enrolment.csv line 2] custominstance value of \"bogus\" does not refer to a valid instance of a {$displayname} context.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -2855,6 +3022,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_user();
         $this->create_test_role();
 
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'instance', 'custominstance');
+
         //create the category
         $category = new stdClass;
         $category->name = 'rlipname';
@@ -2868,10 +3038,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
                       'context' => 'coursecat',
-                      'instance' => 'rlipname',
+                      'custominstance' => 'rlipname',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] instance value of \"rlipname\" refers to multiple course category contexts.\n";
+        $message = "[enrolment.csv line 2] custominstance value of \"rlipname\" refers to multiple course category contexts.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -2887,6 +3057,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_course();
         $this->create_test_role();
 
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'group', 'customgroup');
+
         set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
 
         $data = array('action' => 'create',
@@ -2894,9 +3067,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname',
-                      'group' => 'bogus');
+                      'customgroup' => 'bogus');
 
-        $message = "[enrolment.csv line 2] group value of \"bogus\" does not refer to a valid group in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] customgroup value of \"bogus\" does not refer to a valid group in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -2915,6 +3088,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $courseid = $this->create_test_course();
         $this->create_test_role();
 
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'group', 'customgroup');
+
         $group = new stdClass;
         $group->courseid = $courseid;
         $group->name = 'duplicate';
@@ -2926,9 +3102,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname',
-                      'group' => 'duplicate');
+                      'customgroup' => 'duplicate');
 
-        $message = "[enrolment.csv line 2] group value of \"duplicate\" refers to multiple groups in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] customgroup value of \"duplicate\" refers to multiple groups in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -2947,6 +3123,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $courseid = $this->create_test_course();
         $this->create_test_role();
 
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'grouping', 'customgrouping');
+
         $group = new stdClass;
         $group->courseid = $courseid;
         $group->name = 'rlipname';
@@ -2960,9 +3139,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname',
                       'group' => 'rlipname',
-                      'grouping' => 'bogus');
+                      'customgrouping' => 'bogus');
 
-        $message = "[enrolment.csv line 2] grouping value of \"bogus\" does not refer to a valid grouping in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] customgrouping value of \"bogus\" does not refer to a valid grouping in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -2981,6 +3160,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $courseid = $this->create_test_course();
         $this->create_test_role();
 
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'grouping', 'customgrouping');
+
         $group = new stdClass;
         $group->courseid = $courseid;
         $group->name = 'rlipname';
@@ -2998,9 +3180,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname',
                       'group' => 'rlipname',
-                      'grouping' => 'duplicate');
+                      'customgrouping' => 'duplicate');
 
-        $message = "[enrolment.csv line 2] grouping value of \"duplicate\" refers to multiple groupings in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] customgrouping value of \"duplicate\" refers to multiple groupings in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3010,7 +3192,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validates a duplicate enrolment failure message
      */
     public function testVersion1ImportLogsDuplicateEnrolmentFailureMessage() {
-       global $DB;
+        global $DB;
 
         //set up dependencies
         $this->create_contexts_and_site_course();
@@ -3194,6 +3376,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //set up dependencies
         $roleid = $this->create_test_role();
 
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+        $this->create_mapping_record('enrolment', 'email', 'customemail');
+        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
+
         //base data used every time
         $basedata = array('action' => 'delete',
                           'context' => 'system',
@@ -3215,6 +3402,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_user();
         $this->create_test_role();
 
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'context', 'customcontext');
+
         //data
         $data = array('action' => 'delete',
                       'username' => 'rlipusername',
@@ -3222,7 +3412,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'instance' => 'bogus',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] context value of \"bogus\" is not one of the available options (system, user, coursecat, course).\n";
+        $message = "[enrolment.csv line 2] customcontext value of \"bogus\" is not one of the available options (system, user, coursecat, course).\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3236,13 +3426,16 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_user();
         $this->create_test_role();
 
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'role', 'customrole');
+
         //data
         $data = array('action' => 'delete',
                       'username' => 'rlipusername',
                       'context' => 'system',
                       'role' => 'bogus');
 
-        $message = "[enrolment.csv line 2] role value of \"bogus\" does not refer to a valid role.\n";
+        $message = "[enrolment.csv line 2] customrole value of \"bogus\" does not refer to a valid role.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3431,6 +3624,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_user();
         $this->create_test_role();
 
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'instance', 'custominstance');
+
         //create the category
         $category = new stdClass;
         $category->name = 'rlipname';
@@ -3444,10 +3640,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'delete',
                       'username' => 'rlipusername',
                       'context' => 'coursecat',
-                      'instance' => 'rlipname',
+                      'custominstance' => 'rlipname',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] instance value of \"rlipname\" refers to multiple course category contexts.\n";
+        $message = "[enrolment.csv line 2] custominstance value of \"rlipname\" refers to multiple course category contexts.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3493,14 +3689,17 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_user();
         $this->create_test_role();
 
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'instance', 'custominstance');
+
         //data
         $data = array('action' => 'delete',
                       'username' => 'rlipusername',
                       'context' => $context,
-                      'instance' => 'bogus',
+                      'custominstance' => 'bogus',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] instance value of \"bogus\" does not refer to a valid instance of a {$displayname} context.\n";
+        $message = "[enrolment.csv line 2] custominstance value of \"bogus\" does not refer to a valid instance of a {$displayname} context.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3516,6 +3715,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_user();
         $this->create_test_role();
 
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'category', 'customcategory');
+
         //create the category
         $category = new stdClass;
         $category->name = 'rlipname';
@@ -3529,9 +3731,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipcoursename',
                       'fullname' => 'rlipcoursename',
-                      'category' => 'rlipname');
+                      'customcategory' => 'rlipname');
 
-        $message = "[course.csv line 2] category value of \"rlipname\" refers to multiple categories.\n";
+        $message = "[course.csv line 2] customcategory value of \"rlipname\" refers to multiple categories.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'course');
@@ -3541,6 +3743,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that auth validation works on user create
      */
     public function testVersion1ImportLogsInvalidAuthOnUserCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'auth', 'customauth');
+
         $data = array('action' => 'create',
                       'username' => 'testusername',
                       'password' => 'Rlippassword!0',
@@ -3549,8 +3754,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'auth' => 'bogus');
-        $expected_error = "[user.csv line 2] auth value of \"bogus\" is not a valid auth plugin.\n";
+                      'customauth' => 'bogus');
+        $expected_error = "[user.csv line 2] customauth value of \"bogus\" is not a valid auth plugin.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3560,6 +3765,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsInvalidUsernameOnUserCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+                
         //data setup
         $this->load_csv_data();
         //make sure the user belongs to "localhost"
@@ -3569,14 +3777,14 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $DB->update_record('user', $user);
 
         $data = array('action' => 'create',
-                      'username' => 'testusername',
+                      'customusername' => 'testusername',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'rlipfirstname',
                       'lastname' => 'rliplastname',
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Waterloo',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] username value of \"testusername\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] customusername value of \"testusername\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3584,20 +3792,23 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that email validation works on user create
      */
     public function testVersion1ImportLogsInvalidEmailOnUserCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'email', 'customemail');
+
         $data = array('action' => 'create',
                       'username' => 'testusername',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'rlipfirstname',
                       'lastname' => 'rliplastname',
-                      'email' => 'bogusemail',
+                      'customemail' => 'bogusemail',
                       'city' => 'Waterloo',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] email value of \"bogusemail\" is not a valid email address.\n";
+        $expected_error = "[user.csv line 2] customemail value of \"bogusemail\" is not a valid email address.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $this->load_csv_data();
-        $data['email'] = 'test@user.com';
-        $expected_error = "[user.csv line 2] email value of \"test@user.com\" refers to a user that already exists.\n";
+        $data['customemail'] = 'test@user.com';
+        $expected_error = "[user.csv line 2] customemail value of \"test@user.com\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3607,6 +3818,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsInvalidIdnumberOnUserCreate() {
         $this->load_csv_data();
 
+        //create mapping record
+        $this->create_mapping_record('user', 'idnumber', 'customidnumber');
+
         $data = array('action' => 'create',
                       'username' => 'uniqueusername',
                       'password' => 'Rlippassword!0',
@@ -3615,8 +3829,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'idnumber' => 'idnumber');
-        $expected_error = "[user.csv line 2] idnumber value of \"idnumber\" refers to a user that already exists.\n";
+                      'customidnumber' => 'idnumber');
+        $expected_error = "[user.csv line 2] customidnumber value of \"idnumber\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3627,16 +3841,19 @@ class version1FilesystemLoggingTest extends elis_database_test {
         set_config('passwordpolicy', 1);
         set_config('digits', 1);
 
+        //create mapping record
+        $this->create_mapping_record('user', 'password', 'custompassword');
+
         $data = array('action' => 'create',
                       'username' => 'testusername',
-                      'password' => 'invalidpassword',
+                      'custompassword' => 'invalidpassword',
                       'firstname' => 'rlipfirstname',
                       'lastname' => 'test@user.com',
                       'email' => 'bogusemail',
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'idnumber' => 'idnumber');
-        $expected_error = "[user.csv line 2] password value of \"invalidpassword\" does not conform to your site's password policy.\n";
+        $expected_error = "[user.csv line 2] custompassword value of \"invalidpassword\" does not conform to your site's password policy.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3644,6 +3861,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that maildigest validation works on user create
      */
     public function testVersion1ImportLogsInvalidMaildigestOnUserCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'maildigest', 'custommaildigest');
+
         $data = array('action' => 'create',
                       'username' => 'testusername',
                       'password' => 'Rlippassword!0',
@@ -3652,8 +3872,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'maildigest' => '3');
-        $expected_error = "[user.csv line 2] maildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
+                      'custommaildigest' => '3');
+        $expected_error = "[user.csv line 2] custommaildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3661,6 +3881,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that autosubscribe validation works on user create
      */
     public function testVersion1ImportLogsInvalidAutosubscribeOnUserCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'autosubscribe', 'customautosubscribe');
+
         $data = array('action' => 'create',
                       'username' => 'testusername',
                       'password' => 'Rlippassword!0',
@@ -3669,8 +3892,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'autosubscribe' => '2');
-        $expected_error = "[user.csv line 2] autosubscribe value of \"2\" is not one of the available options (0, 1).\n";
+                      'customautosubscribe' => '2');
+        $expected_error = "[user.csv line 2] customautosubscribe value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3680,6 +3903,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsInvalidTrackforumsOnUserCreate() {
         set_config('forum_trackreadposts', 0);
 
+        //create mapping record
+        $this->create_mapping_record('user', 'trackforums', 'customtrackforums');
+
         $data = array('action' => 'create',
                       'username' => 'testusername',
                       'password' => 'Rlippassword!0',
@@ -3688,13 +3914,13 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'trackforums' => '1');
+                      'customtrackforums' => '1');
         $expected_error = "[user.csv line 2] Tracking unread posts is currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('forum_trackreadposts', 1);
         $data['trackforums'] = 2;
-        $expected_error = "[user.csv line 2] trackforums value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] customtrackforums value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3702,6 +3928,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that screenreader validation works on user create
      */
     public function testVersion1ImportLogsInvalidScreenreaderOnUserCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'screenreader', 'customscreenreader');
+
         $data = array('action' => 'create',
                       'username' => 'testusername',
                       'password' => 'Rlippassword!0',
@@ -3710,8 +3939,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'screenreader' => '2');
-        $expected_error = "[user.csv line 2] screenreader value of \"2\" is not one of the available options (0, 1).\n";
+                      'customscreenreader' => '2');
+        $expected_error = "[user.csv line 2] customscreenreader value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3719,6 +3948,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that country validation works on user create
      */
     public function testVersion1ImportLogsInvalidCountryOnUserCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'country', 'customcountry');
+
         $data = array('action' => 'create',
                       'username' => 'testusername',
                       'password' => 'Rlippassword!0',
@@ -3726,8 +3958,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'lastname' => 'rliplastname',
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
-                      'country' => 'bogus');
-        $expected_error = "[user.csv line 2] country value of \"bogus\" is not a valid country or country code.\n";
+                      'customcountry' => 'bogus');
+        $expected_error = "[user.csv line 2] customcountry value of \"bogus\" is not a valid country or country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3735,6 +3967,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that timezone validation works on user create
      */
     public function testVersion1ImportLogsInvalidTimezoneOnUserCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'timezone', 'customtimezone');
+
         set_config('forcetimezone', '99');
 
         $data = array('action' => 'create',
@@ -3745,8 +3980,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'timezone' => 'bogus');
-        $expected_error = "[user.csv line 2] timezone value of \"bogus\" is not a valid timezone.\n";
+                      'customtimezone' => 'bogus');
+        $expected_error = "[user.csv line 2] customtimezone value of \"bogus\" is not a valid timezone.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('forcetimezone', '-5.0');
@@ -3759,8 +3994,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'timezone' => '-4.0');
-        $expected_error = "[user.csv line 2] timezone value of \"-4.0\" is not consistent with forced timezone value of \"-5.0\" on your site.\n";
+                      'customtimezone' => '-4.0');
+        $expected_error = "[user.csv line 2] customtimezone value of \"-4.0\" is not consistent with forced timezone value of \"-5.0\" on your site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3770,6 +4005,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsInvalidThemeOnUserCreate() {
         set_config('allowuserthemes', 0);
 
+        //create mapping record
+        $this->create_mapping_record('user', 'theme', 'customtheme');
+
         $data = array('action' => 'create',
                       'username' => 'testusername',
                       'password' => 'Rlippassword!0',
@@ -3778,13 +4016,13 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'theme' => 'bartik');
-        $expected_error = "[user.csv line 2] User themes are currently disabled on this site.\n";
+                      'customtheme' => 'bartik');
+        $expected_error = "[user.csv line 2] User customthemes are currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('allowuserthemes', 1);
         $data['theme'] = 'bogus';
-        $expected_error = "[user.csv line 2] theme value of \"bogus\" is not a valid theme.\n";
+        $expected_error = "[user.csv line 2] customtheme value of \"bogus\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3792,6 +4030,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that lang validation works on user create
      */
     public function testVersion1ImportLogsInvalidLangOnUserCreate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'lang', 'customlang');
+
         $data = array('action' => 'create',
                       'username' => 'testusername',
                       'password' => 'Rlippassword!0',
@@ -3800,8 +4041,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'CA',
-                      'lang' => 'bogus');
-        $expected_error = "[user.csv line 2] lang value of \"bogus\" is not a valid language code.\n";
+                      'customlang' => 'bogus');
+        $expected_error = "[user.csv line 2] customlang value of \"bogus\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3900,45 +4141,57 @@ class version1FilesystemLoggingTest extends elis_database_test {
     }
 
     public function testVersion1ImportLogsUpdateEmail() {
+        //create mapping record
+        $this->create_mapping_record('user', 'email', 'customemail');
+
         $this->load_csv_data();
         $data = array('action' => 'update',
                       'username' => 'testusername',
-                      'email' => 'testinvalid@user.com',
+                      'customemail' => 'testinvalid@user.com',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] email value of \"testinvalid@user.com\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] customemail value of \"testinvalid@user.com\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsDeleteEmail() {
+        //create mapping record
+        $this->create_mapping_record('user', 'email', 'customemail');
+
         $this->load_csv_data();
         $data = array('action' => 'delete',
                       'username' => 'testusername',
-                      'email' => 'testinvalid@user.com',
+                      'customemail' => 'testinvalid@user.com',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] email value of \"testinvalid@user.com\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] customemail value of \"testinvalid@user.com\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsUpdateMailDigest() {
+        //create mapping record
+        $this->create_mapping_record('user', 'maildigest', 'custommaildigest');
+
         $this->load_csv_data();
         $data = array('action' => 'update',
                       'username' => 'testusername',
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
-                      'maildigest' => 3);
-        $expected_error = "[user.csv line 2] maildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
+                      'custommaildigest' => 3);
+        $expected_error = "[user.csv line 2] custommaildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsUpdateAutoSubscribe() {
+        //create mapping record
+        $this->create_mapping_record('user', 'autosubscribe', 'customautosubscribe');
+
         $this->load_csv_data();
         $data = array('action' => 'update',
                       'username' => 'testusername',
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'maildigest' => 2,
-                      'autosubscribe' => 2);
-        $expected_error = "[user.csv line 2] autosubscribe value of \"2\" is not one of the available options (0, 1).\n";
+                      'customautosubscribe' => 2);
+        $expected_error = "[user.csv line 2] customautosubscribe value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3957,6 +4210,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
     }
 
     public function testVersion1ImportLogsUpdateTracking() {
+        //create mapping record
+        $this->create_mapping_record('user', 'trackforums', 'customtrackforums');
+
         $this->load_csv_data();
         set_config('forum_trackreadposts', 1);
         $data = array('action' => 'update',
@@ -3965,12 +4221,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'maildigest' => 2,
                       'autosubscribe' => 1,
-                      'trackforums' => 2);
-        $expected_error = "[user.csv line 2] trackforums value of \"2\" is not one of the available options (0, 1).\n";
+                      'customtrackforums' => 2);
+        $expected_error = "[user.csv line 2] customtrackforums value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsUpdateScreenReader() {
+        //create mapping record
+        $this->create_mapping_record('user', 'screenreader', 'customscreenreader');
+
         $this->load_csv_data();
         set_config('forum_trackreadposts', 1);
         $data = array('action' => 'update',
@@ -3980,56 +4239,71 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'maildigest' => 2,
                       'autosubscribe' => 1,
                       'trackforums' => 1,
-                      'screenreader' => 2);
-        $expected_error = "[user.csv line 2] screenreader value of \"2\" is not one of the available options (0, 1).\n";
+                      'customscreenreader' => 2);
+        $expected_error = "[user.csv line 2] customscreenreader value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsUpdateUsername() {
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
         $this->load_csv_data();
         $data = array('action' => 'update',
-                      'username' => 'invalidusername',
+                      'customusername' => 'invalidusername',
                       'email' => 'test@user.com',
                       'idnumber' => 'idnumber',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] username value of \"invalidusername\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] customusername value of \"invalidusername\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsDeleteUsername() {
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
         $this->load_csv_data();
         $data = array('action' => 'delete',
-                      'username' => 'invalidusername',
+                      'customusername' => 'invalidusername',
                       'email' => 'test@user.com',
                       'idnumber' => 'idnumber',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] username value of \"invalidusername\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] customusername value of \"invalidusername\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsUpdateIdNumber() {
+        //create mapping record
+        $this->create_mapping_record('user', 'idnumber', 'customidnumber');
+
         $this->load_csv_data();
         $data = array('action' => 'update',
                       'username' => 'testusername',
                       'email' => 'test@user.com',
-                      'idnumber' => 'invalidid',
+                      'customidnumber' => 'invalidid',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] idnumber value of \"invalidid\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] customidnumber value of \"invalidid\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsDeleteIdNumber() {
+        //create mapping record
+        $this->create_mapping_record('user', 'idnumber', 'customidnumber');
+
         $this->load_csv_data();
         $data = array('action' => 'delete',
                       'username' => 'testusername',
                       'email' => 'test@user.com',
-                      'idnumber' => 'invalidid',
+                      'customidnumber' => 'invalidid',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] idnumber value of \"invalidid\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] customidnumber value of \"invalidid\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsUpdateAuth() {
+        //create mapping record
+        $this->create_mapping_record('user', 'auth', 'customauth');
+
         $this->load_csv_data();
         $data = array('action' => 'update',
                       'username' => 'testusername',
@@ -4037,42 +4311,51 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'idnumber' => 'idnumber',
                       'password' => '1234567',
                       'city' => 'Waterloo',
-                      'auth' => 'invalidauth');
-        $expected_error = "[user.csv line 2] auth value of \"invalidauth\" is not a valid auth plugin.\n";
+                      'customauth' => 'invalidauth');
+        $expected_error = "[user.csv line 2] customauth value of \"invalidauth\" is not a valid auth plugin.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsUpdatePassword() {
+        //create mapping record
+        $this->create_mapping_record('user', 'password', 'custompassword');
+
         $this->load_csv_data();
         $data = array('action' => 'update',
                       'username' => 'testusername',
                       'email' => 'test@user.com',
                       'idnumber' => 'idnumber',
-                      'password' => '1234567',
+                      'custompassword' => '1234567',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] password value of \"1234567\" does not conform to your site's password policy.\n";
+        $expected_error = "[user.csv line 2] custompassword value of \"1234567\" does not conform to your site's password policy.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsUpdateLang() {
+        //create mapping record
+        $this->create_mapping_record('user', 'lang', 'customlang');
+
         $this->load_csv_data();
         $data = array('action' => 'update',
                       'username' => 'testusername',
                       'password' => 'm0ddl3.paSs',
-                      'lang' => 'invalidlang');
-        $expected_error = "[user.csv line 2] lang value of \"invalidlang\" is not a valid language code.\n";
+                      'customlang' => 'invalidlang');
+        $expected_error = "[user.csv line 2] customlang value of \"invalidlang\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsUpdateCountry() {
+        //create mapping record
+        $this->create_mapping_record('user', 'country', 'customcountry');
+
         $this->load_csv_data();
         $data = array('action' => 'update',
                       'username' => 'testusername',
                       'password' => 'm0ddl3.paSs',
                       'lang' => 'en',
-                      'country' => 'invalidcountry'
+                      'customcountry' => 'invalidcountry'
                      );
-        $expected_error = "[user.csv line 2] country value of \"invalidcountry\" is not a valid country or country code.\n";
+        $expected_error = "[user.csv line 2] customcountry value of \"invalidcountry\" is not a valid country or country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4093,6 +4376,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
     }
 
     public function testVersion1ImportLogsUpdateTheme() {
+        //create mapping record
+        $this->create_mapping_record('user', 'theme', 'customtheme');
+
         $this->load_csv_data();
         set_config('allowuserthemes', 1);
         $data = array('action' => 'update',
@@ -4102,14 +4388,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'lang' => 'en',
                       'idnumber' => 'idnumber',
                       'country' => 'CA',
-                      'theme' => 'invalidtheme',
+                      'customtheme' => 'invalidtheme',
                      );
-        $expected_error = "[user.csv line 2] theme value of \"invalidtheme\" is not a valid theme.\n";
+        $expected_error = "[user.csv line 2] customtheme value of \"invalidtheme\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsForceTimezone() {
         global $CFG;
+
+        //create mapping record
+        $this->create_mapping_record('user', 'timezone', 'customtimezone');
+
         $this->load_csv_data();
         $CFG->forcetimezone = 97;
         $data = array('action' => 'update',
@@ -4120,14 +4410,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'idnumber' => 'idnumber',
                       'country' => 'CA',
                       'theme' => 'invalidtheme',
-                      'timezone' => 98,
+                      'customtimezone' => 98,
                      );
-        $expected_error = "[user.csv line 2] timezone value of \"98\" is not consistent with forced timezone value of \"{$CFG->forcetimezone}\" on your site.\n";
+        $expected_error = "[user.csv line 2] customtimezone value of \"98\" is not consistent with forced timezone value of \"{$CFG->forcetimezone}\" on your site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     public function testVersion1ImportLogsInvalidTimezone() {
         global $CFG;
+
+        //create mapping record
+        $this->create_mapping_record('user', 'timezone', 'customtimezone');
+
         $this->load_csv_data();
         $CFG->forcetimezone = 99;
         $data = array('action' => 'update',
@@ -4137,9 +4431,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'lang' => 'en',
                       'idnumber' => 'idnumber',
                       'country' => 'CA',
-                      'timezone' => 'invalidtimezone',
+                      'customtimezone' => 'invalidtimezone',
                      );
-        $expected_error = "[user.csv line 2] timezone value of \"invalidtimezone\" is not a valid timezone.\n";
+        $expected_error = "[user.csv line 2] customtimezone value of \"invalidtimezone\" is not a valid timezone.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4177,12 +4471,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that format validation works on course create
      */
     public function testVersion1ImportLogsInvalidFormatOnCourseCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'format', 'customformat');
+
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
-                      'format' => 'bogus');
-        $expected_error = "[course.csv line 2] format value of \"bogus\" does not refer to a valid course format.\n";
+                      'customformat' => 'bogus');
+        $expected_error = "[course.csv line 2] customformat value of \"bogus\" does not refer to a valid course format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4192,12 +4489,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsInvalidNumsectionsOnCourseCreate() {
         set_config('maxsections', 10, 'moodlecourse');
 
+        //create mapping record
+        $this->create_mapping_record('course', 'numsections', 'customnumsections');
+
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
-                      'numsections' => '11');
-        $expected_error = "[course.csv line 2] numsections value of \"11\" is not one of the available options (0 .. 10).\n";
+                      'customnumsections' => '11');
+        $expected_error = "[course.csv line 2] customnumsections value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4205,12 +4505,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that startdate validation works on course create
      */
     public function testVersion1ImportLogsInvalidStartdateOnCourseCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'startdate', 'customstartdate');
+
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
-                      'startdate' => 'bogus');
-        $expected_error = "[course.csv line 2] startdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
+                      'customstartdate' => 'bogus');
+        $expected_error = "[course.csv line 2] customstartdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4218,12 +4521,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that newsitems validation works on course create
      */
     public function testVersion1ImportLogsInvalidNewsitemsOnCourseCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'newsitems', 'customnewsitems');
+
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
-                      'newsitems' => '11');
-        $expected_error = "[course.csv line 2] newsitems value of \"11\" is not one of the available options (0 .. 10).\n";
+                      'customnewsitems' => '11');
+        $expected_error = "[course.csv line 2] customnewsitems value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4231,12 +4537,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that showgrades validation works on course create
      */
     public function testVersion1ImportLogsInvalidShowgradesOnCourseCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'showgrades', 'customshowgrades');
+
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
-                      'showgrades' => '2');
-        $expected_error = "[course.csv line 2] showgrades value of \"2\" is not one of the available options (0, 1).\n";
+                      'customshowgrades' => '2');
+        $expected_error = "[course.csv line 2] customshowgrades value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4244,12 +4553,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that showreports validation works on course create
      */
     public function testVersion1ImportLogsInvalidShowreportsOnCourseCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'showreports', 'customshowreports');
+
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
-                      'showreports' => '2');
-        $expected_error = "[course.csv line 2] showreports value of \"2\" is not one of the available options (0, 1).\n";
+                      'customshowreports' => '2');
+        $expected_error = "[course.csv line 2] customshowreports value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4257,12 +4569,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that maxbytes validation works on course create
      */
     public function testVersion1ImportLogsInvalidMaxbytesOnCourseCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'maxbytes', 'custommaxbytes');
+
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
-                      'maxbytes' => 'bogus');
-        $expected_error = "[course.csv line 2] maxbytes value of \"bogus\" is not one of the available options.\n";
+                      'custommaxbytes' => 'bogus');
+        $expected_error = "[course.csv line 2] custommaxbytes value of \"bogus\" is not one of the available options.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4272,17 +4587,20 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsInvalidGuestOnCourseCreate() {
         set_config('enrol_plugins_enabled', '');
 
+        //create mapping record
+        $this->create_mapping_record('course', 'guest', 'customguest');
+
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
-                      'guest' => '1');
+                      'customguest' => '1');
         $expected_error = "[course.csv line 2] guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         set_config('enrol_plugins_enabled', 'guest');
-        $data['guest'] = '2';
-        $expected_error = "[course.csv line 2] guest value of \"2\" is not one of the available options (0, 1).\n";        
+        $data['customguest'] = '2';
+        $expected_error = "[course.csv line 2] customguest value of \"2\" is not one of the available options (0, 1).\n";        
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4290,12 +4608,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that visible validation works on course create
      */
     public function testVersion1ImportLogsInvalidVisibleOnCourseCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'visible', 'customvisible');
+        
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
-                      'visible' => '2');
-        $expected_error = "[course.csv line 2] visible value of \"2\" is not one of the available options (0, 1).\n";
+                      'customvisible' => '2');
+        $expected_error = "[course.csv line 2] customvisible value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4303,12 +4624,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that lang validation works on course create
      */
     public function testVersion1ImportLogsInvalidLangOnCourseCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'lang', 'customlang');
+
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
-                      'lang' => 'bogus');
-        $expected_error = "[course.csv line 2] lang value of \"bogus\" is not a valid language code.\n";
+                      'customlang' => 'bogus');
+        $expected_error = "[course.csv line 2] customlang value of \"bogus\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4316,14 +4640,21 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate that shortname validation works on course update
      */
     public function testVersion1ImportLogsInvalidShortnameOnCourseUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
         $data = array('action' => 'update',
-                      'shortname' => 'rlipshortname');
-        $expected_error = "[course.csv line 2] shortname value of \"rlipshortname\" does not refer to a valid course.\n";
+                      'customshortname' => 'rlipshortname');
+        $expected_error = "[course.csv line 2] customshortname value of \"rlipshortname\" does not refer to a valid course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     public function testVersion1ImportLogsUpdateFormat() {
         global $CFG;
+
+        //create mapping record
+        $this->create_mapping_record('course', 'format', 'customformat');
+
         $this->load_csv_data();
         $data = array('action' => 'update',
                       'username' => 'testusername',
@@ -4334,14 +4665,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'country' => 'CA',
                       'timezone' => 'invalidtimezone',
                       'shortname' => 'cm2',
-                      'format' => 'invalidformat'
+                      'customformat' => 'invalidformat'
                      );
-        $expected_error = "[course.csv line 2] format value of \"invalidformat\" does not refer to a valid course format.\n";
+        $expected_error = "[course.csv line 2] customformat value of \"invalidformat\" does not refer to a valid course format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     public function testVersion1ImportLogsUpdateNumSections() {
         global $CFG;
+
+        //create mapping record
+        $this->create_mapping_record('course', 'numsections', 'customnumsections');
+
         $this->load_csv_data();
         set_config('maxsections', 20, 'moodlecourse');
         $maxsections = (int)get_config('moodlecourse', 'maxsections');
@@ -4357,6 +4692,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
     public function testVersion1ImportLogsUpdateStartDate() {
         global $CFG;
+
+        //create mapping record
+        $this->create_mapping_record('course', 'startdate', 'customstartdate');
+
         $this->load_csv_data();
         set_config('maxsections', 20, 'moodlecourse');
         $maxsections = (int)get_config('moodlecourse', 'maxsections');
@@ -4364,14 +4703,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'shortname' => 'cm2',
                       'format' => 'weeks',
                       'numsections' => $maxsections,
-                      'startdate' => 'bogus'
+                      'customstartdate' => 'bogus'
                      );
-        $expected_error = "[course.csv line 2] startdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
+        $expected_error = "[course.csv line 2] customstartdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     public function testVersion1ImportLogsUpdateNewsItems() {
         global $CFG;
+
+        //create mapping record
+        $this->create_mapping_record('course', 'newsitems', 'customnewsitems');
+
         $this->load_csv_data();
         set_config('maxsections', 20, 'moodlecourse');
         $maxsections = (int)get_config('moodlecourse', 'maxsections');
@@ -4380,14 +4723,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'format' => 'weeks',
                       'numsections' => $maxsections,
                       'startdate' => 'jan/12/2013',
-                      'newsitems' => 100
+                      'customnewsitems' => 100
                      );
-        $expected_error = "[course.csv line 2] newsitems value of \"100\" is not one of the available options (0 .. 10).\n";
+        $expected_error = "[course.csv line 2] customnewsitems value of \"100\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     public function testVersion1ImportLogsUpdateShowGrades() {
         global $CFG;
+
+        //create mapping record
+        $this->create_mapping_record('course', 'showgrades', 'customshowgrades');
+
         $this->load_csv_data();
         set_config('maxsections', 20, 'moodlecourse');
         $maxsections = (int)get_config('moodlecourse', 'maxsections');
@@ -4397,14 +4744,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'numsections' => $maxsections,
                       'startdate' => 'jan/12/2013',
                       'newsitems' => 5,
-                      'showgrades' => 3
+                      'customshowgrades' => 3
                      );
-        $expected_error = "[course.csv line 2] showgrades value of \"3\" is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] customshowgrades value of \"3\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     public function testVersion1ImportLogsUpdateShowReports() {
         global $CFG;
+
+        //create mapping record
+        $this->create_mapping_record('course', 'showreports', 'customshowreports');
+
         $this->load_csv_data();
         set_config('maxsections', 20, 'moodlecourse');
         $maxsections = (int)get_config('moodlecourse', 'maxsections');
@@ -4415,14 +4766,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'startdate' => 'jan/12/2013',
                       'newsitems' => 5,
                       'showgrades' => 1,
-                      'showreports' => 3
+                      'customshowreports' => 3
                      );
-        $expected_error = "[course.csv line 2] showreports value of \"3\" is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] customshowreports value of \"3\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     public function testVersion1ImportLogsUpdateMaxBytes() {
         global $CFG;
+
+        //create mapping record
+        $this->create_mapping_record('course', 'maxbytes', 'custommaxbytes');
+
         $this->load_csv_data();
         set_config('maxsections', 20, 'moodlecourse');
         $maxsections = (int)get_config('moodlecourse', 'maxsections');
@@ -4437,9 +4792,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'newsitems' => 5,
                       'showgrades' => 1,
                       'showreports' => 0,
-                      'maxbytes' => $invalidmaxbytes
+                      'custommaxbytes' => $invalidmaxbytes
                      );
-        $expected_error = "[course.csv line 2] maxbytes value of \"{$invalidmaxbytes}\" is not one of the available options.\n";
+        $expected_error = "[course.csv line 2] custommaxbytes value of \"{$invalidmaxbytes}\" is not one of the available options.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4448,6 +4803,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_contexts_and_site_course();
         $this->load_csv_data();
         $this->create_test_course();
+
+        //create mapping record
+        $this->create_mapping_record('course', 'guest', 'customguest');
 
         $maxbytes = 51200;
         set_config('maxbytes', $maxbytes, 'moodlecourse');
@@ -4463,15 +4821,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'showgrades' => 1,
                       'showreports' => 0,
                       'maxbytes' => $maxbytes,
-                      'guest' => 'invalidguest'
+                      'customguest' => 'invalidguest'
                      );
-        $expected_error = "[course.csv line 2] guest value of \"invalidguest\" is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] customguest value of \"invalidguest\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');        
     }
 
     public function testVersion1ImportLogsUpdateVisible() {
         global $CFG;
         $this->load_csv_data();
+
+        //create mapping record
+        $this->create_mapping_record('course', 'visible', 'customvisible');
 
         $maxbytes = 51200;
         set_config('maxbytes', $maxbytes, 'moodlecourse');
@@ -4488,15 +4849,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'showreports' => 0,
                       'maxbytes' => $maxbytes,
                       'guest' => 1,
-                      'visible' => 'invalidvisible',
+                      'customvisible' => 'invalidvisible',
                      );
-        $expected_error = "[course.csv line 2] visible value of \"invalidvisible\" is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] customvisible value of \"invalidvisible\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     public function testVersion1ImportLogsUpdateCourseLang() {
         global $CFG;
         $this->load_csv_data();
+
+        //create mapping record
+        $this->create_mapping_record('course', 'lang', 'customlang');
 
         $maxbytes = 51200;
         set_config('maxbytes', $maxbytes, 'moodlecourse');
@@ -4514,9 +4878,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'maxbytes' => $maxbytes,
                       'guest' => 1,
                       'visible' => 1,
-                      'lang' => 'invalidlang'
+                      'customlang' => 'invalidlang'
                      );
-        $expected_error = "[course.csv line 2] lang value of \"invalidlang\" is not a valid language code.\n";
+        $expected_error = "[course.csv line 2] customlang value of \"invalidlang\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4612,19 +4976,22 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
-   public function testCourseThemes() {
+    public function testCourseThemes() {
+        //create mapping record
+        $this->create_mapping_record('course', 'theme', 'customtheme');
+        
         set_config('allowcoursethemes', 0);
         $data = array('action' => 'create',
                       'shortname' => 'shortname',
                       'fullname' => 'fullname',
-                      'theme' => 'splash',
+                      'customtheme' => 'splash',
                       'category' => 'category');
         $expected_error = "[course.csv line 2] Course themes are currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         set_config('allowcoursethemes', 1);
-        $data['theme'] = 'invalidtheme';
-        $expected_error = "[course.csv line 2] theme value of \"invalidtheme\" is not a valid theme.\n";
+        $data['customtheme'] = 'invalidtheme';
+        $expected_error = "[course.csv line 2] customtheme value of \"invalidtheme\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
