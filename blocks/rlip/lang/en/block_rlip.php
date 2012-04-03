@@ -48,6 +48,7 @@ $string['logexecution'] = 'Execution';
 $string['logfilefailures'] = 'Records with error';
 $string['logfilesuccesses'] = 'Records successfully processed';
 $string['logfile_timestamp'] = '%b_%d_%Y_%H%M%S';
+$string['logfiledaily_timestamp'] = '%b_%d_%Y';
 $string['logplugin'] = 'Plugin';
 $string['logscheduledstart'] = 'Scheduled start time';
 $string['logstart'] = 'Actual start time';

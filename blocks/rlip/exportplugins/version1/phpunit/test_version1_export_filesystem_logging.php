@@ -33,15 +33,16 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
-require_once(elis::lib('testlib.php'));
+require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
 /**
  * Class for validating that filesystem logging works during exports
  */
-class version1ExportFilesystemLoggingTest extends elis_database_test {
+class version1ExportFilesystemLoggingTest extends rlip_test {
     /**
      * Return the list of tables that should be overlayed.
      */
@@ -51,7 +52,10 @@ class version1ExportFilesystemLoggingTest extends elis_database_test {
                      'grade_grades' => 'moodle',
                      'user' => 'moodle',
                      'course' => 'moodle',
-                     'course_categories' => 'moodle');
+                     'course_categories' => 'moodle',
+                     'elis_scheduled_tasks' => 'elis_core',
+                     RLIP_SCHEDULE_TABLE => 'block_rlip',
+                     RLIP_LOG_TABLE => 'block_rlip');
     }
 
     /**
@@ -83,28 +87,41 @@ class version1ExportFilesystemLoggingTest extends elis_database_test {
      * export runs too long
      */
     public function testVersion1ExportLogsRuntimeError() {
-        global $CFG;
+        global $CFG, $DB;
 
         //setup
         $this->load_csv_data();
         set_config('nonincremental', 1, 'rlipexport_version1');
 
-        //set the log file name to a fixed value
-        $filename = $CFG->dataroot.'/rliptestfile.log';
-        set_config('logfilelocation', $filename, 'rlipexport_version1');
+        //set the log file location to the dataroot
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipexport_version1');
 
         //no writing actually happens
         $file = $CFG->dataroot.'/bogus';
         $fileplugin = new rlip_fileplugin_csv_delay($file);
 
         //obtain plugin
-        $plugin = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin);
+        $manual = true;
+        $plugin = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin, $manual);
         $plugin->run(0, 0, 1);
 
         //expected error
         $expected_error = get_string('exportexceedstimelimit', 'block_rlip')."\n";
 
         //validate that a log file was created
+        $plugin_type = 'export';
+        $plugin = 'rlipexport_version1';
+        $format = get_string('logfile_timestamp','block_rlip');
+        //get most recent record
+        $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
+        foreach ($records as $record) {
+            $starttime = $record->starttime;
+            break;
+        }
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
+        $filename = self::get_current_logfile($testfilename);
+
         $this->assertTrue(file_exists($filename));
 
         //fetch log line

@@ -32,11 +32,11 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
 /**
@@ -259,8 +259,10 @@ class version1FilesystemLoggingTest extends rlip_test {
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
                      RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
-                     'ip_schedule' => 'block_rlip',
                      'elis_scheduled_tasks' => 'elis_core',
+                     RLIP_SCHEDULE_TABLE => 'block_rlip',
+                     RLIP_LOG_TABLE => 'block_rlip',
+                     'user' => 'moodle',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle');
     }
@@ -335,7 +337,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         global $DB;
         self::$origdb = $DB;
         self::$overlaydb = new overlay_course_database_fs($DB, static::get_overlay_tables(), static::get_ignored_tables());
-        parent::$existing_logfiles = static::get_logfilelocation_files();
+        static::get_logfilelocation_files();
         //self::$overlaydb = new overlay_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
     }
 
@@ -347,7 +349,7 @@ class version1FilesystemLoggingTest extends rlip_test {
      * @param user $entitytype One of 'user', 'course', 'enrolment'
      */
     protected function assert_data_produces_error($data, $expected_error, $entitytype) {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
@@ -368,7 +370,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         //validate that a log file was created
         $manual = true;
         //get first summary record - at times, multiple summary records are created and this handles that problem
-        $records = $DB->get_records('block_rlip_summary_log', null, 'starttime DESC');
+        $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
         foreach ($records as $record) {
             $starttime = $record->starttime;
             break;
@@ -381,6 +383,14 @@ class version1FilesystemLoggingTest extends rlip_test {
         $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
         //get most recent logfile
         $filename = self::get_current_logfile($testfilename);
+        if (!file_exists($filename)) {
+            echo "\n can't find logfile: $filename for \n$testfilename";
+            // added for random FAILs - show existing log files
+            $filepath = $CFG->dataroot;
+            foreach(glob("$filepath/*.log") as $fn) {
+                echo "\n file: $fn";
+            }
+        }
         $this->assertTrue(file_exists($filename));
 
         //fetch log line
@@ -527,7 +537,9 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         //set up the plugin
         $provider = new rlip_importprovider_fsloguser(array());
+        //create a manual import
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, true);
+
         //validation
         $fslogger = $instance->get_fslogger();
         $this->assertEquals($fslogger instanceof rlip_fslogger, true);
@@ -4636,7 +4648,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $plugin = 'rlipimport_version1';
         $manual = true;
         $format = get_string('logfile_timestamp','block_rlip');
-        $starttime = $DB->get_field('block_rlip_summary_log','starttime',array('id'=>'1'));
+        $starttime = $DB->get_field(RLIP_LOG_TABLE,'starttime',array('id'=>'1'));
 //        $testfilename = rlip_log_file_name('import', 'rlipimport_version1', $filepath, $manual, $starttime);
         $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
         $testfilename = self::get_current_logfile($testfilename);
@@ -4651,53 +4663,58 @@ class version1FilesystemLoggingTest extends rlip_test {
      */
     function testVersionImportLogScheduled() {
         global $CFG, $DB, $USER;
-//        require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
-//        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
 
         //set the log file location to the dataroot
         $filepath = $CFG->dataroot;
         set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
-        //store it at the system context
-//        $context = get_context_instance(CONTEXT_SYSTEM);
-
-        //import file path and name
-        $file_path = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/';
+        //file path and name
         $file_name = 'userscheduledimport.csv';
+        // File WILL BE DELETED after import so must copy to moodledata area
+        // Note: file_path now relative to moodledata ($CFG->dataroot)
+        $file_path = '/phpunit/rlip/importplugins/version1/';
+        @mkdir($CFG->dataroot.$file_path, 0777, true);
+        @copy(dirname(__FILE__) ."/{$file_name}",
+              $CFG->dataroot . $file_path . $file_name);
 
         //create a scheduled job
         $data = array('plugin' => 'rlipimport_version1',
                       'period' => '5m',
                       'label' => 'bogus',
-                      'type' => 'rlipimport');
+                      'type' => 'rlipimport',
+                      'userid' => $USER->id);
         $taskid = rlip_schedule_add_job($data);
 
         //lower bound on starttime
-        $starttime = time();
+        $starttime = time()-100;
 
-        //change the next runtime to a known value in the past
+        //change the next runtime to a day from now
         $task = new stdClass;
         $task->id = $taskid;
         $task->nextruntime = $starttime+86400; //tomorrow?
         $DB->update_record('elis_scheduled_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field('ip_schedule', 'id', array('plugin' => 'rlipimport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipimport_version1'));
         $job->nextruntime = $starttime+86400; //tomorrow?
-        $DB->update_record('ip_schedule', $job);
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         //set up config for plugin so the scheduler knows about our csv file
         set_config('schedule_files_path', $file_path, 'rlipimport_version1');
         set_config('user_schedule_file',$file_name, 'rlipimport_version1');
-        set_config('type', 'user', 'rlipimport_version1');
+//        set_config('type', 'user', 'rlipimport_version1');
 
         //run the import
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
         //get timestamp from summary log
-        $records = $DB->get_records('block_rlip_summary_log', array('userid' => $USER->id),'starttime DESC');
-        $starttime = $records[1]->starttime;
+        $records = $DB->get_records(RLIP_LOG_TABLE, null,'starttime DESC');
+        foreach ($records as $record) {
+            $starttime = $record->starttime;
+            break;
+        }
         $format = get_string('logfile_timestamp','block_rlip');
 
         $plugin_type = 'import';
@@ -4706,13 +4723,12 @@ class version1FilesystemLoggingTest extends rlip_test {
         $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.userdate($starttime, $format).'.log';
 //        $testfilename = rlip_log_file_name($plugin_type, $plugin, $filepath, $manual, $starttime);
         $testfilename = self::get_current_logfile($testfilename);
-//echo "\n 2 looking for filename: ".$testfilename;
 
         $exists = file_exists($testfilename);
         $this->assertEquals($exists, true);
     }
 
-    /**
+     /**
      * Validate that a manual import log file generates the correct log file
      */
     function testVersionImportLogSequentialLogFiles() {
@@ -4753,7 +4769,7 @@ class version1FilesystemLoggingTest extends rlip_test {
             $manual = true;
             $format = get_string('logfile_timestamp','block_rlip');
             //get most recent record
-            $records = $DB->get_records('block_rlip_summary_log', null, 'starttime DESC');
+            $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
             foreach ($records as $record) {
                 $starttime = $record->starttime;
                 break;
@@ -4769,31 +4785,53 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         }
         $this->assertEquals($i, 16);
-}
+    }
 
-/**
+
+    /**
      * Validate that the correct error message is logged when an import runs
      * too long
      */
     public function testVersion1ImportLogsRuntimeError() {
-        global $CFG;
+        global $CFG, $DB;
 
-        //set the log file name to a fixed value
-        $filename = $CFG->dataroot.'/rliptestfile.log';
-        set_config('logfilelocation', $filename, 'rlipimport_version1');
+        //set the log file location to the dataroot
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
-        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
-        $provider = new rlip_importprovider_userfile_delay($file);
+        $file_name = 'userfile2.csv';
+        // File WILL BE DELETED after import so must copy to moodledata area
+        // Note: file_path now relative to moodledata ($CFG->dataroot)
+        $file_path = '/phpunit/rlip/importplugins/version1/';
+        @mkdir($CFG->dataroot.$file_path, 0777, true);
+        @copy(dirname(__FILE__) ."/{$file_name}",
+              $CFG->dataroot . $file_path . $file_name);
+        $provider = new rlip_importprovider_userfile_delay($CFG->dataroot . $file_path . $file_name);
 
         //run the import
-        $importplugin = new rlip_importplugin_version1($provider);
+        $manual = true;
+//        $importplugin = new rlip_importplugin_version1($provider);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
         $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
 
         //expected error
         $expected_error = get_string('importexceedstimelimit_b', 'block_rlip', $result)."\n";
 
+
         //validate that a log file was created
+        $plugin_type = 'import';
+        $plugin = 'rlipimport_version1';
+        $format = get_string('logfile_timestamp','block_rlip');
+        //get most recent record
+        $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
+        foreach ($records as $record) {
+            $starttime = $record->starttime;
+            break;
+        }
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
+        $filename = self::get_current_logfile($testfilename);
+
         $this->assertTrue(file_exists($filename));
 
         //fetch log line

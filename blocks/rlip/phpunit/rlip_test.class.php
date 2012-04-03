@@ -34,7 +34,7 @@ abstract class rlip_test extends elis_database_test {
 
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
-        self::$existing_logfiles = static::get_logfilelocation_files();
+        static::get_logfilelocation_files();
     }
 
     public static function tearDownAfterClass() {
@@ -93,8 +93,6 @@ abstract class rlip_test extends elis_database_test {
         //get newest file
         $newest_file = $filename;
         $versions = array();
-        $files = glob("$filename_prefix[0]*.log");
-        print_object($files);
         foreach (glob("$filename_prefix[0]*.log") as $fn) {
             if (($fn != $filename) &&
                 ((is_array(self::$existing_logfiles) && !in_array($fn, self::$existing_logfiles)) ||
