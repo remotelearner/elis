@@ -119,53 +119,10 @@ if ($tasks && $tasks->valid()) {
         $ipjob->config = serialize($data);
         $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
 
-        switch ($plugparts[0]) {
-            case 'rlipimport':
-                $baseinstance = rlip_dataplugin_factory::factory($plugin);
-                $entity_types = $baseinstance->get_import_entities();
-                $files = array();
-                $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
-                $path = $dataroot . DIRECTORY_SEPARATOR . get_config($plugin, 'schedule_files_path');
-                $path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-                $temppath = sprintf($CFG->dataroot . RLIP_IMPORT_TEMPDIR, $plugin);
-                if (!file_exists($temppath) && !mkdir($temppath, 0777, true)) {
-                    mtrace("run_ipjob({$taskname}): Error creating directory '{$temppath}' ... using '{$path}'");
-                    //TBD*** just use main directory???
-                    $temppath = $path;
-                }
-                foreach ($entity_types as $entity) {
-                    $entity_filename = get_config($plugin, $entity .'_schedule_file');
-                    if (empty($entity_filename)) {
-                        // TBD: need dummy so we're not testing directories!
-                        $entity_filename = $entity .'.csv';
-                    }
-                    //echo "\n get_config('{$plugin}', '{$entity}_schedule_file') => {$entity_filename}";
-                    $files[$entity] = $temppath . $entity_filename;
-                    if ($state == null && $path !== $temppath &&
-                        file_exists($path . $entity_filename) &&
-                        !@rename($path . $entity_filename,
-                                 $temppath . $entity_filename)) {
-                        mtrace("run_ipjob({$taskname}): Error moving '".
-                               $path . $entity_filename . "' to '".
-                               $temppath . $entity_filename . "'");
-                    }
-                }
-                $importprovider = new rlip_importprovider_csv($entity_types, $files);
-                $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);
-                break;
-
-            case 'rlipexport':
-                $tz = $DB->get_field('user', 'timezone',
-                                     array('id' => $ipjob->userid));
-                $export = rlip_get_export_filename($plugin,
-                          ($tz === false) ? 99 : $tz);
-                $fileplugin = rlip_fileplugin_factory::factory($export, NULL, false);
-                $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin);
-                break;
-
-            default:
-                mtrace("{$filename}: RLIP plugin '{$plugin}' not supported!");
-                continue;
+        $instance = rlip_get_run_instance($filename, $plugin, $plugparts[0],
+                                          $ipjob->userid, $state);
+        if ($instance == null) {
+            continue;
         }
 
         $instance->run($targetstarttime, $lastruntime, 0, $state);

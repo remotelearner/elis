@@ -876,4 +876,15 @@ class utilityMethodTest extends elis_database_test {
         $value = reset($info[1]);
         $this->assertEquals($value, 0);
     }
+
+    /**
+     * Validate that the library function rlip_get_maxruntime()
+     * returns correct type and value.
+     */
+    function test_rlip_get_maxruntime() {
+        $mrt = rlip_get_maxruntime();
+        //echo "\n maxruntime = {$mrt}\n";
+        $this->assertTrue(is_int($mrt));
+        $this->assertGreaterThanOrEqual(RLIP_MAXRUNTIME_MIN, $mrt);
+    }
 }
