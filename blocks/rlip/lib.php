@@ -878,6 +878,7 @@ function rlip_zip_log_file($plugin) {
         //check to make sure the file exists
         return file_exists($zipfile);
     }
+}
 
 /**
  * Get the maxruntime for MANUAL import/export runs
