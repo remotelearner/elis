@@ -2116,7 +2116,7 @@ class ELIS_files {
                 if (empty($oid)) { // TBD
                     return false;
                 }
-                $cluster_context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $oid);
+                $cluster_context = context_elis_userset::instance($oid);
 
                 $ofile   = true;
             }
@@ -2600,7 +2600,6 @@ class ELIS_files {
 
         $timenow = time();
 
-        $contextlevelnum = context_level_base::get_custom_context_level('cluster', 'elis_program');
         $capability = 'repository/elis_files:viewusersetcontent';
 
         $child_path = $DB->sql_concat('c_parent.path', "'/%'");
@@ -2631,12 +2630,14 @@ class ELIS_files {
                   AND ca.userid = :cmuserid)
               ";
 
-        $params = array('capability'=>$capability,
-                        'child_path'=>$child_path,
-                        'contextlevelnum'=>$contextlevelnum,
-                        'contextlevelnum2'=>$contextlevelnum,
-                        'muserid'=>$USER->id,
-                        'cmuserid'=>$cmuserid);
+        $params = array(
+            'capability'       => $capability,
+            'child_path'       => $child_path,
+            'contextlevelnum'  => CONTEXT_ELIS_USERSET,
+            'contextlevelnum2' => CONTEXT_ELIS_USERSET,
+            'muserid'          => $USER->id,
+            'cmuserid'         => $cmuserid
+        );
         $viewable_clusters = $DB->get_recordset_sql($sql, $params);
 
         // Get user clusters
@@ -2678,7 +2679,7 @@ class ELIS_files {
             }
 
             // Add to opts array
-            $cluster_context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $cluster->id);
+            $cluster_context = context_elis_userset::instance($cluster->id);
             $viewalfuserset = has_capability('repository/elis_files:viewusersetcontent', $cluster_context);
             $editalfuserset = has_capability('repository/elis_files:createusersetcontent', $cluster_context);
             if ($editalfuserset) {
@@ -3157,7 +3158,7 @@ class ELIS_files {
         if (!empty($location->uuid) && !empty($oid) &&  !empty($location->oid) && ($location->oid != $oid) &&
             ($location->uid === 0) && ($location->shared == $shared) && ($location->uid == $uid)) {
 
-            $cluster_context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $oid);
+            $cluster_context = context_elis_userset::instance($oid);
 
             if (has_capability('repository/elis_files:viewusersetcontent', $cluster_context)) {
                 return $this->get_userset_store($oid);

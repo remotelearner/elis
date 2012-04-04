@@ -987,10 +987,10 @@ class repository_elis_files extends repository {
 
     /// Get the context instance for where we originated viewing this browser from.
         if (!empty($oid)) {
-            $userset_context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $oid);
+            $userset_context = context_elis_userset::instance($oid);
         }
         if ($id == SITEID) {
-            $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+            $context = get_context_instance(CONTEXT_SYSTEM);
         } else {
             $context = get_context_instance(CONTEXT_COURSE, $id);
         }

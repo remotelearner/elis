@@ -123,6 +123,10 @@ class file_uploadTest extends PHPUnit_Framework_TestCase {
     public function testUploadFile($mb) {
         global $CFG;
 
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped('Repository not configured or enabled');
+        }
+
         $filesize = $mb * ONE_MB_BYTES;
         $filename = generate_temp_file($mb);
 

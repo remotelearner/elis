@@ -33,7 +33,7 @@ require_once dirname(__FILE__) . '/lib/HTML_TreeMenu-1.2.0/TreeMenu.php';
 require_once dirname(__FILE__) . '/ELIS_files_factory.class.php';
 
 require_login(SITEID, false);
-$context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+$context = get_context_instance(CONTEXT_SYSTEM);
 $PAGE->set_context($context);
 require_capability('moodle/site:config', $context);
 

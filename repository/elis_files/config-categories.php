@@ -40,7 +40,7 @@ if (!$site = get_site()) {
 
 require_login();
 
-$context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+$context = get_context_instance(CONTEXT_SYSTEM);
 $PAGE->set_context($context);
 require_capability('moodle/site:config', $context);
 

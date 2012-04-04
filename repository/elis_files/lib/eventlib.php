@@ -294,7 +294,7 @@ function elis_files_userset_assigned($usersetinfo) {
         return true;
     }
 
-    $context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $userset->id);
+    $context = context_elis_userset::instance($userset->id);
 
     $sql = 'SELECT ra.*
             FROM {role_assignments} ra
@@ -397,7 +397,7 @@ function elis_files_userset_deassigned($usersetinfo) {
         return true;
     }
 
-    $context = get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $userset->id);
+    $context = context_elis_userset::instance($userset->id);
 
     $sql = 'SELECT rc.*
             FROM {role_assignments} ra
