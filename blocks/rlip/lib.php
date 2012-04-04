@@ -27,6 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 define('IP_SCHEDULE_TIMELIMIT', 2 * 60); // max schedule run time in secs
+define('RLIP_MAXRUNTIME_MIN', 28); // minimum maxruntime in secs
 
 //constant for how many log records to show per page
 define('RLIP_LOGS_PER_PAGE', 20);
@@ -507,6 +508,73 @@ function rlip_get_export_filename($plugin, $tz = 99) {
 }
 
 /**
+ *  sub-function for running scheduled IP jobs
+ *
+ * @param  string  $prefix    mtrace prefix string
+ * @param  string  $plugin    The plugin name
+ * @param  string  $type      The plugin type (i.e. rlipimport, rlipexport)
+ * @param  int     $userid    the scheduled job's Moodle userid
+ * @param  object  $state     the scheduled job's past state object
+ * @uses   $CFG
+ * @uses   $DB
+ * @return object  import/export instance to run,
+                   null on error (for unsupported plugin)
+ */
+function rlip_get_run_instance($prefix, $plugin, $type, $userid, $state) {
+    global $CFG, $DB;
+    $instance = null;
+    switch ($type) { // TBD
+        case 'rlipimport':
+            $baseinstance = rlip_dataplugin_factory::factory($plugin);
+            $entity_types = $baseinstance->get_import_entities();
+            $files = array();
+            $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
+            $path = $dataroot . DIRECTORY_SEPARATOR .
+                    trim(get_config($plugin, 'schedule_files_path'),
+                         DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            $temppath = sprintf($dataroot . RLIP_IMPORT_TEMPDIR, $plugin);
+            if (!file_exists($temppath) && !@mkdir($temppath, 0777, true)) {
+                mtrace("{$prefix}: Error creating directory '{$temppath}' ... using '{$path}'");
+                //TBD*** just use main directory???
+                $temppath = $path;
+            }
+            foreach ($entity_types as $entity) {
+                $entity_filename = get_config($plugin, $entity .'_schedule_file');
+                if (empty($entity_filename)) {
+                    // TBD: need dummy so we're not testing directories!
+                    $entity_filename = $entity .'.csv';
+                }
+                //echo "\n get_config('{$plugin}', '{$entity}_schedule_file') => {$entity_filename}";
+                $files[$entity] = $temppath . $entity_filename;
+                if ($state == null && $path !== $temppath &&
+                    file_exists($path . $entity_filename) &&
+                    !@rename($path . $entity_filename,
+                             $temppath . $entity_filename)) {
+                    mtrace("{$prefix}: Error moving '".
+                           $path . $entity_filename . "' to '".
+                           $temppath . $entity_filename . "'");
+                }
+            }
+            $importprovider = new rlip_importprovider_csv($entity_types, $files);
+            $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);
+            break;
+
+        case 'rlipexport':
+            $tz = $DB->get_field('user', 'timezone', array('id' => $userid));
+            $export = rlip_get_export_filename($plugin,
+                          ($tz === false) ? 99 : $tz);
+            $fileplugin = rlip_fileplugin_factory::factory($export, NULL, false);
+            $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin);
+            break;
+
+        default:
+            mtrace("{$prefix}: IP plugin '{$plugin}' not supported!");
+            break;
+    }
+    return $instance;
+}
+
+/**
  *  Callback function for elis_scheduled_tasks IP jobs
  *
  * @param  string  $taskname  The task name, in the form ipjob_{id}, where id
@@ -518,9 +586,10 @@ function rlip_get_export_filename($plugin, $tz = 99) {
 function run_ipjob($taskname, $maxruntime = 0) {
     global $CFG, $DB;
 
+    $fcnname = "run_ipjob({$taskname}, {$maxruntime})";
     $disabledincron = get_config('rlip', 'disableincron');
     if (!empty($disabledincron)) {
-        mtrace("run_ipjob({$taskname}): Internal IP cron disabled by settings - aborting job!");
+        mtrace("{$fcnname}: Internal IP cron disabled by settings - aborting job!");
         return false; // TBD
     }
 
@@ -536,7 +605,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
     list($prefix, $id) = explode('_', $taskname);
     $ipjob = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $id));
     if (empty($ipjob)) {
-        mtrace("run_ipjob({$taskname}): DB Error retrieving IP schedule record - aborting!");
+        mtrace("{$fcnname}: DB Error retrieving IP schedule record - aborting!");
         return false;
     }
 
@@ -567,58 +636,15 @@ function run_ipjob($taskname, $maxruntime = 0) {
         $ipjob->nextruntime = $task->nextruntime;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
     } else {
-        mtrace("run_ipjob({$taskname}): DB Error retrieving task record!");
+        mtrace("{$fcnname}: DB Error retrieving task record!");
         //todo: return false?
     }
 
     // Perform the IP scheduled action
-    switch ($data['type']) { // TBD
-        case 'rlipimport':
-            $baseinstance = rlip_dataplugin_factory::factory($plugin);
-            $entity_types = $baseinstance->get_import_entities();
-            $files = array();
-            $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
-            $path = $dataroot . DIRECTORY_SEPARATOR . get_config($plugin, 'schedule_files_path');
-            $path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-            $temppath = sprintf($CFG->dataroot . RLIP_IMPORT_TEMPDIR, $plugin);
-            if (!file_exists($temppath) && !mkdir($temppath, 0777, true)) {
-                mtrace("run_ipjob({$taskname}): Error creating directory '{$temppath}' ... using '{$path}'");
-                //TBD*** just use main directory???
-                $temppath = $path;
-            }
-            foreach ($entity_types as $entity) {
-                $entity_filename = get_config($plugin, $entity .'_schedule_file');
-                if (empty($entity_filename)) {
-                    // TBD: need dummy so we're not testing directories!
-                    $entity_filename = $entity .'.csv';
-                }
-                //echo "\n get_config('{$plugin}', '{$entity}_schedule_file') => {$entity_filename}";
-                $files[$entity] = $temppath . $entity_filename;
-                if ($state == null && $path !== $temppath &&
-                    file_exists($path . $entity_filename) &&
-                    !@rename($path . $entity_filename,
-                             $temppath . $entity_filename)) {
-                    mtrace("run_ipjob({$taskname}): Error moving '".
-                           $path . $entity_filename . "' to '".
-                           $temppath . $entity_filename . "'");
-                }
-            }
-            $importprovider = new rlip_importprovider_csv($entity_types, $files);
-            $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);
-            break;
-
-        case 'rlipexport':
-            $tz = $DB->get_field('user', 'timezone',
-                                 array('id' => $ipjob->userid));
-            $export = rlip_get_export_filename($plugin,
-                          ($tz === false) ? 99 : $tz);
-            $fileplugin = rlip_fileplugin_factory::factory($export, NULL, false);
-            $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin);
-            break;
-
-        default:
-            mtrace("run_ipjob({$taskname}): IP plugin '{$plugin}' not supported!");
-            return false;
+    $instance = rlip_get_run_instance($fcnname, $plugin, $data['type'],
+                                      $ipjob->userid, $state);
+    if ($instance == null) {
+        return false;
     }
 
     $ipjob->lastruntime = $task->lastruntime;
@@ -626,7 +652,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
     //run the task, specifying the ideal start time, maximum run time & state
     if (($newstate = $instance->run($targetstarttime, $lastruntime, $maxruntime, $state)) !== null) {
         // Task did not complete - RESET nextruntime back & save new state!
-        mtrace("run_ipjob({$taskname}): IP scheduled task exceeded time limit of {$maxruntime} secs");
+        mtrace("{$fcnname}: IP scheduled task exceeded time limit of {$maxruntime} secs");
         //update next runtime on the scheduled task record
         $task->nextruntime = $targetstarttime;
         $task->lastruntime = $ipjob->lastruntime = $lastruntime;
@@ -852,5 +878,20 @@ function rlip_zip_log_file($plugin) {
         //check to make sure the file exists
         return file_exists($zipfile);
     }
+
+/**
+ * Get the maxruntime for MANUAL import/export runs
+ *
+ * @return int  The allowed maxruntime (php.ini::max_execution_time - 2)
+ *              in seconds
+ */
+function rlip_get_maxruntime() {
+    $maxruntime = (int)ini_get('max_execution_time');
+    $maxruntime -= 2; // TBD: MUST STOP BEFORE time limit is reached!
+    //echo "\nrlip_get_maxruntime(b):{$maxruntime}\n";
+    if ($maxruntime < RLIP_MAXRUNTIME_MIN) {
+        $maxruntime = RLIP_MAXRUNTIME_MIN;
+    }
+    return $maxruntime;
 }
 

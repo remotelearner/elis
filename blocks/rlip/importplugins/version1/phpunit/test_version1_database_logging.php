@@ -217,6 +217,24 @@ class rlip_importprovider_userfile extends rlip_importprovider {
     }
 }
 
+class rlip_importprovider_manual_delay
+      extends rlip_importprovider_userfile_delay {
+
+    /**
+     * Provides the object used to log information to the database to the
+     * import
+     *
+     * @return object the DB logger
+     */
+    function get_dblogger() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
+
+        //force MANUAL
+        return new rlip_dblogger_import(true);
+    }
+}
+
 /**
  * Class for testing database logging with the version 1 plugin
  */
@@ -1082,9 +1100,34 @@ class version1DatabaseLoggingTest extends elis_database_test {
     }
 
     /**
-     * Validate that import obeys maxruntime
+     * Validate that MANUAL import obeys maxruntime
      */
-    public function testVersion1ImportObeysMaxRunTime() {
+    public function testVersion1ManualImportObeysMaxRunTime() {
+        global $CFG, $DB;
+
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
+
+        //set up a "user" import provider, using a single fixed file
+        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
+        $provider = new rlip_importprovider_manual_delay($file);
+
+        //run the import
+        $importplugin = new rlip_importplugin_version1($provider, true);
+        ob_start();
+        $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
+        $ui = ob_get_contents();
+        ob_end_clean();
+        $this->assertNotNull($result);
+        $expected_ui = "/.*errorbox.*Failed importing all lines from import file.*due to time limit exceeded.*/";
+        $this->assertRegExp($expected_ui, $ui);
+    }
+
+    /**
+     * Validate that scheduled import obeys maxruntime
+     */
+    public function testVersion1ScheduledImportObeysMaxRunTime() {
         global $CFG, $DB;
 
         //set the log file name to a fixed value

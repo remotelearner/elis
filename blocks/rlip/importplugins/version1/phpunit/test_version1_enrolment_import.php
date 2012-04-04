@@ -2469,6 +2469,7 @@ class version1EnrolmentImportTest extends rlip_test {
         $data = array();
         $provider = new rlip_importprovider_mockenrolment($data);
         $importplugin = new rlip_importplugin_version1($provider);
+        $importplugin->mappings = rlipimport_version1_get_mapping('enrolment');
 
         //transform a sample record
         $record = new stdClass;
