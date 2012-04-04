@@ -817,7 +817,7 @@ function rlip_log_table_html($table) {
  * @param string $timezone The timezone being used
  * @return string $logfilename The name of the log file
  */
-function rlip_log_file_name($plugin_type, $plugin, $filepath, $manual = false, $timestamp = 0, $format = null, $timezone = 99) {
+function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $manual = false, $timestamp = 0, $format = null, $timezone = 99) {
 
     //if no timeformat is set, set it to logfile timestamp format
     $format = empty($format) ? get_string('logfile_timestamp','block_rlip'):$format;
@@ -830,7 +830,11 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $manual = false, $
         $filepath .= '/';
     }
     //create filename
-    $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.userdate($timestamp, $format, $timezone).'.log';
+    if ($plugin_type == 'import') { //include entity
+        $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.$entity.'_'.userdate($timestamp, $format, $timezone).'.log';
+    } else if ($plugin_type == 'export') {
+        $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.userdate($timestamp, $format, $timezone).'.log';
+    }
 
     //make sure the filename is unique
     $count = 0;

@@ -61,7 +61,7 @@ abstract class rlip_importprovider {
      * @param boolean $manual  Set to true if a manual run
      * @return object the fslogger
      */
-    function get_fslogger($plugin, $manual = false, $starttime = 0) {
+    function get_fslogger($plugin, $entity, $manual = false, $starttime = 0) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 
@@ -69,7 +69,7 @@ abstract class rlip_importprovider {
         $filepath = get_config($plugin, 'logfilelocation');
 
         //get filename
-        $filename = rlip_log_file_name('import', $plugin, $filepath, $manual, $starttime);
+        $filename = rlip_log_file_name('import', $plugin, $filepath, $entity, $manual, $starttime);
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
             //for now, default to scheduled runs
@@ -114,7 +114,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $this->dblogger = $this->provider->get_dblogger();
             $this->dblogger->set_plugin($plugin);
             $this->manual = $manual;
-            $this->fslogger = $this->provider->get_fslogger($plugin, $manual, $this->dblogger->starttime);
         }
     }
 
@@ -352,7 +351,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             foreach ($missing_fields as $key => $value) {
                 if (count($value) > 1) {
                     //use helper to do any display-related field name transformation
-                    $display_value = $this->get_required_field_display($value); 
+                    $display_value = $this->get_required_field_display($value);
                     $fields = implode(', ', $display_value);
 
                     $messages[] = "One of {$fields} is required but all are unspecified or empty.";
@@ -502,8 +501,10 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $state = new stdClass;
         }
 
+        $starttime = time();
+
         //track the start time as the current time
-        $this->dblogger->set_starttime(time());
+        $this->dblogger->set_starttime($starttime);
 
         //fetch a file plugin for the current file
         $fileplugin = $this->provider->get_import_file($entity);
@@ -532,9 +533,12 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //header read, so increment line number
         $this->linenumber++;
 
+        //set up fslogger with this starttime for this entity
+        $this->fslogger = $this->provider->get_fslogger($this->dblogger->plugin, $entity, $this->manual, $starttime);
+
         $this->header_read_hook($entity, $header, $fileplugin->get_filename());
 
-        $starttime = time();
+
         //main processing loop
         while ($record = $fileplugin->read()) {
             if (isset($state->linenumber)) {

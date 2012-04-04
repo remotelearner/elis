@@ -114,7 +114,7 @@ abstract class rlip_test extends elis_database_test {
         return $newest_file;
     }
 
-/**
+    /**
      * Find the next log file
      * @param string filename The base filename to find the most recent file
      * @return string next_file The most current filename + 1
@@ -124,7 +124,9 @@ abstract class rlip_test extends elis_database_test {
         $filename_prefix = explode('.',$filename);
 
         // generate the 'next' filename
-        if ($newest_file == $filename) {
+        if (!file_exists($filename)) {
+            $next_file = $filename;
+        } else if ($newest_file == $filename) {
             $next_file = $filename_prefix[0].'_0.log';
         } else {
             $filename_part = explode('_',$filename_prefix[0]);

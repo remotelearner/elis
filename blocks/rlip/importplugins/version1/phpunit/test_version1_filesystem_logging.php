@@ -382,16 +382,11 @@ class version1FilesystemLoggingTest extends rlip_test {
         $plugin_type = 'import';
         $plugin = 'rlipimport_version1';
         $format = get_string('logfile_timestamp','block_rlip');
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         //get most recent logfile
         $filename = self::get_current_logfile($testfilename);
         if (!file_exists($filename)) {
             echo "\n can't find logfile: $filename for \n$testfilename";
-            // added for random FAILs - show existing log files
-            $filepath = $CFG->dataroot;
-            foreach(glob("$filepath/*.log") as $fn) {
-                echo "\n file: $fn";
-            }
         }
         $this->assertTrue(file_exists($filename));
 
@@ -543,29 +538,29 @@ class version1FilesystemLoggingTest extends rlip_test {
         $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
     }
 
-    /**
-     * Validate that version 1 import plugin instances are set up with file-system
-     * loggers
-     */
-    public function testVersion1ImportInstanceHasFsLogger() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
-
-        //set the log file location
-        $file_path = $CFG->dataroot;
-        set_config('logfilelocation', $file_path, 'rlipimport_version1');
-
-        //set up the plugin
-        $provider = new rlip_importprovider_fsloguser(array());
-        //create a manual import
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, true);
-
-        //validation
-        $fslogger = $instance->get_fslogger();
-        $this->assertEquals($fslogger instanceof rlip_fslogger, true);
-    }
+//    /**
+//     * Validate that version 1 import plugin instances are set up with file-system
+//     * loggers
+//     */
+//    public function testVersion1ImportInstanceHasFsLogger() {
+//        global $CFG;
+//        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+//        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+//        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+//
+//        //set the log file location
+//        $file_path = $CFG->dataroot;
+//        set_config('logfilelocation', $file_path, 'rlipimport_version1');
+//
+//        //set up the plugin
+//        $provider = new rlip_importprovider_fsloguser(array());
+//        //create a manual import
+//        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, true);
+//
+//        //validation
+//        $fslogger = $instance->get_fslogger();
+//        $this->assertEquals($fslogger instanceof rlip_fslogger, true);
+//    }
 
     /**
      * Validates that an error is logged for an empty user action field
@@ -3815,7 +3810,7 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         //create mapping record
         $this->create_mapping_record('user', 'username', 'customusername');
-                
+
         //data setup
         $this->load_csv_data();
         //make sure the user belongs to "localhost"
@@ -4535,7 +4530,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'customformat' => 'bogus');
         $expected_error = "[course.csv line 2] customformat value of \"bogus\" does not refer to a valid course format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4553,7 +4548,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'customnumsections' => '11');
         $expected_error = "[course.csv line 2] customnumsections value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4569,7 +4564,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'customstartdate' => 'bogus');
         $expected_error = "[course.csv line 2] customstartdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4585,7 +4580,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'customnewsitems' => '11');
         $expected_error = "[course.csv line 2] customnewsitems value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4601,7 +4596,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'customshowgrades' => '2');
         $expected_error = "[course.csv line 2] customshowgrades value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4617,7 +4612,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'customshowreports' => '2');
         $expected_error = "[course.csv line 2] customshowreports value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4633,7 +4628,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'custommaxbytes' => 'bogus');
         $expected_error = "[course.csv line 2] custommaxbytes value of \"bogus\" is not one of the available options.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4651,14 +4646,14 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'customguest' => '1');
         $expected_error = "[course.csv line 2] guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         set_config('enrol_plugins_enabled', 'guest');
         $data['customguest'] = '2';
-        $expected_error = "[course.csv line 2] customguest value of \"2\" is not one of the available options (0, 1).\n";  
+        $expected_error = "[course.csv line 2] customguest value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4668,11 +4663,11 @@ class version1FilesystemLoggingTest extends rlip_test {
     public function testVersion1ImportLogsInvalidVisibleOnCourseCreate() {
         //create mapping record
         $this->create_mapping_record('course', 'visible', 'customvisible');
-        
+
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'customvisible' => '2');
         $expected_error = "[course.csv line 2] customvisible value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4688,7 +4683,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'customlang' => 'bogus');
         $expected_error = "[course.csv line 2] customlang value of \"bogus\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -4882,7 +4877,7 @@ class version1FilesystemLoggingTest extends rlip_test {
                       'customguest' => 'invalidguest'
                      );
         $expected_error = "[course.csv line 2] customguest value of \"invalidguest\" is not one of the available options (0, 1).\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');  
+        $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     public function testVersion1ImportLogsUpdateVisible() {
@@ -4983,9 +4978,10 @@ class version1FilesystemLoggingTest extends rlip_test {
         $manual = true;
         $timestamp = time();
         $format = get_string('logfile_timestamp','block_rlip');
+        $entity = 'user';
 
-        $filename = rlip_log_file_name($plugin_type, $plugin, $filepath, $manual, $timestamp);
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($timestamp, $format).'.log';
+        $filename = rlip_log_file_name($plugin_type, $plugin, $filepath, $entity, $manual, $timestamp);
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($timestamp, $format).'.log';
         //get most recent logfile +1 as that is what is returned by rlip_log_file_name
         $testfilename = self::get_next_logfile($testfilename);
 
@@ -5029,11 +5025,10 @@ class version1FilesystemLoggingTest extends rlip_test {
         $plugin = 'rlipimport_version1';
         $manual = true;
         $format = get_string('logfile_timestamp','block_rlip');
+        $entity = 'user';
         $starttime = $DB->get_field(RLIP_LOG_TABLE,'starttime',array('id'=>'1'));
-//        $testfilename = rlip_log_file_name('import', 'rlipimport_version1', $filepath, $manual, $starttime);
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
         $testfilename = self::get_current_logfile($testfilename);
-//echo "\n 1 looking for filename: ".$testfilename;
 
         $exists = file_exists($testfilename);
         $this->assertEquals($exists, true);
@@ -5084,7 +5079,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         //set up config for plugin so the scheduler knows about our csv file
         set_config('schedule_files_path', $file_path, 'rlipimport_version1');
         set_config('user_schedule_file',$file_name, 'rlipimport_version1');
-//        set_config('type', 'user', 'rlipimport_version1');
 
         //run the import
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
@@ -5101,8 +5095,8 @@ class version1FilesystemLoggingTest extends rlip_test {
         $plugin_type = 'import';
         $plugin = 'rlipimport_version1';
         $manual = true;
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.userdate($starttime, $format).'.log';
-//        $testfilename = rlip_log_file_name($plugin_type, $plugin, $filepath, $manual, $starttime);
+        $entity = 'user';
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.$entity.'_'.userdate($starttime, $format).'.log';
         $testfilename = self::get_current_logfile($testfilename);
 
         $exists = file_exists($testfilename);
@@ -5148,6 +5142,7 @@ class version1FilesystemLoggingTest extends rlip_test {
             $plugin_type = 'import';
             $plugin = 'rlipimport_version1';
             $manual = true;
+            $entity = 'user';
             $format = get_string('logfile_timestamp','block_rlip');
             //get most recent record
             $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
@@ -5157,7 +5152,7 @@ class version1FilesystemLoggingTest extends rlip_test {
             }
 
             //get base filename
-            $basefilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
+            $basefilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
             //get calculated filename
             $testfilename = self::get_current_logfile($basefilename);
 
@@ -5204,13 +5199,14 @@ class version1FilesystemLoggingTest extends rlip_test {
         $plugin_type = 'import';
         $plugin = 'rlipimport_version1';
         $format = get_string('logfile_timestamp','block_rlip');
+        $entity = 'user';
         //get most recent record
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
         foreach ($records as $record) {
             $starttime = $record->starttime;
             break;
         }
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
         $filename = self::get_current_logfile($testfilename);
 
         $this->assertTrue(file_exists($filename));
@@ -5257,7 +5253,7 @@ class version1FilesystemLoggingTest extends rlip_test {
     public function testCourseThemes() {
         //create mapping record
         $this->create_mapping_record('course', 'theme', 'customtheme');
-        
+
         set_config('allowcoursethemes', 0);
         $data = array('action' => 'create',
                       'shortname' => 'shortname',
