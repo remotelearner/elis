@@ -75,7 +75,9 @@ class rlip_fileplugin_csv_delay extends rlip_fileplugin_csv {
      * Close the file
      */
     function close() {
-        fclose($this->filepointer);
+        if (!empty($this->filepointer)) {
+            fclose($this->filepointer);
+        }
     }
 
     /**

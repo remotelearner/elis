@@ -88,6 +88,7 @@ abstract class rlip_fileplugin_base {
 
     /**
      * Specifies the name of the current open file
+     *
      * @param  bool   $withpath  Whether to include fullpath with filename
      *                           default is NOT to include full path.
      * @return string The file name.
