@@ -321,7 +321,9 @@ class version1FilesystemLoggingTest extends rlip_test {
                      'quiz_question_instances' => 'mod_quiz',
                      'quiz_feedback' => 'mod_quiz',
                      'quiz' => 'mod_quiz',
-                     'url' => 'moodle');
+                     'url' => 'moodle',
+                     'assignment' => 'moodle',
+                     'assignment_submissions' => 'moodle');
 
         if ($DB->record_exists("block", array("name" => "curr_admin"))) {
             $tables['crlm_user_moodle'] = 'elis_program';

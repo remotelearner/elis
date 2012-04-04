@@ -641,10 +641,6 @@ function run_ipjob($taskname, $maxruntime = 0) {
     }
     $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
 
-    // check that last runtime was yesterday? and create zip file if so?
-
-    $DB->update_record('ip_schedule', $ipjob);
-
     return true;
 }
 
