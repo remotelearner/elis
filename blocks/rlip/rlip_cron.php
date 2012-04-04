@@ -30,9 +30,9 @@ define('CLI_SCRIPT', 1);
 require_once(dirname(__FILE__) .'/../../config.php');
 require_once($CFG->dirroot .'/elis/core/lib/tasklib.php');
 require_once($CFG->dirroot .'/blocks/rlip/lib.php');
-require_once($CFG->dirroot .'/blocks/rlip/rlip_dataplugin.class.php');
-require_once($CFG->dirroot .'/blocks/rlip/rlip_fileplugin.class.php');
-require_once($CFG->dirroot .'/blocks/rlip/rlip_importprovider_csv.class.php');
+require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
 
 $filename = basename(__FILE__);
 $disabledincron = get_config('rlip', 'disableincron');
