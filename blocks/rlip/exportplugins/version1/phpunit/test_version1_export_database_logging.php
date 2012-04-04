@@ -30,7 +30,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
 /**
@@ -205,7 +205,8 @@ class version1ExportDatabaseLoggingTest extends elis_database_test {
      */
     function run_export($targetstarttime = 0, $writedelay = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //plugin for file IO
         $fileplugin = new rlip_fileplugin_memoryexport($writedelay);

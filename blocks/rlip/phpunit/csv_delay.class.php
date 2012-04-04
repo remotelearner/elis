@@ -23,27 +23,15 @@
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
-
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+$file = get_plugin_directory('rlipfile', 'csv').'/csv.class.php';
+require_once($file);
 
 /**
- * Mock file plugin that provides a fixed set of data
+ * Class that delays reading import file and delays writing out an export file
  */
-class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
-    //current file position
-    var $index;
-    //file data
-    var $data;
-
-    /**
-     * Mock file plugin constructor
-     *
-     * @param array $data The data represented by this file
-     */
-    function __construct($data) {
-        $this->index = 0;
-        $this->data = $data;
-    }
+class rlip_fileplugin_csv_delay extends rlip_fileplugin_csv {
+    private $readdelay = 3; // 3 sec delay before reads
+    private $writedelay = 3; // 3 sec delay before writes
 
     /**
      * Open the file
@@ -52,41 +40,42 @@ class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
      *                  the mode in which the file should be opened
      */
     function open($mode) {
-        $this->index = 0;
+        if ($mode == RLIP_FILE_WRITE) {
+            return;
+        }
+
+        parent::open($mode);
     }
 
     /**
-     * Read one entry from the file
+     * Delay, then read data in
      *
      * @return array The entry read
      */
     function read() {
-        if ($this->index < count($this->data)) {
-            //more lines to read, fetch next one
-            $result = $this->data[$this->index];
-            //move "line pointer"
-            $this->index++;
-            return $result;
+        if (!empty($this->readdelay)) {
+            sleep($this->readdelay);
         }
-
-        //out of lines
-        return false;
+        return parent::read();
     }
 
     /**
-     * Write one entry to the file
+     * Delay, rather than actually write data out
      *
      * @param array $entry The entry to write to the file
      */
     function write($entry) {
-        //nothing to do
+        if (!empty($this->writedelay)) {
+            sleep($this->writedelay);
+        }
+        //don't actually write anything
     }
 
     /**
      * Close the file
      */
     function close() {
-        //nothing to do
+        fclose($this->filepointer);
     }
 
     /**
@@ -97,7 +86,7 @@ class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
      * @return string The file name
      */
     function get_filename($withpath = false) {
-        return 'memoryfile';
+        //todo: implement?
+        return '';
     }
 }
-

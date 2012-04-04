@@ -31,7 +31,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once(elis::lib('testlib.php'));
@@ -109,7 +109,8 @@ class version1CreateorupdateTest extends elis_database_test {
      */
     private function run_core_user_import($data) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_createorupdateuser($data);
 
@@ -124,7 +125,8 @@ class version1CreateorupdateTest extends elis_database_test {
      */
     private function run_core_course_import($data) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_createorupdatecourse($data);
 
@@ -139,7 +141,8 @@ class version1CreateorupdateTest extends elis_database_test {
      */
     private function run_core_enrolment_import($data) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_createorupdateenrolment($data);
 
@@ -195,7 +198,8 @@ class version1CreateorupdateTest extends elis_database_test {
         require_once($CFG->dirroot.'/elis/core/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
 
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         $tables = array(
             'config_plugins' => 'moodle',
@@ -284,7 +288,8 @@ class version1CreateorupdateTest extends elis_database_test {
      */
     private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //add the record to the DB
         $record = new stdClass;

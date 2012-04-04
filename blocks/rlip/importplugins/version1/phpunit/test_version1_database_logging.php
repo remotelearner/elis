@@ -31,24 +31,13 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/fileplugins/csv.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
+$file = get_plugin_directory('rlipfile', 'csv').'/csv.class.php';
+require_once($file);
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
-
-/**
- * Class that delays reading import file
- */
-class rlip_fileplugin_csv_mock extends rlip_fileplugin_csv {
-    private $readdelay = 3; // 3 sec delay before reads
-
-    function read() {
-        if (!empty($this->readdelay)) {
-            sleep($this->readdelay);
-        }
-        return parent::read();
-    }
-}
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -230,26 +219,21 @@ class rlip_importprovider_userfile extends rlip_importprovider {
     }
 }
 
-class rlip_importprovider_userfile2 extends rlip_importprovider {
-    var $filename;
-
-    function __construct($filename) {
-        $this->filename = $filename;
-    }
+class rlip_importprovider_manual_delay
+      extends rlip_importprovider_userfile_delay {
 
     /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
+     * Provides the object used to log information to the database to the
+     * import
      *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
+     * @return object the DB logger
      */
-    function get_import_file($entity) {
-        if ($entity != 'user') {
-            return false;
-        }
+    function get_dblogger() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 
-        return new rlip_fileplugin_csv_mock($this->filename);
+        //force MANUAL
+        return new rlip_dblogger_import(true);
     }
 }
 
@@ -265,7 +249,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         return array(RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
@@ -377,7 +362,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     private function run_user_import($data) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_loguser($data);
 
@@ -392,7 +378,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     private function run_course_import($data) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_logcourse($data);
 
@@ -407,7 +394,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     private function run_enrolment_import($data) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $provider = new rlip_importprovider_logenrolment($data);
 
@@ -561,7 +549,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseCreate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //set up the site course context
         $prefix = self::$origdb->get_prefix();
@@ -594,7 +583,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingDoesNotLogSuccessMessageOnFailedCourseCreate() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $data = array('entity' => 'course',
                       'action' => 'create',
@@ -616,7 +606,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseUpdate() {
         global $CFG, $DB, $UNITTEST;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //prevent problem with cached contexts
         $UNITTEST = new stdClass;
@@ -684,7 +675,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseDelete() {
         global $CFG, $DB, $UNITTEST;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //prevent problem with cached contexts
         $UNITTEST->running = true;
@@ -730,7 +722,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingDoesNotLogSuccessMessageOnFailedCourseDelete() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $data = array('entity' => 'course',
                       'action' => 'delete',
@@ -1114,9 +1107,9 @@ class version1DatabaseLoggingTest extends elis_database_test {
     }
 
     /**
-     * Validate that import obeys maxruntime
+     * Validate that MANUAL import obeys maxruntime
      */
-    public function testVersion1ImportObeysMaxRunTime() {
+    public function testVersion1ManualImportObeysMaxRunTime() {
         global $CFG, $DB;
 
         //set the log file name to a fixed value
@@ -1125,7 +1118,32 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         //set up a "user" import provider, using a single fixed file
         $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
-        $provider = new rlip_importprovider_userfile2($file);
+        $provider = new rlip_importprovider_manual_delay($file);
+
+        //run the import
+        $importplugin = new rlip_importplugin_version1($provider, true);
+        ob_start();
+        $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
+        $ui = ob_get_contents();
+        ob_end_clean();
+        $this->assertNotNull($result);
+        $expected_ui = "/.*errorbox.*Failed importing all lines from import file.*due to time limit exceeded.*/";
+        $this->assertRegExp($expected_ui, $ui);
+    }
+
+    /**
+     * Validate that scheduled import obeys maxruntime
+     */
+    public function testVersion1ScheduledImportObeysMaxRunTime() {
+        global $CFG, $DB;
+
+        //set the log file name to a fixed value
+        $filename = $CFG->dataroot.'/rliptestfile.log';
+        set_config('logfilelocation', $filename, 'rlipimport_version1');
+
+        //set up a "user" import provider, using a single fixed file
+        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
+        $provider = new rlip_importprovider_userfile_delay($file);
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider);
@@ -1218,7 +1236,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingStoresCorrectFilenameOnRunWithMoodleFile() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
 
         //set the log file name to a fixed value
         $filename = $CFG->dataroot.'/rliptestfile.log';
@@ -1251,7 +1269,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $provider = new rlip_importprovider_moodlefile($entity_types, $fileids);
 
         $importplugin = new rlip_importplugin_version1($provider);
+        //buffer output due to summary display
+        ob_start();
         $result = $importplugin->run();
+        ob_end_clean();
         $this->assertNull($result);
 
         //data validation
@@ -1375,7 +1396,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
     public function testVersion1DBLoggingLogsCorrectUseridForManualImport() {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         $USER->id = 9999;
 
@@ -1424,7 +1446,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
      */
     public function testVersion1DBLoggingSetsAllFieldsDuringScheduledImportRun() {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //set the log file name to a fixed value
@@ -1439,7 +1461,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         // File WILL BE DELETED after import so must copy to moodledata area
         // Note: file_path now relative to moodledata ($CFG->dataroot)
         $file_path = '/phpunit/rlip/importplugins/version1/';
-        @mkdir($file_path, 0777, true);
+        @mkdir($CFG->dataroot.$file_path, 0777, true);
         @copy(dirname(__FILE__) ."/{$file_name}",
               $CFG->dataroot . $file_path . $file_name);
 

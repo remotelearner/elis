@@ -23,69 +23,55 @@
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
 /**
- * File plugin used for writing text to log files
+ * Dummy file plugin that ignores write actions
  */
-class rlip_fileplugin_log extends rlip_fileplugin_base {
-
-	/**
-     * Open the file
+class rlip_fileplugin_nowrite extends rlip_fileplugin_base {
+    /**
+     * Hook for opening the file
      *
      * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
      *                  the mode in which the file should be opened
      */
     function open($mode) {
-    	if ($mode == RLIP_FILE_WRITE) {
-  	        //todo: determine if we need to make a change to unit tests to
-  	        //remove this check
-    	    if (!empty($this->filename)) {
-                $this->filepointer = fopen($this->filename, 'w');
-    	    }
-    	} else {
-    	    //we never read with this class
-    	}
+        //do nothing
     }
 
     /**
-     * Read one entry from the file
+     * Hook for reading one entry from the file
      *
      * @return array The entry read
      */
     function read() {
-        //we never read with this class
+        //do nothing
+        return array();
     }
 
     /**
-     * Write one entry to the file
+     * Hook for writing one entry to the file
      *
-     * @param array $entry The entry to write to the file
+     * @param array $line The entry to write to the file
      */
     function write($entry) {
-        //todo: determine if we need to make a change to unit tests to
-        //remove this check
-        if (isset($this->filepointer)) {
-            $entry = reset($entry);
-            fwrite($this->filepointer, $entry."\n");
-        }
+        //do nothing
     }
 
     /**
-     * Close the file
+     * Hook for closing the file
      */
     function close() {
-        fclose($this->filepointer);
+        //do nothing
     }
 
     /**
      * Specifies the name of the current open file
      *
-     * @param  bool   $withpath  Whether to include fullpath with filename
-     *                           default is NOT to include full path.
-     * @return string The file name
+     * @return string The file name, not including the full path
      */
-    function get_filename($withpath = false) {
-        //todo: implement?
-        return '';
+    function get_filename() {
+        //bogus filename
+        return 'bogus';
     }
 }

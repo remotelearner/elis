@@ -27,8 +27,8 @@
 require_once('../../../config.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/form/rlip_manualexport_form.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
 //permissions checking
 require_login();
@@ -58,7 +58,7 @@ if ($data = $form->get_data()) {
     //indicate to the factory class that this is a manual run
     $manual = true;
     $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin, $manual);
-    $instance->run();
+    $instance->run(0, 0, rlip_get_maxruntime());
 
     //stop page output so that HTML isn't included in the export file
     die;

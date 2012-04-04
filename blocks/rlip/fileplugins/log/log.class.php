@@ -24,35 +24,27 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-
 /**
- * Mock file plugin that provides a fixed set of data
+ * File plugin used for writing text to log files
  */
-class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
-    //current file position
-    var $index;
-    //file data
-    var $data;
+class rlip_fileplugin_log extends rlip_fileplugin_base {
 
-    /**
-     * Mock file plugin constructor
-     *
-     * @param array $data The data represented by this file
-     */
-    function __construct($data) {
-        $this->index = 0;
-        $this->data = $data;
-    }
-
-    /**
+	/**
      * Open the file
      *
      * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
      *                  the mode in which the file should be opened
      */
     function open($mode) {
-        $this->index = 0;
+    	if ($mode == RLIP_FILE_WRITE) {
+  	        //todo: determine if we need to make a change to unit tests to
+  	        //remove this check
+    	    if (!empty($this->filename)) {
+                $this->filepointer = fopen($this->filename, 'w');
+    	    }
+    	} else {
+    	    //we never read with this class
+    	}
     }
 
     /**
@@ -61,16 +53,7 @@ class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
      * @return array The entry read
      */
     function read() {
-        if ($this->index < count($this->data)) {
-            //more lines to read, fetch next one
-            $result = $this->data[$this->index];
-            //move "line pointer"
-            $this->index++;
-            return $result;
-        }
-
-        //out of lines
-        return false;
+        //we never read with this class
     }
 
     /**
@@ -79,25 +62,28 @@ class rlip_fileplugin_readmemory extends rlip_fileplugin_base {
      * @param array $entry The entry to write to the file
      */
     function write($entry) {
-        //nothing to do
+        //todo: determine if we need to make a change to unit tests to
+        //remove this check
+        if (isset($this->filepointer)) {
+            $entry = reset($entry);
+            fwrite($this->filepointer, $entry."\n");
+        }
     }
 
     /**
      * Close the file
      */
     function close() {
-        //nothing to do
+        fclose($this->filepointer);
     }
 
     /**
      * Specifies the name of the current open file
      *
-     * @param  bool   $withpath  Whether to include fullpath with filename
-     *                           default is NOT to include full path.
-     * @return string The file name
+     * @return string The file name, not including the full path
      */
-    function get_filename($withpath = false) {
-        return 'memoryfile';
+    function get_filename() {
+        //todo: implement?
+        return '';
     }
 }
-

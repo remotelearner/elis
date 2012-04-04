@@ -24,7 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
 /**
  * Base class for a provider that instantiates a file plugin
@@ -48,10 +48,10 @@ abstract class rlip_importprovider {
      */
     function get_dblogger() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_dblogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 
-        //for now, the only db logger
-        return new rlip_dblogger_import();
+        //for now, the only db logger, and assume scheduled
+        return new rlip_dblogger_import(false);
     }
 
     /**
@@ -62,13 +62,14 @@ abstract class rlip_importprovider {
      */
     function get_fslogger($plugin) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 
         //set up the file-system logger
         $filename = get_config($plugin, 'logfilelocation');
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
-            return new rlip_fslogger($fileplugin);
+            //for now, default to scheduled runs
+            return rlip_fslogger_factory::factory($fileplugin);
         }
         return null;
     }
@@ -96,7 +97,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      */
     function __construct($provider = NULL, $manual = false) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
         if ($provider !== NULL) {
             //note: provider is not set if only using plugin_supports
@@ -332,8 +333,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * @return boolean true if fields ok, otherwise false
      */
     function check_required_fields($entity, $record, $filename, $exceptions = array()) {
-        //log line prefix
-        $prefix = "[{$filename} line {$this->linenumber}]";
 
         //get list of required fields
         $required_fields = $this->plugin_supports_action($entity, $record->action);
@@ -348,7 +347,10 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             //process "1-of-n" type fields first
             foreach ($missing_fields as $key => $value) {
                 if (count($value) > 1) {
-                    $fields = implode(', ', $value);
+                    //use helper to do any display-related field name transformation
+                    $display_value = $this->get_required_field_display($value); 
+                    $fields = implode(', ', $display_value);
+
                     $messages[] = "One of {$fields} is required but all are unspecified or empty.";
                     //remove so we don't re-process
                     unset($missing_fields[$key]);
@@ -374,22 +376,38 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                 }
 
                 if ($append) {
-                    $messages[] = "Required field {$field} is unspecified or empty.";
+                    //use helper to do any display-related field name transformation
+                    $field_display = $this->get_required_field_display($field);
+                    $messages[] = "Required field {$field_display} is unspecified or empty.";
                 }
             } else if (count($missing_fields) > 1) {
-                $fields = implode(', ', $missing_fields);
+                //use helper to do any display-related field name transformation
+                $missing_fields_display = $this->get_required_field_display($missing_fields);
+                $fields = implode(', ', $missing_fields_display);
                 $messages[] = "Required fields {$fields} are unspecified or empty.";
             }
 
             if (count($messages) > 0) {
                 //combine and log
-                $message = "{$prefix} ".implode(' ', $messages);
-                $this->process_error($message);
+                $message = implode(' ', $messages);
+                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
                 return false;
             }
         }
 
         return true;
+    }
+
+    /**
+     * Perform any necessary transformation on required fields
+     * for display purposes
+     *
+     * @param mixed $fieldorgroup a single field name string, or an array
+     *                            of them
+     * @return mixed the field or array of fields to display
+     */
+    function get_required_field_display($fieldorgroup) {
+        return $fieldorgroup;
     }
 
     /**
@@ -422,13 +440,13 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * @return boolean true if action field is set, otherwise false
      */
     function check_action_field($record, $filename) {
-        //log prefix
-        $prefix = "[{$filename} line {$this->linenumber}]";
-
         if (!isset($record->action) || $record->action === '') {
             //not set, so error
-            $message = "{$prefix} Required field action is unspecified or empty.";
-            $this->process_error($message);
+
+            //use helper to do any display-related field name transformation
+            $field_display = $this->get_required_field_display('action');
+            $message = "Required field {$field_display} is unspecified or empty.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
 
             return false;
         }
@@ -495,6 +513,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         while ($fileplugin->read()) {
             ++$filelines;
         }
+        //track the total number of records to process
+        $this->dblogger->set_totalrecords($filelines);
         $fileplugin->close();
 
         $fileplugin->open(RLIP_FILE_READ);
@@ -508,7 +528,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //header read, so increment line number
         $this->linenumber++;
 
-        $this->header_read_hook($entity, $header);
+        $this->header_read_hook($entity, $header, $fileplugin->get_filename());
 
         $starttime = time();
         //main processing loop
@@ -522,6 +542,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             }
             // check if timelimit excceeded
             if ($maxruntime && (time() - $starttime) > $maxruntime) {
+                $this->dblogger->signal_maxruntime_exceeded();
                 $state->result = false;
                 $state->entity = $entity;
                 $state->filelines = $filelines;
@@ -553,14 +574,11 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         $filename = $fileplugin->get_filename();
         $this->dblogger->flush($filename);
 
-        if ($this->manual) {
-            //display status of the file
-            $logid = $this->dblogger->get_logid();
-            rlip_print_manual_status($logid);
-        } else {
+        if (!$this->manual) {
             // delete processed import file - TBD: check return
             $fileplugin->delete();
         }
+
         return null;
     }
 
@@ -603,7 +621,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                                                       $state)) !== null) {
                 if ($this->fslogger) {
                     $msg = get_string('importexceedstimelimit_b', 'block_rlip', $result);
-                    $this->fslogger->log($msg);
+                    $this->fslogger->log_failure($msg);
                 }
                 return $result;
             }
@@ -613,12 +631,21 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                     $maxruntime -= $usedtime;
                 } else if (($nextentity = next($entities)) !== false) {
                     // import time limit already exceeded, log & exit
+                    $this->dblogger->signal_maxruntime_exceeded();
+                    $filename = '{unknown}'; // default if $fileplugin false
+                    //fetch a file plugin for the current file
+                    $fileplugin = $this->provider->get_import_file($entity);
+                    if ($fileplugin !== false) {
+                        $filename = $fileplugin->get_filename();
+                    }
+                    //flush db log record
+                    $this->dblogger->flush($filename);
                     $state = new stdClass;
                     $state->result = false;
                     $state->entity = $nextentity;
                     if ($this->fslogger) {
                         $msg = get_string('importexceedstimelimit', 'block_rlip', $state);
-                        $this->fslogger->log($msg);
+                        $this->fslogger->log_failure($msg);
                     }
                     return $state;
                 } else {
@@ -647,19 +674,4 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     function get_fslogger() {
         return $this->fslogger;
     }
-
-    /**
-     * Process an error message - to log and screen (if a manual run)
-     */
-    function process_error($error = NULL) {
-        if (!empty($error)) {
-            if ($this->manual) {
-                rlip_print_error($error);
-            }
-            if ($this->fslogger) {
-                $this->fslogger->log($error);
-            }
-        }
-    }
-
 }

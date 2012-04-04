@@ -31,7 +31,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once(elis::lib('testlib.php'));
@@ -94,7 +94,8 @@ class version1EnrolmentImportTest extends elis_database_test {
      */
     protected static function get_overlay_tables() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         return array('context' => 'moodle',
                      'course' => 'moodle',
@@ -363,7 +364,8 @@ class version1EnrolmentImportTest extends elis_database_test {
      */
     private function run_core_enrolment_import($extradata, $use_default_data = true) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         if ($use_default_data) {
             $data = $this->get_core_enrolment_data();
@@ -2401,7 +2403,8 @@ class version1EnrolmentImportTest extends elis_database_test {
      */
     public function testVersion1ImportUsesEnrolmentFieldMappings() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         //set up our mapping of standard field names to custom field names
         $mapping = array('action' => 'action1',
@@ -2450,8 +2453,9 @@ class version1EnrolmentImportTest extends elis_database_test {
      */
     public function testVersion1ImportEnrolmentFieldImportPreventsStandardFieldUse() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        $plugin_dir = get_plugin_directory('rlipimport', 'version1');
+        require_once($plugin_dir.'/lib.php');
+        require_once($plugin_dir.'/version1.class.php');
 
         //create the mapping record
         $record = new stdClass;
@@ -2464,6 +2468,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         $data = array();
         $provider = new rlip_importprovider_mockenrolment($data);
         $importplugin = new rlip_importplugin_version1($provider);
+        $importplugin->mappings = rlipimport_version1_get_mapping('enrolment');
 
         //transform a sample record
         $record = new stdClass;

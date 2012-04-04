@@ -30,8 +30,8 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 
@@ -146,9 +146,11 @@ class fsLoggerTest extends elis_database_test {
     /**
      * Provides a file-system logger object bound to a log file
      *
+     * @param boolean $manual true to indicate to the logger that the run is
+     *                        manual, or false for scheduled
      * @return array Array of the logger object and the associated filename
      */
-    protected function get_fs_logger() {
+    protected function get_fs_logger($manual = false) {
         global $CFG;
 
         //set up the file plugin for IO
@@ -156,7 +158,7 @@ class fsLoggerTest extends elis_database_test {
         $fileplugin = rlip_fileplugin_factory::factory($CFG->dataroot.'/rliptest', NULL, true);
 
         //set up the logging object
-        $fslogger = rlip_fslogger_factory::factory($fileplugin);
+        $fslogger = rlip_fslogger_factory::factory($fileplugin, $manual);
 
         return array($fslogger, $filename);        
     }
@@ -172,13 +174,13 @@ class fsLoggerTest extends elis_database_test {
         list($fslogger, $filename) = $this->get_fs_logger();
 
         //write a line
-        $fslogger->log(1000000000, 'Teststring');
+        $fslogger->log_success(1000000000, 'Teststring');
 
         //track whether data was recorded on-the-fly
         $firstcount = count(file($filename));
 
         //write a line
-        $fslogger->log(1000000000, 'Teststring');
+        $fslogger->log_success(1000000000, 'Teststring');
 
         //track whether data was recorded on-the-fly
         $secondcount = count(file($filename));
@@ -202,7 +204,7 @@ class fsLoggerTest extends elis_database_test {
         list($fslogger, $filename) = $this->get_fs_logger();
 
         //write a line
-        $fslogger->log(1000000000, 'Teststring');
+        $fslogger->log_success(1000000000, 'Teststring');
 
         //clean up
         $fslogger->close();
@@ -248,7 +250,7 @@ class fsLoggerTest extends elis_database_test {
         //write a line
         $time = time();
         $message = 'Message';
-        $fslogger->log($message, $time);
+        $fslogger->log_success($message, $time);
 
         //clean up
         $fslogger->close();
@@ -304,7 +306,7 @@ class fsLoggerTest extends elis_database_test {
         //write a line
         $time = time();
         $message = 'Message';
-        $fslogger->log($message, $time);
+        $fslogger->log_success($message, $time);
 
         //clean up
         $fslogger->close();
@@ -323,7 +325,7 @@ class fsLoggerTest extends elis_database_test {
         //write a line
         $time = time();
         $message = 'Message';
-        $fslogger->log($message, $time);
+        $fslogger->log_success($message, $time);
 
         //clean up
         $fslogger->close();
@@ -351,7 +353,7 @@ class fsLoggerTest extends elis_database_test {
         //write a line
         $time = time();
         $message = 'Message';
-        $fslogger->log($message, $time);
+        $fslogger->log_success($message, $time);
 
         //clean up
         $fslogger->close();
@@ -370,7 +372,7 @@ class fsLoggerTest extends elis_database_test {
         //write a line
         $time = time();
         $message = 'Message';
-        $fslogger->log($message, $time);
+        $fslogger->log_success($message, $time);
 
         //clean up
         $fslogger->close();
@@ -395,7 +397,7 @@ class fsLoggerTest extends elis_database_test {
         //write a line
         $time = time();
         $message = 'Message';
-        $fslogger->log($message);
+        $fslogger->log_success($message);
 
         //clean up
         $fslogger->close();
@@ -424,7 +426,7 @@ class fsLoggerTest extends elis_database_test {
         //write a line
         $time = time();
         $message = 'Message';
-        $fslogger->log($message);
+        $fslogger->log_success($message);
 
         //clean up
         $fslogger->close();
@@ -478,11 +480,11 @@ class fsLoggerTest extends elis_database_test {
         //write a line for the current time
         $time = time();
         $message = 'Message';
-        $fslogger->log($message);
+        $fslogger->log_success($message);
 
         //write a line for six months in the future
         $time += 182 * DAYSECS;
-        $fslogger->log($message, $time);
+        $fslogger->log_success($message, $time);
 
         //clean up
         $fslogger->close();
@@ -541,11 +543,11 @@ class fsLoggerTest extends elis_database_test {
         //write a line for the current time
         $time = time();
         $message = 'Message';
-        $fslogger->log($message);
+        $fslogger->log_success($message);
 
         //write a line for six months in the future
         $time += 182 * DAYSECS;
-        $fslogger->log($message, $time);
+        $fslogger->log_success($message, $time);
 
         //clean up
         $fslogger->close();
@@ -604,11 +606,11 @@ class fsLoggerTest extends elis_database_test {
         //write a line for the current time
         $time = time();
         $message = 'Message';
-        $fslogger->log($message);
+        $fslogger->log_success($message);
 
         //write a line for six months in the future
         $time += 182 * DAYSECS;
-        $fslogger->log($message, $time);
+        $fslogger->log_success($message, $time);
 
         //clean up
         $fslogger->close();
@@ -652,11 +654,10 @@ class fsLoggerTest extends elis_database_test {
         //write a line
         $time = time();
         $message = 'Message';
-        $fslogger->log($message, $time);
+        $fslogger->log_success($message, $time);
         //write a line
-        $time = time();
         $message = 'Message 2';
-        $fslogger->log($message, $time);
+        $fslogger->log_success($message, $time);
 
         //clean up
         $fslogger->close();
@@ -679,7 +680,7 @@ class fsLoggerTest extends elis_database_test {
         $fslogger = rlip_fslogger_factory::factory($fileplugin);
 
         //write a line
-        $fslogger->log('Teststring', 1000000000);
+        $fslogger->log_success('Teststring', 1000000000);
 
         //clean up
         $fslogger->close();
@@ -711,5 +712,151 @@ class fsLoggerTest extends elis_database_test {
         //test positive hours
         $this->assertEquals(rlip_fslogger::offset_display(5), '+0500');
         $this->assertEquals(rlip_fslogger::offset_display(12), '+1200');
+    }
+
+    /**
+     * Validate that the file-system logger correctly implements the API hook
+     * for customizing a log line
+     */
+    public function testLinebasedFsloggerCustomizesRecord() {
+        //set up the logging object
+        list($fslogger, $filename) = $this->get_fs_logger();
+
+        //obtain the specialized string
+        $specialized_output = $fslogger->customize_record('Message', time(), 'rliptest', 10, true);
+
+        //validation
+        $expected_line = '[rliptest line 10] Message';
+        $this->assertEquals($specialized_output, $expected_line);
+    }
+
+    /**
+     * Validate that the file-system logger correctly logs a complete line on
+     * success
+     */
+    public function testLinebasedFsloggerCalculatesFileAndLineInformationOnSuccess() {
+        //force the timezone
+        set_config('forcetimezone', -5.0);
+
+        //set up the logging object
+        list($fslogger, $filename) = $this->get_fs_logger();
+
+        //log a line with all information included
+        $time = time();
+        $fslogger->log_success('Message', $time, 'rliptest', 10);
+
+        //validation
+        $format = get_string('logtimeformat', 'block_rlip');
+        $expected_lines = array('['.userdate($time, $format, -5.0, false).' -0500] [rliptest line 10] Message'."\n");
+        $this->assert_file_contents_equal($filename, $expected_lines);
+    }
+
+    /**
+     * Validate that the file-system logger correctly logs a complete line on
+     * failure
+     */
+    public function testLinebasedFsloggerCalculatesFileAndLineInformationOnFailure() {
+        //force the timezone
+        set_config('forcetimezone', -5.0);
+
+        //set up the logging object
+        list($fslogger, $filename) = $this->get_fs_logger();
+
+        //log a line with all information included
+        $time = time();
+        $fslogger->log_failure('Message', $time, 'rliptest', 10);
+
+        //validation
+        $format = get_string('logtimeformat', 'block_rlip');
+        $expected_lines = array('['.userdate($time, $format, -5.0, false).' -0500] [rliptest line 10] Message'."\n");
+        $this->assert_file_contents_equal($filename, $expected_lines);
+    }
+
+    /**
+     * Validate that the file-system logger does not produce output for a
+     * successful record on a manual run
+     */
+    public function testFsLoggerDoesNotOutputForManualSuccessLog() {
+        //set up the logging object
+        list($fslogger, $filename) = $this->get_fs_logger(true);
+
+        //start output buffering
+        ob_start();
+
+        //log a line with all information included
+        $time = time();
+        $fslogger->log_success('Message', $time, 'rliptest', 10);
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertEquals($output, '');
+    }
+
+    /**
+     * Validate that the file-system logger produces output for a failed record
+     * on a manual run
+     */
+    public function testFsLoggerOutputsForManualFailureLog() {
+        //set up the logging object
+        list($fslogger, $filename) = $this->get_fs_logger(true);
+
+        //start output buffering
+        ob_start();
+
+        //log a line with all information included
+        $time = time();
+        $fslogger->log_failure('Message', $time, 'rliptest', 10);
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertNotEquals($output, '');
+    }
+
+    /**
+     * Validate that the file-system logger does not produce output for a
+     * successful record on a scheduled run
+     */
+    public function testFsLoggerDoesNotOutputForScheduledSuccessLog() {
+        //set up the logging object
+        list($fslogger, $filename) = $this->get_fs_logger();
+
+        //start output buffering
+        ob_start();
+
+        //log a line with all information included
+        $time = time();
+        $fslogger->log_success('Message', $time, 'rliptest', 10);
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertEquals($output, '');
+    }
+
+    /**
+     * Validate that the file-system logger does not produce output for a
+     * failed record on a scheduled run
+     */
+    public function testFsLoggerDoesNotOutputForScheduledFailureLog() {
+        //set up the logging object
+        list($fslogger, $filename) = $this->get_fs_logger();
+
+        //start output buffering
+        ob_start();
+
+        //log a line with all information included
+        $time = time();
+        $fslogger->log_failure('Message', $time, 'rliptest', 10);
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        //validation
+        $this->assertEquals($output, '');
     }
 }

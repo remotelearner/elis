@@ -24,7 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/rlip_exportplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
 
 /**
  * Moodle course grade export compatible with the original Moodle-only grade
@@ -52,7 +52,8 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
     function init($targetstarttime = 0, $lastruntime = 0) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($file);
 
         //columns that are always displayed
         $columns = array(get_string('header_firstname', 'rlipexport_version1'),

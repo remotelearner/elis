@@ -25,7 +25,8 @@
  */
 
 require_once('../../../../config.php');
-require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+$file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+require_once($file);
 
 //permissions checking
 require_login();

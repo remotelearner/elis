@@ -26,8 +26,8 @@
 
 require_once(dirname(__FILE__) .'/../../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/rlip_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemorywithname.class.php');
 
@@ -76,7 +76,7 @@ class rlip_importprovider_mock extends rlip_importprovider {
      */
     function get_fslogger($plugin) {
         $fileplugin = rlip_fileplugin_factory::factory('', NULL, true);
-        return new rlip_fslogger($fileplugin);
+        return rlip_fslogger_factory::factory($fileplugin);
     }
 }
 
@@ -169,7 +169,7 @@ class rlip_importprovider_multi_mock extends rlip_importprovider {
      */
     function get_fslogger($plugin) {
         $fileplugin = rlip_fileplugin_factory::factory('', NULL, true);
-        return new rlip_fslogger($fileplugin);
+        return rlip_fslogger_factory::factory($fileplugin);
     }
 }
 

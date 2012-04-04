@@ -51,6 +51,13 @@ class utilityMethodTest extends elis_database_test {
     }
 
     /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        return array('context' => 'moodle');
+    }
+
+    /**
      * Create test user record
      */
     protected function create_test_user() {
@@ -841,7 +848,7 @@ class utilityMethodTest extends elis_database_test {
      */
     function testOperationSelectReturnsCorrectSQLFilter() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/rlip_log_filtering.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_log_filtering.class.php');
 
         //create filter class
         $options = array('= 0' => 'label1',
@@ -868,5 +875,16 @@ class utilityMethodTest extends elis_database_test {
         $this->assertEquals(substr($info[0], 0, 7), 'field >');
         $value = reset($info[1]);
         $this->assertEquals($value, 0);
+    }
+
+    /**
+     * Validate that the library function rlip_get_maxruntime()
+     * returns correct type and value.
+     */
+    function test_rlip_get_maxruntime() {
+        $mrt = rlip_get_maxruntime();
+        //echo "\n maxruntime = {$mrt}\n";
+        $this->assertTrue(is_int($mrt));
+        $this->assertGreaterThanOrEqual(RLIP_MAXRUNTIME_MIN, $mrt);
     }
 }
