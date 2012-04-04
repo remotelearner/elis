@@ -91,10 +91,15 @@ class rlip_fileplugin_readmemorywithname extends rlip_fileplugin_base {
     /**
      * Specifies the name of the current open file
      *
-     * @return string The file name, not including the full path
+     * @param  bool   $withpath  Whether to include fullpath with filename
+     *                           default is NOT to include full path.
+     * @return string The file name.
      */
-    function get_filename() {
+    function get_filename($withpath = false) {
         //physical file, so obtain filename from full path
+        if ($withpath) {
+            return $this->filename;
+        }
         $parts = explode('/', $this->filename);
         $count = count($parts);
         return $parts[$count - 1];
