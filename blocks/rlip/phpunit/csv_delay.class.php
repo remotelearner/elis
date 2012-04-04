@@ -70,4 +70,25 @@ class rlip_fileplugin_csv_delay extends rlip_fileplugin_csv {
         }
         //don't actually write anything
     }
+
+    /**
+     * Close the file
+     */
+    function close() {
+        if (!empty($this->filepointer)) {
+            fclose($this->filepointer);
+        }
+    }
+
+    /**
+     * Specifies the name of the current open file
+     *
+     * @param  bool   $withpath  Whether to include fullpath with filename
+     *                           default is NOT to include full path.
+     * @return string The file name
+     */
+    function get_filename($withpath = false) {
+        //todo: implement?
+        return '';
+    }
 }

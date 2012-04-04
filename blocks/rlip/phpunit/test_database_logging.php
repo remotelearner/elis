@@ -166,8 +166,14 @@ class databaseLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
         //set up the import
+        // MUST copy file to temp area 'cause it'll be deleted after import
         $entity_types = array('user');
-        $files = array('user' => get_plugin_directory('rlipimport', 'version1').'/phpunit/userfile.csv');
+        $userfile = 'userfile.csv';
+        $testfile = dirname(__FILE__) .'/'. $userfile;
+        $tempdir = $CFG->dataroot .'/blocks/rlip/phpunit/';
+        @mkdir($tempdir, 0777, true);
+        @copy($testfile, $tempdir . $userfile);
+        $files = array('user' => $tempdir . $userfile);
         $importprovider = new rlip_importprovider_csv($entity_types, $files);
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $importprovider);
 

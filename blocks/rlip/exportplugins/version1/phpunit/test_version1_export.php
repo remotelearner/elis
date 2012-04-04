@@ -89,9 +89,11 @@ class rlip_fileplugin_bogus extends rlip_fileplugin_base {
     /**
      * Specifies the name of the current open file
      *
-     * @return string The file name, not including the full path
+     * @param  bool   $withpath  Whether to include fullpath with filename
+     *                           default is NOT to include full path.
+     * @return string The file name
      */
-    function get_filename() {
+    function get_filename($withpath = false) {
         return 'bogus';
     }
 }
@@ -143,9 +145,11 @@ class rlip_fileplugin_openclose extends rlip_fileplugin_base {
     /**
      * Specifies the name of the current open file
      *
-     * @return string The file name, not including the full path
+     * @param  bool   $withpath  Whether to include fullpath with filename
+     *                           default is NOT to include full path.
+     * @return string The file name
      */
-    function get_filename() {
+    function get_filename($withpath = false) {
         return 'bogus';
     }
 

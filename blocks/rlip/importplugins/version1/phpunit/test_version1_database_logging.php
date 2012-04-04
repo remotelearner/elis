@@ -120,9 +120,11 @@ class rlip_fileplugin_readmemory_dynamic extends rlip_fileplugin_readmemory {
     /**
      * Specifies the name of the current open file
      *
-     * @return string The file name, not including the full path
+     * @param  bool   $withpath  Whether to include fullpath with filename
+     *                           default is NOT to include full path.
+     * @return string The file name
      */
-    function get_filename() {
+    function get_filename($withpath = false) {
         return $this->filename;
     }
 }
@@ -1084,7 +1086,12 @@ class version1DatabaseLoggingTest extends elis_database_test {
         set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
-        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile.csv';
+        // MUST copy file to temp area 'cause it'll be deleted after import
+        $testfile = dirname(__FILE__) .'/userfile.csv';
+        $tempdir = $CFG->dataroot .'/blocks/rlip/importplugins/version1/phpunit/';
+        $file = $tempdir .'/userfile.csv';
+        @mkdir($tempdir, 0777, true);
+        @copy($testfile, $file);
         $provider = new rlip_importprovider_userfile($file);
 
         //run the import

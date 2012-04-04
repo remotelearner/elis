@@ -41,9 +41,7 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      */
     function open($mode) {
     	global $CFG;
-
     	$fs = get_file_storage();
-
     	if ($mode == RLIP_FILE_WRITE) {
             if ($this->sendtobrowser) {
     	        //send directly to the browser
@@ -116,14 +114,20 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
     /**
      * Specifies the name of the current open file
      *
-     * @return string The file name, not including the full path
+     * @param  bool   $withpath  Whether to include fullpath with filename
+     *                           default is NOT to include full path.
+     * @uses   $DB
+     * @return string The file name.
      */
-    function get_filename() {
+    function get_filename($withpath = false) {
         global $DB;
 
-        if ($this->filename != '') {
+        if (!empty($this->filename)) {
             //physical file, so obtain filename from full path
-            $parts = explode('/', $this->filename);
+            if ($withpath) {
+                return $this->filename;
+            }
+            $parts = explode(DIRECTORY_SEPARATOR, $this->filename);
             $count = count($parts);
             return $parts[$count - 1];
         } else {
@@ -138,7 +142,9 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      * @return bool   true on success, false on error
      */
     function delete() {
-        return @unlink($this->get_filename());
+        if (!empty($this->filename)) {
+            return @unlink($this->get_filename(true));
+        } /* else { // delete from Moodle fs } */
     }
 
 }
