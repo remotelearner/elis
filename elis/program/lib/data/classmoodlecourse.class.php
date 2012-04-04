@@ -39,7 +39,7 @@ require_once elispm::lib('moodlecourseurl.class.php');
 define ('CLSMDLENROLAUTO', 0);          // Automatically assign roles in Moodle course.
 define ('CLSMDLENROLCHOICE', 1);        // Allow user to choose at time of assignment.
 
-class classmoodlecourse extends data_object_with_custom_fields {
+class classmoodlecourse extends elis_data_object {
     const TABLE = 'crlm_class_moodle';
 
     static $associations = array(
@@ -62,10 +62,6 @@ class classmoodlecourse extends data_object_with_custom_fields {
     protected $_dbfield_autocreated;
 
     var $siteconfig = ''; // TBD: not a _dbfield, leave empty?
-
-    protected function get_field_context_level() {
-        return CONTEXT_ELIS_COURSE;
-    }
 
 	public static function delete_for_class($id) {
     	return $this->_db->delete_records(classmoodlecourse::TABLE, array('classid'=>$id));

@@ -28,7 +28,7 @@
  * Generate a JSON data set containing all the classes belonging to the specified course
  */
 
-require_once(dirname(__FILE__) .'/../../../../config.php');
+require_once(dirname(__FILE__) .'/../../../../../config.php');
 require_once($CFG->dirroot .'/elis/program/lib/setup.php');
 require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
 require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');

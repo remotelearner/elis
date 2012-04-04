@@ -29,6 +29,7 @@ global $CFG;
 require_once($CFG->dirroot . '/elis/program/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
+require_once(elis::lib('data/customfield.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 
 class usersetTest extends elis_database_test {
@@ -38,6 +39,8 @@ class usersetTest extends elis_database_test {
         return array(
             'context'      => 'moodle',
             'course'       => 'moodle',
+            field::TABLE => 'elis_core',
+            field_contextlevel::TABLE => 'elis_core',
             userset::TABLE => 'elis_program',
         );
     }
@@ -151,9 +154,6 @@ class usersetTest extends elis_database_test {
      * Test that you can delete and promote user subsets
      */
     public function testDeletingRecordCanPromoteUserSubsets() {
-        $this->markTestSkipped();
-        return;
-
         $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children
@@ -177,9 +177,6 @@ class usersetTest extends elis_database_test {
      * Test that you can delete a user set and all its user subsets
      */
     public function testDeleteRecordCanDeleteUserSubsets() {
-        $this->markTestSkipped();
-        return;
-
         $this->load_csv_data();
 
         // make sure all the contexts are created, so that we can find the children

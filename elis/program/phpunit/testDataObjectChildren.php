@@ -29,6 +29,7 @@ global $CFG;
 require_once($CFG->dirroot . '/elis/program/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
+require_once(elis::lib('data/customfield.class.php'));
 require_once(elispm::lib('data/classmoodlecourse.class.php'));
 require_once(elispm::lib('data/clusterassignment.class.php'));
 require_once(elispm::lib('data/clustercurriculum.class.php'));
@@ -69,6 +70,7 @@ class testDataObjectChildren extends elis_database_test {
 		    courseprerequisite::TABLE => 'elis_program',
 		    curriculumcourse::TABLE => 'elis_program',
 		    curriculumstudent::TABLE => 'elis_program',
+		    field::TABLE => 'elis_core',
 		    instructor::TABLE => 'elis_program',
 		    pmclass::TABLE => 'elis_program',
             student::TABLE => 'elis_program',
@@ -107,7 +109,9 @@ class testDataObjectChildren extends elis_database_test {
         $dataset->addTable('user', elis::component_file('program', 'phpunit/mdluser.csv'));
         $dataset->addTable(user::TABLE, elis::component_file('program', 'phpunit/pmuser.csv'));
         $dataset->addTable(usermoodle::TABLE, elis::component_file('program', 'phpunit/usermoodle.csv'));
+        $dataset->addTable(course::TABLE, elis::component_file('program', 'phpunit/pmcourse.csv'));
         $dataset->addTable(pmclass::TABLE, elis::component_file('program', 'phpunit/pmclass.csv'));
+        $dataset->addTable(curriculum::TABLE, elis::component_file('program', 'phpunit/curriculum.csv'));
         $dataset->addTable(track::TABLE, elis::component_file('program', 'phpunit/track.csv'));
         $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);
@@ -135,7 +139,7 @@ class testDataObjectChildren extends elis_database_test {
             array(
                 'clusterassignment',
                 array(
-                    'clusterid' => 100,
+                    'clusterid' => 1,
                     'userid' => 100,
                     'plugin' => 'manual',
                     'autoenrol' => 1,
@@ -310,7 +314,7 @@ class testDataObjectChildren extends elis_database_test {
             array(
                 'track',
                 array(
-                    'curid' => 100,
+                    'curid' => 1,
                     'idnumber' => '__c_t_test101',
                     'name' => 'Test Track 101',
                     'description' => 'Track description',
@@ -449,9 +453,7 @@ class testDataObjectChildren extends elis_database_test {
 
         // Verify that each property from the data is setup in the new object
         foreach ($data as $key => $val) {
-//             mtrace('$key: '.$key.' => '.$new_object->__get($key));
             $this->assertEquals($val, $new_object->$key, 'class: '.$classname.'->'.$key);
-//             $this->assertObjectHasAttribute($key, $pmclass);
         }
 	}
 }

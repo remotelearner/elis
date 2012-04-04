@@ -131,7 +131,6 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $field = $DB->get_record(field::TABLE, array('shortname' => '_19upgrade_curriculum_tags'));
         $this->assertGreaterThan(0, $field->id);
 
-//         $context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $program->id);
         $context = context_elis_program::instance($program->id);
         $this->assertTrue($DB->record_exists(field_data_char::TABLE, array('contextid' => $context->id, 'fieldid' => $field->id)));
     }
@@ -158,7 +157,6 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $field = $DB->get_record(field::TABLE, array('shortname' => '_19upgrade_course_environment'));
         $this->assertGreaterThan(0, $field->id);
 
-//         $context = get_context_instance(context_level_base::get_custom_context_level('course', 'elis_program'), $course->id);
         $context = context_elis_course::instance($course->id);
         $this->assertTrue($DB->record_exists(field_data_char::TABLE, array('contextid' => $context->id, 'fieldid' => $field->id)));
     }

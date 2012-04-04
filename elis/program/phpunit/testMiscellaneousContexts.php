@@ -59,6 +59,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
             field_data_text::TABLE => 'elis_core',
             instructor::TABLE => 'elis_program',
             pmclass::TABLE => 'elis_program',
+            classmoodlecourse::TABLE => 'elis_program',
             student::TABLE => 'elis_program',
             student_grade::TABLE => 'elis_program',
             track::TABLE => 'elis_program',

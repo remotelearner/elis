@@ -167,7 +167,7 @@ class cmEngineForm extends cmform {
         $mform->addElement('hidden', 'rid', $this->_customdata['rid']);
         $mform->addElement('hidden', 'contextid', $this->_customdata['contextid']);
 
-        $attributes = array('onchange' => 'toggleform(this);');
+        $attributes = array('onchange' => 'toggleform(this);', 'group' => null);
         $active= array();
         $active[] = $mform->createElement('advcheckbox', 'active', '', $activaterule, $attributes);
         $mform->addGroup($active, '', '', ' ', false);
@@ -197,6 +197,8 @@ class cmEngineForm extends cmform {
 
         $mform->addElement('html', '<fieldset class="engineform">');
         $mform->addElement('html', '<legend>'. $eventtrigger .'</legend>');
+
+        $attributes['group'] = null;
 
         $grade = array();
         $grade[] = $mform->createElement('radio', 'eventtriggertype', '', $gradeset, RESULTS_ENGINE_GRADE_SET, $attributes);
@@ -489,12 +491,11 @@ class cmEngineForm extends cmform {
         global $CFG, $DB;
 
         $results   = array('' => get_string('results_select_profile', self::LANG_FILE));
-        $userlevel = context_level_base::get_custom_context_level('user', 'elis_program');
 
         $sql = 'SELECT f.id, f.name'
              .' FROM '. $CFG->prefix . field::TABLE .' f'
-             .' RIGHT JOIN '. $CFG->prefix . field_contextlevel::TABLE .' fc ON fc.fieldid = f.id '
-             .' WHERE fc.contextlevel = '. $userlevel;
+             .' INNER JOIN '. $CFG->prefix . field_contextlevel::TABLE .' fc ON fc.fieldid = f.id '
+             .' WHERE fc.contextlevel = '.CONTEXT_ELIS_USER;
 
         $rows = $DB->get_records_sql($sql);
 
