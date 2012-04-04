@@ -58,6 +58,12 @@ abstract class rlip_dblogger {
     //tracks whether an unmet dependency was encountered
     var $unmetdependency = 0;
 
+    //tracks whether maxruntime has been exceeded
+    var $maxruntimeexceeded = false;
+
+    // total records to process (import only)
+    var $totalrecords = 0;
+
     //tracks whether we're performing a manual or scheduled run
     var $manual;
 
@@ -175,6 +181,8 @@ abstract class rlip_dblogger {
 
         $this->dbops = -1;
         $this->unmetdependency = 0;
+        $this->maxruntimeexceeded = false;
+        $this->totalrecords = 0;
     }
 
     /**
@@ -199,6 +207,8 @@ abstract class rlip_dblogger {
         $record->storedfailures = $this->storedfailures;
         $record->dbops = $this->dbops;
         $record->unmetdependency = $this->unmetdependency;
+        $record->maxruntimeexceeded = $this->maxruntimeexceeded;
+        $record->totalrecords = $this->totalrecords;
 
         //perform any necessary data specialization
         $record = $this->customize_record($record, $filename);
@@ -228,6 +238,22 @@ abstract class rlip_dblogger {
      * @param string $filename The filename for which processing is finished
      */
     abstract function display_log($record, $filename); 
+
+    /**
+     * Sets the total number of records to process
+     *
+     * @param int $total  the total number of records to process
+     */
+    function set_totalrecords($total) {
+        $this->totalrecords = $total;
+    }
+
+    /**
+     * Signals that the maxruntime has been exceeded
+     */
+    function signal_maxruntime_exceeded() {
+        $this->maxruntimeexceeded = true;
+    }
 }
 
 /**
@@ -241,7 +267,14 @@ class rlip_dblogger_import extends rlip_dblogger {
      * @return object The customized version of the record
      */
     function customize_record($record, $filename) {
-        if ($this->filefailures == 0) {
+        if ($this->maxruntimeexceeded) {
+            // maxruntime exceeded message
+            $record->statusmessage = get_string('manualimportexceedstimelimit',
+                                        'block_rlip',
+                                        array('filename' => $filename,
+                                        'filesuccesses' => $record->filesuccesses,
+                                        'totalrecords' => $record->totalrecords));
+        } else if ($this->filefailures == 0) {
             //success message
             $record->statusmessage = "All lines from import file {$filename} were successfully processed.";
         } else {
@@ -255,17 +288,28 @@ class rlip_dblogger_import extends rlip_dblogger {
      *
      * @param object $record The log record, with all standard fields included
      * @param string $filename The filename for which processing is finished
+     * @uses  $OUTPUT
      */
     function display_log($record, $filename) {
         global $OUTPUT;
 
         if ($this->manual) {
-            //total rows = successes + failures
-            $record->total = $record->filesuccesses + $record->filefailures;
+            if ($this->maxruntimeexceeded) {
+                $displaystring = get_string('manualimportexceedstimelimit',
+                                     'block_rlip',
+                                     array('filename' => $filename,
+                                     'filesuccesses' => $record->filesuccesses,
+                                     'totalrecords' => $record->totalrecords));
+                $css = 'errorbox manualstatusbox';
+            } else {
+                //total rows = successes + failures
+                $record->total = $record->filesuccesses + $record->filefailures;
 
-            //display status message with successes and total records
-            $displaystring = get_string('manualstatus', 'block_rlip', $record);
-            echo $OUTPUT->box($displaystring, 'generalbox manualstatusbox');            
+                //display status message with successes and total records
+                $displaystring = get_string('manualstatus', 'block_rlip', $record);
+                $css = 'generalbox manualstatusbox';
+            }
+            echo $OUTPUT->box($displaystring, $css);
         }
     }
 }
@@ -284,7 +328,13 @@ class rlip_dblogger_export extends rlip_dblogger {
         //flag as export
         $record->export = 1;
         //message
-        $record->statusmessage = "Export file {$filename} successfully created.";
+        if ($this->maxruntimeexceeded) {
+            $record->filesuccesses = 0; // TBD
+            // maxruntime exceeded message
+            $record->statusmessage = "Export file {$filename} not created - time limit exceeded!";
+        } else {
+            $record->statusmessage = "Export file {$filename} successfully created.";
+        }
         return $record;
     }
 
@@ -293,8 +343,12 @@ class rlip_dblogger_export extends rlip_dblogger {
      *
      * @param object $record The log record, with all standard fields included
      * @param string $filename The filename for which processing is finished
+     * @uses  $OUTPUT
      */
     function display_log($record, $filename) {
-        //do nothing
+        if ($this->manual && $this->maxruntimeexceeded) {
+            global $OUTPUT;
+            echo $OUTPUT->box("Export file {$filename} not created - time limit exceeded!", 'errorbox manualstatusbox'); // TBD
+        }
     }
 }

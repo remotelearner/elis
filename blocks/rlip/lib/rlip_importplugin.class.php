@@ -513,6 +513,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         while ($fileplugin->read()) {
             ++$filelines;
         }
+        //track the total number of records to process
+        $this->dblogger->set_totalrecords($filelines);
         $fileplugin->close();
 
         $fileplugin->open(RLIP_FILE_READ);
@@ -540,6 +542,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             }
             // check if timelimit excceeded
             if ($maxruntime && (time() - $starttime) > $maxruntime) {
+                $this->dblogger->signal_maxruntime_exceeded();
                 $state->result = false;
                 $state->entity = $entity;
                 $state->filelines = $filelines;
@@ -628,6 +631,15 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                     $maxruntime -= $usedtime;
                 } else if (($nextentity = next($entities)) !== false) {
                     // import time limit already exceeded, log & exit
+                    $this->dblogger->signal_maxruntime_exceeded();
+                    $filename = '{unknown}'; // default if $fileplugin false
+                    //fetch a file plugin for the current file
+                    $fileplugin = $this->provider->get_import_file($entity);
+                    if ($fileplugin !== false) {
+                        $filename = $fileplugin->get_filename();
+                    }
+                    //flush db log record
+                    $this->dblogger->flush($filename);
                     $state = new stdClass;
                     $state->result = false;
                     $state->entity = $nextentity;
