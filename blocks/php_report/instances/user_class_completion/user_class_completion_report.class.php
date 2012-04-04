@@ -479,7 +479,7 @@ class user_class_completion_report extends table_report {
                     $this->_fielddatatypes[$fieldid] = $field->data_type();
 
                     //store the context level that's represented by this field
-                    $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
+                    $level = CONTEXT_ELIS_PROGRAM;
                     if ($DB->record_exists('elis_field_contextlevels',
                                  array('fieldid'      => $fieldid,
                                        'contextlevel' => $level))) {
@@ -631,23 +631,23 @@ class user_class_completion_report extends table_report {
      */
     function get_custom_field_sql($fieldids, $instancefields) {
         global $DB;
+
         $where    = $DB->get_in_or_equal($fieldids);
-        $sql      = "SELECT efc.*, c.name, c.component
-                       FROM {context_levels} c
-                       JOIN {elis_field_contextlevels} efc
-                         ON efc.contextlevel = (1000 + c.id)
-                      WHERE efc.fieldid {$where[0]}";
-        $contexts = $DB->get_records_sql($sql, $where[1]);
-        //$levels   = context_level_base::get_all_context_levels();
+        $contexts = $DB->get_records_select(field_contextlevel::TABLE, 'fieldid '.$where[0], $where[1]);
+
         $fragment = array();
 
-      /* *** debug ***
+     /* *** debug ***
         ob_start();
         var_dump($instancefields);
         $tmp = ob_get_contents();
         ob_end_clean();
         error_log("UCCR::get_custom_field_sql(fieldids, instancefields = {$tmp})");
-      */
+     */
+
+        // Get the legacy context names mapped to the context level values
+        $contextlevelnames = array_flip(context_elis_helper::get_legacy_levels());
+
         $contextlevel = '';
         $contextname  = '';
         if (!empty($contexts)) {
@@ -655,12 +655,11 @@ class user_class_completion_report extends table_report {
             foreach ($contexts as $context) {
                 if ($contextlevel != $context->contextlevel) {
                     $contextlevel = $context->contextlevel;
-                    //$contextname  = $levels[$contextlevel]->get_component_string('', ''); 
-                    $contextname = "{$context->name}_"; // TBD
-                    $instancefield = $instancefields[$context->name];
+                    $ctxname     = $contextlevelnames[$context->contextlevel];
+                    $contextname = $ctxname.'_'; // TBD
+                    $instancefield = $instancefields[$ctxname];
                     //have one ot more profile field we're joining, so join the context table at the top level
-                    $context_level = context_level_base::get_custom_context_level($contextlevel, 'elis_program');
-                    $fragment[$context->name] =
+                    $fragment[$ctxname] =
                              " LEFT JOIN {context} {$contextname}context
                                       ON {$instancefield} = {$contextname}context.instanceid
                                      AND {$contextname}context.contextlevel = {$contextlevel}";
@@ -674,7 +673,7 @@ class user_class_completion_report extends table_report {
         }
 
         $result = implode("\n", $fragment);
-        //error_log("UCCR::get_custom_field_sql() => {$result}");
+//         error_log("UCCR::get_custom_field_sql() => {$result}");
         return $result;
     }
 
@@ -1048,7 +1047,7 @@ class user_class_completion_report extends table_report {
                      WHERE (EXISTS ({$exists_query})
                         OR (NOT EXISTS ({$stu_not_exists_query})
                             AND NOT EXISTS ({$curr_not_exists_query})
-                           )) 
+                           ))
                     {$status_where}
                     {$status_sql}
                        AND ". table_report::PARAMETER_TOKEN ."
@@ -1156,7 +1155,7 @@ class user_class_completion_report extends table_report {
         }
 
         if ($this->_show_curricula === null) {
-            $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
+            $level = CONTEXT_ELIS_PROGRAM;
             // Check for custom fields to display
             $curriculumfields = $DB->get_records('elis_field_contextlevels',
                                          array('contextlevel' => $level));
@@ -1652,7 +1651,7 @@ class user_class_completion_report extends table_report {
                              WHERE (EXISTS ({$exists_query}) OR
                                     (NOT EXISTS ({$stu_not_exists_query})
                                      AND NOT EXISTS ({$curr_not_exists_query})
-                                   )) 
+                                   ))
                             {$status_where}
                                AND ". table_report::PARAMETER_TOKEN ."
                             {$status_sql}
@@ -1914,7 +1913,7 @@ class user_class_completion_report extends table_report {
      *
      * @param   boolean  $init_data  If true, signal the report to load the
      *                               actual content of the filter objects
-     * 
+     *
      */
     function init_filter($id, $init_data = true) {
         global $CFG;

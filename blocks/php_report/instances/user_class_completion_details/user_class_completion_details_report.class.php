@@ -487,7 +487,7 @@ class user_class_completion_details_report extends user_class_completion_report 
         $options['wrapper'] = ' INNER JOIN {'. curriculumcourse::TABLE .'} ccc
                                         ON c.instanceid = ccc.curriculumid';
         //tell the filter that we're operating on the curriculum level
-        $options['contextlevel'] = context_level_base::get_custom_context_level('curriculum', 'elis_program');
+        $options['contextlevel'] = CONTEXT_ELIS_PROGRAM;
 
         //attempt to retrieve the appropriate filter object
         $filter_object = false;
@@ -542,7 +542,7 @@ class user_class_completion_details_report extends user_class_completion_report 
         $conditions = array();
 
         //set up the context level for dealing with curriculum custom fields
-        $ctxtlvl = context_level_base::get_custom_context_level('curriculum', 'elis_program');
+        $ctxtlvl = CONTEXT_ELIS_PROGRAM;
         $curriculumfields = field::get_for_context_level($ctxtlvl);
 
         //iterate through all curriculum custom fields
@@ -815,8 +815,7 @@ class user_class_completion_details_report extends user_class_completion_report 
         //configured user custom fields
         if (!empty($this->_userfieldids)) {
             //only need to obtain the user information once
-            $user_context_level = context_level_base::get_custom_context_level('user', 'elis_program');
-            $user = get_context_instance($user_context_level, $datum->userid);
+            $user = context_elis_user::instance($datum->userid);
 
             //add a row for each field
             foreach ($this->_userfieldids as $userfieldid) {
@@ -1119,7 +1118,7 @@ class user_class_completion_details_report extends user_class_completion_report 
     protected function curriculum_fields_included($filters) {
         global $DB;
 
-        $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
+        $level = CONTEXT_ELIS_PROGRAM;
         if (!$level) {
             error_log("UCCDR::curriculum_fields_included(); NO custom curriculum context level!");
             return false;
