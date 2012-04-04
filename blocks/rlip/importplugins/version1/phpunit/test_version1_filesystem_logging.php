@@ -539,7 +539,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Rlipcity',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field username is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User could not be created. Required field username is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -556,7 +556,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Rlipcity',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field password is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field password is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -573,7 +573,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Rlipcity',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field firstname is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field firstname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -590,7 +590,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Rlipcity',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field lastname is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field lastname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -607,7 +607,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => '',
                       'city' => 'Rlipcity',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field email is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field email is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -624,7 +624,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => '',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] Required field city is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field city is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -641,7 +641,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Rlipcity',
                       'country' => '');
-        $expected_error = "[user.csv line 2] Required field country is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field country is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -652,7 +652,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //validation for an empty username field
         $data = array('action' => 'update',
                       'username' => '');
-        $expected_error = "[user.csv line 2] One of username, email, idnumber is required but all are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User could not be updated. One of username, email, idnumber is required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -661,9 +661,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
      */
     public function testVersionImportLogsEmptyUserUsernameOnDelete() {
         //validation for an empty username field
-        $data = array('action' => 'update',
+        $data = array('action' => 'delete',
                       'username' => '');
-        $expected_error = "[user.csv line 2] One of username, email, idnumber is required but all are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User could not be deleted. One of username, email, idnumber is required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -686,7 +686,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'shortname' => '',
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory');
-        $expected_error = "[course.csv line 2] Required field shortname is unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course could not be created. Required field shortname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -699,7 +699,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'shortname' => 'rlipshortname',
                       'fullname' => '',
                       'category' => 'rlipcategory');
-        $expected_error = "[course.csv line 2] Required field fullname is unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. Required field fullname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -712,7 +712,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname',
                       'category' => '');
-        $expected_error = "[course.csv line 2] Required field category is unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. Required field category is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -723,7 +723,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //validation for an empty shortname field
         $data = array('action' => 'update',
                       'shortname' => '');
-        $expected_error = "[course.csv line 2] Required field shortname is unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course could not be updated. Required field shortname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -734,7 +734,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //validation for an empty shortname field
         $data = array('action' => 'delete',
                       'shortname' => '');
-        $expected_error = "[course.csv line 2] Required field shortname is unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course could not be deleted. Required field shortname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -758,7 +758,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] One of username, email, idnumber is required but all are unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be created. One of username, email, idnumber is required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -772,7 +772,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => '',
                       'instance' => 'rlipshortname',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] Required field context is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] User with username \"rlipusername\" could not be enroled in course with shortname \"rlipshortname\". Required field context is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -786,7 +786,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => '',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] Required field instance is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be created. Required field instance is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -800,7 +800,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => '');
-        $expected_error = "[enrolment.csv line 2] Required field role is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] User with username \"rlipusername\" could not be enroled in course with shortname \"rlipshortname\". Required field role is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -814,7 +814,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] One of username, email, idnumber is required but all are unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be deleted. One of username, email, idnumber is required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -828,7 +828,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => '',
                       'instance' => 'rlipshortname',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] Required field context is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unenroled in course with shortname \"rlipshortname\". Required field context is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -837,12 +837,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
      */
     public function testVersion1ImportLogsEmptyEnrolmentInstanceOnDelete() {
         //validation for an empty instance field
-        $data = array('action' => 'create',
+        $data = array('action' => 'delete',
                       'username' => 'rlipusername',
                       'context' => 'course',
                       'instance' => '',
                       'role' => 'rliprole');
-        $expected_error = "[enrolment.csv line 2] Required field instance is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be deleted. Required field instance is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -851,12 +851,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
      */
     public function testVersion1ImportLogsEmptyEnrolmentRoleOnDelete() {
         //validation for an empty role field
-        $data = array('action' => 'create',
+        $data = array('action' => 'delete',
                       'username' => 'rlipusername',
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => '');
-        $expected_error = "[enrolment.csv line 2] Required field role is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unenroled in course with shortname \"rlipshortname\". Required field role is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -869,7 +869,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'shortname' => '',
                       'fullname' => '',
                       'category' => '');
-        $expected_error = "[course.csv line 2] Required fields shortname, fullname, category are unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course could not be created. Required fields shortname, fullname, category are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -880,7 +880,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsMultipleMissingFieldsWithOption() {
         //validation for "1 of 3", plus 3 required fields
         $data = array('action' => 'create');
-        $expected_error = "[enrolment.csv line 2] One of username, email, idnumber is required but all are unspecified or empty. Required fields context, instance, role are unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be created. One of username, email, idnumber is required but all are unspecified or empty. Required fields context, instance, role are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -891,7 +891,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsMissingField() {
         //validation for unspecified field "shortname"
         $data = array('action' => 'update');
-        $expected_error = "[course.csv line 2] Required field shortname is unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course could not be updated. Required field shortname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -902,7 +902,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsMultipleMissingFields() {
         //validation for missing fields shortname, fullname, category
         $data = array('action' => 'create');
-        $expected_error = "[course.csv line 2] Required fields shortname, fullname, category are unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course could not be created. Required fields shortname, fullname, category are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -916,7 +916,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         //create validation using update
         $data = array('action' => 'update');
-        $expected_error = "[user.csv line 2] Required fields username, password, firstname, lastname, email, city, country are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User could not be created. Required fields username, password, firstname, lastname, email, city, country are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         //actually create using update
@@ -939,7 +939,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         //update validation using create
         $data = array('action' => 'create');
-        $expected_error = "[user.csv line 2] Required fields username, password, firstname, lastname, email, city, country are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User could not be created. Required fields username, password, firstname, lastname, email, city, country are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         //actually update using create
@@ -974,7 +974,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         //create validation using update
         $data = array('action' => 'update');
-        $expected_error = "[course.csv line 2] Required fields shortname, fullname, category are unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course could not be created. Required fields shortname, fullname, category are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         //actually create using update
@@ -992,7 +992,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         //update validation using create
         $data = array('action' => 'update');
-        $expected_error = "[course.csv line 2] Required fields shortname, fullname, category are unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course could not be created. Required fields shortname, fullname, category are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         //actually update using create
@@ -2778,7 +2778,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => 'system',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] The role with shortname \"rlipshortname\" is not assignable on the system context level.\n";
+        $message = "[enrolment.csv line 2] Role assignment could not be created. The role with shortname \"rlipshortname\" is not assignable on the system context level.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -2799,8 +2799,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => 'bogus',
                       'instance' => 'bogus',
                       'role' => 'rlipshortname');
-
-        $message = "[enrolment.csv line 2] context value of \"bogus\" is not one of the available options (system, user, coursecat, course).\n";
+        $message = "[enrolment.csv line 2] Role assignment could not be created. context value of \"bogus\" is not one of the available options (system, user, coursecat, course).\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -2896,7 +2895,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'role' => 'rlipshortname',
                       'group' => 'bogus');
 
-        $message = "[enrolment.csv line 2] group value of \"bogus\" does not refer to a valid group in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] Group with name \"bogus\" could not be created in course with shortname \"rlipshortname\". group value of \"bogus\" does not refer to a valid group in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -2962,7 +2961,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'group' => 'rlipname',
                       'grouping' => 'bogus');
 
-        $message = "[enrolment.csv line 2] grouping value of \"bogus\" does not refer to a valid grouping in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] Group with name \"rlipname\" could not be created in course with shortname \"rlipshortname\". grouping value of \"bogus\" does not refer to a valid grouping in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3000,7 +2999,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'group' => 'rlipname',
                       'grouping' => 'duplicate');
 
-        $message = "[enrolment.csv line 2] grouping value of \"duplicate\" refers to multiple groupings in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] Group with name \"rlipname\" could not be created in course with shortname \"rlipshortname\". grouping value of \"duplicate\" refers to multiple groupings in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3222,7 +3221,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'instance' => 'bogus',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] context value of \"bogus\" is not one of the available options (system, user, coursecat, course).\n";
+        $message = "[enrolment.csv line 2] Role assignment could not be deleted. context value of \"bogus\" is not one of the available options (system, user, coursecat, course).\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3550,7 +3549,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'auth' => 'bogus');
-        $expected_error = "[user.csv line 2] auth value of \"bogus\" is not a valid auth plugin.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. auth value of \"bogus\" is not a valid auth plugin.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3576,7 +3575,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'rlipuser@rlipdomain.com',
                       'city' => 'Waterloo',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] username value of \"testusername\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. username value of \"testusername\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3592,12 +3591,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'bogusemail',
                       'city' => 'Waterloo',
                       'country' => 'CA');
-        $expected_error = "[user.csv line 2] email value of \"bogusemail\" is not a valid email address.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. email value of \"bogusemail\" is not a valid email address.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $this->load_csv_data();
         $data['email'] = 'test@user.com';
-        $expected_error = "[user.csv line 2] email value of \"test@user.com\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. email value of \"test@user.com\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3616,7 +3615,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'idnumber' => 'idnumber');
-        $expected_error = "[user.csv line 2] idnumber value of \"idnumber\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] User with username \"uniqueusername\" could not be created. idnumber value of \"idnumber\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3636,7 +3635,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'idnumber' => 'idnumber');
-        $expected_error = "[user.csv line 2] password value of \"invalidpassword\" does not conform to your site's password policy.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. password value of \"invalidpassword\" does not conform to your site's password policy.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3653,7 +3652,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'maildigest' => '3');
-        $expected_error = "[user.csv line 2] maildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. maildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3670,7 +3669,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'autosubscribe' => '2');
-        $expected_error = "[user.csv line 2] autosubscribe value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. autosubscribe value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3689,12 +3688,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'trackforums' => '1');
-        $expected_error = "[user.csv line 2] Tracking unread posts is currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. Tracking unread posts is currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('forum_trackreadposts', 1);
         $data['trackforums'] = 2;
-        $expected_error = "[user.csv line 2] trackforums value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. trackforums value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3711,7 +3710,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'screenreader' => '2');
-        $expected_error = "[user.csv line 2] screenreader value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. screenreader value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3727,7 +3726,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'country' => 'bogus');
-        $expected_error = "[user.csv line 2] country value of \"bogus\" is not a valid country or country code.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. country value of \"bogus\" is not a valid country or country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3746,7 +3745,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'timezone' => 'bogus');
-        $expected_error = "[user.csv line 2] timezone value of \"bogus\" is not a valid timezone.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. timezone value of \"bogus\" is not a valid timezone.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('forcetimezone', '-5.0');
@@ -3760,7 +3759,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'timezone' => '-4.0');
-        $expected_error = "[user.csv line 2] timezone value of \"-4.0\" is not consistent with forced timezone value of \"-5.0\" on your site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. timezone value of \"-4.0\" is not consistent with forced timezone value of \"-5.0\" on your site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3779,12 +3778,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'theme' => 'bartik');
-        $expected_error = "[user.csv line 2] User themes are currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. User themes are currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('allowuserthemes', 1);
         $data['theme'] = 'bogus';
-        $expected_error = "[user.csv line 2] theme value of \"bogus\" is not a valid theme.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. theme value of \"bogus\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3801,7 +3800,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'lang' => 'bogus');
-        $expected_error = "[user.csv line 2] lang value of \"bogus\" is not a valid language code.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. lang value of \"bogus\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3877,17 +3876,17 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'country' => 'CA',
                       'profile_field_checkbox' => 2);
-        $expected_error = "[user.csv line 2] \"2\" is not one of the available options for a checkbox profile field checkbox (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. \"2\" is not one of the available options for a checkbox profile field checkbox (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         unset($data['profile_field_checkbox']);
         $data['profile_field_menu'] = 'option2';
-        $expected_error = "[user.csv line 2] \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         unset($data['profile_field_menu']);
         $data['profile_field_date'] = 'bogus';
-        $expected_error = "[user.csv line 2] profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3905,7 +3904,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'username' => 'testusername',
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] email value of \"testinvalid@user.com\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. email value of \"testinvalid@user.com\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3915,7 +3914,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'username' => 'testusername',
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] email value of \"testinvalid@user.com\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be deleted. email value of \"testinvalid@user.com\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3926,7 +3925,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'testinvalid@user.com',
                       'city' => 'Waterloo',
                       'maildigest' => 3);
-        $expected_error = "[user.csv line 2] maildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. maildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3938,7 +3937,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'city' => 'Waterloo',
                       'maildigest' => 2,
                       'autosubscribe' => 2);
-        $expected_error = "[user.csv line 2] autosubscribe value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. autosubscribe value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3952,7 +3951,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'maildigest' => 2,
                       'autosubscribe' => 1,
                       'trackforums' => 0);
-        $expected_error = "[user.csv line 2] Tracking unread posts is currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. Tracking unread posts is currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3966,7 +3965,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'maildigest' => 2,
                       'autosubscribe' => 1,
                       'trackforums' => 2);
-        $expected_error = "[user.csv line 2] trackforums value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. trackforums value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3981,7 +3980,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'autosubscribe' => 1,
                       'trackforums' => 1,
                       'screenreader' => 2);
-        $expected_error = "[user.csv line 2] screenreader value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. screenreader value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -3992,7 +3991,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'test@user.com',
                       'idnumber' => 'idnumber',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] username value of \"invalidusername\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"invalidusername\" could not be updated. username value of \"invalidusername\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4003,7 +4002,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'test@user.com',
                       'idnumber' => 'idnumber',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] username value of \"invalidusername\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"invalidusername\" could not be deleted. username value of \"invalidusername\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4014,7 +4013,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'test@user.com',
                       'idnumber' => 'invalidid',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] idnumber value of \"invalidid\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. idnumber value of \"invalidid\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4025,7 +4024,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'email' => 'test@user.com',
                       'idnumber' => 'invalidid',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] idnumber value of \"invalidid\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be deleted. idnumber value of \"invalidid\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4038,7 +4037,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'password' => '1234567',
                       'city' => 'Waterloo',
                       'auth' => 'invalidauth');
-        $expected_error = "[user.csv line 2] auth value of \"invalidauth\" is not a valid auth plugin.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. auth value of \"invalidauth\" is not a valid auth plugin.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4050,7 +4049,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'idnumber' => 'idnumber',
                       'password' => '1234567',
                       'city' => 'Waterloo');
-        $expected_error = "[user.csv line 2] password value of \"1234567\" does not conform to your site's password policy.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. password value of \"1234567\" does not conform to your site's password policy.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4060,7 +4059,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'username' => 'testusername',
                       'password' => 'm0ddl3.paSs',
                       'lang' => 'invalidlang');
-        $expected_error = "[user.csv line 2] lang value of \"invalidlang\" is not a valid language code.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. lang value of \"invalidlang\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4072,7 +4071,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'lang' => 'en',
                       'country' => 'invalidcountry'
                      );
-        $expected_error = "[user.csv line 2] country value of \"invalidcountry\" is not a valid country or country code.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. country value of \"invalidcountry\" is not a valid country or country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4088,7 +4087,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'country' => 'CA',
                       'theme' => 'invalidtheme',
                      );
-        $expected_error = "[user.csv line 2] User themes are currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. User themes are currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4104,7 +4103,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'country' => 'CA',
                       'theme' => 'invalidtheme',
                      );
-        $expected_error = "[user.csv line 2] theme value of \"invalidtheme\" is not a valid theme.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. theme value of \"invalidtheme\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4122,7 +4121,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'theme' => 'invalidtheme',
                       'timezone' => 98,
                      );
-        $expected_error = "[user.csv line 2] timezone value of \"98\" is not consistent with forced timezone value of \"{$CFG->forcetimezone}\" on your site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. timezone value of \"98\" is not consistent with forced timezone value of \"{$CFG->forcetimezone}\" on your site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4139,7 +4138,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'country' => 'CA',
                       'timezone' => 'invalidtimezone',
                      );
-        $expected_error = "[user.csv line 2] timezone value of \"invalidtimezone\" is not a valid timezone.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. timezone value of \"invalidtimezone\" is not a valid timezone.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4159,17 +4158,17 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'update',
                       'username' => 'rlipusername',
                       'profile_field_checkbox' => 2);
-        $expected_error = "[user.csv line 2] \"2\" is not one of the available options for a checkbox profile field checkbox (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be updated. \"2\" is not one of the available options for a checkbox profile field checkbox (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         unset($data['profile_field_checkbox']);
         $data['profile_field_menu'] = 'option2';
-        $expected_error = "[user.csv line 2] \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be updated. \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         unset($data['profile_field_menu']);
         $data['profile_field_date'] = 'bogus';
-        $expected_error = "[user.csv line 2] profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be updated. profile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4180,9 +4179,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'format' => 'bogus');
-        $expected_error = "[course.csv line 2] format value of \"bogus\" does not refer to a valid course format.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. format value of \"bogus\" does not refer to a valid course format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4195,9 +4194,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'numsections' => '11');
-        $expected_error = "[course.csv line 2] numsections value of \"11\" is not one of the available options (0 .. 10).\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. numsections value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4208,9 +4207,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'startdate' => 'bogus');
-        $expected_error = "[course.csv line 2] startdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. startdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4221,9 +4220,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'newsitems' => '11');
-        $expected_error = "[course.csv line 2] newsitems value of \"11\" is not one of the available options (0 .. 10).\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. newsitems value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4234,9 +4233,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'showgrades' => '2');
-        $expected_error = "[course.csv line 2] showgrades value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. showgrades value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4247,9 +4246,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'showreports' => '2');
-        $expected_error = "[course.csv line 2] showreports value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. showreports value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4260,9 +4259,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'maxbytes' => 'bogus');
-        $expected_error = "[course.csv line 2] maxbytes value of \"bogus\" is not one of the available options.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. maxbytes value of \"bogus\" is not one of the available options.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4275,14 +4274,14 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'guest' => '1');
-        $expected_error = "[course.csv line 2] guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         set_config('enrol_plugins_enabled', 'guest');
         $data['guest'] = '2';
-        $expected_error = "[course.csv line 2] guest value of \"2\" is not one of the available options (0, 1).\n";        
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. guest value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4293,9 +4292,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'visible' => '2');
-        $expected_error = "[course.csv line 2] visible value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. visible value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4306,9 +4305,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'lang' => 'bogus');
-        $expected_error = "[course.csv line 2] lang value of \"bogus\" is not a valid language code.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. lang value of \"bogus\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4318,7 +4317,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsInvalidShortnameOnCourseUpdate() {
         $data = array('action' => 'update',
                       'shortname' => 'rlipshortname');
-        $expected_error = "[course.csv line 2] shortname value of \"rlipshortname\" does not refer to a valid course.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be updated. shortname value of \"rlipshortname\" does not refer to a valid course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4336,7 +4335,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'shortname' => 'cm2',
                       'format' => 'invalidformat'
                      );
-        $expected_error = "[course.csv line 2] format value of \"invalidformat\" does not refer to a valid course format.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. format value of \"invalidformat\" does not refer to a valid course format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4351,7 +4350,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'format' => 'weeks',
                       'numsections' => $invalidmaxsections
                      );
-        $expected_error = "[course.csv line 2] numsections value of \"{$invalidmaxsections}\" is not one of the available options (0 .. {$maxsections}).\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. numsections value of \"{$invalidmaxsections}\" is not one of the available options (0 .. {$maxsections}).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4366,7 +4365,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'numsections' => $maxsections,
                       'startdate' => 'bogus'
                      );
-        $expected_error = "[course.csv line 2] startdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. startdate value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4382,7 +4381,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'startdate' => 'jan/12/2013',
                       'newsitems' => 100
                      );
-        $expected_error = "[course.csv line 2] newsitems value of \"100\" is not one of the available options (0 .. 10).\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. newsitems value of \"100\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4399,7 +4398,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'newsitems' => 5,
                       'showgrades' => 3
                      );
-        $expected_error = "[course.csv line 2] showgrades value of \"3\" is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. showgrades value of \"3\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4417,7 +4416,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'showgrades' => 1,
                       'showreports' => 3
                      );
-        $expected_error = "[course.csv line 2] showreports value of \"3\" is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. showreports value of \"3\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4439,7 +4438,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'showreports' => 0,
                       'maxbytes' => $invalidmaxbytes
                      );
-        $expected_error = "[course.csv line 2] maxbytes value of \"{$invalidmaxbytes}\" is not one of the available options.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. maxbytes value of \"{$invalidmaxbytes}\" is not one of the available options.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4465,8 +4464,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'maxbytes' => $maxbytes,
                       'guest' => 'invalidguest'
                      );
-        $expected_error = "[course.csv line 2] guest value of \"invalidguest\" is not one of the available options (0, 1).\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');        
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be updated. guest value of \"invalidguest\" is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     public function testVersion1ImportLogsUpdateVisible() {
@@ -4490,7 +4489,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'guest' => 1,
                       'visible' => 'invalidvisible',
                      );
-        $expected_error = "[course.csv line 2] visible value of \"invalidvisible\" is not one of the available options (0, 1).\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. visible value of \"invalidvisible\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4516,7 +4515,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'visible' => 1,
                       'lang' => 'invalidlang'
                      );
-        $expected_error = "[course.csv line 2] lang value of \"invalidlang\" is not a valid language code.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. lang value of \"invalidlang\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4544,7 +4543,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'visible' => 1,
                       'lang' => 'en',
                      );
-        $expected_error = "[course.csv line 2] guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4619,12 +4618,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'fullname' => 'fullname',
                       'theme' => 'splash',
                       'category' => 'category');
-        $expected_error = "[course.csv line 2] Course themes are currently disabled on this site.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"shortname\" could not be created. Course themes are currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         set_config('allowcoursethemes', 1);
         $data['theme'] = 'invalidtheme';
-        $expected_error = "[course.csv line 2] theme value of \"invalidtheme\" is not a valid theme.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"shortname\" could not be created. theme value of \"invalidtheme\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
