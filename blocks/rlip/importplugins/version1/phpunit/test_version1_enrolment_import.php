@@ -2480,4 +2480,42 @@ class version1EnrolmentImportTest extends elis_database_test {
         //validate that the field was unset
         $this->assertEquals(isset($record->context), false);
     }
+
+    /**
+     * Validate that the import succeeds with fixed-size fields at their
+     * maximum sizes
+     */
+    public function testVersion1ImportSucceedsWithMaxLengthEnrolmentFields() {
+        global $DB;
+
+        //enable group / grouping creation
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+
+        //data for all fixed-size fields at their maximum sizes
+        $data = array('group' => str_repeat('x', 254),
+                      'grouping' => str_repeat('x', 254),
+                      'role' => 'studentshortname');
+
+        //run the import
+        $this->run_core_enrolment_import($data);
+
+        //validate all record counts
+        $num_enrolments = $DB->count_records('user_enrolments');
+        $this->assertEquals($num_enrolments, 1);
+
+        $num_assignments = $DB->count_records('role_assignments');
+        $this->assertEquals($num_assignments, 1);
+
+        $num_groups = $DB->count_records('groups');
+        $this->assertEquals($num_groups, 1);
+
+        $num_groups_members = $DB->count_records('groups_members');
+        $this->assertEquals($num_groups_members, 1);
+
+        $num_groupings = $DB->count_records('groupings');
+        $this->assertEquals($num_groupings, 1);
+
+        $num_groupings_groups = $DB->count_records('groupings_groups');
+        $this->assertEquals($num_groupings_groups, 1);
+    }
 }
