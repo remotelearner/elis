@@ -1373,6 +1373,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_course();
         $this->create_test_role();
 
+        set_config('gradebookroles', '');
+
         //base data used every time
         $basedata = array('action' => 'create',
                           'context' => 'course',
@@ -5322,6 +5324,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //setup
         set_config('enrol_plugins_enabled', 'guest');
         set_config('defaultenrol', 1, 'enrol_guest');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_guest');
 
         $this->create_contexts_and_site_course();
         $this->create_test_course();
@@ -5758,7 +5761,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsInvalidUserAction() {
         //data
         $data = array('action' => 'bogus');
-        $expected_message = '[user.csv line 1] Action of "bogus" is not supported.';
+        $expected_message = "[user.csv line 2] Action of \"bogus\" is not supported.\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_message, 'user');
@@ -5771,7 +5774,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsInvalidCourseAction() {
         //data
         $data = array('action' => 'bogus');
-        $expected_message = '[course.csv line 1] Action of "bogus" is not supported.';
+        $expected_message = "[course.csv line 2] Action of \"bogus\" is not supported.\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_message, 'course');
@@ -5784,7 +5787,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsInvalidEnrolmentAction() {
         //data
         $data = array('action' => 'bogus');
-        $expected_message = '[enrolment.csv line 1] Action of "bogus" is not supported.';
+        $expected_message = "[enrolment.csv line 2] Action of \"bogus\" is not supported.\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');

@@ -240,7 +240,8 @@ class version1CreateorupdateTest extends elis_database_test {
                      'block_instances' => 'moodle',
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
-                     'log' => 'moodle');
+                     'log' => 'moodle',
+                     'user_enrolments' => 'moodle');
     }
 
     /**

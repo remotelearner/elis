@@ -153,7 +153,8 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
                      'enrol' => 'moodle',
-                     'log' => 'moodle');
+                     'log' => 'moodle',
+                     'user_enrolments' => 'moodle');
     }
 
     /**

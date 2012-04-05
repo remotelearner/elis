@@ -433,7 +433,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $action = isset($record->action) ? $record->action : '';
         }
 
-        if (!$this->check_action_field($record, $filename)) {
+        if (!$this->check_action_field('user', $record, $filename)) {
             //missing an action value
             return false;
         }
@@ -946,7 +946,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $action = isset($record->action) ? $record->action : '';
         }
 
-        if (!$this->check_action_field($record, $filename)) {
+        if (!$this->check_action_field('course', $record, $filename)) {
             //missing an action value
             return false;
         }
@@ -1566,7 +1566,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $action = isset($record->action) ? $record->action : '';
         }
 
-        if (!$this->check_action_field($record, $filename)) {
+        if (!$this->check_action_field('enrolment', $record, $filename)) {
             //missing an action value
             return false;
         }
