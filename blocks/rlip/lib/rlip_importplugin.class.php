@@ -321,6 +321,32 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     }
 
     /**
+     * Validate that the action field is included in the header
+     *
+     * @param string $entity Type of entity, such as 'user'
+     * @param array $header The list of supplied header columns
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if the action column is correctly specified,
+     *                 otherwise false
+     */
+    abstract function check_action_header($entity, $header, $filename);
+    //todo: copy generic parts from the version 1 import plugin here and make
+    //this method non-abstract
+
+    /**
+     * Validate that all required fields are included in the header
+     *
+     * @param string $entity Type of entity, such as 'user'
+     * @param array $header The list of supplied header columns
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if the action column is correctly specified,
+     *                 otherwise false
+     */
+    abstract function check_required_headers($entity, $header, $filename);
+    //todo: copy generic parts from the version 1 import plugin here and make
+    //this method non-abstract
+
+    /**
      * Validates whether all required fields are set, logging to the filesystem
      * where not - call from child class where needed
      *
@@ -532,7 +558,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         if (!$header = $fileplugin->read()) {
             return null; // no error cause we're just gonna skip this entity
         }
-
         //initialize line number
         $this->linenumber = 0;
 
@@ -540,6 +565,16 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         $this->linenumber++;
 
         $this->header_read_hook($entity, $header, $fileplugin->get_filename());
+
+        if (!$this->check_action_header($entity, $header, $fileplugin->get_filename())) {
+            //action field not specified in the header, so we can't continue
+            return null;
+        }
+
+        if (!$this->check_required_headers($entity, $header, $fileplugin->get_filename())) {
+            //a required field is missing from the header, so we can't continue
+            return null;
+        }
 
         $starttime = time();
         //main processing loop

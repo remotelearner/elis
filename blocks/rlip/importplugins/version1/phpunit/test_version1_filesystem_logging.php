@@ -544,7 +544,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_mapping_record('user', 'action', 'customaction');
 
         //validation for an empty action field
-        $data = array('customaction' => '');
+        $data = array('customaction' => '',
+                      'username' => 'rlipusername');
         $expected_error = "[user.csv line 2] Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
@@ -729,7 +730,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_mapping_record('course', 'action', 'customaction');
 
         //validation for an empty action field
-        $data = array('customaction' => '');
+        $data = array('customaction' => '',
+                      'shortname' => 'rlipshortname');
         $expected_error = "[course.csv line 2] Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
@@ -818,7 +820,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_mapping_record('enrolment', 'action', 'customaction');
 
         //validation for an empty action field
-        $data = array('customaction' => '');
+        $data = array('customaction' => '',
+                      'username' => 'rlipusername',
+                      'context' => 'rlipcontext',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
         $expected_error = "[enrolment.csv line 2] Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
@@ -964,7 +970,44 @@ class version1FilesystemLoggingTest extends elis_database_test {
     }
 
     /**
-     * Validates that an appropriate error is logged when multiple required fields are empty
+     * Validates that an appropriate error is logged for a scenario with empty required fields,
+     * some of which are only required in a "1 of n"-fashion
+     */
+    public function testVersion1ImportLogsMultipleEmptyFieldsWithOption() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+        $this->create_mapping_record('enrolment', 'email', 'customemail');
+        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
+
+        //validation for "1 of 3", plus 3 required fields
+        $data = array('action' => 'create',
+                      'customusername' => '',
+                      'customemail' => '',
+                      'customidnumber' => '',
+                      'context' => '',
+                      'role' => '');
+        $expected_error = "[enrolment.csv line 2] One of customusername, customemail, customidnumber is required but all are unspecified or empty. Required fields context, instance, role are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+    }
+
+    /**
+     * Validates that an appropriate error is logged for a field that is empty
+     * in the import file
+     */
+    public function testVersion1ImportLogsEmptyField() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
+        //validation for unspecified field "shortname"
+        $data = array('action' => 'update',
+                      'customshortname' => '');
+        $expected_error = "[course.csv line 2] Required field customshortname is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validates that an appropriate error is logged for multiple empty
+     * fields that are absolutely necessary
      */
     public function testVersion1ImportLogsMultipleEmptyFields() {
         //create mapping records
@@ -972,57 +1015,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_mapping_record('course', 'fullname', 'customfullname');
         $this->create_mapping_record('course', 'category', 'customcategory');
 
-        //validation for three empty required fields
+        //validation for missing fields shortname, fullname, category
         $data = array('action' => 'create',
                       'customshortname' => '',
                       'customfullname' => '',
                       'customcategory' => '');
-        $expected_error = "[course.csv line 2] Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validates that an appropriate error is logged for a scenario with missing required fields,
-     * some of which are only required in a "1 of n"-fashion
-     */
-    public function testVersion1ImportLogsMultipleMissingFieldsWithOption() {
-        //create mapping record
-        $this->create_mapping_record('enrolment', 'username', 'customusername');
-        $this->create_mapping_record('enrolment', 'email', 'customemail');
-        $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
-
-        //validation for "1 of 3", plus 3 required fields
-        $data = array('action' => 'create');
-        $expected_error = "[enrolment.csv line 2] One of customusername, customemail, customidnumber is required but all are unspecified or empty. Required fields context, instance, role are unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
-    }
-
-    /**
-     * Validates that an appropriate error is logged for a field that is not in
-     * the import file
-     */
-    public function testVersion1ImportLogsMissingField() {
-        //create mapping record
-        $this->create_mapping_record('course', 'shortname', 'customshortname');
-
-        //validation for unspecified field "shortname"
-        $data = array('action' => 'update');
-        $expected_error = "[course.csv line 2] Required field customshortname is unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validates that an appropriate error is logged for multiple missing
-     * fields that are absolutely necessary
-     */
-    public function testVersion1ImportLogsMultipleMissingFields() {
-        //create mapping records
-        $this->create_mapping_record('course', 'shortname', 'customshortname');
-        $this->create_mapping_record('course', 'fullname', 'customfullname');
-        $this->create_mapping_record('course', 'category', 'customcategory');
-
-        //validation for missing fields shortname, fullname, category
-        $data = array('action' => 'create');
         $expected_error = "[course.csv line 2] Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
@@ -1045,7 +1042,14 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_mapping_record('user', 'country', 'customcountry');
 
         //create validation using update
-        $data = array('action' => 'update');
+        $data = array('action' => 'update',
+                      'customusername' => '',
+                      'custompassword' => '',
+                      'customfirstname' => '',
+                      'customlastname' => '',
+                      'customemail' => '',
+                      'customcity' => '',
+                      'customcountry' => '');
         $expected_error = "[user.csv line 2] Required fields customusername, custompassword, customfirstname, customlastname, customemail, customcity, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
@@ -1073,7 +1077,14 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_record_exists('user', $data);
 
         //update validation using create
-        $data = array('action' => 'create');
+        $data = array('action' => 'create',
+                      'customusername' => '',
+                      'custompassword' => '',
+                      'customfirstname' => '',
+                      'customlastname' => '',
+                      'customemail' => '',
+                      'customcity' => '',
+                      'customcountry' => '');
         $expected_error = "[user.csv line 2] Required fields customusername, custompassword, customfirstname, customlastname, customemail, customcity, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
@@ -1113,7 +1124,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_contexts_and_site_course();
 
         //create validation using update
-        $data = array('action' => 'update');
+        $data = array('action' => 'update',
+                      'customshortname' => '',
+                      'customfullname' => '',
+                      'customcategory' => '');
         $expected_error = "[course.csv line 2] Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
@@ -1132,7 +1146,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->assert_record_exists('course', $data);
 
         //update validation using create
-        $data = array('action' => 'update');
+        $data = array('action' => 'update',
+                      'customshortname' => '',
+                      'customfullname' => '',
+                      'customcategory' => '');
         $expected_error = "[course.csv line 2] Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
@@ -5629,12 +5646,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //create mapping record
         $this->create_mapping_record('user', 'action', 'customaction');
 
-        $data = array();
-        $message = 'Import file user.csv was not processed because it is missing the following column: customaction. Please fix the import file and re-upload it.';
+        $data = array('username' => 'rlipusername');
+        $message = "Import file user.csv was not processed because it is missing the following column: customaction. Please fix the import file and re-upload it.\n";
         $expected_message = "[user.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'user');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('status' => $message));
+        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
     }
 
     /**
@@ -5651,11 +5668,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_mapping_record('user', 'idnumber', 'customidnumber');
 
         $data = array('action' => 'create');
-        $message = 'Import file user.csv was not processed because one of the following columns is required but all are unspecified; customusername, customemail, customidnumber. Please fix the import file and re-upload it.';
+        $message = "Import file user.csv was not processed because one of the following columns is required but all are unspecified; customusername, customemail, customidnumber. Please fix the import file and re-upload it.\n";
         $expected_message = "[user.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'user');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('status' => $message));
+        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
     }
 
     /**
@@ -5668,12 +5685,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //create mapping record
         $this->create_mapping_record('course', 'action', 'customaction');
 
-        $data = array();
-        $message = 'Import file course.csv was not processed because it is missing the following column: customaction. Please fix the import file and re-upload it.';
+        $data = array('shortname' => 'rlipshortname');
+        $message = "Import file course.csv was not processed because it is missing the following column: customaction. Please fix the import file and re-upload it.\n";
         $expected_message = "[course.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'course');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('status' => $message));
+        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
     }
 
     /**
@@ -5687,11 +5704,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_mapping_record('course', 'shortname', 'customshortname');
 
         $data = array('action' => 'create');
-        $message = 'Import file course.csv was not processed because it is missing the following required column: customshortname. Please fix the import file and re-upload it.';
+        $message = "Import file course.csv was not processed because it is missing the following required column: customshortname. Please fix the import file and re-upload it.\n";
         $expected_message = "[course.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'course');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('status' => $message));
+        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
     }
 
     /**
@@ -5704,12 +5721,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //create mapping record
         $this->create_mapping_record('enrolment', 'action', 'customaction');
 
-        $data = array();
-        $message = 'Import file enrolment.csv was not processed because it is missing the following column: customaction. Please fix the import file and re-upload it.';
+        $data = array('username' => 'rlipusername');
+        $message = "Import file enrolment.csv was not processed because it is missing the following column: customaction. Please fix the import file and re-upload it.\n";
         $expected_message = "[enrolment.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('status' => $message));
+        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
     }
 
     /**
@@ -5726,11 +5743,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'username' => 'rlipusername',
                       'context' => 'user',
                       'instance' => 'rlipusername');
-        $message = 'Import file enrolment.csv was not processed because it is missing the following required column: customrole. Please fix the import file and re-upload it.';
+        $message = "Import file enrolment.csv was not processed because it is missing the following required column: customrole. Please fix the import file and re-upload it.\n";
         $expected_message = "[enrolment.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('status' => $message));
+        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
     }
 
     /**
@@ -5745,13 +5762,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_mapping_record('enrolment', 'role', 'customrole');
 
         $data = array('action' => 'create',
-                      'username' => 'rlipusername',
-                      'context' => 'user');
-        $message = 'Import file enrolment.csv was not processed because it is missing the following required column: custominstance, customrole. Please fix the import file and re-upload it.';
+                      'username' => 'rlipusername');
+        $message = "Import file enrolment.csv was not processed because it is missing the following required columns: customcontext, customrole. Please fix the import file and re-upload it.\n";
         $expected_message = "[enrolment.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('status' => $message));
+        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
     }
 
     /**
@@ -5760,7 +5776,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
      */
     public function testVersion1ImportLogsInvalidUserAction() {
         //data
-        $data = array('action' => 'bogus');
+        $data = array('action' => 'bogus',
+                      'username' => 'testusername');
         $expected_message = "[user.csv line 2] Action of \"bogus\" is not supported.\n";
 
         //validation
@@ -5773,7 +5790,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
      */
     public function testVersion1ImportLogsInvalidCourseAction() {
         //data
-        $data = array('action' => 'bogus');
+        $data = array('action' => 'bogus',
+                      'shortname' => 'testshortname');
         $expected_message = "[course.csv line 2] Action of \"bogus\" is not supported.\n";
 
         //validation
@@ -5786,7 +5804,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
      */
     public function testVersion1ImportLogsInvalidEnrolmentAction() {
         //data
-        $data = array('action' => 'bogus');
+        $data = array('action' => 'bogus',
+                      'username' => 'testusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
         $expected_message = "[enrolment.csv line 2] Action of \"bogus\" is not supported.\n";
 
         //validation

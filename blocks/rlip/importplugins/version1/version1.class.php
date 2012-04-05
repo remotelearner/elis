@@ -2165,4 +2165,111 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return $this->mappings[$fieldorgroup];
         }
     }
+
+    /**
+     * Validate that the action field is included in the header
+     *
+     * @param string $entity Type of entity, such as 'user'
+     * @param array $header The list of supplied header columns
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if the action column is correctly specified,
+     *                 otherwise false
+     */
+    function check_action_header($entity, $header, $filename) {
+        $translated_action = $this->mappings['action'];
+
+        if (!in_array($translated_action, $header)) {
+            //action column not specified
+            $message = "Import file {$filename} was not processed because it is missing the ".
+                       "following column: {$translated_action}. Please fix the import file and re-upload it.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate that all required fields are included in the header
+     *
+     * @param string $entity Type of entity, such as 'user'
+     * @param array $header The list of supplied header columns
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if the action column is correctly specified,
+     *                 otherwise false
+     */
+    function check_required_headers($entity, $header, $filename) {
+        //get list of required fields
+        //note: for now, assuming that the delete action is available for
+        //all entity types and requires the bare minimum in terms of fields
+        $required_fields = $this->plugin_supports_action($entity, 'delete');
+
+        //handle context / instance fix
+        if ($entity == 'enrolment') {
+            foreach ($required_fields as $key => $required_field) {
+                if ($required_field == 'instance') {
+                    //never require instance in the header, since each row
+                    //could by a system-context role assignment
+                    unset($required_fields[$key]);
+                }
+            }
+        }
+
+        //perform the necessary transformation on the list of required fields
+        $translated_required_fields = array();
+        foreach ($required_fields as $fieldorgroup) {
+            if (is_array($fieldorgroup)) {
+                $group = array();
+                foreach ($fieldorgroup as $field) {
+                    $group[] = $this->mappings[$field];
+                    $translated_required_fields[] = $group;
+                }
+            } else {
+                $translated_required_fields[] = $this->mappings[$fieldorgroup];
+            }
+        }
+
+        //convert the header into a data record
+        $record = new stdClass;
+        foreach ($header as $value) {
+            $record->$value = $value;
+        }
+
+        //figure out which are missing
+        $missing_fields = $this->get_missing_required_fields($record, $translated_required_fields);
+
+        if ($missing_fields !== false) {
+            $field_display = '';
+            $first = reset($missing_fields);
+
+            //for now, assume "groups" are always first and only showing
+            //that one problem in the log
+            if (!is_array($first)) {
+                //1-of-n case
+
+                //list of fields, as displayed
+                $field_display = implode(', ', $missing_fields);
+
+                //singular/plural handling
+                $label = count($missing_fields) > 1 ? 'columns' : 'column';
+
+                $message = "Import file {$filename} was not processed because it is missing the following ".
+                           "required {$label}: {$field_display}. Please fix the import file and re-upload it.";
+            } else {
+                //basic case, all missing fields are required
+
+                //list of fields, as displayed
+                $group = reset($missing_fields);
+                $field_display = implode(', ', $group);
+
+                $message = "Import file {$filename} was not processed because one of the following columns is ".
+                           "required but all are unspecified: {$field_display}. Please fix the import file and re-upload it.";
+            }
+
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+            return false;
+        }
+
+        return true;
+    }
 }
