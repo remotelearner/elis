@@ -5187,7 +5187,6 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         //run the import
         $manual = true;
-//        $importplugin = new rlip_importplugin_version1($provider);
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
         $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
 

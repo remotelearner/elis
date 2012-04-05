@@ -1089,7 +1089,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         // MUST copy file to temp area 'cause it'll be deleted after import
         $testfile = dirname(__FILE__) .'/userfile.csv';
         $tempdir = $CFG->dataroot .'/blocks/rlip/importplugins/version1/phpunit/';
-        $file = $tempdir .'/userfile.csv';
+        $file = $tempdir .'userfile.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
         $provider = new rlip_importprovider_userfile($file);
@@ -1113,11 +1113,16 @@ class version1DatabaseLoggingTest extends elis_database_test {
         global $CFG, $DB;
 
         //set the log file name to a fixed value
-        $filename = $CFG->dataroot.'/rliptestfile.log';
-        set_config('logfilelocation', $filename, 'rlipimport_version1');
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
-        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
+        // MUST copy file to temp area 'cause it'll be deleted after import
+        $testfile = dirname(__FILE__) .'/userfile2.csv';
+        $tempdir = $CFG->dataroot .'/blocks/rlip/importplugins/version1/phpunit/';
+        $file = $tempdir .'userfile2.csv';
+        @mkdir($tempdir, 0777, true);
+        @copy($testfile, $file);
         $provider = new rlip_importprovider_manual_delay($file);
 
         //run the import
@@ -1142,7 +1147,12 @@ class version1DatabaseLoggingTest extends elis_database_test {
         set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
-        $file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfile2.csv';
+        // MUST copy file to temp area 'cause it'll be deleted after import
+        $testfile = dirname(__FILE__) .'/userfile2.csv';
+        $tempdir = $CFG->dataroot .'/blocks/rlip/importplugins/version1/phpunit/';
+        $file = $tempdir .'userfile2.csv';
+        @mkdir($tempdir, 0777, true);
+        @copy($testfile, $file);
         $provider = new rlip_importprovider_userfile_delay($file);
 
         //run the import
@@ -1262,13 +1272,12 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $fs = get_file_storage();
         $fs->create_file_from_pathname($fileinfo, "{$file_path}{$file_name}");
         $fileid = $DB->get_field_select('files', 'id', "filename != '.'");
-
         //run the import
         $entity_types = array('user', 'bogus', 'bogus');
         $fileids = array($fileid, false, false);
         $provider = new rlip_importprovider_moodlefile($entity_types, $fileids);
-
         $importplugin = new rlip_importplugin_version1($provider);
+        print_object($importplugin);
         //buffer output due to summary display
         ob_start();
         $result = $importplugin->run();
