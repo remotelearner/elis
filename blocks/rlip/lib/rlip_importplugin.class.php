@@ -58,13 +58,14 @@ abstract class rlip_importprovider {
      * Provides the object used to log information to the file system logfile
      *
      * @param  string $plugin  the plugin
+     * @param  string $entity  the entity type
      * @param boolean $manual  Set to true if a manual run
+     * @param  integer $starttime the time used in the filename
      * @return object the fslogger
      */
     function get_fslogger($plugin, $entity, $manual = false, $starttime = 0) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
-
         //set up the file-system logger
         $filepath = get_config($plugin, 'logfilelocation');
 
@@ -72,8 +73,7 @@ abstract class rlip_importprovider {
         $filename = rlip_log_file_name('import', $plugin, $filepath, $entity, $manual, $starttime);
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
-            //for now, default to scheduled runs
-            return rlip_fslogger_factory::factory($fileplugin);
+            return rlip_fslogger_factory::factory($fileplugin, $manual);
         }
         return null;
     }
@@ -518,6 +518,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         while ($fileplugin->read()) {
             ++$filelines;
         }
+
         //track the total number of records to process
         $this->dblogger->set_totalrecords($filelines);
         $fileplugin->close();
@@ -537,7 +538,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         $this->fslogger = $this->provider->get_fslogger($this->dblogger->plugin, $entity, $this->manual, $starttime);
 
         $this->header_read_hook($entity, $header, $fileplugin->get_filename());
-
 
         //main processing loop
         while ($record = $fileplugin->read()) {
