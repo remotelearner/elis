@@ -1277,7 +1277,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $fileids = array($fileid, false, false);
         $provider = new rlip_importprovider_moodlefile($entity_types, $fileids);
         $importplugin = new rlip_importplugin_version1($provider);
-        print_object($importplugin);
+
         //buffer output due to summary display
         ob_start();
         $result = $importplugin->run();
