@@ -393,7 +393,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             if (count($messages) > 0) {
                 //combine and log
                 $message = implode(' ', $messages);
-                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $entity);
                 return false;
             }
         }

@@ -588,10 +588,6 @@ function run_ipjob($taskname, $maxruntime = 0) {
 
     $fcnname = "run_ipjob({$taskname}, {$maxruntime})";
     $disabledincron = get_config('rlip', 'disableincron');
-    if (!empty($disabledincron)) {
-        mtrace("{$fcnname}: Internal IP cron disabled by settings - aborting job!");
-        return false; // TBD
-    }
 
     if (empty($maxruntme)) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;
@@ -620,24 +616,36 @@ function run_ipjob($taskname, $maxruntime = 0) {
     if ($task = $DB->get_record('elis_scheduled_tasks',
                                 array('taskname' => $taskname))) {
 
-        //record last runtime
-        $lastruntime = (int)($ipjob->lastruntime);
+        if (empty($disabledincron)) {
+            //record last runtime
+            $lastruntime = (int)($ipjob->lastruntime);
 
-        //update next runtime on the scheduled task record
-        $nextruntime = $ipjob->nextruntime;
-        $timenow = time();
-        do {
-            $nextruntime += (int)rlip_schedule_period_minutes($data['period']) * 60;
-        } while ($nextruntime <= ($timenow + 59));
-        $task->nextruntime = $nextruntime;
+            //update next runtime on the scheduled task record
+            $nextruntime = $ipjob->nextruntime;
+            $timenow = time();
+            do {
+                $nextruntime += (int)rlip_schedule_period_minutes($data['period']) * 60;
+            } while ($nextruntime <= ($timenow + 59));
+            $task->nextruntime = $nextruntime;
+
+            //update the next runtime on the ip schedule record
+            $ipjob->nextruntime = $task->nextruntime;
+            $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
+        } else {
+            // running RLIP cron externally, put times back to pre-run state
+            $task->nextruntime = $ipjob->nextruntime;
+            $task->lastruntime = $ipjob->lastruntime;
+        }
         $DB->update_record('elis_scheduled_tasks', $task);
-
-        //update the next runtime on the ip schedule record
-        $ipjob->nextruntime = $task->nextruntime;
-        $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
     } else {
         mtrace("{$fcnname}: DB Error retrieving task record!");
         //todo: return false?
+    }
+
+    // Must set last & next run times before exiting!
+    if (!empty($disabledincron)) {
+        mtrace("{$fcnname}: Internal IP cron disabled by settings - aborting job!");
+        return false; // TBD
     }
 
     // Perform the IP scheduled action

@@ -37,7 +37,7 @@ class rlip_fslogger {
      *
      * @param object $fileplugin The file plugin used to write data out
      * @param boolean $manual true if a manual run, otherwise false for
-     *                        scheduled 
+     *                        scheduled
      */
     function __construct($fileplugin, $manual = false) {
         $this->fileplugin = $fileplugin;
@@ -252,10 +252,175 @@ class rlip_fslogger {
 }
 
 /**
+ * Class for logging general entry messages to the file system.
+ * These "general" messages should likely NOT have been separated from the "specific" messages,
+ * but rather inserted together.
+ */
+class rlip_import_version1_fslogger extends rlip_fslogger {
+
+    /**
+     * Log a failure message to the log file, and potentially the screen
+     *
+     * @param string $message The message to long
+     * @param int $timestamp The timestamp to associate the message with, or 0
+     *                       for the current time
+     * @param string $filename The name of the import / export file we are
+     *                         reporting on
+     * @param int $entitydescriptor A descriptor of which entity from an import file
+     *                              we are handling, if applicable
+     * @param Object $record Imported data
+     * @param string $type Type of import
+     */
+    function log_failure($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL, $record = NULL, $type = NULL) {
+        if (!empty($record) && !empty($type)) {
+            $this->type_validation($type);
+            $message = $this->general_validation_message($record, $message, $type);
+        }
+        parent::log_failure($message, $timestamp, $filename, $entitydescriptor);
+    }
+
+    /*
+     * Adds the general message to the specific message for a given type
+     * @param Object $record Imported data
+     * @param string $message The specific message
+     * @param string $type Type of import
+    */
+    function general_validation_message($record, $message, $type) {
+        // "action" is not always provided. In that case, return only the specific message
+        if (empty($record->action)) {
+            return $message;
+        }
+
+        $msg = "";
+
+        if ($type == "enrolment") {
+            switch ($record->action) {
+                case "create":
+                    // If the field data is not provided, provide the least general message
+                    if (empty($record->username) || empty($record->instance)) {
+                        $msg = "Enrolment could not be created. " . $message;
+                    } else {
+                        $msg = "User with username \"{$record->username}\" could not be enroled in course with shortname \"{$record->instance}\". " . $message;
+                    }
+                    break;
+                case "delete":
+                    if (empty($record->username) || empty($record->instance)) {
+                        $msg = "Enrolment could not be deleted. " . $message;
+                    } else {
+                        $msg = "User with username \"{$record->username}\" could not be unenroled in course with shortname \"{$record->instance}\". " . $message;
+                    }
+                    break;
+            }
+        }
+
+        if ($type == "group") {
+            switch ($record->action) {
+                case "create":
+                    $msg = "Group with name \"{$record->group}\" could not be created in course with shortname \"{$record->instance}\". " . $message;
+                    break;
+                case "update":
+                    $msg = "Group with name \"{$record->group}\" could not be updated in course with shortname \"{$record->instance}\". " . $message;
+                    break;
+                case "delete":
+                    $msg = "Group with name \"{$record->group}\" could not be deleted in course with shortname \"{$record->instance}\". " . $message;
+                    break;
+            }
+        }
+
+        if ($type == "roleassignment") {
+            switch ($record->action) {
+                case "create":
+                    if (empty($record->shortname) || empty($record->username) || empty($record->context) || empty($record->instance)) {
+                        $msg = "Role assignment could not be created. " . $message;
+                    } else {
+                        $msg = "User with username \"{$record->username}\" could not be assigned role with shortname \"{$record->shortname}\"" .
+                           " on \"{$record->context}\" \"$record->instance\" " . $message;
+                    }
+                    break;
+                case "delete":
+                    if (empty($record->shortname) || empty($record->username) || empty($record->context) || empty($record->instance)) {
+                        $msg = "Role assignment could not be deleted. " . $message;
+                    } else {
+                        $msg = "User with username \"{$record->username}\" could not be unassigned role with shortname \"{$record->shortname}\"" .
+                           " on \"{$record->context}\" \"$record->instance\" " . $message;
+                    }
+                    break;
+            }
+        }
+
+        if ($type == "course") {
+            $type = ucfirst($type);
+            switch ($record->action) {
+                case "create":
+                    if (empty($record->shortname)) {
+                        $msg = "Course could not be created. " . $message;
+                    } else {
+                        $msg =  "{$type} with shortname \"{$record->shortname}\" could not be created. " . $message;
+                    }
+                    break;
+                case "update":
+                    if (empty($record->shortname)) {
+                        $msg = "Course could not be updated. " . $message;
+                    } else {
+                        $msg = "{$type} with shortname \"{$record->shortname}\" could not be updated. " . $message;
+                    }
+                    break;
+                case "delete":
+                    if (empty($record->shortname)) {
+                        $msg = "Course could not be deleted. " . $message;
+                    } else {
+                        $msg = "{$type} with shortname \"{$record->shortname}\" could not be deleted. " . $message;
+                    }
+                    break;
+            }
+        }
+
+        if ($type == "user") {
+            $type = ucfirst($type);
+            switch ($record->action) {
+                case "create":
+                    if (empty($record->username)) {
+                        $msg = "User could not be created. " . $message;
+                    } else {
+                        $msg =  "{$type} with username \"{$record->username}\" could not be created. " . $message;
+                    }
+                    break;
+                case "update":
+                    if (empty($record->username)) {
+                        $msg = "User could not be updated. " . $message;
+                    } else {
+                        $msg = "{$type} with username \"{$record->username}\" could not be updated. " . $message;
+                    }
+                    break;
+                case "delete":
+                    if (empty($record->username)) {
+                        $msg = "User could not be deleted. " . $message;
+                    } else {
+                        $msg = "{$type} with username \"{$record->username}\" could not be deleted. " . $message;
+                    }
+                    break;
+            }
+        }
+
+        return $msg;
+    }
+
+    // Validate the provided type
+    private function type_validation($type) {
+        $types = array('course','user','roleassignment','group','enrolment');
+        if (!in_array($type, $types)) {
+            throw new Exception("\"$type\" in an invalid type. The available types are " . implode(', ', $types));
+        }
+    }
+
+}
+
+/**
  * Filesystem logging class that represents file / import types with
+tim ~/moodle.dev/rlip_plain/lib/phpunittestlib >
  * line-by-line data
  */
-class rlip_fslogger_linebased extends rlip_fslogger {
+class rlip_fslogger_linebased extends rlip_import_version1_fslogger {
     /**
      * API hook for customizing the contents for a file-system log line / record
      *
