@@ -32,12 +32,12 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
-require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -226,13 +226,13 @@ class version1FilesystemLoggingTest extends rlip_test {
     /**
      * Return the list of tables that should be overlayed.
      */
-    static function get_overlay_tables() {
+static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
-        return array(RLIP_LOG_TABLE => 'block_rlip',
+        $tables = array(RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
                      'config_plugins' => 'moodle',
                      'course' => 'moodle',
@@ -264,7 +264,20 @@ class version1FilesystemLoggingTest extends rlip_test {
                      RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
                      'user_info_category' => 'moodle',
-                     'user_info_field' => 'moodle');
+                     'user_info_field' => 'moodle',
+                     'message_working' => 'moodle');
+
+        // Detect if we are running this test on a site with the ELIS PM system in place
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/user.class.php'));
+            require_once(elispm::lib('data/usermoodle.class.php'));
+
+            $tables[user::TABLE] = 'elis_program';
+            $tables[usermoodle::TABLE] = 'elis_program';
+        }
+
+        return $tables;
     }
 
     /**
@@ -5048,6 +5061,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $plugin_type = 'import';
         $plugin = 'rlipimport_version1';
         $manual = true;
+        $entity = 'user';
         $timestamp = time();
         $format = get_string('logfile_timestamp','block_rlip');
         $entity = 'user';
@@ -5233,8 +5247,7 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         }
         $this->assertEquals($i, 16);
-    }
-
+}
 
     /**
      * Validate that the correct error message is logged when an import runs
@@ -5338,6 +5351,49 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data['customtheme'] = 'invalidtheme';
         $expected_error = "[course.csv line 2] Course with shortname \"shortname\" could not be created. customtheme value of \"invalidtheme\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate that all log files from the previous day are bundled into a zip file
+     * and named with the previous day's date
+     */
+    function testVersionImportLogZipsDaily() {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        $filepath = $CFG->dataroot;
+        //set logfilelocation for import and export plugins
+        set_config('logfilelocation', $filepath, 'rlipimport_version1');
+        set_config('logfilelocation', $filepath, 'rlipexport_version1');
+
+        $plugin_type = 'import';
+        $plugin = 'rlipimport_version1';
+        $format = get_string('logfile_timestamp','block_rlip');
+
+        // create a log file to be zipped by the cron job
+        $starttime = time()-86500; //yesterday
+        $filename = rlip_log_file_name($plugin_type,$plugin, $filepath, 'user', false, $starttime);
+
+        //write out a line to the logfile
+        $logfile = new rlip_fileplugin_log($filename);
+        $logfile->open(RLIP_FILE_WRITE);
+        $logfile->write(array('test entry'));
+
+        //call cron job that zips the previous day's log files
+        rlip_compress_logs_cron();
+
+        //was a zip file created?
+        $format = get_string('logfiledaily_timestamp','block_rlip');
+        $compressed_file = $filepath.'/'.$plugin_type.'_'.$plugin.'_'.userdate($starttime, $format).'.zip';
+
+        //verify that the compressed file exists
+        $exists = file_exists($compressed_file);
+        $this->assertEquals($exists, true);
+
+        //verify that the log file created is gone...
+        $exists = file_exists($filename);
+        $this->assertEquals($exists, false);
     }
 
 }
