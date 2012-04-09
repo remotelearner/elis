@@ -5640,7 +5640,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * Validate log message for the action column missing on user import
      */
     public function testVersion1ImportLogsMissingActionColumnOnUserImport() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //create mapping record
@@ -5651,7 +5651,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_message = "[user.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'user');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
     }
 
     /**
@@ -5659,7 +5664,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * missing on user import
      */
     public function testVersion1ImportLogsMissingUserColumnGroup() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //create mapping record
@@ -5668,18 +5673,23 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_mapping_record('user', 'idnumber', 'customidnumber');
 
         $data = array('action' => 'create');
-        $message = "Import file user.csv was not processed because one of the following columns is required but all are unspecified; customusername, customemail, customidnumber. Please fix the import file and re-upload it.\n";
+        $message = "Import file user.csv was not processed because one of the following columns is required but all are unspecified: customusername, customemail, customidnumber. Please fix the import file and re-upload it.\n";
         $expected_message = "[user.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'user');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
     }
 
     /**
      * Validate log message for action column missing on course import
      */
     public function testVersion1ImportLogsMissingActionColumnOnCourseImport() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //create mapping record
@@ -5690,14 +5700,19 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_message = "[course.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'course');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
     }
 
     /**
      * Validate log message for a single column missing on course import
      */
     public function testVersion1ImportLogsMissingCourseColumn() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //create mapping record
@@ -5708,14 +5723,19 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_message = "[course.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'course');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
     }
 
     /**
      * Validate log message for action column missing on enrolment import
      */
     public function testVersion1ImportLogsMissingActionColumnOnEnrolmentImport() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //create mapping record
@@ -5726,14 +5746,19 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_message = "[enrolment.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
     }
 
     /**
      * Validate log message for a single column missing on enrolment import
      */
     public function testVersion1ImportLogsMissingEnrolmentColumn() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //create mapping record
@@ -5747,18 +5772,23 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_message = "[enrolment.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
     }
 
     /**
      * Validate log message for multiple columns missing on enrolment import
      */
     public function testVersion1ImportLogsMissingEnrolmentColumns() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         //create mapping record
-        $this->create_mapping_record('enrolment', 'instance', 'custominstance');
+        $this->create_mapping_record('enrolment', 'context', 'customcontext');
         $this->create_mapping_record('enrolment', 'role', 'customrole');
 
         $data = array('action' => 'create',
@@ -5767,7 +5797,12 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $expected_message = "[enrolment.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
-        $this->assert_record_exists(RLIP_LOG_TABLE, array('statusmessage' => $message));
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
     }
 
     /**

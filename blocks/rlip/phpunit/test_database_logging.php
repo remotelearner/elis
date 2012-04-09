@@ -113,6 +113,40 @@ class databaseLoggingTest extends elis_database_test {
     }
 
     /**
+     * Validation for support of missing database columns in the import
+     * database logging mechanism
+     */
+    public function testDBLoggingSupportsMissingColumns() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //obtain dblogger
+        $dblogger = new rlip_dblogger_import();
+
+        //validate initial state
+        $this->assertFalse($dblogger->missingcolumns);
+        $this->assertEquals($dblogger->missingcolumnsmessage, '');
+
+        //signal a missing column message and flush
+        $dblogger->signal_missing_columns('testmessage');
+
+        //validate state
+        $this->assertTrue($dblogger->missingcolumns);
+        $this->assertEquals($dblogger->missingcolumnsmessage, 'testmessage');
+
+        //validate persisted values
+        $dblogger->flush('test');
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        $params = array('statusmessage' => 'testmessage');
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
+
+        //validate state
+        $this->assertFalse($dblogger->missingcolumns);
+        $this->assertEquals($dblogger->missingcolumnsmessage, '');
+    }
+
+    /**
      * Validate that DB logging produces output as the result of a manual import
      */
     public function testDBLoggingProducesOutputForManualImport() {

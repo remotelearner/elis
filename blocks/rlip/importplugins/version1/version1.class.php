@@ -2183,6 +2183,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $message = "Import file {$filename} was not processed because it is missing the ".
                        "following column: {$translated_action}. Please fix the import file and re-upload it.";
             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+            $this->dblogger->signal_missing_columns($message);
             return false;
         }
 
@@ -2222,8 +2223,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $group = array();
                 foreach ($fieldorgroup as $field) {
                     $group[] = $this->mappings[$field];
-                    $translated_required_fields[] = $group;
                 }
+                $translated_required_fields[] = $group;
             } else {
                 $translated_required_fields[] = $this->mappings[$fieldorgroup];
             }
@@ -2267,6 +2268,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
 
             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+            $this->dblogger->signal_missing_columns($message);
             return false;
         }
 

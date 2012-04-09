@@ -260,6 +260,21 @@ abstract class rlip_dblogger {
  * Database logging class for imports
  */
 class rlip_dblogger_import extends rlip_dblogger {
+    //track whether there are any missing columns and the associated message
+    var $missingcolumns = false;
+    var $missingcolumnsmessage = '';
+
+    /**
+     * Reset the state of the logger between executions
+     */
+    function reset_state() {
+        parent::reset_state();
+
+        //reset state related to missing columns
+        $this->missingcolumns = false;
+        $this->missingcolumnsmessage = '';
+    }
+
     /**
      * Specialization function for log records
      * @param object $record The log record, with all standard fields included
@@ -267,7 +282,9 @@ class rlip_dblogger_import extends rlip_dblogger {
      * @return object The customized version of the record
      */
     function customize_record($record, $filename) {
-        if ($this->maxruntimeexceeded) {
+        if ($this->missingcolumns) {
+            $record->statusmessage = $this->missingcolumnsmessage;
+        } else if ($this->maxruntimeexceeded) {
             // maxruntime exceeded message
             $record->statusmessage = get_string('manualimportexceedstimelimit',
                                         'block_rlip',
@@ -311,6 +328,16 @@ class rlip_dblogger_import extends rlip_dblogger {
             }
             echo $OUTPUT->box($displaystring, $css);
         }
+    }
+
+    /**
+     * Signals that one or more columns are missing from the import file
+     *
+     * @param string $message The message to log related to missing columns
+     */
+    function signal_missing_columns($message) {
+        $this->missingcolumns = true;
+        $this->missingcolumnsmessage = $message;
     }
 }
 
