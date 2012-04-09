@@ -750,7 +750,8 @@ function rlip_get_log_table($logs) {
                          get_string('logend', 'block_rlip'),
                          get_string('logfilesuccesses', 'block_rlip'),
                          get_string('logfilefailures', 'block_rlip'),
-                         get_string('logstatus', 'block_rlip'));
+                         get_string('logstatus', 'block_rlip'),
+                         get_string('logdownload', 'block_rlip'));
 
     $table->data = array();
 
@@ -780,6 +781,9 @@ function rlip_get_log_table($logs) {
             $targetstarttime = userdate($log->targetstarttime, $timeformat, 99, false);
         }
 
+        $logstr = get_string('log', 'block_rlip');
+        $link = "<a href=\"download.php?id=$log->id\">$logstr</a>";
+
         //construct data row
         $table->data[] = array($plugintype,
                                get_string('pluginname', $log->plugin),
@@ -790,7 +794,8 @@ function rlip_get_log_table($logs) {
                                userdate($log->endtime, $timeformat, 99, false),
                                $log->filesuccesses,
                                $filefailures,
-                               $log->statusmessage);
+                               $log->statusmessage,
+                               $link);
     }
 
     return $table;

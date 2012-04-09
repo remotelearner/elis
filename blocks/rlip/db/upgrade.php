@@ -189,5 +189,14 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         $dbman->rename_table(new xmldb_table('ip_schedule'), 'block_rlip_schedule');
     }
 
+    if ($result && $oldversion < 2012040500) {
+        $table = new xmldb_table('block_rlip_summary_logs');
+
+        $field = new xmldb_field('logpath', XMLDB_TYPE_TEXT, 'medium', null, null);
+        $dbman->add_field($table, $field);
+
+        upgrade_block_savepoint(true, 2012040500, 'rlip');
+    }
+
     return $result;
 }

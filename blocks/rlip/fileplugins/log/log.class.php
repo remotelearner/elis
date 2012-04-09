@@ -40,10 +40,24 @@ class rlip_fileplugin_log extends rlip_fileplugin_base {
   	        //todo: determine if we need to make a change to unit tests to
   	        //remove this check
     	    if (!empty($this->filename)) {
-                $this->filepointer = fopen($this->filename, 'w');
+                if ($this->sendtobrowser) {
+                    header("Content-Transfer-Encoding: ascii");
+                    header("Content-Disposition: attachment; filename={$this->filename}");
+                    header("Content-Type: text/plain");
+                    $this->filepointer = fopen('php://output', 'w');
+                } else {
+                    $this->filepointer = fopen($this->filename, 'w');
+                }
     	    }
     	} else {
-    	    //we never read with this class
+            if ($this->filename != '') {
+                //read from the file system
+                $this->filepointer = fopen($this->filename, 'r');
+            } else {
+                //read from a Moodle file
+                $file = $fs->get_file_by_id($this->fileid);
+                $this->filepointer = $file->get_content_file_handle();
+            }
     	}
     }
 
@@ -53,7 +67,13 @@ class rlip_fileplugin_log extends rlip_fileplugin_base {
      * @return array The entry read
      */
     function read() {
-        //we never read with this class
+        if ($this->filepointer === false) {
+            return false;
+        }
+
+        $result = fgets($this->filepointer);
+
+        return $result;
     }
 
     /**
