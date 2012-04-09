@@ -259,7 +259,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
                      'forum' => 'mod_forum',
                      RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      'user_info_category' => 'moodle',
-                     'user_info_field' => 'moodle');
+                     'user_info_field' => 'moodle',
+                     'role_capabilities' => 'moodle');
     }
 
     /**
@@ -453,11 +454,15 @@ class version1FilesystemLoggingTest extends elis_database_test {
     /**
      * Creates a test role, assignable at all necessary context levels
      *
+     * @param string $fullname The new role's fullname
+     * @param string $shortname The new role's shortname
+     * @param string $description The new role's description
      * @return int The database record id of the created course
      */
-    private function create_test_role() {
+    private function create_test_role($fullname = 'rlipfullname', $shortname = 'rlipshortname',
+                                      $description = 'rlipdescription') {
         //create the role
-        $roleid = create_role('rlipfullshortname', 'rlipshortname', 'rlipdescription');
+        $roleid = create_role($fullname, $shortname, $description);
 
         //make it assignable at all necessary contexts
         $contexts = array(CONTEXT_COURSE,
@@ -1388,7 +1393,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
 
         $this->create_test_user();
         $this->create_test_course();
-        $this->create_test_role();
+        $roleid = $this->create_test_role();
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        //make sure it can be assigned as a non-student role
+        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
         set_config('gradebookroles', '');
 
@@ -3027,6 +3035,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $this->create_test_course();
         $this->create_test_role();
 
+        set_config('gradebookroles', '');
+
         //data
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
@@ -3035,7 +3045,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        $message = '[enrolment.csv line 1] Role with shortname "rlipshortname" does not have the moodle/course:view capability."';
+        $message = "[enrolment.csv line 2] Role with shortname \"rlipshortname\" does not have the moodle/course:view capability.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3188,6 +3198,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
     public function testVersion1ImportLogsDuplicateGroupAssignment() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/group/lib.php');
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        set_config('enrol_plugin_enabled', 'manual');
+        set_config('defaultenrol', 1, 'enrol_manual');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
 
         //set up dependencies
         $this->create_contexts_and_site_course();
@@ -3202,14 +3217,18 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $group->name = 'rlipname';
         $group->id = groups_create_group($group);
 
+        //enrol the user in some secondary student role
+        $secondroleid = $this->create_test_role('secondfullname', 'secondshortname', 'seconddescription');
+        set_config('gradebookroles', "{$roleid},{$secondroleid}");
+        enrol_try_internal_enrol($courseid, $userid, $secondroleid);
         //assign the user to the group
         groups_add_member($group->id, $userid);
 
         //make our role a "student" role
-        set_config('gradebookroles', $roleid);
+        //set_config('gradebookroles', $roleid);
 
         //make sure they already have a role assignment
-        role_assign($roleid, $userid, $context->id);
+        //role_assign($roleid, $userid, $context->id);
 
         //base data used every time
         $basedata = array('action' => 'create',
@@ -3221,63 +3240,56 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //username
         $data = $basedata;
         $data['username'] = 'rlipusername';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" enrolled in course with shortname \"rlipshortname\". User with username \"rlipusername\" is already assigned to group with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already assigned to group with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
-        $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups_members');
+        $DB->delete_records('role_assignments');
 
         //email
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" enrolled in course with shortname \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\" is already assigned to group with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\" is already assigned to group with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
-        $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups_members');
+        $DB->delete_records('role_assignments');
 
         //idnumber
         $data = $basedata;
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". User with idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
-        $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups_members');
+        $DB->delete_records('role_assignments');
 
         //username, email
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" enrolled in course with shortname \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned to group with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned to group with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
-        $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups_members');
+        $DB->delete_records('role_assignments');
 
         //username, idnumber
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
-        $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups_members');
+        $DB->delete_records('role_assignments');
 
         //email, idnumber
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
-        $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups_members');
+        $DB->delete_records('role_assignments');
 
         //username, email, idnumber
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
-        $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups_members');
+        $DB->delete_records('role_assignments');
     }
 
     /**
@@ -3325,77 +3337,63 @@ class version1FilesystemLoggingTest extends elis_database_test {
         //username
         $data = $basedata;
         $data['username'] = 'rlipusername';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" enrolled in course with shortname \"rlipshortname\". Group created with name \"rlipname\". Assigned user with username \"rlipusername\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" enrolled in course with shortname \"rlipshortname\". Assigned user with username \"rlipusername\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
         $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups');
         $DB->delete_records('groups_members');
-        $DB->delete_records('groupings_groups');
 
         //email
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" enrolled in course with shortname \"rlipshortname\". Group created with name \"rlipname\". Assigned user with email \"rlipuser@rlipdomain.com\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" enrolled in course with shortname \"rlipshortname\". Assigned user with email \"rlipuser@rlipdomain.com\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
         $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups');
         $DB->delete_records('groups_members');
-        $DB->delete_records('groupings_groups');
 
         //idnumber
         $data = $basedata;
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Group created with name \"rlipname\". Assigned user with idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Assigned user with idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
         $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups');
         $DB->delete_records('groups_members');
-        $DB->delete_records('groupings_groups');
 
         //username, email
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" enrolled in course with shortname \"rlipshortname\". Group created with name \"rlipname\". Assigned user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" enrolled in course with shortname \"rlipshortname\". Assigned user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
         $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups');
         $DB->delete_records('groups_members');
-        $DB->delete_records('groupings_groups');
 
         //username, idnumber
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Group created with name \"rlipname\". Assigned user with username \"rlipusername\", idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Assigned user with username \"rlipusername\", idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
         $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups');
         $DB->delete_records('groups_members');
-        $DB->delete_records('groupings_groups');
 
         //email, idnumber
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Group created with name \"rlipname\". Assigned user with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Assigned user with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
         $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups');
         $DB->delete_records('groups_members');
-        $DB->delete_records('groupings_groups');
 
         //username, email, idnumber
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Group created with name \"rlipname\". Assigned user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Assigned user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
         $DB->delete_records('user_enrolments');
-        $DB->delete_records('groups');
         $DB->delete_records('groups_members');
-        $DB->delete_records('groupings_groups');
     }
 
     /**
@@ -3403,7 +3401,11 @@ class version1FilesystemLoggingTest extends elis_database_test {
      */
     public function testVersion1ImportLogsGroupAssignmentForNonStudent() {
         set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('gradebookroles', '');
 
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $this->create_test_course();
         $this->create_test_role();
 
         $data = array('action' => 'create',
@@ -3412,9 +3414,9 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'idnumber' => 'rlipidnumber',
                       'context' => 'course',
                       'instance' => 'rlipshortname',
-                      'role' => 'courseshortname',
+                      'role' => 'rlipshortname',
                       'group' => 'rlipgroup');
-        $message = '[enrolment.csv line 1] Could not assign user with username "rlipusername", email "rlipuser@rlipdomain.com", idnumber "rlipidnumber" to group with name "rlipgroup" because they are not enrolled in course with shortname "rlipshortname".';
+        $message = "[enrolment.csv line 2] Could not assign user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipgroup\" because they are not enrolled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
 
@@ -3609,6 +3611,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
         $courseid = $this->create_test_course();
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
         $roleid = $this->create_test_role();
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
         //base data used every time
         $basedata = array('action' => 'create',
@@ -4076,7 +4080,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'fullname' => 'rlipcoursename',
                       'customcategory' => 'rlipname/rlipchildname');
 
-        $message = "[course.csv line 2] customcategory value of \"rlipname\" refers to an ambiguous parent category path.\n";
+        $message = "[course.csv line 2] customcategory value of \"rlipname/rlipchildname\" refers to an ambiguous parent category path.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'course');
@@ -4833,7 +4837,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory');
-        $expected_error = "[user.csv line 2] shortname value of \"rlipshortname\" refers to a course that already exists.\n";
+        $expected_error = "[course.csv line 2] shortname value of \"rlipshortname\" refers to a course that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -5291,7 +5295,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
      */
     public function testVersion1ImportLogsGuestWithGuestUnsetOnCourseUpdate() {
         //setup
-        set_config('enrol_plugin_enabled', 'guest');
+        set_config('enrol_plugins_enabled', 'guest');
         set_config('defaultenrol', 0, 'enrol_guest');
 
         $this->create_contexts_and_site_course();
@@ -5351,7 +5355,7 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'shortname' => 'rlipshortname',
                       'guest' => '0',
                       'password' => 'rlippassword');
-        $expected_error = "[course.csv line 2] guest enrolment plugin cannot be assigned a password because the guest enrolment plugin is not enabled.\n";
+        $expected_error = "[course.csv line 2] guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been disabled in course \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_error, 'course');

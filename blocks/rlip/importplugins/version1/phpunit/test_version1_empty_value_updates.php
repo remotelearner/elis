@@ -125,7 +125,8 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
             RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
             field_data_int::TABLE => 'elis_core',
             field_data_char::TABLE => 'elis_core',
-            field_data_text::TABLE => 'elis_core'
+            field_data_text::TABLE => 'elis_core',
+            'config' => 'moodle'
         );
 
         // Detect if we are running this test on a site with the ELIS PM system in place
@@ -282,6 +283,7 @@ class version1EmptyValueUpdatesTest extends elis_database_test {
         require_once($CFG->dirroot.'/user/lib.php');
 
         set_config('createorupdate', 0, 'rlipimport_version1');
+        set_config('gradebookroles', '');
 
         //set up the site course record
         if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {

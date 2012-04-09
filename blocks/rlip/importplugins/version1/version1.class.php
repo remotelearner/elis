@@ -1128,6 +1128,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                         $parent = $parentids[0];
                     } else if (count($parentids) > 0) {
                         //ambiguous parent, so we can't continue
+                        $identifier = $this->mappings['category'];
+                        $this->fslogger->log_failure("{$identifier} value of \"{$category_string}\" ".
+                                                     "refers to an ambiguous parent category path.",
+                                                     0, $filename, $this->linenumber);
                         return false;
                     }
 
@@ -1304,12 +1308,25 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //make sure "guest" settings are consistent for new course
             if (isset($record->guest) && empty($record->guest) && !empty($record->password)) {
                 //password set but guest is not enabled
+                $this->fslogger->log_failure('guest enrolment plugin cannot be assigned a password '.
+                                             'because the guest enrolment plugin is not enabled.',
+                                             0, $filename, $this->linenumber);
                 return false;
             }
 
             $defaultenrol = get_config('enrol_guest', 'defaultenrol');
-            if (empty($defaultenrol) && (!empty($record->guest) || !empty($record->password))) {
+            if (empty($defaultenrol) && !empty($record->guest)) {
                 //enabling guest access without the guest plugin being added by default
+                $this->fslogger->log_failure('guest enrolment plugin cannot be assigned a password '.
+                                             'because the guest enrolment plugin is not configured '.
+                                             'to be added to new courses by default.',
+                                             0, $filename, $this->linenumber);
+                return false;
+            } else if (empty($defaultenrol) && !empty($record->password)) {
+                //enabling guest password without the guest plugin being added by default
+                $this->fslogger->log_failure('guest enrolment plugin cannot be assigned a password '.
+                                             'because the guest enrolment plugin is not configured to '.
+                                             'be added to new courses by default.', 0, $filename, $this->linenumber);
                 return false;
             }
 
@@ -1317,6 +1334,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //an invalid course shortname
             if (isset($record->link)) {
                 if (!$DB->record_exists('course', array('shortname' => $record->link))) {
+                    $this->fslogger->log_failure("Template course with shortname \"{$record->link}\" ".
+                                                 "could not be found.", 0, $filename, $this->linenumber);
                     return false;
                 }
             }
@@ -1326,14 +1345,27 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //todo: consider moving into course_update function
             //make sure "guest" settings are consistent for new course
 
-            if (isset($record->guest) || isset($record->password)) {
-                //a "guest" setting is used, validate that the guest enrolment
-                //plugin is added to the current course
-                if ($courseid = $DB->get_field('course', 'id', array('shortname' => $record->shortname))) {
-                    if (!$DB->record_exists('enrol', array('courseid' => $courseid,
-                                                            'enrol' => 'guest'))) {
-                       return false;
-                    }
+            //determine whether the guest enrolment plugin is added to the current course
+            $guest_plugin_exists = false;
+            if ($courseid = $DB->get_field('course', 'id', array('shortname' => $record->shortname))) {
+                if ($DB->record_exists('enrol', array('courseid' => $courseid,
+                                                      'enrol' => 'guest'))) {
+                    $guest_plugin_exists = true;
+                }
+            } 
+
+            if (!$guest_plugin_exists) {
+                //guest enrolment plugin specifically removed from course
+                if (isset($record->guest)) { 
+                    $this->fslogger->log_failure("guest enrolment plugin cannot be enabled because ".
+                                                 "the guest enrolment plugin has been removed from ".
+                                                 "course \"{$record->shortname}\".", 0, $filename, $this->linenumber);
+                    return false;
+                } else if (isset($record->password)) {
+                    $this->fslogger->log_failure("guest enrolment plugin cannot be assigned a password ".
+                                                 "because the guest enrolment plugin has been removed ".
+                                                 "from course \"{$record->shortname}\".", 0, $filename, $this->linenumber);
+                    return false;
                 }
             }
 
@@ -1344,7 +1376,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     if (isset($record->guest) && empty($record->guest)) {
                         //guest access specifically disabled, which isn't
                         //consistent with providing a password
-                        $this->fslogger->log_failure("guest enrolment plugin cannot be assigned a password because the guest enrolment plugin is globally disabled.", 0, $filename, $this->linenumber);
+                        $this->fslogger->log_failure("guest enrolment plugin cannot be assigned a ".
+                                                     "password because the guest enrolment plugin has been ".
+                                                     "disabled in course \"{$record->shortname}\".",
+                                                     0, $filename, $this->linenumber);
                         return false;
                     } else if (!isset($record->guest)) {
                         $params = array('courseid' => $courseid,
@@ -1352,6 +1387,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                         'status' => ENROL_INSTANCE_ENABLED);
                         if (!$DB->record_exists('enrol', $params)) {
                             //guest access disabled in the database
+                            $this->fslogger->log_failure('attempting to set password when added but '.
+                                                         'disabled during update', 0, $filename, $this->linenumber);
                             return false;
                         }
                     }
@@ -1398,6 +1435,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //uniqueness check
         if ($DB->record_exists('course', array('shortname' => $record->shortname))) {
+            $identifier = $this->mappings['shortname'];
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->shortname}\" refers to a ".
+                                         "course that already exists.", 0, $filename, $this->linenumber);
             return false;
         }
 
@@ -1740,6 +1780,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //data checking
         if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {
+            $identifier = $this->mappings['role'];
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->role}\" does not refer ".
+                                         "to a valid role.", 0, $filename, $this->linenumber);
             return false;
         }
 
@@ -1853,17 +1896,47 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 enrol_try_internal_enrol($context->instanceid, $userid, $roleid, $timestart);
 
                 //collect success message for logging at end of action
-                $logmessages[] = "User with {$user_descriptor} successfully assigned role with shortname \"{$record->role}\" on {$context_descriptor}.";
-            } else {
+                $logmessages[] = "User with {$user_descriptor} successfully assigned role with shortname ".
+                                 "\"{$record->role}\" on {$context_descriptor}.";
+            } else if (!$role_assignment_exists) {
+                //just assign the role
+                role_assign($roleid, $userid, $context->id);
 
+                //collect success message for logging at end of action
+                $logmessages[] = "User with {$user_descriptor} successfully assigned role with ".
+                                 "shortname \"{$record->role}\" on {$context_descriptor}.";
+            } else {
                 //duplicate enrolment attempt
-                $this->fslogger->log_failure("User with {$user_descriptor} is already assigned role with shortname \"{$record->role}\" on {$context_descriptor}. User with {$user_descriptor} is already enroled in course with shortname \"{$record->instance}\".", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("User with {$user_descriptor} is already assigned role ".
+                                             "with shortname \"{$record->role}\" on {$context_descriptor}. ".
+                                             "User with {$user_descriptor} is already enroled in course with ".
+                                             "shortname \"{$record->instance}\".", 0, $filename, $this->linenumber);
                 return false;
             }
 
             //collect success message for logging at end of action
-            $logmessages[] = "User with {$user_descriptor} enrolled in course with shortname \"{$record->instance}\".";
+            if (!$is_enrolled) {
+                $logmessages[] = "User with {$user_descriptor} enrolled in course with shortname \"{$record->instance}\".";
+            }
         } else {
+            if ($record->context == 'course' && isset($record->group)) {
+                if (!is_enrolled($context, $userid)) {
+                    $this->fslogger->log_failure("Could not assign user with {$user_descriptor} to group ".
+                                                 "with name \"{$record->group}\" because they are not enrolled ".
+                                                 "in course with shortname \"{$record->instance}\".",
+                                                 0, $filename, $this->linenumber);
+                    return false;
+                }
+            }
+
+            if ($record->context == 'course') {
+                if (!$DB->record_exists('role_capabilities', array('roleid' => $roleid,
+                                                                   'capability' => 'moodle/course:view'))) {
+                    $this->fslogger->log_failure("Role with shortname \"{$record->role}\" does not have ".
+                                                 "the moodle/course:view capability.", 0, $filename, $this->linenumber);
+                    return false;
+                }
+            }
 
             if ($role_assignment_exists) {
                 //role assignment already exists, so this action serves no purpose
@@ -1896,10 +1969,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             if (groups_is_member($groupid, $userid)) {
                 //error handling
+                $logmessages[] = "User with {$user_descriptor} is already assigned to group with name \"{$record->group}\".";
             } else {
                 //try to assign the user to the group
                 if (!groups_add_member($groupid, $userid)) {
-                    //error handling - already a member
+                    //should never happen
                 }
 
                 //collect success message for logging at end of action
@@ -1925,8 +1999,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 if ($DB->record_exists('groupings_groups', array('groupingid' => $groupingid,
                                                                  'groupid' => $groupid))) {
                     //error handling
+                    $logmessages[] = "Group with name \"{$record->group}\" is already assigned to grouping with name \"{$record->grouping}\".";
                 } else {
-                    groups_assign_grouping($groupingid, $groupid);
+                    if (!groups_assign_grouping($groupingid, $groupid)) {
+                        //should never happen
+                    }
 
                     //collect success message for logging at end of action
                     $logmessages[] = "Assigned group with name \"{$record->group}\" to grouping with name \"{$record->grouping}\".";
