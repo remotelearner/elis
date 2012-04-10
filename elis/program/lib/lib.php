@@ -1715,10 +1715,11 @@ function pm_migrate_certificate_files() {
     global $CFG;
     $result = true;
     // Migrate directories: olddir => newdir
-    $dirs = array('1/curriculum/pix/certificate/borders'
-                  => 'elis/program/pix/certificate/borders',
-                  '1/curriculum/pix/certificate/seals'
-                  => 'elis/program/pix/certificate/seals');
+    $dirs = array(
+        '1/curriculum/pix/certificate/borders'  => 'elis/program/pix/certificate/borders',
+        '1/curriculum/pix/certificate/seals'    => 'elis/program/pix/certificate/seals',
+        'curriculum/pix/certificates/templates' => 'elis/program/pix/certificates/templates'
+    );
     foreach ($dirs as $olddir => $newdir) {
         $oldpath = $CFG->dataroot .'/'. $olddir;
         $newpath = $CFG->dataroot .'/'. $newdir;
