@@ -774,6 +774,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         $roleid = create_role('rlipname', 'rlipshortname', 'rlipdescription');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
+        set_config('gradebookroles', "{$roleid}");
 
         $data = array('entity' => 'enrolment',
                       'action' => 'create',
