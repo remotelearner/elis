@@ -58,18 +58,22 @@ abstract class rlip_importprovider {
      * Provides the object used to log information to the file system logfile
      *
      * @param  string $plugin  the plugin
+     * @param  string $entity  the entity type
+     * @param boolean $manual  Set to true if a manual run
+     * @param  integer $starttime the time used in the filename
      * @return object the fslogger
      */
-    function get_fslogger($plugin) {
+    function get_fslogger($plugin, $entity, $manual = false, $starttime = 0) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
-
         //set up the file-system logger
-        $filename = get_config($plugin, 'logfilelocation');
+        $filepath = get_config($plugin, 'logfilelocation');
+
+        //get filename
+        $filename = rlip_log_file_name('import', $plugin, $filepath, $entity, $manual, $starttime);
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
-            //for now, default to scheduled runs
-            return rlip_fslogger_factory::factory($fileplugin);
+            return rlip_fslogger_factory::factory($fileplugin, $manual);
         }
         return null;
     }
@@ -110,7 +114,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $this->dblogger = $this->provider->get_dblogger();
             $this->dblogger->set_plugin($plugin);
             $this->manual = $manual;
-            $this->fslogger = $this->provider->get_fslogger($plugin);
         }
     }
 
@@ -434,7 +437,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             foreach ($missing_fields as $key => $value) {
                 if (count($value) > 1) {
                     //use helper to do any display-related field name transformation
-                    $display_value = $this->get_required_field_display($value); 
+                    $display_value = $this->get_required_field_display($value);
                     $fields = implode(', ', $display_value);
 
                     $messages[] = "One of {$fields} is required but all are unspecified or empty.";
@@ -476,7 +479,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             if (count($messages) > 0) {
                 //combine and log
                 $message = implode(' ', $messages);
-                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $entity);
                 return false;
             }
         }
@@ -595,8 +598,10 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $state = new stdClass;
         }
 
+        $starttime = time();
+
         //track the start time as the current time
-        $this->dblogger->set_starttime(time());
+        $this->dblogger->set_starttime($starttime);
 
         //fetch a file plugin for the current file
         $fileplugin = $this->provider->get_import_file($entity);
@@ -610,6 +615,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         while ($fileplugin->read()) {
             ++$filelines;
         }
+
         //track the total number of records to process
         $this->dblogger->set_totalrecords($filelines);
         $fileplugin->close();
@@ -625,7 +631,14 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         $this->linenumber++;
 
         $filename = $fileplugin->get_filename();
-        $this->header_read_hook($entity, $header, $filename);
+
+        //set up fslogger with this starttime for this entity
+        $this->fslogger = $this->provider->get_fslogger($this->dblogger->plugin, $entity, $this->manual, $starttime);
+        if (method_exists($this->provider, 'get_file_name')) {
+            $this->dblogger->set_log_path($filename);
+        }
+
+        $this->header_read_hook($entity, $header, $fileplugin->get_filename());
 
         if (!$this->check_action_header($entity, $header, $filename)) {
             //action field not specified in the header, so we can't continue
@@ -639,7 +652,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             return null;
         }
 
-        $starttime = time();
         //main processing loop
         while ($record = $fileplugin->read()) {
             if (isset($state->linenumber)) {

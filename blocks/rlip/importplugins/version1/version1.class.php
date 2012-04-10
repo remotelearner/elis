@@ -122,7 +122,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     $realcolumn = $standardfieldname;
                     break;
                 }
-            } 
+            }
 
             //attempt to fetch the field
             if (strpos($realcolumn, 'profile_field_') === 0) {
@@ -486,7 +486,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $auths = get_plugin_list('auth');
         if (!$this->validate_fixed_list($record, 'auth', array_keys($auths))) {
             $identifier = $this->mappings['auth'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->auth}\" is not a valid auth plugin.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->auth}\" is not a valid auth plugin.", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
@@ -495,7 +495,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $errmsg = '';
             if (!check_password_policy($record->password, $errmsg)) {
                 $identifier = $this->mappings['password'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$record->password}\" does not conform to your site's password policy.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->password}\" does not conform to your site's password policy.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -504,7 +504,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if ($action == 'create') {
             if (!validate_email($record->email)) {
                 $identifier = $this->mappings['email'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$record->email}\" is not a valid email address.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->email}\" is not a valid email address.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -512,7 +512,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure maildigest is one of the available values
         if (!$this->validate_fixed_list($record, 'maildigest', array(0, 1, 2))) {
             $identifier = $this->mappings['maildigest'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->maildigest}\" is not one of the available options (0, 1, 2).", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->maildigest}\" is not one of the available options (0, 1, 2).", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
@@ -520,14 +520,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$this->validate_fixed_list($record, 'autosubscribe', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
             $identifier = $this->mappings['autosubscribe'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->autosubscribe}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->autosubscribe}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
         //make sure trackforums can only be set if feature is enabled
         if (isset($record->trackforums)) {
             if (empty($CFG->forum_trackreadposts)) {
-                $this->fslogger->log_failure("Tracking unread posts is currently disabled on this site.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("Tracking unread posts is currently disabled on this site.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -536,7 +536,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$this->validate_fixed_list($record, 'trackforums', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
             $identifier = $this->mappings['trackforums'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->trackforums}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->trackforums}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
@@ -544,7 +544,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$this->validate_fixed_list($record, 'screenreader', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
             $identifier = $this->mappings['screenreader'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->screenreader}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->screenreader}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
@@ -553,7 +553,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$this->validate_fixed_list($record, 'country',
                         array_keys($countries), array_flip($countries))) {
             $identifier = $this->mappings['country'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->country}\" is not a valid country or country code.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->country}\" is not a valid country or country code.", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
@@ -561,7 +561,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (isset($record->timezone)) {
             if ($CFG->forcetimezone != 99 && $record->timezone != $CFG->forcetimezone) {
                 $identifier = $this->mappings['timezone'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$record->timezone}\" is not consistent with forced timezone value of \"{$CFG->forcetimezone}\" on your site.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->timezone}\" is not consistent with forced timezone value of \"{$CFG->forcetimezone}\" on your site.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -570,14 +570,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $timezones = get_list_of_timezones();
         if (!$this->validate_fixed_list($record, 'timezone', array_keys($timezones))) {
             $identifier = $this->mappings['timezone'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->timezone}\" is not a valid timezone.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->timezone}\" is not a valid timezone.", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
         //make sure theme can only be set if feature is enabled
         if (isset($record->theme)) {
             if (empty($CFG->allowuserthemes)) {
-                $this->fslogger->log_failure("User themes are currently disabled on this site.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("User themes are currently disabled on this site.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -586,7 +586,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $themes = get_list_of_themes();
         if (!$this->validate_fixed_list($record, 'theme', array_keys($themes))) {
             $identifier = $this->mappings['theme'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->theme}\" is not a valid theme.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->theme}\" is not a valid theme.", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
@@ -594,7 +594,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $languages = get_string_manager()->get_list_of_translations();
         if (!$this->validate_fixed_list($record, 'lang', array_keys($languages))) {
             $identifier = $this->mappings['lang'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->lang}\" is not a valid language code.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->lang}\" is not a valid language code.", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
@@ -619,13 +619,13 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //perform type-specific validation and transformation
             if ($field->datatype == 'checkbox') {
                 if ($data != 0 && $data != 1) {
-                    $this->fslogger->log_failure("\"{$data}\" is not one of the available options for a checkbox profile field {$shortname} (0, 1).", 0, $filename, $this->linenumber);
+                    $this->fslogger->log_failure("\"{$data}\" is not one of the available options for a checkbox profile field {$shortname} (0, 1).", 0, $filename, $this->linenumber, $record, "user");
                     return false;
                 }
             } else if ($field->datatype == 'menu') {
                 $options = explode("\n", $field->param1);
                 if (!in_array($data, $options)) {
-                    $this->fslogger->log_failure("\"{$data}\" is not one of the available options for a menu of choices profile field {$shortname}.", 0, $filename, $this->linenumber);
+                    $this->fslogger->log_failure("\"{$data}\" is not one of the available options for a menu of choices profile field {$shortname}.", 0, $filename, $this->linenumber, $record, "user");
                     return false;
                 }
             } else if ($field->datatype == 'datetime') {
@@ -634,7 +634,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     $identifier = $this->mappings["profile_field_{$shortname}"];
                     $this->fslogger->log_failure("{$identifier} value of \"{$data}\" ".
                                                  "is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.",
-                                                 0, $filename, $this->linenumber);
+                                                 0, $filename, $this->linenumber, $record, "user");
                     return false;
                 }
 
@@ -681,20 +681,20 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if ($DB->record_exists('user', array('username' => $record->username,
                                              'mnethostid'=> $CFG->mnet_localhost_id))) {
             $identifier = $this->mappings['username'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->username}\" refers to a user that already exists.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->username}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
         if ($DB->record_exists('user', array('email' => $record->email))) {
             $identifier = $this->mappings['email'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->email}\" refers to a user that already exists.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->email}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
         if (isset($record->idnumber)) {
             if ($DB->record_exists('user', array('idnumber' => $record->idnumber))) {
                 $identifier = $this->mappings['idnumber'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$record->idnumber}\" refers to a user that already exists.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->idnumber}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -786,7 +786,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $updateusername = $DB->get_record('user', array('username' => $params['username']));
             if(!$updateusername) {
                 $identifier = $this->mappings['username'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['username']}\" does not refer to a valid user.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$params['username']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -796,7 +796,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $updateemail = $DB->get_record('user', array('email' => $params['email']));
             if(!$updateemail) {
                 $identifier = $this->mappings['email'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['email']}\" does not refer to a valid user.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$params['email']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -806,7 +806,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $updateidnumber = $DB->get_record('user', array('idnumber' => $params['idnumber']));
             if(!$updateidnumber) {
                 $identifier = $this->mappings['idnumber'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['idnumber']}\" does not refer to a valid user.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$params['idnumber']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -866,7 +866,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $updateusername = $DB->get_record('user', array('username' => $params['username']));
             if(!$updateusername) {
                 $identifier = $this->mappings['username'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['username']}\" does not refer to a valid user.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$params['username']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -876,7 +876,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $updateusername = $DB->get_record('user', array('email' => $params['email']));
             if(!$updateusername) {
                 $identifier = $this->mappings['email'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['email']}\" does not refer to a valid user.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$params['email']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -886,7 +886,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $updateusername = $DB->get_record('user', array('idnumber' => $params['idnumber']));
             if(!$updateusername) {
                 $identifier = $this->mappings['idnumber'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['idnumber']}\" does not refer to a valid user.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$params['idnumber']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -1192,7 +1192,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //make sure theme can only be set if feature is enabled
         if (isset($record->theme)) {
              if (empty($CFG->allowcoursethemes)) {
-               $this->fslogger->log_failure("Course themes are currently disabled on this site.", 0, $filename, $this->linenumber);
+               $this->fslogger->log_failure("Course themes are currently disabled on this site.", 0, $filename, $this->linenumber, $record, "course");
                return false;
            }
         }
@@ -1201,7 +1201,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $themes = get_list_of_themes();
         if (!$this->validate_fixed_list($record, 'theme', array_keys($themes))) {
             $identifier = $this->mappings['theme'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->theme}\" is not a valid theme.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->theme}\" is not a valid theme.", 0, $filename, $this->linenumber, $record, "course");
             return false;
         }
 
@@ -1211,7 +1211,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             if (!$this->validate_fixed_list($record, 'format', array_keys($courseformats))) {
                 $identifier = $this->mappings['format'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$record->format}\" does not refer to a valid course format.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->format}\" does not refer to a valid course format.", 0, $filename, $this->linenumber, $record, "course");
                 return false;
             }
         }
@@ -1228,7 +1228,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $record->numsections = (int)$record->numsections;
             if ($record->numsections < 0 || $record->numsections > $maxsections) {
                 $identifier = $this->mappings['numsections'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$record->numsections}\" is not one of the available options (0 .. {$maxsections}).", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->numsections}\" is not one of the available options (0 .. {$maxsections}).", 0, $filename, $this->linenumber, $record, "course");
                 //not between 0 and max
                 return false;
             }
@@ -1241,7 +1241,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['startdate'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->startdate}\" is not a ".
                                              "valid date in MMM/DD/YYYY or MM/DD/YYYY format.",
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, "course");
                 return false;
             }
 
@@ -1253,7 +1253,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $options = range(0, 10);
         if (!$this->validate_fixed_list($record, 'newsitems', $options)) {
             $identifier = $this->mappings['newsitems'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->newsitems}\" is not one of the available options (0 .. 10).", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->newsitems}\" is not one of the available options (0 .. 10).", 0, $filename, $this->linenumber, $record, "course");
             return false;
         }
 
@@ -1261,7 +1261,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$this->validate_fixed_list($record, 'showgrades', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
             $identifier = $this->mappings['showgrades'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->showgrades}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->showgrades}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "course");
             return false;
         }
 
@@ -1269,7 +1269,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$this->validate_fixed_list($record, 'showreports', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
             $identifier = $this->mappings['showreports'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->showreports}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->showreports}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "course");
             return false;
         }
 
@@ -1278,7 +1278,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $choices = get_max_upload_sizes($CFG->maxbytes);
             if (!$this->validate_fixed_list($record, 'maxbytes', array_keys($choices))) {
                 $identifier = $this->mappings['maxbytes'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$record->maxbytes}\" is not one of the available options.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->maxbytes}\" is not one of the available options.", 0, $filename, $this->linenumber, $record, "course");
                 return false;
             }
         }
@@ -1287,7 +1287,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$this->validate_fixed_list($record, 'guest', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
             $identifier = $this->mappings['guest'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->guest}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->guest}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "course");
             return false;
         }
 
@@ -1295,7 +1295,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$this->validate_fixed_list($record, 'visible', array(0, 1),
                                         array('no' => 0, 'yes' => 1))) {
             $identifier = $this->mappings['visible'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->visible}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->visible}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "course");
             return false;
         }
 
@@ -1304,14 +1304,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $language_codes = array_merge(array(''), array_keys($languages));
         if (!$this->validate_fixed_list($record, 'lang', $language_codes)) {
             $identifier = $this->mappings['lang'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->lang}\" is not a valid language code.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->lang}\" is not a valid language code.", 0, $filename, $this->linenumber, $record, "course");
             return false;
         }
 
         //determine if this plugin is even enabled
         $enabled = explode(',', $CFG->enrol_plugins_enabled);
         if (!in_array('guest', $enabled) && !empty($record->guest)) {
-            $this->fslogger->log_failure("guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.", 0, $filename, $this->linenumber, $record, "course");
             return false;
         }
 
@@ -1532,7 +1532,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $record->id = $DB->get_field('course', 'id', array('shortname' => $record->shortname));
         if (empty($record->id)) {
             $identifier = $this->mappings['shortname'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->shortname}\" does not refer to a valid course.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->shortname}\" does not refer to a valid course.", 0, $filename, $this->linenumber, $record, "course");
             return false;
         }
 
@@ -1799,7 +1799,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $identifier = $this->mappings['context'];
             $this->fslogger->log_failure("{$identifier} value of \"{$record->context}\" is not one of ".
                                          "the available options (system, user, coursecat, course).",
-                                         0, $filename, $this->linenumber);
+                                         0, $filename, $this->linenumber, $record, "roleassignment");
             return false;
         }
     }
@@ -1846,7 +1846,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                              'contextlevel' => $contextlevel))) {
             $this->fslogger->log_failure("The role with shortname \"{$record->role}\" is not assignable ".
                                          "on the {$record->context} context level.",
-                                         0, $filename, $this->linenumber);
+                                         0, $filename, $this->linenumber, $record, "roleassignment");
             return false;
         }
 
@@ -1880,7 +1880,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['group'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->group}\" does not refer to ".
                                              "a valid group in course with shortname \"{$record->instance}\".",
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, "group");
                 return false;
             } else {
                 //exact group exists
@@ -1895,14 +1895,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     $identifier = $this->mappings['grouping'];
                     $this->fslogger->log_failure("{$identifier} value of \"{$record->grouping}\" refers to multiple ".
                                                  "groupings in course with shortname \"{$record->instance}\".",
-                                                 0, $filename, $this->linenumber);
+                                                 0, $filename, $this->linenumber, $record, "group");
                     return false;
                 } else if ($count == 0 && empty($creategroups)) {
                     //does not exist and not creating
                     $identifier = $this->mappings['grouping'];
                     $this->fslogger->log_failure("{$identifier} value of \"{$record->grouping}\" does not refer to ".
                                                  "a valid grouping in course with shortname \"{$record->instance}\".",
-                                                 0, $filename, $this->linenumber);
+                                                 0, $filename, $this->linenumber, $record, "group");
                     return false;
                 } else {
                     //exact grouping exists

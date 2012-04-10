@@ -35,7 +35,7 @@ $string['configcreateorupdate'] = 'When enabled, all create or update actions on
 actions if the entity does not already exist, or update actions if the entity exists.';
 $string['configcreategroupsandgroupings'] = 'When enabled, groups and groupings can be created in the enrolment import.';
 $string['configfieldstreelink'] = 'Field mapping';
-$string['configlogfilelocation'] = 'The absolute path to the log file, including its file name and path.';
+$string['configlogfilelocation'] = 'The absolute path to the log file.';
 $string['configurelink'] = 'Click here to configure field mappings to use for importing data';
 $string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Import Fields';
 $string['course_schedule_file'] = 'Course import filename';
@@ -48,6 +48,7 @@ $string['enrolment_schedule_file'] = 'Enrolment import filename';
 $string['enrolmentfile'] = 'Enrolment file';
 $string['enrolmenttab'] = 'Enrolment fields';
 $string['importfields'] = 'Version 1 import fields';
+$string['import_file_timestamp'] = '%b_%d_%Y_%H%M%S';
 $string['logfilelocation'] = 'Log file location';
 $string['logging'] = 'Logging';
 $string['mappingscancelled'] = 'Previously saved field mappings successfully restored';

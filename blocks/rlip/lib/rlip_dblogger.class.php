@@ -67,6 +67,9 @@ abstract class rlip_dblogger {
     //tracks whether we're performing a manual or scheduled run
     var $manual;
 
+    //path of the log file
+    var $logpath = NULL;
+
     /**
      * DB logger constructor
      *
@@ -115,6 +118,22 @@ abstract class rlip_dblogger {
      */
     function set_starttime($starttime) {
         $this->starttime = $starttime;
+    }
+
+    /**
+     * Set the path to the log
+     * @param string the log path
+     */
+    function set_log_path($logpath) {
+        $this->logpath = $logpath;
+    }
+
+    /**
+     * Get the path to the log
+     * @return the log path
+     */
+    function get_log_path($logpath) {
+        return $this->logpath;
     }
 
     /**
@@ -209,6 +228,7 @@ abstract class rlip_dblogger {
         $record->unmetdependency = $this->unmetdependency;
         $record->maxruntimeexceeded = $this->maxruntimeexceeded;
         $record->totalrecords = $this->totalrecords;
+        $record->logpath = $this->logpath;
 
         //perform any necessary data specialization
         $record = $this->customize_record($record, $filename);

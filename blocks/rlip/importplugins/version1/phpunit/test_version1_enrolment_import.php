@@ -34,7 +34,7 @@ global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
-require_once(elis::lib('testlib.php'));
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
 /**
  * Class that fetches import files for the enrolment import
@@ -77,7 +77,7 @@ class overlay_enrolment_database extends overlay_database {
 /**
  * Class for version 1 enrolment import correctness
  */
-class version1EnrolmentImportTest extends elis_database_test {
+class version1EnrolmentImportTest extends rlip_test {
     static $courseroleid;
     static $studentroleid;
     static $coursecatroleid;
@@ -161,6 +161,7 @@ class version1EnrolmentImportTest extends elis_database_test {
                                                                                                             CONTEXT_USER));
         self::$courseid = self::create_test_course();
         self::$userid = self::create_test_user();
+        self::$existing_logfiles = static::get_logfilelocation_files();
     }
 
     /**
@@ -252,7 +253,7 @@ class version1EnrolmentImportTest extends elis_database_test {
 
         $course = create_course($course);
 
-        return $course->id; 
+        return $course->id;
     }
 
     /**
@@ -367,7 +368,7 @@ class version1EnrolmentImportTest extends elis_database_test {
 
     /**
      * Helper function that runs the enrolment import for a sample enrolment
-     * 
+     *
      * @param array $extradata Extra fields to set for the new course
      */
     private function run_core_enrolment_import($extradata, $use_default_data = true) {
@@ -384,7 +385,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         foreach ($extradata as $key => $value) {
             $data[$key] = $value;
         }
-        
+
         $provider = new rlip_importprovider_mockenrolment($data);
 
         $importplugin = new rlip_importplugin_version1($provider);
@@ -401,7 +402,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true); 
+        $this->assertEquals($exists, true);
     }
 
     /**
@@ -541,7 +542,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         $data = array();
         $data['roleid'] = self::$userroleid;
 
-        $user_context = get_context_instance(CONTEXT_USER, self::$userid);  
+        $user_context = get_context_instance(CONTEXT_USER, self::$userid);
         $data['contextid'] = $user_context->id;
 
         $data['userid'] = self::$userid;
@@ -1231,7 +1232,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         //set up the "pre-existing" group
         $groupid = $this->create_test_group(self::$courseid);
 
-        //set up the "pre-existing" grouping 
+        //set up the "pre-existing" grouping
         $groupingid = $this->create_test_grouping(self::$courseid);;
 
         //run the import
@@ -1673,7 +1674,7 @@ class version1EnrolmentImportTest extends elis_database_test {
 
         //data setup
         $this->create_test_course(array('shortname' => 'timestampcourse',
-                                        'startdate' => 12345)); 
+                                        'startdate' => 12345));
 
         //run the import
         $data = $this->get_core_enrolment_data();
@@ -1682,7 +1683,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         $this->run_core_enrolment_import($data, false);
 
         //ideal enrolment start time
-        $course_startdate = $DB->get_field('course', 'startdate', array('shortname' => 'timestampcourse')); 
+        $course_startdate = $DB->get_field('course', 'startdate', array('shortname' => 'timestampcourse'));
 
         //validate enrolment record
         $where = 'timestart = :timestart AND
@@ -1859,7 +1860,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         //compare data
         $this->assert_no_enrolments_exist();
     }
-    
+
     /**
      * Validate that the version 1 plugin can delete a course-level role
      * assignment when there is no enrolment tied to it
@@ -1967,7 +1968,7 @@ class version1EnrolmentImportTest extends elis_database_test {
         $data['instance'] = 'rlipusername';
         $data['role'] = 'usershortname';
         $this->run_core_enrolment_import($data, false);
-        
+
         $this->assertEquals($DB->count_records('role_assignments'), 0);
     }
 
@@ -2313,7 +2314,7 @@ class version1EnrolmentImportTest extends elis_database_test {
 
         //set up our second enrolment
         $data = $this->get_core_enrolment_data();
-        $data['role'] = 'studentshortname'; 
+        $data['role'] = 'studentshortname';
         $this->run_core_enrolment_import($data, false);
 
         $this->assertEquals($DB->count_records('user_enrolments'), 1);

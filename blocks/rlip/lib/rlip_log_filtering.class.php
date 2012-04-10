@@ -39,7 +39,7 @@ class rlip_log_filter_operationselect extends user_filter_simpleselect {
      */
     function get_sql_filter($data) {
         static $counter = 0;
-        $name = 'ex_simpleselect'.$counter++;
+        $name = 'ex_rlip_lfos'. $counter++;
 
         $value = $data['value'];
         $params = array();

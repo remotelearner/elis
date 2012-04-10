@@ -30,9 +30,15 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
+<<<<<<< HEAD
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+//require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/rlip_fileplugin.class.php');
+=======
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+>>>>>>> origin/ELIS_INT_2.0.2
 
 /**
  * File plugin that just stores read records in memory
@@ -104,11 +110,9 @@ class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
     /**
      * Specifies the name of the current open file
      *
-     * @param  bool   $withpath  Whether to include fullpath with filename
-     *                           default is NOT to include full path.
-     * @return string The file name.
+     * @return string The file name, not including the full path
      */
-    function get_filename($withpath = false) {
+    function get_filename() {
         return 'memoryexport';
     }
 }

@@ -1,4 +1,30 @@
 <?php
+/**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    rlip
+ * @subpackage importplugins_version1
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ */
+
+defined('MOODLE_INTERNAL') || die();
 
 $string['addfieldinstructions'] = 'Please add a profile field using the dropdown below.';
 $string['addprofilefield'] = 'Add profile field...';
@@ -10,7 +36,7 @@ $string['configincrementaldelta'] = 'This setting is not used in a scheduled inc
 This should be specified in \*d\*h\*m format, with values representing days, hours and minutes.
 This setting only takes effect when using the incremental manual export, and is based on the time at which a user\'s course grade was
 last modified.';
-$string['configlogfilelocation'] = 'The absolute path to the log file, including its file name and path.';
+$string['configlogfilelocation'] = 'The absolute path to the log file.';
 $string['confignonincremental'] = 'Include all historical data in manual exports';
 $string['configureheader'] = 'Profile Fields';
 $string['configurelink'] = 'Click here to configure which profile fields are included in this export';

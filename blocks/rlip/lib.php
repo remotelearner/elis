@@ -41,6 +41,7 @@ define('RLIP_EXPORT_TEMPDIR', '/rlip/%s/temp/');
 define('RLIP_IMPORT_TEMPDIR', '/rlip/%s/temp/');
 
 require_once($CFG->dirroot.'/lib/adminlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
 /**
  * Settings page that can have child pages
@@ -59,7 +60,7 @@ class rlip_category_settingpage extends admin_settingpage implements parentable_
      * @return bool true if successful, false if not
      */
     public function add($setting, $bogus = '') {
-        //note: this is only called as is done for admin_settingpage 
+        //note: this is only called as is done for admin_settingpage
         return parent::add($setting);
     }
 }
@@ -588,10 +589,6 @@ function run_ipjob($taskname, $maxruntime = 0) {
 
     $fcnname = "run_ipjob({$taskname}, {$maxruntime})";
     $disabledincron = get_config('rlip', 'disableincron');
-    if (!empty($disabledincron)) {
-        mtrace("{$fcnname}: Internal IP cron disabled by settings - aborting job!");
-        return false; // TBD
-    }
 
     if (empty($maxruntme)) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;
@@ -620,24 +617,36 @@ function run_ipjob($taskname, $maxruntime = 0) {
     if ($task = $DB->get_record('elis_scheduled_tasks',
                                 array('taskname' => $taskname))) {
 
-        //record last runtime
-        $lastruntime = (int)($ipjob->lastruntime);
+        if (empty($disabledincron)) {
+            //record last runtime
+            $lastruntime = (int)($ipjob->lastruntime);
 
-        //update next runtime on the scheduled task record
-        $nextruntime = $ipjob->nextruntime;
-        $timenow = time();
-        do {
-            $nextruntime += (int)rlip_schedule_period_minutes($data['period']) * 60;
-        } while ($nextruntime <= ($timenow + 59));
-        $task->nextruntime = $nextruntime;
+            //update next runtime on the scheduled task record
+            $nextruntime = $ipjob->nextruntime;
+            $timenow = time();
+            do {
+                $nextruntime += (int)rlip_schedule_period_minutes($data['period']) * 60;
+            } while ($nextruntime <= ($timenow + 59));
+            $task->nextruntime = $nextruntime;
+
+            //update the next runtime on the ip schedule record
+            $ipjob->nextruntime = $task->nextruntime;
+            $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
+        } else {
+            // running RLIP cron externally, put times back to pre-run state
+            $task->nextruntime = $ipjob->nextruntime;
+            $task->lastruntime = $ipjob->lastruntime;
+        }
         $DB->update_record('elis_scheduled_tasks', $task);
-
-        //update the next runtime on the ip schedule record
-        $ipjob->nextruntime = $task->nextruntime;
-        $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
     } else {
         mtrace("{$fcnname}: DB Error retrieving task record!");
         //todo: return false?
+    }
+
+    // Must set last & next run times before exiting!
+    if (!empty($disabledincron)) {
+        mtrace("{$fcnname}: Internal IP cron disabled by settings - aborting job!");
+        return false; // TBD
     }
 
     // Perform the IP scheduled action
@@ -742,7 +751,8 @@ function rlip_get_log_table($logs) {
                          get_string('logend', 'block_rlip'),
                          get_string('logfilesuccesses', 'block_rlip'),
                          get_string('logfilefailures', 'block_rlip'),
-                         get_string('logstatus', 'block_rlip'));
+                         get_string('logstatus', 'block_rlip'),
+                         get_string('logdownload', 'block_rlip'));
 
     $table->data = array();
 
@@ -772,6 +782,9 @@ function rlip_get_log_table($logs) {
             $targetstarttime = userdate($log->targetstarttime, $timeformat, 99, false);
         }
 
+        $logstr = get_string('log', 'block_rlip');
+        $link = "<a href=\"download.php?id=$log->id\">$logstr</a>";
+
         //construct data row
         $table->data[] = array($plugintype,
                                get_string('pluginname', $log->plugin),
@@ -782,7 +795,8 @@ function rlip_get_log_table($logs) {
                                userdate($log->endtime, $timeformat, 99, false),
                                $log->filesuccesses,
                                $filefailures,
-                               $log->statusmessage);
+                               $log->statusmessage,
+                               $link);
     }
 
     return $table;
@@ -804,6 +818,119 @@ function rlip_log_table_html($table) {
 
     //obtain table html
     return html_writer::table($table);
+}
+
+/**
+ * Return the properly formatted log file name
+ * @param string $plugin_type Import or Export
+ * @param string $plugin The name of the plugin
+ * @param string $filepath The path of the log to append to the standardized filename
+ * @param boolean $manual True if this is a manual import
+ * @param string $timestamp The timestamp used for this import
+ * @param string $timeformat The format to use
+ * @param string $timezone The timezone being used
+ * @return string $logfilename The name of the log file
+ */
+function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $manual = false, $timestamp = 0, $format = null, $timezone = 99) {
+
+    //if no timeformat is set, set it to logfile timestamp format
+    $format = empty($format) ? get_string('logfile_timestamp','block_rlip'):$format;
+    //add scheduled/manual to the logfile name
+    $scheduling = empty($manual) ? strtolower(get_string('scheduled','block_rlip')) : strtolower(get_string('manual','block_rlip'));
+    //use timestamp passed or time()
+    $timestamp  = empty($timestamp) ? time():$timestamp;
+    //check for proper filepath
+    if (strrpos($filepath, '/') !== strlen($filepath) - 1) {
+        $filepath .= '/';
+    }
+
+    //create filename
+    if ($plugin_type == 'import') { //include entity
+        $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.$entity.'_'.userdate($timestamp, $format, $timezone).'.log';
+    } else if ($plugin_type == 'export') {
+        $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.userdate($timestamp, $format, $timezone).'.log';
+    }
+
+    //make sure the filename is unique
+    $count = 0;
+    $unique_filename = $filename;
+    while (file_exists($unique_filename)) {
+        $filename_prefix = explode('.',$filename);
+        $filename_part = explode('_',$filename_prefix[0]);
+        $unique_filename = $filename_prefix[0].'_'.$count.'.log';
+        $count++;
+    }
+    return $unique_filename;
+}
+
+/**
+ * Task to create a zip file from today's log files
+ *
+ */
+function rlip_compress_logs_cron() {
+
+    $time = time() - 86400; //get yesterday's date
+
+    //the types of plugins we are considering
+    $plugintypes = array('rlipimport'=>'import', 'rlipexport'=>'export');
+    //lookup for the directory paths for plugins
+    $directories = get_plugin_types();
+    //Loop through all plugins...
+    $timestamp = userdate($time, get_string('logfiledaily_timestamp','block_rlip'), 99);
+
+    foreach ($plugintypes as $plugintype=>$pluginvalue) {
+        //base directory
+        $directory = $directories[$plugintype];
+
+        //obtain plugins and iterate through them
+        $plugins = get_plugin_list($plugintype);
+
+        foreach ($plugins as $name => $path) {
+            //skip plugins used for testing only
+            $instance = rlip_dataplugin_factory::factory("{$plugintype}_{$name}");
+            if ($instance->is_test_plugin()) {
+                continue;
+            }
+
+            //get the display name from the plugin-specific language string
+            $plugin_name = "{$plugintype}_{$name}";
+            $logfilelocation = get_config($plugin_name, 'logfilelocation');
+
+            $logfileprefix = "{$pluginvalue}_{$plugin_name}";
+            $logfiledate = "{$timestamp}";
+
+            //do a glob of all log files of this plugin name and of the previous day's date
+            $files = array();
+            foreach(glob("$logfilelocation/$logfileprefix*$logfiledate*.log") as $file) {
+                $files[] = $file;
+            }
+
+            //create a zip file if there are files to archive
+            if (!empty($files)) {
+                $zipfile = "{$logfilelocation}/{$logfileprefix}_{$timestamp}.zip";
+
+                //create the archive
+                $zip = new ZipArchive();
+                if($zip->open($zipfile, ZIPARCHIVE::OVERWRITE) !== true) {
+                    return false;
+                }
+
+                foreach ($files as $file) {
+                    //add the file
+                    $zip->addFile($file,$file);
+                }
+                //close the zip -- done!
+                $zip->close();
+
+                //remove the file(s) from the system
+                foreach ($files as $file) {
+                    //add the file
+                    unlink($file);
+                }
+            }
+        }
+    }
+
 }
 
 /**

@@ -100,8 +100,12 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
         $class = get_class($this);
         $this->plugin = str_replace('rlip_exportplugin_', 'rlipexport_', $class);
 
+        //track the start time as the current time - moved from run() in order to support rlip_log_file_name
+        $this->dblogger->set_starttime(time());
+
         //set up the file-system logger, if exists
-        $filename = get_config($this->plugin, 'logfilelocation');
+        $filepath = get_config($this->plugin, 'logfilelocation');
+        $filename = rlip_log_file_name('export', $this->plugin, $filepath, '', $manual, $this->dblogger->starttime);
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true, $manual);
             $this->fslogger = rlip_fslogger_factory::factory($fileplugin, $this->manual);
@@ -126,8 +130,6 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      *         ->result            false on error, i.e. time limit exceeded.
      */
     function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
-        //track the start time as the current time
-        $this->dblogger->set_starttime(time());
         //track the provided target start time
         $this->dblogger->set_targetstarttime($targetstarttime);
 
