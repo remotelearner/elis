@@ -104,7 +104,10 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
         //obtain plugin
         $manual = true;
         $plugin = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin, $manual);
+        ob_start();
         $plugin->run(0, 0, 1);
+        $ui = ob_get_contents(); // TBD: test this UI string!
+        ob_end_clean();
 
         //expected error
         $expected_error = get_string('exportexceedstimelimit', 'block_rlip')."\n";
