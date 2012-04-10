@@ -5448,6 +5448,19 @@ class version1FilesystemLoggingTest extends elis_database_test {
     }
 
     /**
+     * Validate that shortname validation works on course delete
+     */
+    public function testVersion1ImportLogsInvalidShortnameOnCourseDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
+        $data = array('action' => 'delete',
+                      'customshortname' => 'rlipshortname');
+        $expected_error = "[course.csv line 2] customshortname value of \"rlipshortname\" does not refer to a valid course.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
      * Validate that the correct error message is logged when an import runs
      * too long
      */
@@ -5536,7 +5549,8 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * @return array Mapping of user fields to their maximum lengths
      */
     public function userMaxFieldLengthProvider() {
-        return array(array('firstname', 100),
+        return array(array('username', 100),
+                     array('firstname', 100),
                      array('lastname', 100),
                      array('email', 100),
                      array('city', 120),
@@ -5568,7 +5582,35 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'country' => 'CA');
         $value = str_repeat('x', $maxlength + 1);
         $data['custom'.$field] = $value;
-        $expected_error = "[user.csv line2] custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.";
+        $expected_error = "[user.csv line 2] custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that field length validation works on user update
+     */
+    public function testVersionImportLogsUserFieldLengthErrorOnUpdate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
+        $value = str_repeat('x', 101);
+        $data = array('action' => 'update',
+                      'customusername' => $value);
+        $expected_error = "[user.csv line 2] customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that field length validation works on user delete
+     */
+    public function testVersionImportLogsUserFieldLengthErrorOnDelete() {
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
+        $value = str_repeat('x', 101);
+        $data = array('action' => 'delete',
+                      'customusername' => $value);
+        $expected_error = "[user.csv line 2] customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -5602,7 +5644,35 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'category' => 'rlipcategory');
         $value = str_repeat('x', $maxlength + 1);
         $data['custom'.$field] = $value;
-        $expected_error = "[course.csv line2] custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.";
+        $expected_error = "[course.csv line 2] custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate that field length validation works on course update
+     */
+    public function testVersionImportLogsCourseFieldLengthErrorOnUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
+        $value = str_repeat('x', 101);
+        $data = array('action' => 'update',
+                      'customshortname' => $value);
+        $expected_error = "[course.csv line 2] customshortname value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate that field length validation works on course delete
+     */
+    public function testVersionImportLogsCourseFieldLengthErrorOnDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
+        $value = str_repeat('x', 101);
+        $data = array('action' => 'delete',
+                      'customshortname' => $value);
+        $expected_error = "[course.csv line 2] customshortname value of \"{$value}\" exceeds the maximum field length of 100.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -5612,7 +5682,10 @@ class version1FilesystemLoggingTest extends elis_database_test {
      * @return array Mapping of enrolment fields to their maximum lengths
      */
     public function enrolmentMaxFieldLengthProvider() {
-        return array(array('group', 254),
+        return array(array('username', 100),
+                     array('email', 100),
+                     array('idnumber', 255),
+                     array('group', 254),
                      array('grouping', 254));
     }
 
@@ -5636,7 +5709,24 @@ class version1FilesystemLoggingTest extends elis_database_test {
                       'role' => 'rlipshortname');
         $value = str_repeat('x', $maxlength + 1);
         $data['custom'.$field] = $value;
-        $expected_error = "[enrolment.csv line2] custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.";
+        $expected_error = "[enrolment.csv line 2] custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+    }
+
+    /**
+     * Validate that field length validation works on enrolment delete
+     */
+    public function testVersionImportLogsEnrolmentFieldLengthErrorOnDelete() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+
+        $value = str_repeat('x', 101);
+        $data = array('action' => 'delete',
+                      'customusername' => $value,
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
+        $expected_error = "[enrolment.csv line 2] customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 

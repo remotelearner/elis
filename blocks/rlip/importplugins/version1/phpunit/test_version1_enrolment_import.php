@@ -2508,9 +2508,13 @@ class version1EnrolmentImportTest extends elis_database_test {
         set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
 
         //data for all fixed-size fields at their maximum sizes
-        $data = array('group' => str_repeat('x', 254),
+        $data = array('username' => str_repeat('x', 100),
+                      'group' => str_repeat('x', 254),
                       'grouping' => str_repeat('x', 254),
                       'role' => 'studentshortname');
+
+        //create a test user
+        $this->create_test_user(array('username' => str_repeat('x', 100)));
 
         //run the import
         $this->run_core_enrolment_import($data);

@@ -263,14 +263,39 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
+     * Check the lengths of fields based on the supplied maximum lengths
+     *
+     * @param object $record The import record
+     * @param string $filename The name of the import file, excluding path
+     * @param array $lengths Mapping of fields to max lengths
+     */
+    function check_field_lengths($record, $filename, $lengths) {
+        foreach ($lengths as $field => $length) {
+            //note: do not worry about missing fields here
+            if (isset($record->$field)) {
+                $value = $record->$field;
+                if (strlen($value) > $length) {
+                    $identifier = $this->mappings[$field];
+                    $this->fslogger->log_failure("{$identifier} value of \"{$value}\" exceeds the maximum field length of {$length}.", 0, $filename, $this->linenumber);
+                    return false;
+                }
+            }
+        }
+
+        //no problems found
+        return true;        
+    }
+
+    /**
      * Check the lengths of fields from a user record
      * @todo: consider generalizing
      *
      * @param object $record The user record
      * @return boolean True if field lengths are ok, otherwise false
      */
-    function check_user_field_lengths($record) {
-        $lengths = array('firstname' => 100,
+    function check_user_field_lengths($record, $filename) {
+        $lengths = array('username' => 100,
+                         'firstname' => 100,
                          'lastname' => 100,
                          'email' => 100,
                          'city' => 120,
@@ -278,17 +303,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                          'institution' => 40,
                          'department' => 30);
 
-        foreach ($lengths as $field => $length) {
-            //note: do not worry about missing fields here
-            if (isset($record->$field)) {
-                if (strlen($record->$field) > $length) {
-                    return false;
-                }
-            }
-        }
-
-        //no problems found
-        return true;
+        return $this->check_field_lengths($record, $filename, $lengths);
     }
 
     /**
@@ -647,7 +662,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $record = $this->remove_invalid_user_fields($record);
 
         //field length checking
-        $lengthcheck = $this->check_user_field_lengths($record);
+        $lengthcheck = $this->check_user_field_lengths($record, $filename);
         if (!$lengthcheck) {
             return false;
         }
@@ -749,7 +764,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $record = $this->remove_invalid_user_fields($record);
 
         //field length checking
-        $lengthcheck = $this->check_user_field_lengths($record);
+        $lengthcheck = $this->check_user_field_lengths($record, $filename);
         if (!$lengthcheck) {
             return false;
         }
@@ -837,6 +852,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     function user_delete($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
+
+        //field length checking
+        $lengthcheck = $this->check_user_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
 
         //find existing user record
         $params = array();
@@ -993,22 +1014,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @param object $record The course record
      * @return boolean True if field lengths are ok, otherwise false
      */
-    function check_course_field_lengths($record) {
+    function check_course_field_lengths($record, $filename) {
         $lengths = array('fullname' => 254,
                          'shortname' => 100,
                          'idnumber' => 100);
 
-        foreach ($lengths as $field => $length) {
-            //note: do not worry about missing fields here
-            if (isset($record->$field)) {
-                if (strlen($record->$field) > $length) {
-                    return false;
-                }
-            }
-        }
-
-        //no problems found
-        return true;
+        return $this->check_field_lengths($record, $filename, $lengths);
     }
 
     /**
@@ -1415,7 +1426,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $record = $this->remove_invalid_course_fields($record);
 
         //field length checking
-        $lengthcheck = $this->check_course_field_lengths($record);
+        $lengthcheck = $this->check_course_field_lengths($record, $filename);
         if (!$lengthcheck) {
             return false;
         }
@@ -1498,7 +1509,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $record = $this->remove_invalid_course_fields($record);
 
         //field length checking
-        $lengthcheck = $this->check_course_field_lengths($record);
+        $lengthcheck = $this->check_course_field_lengths($record, $filename);
         if (!$lengthcheck) {
             return false;
         }
@@ -1577,6 +1588,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     function course_delete($record, $filename) {
         global $DB;
 
+        //field length checking
+        $lengthcheck = $this->check_course_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
+
         if ($courseid = $DB->get_field('course', 'id', array('shortname' => $record->shortname))) {
             delete_course($courseid, false);
             fix_course_sortorder();
@@ -1586,6 +1603,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             return true;
         }
+
+        $identifier = $this->mappings['shortname'];
+        $this->fslogger->log_success("{$identifier} value of \"{$record->shortname}\" does not refer to a valid course.", 0, $filename, $this->linenumber);
 
         return false;
     }
@@ -1629,6 +1649,23 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //todo: add logging
             return false;
         }
+    }
+
+    /**
+     * Check the lengths of fields from an enrolment record
+     * @todo: consider generalizing
+     *
+     * @param object $record The course record
+     * @return boolean True if field lengths are ok, otherwise false
+     */
+    function check_enrolment_field_lengths($record, $filename) {
+        $lengths = array('username' => 100,
+                         'email' => 100,
+                         'idnumber' => 255,
+                         'group' => 254,
+                         'grouping' => 254);
+
+        return $this->check_field_lengths($record, $filename, $lengths);
     }
 
     /**
@@ -1777,6 +1814,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     function enrolment_create($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //field length checking
+        $lengthcheck = $this->check_enrolment_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
 
         //data checking
         if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {
@@ -2039,6 +2082,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     function enrolment_delete($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //field length checking
+        $lengthcheck = $this->check_enrolment_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
 
         //data checking
         if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {

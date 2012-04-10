@@ -2534,7 +2534,8 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportSucceedsWithMaxLengthUserFields() {
         //data for all fixed-size fields at their maximum sizes
-        $data = array('firstname' => str_repeat('x', 100),
+        $data = array('username' => str_repeat('x', 100),
+                      'firstname' => str_repeat('x', 100),
                       'lastname' => str_repeat('x', 100),
                       'email' => str_repeat('x', 47).'@'.str_repeat('x', 48).'.com',
                       'city' => str_repeat('x', 120),
