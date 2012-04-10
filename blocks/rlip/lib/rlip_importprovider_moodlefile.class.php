@@ -47,14 +47,6 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
         $this->fileids = $fieldids;
     }
 
-    public function set_file_name($filename) {
-        $this->filename = $filename;
-    }
-
-    public function get_file_name() {
-        return $this->filename;
-    }
-
     /**
      * Hook for providing a file plugin for a particular
      * import entity type
@@ -110,7 +102,6 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
         //get filename
         $filename = rlip_log_file_name('import', $plugin, $filepath, $entity, $manual, $starttime);
         if (!empty($filename)) {
-            $this->set_file_name($filename);
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
             return rlip_fslogger_factory::factory($fileplugin, $manual);
         }
