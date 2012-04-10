@@ -189,5 +189,10 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         $dbman->rename_table(new xmldb_table('ip_schedule'), 'block_rlip_schedule');
     }
 
+    if ($result && $oldversion < 2012040900) {
+        // Add a cron task for log rollover
+        elis_tasks_update_definition('block_rlip');
+    }
+
     return $result;
 }

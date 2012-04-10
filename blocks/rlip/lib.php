@@ -41,6 +41,7 @@ define('RLIP_EXPORT_TEMPDIR', '/rlip/%s/temp/');
 define('RLIP_IMPORT_TEMPDIR', '/rlip/%s/temp/');
 
 require_once($CFG->dirroot.'/lib/adminlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
 /**
  * Settings page that can have child pages
