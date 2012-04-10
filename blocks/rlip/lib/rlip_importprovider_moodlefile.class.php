@@ -83,6 +83,14 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
         return new rlip_dblogger_import(true);
     }
 
+    public function set_file_name($filename) {
+        $this->filename = $filename;
+    }
+
+    public function get_file_name() {
+        return $this->filename;
+    }
+
     /**
      * Provides the object used to log information to the file system logfile
      *
@@ -102,6 +110,7 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
         //get filename
         $filename = rlip_log_file_name('import', $plugin, $filepath, $entity, $manual, $starttime);
         if (!empty($filename)) {
+            $this->set_file_name($filename);
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
             return rlip_fslogger_factory::factory($fileplugin, $manual);
         }
