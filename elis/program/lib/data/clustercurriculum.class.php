@@ -290,7 +290,7 @@ class clustercurriculum extends elis_data_object {
 
             if (!empty($filter_sql)) {
                 //user does not have access at the system context
-                $where .= 'AND '.$filter_sql['where'];
+                $where .= 'AND '.$filter_sql['where'].' ';
                 $params = array_merge($params, $filter_sql['where_parameters']);
             }
         }
