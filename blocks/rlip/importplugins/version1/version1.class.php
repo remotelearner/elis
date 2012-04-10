@@ -895,7 +895,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      */
     function user_disable($record, $filename) {
         //note: this is only here due to legacy 1.9 weirdness
-        return $this->user_delete($record);
+        return $this->user_delete($record, $filename);
     }
 
     /**
