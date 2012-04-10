@@ -201,6 +201,8 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
     if ($result && $oldversion < 2012040900) {
         // Add a cron task for log rollover
         elis_tasks_update_definition('block_rlip');
+
+        upgrade_block_savepoint(true, 2012040900, 'rlip');
     }
 
     return $result;
