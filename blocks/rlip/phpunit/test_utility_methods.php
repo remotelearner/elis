@@ -482,6 +482,7 @@ class utilityMethodTest extends elis_database_test {
         $record->unmetdependency = 1;
         $record->firstname = 'Test';
         $record->lastname = 'User';
+        $record->logpath = NULL;
         $this->assertEquals($record, $dbrecord);
     }
 
@@ -677,7 +678,8 @@ class utilityMethodTest extends elis_database_test {
                                                 get_string('logend', 'block_rlip'),
                                                 get_string('logfilesuccesses', 'block_rlip'),
                                                 get_string('logfilefailures', 'block_rlip'),
-                                                get_string('logstatus', 'block_rlip')));
+                                                get_string('logstatus', 'block_rlip'),
+                                                get_string('logdownload', 'block_rlip')));
 
         //validate table data
         $this->assertEquals(count($table->data), 1);
@@ -691,7 +693,8 @@ class utilityMethodTest extends elis_database_test {
                                           userdate(1000000003, $timeformat, 99, false),
                                           '1',
                                           get_string('na', 'block_rlip'),
-                                          'testmessage'));
+                                          'testmessage',
+                                          '<a href="download.php?id=1">Log</a>'));
     }
 
     /**
