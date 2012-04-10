@@ -19,7 +19,8 @@
         <FIELD NAME="storedfailures" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The number of rows that failed to be processed from previously stored records" PREVIOUS="storedsuccesses" NEXT="statusmessage"/>
         <FIELD NAME="statusmessage" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" COMMENT="Success / failure status message" PREVIOUS="storedfailures" NEXT="dbops"/>
         <FIELD NAME="dbops" TYPE="int" NOTNULL="true" LENGTH="10" UNSIGNED="false" DEFAULT="-1" SEQUENCE="false" COMMENT="The number of database operations used" PREVIOUS="statusmessage" NEXT="unmetdependency"/>
-        <FIELD NAME="unmetdependency" TYPE="int" NOTNULL="true" LENGTH="10" UNSIGNED="true" SEQUENCE="false" DEFAULT="0" COMMENT="Flag to indicate that the record failed due to an unmet dependency" PREVIOUS="dbops"/>
+        <FIELD NAME="unmetdependency" TYPE="int" NOTNULL="true" LENGTH="10" UNSIGNED="true" SEQUENCE="false" DEFAULT="0" COMMENT="Flag to indicate that the record failed due to an unmet dependency" PREVIOUS="dbops" NEXT="logpath"/>
+        <FIELD NAME="logpath" TYPE="text" NOTNULL="false" LENGTH="medium" SEQUENCE="false" COMMENT="Path to the log file for download" PREVIOUS="unmetdependency"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
