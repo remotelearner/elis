@@ -390,7 +390,7 @@ class generalized_filter_multifilter {
 
         // Generate the standard fields
         foreach ($groups as $group => $choices) {
-            $custom_fields = $this->_fields[$group];
+            $custom_fields = isset($this->_fields[$group]) ? $this->_fields[$group]: array();
             $this->_fields[$group] = array();
             foreach ($choices as $name => $alias) {
                 $label = $name;
