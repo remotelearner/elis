@@ -1090,25 +1090,6 @@ static function get_overlay_tables() {
     }
 
     /**
-     * Validates that an appropriate error is logged for multiple empty
-     * fields that are absolutely necessary
-     */
-    public function testVersion1ImportLogsMultipleEmptyFields() {
-        //create mapping records
-        $this->create_mapping_record('course', 'shortname', 'customshortname');
-        $this->create_mapping_record('course', 'fullname', 'customfullname');
-        $this->create_mapping_record('course', 'category', 'customcategory');
-
-        //validation for missing fields shortname, fullname, category
-        $data = array('action' => 'create',
-                      'customshortname' => '',
-                      'customfullname' => '',
-                      'customcategory' => '');
-        $expected_error = "[course.csv line 2] Course could not be created. Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
      * Validates that error logging works correctly with the user "create or update" functionality
      */
     public function testVersion1ImportLoggingSupportsUserCreateOrUpdate() {
@@ -3371,6 +3352,10 @@ static function get_overlay_tables() {
         //set up dependencies
         $this->create_contexts_and_site_course();
 
+        set_config('enrol_plugin_enabled', 'manual');
+        set_config('defaultenrol', 1, 'enrol_manual');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
+
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
@@ -3581,84 +3566,6 @@ static function get_overlay_tables() {
                       'role' => 'rlipshortname',
                       'group' => 'rlipgroup');
         $message = "[enrolment.csv line 2] Could not assign user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipgroup\" because they are not enrolled in course with shortname \"rlipshortname\".\n";
-        $this->assert_data_produces_error($data, $message, 'enrolment');
-    }
-
-    /**
-     * Validate log message for invalid grouping name
-     */
-    public function testVersion1ImportLogsInvalidGroupingNameOnRoleAssignmentCreate() {
-        global $CFG;
-        require_once($CFG->dirroot.'/group/lib.php');
-
-        //set up dependencies
-        $this->create_contexts_and_site_course();
-        $this->create_test_user();
-        $courseid = $this->create_test_course();
-        $this->create_test_role();
-
-        //create mapping record
-        $this->create_mapping_record('enrolment', 'grouping', 'customgrouping');
-
-        $group = new stdClass;
-        $group->courseid = $courseid;
-        $group->name = 'rlipname';
-        groups_create_group($group);
-
-        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
-
-        $data = array('action' => 'create',
-                      'username' => 'rlipusername',
-                      'context' => 'course',
-                      'instance' => 'rlipshortname',
-                      'role' => 'rlipshortname',
-                      'group' => 'rlipname',
-                      'customgrouping' => 'bogus');
-
-        $message = "[enrolment.csv line 2] customgrouping value of \"bogus\" does not refer to a valid grouping in course with shortname \"rlipshortname\".\n";
-
-        //validation
-        $this->assert_data_produces_error($data, $message, 'enrolment');
-    }
-
-    /**
-     * Validate log message for ambiguous grouping name
-     */
-    public function testVersion1ImportLogsAmbiguousGroupingNameOnRoleAssignmentCreate() {
-        global $CFG;
-        require_once($CFG->dirroot.'/group/lib.php');
-
-        //set up dependencies
-        $this->create_contexts_and_site_course();
-        $this->create_test_user();
-        $courseid = $this->create_test_course();
-        $this->create_test_role();
-
-        //create mapping record
-        $this->create_mapping_record('enrolment', 'grouping', 'customgrouping');
-
-        $group = new stdClass;
-        $group->courseid = $courseid;
-        $group->name = 'rlipname';
-        groups_create_group($group);
-
-        $grouping = new stdClass;
-        $grouping->name = 'duplicate';
-        $grouping->courseid = $courseid;
-        groups_create_grouping($grouping);
-        groups_create_grouping($grouping);
-
-        $data = array('action' => 'create',
-                      'username' => 'rlipusername',
-                      'context' => 'course',
-                      'instance' => 'rlipshortname',
-                      'role' => 'rlipshortname',
-                      'group' => 'rlipname',
-                      'customgrouping' => 'duplicate');
-
-        $message = "[enrolment.csv line 2] customgrouping value of \"duplicate\" refers to multiple groupings in course with shortname \"rlipshortname\".\n";
-
-        //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
 
