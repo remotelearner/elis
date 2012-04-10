@@ -175,7 +175,7 @@ class importPluginTest extends elis_database_test {
 
         $this->assertEquals($supports, array('sampleaction'));
     }
-    
+
     /**
      * Validate that plugin_supports flags invalid entities
      */
@@ -213,7 +213,7 @@ class importPluginTest extends elis_database_test {
     }
 
     /**
-     * Validate that the import process correctly delegates to the right action 
+     * Validate that the import process correctly delegates to the right action
      */
     public function testValidInputTriggersAction() {
         global $CFG;
@@ -293,7 +293,9 @@ class importPluginTest extends elis_database_test {
 
         //obtain its logging object
         set_config('logfilelocation', $CFG->dataroot.'/bogus', 'rlipimport_version1');
-        $fslogger = $provider->get_fslogger('rlipimport_version1');
+        $entity = '';
+        $manual = false;
+        $fslogger = $provider->get_fslogger('rlipimport_version1', $entity, $manual);
 
         //validation
         $this->assertFalse($fslogger->get_manual());
@@ -312,7 +314,9 @@ class importPluginTest extends elis_database_test {
 
         //obtain its logging object
         set_config('logfilelocation', $CFG->dataroot.'/bogus', 'rlipimport_version1');
-        $fslogger = $provider->get_fslogger('rlipimport_version1');
+        $entity = '';
+        $manual = true;
+        $fslogger = $provider->get_fslogger('rlipimport_version1', $entity, $manual);
 
         //validation
         $this->assertTrue($fslogger->get_manual());
