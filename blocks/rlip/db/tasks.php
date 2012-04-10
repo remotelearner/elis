@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
+ * @package    elis
  * @subpackage blocks_rlip
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
@@ -26,4 +26,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2012040900;
+$tasks = array(
+    array(
+        'callfile'     => '/blocks/rlip/lib.php',
+        'callfunction' => 'rlip_compress_logs_cron',
+        'minute'       => '00',
+        'hour'         => '00',
+        'day'          => '*',
+        'month'        => '*',
+        'dayofweek'    => '*'
+    )
+);
+

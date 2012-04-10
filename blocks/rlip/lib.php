@@ -41,6 +41,7 @@ define('RLIP_EXPORT_TEMPDIR', '/rlip/%s/temp/');
 define('RLIP_IMPORT_TEMPDIR', '/rlip/%s/temp/');
 
 require_once($CFG->dirroot.'/lib/adminlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
 /**
  * Settings page that can have child pages
@@ -842,6 +843,7 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
     if (strrpos($filepath, '/') !== strlen($filepath) - 1) {
         $filepath .= '/';
     }
+
     //create filename
     if ($plugin_type == 'import') { //include entity
         $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.$entity.'_'.userdate($timestamp, $format, $timezone).'.log';
@@ -862,39 +864,73 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
 }
 
 /**
- * Create a zip file from today's log file
- * @param string plugin The name of IP plugin
+ * Task to create a zip file from today's log files
  *
  */
-function rlip_zip_log_file($plugin) {
-    $logfile = get_config('logfilelocation', $filename, $plugin);
-    if ($logfile) {
-        //set archive name
-        $timestamp = userdate(time(), get_string('export_file_timestamp',
-                                                 $plugin), $tz);
-        if (($extpos = strrpos($logfile, '.')) !== false) {
-            $zipfile = substr($logfile, 0, $extpos) .
-                      "_{$timestamp}" . substr($logfile, $extpos);
-        } else {
-            $zipfile .= "_{$timestamp}.zip";
+function rlip_compress_logs_cron() {
+
+    $time = time() - 86400; //get yesterday's date
+
+    //the types of plugins we are considering
+    $plugintypes = array('rlipimport'=>'import', 'rlipexport'=>'export');
+    //lookup for the directory paths for plugins
+    $directories = get_plugin_types();
+    //Loop through all plugins...
+    $timestamp = userdate($time, get_string('logfiledaily_timestamp','block_rlip'), 99);
+
+    foreach ($plugintypes as $plugintype=>$pluginvalue) {
+        //base directory
+        $directory = $directories[$plugintype];
+
+        //obtain plugins and iterate through them
+        $plugins = get_plugin_list($plugintype);
+
+        foreach ($plugins as $name => $path) {
+            //skip plugins used for testing only
+            $instance = rlip_dataplugin_factory::factory("{$plugintype}_{$name}");
+            if ($instance->is_test_plugin()) {
+                continue;
+            }
+
+            //get the display name from the plugin-specific language string
+            $plugin_name = "{$plugintype}_{$name}";
+            $logfilelocation = get_config($plugin_name, 'logfilelocation');
+
+            $logfileprefix = "{$pluginvalue}_{$plugin_name}";
+            $logfiledate = "{$timestamp}";
+
+            //do a glob of all log files of this plugin name and of the previous day's date
+            $files = array();
+            foreach(glob("$logfilelocation/$logfileprefix*$logfiledate*.log") as $file) {
+                $files[] = $file;
+            }
+
+            //create a zip file if there are files to archive
+            if (!empty($files)) {
+                $zipfile = "{$logfilelocation}/{$logfileprefix}_{$timestamp}.zip";
+
+                //create the archive
+                $zip = new ZipArchive();
+                if($zip->open($zipfile, ZIPARCHIVE::OVERWRITE) !== true) {
+                    return false;
+                }
+
+                foreach ($files as $file) {
+                    //add the file
+                    $zip->addFile($file,$file);
+                }
+                //close the zip -- done!
+                $zip->close();
+
+                //remove the file(s) from the system
+                foreach ($files as $file) {
+                    //add the file
+                    unlink($file);
+                }
+            }
         }
-
-        //create the archive
-        $zip = new ZipArchive();
-        if($zip->open($zipfile,$overwrite ? ZIPARCHIVE::OVERWRITE : ZIPARCHIVE::CREATE) !== true) {
-            return false;
-        }
-        //add the file
-        $zip->addFile($logfile,$logfile);
-        //debug
-        echo 'The zip archive contains ',$zip->numFiles,' files with a status of ',$zip->status;
-
-        //close the zip -- done!
-        $zip->close();
-
-        //check to make sure the file exists
-        return file_exists($zipfile);
     }
+
 }
 
 /**
