@@ -5273,11 +5273,13 @@ static function get_overlay_tables() {
         //run the import
         $manual = true;
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
+        ob_start();
         $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
+        $ui = ob_get_contents(); // TBD: test this UI string
+        ob_end_clean();
 
         //expected error
         $expected_error = get_string('importexceedstimelimit_b', 'block_rlip', $result)."\n";
-
 
         //validate that a log file was created
         $plugin_type = 'import';
