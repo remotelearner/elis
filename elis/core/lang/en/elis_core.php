@@ -135,7 +135,9 @@ The filter has the following options:</p>
 <li>ends with - this option allows only ID numbers that end with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only ID numbers that are equal to the empty string (the text entered is ignored)</li>
 </ul>';
-$string['fld_inactive'] = 'Inactive';
+$string['fld_inactive'] = 'Inactive filter';
+$string['fld_inactive_help'] = '<h1>Inactive filter</h1>
+<p>This filter allows you to filter users\' status as active, inactive or both.</p>';
 $string['fld_iscustom'] = 'Custom';
 $string['fld_lang'] = 'Preferred language';
 $string['fld_lang_help'] = '<h1>Language filter</h1>
@@ -189,6 +191,8 @@ $string['fld_version'] = 'Version';
 
 $string['invalidid'] = 'Invalid ID';
 $string['invalidoperator'] = 'Invalid Operator';
+
+$string['missing_datatype'] = 'Missing datatype';
 
 $string['noactivities'] = 'No activities found';
 $string['nocourseselected'] = 'No course selected';
@@ -262,6 +266,8 @@ The filter has the following options:</p>
 <li>ends with - this option allows only information that ends with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only information that is equal to an empty string (the text entered is ignored)</li>
 </ul>';
+
+$string['unknown_datatype'] = 'Unknown datatype';
 $string['workflow_cancelled'] = 'Cancelled';
 $string['workflow_invalidstep'] = 'Invalid step specified';
 $string['write_to_non_overlay_table'] = 'Attempted write to a non-overlay table: {$a}';
