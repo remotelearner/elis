@@ -12,10 +12,8 @@ require_once(dirname(__FILE__).'/lib.php');
 $url = $CFG->wwwroot.'/blocks/rlip/exportplugins/version1/config_fields.php';
 $attributes = array('href' => $url,
                     'target' => '_blank');
-$displaystring = get_string('configurelink', 'rlipexport_version1');
 $headerstring = get_string('configureheader', 'rlipexport_version1');
-$tag = html_writer::tag('a', $displaystring, $attributes);
-$settings->add(new admin_setting_heading('rlipexport_version1_profilefields', $headerstring, $tag));
+$settings->add(new admin_setting_heading('rlipexport_version1_profilefields', $headerstring, null));
 
 // Export filename settings
 $settings->add(new admin_setting_configtext('rlipexport_version1/export_path',

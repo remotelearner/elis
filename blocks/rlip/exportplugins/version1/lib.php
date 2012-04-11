@@ -215,7 +215,7 @@ class rlipexport_version1_config {
         $delete = optional_param('delete', 0, PARAM_INT);
         if ($delete != 0) {
             self::delete_field_from_export($delete);
-            redirect($baseurl, '', 0);
+            redirect($baseurl, get_string('profilefieldsuccessdelete', 'rlipexport_version1'), 1);
         }
 
         //handle moving a field down the list
@@ -244,7 +244,7 @@ class rlipexport_version1_config {
         if ($updatefields !== '') {
             $data = data_submitted();
             self::update_field_headers($data);
-            redirect($baseurl, '', 0);
+            redirect($baseurl, get_string('profilefieldsuccessupdate', 'rlipexport_version1'), 1);
         }
     }
 }
@@ -267,12 +267,6 @@ function rlipexport_version1_page_setup($baseurl) {
 
     //use the default admin layout
     $PAGE->set_pagelayout('admin');
-
-    //add navigation items
-    $PAGE->navbar->add(get_string('administrationsite'));
-    $PAGE->navbar->add(get_string('plugins', 'admin'));
-    $PAGE->navbar->add(get_string('blocks'));
-    $PAGE->navbar->add(get_string('exportfields', 'rlipexport_version1'));
 }
 
 /**
@@ -287,7 +281,17 @@ function rlipexport_version1_linked_image($url, $imageidentifier) {
 
     //get the full image tag
     $imageurl = $OUTPUT->pix_url($imageidentifier);
-    $imagetag = html_writer::empty_tag('img', array('src' => $imageurl));
+    $alttitle = '';
+    if ($imageidentifier == 't/delete') {
+        $alttitle = get_string('delete', 'rlipexport_version1');
+    }
+    if ($imageidentifier == 't/up') {
+        $alttitle = get_string('moveup', 'rlipexport_version1');
+    }
+    if ($imageidentifier == 't/down') {
+        $alttitle = get_string('movedown', 'rlipexport_version1');
+    }
+    $imagetag = html_writer::empty_tag('img', array('src' => $imageurl, 'alt' => $alttitle, 'title' => $alttitle));
 
     //return the full anchor tag
     $attributes = array('href' => $url);

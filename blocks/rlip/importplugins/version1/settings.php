@@ -4,11 +4,9 @@
 $url = $CFG->wwwroot.'/blocks/rlip/importplugins/version1/config_fields.php';
 $attributes = array('href' => $url,
                     'target' => '_blank');
-$displaystring = get_string('configurelink', 'rlipimport_version1');
-$tag = html_writer::tag('a', $displaystring, $attributes);
 $settings->add(new admin_setting_heading('rlipimport_version1/datahandling',
                                          get_string('datahandling', 'rlipimport_version1'),
-                                         $tag));
+                                         null));
 
 //groups / groupings
 $settings->add(new admin_setting_configcheckbox('rlipimport_version1/creategroupsandgroupings',

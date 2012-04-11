@@ -99,11 +99,11 @@ function rlip_admintree_setup(&$adminroot) {
 
     $plugintypes = array('rlipimport', 'rlipexport');
 
-    $displaystring = get_string('rlipmanageplugins', 'block_rlip');
+    $displaystring = get_string('plugins', 'block_rlip');
     $externcat = new admin_category('rlipmanageplugins', $displaystring);
     $adminroot->add('blocksettings', $externcat);
 
-    $displaystring = get_string('plugins', 'block_rlip');
+    $displaystring = get_string('rlipmanageplugins', 'block_rlip');
     $url = $CFG->wwwroot.'/blocks/rlip/plugins.php';
     $page = new admin_externalpage('rlipsettingplugins', $displaystring, $url, 'moodle/site:config');
     $adminroot->add('rlipmanageplugins', $page);
@@ -166,7 +166,7 @@ function rlip_manualrun_page_setup($baseurl, $plugin_display) {
     $PAGE->navbar->add(get_string('plugins', 'admin'));
     $PAGE->navbar->add(get_string('blocks'));
     $PAGE->navbar->add(get_string('plugins', 'block_rlip'));
-    $PAGE->navbar->add($plugin_display);
+    $PAGE->navbar->add(get_string('rlipmanageplugins', 'block_rlip'), new moodle_url('/blocks/rlip/plugins.php'));
     $PAGE->navbar->add(get_string('runmanually', 'block_rlip'));
 
     //block css file
