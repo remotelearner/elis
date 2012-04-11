@@ -256,6 +256,8 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         $inactive_options = array('choices' => array(get_string('filter_inactive_yes', $this->lang_file) => array(0, 1),
                                                      get_string('filter_inactive_no',  $this->lang_file) => array(0)),
                                   'numeric' => true,
+                                  'default'  => array(0),
++                                  //'anyvalue' => array(0, 1),
                                   'help' => array('class_completion_gas_gauge_inactive',
                                                   get_string('filter_inactive', $this->lang_file),
                                                   $this->lang_file)
