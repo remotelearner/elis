@@ -71,11 +71,14 @@ class ip_schedule_page extends elis_page {
 
     function build_navbar_default() {
         global $CFG;
-        // TBD: breadcrumbs
-        $this->navbar->add(get_string('plugins', 'block_rlip'),
-                           "{$CFG->wwwroot}/blocks/rlip/plugins.php");
-        $this->navbar->add(get_string('schedulepagetitle', 'block_rlip'),
-                           null);
+
+        //add navigation items
+        $this->navbar->add(get_string('administrationsite'));
+        $this->navbar->add(get_string('plugins', 'admin'));
+        $this->navbar->add(get_string('blocks'));
+        $this->navbar->add(get_string('plugins', 'block_rlip'));
+        $this->navbar->add(get_string('rlipmanageplugins', 'block_rlip'), new moodle_url('/blocks/rlip/plugins.php'));
+        $this->navbar->add(get_string('schedulepagetitle', 'block_rlip'), null);
     }
 
     function can_do_default() {
@@ -91,7 +94,7 @@ class ip_schedule_page extends elis_page {
                                             is_siteadmin() ? 0 : $USER->id);
         if (!empty($ipscheds) && $ipscheds->valid()) {
             echo $OUTPUT->notification(get_string("rlip_jobs_heading_jobs",
-                                                  'block_rlip', $display_name),
+                                                  'block_rlip', get_string('pluginname', $display_name)),
                                        'rlip_bold_header', 'left');
             echo $OUTPUT->notification(get_string('rlip_jobs_heading_fullinstructions',
                                                   'block_rlip', $display_name),
@@ -145,7 +148,7 @@ class ip_schedule_page extends elis_page {
                                        'rlip_italic_header', 'left');
         } else {
             echo $OUTPUT->notification(get_string('rlip_jobs_heading_nojobs',
-                                                  'block_rlip', $display_name),
+                                                  'block_rlip', get_string('pluginname', $display_name)),
                                        'rlip_bold_header', 'left');
             echo $OUTPUT->notification(get_string('rlip_jobs_heading_instructions',
                                                   'block_rlip', $display_name),

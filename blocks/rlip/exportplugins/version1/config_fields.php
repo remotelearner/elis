@@ -108,17 +108,18 @@ if (!empty($table->data)) {
                         'name' => 'revertfields');
     echo html_writer::empty_tag('input', $attributes);
     echo $OUTPUT->spacer(null, true);
+    echo $OUTPUT->spacer(null, true);
 
     //button to save changes to headers
     $attributes = array('type' => 'submit',
                         'value' => get_string('updateheaders', 'rlipexport_version1'),
                         'name' => 'updatefields');
     echo html_writer::empty_tag('input', $attributes);
+    echo $OUTPUT->spacer(null, true);
+    echo $OUTPUT->spacer(null, true);
 
     //close form
     echo html_writer::end_tag('form');
-} else {
-    echo html_writer::tag('span', get_string('addfieldinstructions', 'rlipexport_version1'));
 }
 
 //fetch all available profile fields
@@ -129,9 +130,14 @@ if ($recordset = rlipexport_version1_config::get_available_fields()) {
     }
 }
 
-if (!empty($options)) {
-    //one or more fields are available
-    echo $OUTPUT->spacer(null, true);
+if (empty($options)) {
+    if (empty($table->data)) {
+        echo html_writer::tag('span', get_string('profilefieldnotconfig', 'rlipexport_version1'));
+    } else {
+        echo html_writer::tag('span', get_string('profilefieldalladded', 'rlipexport_version1'));
+    }
+} else {
+    echo html_writer::tag('span', get_string('addfieldinstructions', 'rlipexport_version1'));
     echo $OUTPUT->spacer(null, true);
 
     $displaystring = get_string('addprofilefield', 'rlipexport_version1');
