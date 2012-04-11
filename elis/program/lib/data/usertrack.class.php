@@ -195,8 +195,9 @@ class usertrack extends elis_data_object {
                     $wait_list->save();
                     $status = true;
                 } catch (Exception $e) {
+                    $param = array('message' => $e->getMessage());
                     echo cm_error(get_string('record_not_created_reason',
-                                             'elis_program', $e));
+                                             'elis_program', $param));
                 }
             }
         }
