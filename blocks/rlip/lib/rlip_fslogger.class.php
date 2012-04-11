@@ -346,7 +346,7 @@ class rlip_import_version1_fslogger extends rlip_fslogger {
                             $context = 'course category';
                         }
                         $msg = "User with username \"{$record->username}\" could not be assigned role ".
-                               "with shortname \"{$record->role}\ on {$context} \"$record->instance\". " . $message;
+                               "with shortname \"{$record->role}\" on {$context} \"$record->instance\". " . $message;
                     } else if ($required_fields_set && $record->context == 'system') {
                         $msg = "User with username \"{$record->username}\" could not be assigned role ".
                                "with shortname \"{$record->role}\" on the system context. " . $message;
