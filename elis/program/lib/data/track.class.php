@@ -434,8 +434,9 @@ class track extends data_object_with_custom_fields {
                     $wait_list->save();
                     $status = true;
                 } catch (Exception $e) {
+                    $param = array('message' => $e->getMessage());
                     echo cm_error(get_string('record_not_created_reason',
-                                             self::LANG_FILE, $e));
+                                             self::LANG_FILE, $param));
                 }
             }
         }
@@ -700,8 +701,9 @@ class trackassignment extends elis_data_object {
                     $wait_list = new waitlist($wait_record);
                     $wait_list->save();
                 } catch (Exception $e) {
+                    $param = array('message' => $e->getMessage());
                     echo cm_error(get_string('record_not_created_reason',
-                                             'elis_program', $e));
+                                             'elis_program', $param));
                 }
             }
         }
