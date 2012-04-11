@@ -1415,6 +1415,18 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
         }
 
+        //check that any unset fields are set to course default
+        $courseconfig = get_config('moodlecourse');
+
+        //set up an array with all the course fields that have defaults
+        $course_defaults = array('format', 'numsections', 'hiddensections', 'newsitems', 'showgrades',
+            'showreports', 'maxbytes', 'groupmode', 'groupmodeforce', 'visible', 'lang');
+        foreach ($course_defaults as $course_default) {
+            if (!isset($record->$course_default) && isset($courseconfig->$course_default)) {
+                $record->$course_default = $courseconfig->$course_default;
+            }
+        }
+
         //write to the database
         if (isset($record->link)) {
             //creating from template

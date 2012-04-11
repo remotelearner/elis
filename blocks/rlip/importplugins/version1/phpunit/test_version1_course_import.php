@@ -308,6 +308,7 @@ class version1CourseImportTest extends rlip_test {
         return $data;
     }
 
+
     /**
      * Helper function that runs the course import for a sample course
      *
@@ -315,8 +316,10 @@ class version1CourseImportTest extends rlip_test {
      */
     private function run_core_course_import($extradata, $use_default_data = true) {
         global $CFG;
+
         $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
         require_once($file);
+
 
         if ($use_default_data) {
             $data = $this->get_core_course_data('childcategory');
@@ -2748,6 +2751,7 @@ class version1CourseImportTest extends rlip_test {
         //set up the course with one section, including default blocks
         set_config('defaultblocks_topics', 'search_forums');
         set_config('maxsections', 10, 'moodlecourse');
+
         $this->run_core_course_import(array('shortname' => 'deleteassociationsshortname',
                                             'numsections' => 1));
 
@@ -3147,5 +3151,46 @@ class version1CourseImportTest extends rlip_test {
         $visible = $DB->get_field('course', 'visible', array('shortname' => 'invisiblecrs'));
         $this->assertEquals($visible, 0);
 
+    }
+
+    /** Validate that an import uses moodlecourse defaults
+     *
+     */
+    public function testVersion1ImportCourseCreateUsesDefaults() {
+        global $DB;
+
+        //backup current course defaults...
+        $config_backup = get_config('moodlecourse');
+
+        //set course defaults
+        $default_values = array('format'=>'weeks',
+                                'numsections'=>10,
+                                'hiddensections'=>0,
+                                'newsitems'=>5,
+                                'showgrades'=>1,
+                                'showreports'=>0,
+                                'maxbytes'=>5368709120,
+                                'groupmode'=>0,
+                                'groupmodeforce'=>0,
+                                'visible'=>1,
+                                'lang'=>'');
+        foreach($default_values as $default=>$value) {
+            set_config($default, $value, 'moodlecourse');
+        }
+
+        //create a course - visible by default
+        $this->run_core_course_import(array('shortname' => 'crsdefaults'));
+
+        //data validation
+        foreach($default_values as $field=>$value) {
+            $test_value = $DB->get_field('course', $field, array('shortname' => 'crsdefaults'));
+            $this->assertEquals($test_value, $value);
+            unset_config($field, 'moodlecourse');
+        }
+
+        //reset moodlecourse config values
+        foreach($config_backup as $default=>$value) {
+            set_config($default, $value, 'moodlecourse');
+        }
     }
 }
