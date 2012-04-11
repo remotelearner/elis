@@ -288,6 +288,10 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     function get_missing_required_fields($record, $required_fields) {
         $result = array();
 
+        if (empty($required_fields)) {
+            return false;
+        }
+
         foreach ($required_fields as $field_or_group) {
             if (is_array($field_or_group)) {
                 //"1-of-n" secnario
@@ -321,6 +325,88 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         }
 
         return $result;
+    }
+
+    /**
+     * Validate that the action field is included in the header
+     *
+     * @param string $entity Type of entity, such as 'user'
+     * @param array $header The list of supplied header columns
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if the action column is correctly specified,
+     *                 otherwise false
+     */
+    function check_action_header($entity, $header, $filename) {
+        if (!in_array('action', $header)) {
+            //action column not specified
+            $message = "Import file {$filename} was not processed because it is missing the ".
+                       "following column: action. Please fix the import file and re-upload it.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+            $this->dblogger->signal_missing_columns($message);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate that all required fields are included in the header
+     *
+     * @param string $entity Type of entity, such as 'user'
+     * @param array $header The list of supplied header columns
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if the action column is correctly specified,
+     *                 otherwise false
+     */
+    function check_required_headers($entity, $header, $filename) {
+        //get list of required fields
+        //note: for now, assuming that the delete action is available for
+        //all entity types and requires the bare minimum in terms of fields
+        $required_fields = $this->plugin_supports_action($entity, 'delete');
+
+        //convert the header into a data record
+        $record = new stdClass;
+        foreach ($header as $value) {
+            $record->$value = $value;
+        }
+
+        //figure out which are missing
+        $missing_fields = $this->get_missing_required_fields($record, $required_fields);
+
+        if ($missing_fields !== false) {
+            $field_display = '';
+            $first = reset($missing_fields);
+
+            //for now, assume "groups" are always first and only showing
+            //that one problem in the log
+            if (!is_array($first)) {
+                //1-of-n case
+
+                //list of fields, as displayed
+                $field_display = implode(', ', $missing_fields);
+
+                //singular/plural handling
+                $label = count($missing_fields) > 1 ? 'columns' : 'column';
+
+                $message = "Import file {$filename} was not processed because it is missing the following ".
+                           "required {$label}: {$field_display}. Please fix the import file and re-upload it.";
+            } else {
+                //basic case, all missing fields are required
+
+                //list of fields, as displayed
+                $group = reset($missing_fields);
+                $field_display = implode(', ', $group);
+
+                $message = "Import file {$filename} was not processed because one of the following columns is ".
+                           "required but all are unspecified: {$field_display}. Please fix the import file and re-upload it.";
+            }
+
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+            $this->dblogger->signal_missing_columns($message);
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -438,11 +524,12 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * logging error to the file system, if necessary - call from child class
      * when needed
      *
+     * @param string $entitytype The type of entity we are performing an action on
      * @param object $record One data import record
      * @param string $filename The name of the import file, to use in logging
      * @return boolean true if action field is set, otherwise false
      */
-    function check_action_field($record, $filename) {
+    function check_action_field($entitytype, $record, $filename) {
         if (!isset($record->action) || $record->action === '') {
             //not set, so error
 
@@ -451,6 +538,16 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $message = "Required field {$field_display} is unspecified or empty.";
             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
 
+            return false;
+        }
+
+        //feature, in the standard Moodle "plugin_supports" format
+        $feature = $entitytype.'_'.$record->action;
+
+        if (!$this->plugin_supports($feature)) {
+            //invalid action for this entity type
+            $message = "Action of \"{$record->action}\" is not supported.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
             return false;
         }
 
@@ -527,20 +624,33 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         if (!$header = $fileplugin->read()) {
             return null; // no error cause we're just gonna skip this entity
         }
-
         //initialize line number
         $this->linenumber = 0;
 
         //header read, so increment line number
         $this->linenumber++;
 
+        $filename = $fileplugin->get_filename();
+
         //set up fslogger with this starttime for this entity
         $this->fslogger = $this->provider->get_fslogger($this->dblogger->plugin, $entity, $this->manual, $starttime);
         if (method_exists($this->provider, 'get_file_name')) {
-            $this->dblogger->set_log_path($this->provider->get_file_name());
+            $this->dblogger->set_log_path($filename);
         }
 
         $this->header_read_hook($entity, $header, $fileplugin->get_filename());
+
+        if (!$this->check_action_header($entity, $header, $filename)) {
+            //action field not specified in the header, so we can't continue
+            $this->dblogger->flush($filename);
+            return null;
+        }
+
+        if (!$this->check_required_headers($entity, $header, $filename)) {
+            //a required field is missing from the header, so we can't continue
+            $this->dblogger->flush($filename);
+            return null;
+        }
 
         //main processing loop
         while ($record = $fileplugin->read()) {
@@ -562,7 +672,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                 $fileplugin->close();
                 $this->dblogger->set_endtime(time());
                 //flush db log record
-                $filename = $fileplugin->get_filename();
                 $this->dblogger->flush($filename);
                 return $state;
             }
@@ -571,7 +680,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
             //track return value
             //todo: change second parameter when in the cron
-            $filename = $fileplugin->get_filename();
             $result = $this->process_record($entity, $record, $filename);
             $this->dblogger->track_success($result, true);
         }

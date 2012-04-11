@@ -265,6 +265,7 @@ static function get_overlay_tables() {
                      'user' => 'moodle',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle',
+                     'role_capabilities' => 'moodle',
                      'message_working' => 'moodle');
 
         // Detect if we are running this test on a site with the ELIS PM system in place
@@ -491,11 +492,15 @@ static function get_overlay_tables() {
     /**
      * Creates a test role, assignable at all necessary context levels
      *
+     * @param string $fullname The new role's fullname
+     * @param string $shortname The new role's shortname
+     * @param string $description The new role's description
      * @return int The database record id of the created course
      */
-    private function create_test_role() {
+    private function create_test_role($fullname = 'rlipfullname', $shortname = 'rlipshortname',
+                                      $description = 'rlipdescription') {
         //create the role
-        $roleid = create_role('rlipfullshortname', 'rlipshortname', 'rlipdescription');
+        $roleid = create_role($fullname, $shortname, $description);
 
         //make it assignable at all necessary contexts
         $contexts = array(CONTEXT_COURSE,
@@ -583,7 +588,8 @@ static function get_overlay_tables() {
         $this->create_mapping_record('user', 'action', 'customaction');
 
         //validation for an empty action field
-        $data = array('customaction' => '');
+        $data = array('customaction' => '',
+                      'username' => 'rlipusername');
         $expected_error = "[user.csv line 2] Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
@@ -776,7 +782,8 @@ static function get_overlay_tables() {
         $this->create_mapping_record('course', 'action', 'customaction');
 
         //validation for an empty action field
-        $data = array('customaction' => '');
+        $data = array('customaction' => '',
+                      'shortname' => 'rlipshortname');
         $expected_error = "[course.csv line 2] Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
@@ -870,7 +877,11 @@ static function get_overlay_tables() {
         $this->create_mapping_record('enrolment', 'action', 'customaction');
 
         //validation for an empty action field
-        $data = array('customaction' => '');
+        $data = array('customaction' => '',
+                      'username' => 'rlipusername',
+                      'context' => 'rlipcontext',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
         $expected_error = "[enrolment.csv line 2] Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
@@ -1046,45 +1057,35 @@ static function get_overlay_tables() {
      * Validates that an appropriate error is logged for a scenario with missing required fields,
      * some of which are only required in a "1 of n"-fashion
      */
-    public function testVersion1ImportLogsMultipleMissingFieldsWithOption() {
+    public function testVersion1ImportLogsMultipleEmptyFieldsWithOption() {
         //create mapping record
         $this->create_mapping_record('enrolment', 'username', 'customusername');
         $this->create_mapping_record('enrolment', 'email', 'customemail');
         $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
 
         //validation for "1 of 3", plus 3 required fields
-        $data = array('action' => 'create');
+        $data = array('action' => 'create',
+                      'customusername' => '',
+                      'customemail' => '',
+                      'customidnumber' => '',
+                      'context' => '',
+                      'role' => '');
         $expected_error = "[enrolment.csv line 2] Enrolment could not be created. One of customusername, customemail, customidnumber is required but all are unspecified or empty. Required fields context, instance, role are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
     /**
-     * Validates that an appropriate error is logged for a field that is not in
-     * the import file
+     * Validates that an appropriate error is logged for a field that is empty
+     * in the import file
      */
-    public function testVersion1ImportLogsMissingField() {
+    public function testVersion1ImportLogsEmptyField() {
         //create mapping record
         $this->create_mapping_record('course', 'shortname', 'customshortname');
 
         //validation for unspecified field "shortname"
-        $data = array('action' => 'update');
+        $data = array('action' => 'update',
+                      'customshortname' => '');
         $expected_error = "[course.csv line 2] Course could not be updated. Required field customshortname is unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validates that an appropriate error is logged for multiple missing
-     * fields that are absolutely necessary
-     */
-    public function testVersion1ImportLogsMultipleMissingFields() {
-        //create mapping records
-        $this->create_mapping_record('course', 'shortname', 'customshortname');
-        $this->create_mapping_record('course', 'fullname', 'customfullname');
-        $this->create_mapping_record('course', 'category', 'customcategory');
-
-        //validation for missing fields shortname, fullname, category
-        $data = array('action' => 'create');
-        $expected_error = "[course.csv line 2] Course could not be created. Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -1106,7 +1107,14 @@ static function get_overlay_tables() {
         $this->create_mapping_record('user', 'country', 'customcountry');
 
         //create validation using update
-        $data = array('action' => 'update');
+        $data = array('action' => 'update',
+                      'customusername' => '',
+                      'custompassword' => '',
+                      'customfirstname' => '',
+                      'customlastname' => '',
+                      'customemail' => '',
+                      'customcity' => '',
+                      'customcountry' => '');
         $expected_error = "[user.csv line 2] User could not be created. Required fields customusername, custompassword, customfirstname, customlastname, customemail, customcity, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
@@ -1137,7 +1145,14 @@ static function get_overlay_tables() {
         $this->assert_record_exists('user', $data);
 
         //update validation using create
-        $data = array('action' => 'create');
+        $data = array('action' => 'create',
+                      'customusername' => '',
+                      'custompassword' => '',
+                      'customfirstname' => '',
+                      'customlastname' => '',
+                      'customemail' => '',
+                      'customcity' => '',
+                      'customcountry' => '');
         $expected_error = "[user.csv line 2] User could not be created. Required fields customusername, custompassword, customfirstname, customlastname, customemail, customcity, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
@@ -1180,7 +1195,10 @@ static function get_overlay_tables() {
         $this->create_contexts_and_site_course();
 
         //create validation using update
-        $data = array('action' => 'update');
+        $data = array('action' => 'update',
+                      'customshortname' => '',
+                      'customfullname' => '',
+                      'customcategory' => '');
         $expected_error = "[course.csv line 2] Course could not be created. Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
@@ -1202,7 +1220,10 @@ static function get_overlay_tables() {
         $this->assert_record_exists('course', $data);
 
         //update validation using create
-        $data = array('action' => 'update');
+        $data = array('action' => 'update',
+                      'customshortname' => '',
+                      'customfullname' => '',
+                      'customcategory' => '');
         $expected_error = "[course.csv line 2] Course could not be created. Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
@@ -1444,7 +1465,12 @@ static function get_overlay_tables() {
 
         $this->create_test_user();
         $this->create_test_course();
-        $this->create_test_role();
+        $roleid = $this->create_test_role();
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        //make sure it can be assigned as a non-student role
+        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
+
+        set_config('gradebookroles', '');
 
         //base data used every time
         $basedata = array('action' => 'create',
@@ -3017,7 +3043,7 @@ static function get_overlay_tables() {
                       'context' => 'system',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] Role assignment could not be created. The role with shortname \"rlipshortname\" is not assignable on the system context level.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on the system context. The role with shortname \"rlipshortname\" is not assignable on the system context level.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3043,6 +3069,55 @@ static function get_overlay_tables() {
                       'role' => 'rlipshortname');
 
         $message = "[enrolment.csv line 2] Role assignment could not be created. customcontext value of \"bogus\" is not one of the available options (system, user, coursecat, course).\n";
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates log message for assigning a role that doesn't exist
+     */
+    public function testVersionImportLogsInvalidRoleOnRoleAssignmentCreate() {
+        //set up dependencies
+        $this->create_test_user();
+
+        //create mapping records
+        $this->create_mapping_record('enrolment', 'role', 'customrole');
+
+        //data
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'system',
+                      'customrole' => 'bogus');
+
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"bogus\" on the system context. customrole value of \"bogus\" does not refer to a valid role.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates log message for assigning a role that does not have the
+     * "course view" capability tied to it
+     */
+    public function testVersion1ImportLogsMissingCourseViewCapability() {
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $this->create_test_course();
+        $this->create_test_role();
+
+        set_config('gradebookroles', '');
+
+        //data
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'idnumber' => 'rlipidnumber',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". Role with shortname \"rlipshortname\" does not have the moodle/course:view capability.\n";
+
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
@@ -3118,7 +3193,7 @@ static function get_overlay_tables() {
                       'custominstance' => 'rlipname',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] custominstance value of \"rlipname\" refers to multiple course category contexts.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course category \"rlipname\". custominstance value of \"rlipname\" refers to multiple course category contexts.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3180,7 +3255,7 @@ static function get_overlay_tables() {
                       'role' => 'rlipshortname',
                       'customgroup' => 'duplicate');
 
-        $message = "[enrolment.csv line 2] customgroup value of \"duplicate\" refers to multiple groups in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be enroled in course with shortname \"rlipshortname\". customgroup value of \"duplicate\" refers to multiple groups in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3222,12 +3297,17 @@ static function get_overlay_tables() {
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
 
-    /**
-     * Validate log message for ambiguous grouping name
-     */
+     /**
+      * Validate log message for ambiguous grouping name
+      */
     public function testVersion1ImportLogsAmbiguousGroupingNameOnRoleAssignmentCreate() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/group/lib.php');
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        set_config('enrol_plugin_enabled', 'manual');
+        set_config('defaultenrol', 1, 'enrol_manual');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
 
         //set up dependencies
         $this->create_contexts_and_site_course();
@@ -3259,6 +3339,233 @@ static function get_overlay_tables() {
 
         $message = "[enrolment.csv line 2] Group with name \"rlipname\" could not be created in course with shortname \"rlipshortname\". customgrouping value of \"duplicate\" refers to multiple groupings in course with shortname \"rlipshortname\".\n";
         //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+     /**
+      * Validate log message for assigning a user to a group they already
+      * belong to
+      */
+     public function testVersion1ImportLogsDuplicateGroupAssignment() {
+        global $DB;
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+
+        set_config('enrol_plugin_enabled', 'manual');
+        set_config('defaultenrol', 1, 'enrol_manual');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
+
+        $userid = $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
+
+        $group = new stdClass;
+        $group->courseid = $courseid;
+        $group->name = 'rlipname';
+        $group->id = groups_create_group($group);
+
+        //enrol the user in some secondary student role
+        $secondroleid = $this->create_test_role('secondfullname', 'secondshortname', 'seconddescription');
+        set_config('gradebookroles', "{$roleid},{$secondroleid}");
+        enrol_try_internal_enrol($courseid, $userid, $secondroleid);
+        //assign the user to the group
+        groups_add_member($group->id, $userid);
+
+        //make our role a "student" role
+        //set_config('gradebookroles', $roleid);
+
+        //make sure they already have a role assignment
+        //role_assign($roleid, $userid, $context->id);
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'course',
+                          'instance' => 'rlipshortname',
+                          'role' => 'rlipshortname',
+                          'group' => 'rlipname');
+
+        //username
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already assigned to group with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('role_assignments');
+
+        //email
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\" is already assigned to group with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('role_assignments');
+
+        //idnumber
+        $data = $basedata;
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('role_assignments');
+
+        //username, email
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned to group with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('role_assignments');
+
+        //username, idnumber
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('role_assignments');
+
+        //email, idnumber
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('role_assignments');
+
+        //username, email, idnumber
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned to group with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('role_assignments');
+    }
+
+    /**
+     * Validate log message for assigning a group to a grouping is already
+     * belongs to
+     */
+    public function testVersion1ImportLogsDuplicateGroupingAssignment() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/group/lib.php');
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+
+        $userid = $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $roleid = $this->create_test_role();
+
+        $group = new stdClass;
+        $group->courseid = $courseid;
+        $group->name = 'rlipname';
+        $group->id = groups_create_group($group);
+
+        $grouping = new stdClass;
+        $grouping->courseid = $courseid;
+        $grouping->name = 'rlipname';
+        $grouping->id = groups_create_grouping($grouping);
+
+        groups_assign_grouping($grouping->id, $group->id);
+
+        //make our role a "student" role
+        set_config('gradebookroles', $roleid);
+
+        //make sure they already have a role assignment
+        role_assign($roleid, $userid, $context->id);
+
+        //base data used every time
+        $basedata = array('action' => 'create',
+                          'context' => 'course',
+                          'instance' => 'rlipshortname',
+                          'role' => 'rlipshortname',
+                          'group' => 'rlipname',
+                          'grouping' => 'rlipname');
+
+        //username
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" enrolled in course with shortname \"rlipshortname\". Assigned user with username \"rlipusername\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('user_enrolments');
+        $DB->delete_records('groups_members');
+
+        //email
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" enrolled in course with shortname \"rlipshortname\". Assigned user with email \"rlipuser@rlipdomain.com\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('user_enrolments');
+        $DB->delete_records('groups_members');
+
+        //idnumber
+        $data = $basedata;
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Assigned user with idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('user_enrolments');
+        $DB->delete_records('groups_members');
+
+        //username, email
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" enrolled in course with shortname \"rlipshortname\". Assigned user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('user_enrolments');
+        $DB->delete_records('groups_members');
+
+        //username, idnumber
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Assigned user with username \"rlipusername\", idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('user_enrolments');
+        $DB->delete_records('groups_members');
+
+        //email, idnumber
+        $data = $basedata;
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Assigned user with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('user_enrolments');
+        $DB->delete_records('groups_members');
+
+        //username, email, idnumber
+        $data = $basedata;
+        $data['username'] = 'rlipusername';
+        $data['email'] = 'rlipuser@rlipdomain.com';
+        $data['idnumber'] = 'rlipidnumber';
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\". Assigned user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipname\". Group with name \"rlipname\" is already assigned to grouping with name \"rlipname\".\n";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+        $DB->delete_records('user_enrolments');
+        $DB->delete_records('groups_members');
+    }
+
+    /**
+     * Validate log message for attempting to assign a non-student to a group
+     */
+    public function testVersion1ImportLogsGroupAssignmentForNonStudent() {
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('gradebookroles', '');
+
+        $this->create_contexts_and_site_course();
+        $this->create_test_user();
+        $this->create_test_course();
+        $this->create_test_role();
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'idnumber' => 'rlipidnumber',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname',
+                      'group' => 'rlipgroup');
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". Could not assign user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipgroup\" because they are not enrolled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
 
@@ -3306,40 +3613,40 @@ static function get_overlay_tables() {
         //username
         $data = $basedata;
         $data['username'] = 'rlipusername';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //email
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //idnumber
         $data = $basedata;
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, email
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, idnumber
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //email, idnumber
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, email, idnumber
@@ -3347,7 +3654,7 @@ static function get_overlay_tables() {
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
 
@@ -3375,6 +3682,8 @@ static function get_overlay_tables() {
         $courseid = $this->create_test_course();
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
         $roleid = $this->create_test_role();
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
         //base data used every time
         $basedata = array('action' => 'create',
@@ -3386,21 +3695,21 @@ static function get_overlay_tables() {
         role_assign($roleid, $userid, $context->id);
         $data = $basedata;
         $data['username'] = 'rlipusername';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //email
         role_assign($roleid, $userid, $context->id);
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //idnumber
         role_assign($roleid, $userid, $context->id);
         $data = $basedata;
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, email
@@ -3408,7 +3717,7 @@ static function get_overlay_tables() {
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, idnumber
@@ -3416,7 +3725,7 @@ static function get_overlay_tables() {
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //email, idnumber
@@ -3424,7 +3733,7 @@ static function get_overlay_tables() {
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, email, idnumber
@@ -3433,7 +3742,7 @@ static function get_overlay_tables() {
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
 
@@ -3508,7 +3817,7 @@ static function get_overlay_tables() {
                       'context' => 'system',
                       'customrole' => 'bogus');
 
-        $message = "[enrolment.csv line 2] customrole value of \"bogus\" does not refer to a valid role.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"bogus\" on the system context. customrole value of \"bogus\" does not refer to a valid role.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3716,7 +4025,7 @@ static function get_overlay_tables() {
                       'custominstance' => 'rlipname',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] custominstance value of \"rlipname\" refers to multiple course category contexts.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on course category \"rlipname\". custominstance value of \"rlipname\" refers to multiple course category contexts.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3806,7 +4115,42 @@ static function get_overlay_tables() {
                       'fullname' => 'rlipcoursename',
                       'customcategory' => 'rlipname');
 
-        $message = "[course.csv line 2] customcategory value of \"rlipname\" refers to multiple categories.\n";
+        $message = "[course.csv line 2] Course with shortname \"rlipcoursename\" could not be created. customcategory value of \"rlipname\" refers to multiple categories.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+
+    /**
+     * Validate log message for ambiguous parent category name as part of
+     * a category path
+     */
+    public function testVersion1ImportLogsAmbiguousParentCategoryNameOnCourseCreate() {
+        global $DB;
+
+        //set up dependencies
+        $this->create_test_user();
+        $this->create_test_role();
+
+        //create mapping record
+        $this->create_mapping_record('course', 'category', 'customcategory');
+
+        //create the category
+        $category = new stdClass;
+        $category->name = 'rlipname';
+        $categoryid = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        //create a duplicate category
+        $categoryid = $DB->insert_record('course_categories', $category);
+        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+
+        $data = array('action' => 'create',
+                      'shortname' => 'rlipcoursename',
+                      'fullname' => 'rlipcoursename',
+                      'customcategory' => 'rlipname/rlipchildname');
+
+        $message = "[course.csv line 2] Course with shortname \"rlipcoursename\" could not be created. customcategory value of \"rlipname/rlipchildname\" refers to an ambiguous parent category path.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'course');
@@ -4585,6 +4929,23 @@ static function get_overlay_tables() {
     }
 
     /**
+     * Validate log message for duplicate course shortname when creating a course
+     */
+    public function testVersion1ImportLogsInvalidShortnameOnCourseCreate() {
+        global $CFG, $DB;
+
+        $this->create_contexts_and_site_course();
+        $this->create_test_course();
+
+        $data = array('action' => 'create',
+                      'shortname' => 'rlipshortname',
+                      'fullname' => 'rlipfullname',
+                      'category' => 'rlipcategory');
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. shortname value of \"rlipshortname\" refers to a course that already exists.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
      * Validate that format validation works on course create
      */
     public function testVersion1ImportLogsInvalidFormatOnCourseCreate() {
@@ -4709,23 +5070,60 @@ static function get_overlay_tables() {
      * Validate that guest validation works on course create
      */
     public function testVersion1ImportLogsInvalidGuestOnCourseCreate() {
-        set_config('enrol_plugins_enabled', '');
-
         //create mapping record
         $this->create_mapping_record('course', 'guest', 'customguest');
+
+        set_config('enrol_plugins_enabled', 'guest');
 
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',
-                      'customguest' => '1');
+                      'category' => 'rlipcategory',        
+                      'customguest' => '2');
 
-        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-
-        set_config('enrol_plugins_enabled', 'guest');
-        $data['customguest'] = '2';
         $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. customguest value of \"2\" is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate log message for assigning password with guest enrolments
+     * globally disabled
+     */
+    public function testVersion1ImportLogsPasswordSetWithGuestDisabledOnCourseCreate() {
+        //setup
+        set_config('enrol_plugins_enabled', 'guest');
+
+        //data
+        $data = array('action' => 'create',
+                      'shortname' => 'rlipshortname',
+                      'fullname' => 'rlipfullname',
+                      'category' => 'rlipcategory',
+                      'guest' => '0',
+                      'password' => 'rlippassword');
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. guest enrolment plugin cannot be assigned a password because the guest enrolment plugin is not enabled.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate log message for assigning a password with guest enrolments
+     * not being added to new courses by default
+     */
+    public function testVesion1ImportLogsPasswordSetWithGuestUnsetOnCourseCreate() {
+        //setup
+        set_config('enrol_plugin_enabled', 'guest');
+        set_config('defaultenrol', 0, 'enrol_guest');
+
+        //data
+        $data = array('action' => 'create',
+                      'shortname' => 'rlipshortname',
+                      'fullname' => 'rlipfullname',
+                      'category' => 'rlipcategory',
+                      'password' => 'rlippassword');
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. guest enrolment plugin cannot be assigned a password because the guest enrolment plugin is not configured to be added to new courses by default.\n";
+
+        //validation
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4760,6 +5158,19 @@ static function get_overlay_tables() {
                       'customlang' => 'bogus');
 
         $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. customlang value of \"bogus\" is not a valid language code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate that link (template course) validation works on course create
+     */
+    public function testVersion1ImportLogsInvalidLinkOnCourseCreate() {
+        $data = array('action' => 'create',
+                      'shortname' => 'rlipshortname',
+                      'fullname' => 'rlipname',
+                      'category' => 'rlipcategory',        
+                      'link' => 'bogus');
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. Template course with shortname \"bogus\" could not be found.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -4963,6 +5374,142 @@ static function get_overlay_tables() {
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
+    /**
+     * Validate log message for attempting to set the guest flag with the guest enrolment
+     * plugin globally disabled
+     */
+    public function testVersion1ImportLogsGuestWithGuestDisabledOnCourseUpdate() {
+        global $CFG;
+        //setup
+        $this->load_csv_data();
+
+        set_config('enrol_plugins_enabled', '');
+
+        $maxbytes = 51200;
+        set_config('maxbytes', $maxbytes, 'moodlecourse');
+        $maxsections = 20;
+        set_config('maxsections', $maxsections, 'moodlecourse');
+
+        //data
+        $data = array('action' => 'update',
+                      'shortname' => 'cm2',
+                      'format' => 'weeks',
+                      'numsections' => $maxsections,
+                      'startdate' => 'jan/12/2013',
+                      'newsitems' => 5,
+                      'showgrades' => 1,
+                      'showreports' => 0,
+                      'maxbytes' => $maxbytes,
+                      'guest' => 1,
+                      'visible' => 1,
+                      'lang' => 'en',
+                     );
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate log message for attempting to set the guest flag with the guest enrolment
+     * plugin removed from the course
+     */
+    public function testVersion1ImportLogsGuestWithGuestUnsetOnCourseUpdate() {
+        //setup
+        set_config('enrol_plugins_enabled', 'guest');
+        set_config('defaultenrol', 0, 'enrol_guest');
+
+        $this->create_contexts_and_site_course();
+        $this->create_test_course();
+
+        //data
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'fullname' => 'rlipfullname',
+                      'category' => 'rlipcategory',
+                      'guest' => 1);
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be updated. guest enrolment plugin cannot be enabled because the guest enrolment plugin has been removed from course \"rlipshortname\".\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate log message for attempting to set the guest password with the guest enrolment
+     * plugin removed from the course
+     */
+    public function testVesion1ImportLogsPasswordSetWithGuestUnsetOnCourseUpdate() {
+        //setup
+        set_config('enrol_plugin_enabled', 'guest');
+        set_config('defaultenrol', 0, 'enrol_guest');
+
+        $this->create_contexts_and_site_course();
+        $this->create_test_course();
+
+        //data
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'fullname' => 'rlipfullname',
+                      'category' => 'rlipcategory',
+                      'password' => 'rlippassword');
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be updated. guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been removed from course \"rlipshortname\".\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate log message for attempting to set guest password while disabling
+     * the guest enrolment plugin
+     */
+    public function testVersion1ImportLogsPasswordSetWithGuestUnsetOnCourseUpdate() {
+        //setup
+        set_config('enrol_plugins_enabled', 'guest');
+        set_config('defaultenrol', 1, 'enrol_guest');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_guest');
+
+        $this->create_contexts_and_site_course();
+        $this->create_test_course();
+
+        //data
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'guest' => '0',
+                      'password' => 'rlippassword');
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be updated. guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been disabled in course \"rlipshortname\".\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate log message for attempting to set guest password while disabling
+     * the guest enrolment plugin, when the guest plugin was previously added and disabled
+     */
+    public function testVesion1ImportLogsPasswordSetWithGuestUnsetAndPreviouslyDisabledOnCourseUpdate() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //setup
+        set_config('enrol_plugin_enabled', 'guest');
+        set_config('defaultenrol', 1, 'enrol_guest');
+        set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
+
+        $this->create_contexts_and_site_course();
+        $this->create_test_course();
+
+        //data
+        $data = array('action' => 'update',
+                      'shortname' => 'rlipshortname',
+                      'fullname' => 'rlipfullname',
+                      'category' => 'rlipcategory',
+                      'password' => 'rlippassword');
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be updated. guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been disabled in course \"rlipshortname\".\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
     public function testVersion1ImportLogsUpdateVisible() {
         global $CFG;
         $this->load_csv_data();
@@ -5022,31 +5569,16 @@ static function get_overlay_tables() {
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
-    public function testVersion1ImportLogsUpdateGuestEnrolmentsDisabled() {
-        global $CFG;
-        $this->load_csv_data();
+    /**
+     * Validate that shortname validation works on course delete
+     */
+    public function testVersion1ImportLogsInvalidShortnameOnCourseDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
 
-        set_config('enrol_plugins_enabled', '');
-
-        $maxbytes = 51200;
-        set_config('maxbytes', $maxbytes, 'moodlecourse');
-        $maxsections = 20;
-        set_config('maxsections', $maxsections, 'moodlecourse');
-
-        $data = array('action' => 'update',
-                      'shortname' => 'cm2',
-                      'format' => 'weeks',
-                      'numsections' => $maxsections,
-                      'startdate' => 'jan/12/2013',
-                      'newsitems' => 5,
-                      'showgrades' => 1,
-                      'showreports' => 0,
-                      'maxbytes' => $maxbytes,
-                      'guest' => 1,
-                      'visible' => 1,
-                      'lang' => 'en',
-                     );
-        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
+        $data = array('action' => 'delete',
+                      'customshortname' => 'rlipshortname');
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be deleted. customshortname value of \"rlipshortname\" does not refer to a valid course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -5356,6 +5888,419 @@ static function get_overlay_tables() {
     }
 
     /**
+     * Data provider method, providing user fields with their maximum lengths
+     *
+     * @return array Mapping of user fields to their maximum lengths
+     */
+    public function userMaxFieldLengthProvider() {
+        return array(array('username', 100),
+                     array('firstname', 100),
+                     array('lastname', 100),
+                     array('email', 100),
+                     array('city', 120),
+                     array('idnumber', 255),
+                     array('institution', 40),
+                     array('department', 30));
+    }
+
+    /**
+     * Validate that errors for user fields exceeding their maximum length are
+     * logged
+     *
+     * @param string $field The identifying for the field we are testing
+     * @param int $maxlength The maximum length allowed for the field we are
+     *                       testing
+     * @dataProvider userMaxFieldLengthProvider
+     */
+    public function testVersion1ImportLogsUserFieldLengthError($field, $maxlength) {
+        //create mapping record
+        $this->create_mapping_record('user', $field, 'custom'.$field);
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'city' => 'rlipcity',
+                      'country' => 'CA');
+        $value = str_repeat('x', $maxlength + 1);
+        $data['custom'.$field] = $value;
+        $username = 'rlipusername';
+        if ($field == 'username') {
+            $username = $value;
+        }
+        $expected_error = "[user.csv line 2] User with username \"{$username}\" could not be created. custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that field length validation works on user update
+     */
+    public function testVersionImportLogsUserFieldLengthErrorOnUpdate() {
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
+        $value = str_repeat('x', 101);
+        $data = array('action' => 'update',
+                      'customusername' => $value);
+        $expected_error = "[user.csv line 2] User with username \"{$value}\" could not be updated. customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that field length validation works on user delete
+     */
+    public function testVersionImportLogsUserFieldLengthErrorOnDelete() {
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
+        $value = str_repeat('x', 101);
+        $data = array('action' => 'delete',
+                      'customusername' => $value);
+        $expected_error = "[user.csv line 2] User with username \"{$value}\" could not be deleted. customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Data provider method, providing course fields with their maximum lengths
+     *
+     * @return array Mapping of course fields to their maximum lengths
+     */
+    public function courseMaxFieldLengthProvider() {
+        return array(array('fullname', 254),
+                     array('shortname', 100),
+                     array('idnumber', 100));
+    }
+
+    /**
+     * Validate that errors for course fields exceeding their maximum length are
+     * logged
+     *
+     * @param string $field The identifying for the field we are testing
+     * @param int $maxlength The maximum length allowed for the field we are
+     *                       testing
+     * @dataProvider courseMaxFieldLengthProvider
+     */
+    public function testVersion1ImportLogsCourseFieldLengthError($field, $maxlength) {
+        //create mapping record
+        $this->create_mapping_record('course', $field, 'custom'.$field);
+
+        $data = array('action' => 'create',
+                      'shortname' => 'rlipshortname',
+                      'fullname' => 'rlipfullname',
+                      'category' => 'rlipcategory');
+        $value = str_repeat('x', $maxlength + 1);
+        $data['custom'.$field] = $value;
+        $shortname = 'rlipshortname';
+        if ($field == 'shortname') {
+            $shortname = $value;
+        }
+        $expected_error = "[course.csv line 2] Course with shortname \"{$shortname}\" could not be created. custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate that field length validation works on course update
+     */
+    public function testVersionImportLogsCourseFieldLengthErrorOnUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
+        $value = str_repeat('x', 101);
+        $data = array('action' => 'update',
+                      'customshortname' => $value);
+        $expected_error = "[course.csv line 2] Course with shortname \"{$value}\" could not be updated. customshortname value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate that field length validation works on course delete
+     */
+    public function testVersionImportLogsCourseFieldLengthErrorOnDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
+        $value = str_repeat('x', 101);
+        $data = array('action' => 'delete',
+                      'customshortname' => $value);
+        $expected_error = "[course.csv line 2] Course with shortname \"{$value}\" could not be deleted. customshortname value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Data provider method, providing enrolment fields with their maximum lengths
+     *
+     * @return array Mapping of enrolment fields to their maximum lengths
+     */
+    public function enrolmentMaxFieldLengthProvider() {
+        return array(array('username', 100),
+                     array('email', 100),
+                     array('idnumber', 255),
+                     array('group', 254),
+                     array('grouping', 254));
+    }
+
+    /**
+     * Validate that errors for enrolment fields exceeding their maximum length are
+     * logged
+     *
+     * @param string $field The identifying for the field we are testing
+     * @param int $maxlength The maximum length allowed for the field we are
+     *                       testing
+     * @dataProvider enrolmentMaxFieldLengthProvider
+     */
+    public function testVersion1ImportLogsEnrolmentFieldLengthError($field, $maxlength) {
+        //create mapping record
+        $this->create_mapping_record('enrolment', $field, 'custom'.$field);
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
+        $value = str_repeat('x', $maxlength + 1);
+        $data['custom'.$field] = $value;
+        $username = 'rlipusername';
+        if ($field == 'username') {
+            $username = $value;
+        }
+        $expected_error = "[enrolment.csv line 2] User with username \"{$username}\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+    }
+
+    /**
+     * Validate that field length validation works on enrolment delete
+     */
+    public function testVersionImportLogsEnrolmentFieldLengthErrorOnDelete() {
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'username', 'customusername');
+
+        $value = str_repeat('x', 101);
+        $data = array('action' => 'delete',
+                      'customusername' => $value,
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
+        $expected_error = "[enrolment.csv line 2] User with username \"{$value}\" could not be unassigned role with shortname \"rlipshortname\" on course \"rlipshortname\". customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+    }
+
+    /**
+     * Validate log message for the action column missing on user import
+     */
+    public function testVersion1ImportLogsMissingActionColumnOnUserImport() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create mapping record
+        $this->create_mapping_record('user', 'action', 'customaction');
+
+        $data = array('username' => 'rlipusername');
+        $message = "Import file user.csv was not processed because it is missing the following column: customaction. Please fix the import file and re-upload it.\n";
+        $expected_message = "[user.csv line 1] {$message}";
+        $this->assert_data_produces_error($data, $expected_message, 'user');
+
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate log message for all of username, email, idnumber columns
+     * missing on user import
+     */
+    public function testVersion1ImportLogsMissingUserColumnGroup() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+        $this->create_mapping_record('user', 'email', 'customemail');
+        $this->create_mapping_record('user', 'idnumber', 'customidnumber');
+
+        $data = array('action' => 'create');
+        $message = "Import file user.csv was not processed because one of the following columns is required but all are unspecified: customusername, customemail, customidnumber. Please fix the import file and re-upload it.\n";
+        $expected_message = "[user.csv line 1] {$message}";
+        $this->assert_data_produces_error($data, $expected_message, 'user');
+
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate log message for action column missing on course import
+     */
+    public function testVersion1ImportLogsMissingActionColumnOnCourseImport() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create mapping record
+        $this->create_mapping_record('course', 'action', 'customaction');
+
+        $data = array('shortname' => 'rlipshortname');
+        $message = "Import file course.csv was not processed because it is missing the following column: customaction. Please fix the import file and re-upload it.\n";
+        $expected_message = "[course.csv line 1] {$message}";
+        $this->assert_data_produces_error($data, $expected_message, 'course');
+
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate log message for a single column missing on course import
+     */
+    public function testVersion1ImportLogsMissingCourseColumn() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create mapping record
+        $this->create_mapping_record('course', 'shortname', 'customshortname');
+
+        $data = array('action' => 'create');
+        $message = "Import file course.csv was not processed because it is missing the following required column: customshortname. Please fix the import file and re-upload it.\n";
+        $expected_message = "[course.csv line 1] {$message}";
+        $this->assert_data_produces_error($data, $expected_message, 'course');
+
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate log message for action column missing on enrolment import
+     */
+    public function testVersion1ImportLogsMissingActionColumnOnEnrolmentImport() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'action', 'customaction');
+
+        $data = array('username' => 'rlipusername');
+        $message = "Import file enrolment.csv was not processed because it is missing the following column: customaction. Please fix the import file and re-upload it.\n";
+        $expected_message = "[enrolment.csv line 1] {$message}";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate log message for a single column missing on enrolment import
+     */
+    public function testVersion1ImportLogsMissingEnrolmentColumn() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'role', 'customrole');
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'context' => 'user',
+                      'instance' => 'rlipusername');
+        $message = "Import file enrolment.csv was not processed because it is missing the following required column: customrole. Please fix the import file and re-upload it.\n";
+        $expected_message = "[enrolment.csv line 1] {$message}";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate log message for multiple columns missing on enrolment import
+     */
+    public function testVersion1ImportLogsMissingEnrolmentColumns() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //create mapping record
+        $this->create_mapping_record('enrolment', 'context', 'customcontext');
+        $this->create_mapping_record('enrolment', 'role', 'customrole');
+
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername');
+        $message = "Import file enrolment.csv was not processed because it is missing the following required columns: customcontext, customrole. Please fix the import file and re-upload it.\n";
+        $expected_message = "[enrolment.csv line 1] {$message}";
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        //remove newline character
+        $message = substr($message, 0, strlen($message) - 1);
+        $params = array('statusmessage' => $message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate log message for an invalid action value for the user
+     * entity type
+     */
+    public function testVersion1ImportLogsInvalidUserAction() {
+        //data
+        $data = array('action' => 'bogus',
+                      'username' => 'testusername');
+        $expected_message = "[user.csv line 2] Action of \"bogus\" is not supported.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_message, 'user');
+    }
+
+    /**
+     * Validate log message for an invalid action value for the course
+     * entity type
+     */
+    public function testVersion1ImportLogsInvalidCourseAction() {
+        //data
+        $data = array('action' => 'bogus',
+                      'shortname' => 'testshortname');
+        $expected_message = "[course.csv line 2] Action of \"bogus\" is not supported.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_message, 'course');
+    }
+
+    /**
+     * Validate log message for an invalid action value for the enrolment
+     * entity type
+     */
+    public function testVersion1ImportLogsInvalidEnrolmentAction() {
+        //data
+        $data = array('action' => 'bogus',
+                      'username' => 'testusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'rlipshortname');
+        $expected_message = "[enrolment.csv line 2] Action of \"bogus\" is not supported.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+    }
+
+    /*
      * Validate that all log files from the previous day are bundled into a zip file
      * and named with the previous day's date
      */

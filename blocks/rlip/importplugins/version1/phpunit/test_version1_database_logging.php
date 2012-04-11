@@ -774,6 +774,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         $roleid = create_role('rlipname', 'rlipshortname', 'rlipdescription');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
+        set_config('gradebookroles', "{$roleid}");
 
         $data = array('entity' => 'enrolment',
                       'action' => 'create',
@@ -816,11 +817,17 @@ class version1DatabaseLoggingTest extends elis_database_test {
         global $CFG, $DB, $UNITTEST;
         require_once($CFG->dirroot.'/user/lib.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //prevent problem with cached contexts
         $UNITTEST->running = true;
         accesslib_clear_all_caches_for_unit_testing();
         unset($UNITTEST->running);
+
+        //set up config values
+        set_config('enrol_plugins_enabled', 'manual');
+        set_config('defaultenrol', 1, 'enrol_manual');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
 
         //set up the site course context
         $prefix = self::$origdb->get_prefix();

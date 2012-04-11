@@ -294,20 +294,24 @@ class rlip_import_version1_fslogger extends rlip_fslogger {
         $msg = "";
 
         if ($type == "enrolment") {
+            $missing_required_field = empty($record->username) || empty($record->instance);
+
             switch ($record->action) {
                 case "create":
                     // If the field data is not provided, provide the least general message
-                    if (empty($record->username) || empty($record->instance)) {
+                    if ($missing_required_field) {
                         $msg = "Enrolment could not be created. " . $message;
                     } else {
-                        $msg = "User with username \"{$record->username}\" could not be enroled in course with shortname \"{$record->instance}\". " . $message;
+                        $msg = "User with username \"{$record->username}\" could not be enroled in ".
+                               "course with shortname \"{$record->instance}\". " . $message;
                     }
                     break;
                 case "delete":
-                    if (empty($record->username) || empty($record->instance)) {
+                    if ($missing_required_field) {
                         $msg = "Enrolment could not be deleted. " . $message;
                     } else {
-                        $msg = "User with username \"{$record->username}\" could not be unenroled in course with shortname \"{$record->instance}\". " . $message;
+                        $msg = "User with username \"{$record->username}\" could not be unenroled ".
+                               "in course with shortname \"{$record->instance}\". " . $message;
                     }
                     break;
             }
@@ -316,33 +320,53 @@ class rlip_import_version1_fslogger extends rlip_fslogger {
         if ($type == "group") {
             switch ($record->action) {
                 case "create":
-                    $msg = "Group with name \"{$record->group}\" could not be created in course with shortname \"{$record->instance}\". " . $message;
+                    $msg = "Group with name \"{$record->group}\" could not be created in course ".
+                           "with shortname \"{$record->instance}\". " . $message;
                     break;
                 case "update":
-                    $msg = "Group with name \"{$record->group}\" could not be updated in course with shortname \"{$record->instance}\". " . $message;
+                    $msg = "Group with name \"{$record->group}\" could not be updated in course ".
+                           "with shortname \"{$record->instance}\". " . $message;
                     break;
                 case "delete":
-                    $msg = "Group with name \"{$record->group}\" could not be deleted in course with shortname \"{$record->instance}\". " . $message;
+                    $msg = "Group with name \"{$record->group}\" could not be deleted in course ".
+                           "with shortname \"{$record->instance}\". " . $message;
                     break;
             }
         }
 
         if ($type == "roleassignment") {
+            $required_fields_set = !empty($record->role) && !empty($record->username) && !empty($record->context);
+            $valid_contexts = array('coursecat', 'course', 'user');
+
             switch ($record->action) {
                 case "create":
-                    if (empty($record->shortname) || empty($record->username) || empty($record->context) || empty($record->instance)) {
-                        $msg = "Role assignment could not be created. " . $message;
+                    if ($required_fields_set && in_array($record->context, $valid_contexts) && !empty($record->instance)) {
+                        $context = $record->context;
+                        if ($context == 'coursecat') {
+                            $context = 'course category';
+                        }
+                        $msg = "User with username \"{$record->username}\" could not be assigned role ".
+                               "with shortname \"{$record->role}\" on {$context} \"$record->instance\". " . $message;
+                    } else if ($required_fields_set && $record->context == 'system') {
+                        $msg = "User with username \"{$record->username}\" could not be assigned role ".
+                               "with shortname \"{$record->role}\" on the system context. " . $message;
                     } else {
-                        $msg = "User with username \"{$record->username}\" could not be assigned role with shortname \"{$record->shortname}\"" .
-                           " on \"{$record->context}\" \"$record->instance\" " . $message;
+                        $msg = "Role assignment could not be created. " . $message;
                     }
                     break;
                 case "delete":
-                    if (empty($record->shortname) || empty($record->username) || empty($record->context) || empty($record->instance)) {
-                        $msg = "Role assignment could not be deleted. " . $message;
+                    if ($required_fields_set && in_array($record->context, $valid_contexts) && !empty($record->instance)) {
+                        $context = $record->context;
+                        if ($context == 'coursecat') {
+                            $context = 'course category';
+                        }
+                        $msg = "User with username \"{$record->username}\" could not be unassigned role ".
+                               "with shortname \"{$record->role}\" on {$context} \"$record->instance\". " . $message;                        
+                    } else if ($required_fields_set && $record->context == 'system') {
+                        $msg = "User with username \"{$record->username}\" could not be unassigned role ".
+                               "with shortname \"{$record->role}\" on the system context. " . $message;
                     } else {
-                        $msg = "User with username \"{$record->username}\" could not be unassigned role with shortname \"{$record->shortname}\"" .
-                           " on \"{$record->context}\" \"$record->instance\" " . $message;
+                        $msg = "Role assignment could not be deleted. " . $message;
                     }
                     break;
             }

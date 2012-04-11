@@ -213,7 +213,8 @@ class version1CreateorupdateTest extends rlip_test {
             RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
             field_data_int::TABLE => 'elis_core',
             field_data_char::TABLE => 'elis_core',
-            field_data_text::TABLE => 'elis_core'
+            field_data_text::TABLE => 'elis_core',
+            'config' => 'moodle'
         );
 
         // Detect if we are running this test on a site with the ELIS PM system in place
@@ -240,7 +241,8 @@ class version1CreateorupdateTest extends rlip_test {
                      'block_instances' => 'moodle',
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
-                     'log' => 'moodle');
+                     'log' => 'moodle',
+                     'user_enrolments' => 'moodle');
     }
 
     /**
@@ -554,6 +556,7 @@ class version1CreateorupdateTest extends rlip_test {
 
         //set up initial conditions
         set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('gradebookroles', '');
         $this->init_contexts_and_site_course();
 
         //initial data setup
@@ -562,6 +565,10 @@ class version1CreateorupdateTest extends rlip_test {
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
         $roleid = create_role('rlipname', 'rlipshortname', 'rlipdescription');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        //make sure it has the course view capability so it can be assigned as
+        //a non-student role
+        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
         //validate that the standard create action still works
         $expected_data = array('userid' => $userid,

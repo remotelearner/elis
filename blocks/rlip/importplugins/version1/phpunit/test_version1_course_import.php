@@ -3193,4 +3193,22 @@ class version1CourseImportTest extends rlip_test {
             set_config($default, $value, 'moodlecourse');
         }
     }
+
+    /**
+     * Validate that the import succeeds with fixed-size fields at their
+     * maximum sizes
+     */
+    public function testVersion1ImportSucceedsWithMaxLengthCourseFields() {
+        //data for all fixed-size fields at their maximum sizes
+        $data = array('fullname' => str_repeat('x', 254),
+                      'shortname' => str_repeat('x', 100),
+                      'idnumber' => str_repeat('x', 100));
+        //run the import, suppressing warning about log contents being too long
+        ob_start();
+        $this->run_core_course_import($data);
+        ob_end_clean();
+
+        //data validation
+        $this->assert_record_exists('course', $data);
+    }
 }

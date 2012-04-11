@@ -2528,4 +2528,25 @@ class version1UserImportTest extends elis_database_test {
         //validate that the field was unset
         $this->assertEquals(isset($record->username), false);
     }
+
+    /**
+     * Validate that the import succeeds with fixed-size fields at their
+     * maximum sizes
+     */
+    public function testVersion1ImportSucceedsWithMaxLengthUserFields() {
+        //data for all fixed-size fields at their maximum sizes
+        $data = array('username' => str_repeat('x', 100),
+                      'firstname' => str_repeat('x', 100),
+                      'lastname' => str_repeat('x', 100),
+                      'email' => str_repeat('x', 47).'@'.str_repeat('x', 48).'.com',
+                      'city' => str_repeat('x', 120),
+                      'idnumber' => str_repeat('x', 255),
+                      'institution' => str_repeat('x', 40),
+                      'department' => str_repeat('x', 30));
+        //run the import
+        $this->run_core_user_import($data);
+
+        //data validation
+        $this->assert_record_exists('user', $data);
+    }
 }

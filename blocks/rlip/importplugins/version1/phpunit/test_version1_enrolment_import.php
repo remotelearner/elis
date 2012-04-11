@@ -116,7 +116,8 @@ class version1EnrolmentImportTest extends rlip_test {
                      'user_lastaccess' => 'moodle',
                      'config' => 'moodle',
                      'config_plugins' => 'moodle',
-                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1');
+                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+                     'role_capabilities' => 'moodle');
     }
 
     /**
@@ -141,7 +142,14 @@ class version1EnrolmentImportTest extends rlip_test {
         $DB = self::$overlaydb;
         self::init_contexts_and_site_course();
         self::create_guest_user();
+
+        //the non-student course role needs the course view capability
         self::$courseroleid = self::create_test_role();
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        //make sure it has the course view capability so it can be assigned as
+        //a non-student role
+        assign_capability('moodle/course:view', CAP_ALLOW, self::$courseroleid, $syscontext->id);
+
         self::$systemroleid = self::create_test_role('systemname', 'systemshortname', 'systemdescription', array(CONTEXT_SYSTEM));
         self::$coursecatroleid = self::create_test_role('coursecatname', 'coursecatshortname', 'coursecatdescription', array(CONTEXT_COURSECAT));
         self::$userroleid = self::create_test_role('username', 'usershortname', 'userdescription', array(CONTEXT_USER));
@@ -1144,7 +1152,8 @@ class version1EnrolmentImportTest extends rlip_test {
 
         //run the import
         $this->run_core_enrolment_import(array('group' => 'rlipgroup',
-                                               'grouping' => 'rlipgrouping'));
+                                               'grouping' => 'rlipgrouping',
+                                               'role' => 'studentshortname'));
 
         //compare data
         $this->assert_record_exists('groups', array('name' => 'rlipgroup'));
@@ -1174,6 +1183,7 @@ class version1EnrolmentImportTest extends rlip_test {
         $data = $this->get_core_enrolment_data();
         $data['group'] = 'rlipgroup';
         $data['grouping'] = 'rlipgrouping';
+        $data['role'] = 'studentshortname';
         $this->run_core_enrolment_import($data, false);
 
         //compare data
@@ -1201,6 +1211,7 @@ class version1EnrolmentImportTest extends rlip_test {
         $data = $this->get_core_enrolment_data();
         $data['group'] = 'rlipgroup';
         $data['grouping'] = 'rlipgrouping';
+        $data['role'] = 'studentshortname';
         $this->run_core_enrolment_import($data, false);
 
         //compare data
@@ -1228,6 +1239,7 @@ class version1EnrolmentImportTest extends rlip_test {
         $data = $this->get_core_enrolment_data();
         $data['group'] = 'rlipgroup';
         $data['grouping'] = 'rlipgrouping';
+        $data['role'] = 'studentshortname';
         $this->run_core_enrolment_import($data, false);
 
         //compare data
@@ -1610,7 +1622,7 @@ class version1EnrolmentImportTest extends rlip_test {
         $this->run_core_enrolment_import(array('group' => 'rlipgroup'));
 
         //compare data
-        $this->assertEquals($DB->count_records('groups'), 1);
+        $this->assertEquals($DB->count_records('groups'), 0);
         $this->assertEquals($DB->count_records('groups_members'), 0);
     }
 
@@ -2379,7 +2391,11 @@ class version1EnrolmentImportTest extends rlip_test {
         //set up our enrolment
         $this->run_core_enrolment_import(array());
 
-        $this->create_test_role('deletionrolespecificname', 'deletionrolespecificshortname', 'deletionrolespecificdescription');
+        $roleid = $this->create_test_role('deletionrolespecificname', 'deletionrolespecificshortname', 'deletionrolespecificdescription');
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        //make sure it has the course view capability so it can be assigned as
+        //a non-student role
+        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
         //set up a second enrolment
         $data = $this->get_core_enrolment_data();
@@ -2480,5 +2496,47 @@ class version1EnrolmentImportTest extends rlip_test {
 
         //validate that the field was unset
         $this->assertEquals(isset($record->context), false);
+    }
+
+    /**
+     * Validate that the import succeeds with fixed-size fields at their
+     * maximum sizes
+     */
+    public function testVersion1ImportSucceedsWithMaxLengthEnrolmentFields() {
+        global $DB;
+
+        //enable group / grouping creation
+        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+
+        //data for all fixed-size fields at their maximum sizes
+        $data = array('username' => str_repeat('x', 100),
+                      'group' => str_repeat('x', 254),
+                      'grouping' => str_repeat('x', 254),
+                      'role' => 'studentshortname');
+
+        //create a test user
+        $this->create_test_user(array('username' => str_repeat('x', 100)));
+
+        //run the import
+        $this->run_core_enrolment_import($data);
+
+        //validate all record counts
+        $num_enrolments = $DB->count_records('user_enrolments');
+        $this->assertEquals($num_enrolments, 1);
+
+        $num_assignments = $DB->count_records('role_assignments');
+        $this->assertEquals($num_assignments, 1);
+
+        $num_groups = $DB->count_records('groups');
+        $this->assertEquals($num_groups, 1);
+
+        $num_groups_members = $DB->count_records('groups_members');
+        $this->assertEquals($num_groups_members, 1);
+
+        $num_groupings = $DB->count_records('groupings');
+        $this->assertEquals($num_groupings, 1);
+
+        $num_groupings_groups = $DB->count_records('groupings_groups');
+        $this->assertEquals($num_groupings_groups, 1);
     }
 }
