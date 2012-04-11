@@ -74,7 +74,7 @@ class databaseLoggingTest extends elis_database_test {
 
         return array(RLIP_LOG_TABLE => 'block_rlip',
                      'files' => 'moodle',
-                     'config_plugins', 'moodle');
+                     'config_plugins' => 'moodle');
     }
 
     /**

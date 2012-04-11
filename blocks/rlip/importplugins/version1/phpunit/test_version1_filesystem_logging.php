@@ -3043,7 +3043,7 @@ static function get_overlay_tables() {
                       'context' => 'system',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] Role assignment could not be created. The role with shortname \"rlipshortname\" is not assignable on the system context level.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on the system context. The role with shortname \"rlipshortname\" is not assignable on the system context level.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3089,7 +3089,7 @@ static function get_overlay_tables() {
                       'context' => 'system',
                       'customrole' => 'bogus');
 
-        $message = "[enrolment.csv line 2] customrole value of \"bogus\" does not refer to a valid role.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"bogus\" on the system context. customrole value of \"bogus\" does not refer to a valid role.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3116,7 +3116,7 @@ static function get_overlay_tables() {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        $message = "[enrolment.csv line 2] Role with shortname \"rlipshortname\" does not have the moodle/course:view capability.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". Role with shortname \"rlipshortname\" does not have the moodle/course:view capability.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3193,7 +3193,7 @@ static function get_overlay_tables() {
                       'custominstance' => 'rlipname',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] custominstance value of \"rlipname\" refers to multiple course category contexts.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course category \"rlipname\". custominstance value of \"rlipname\" refers to multiple course category contexts.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3255,7 +3255,7 @@ static function get_overlay_tables() {
                       'role' => 'rlipshortname',
                       'customgroup' => 'duplicate');
 
-        $message = "[enrolment.csv line 2] customgroup value of \"duplicate\" refers to multiple groups in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be enroled in course with shortname \"rlipshortname\". customgroup value of \"duplicate\" refers to multiple groups in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3565,7 +3565,7 @@ static function get_overlay_tables() {
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname',
                       'group' => 'rlipgroup');
-        $message = "[enrolment.csv line 2] Could not assign user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipgroup\" because they are not enrolled in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". Could not assign user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipgroup\" because they are not enrolled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
 
@@ -3613,40 +3613,40 @@ static function get_overlay_tables() {
         //username
         $data = $basedata;
         $data['username'] = 'rlipusername';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //email
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //idnumber
         $data = $basedata;
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, email
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, idnumber
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //email, idnumber
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, email, idnumber
@@ -3654,7 +3654,7 @@ static function get_overlay_tables() {
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already enroled in course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
 
@@ -3695,21 +3695,21 @@ static function get_overlay_tables() {
         role_assign($roleid, $userid, $context->id);
         $data = $basedata;
         $data['username'] = 'rlipusername';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //email
         role_assign($roleid, $userid, $context->id);
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //idnumber
         role_assign($roleid, $userid, $context->id);
         $data = $basedata;
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, email
@@ -3717,7 +3717,7 @@ static function get_overlay_tables() {
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, idnumber
@@ -3725,7 +3725,7 @@ static function get_overlay_tables() {
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //email, idnumber
@@ -3733,7 +3733,7 @@ static function get_overlay_tables() {
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] Role assignment could not be created. User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, email, idnumber
@@ -3742,7 +3742,7 @@ static function get_overlay_tables() {
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
 
@@ -3817,7 +3817,7 @@ static function get_overlay_tables() {
                       'context' => 'system',
                       'customrole' => 'bogus');
 
-        $message = "[enrolment.csv line 2] customrole value of \"bogus\" does not refer to a valid role.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"bogus\" on the system context. customrole value of \"bogus\" does not refer to a valid role.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -4025,7 +4025,7 @@ static function get_overlay_tables() {
                       'custominstance' => 'rlipname',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] custominstance value of \"rlipname\" refers to multiple course category contexts.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on course category \"rlipname\". custominstance value of \"rlipname\" refers to multiple course category contexts.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -4115,7 +4115,7 @@ static function get_overlay_tables() {
                       'fullname' => 'rlipcoursename',
                       'customcategory' => 'rlipname');
 
-        $message = "[course.csv line 2] customcategory value of \"rlipname\" refers to multiple categories.\n";
+        $message = "[course.csv line 2] Course with shortname \"rlipcoursename\" could not be created. customcategory value of \"rlipname\" refers to multiple categories.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'course');
@@ -4150,7 +4150,7 @@ static function get_overlay_tables() {
                       'fullname' => 'rlipcoursename',
                       'customcategory' => 'rlipname/rlipchildname');
 
-        $message = "[course.csv line 2] customcategory value of \"rlipname/rlipchildname\" refers to an ambiguous parent category path.\n";
+        $message = "[course.csv line 2] Course with shortname \"rlipcoursename\" could not be created. customcategory value of \"rlipname/rlipchildname\" refers to an ambiguous parent category path.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'course');
@@ -4941,7 +4941,7 @@ static function get_overlay_tables() {
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory');
-        $expected_error = "[course.csv line 2] shortname value of \"rlipshortname\" refers to a course that already exists.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. shortname value of \"rlipshortname\" refers to a course that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -5100,7 +5100,7 @@ static function get_overlay_tables() {
                       'category' => 'rlipcategory',
                       'guest' => '0',
                       'password' => 'rlippassword');
-        $expected_error = "[course.csv line 2] guest enrolment plugin cannot be assigned a password because the guest enrolment plugin is not enabled.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. guest enrolment plugin cannot be assigned a password because the guest enrolment plugin is not enabled.\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -5121,7 +5121,7 @@ static function get_overlay_tables() {
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory',
                       'password' => 'rlippassword');
-        $expected_error = "[course.csv line 2] guest enrolment plugin cannot be assigned a password because the guest enrolment plugin is not configured to be added to new courses by default.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. guest enrolment plugin cannot be assigned a password because the guest enrolment plugin is not configured to be added to new courses by default.\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -5170,7 +5170,7 @@ static function get_overlay_tables() {
                       'fullname' => 'rlipname',
                       'category' => 'rlipcategory',        
                       'link' => 'bogus');
-        $expected_error = "[course.csv line 2] Template course with shortname \"bogus\" could not be found.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. Template course with shortname \"bogus\" could not be found.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -5404,7 +5404,7 @@ static function get_overlay_tables() {
                       'visible' => 1,
                       'lang' => 'en',
                      );
-        $expected_error = "[course.csv line 2] guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"cm2\" could not be updated. guest enrolments cannot be enabled because the guest enrolment plugin is globally disabled.\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -5428,7 +5428,7 @@ static function get_overlay_tables() {
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory',
                       'guest' => 1);
-        $expected_error = "[course.csv line 2] guest enrolment plugin cannot be enabled because the guest enrolment plugin has been removed from course \"rlipshortname\".\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be updated. guest enrolment plugin cannot be enabled because the guest enrolment plugin has been removed from course \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -5452,7 +5452,7 @@ static function get_overlay_tables() {
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory',
                       'password' => 'rlippassword');
-        $expected_error = "[course.csv line 2] guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been removed from course \"rlipshortname\".\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be updated. guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been removed from course \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -5476,7 +5476,7 @@ static function get_overlay_tables() {
                       'shortname' => 'rlipshortname',
                       'guest' => '0',
                       'password' => 'rlippassword');
-        $expected_error = "[course.csv line 2] guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been disabled in course \"rlipshortname\".\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be updated. guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been disabled in course \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -5503,9 +5503,8 @@ static function get_overlay_tables() {
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipfullname',
                       'category' => 'rlipcategory',
-                      'guest' => '0',
                       'password' => 'rlippassword');
-        $expected_error = "[course.csv line 2] guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been disabled in course \"rlipshortname\".\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be updated. guest enrolment plugin cannot be assigned a password because the guest enrolment plugin has been disabled in course \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -5579,7 +5578,7 @@ static function get_overlay_tables() {
 
         $data = array('action' => 'delete',
                       'customshortname' => 'rlipshortname');
-        $expected_error = "[course.csv line 2] customshortname value of \"rlipshortname\" does not refer to a valid course.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be deleted. customshortname value of \"rlipshortname\" does not refer to a valid course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -5927,7 +5926,11 @@ static function get_overlay_tables() {
                       'country' => 'CA');
         $value = str_repeat('x', $maxlength + 1);
         $data['custom'.$field] = $value;
-        $expected_error = "[user.csv line 2] custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $username = 'rlipusername';
+        if ($field == 'username') {
+            $username = $value;
+        }
+        $expected_error = "[user.csv line 2] User with username \"{$username}\" could not be created. custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -5941,7 +5944,7 @@ static function get_overlay_tables() {
         $value = str_repeat('x', 101);
         $data = array('action' => 'update',
                       'customusername' => $value);
-        $expected_error = "[user.csv line 2] customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $expected_error = "[user.csv line 2] User with username \"{$value}\" could not be updated. customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -5955,7 +5958,7 @@ static function get_overlay_tables() {
         $value = str_repeat('x', 101);
         $data = array('action' => 'delete',
                       'customusername' => $value);
-        $expected_error = "[user.csv line 2] customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $expected_error = "[user.csv line 2] User with username \"{$value}\" could not be deleted. customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -5989,7 +5992,11 @@ static function get_overlay_tables() {
                       'category' => 'rlipcategory');
         $value = str_repeat('x', $maxlength + 1);
         $data['custom'.$field] = $value;
-        $expected_error = "[course.csv line 2] custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $shortname = 'rlipshortname';
+        if ($field == 'shortname') {
+            $shortname = $value;
+        }
+        $expected_error = "[course.csv line 2] Course with shortname \"{$shortname}\" could not be created. custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -6003,7 +6010,7 @@ static function get_overlay_tables() {
         $value = str_repeat('x', 101);
         $data = array('action' => 'update',
                       'customshortname' => $value);
-        $expected_error = "[course.csv line 2] customshortname value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"{$value}\" could not be updated. customshortname value of \"{$value}\" exceeds the maximum field length of 100.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -6017,7 +6024,7 @@ static function get_overlay_tables() {
         $value = str_repeat('x', 101);
         $data = array('action' => 'delete',
                       'customshortname' => $value);
-        $expected_error = "[course.csv line 2] customshortname value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $expected_error = "[course.csv line 2] Course with shortname \"{$value}\" could not be deleted. customshortname value of \"{$value}\" exceeds the maximum field length of 100.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -6054,7 +6061,11 @@ static function get_overlay_tables() {
                       'role' => 'rlipshortname');
         $value = str_repeat('x', $maxlength + 1);
         $data['custom'.$field] = $value;
-        $expected_error = "[enrolment.csv line 2] custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $username = 'rlipusername';
+        if ($field == 'username') {
+            $username = $value;
+        }
+        $expected_error = "[enrolment.csv line 2] User with username \"{$username}\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -6071,7 +6082,7 @@ static function get_overlay_tables() {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        $expected_error = "[enrolment.csv line 2] customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
+        $expected_error = "[enrolment.csv line 2] User with username \"{$value}\" could not be unassigned role with shortname \"rlipshortname\" on course \"rlipshortname\". customusername value of \"{$value}\" exceeds the maximum field length of 100.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 

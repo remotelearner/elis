@@ -265,18 +265,21 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     /**
      * Check the lengths of fields based on the supplied maximum lengths
      *
+     * @param string $entitytype The entity type, as expected by the logger
      * @param object $record The import record
      * @param string $filename The name of the import file, excluding path
      * @param array $lengths Mapping of fields to max lengths
      */
-    function check_field_lengths($record, $filename, $lengths) {
+    function check_field_lengths($entitytype, $record, $filename, $lengths) {
         foreach ($lengths as $field => $length) {
             //note: do not worry about missing fields here
             if (isset($record->$field)) {
                 $value = $record->$field;
                 if (strlen($value) > $length) {
                     $identifier = $this->mappings[$field];
-                    $this->fslogger->log_failure("{$identifier} value of \"{$value}\" exceeds the maximum field length of {$length}.", 0, $filename, $this->linenumber);
+                    $this->fslogger->log_failure("{$identifier} value of \"{$value}\" exceeds ".
+                                                 "the maximum field length of {$length}.",
+                                                 0, $filename, $this->linenumber, $record, $entitytype);
                     return false;
                 }
             }
@@ -303,7 +306,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                          'institution' => 40,
                          'department' => 30);
 
-        return $this->check_field_lengths($record, $filename, $lengths);
+        return $this->check_field_lengths('user', $record, $filename, $lengths);
     }
 
     /**
@@ -1019,7 +1022,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                          'shortname' => 100,
                          'idnumber' => 100);
 
-        return $this->check_field_lengths($record, $filename, $lengths);
+        return $this->check_field_lengths('course', $record, $filename, $lengths);
     }
 
     /**
@@ -1096,8 +1099,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      *                                and / as a category separator
      * @return mixed Returns false on error, or the integer category id otherwise
      */
-    function get_category_id($category_string, $filename) {
+    function get_category_id($record, $filename) {
         global $DB;
+
+        $category_string = $record->category;
 
         $parentids = array();
 
@@ -1142,7 +1147,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                         $identifier = $this->mappings['category'];
                         $this->fslogger->log_failure("{$identifier} value of \"{$category_string}\" ".
                                                      "refers to an ambiguous parent category path.",
-                                                     0, $filename, $this->linenumber);
+                                                     0, $filename, $this->linenumber, $record, 'course');
                         return false;
                     }
 
@@ -1158,8 +1163,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     //set "parent ids" to the current result set for our next iteration
                     $parentids = array();
 
-                    foreach ($records as $record) {
-                        $parentids[] = $record->id;
+                    foreach ($records as $childrecord) {
+                        $parentids[] = $childrecord->id;
                     }
                 }
             }
@@ -1171,7 +1176,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         } else {
             //path refers to multiple potential categories
             $identifier = $this->mappings['category'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$category_string}\" refers to multiple categories.", 0, $filename, $this->linenumber);
+            $this->fslogger->log_failure("{$identifier} value of \"{$category_string}\" refers to ".
+                                         "multiple categories.", 0, $filename, $this->linenumber,
+                                         $record, 'course');
             return false;
         }
     }
@@ -1321,7 +1328,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 //password set but guest is not enabled
                 $this->fslogger->log_failure('guest enrolment plugin cannot be assigned a password '.
                                              'because the guest enrolment plugin is not enabled.',
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, 'course');
                 return false;
             }
 
@@ -1331,13 +1338,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $this->fslogger->log_failure('guest enrolment plugin cannot be assigned a password '.
                                              'because the guest enrolment plugin is not configured '.
                                              'to be added to new courses by default.',
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, 'course');
                 return false;
             } else if (empty($defaultenrol) && !empty($record->password)) {
                 //enabling guest password without the guest plugin being added by default
                 $this->fslogger->log_failure('guest enrolment plugin cannot be assigned a password '.
                                              'because the guest enrolment plugin is not configured to '.
-                                             'be added to new courses by default.', 0, $filename, $this->linenumber);
+                                             'be added to new courses by default.', 0, $filename, $this->linenumber,
+                                             $record, 'course');
                 return false;
             }
 
@@ -1346,7 +1354,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             if (isset($record->link)) {
                 if (!$DB->record_exists('course', array('shortname' => $record->link))) {
                     $this->fslogger->log_failure("Template course with shortname \"{$record->link}\" ".
-                                                 "could not be found.", 0, $filename, $this->linenumber);
+                                                 "could not be found.", 0, $filename, $this->linenumber,
+                                                 $record, 'course');
                     return false;
                 }
             }
@@ -1370,12 +1379,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 if (isset($record->guest)) { 
                     $this->fslogger->log_failure("guest enrolment plugin cannot be enabled because ".
                                                  "the guest enrolment plugin has been removed from ".
-                                                 "course \"{$record->shortname}\".", 0, $filename, $this->linenumber);
+                                                 "course \"{$record->shortname}\".", 0, $filename, $this->linenumber,
+                                                 $record, 'course');
                     return false;
                 } else if (isset($record->password)) {
                     $this->fslogger->log_failure("guest enrolment plugin cannot be assigned a password ".
                                                  "because the guest enrolment plugin has been removed ".
-                                                 "from course \"{$record->shortname}\".", 0, $filename, $this->linenumber);
+                                                 "from course \"{$record->shortname}\".", 0, $filename, $this->linenumber,
+                                                 $record, 'course');
                     return false;
                 }
             }
@@ -1390,7 +1401,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                         $this->fslogger->log_failure("guest enrolment plugin cannot be assigned a ".
                                                      "password because the guest enrolment plugin has been ".
                                                      "disabled in course \"{$record->shortname}\".",
-                                                     0, $filename, $this->linenumber);
+                                                     0, $filename, $this->linenumber,
+                                                     $record, 'course');
                         return false;
                     } else if (!isset($record->guest)) {
                         $params = array('courseid' => $courseid,
@@ -1398,8 +1410,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                         'status' => ENROL_INSTANCE_ENABLED);
                         if (!$DB->record_exists('enrol', $params)) {
                             //guest access disabled in the database
-                            $this->fslogger->log_failure('attempting to set password when added but '.
-                                                         'disabled during update', 0, $filename, $this->linenumber);
+                            $this->fslogger->log_failure("guest enrolment plugin cannot be assigned a ".
+                                                         "password because the guest enrolment plugin has been ".
+                                                         "disabled in course \"{$record->shortname}\".",
+                                                         0, $filename, $this->linenumber,
+                                                         $record, 'course');
                             return false;
                         }
                     }
@@ -1437,7 +1452,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //validate and set up the category
-        $categoryid = $this->get_category_id($record->category, $filename);
+        $categoryid = $this->get_category_id($record, $filename);
         if ($categoryid === false) {
             return false;
         }
@@ -1448,7 +1463,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if ($DB->record_exists('course', array('shortname' => $record->shortname))) {
             $identifier = $this->mappings['shortname'];
             $this->fslogger->log_failure("{$identifier} value of \"{$record->shortname}\" refers to a ".
-                                         "course that already exists.", 0, $filename, $this->linenumber);
+                                         "course that already exists.", 0, $filename, $this->linenumber,
+                                         $record, 'course');
             return false;
         }
 
@@ -1521,7 +1537,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //validate and set up the category
         if (isset($record->category)) {
-            $categoryid = $this->get_category_id($record->category, $filename);
+            $categoryid = $this->get_category_id($record, $filename);
             if ($categoryid === false) {
                 return false;
             }
@@ -1605,7 +1621,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         $identifier = $this->mappings['shortname'];
-        $this->fslogger->log_success("{$identifier} value of \"{$record->shortname}\" does not refer to a valid course.", 0, $filename, $this->linenumber);
+        $this->fslogger->log_failure("{$identifier} value of \"{$record->shortname}\" does not ".
+                                     "refer to a valid course.", 0, $filename, $this->linenumber,
+                                     $record, 'course');
 
         return false;
     }
@@ -1665,7 +1683,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                          'group' => 254,
                          'grouping' => 254);
 
-        return $this->check_field_lengths($record, $filename, $lengths);
+        return $this->check_field_lengths('roleassignment', $record, $filename, $lengths);
     }
 
     /**
@@ -1759,7 +1777,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['instance'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->instance}\" refers to ".
                                              "multiple course category contexts.",
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, 'roleassignment');
                 return false;
             }
 
@@ -1825,7 +1843,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {
             $identifier = $this->mappings['role'];
             $this->fslogger->log_failure("{$identifier} value of \"{$record->role}\" does not refer ".
-                                         "to a valid role.", 0, $filename, $this->linenumber);
+                                         "to a valid role.", 0, $filename, $this->linenumber,
+                                         $record, 'roleassignment');
             return false;
         }
 
@@ -1873,7 +1892,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['group'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->group}\" refers to multiple ".
                                              "groups in course with shortname \"{$record->instance}\".",
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, 'enrolment');
                 return false;
             } else if ($count == 0 && empty($creategroups)) {
                 //does not exist and not creating
@@ -1953,7 +1972,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $this->fslogger->log_failure("User with {$user_descriptor} is already assigned role ".
                                              "with shortname \"{$record->role}\" on {$context_descriptor}. ".
                                              "User with {$user_descriptor} is already enroled in course with ".
-                                             "shortname \"{$record->instance}\".", 0, $filename, $this->linenumber);
+                                             "shortname \"{$record->instance}\".", 0, $filename, $this->linenumber,
+                                             $record, 'roleassignment');
                 return false;
             }
 
@@ -1967,7 +1987,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     $this->fslogger->log_failure("Could not assign user with {$user_descriptor} to group ".
                                                  "with name \"{$record->group}\" because they are not enrolled ".
                                                  "in course with shortname \"{$record->instance}\".",
-                                                 0, $filename, $this->linenumber);
+                                                 0, $filename, $this->linenumber, $record, 'roleassignment');
                     return false;
                 }
             }
@@ -1976,14 +1996,17 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 if (!$DB->record_exists('role_capabilities', array('roleid' => $roleid,
                                                                    'capability' => 'moodle/course:view'))) {
                     $this->fslogger->log_failure("Role with shortname \"{$record->role}\" does not have ".
-                                                 "the moodle/course:view capability.", 0, $filename, $this->linenumber);
+                                                 "the moodle/course:view capability.", 0, $filename, $this->linenumber,
+                                                 $record, 'roleassignment');
                     return false;
                 }
             }
 
             if ($role_assignment_exists) {
                 //role assignment already exists, so this action serves no purpose
-                $this->fslogger->log_failure("User with {$user_descriptor} is already assigned role with shortname \"{$record->role}\" on {$context_descriptor}.", 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure("User with {$user_descriptor} is already assigned role ".
+                                             "with shortname \"{$record->role}\" on {$context_descriptor}.",
+                                             0, $filename, $this->linenumber, $record, 'roleassignment');
                 return false;
             }
 
@@ -2093,7 +2116,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {
             $identifier = $this->mappings['role'];
             $this->fslogger->log_failure("{$identifier} value of \"{$record->role}\" does not refer to a valid role.",
-                                         0, $filename, $this->linenumber);
+                                         0, $filename, $this->linenumber, $record, 'roleassignment');
             return false;
         }
 
