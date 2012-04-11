@@ -3349,7 +3349,6 @@ class ELIS_files {
             }
         }
         return true;
-
     }
 
     /**
