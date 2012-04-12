@@ -270,7 +270,8 @@ class version1CourseImportTest extends rlip_test {
         set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
         set_config('enrol_plugins_enabled', 'manual,guest');
 
-        self::$existing_logfiles = static::get_logfilelocation_files();
+        self::get_logfilelocation_files();
+        self::get_zip_files();
     }
 
     /**

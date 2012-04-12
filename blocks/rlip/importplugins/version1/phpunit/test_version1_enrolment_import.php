@@ -161,7 +161,8 @@ class version1EnrolmentImportTest extends rlip_test {
                                                                                                             CONTEXT_USER));
         self::$courseid = self::create_test_course();
         self::$userid = self::create_test_user();
-        self::$existing_logfiles = static::get_logfilelocation_files();
+        self::get_logfilelocation_files();
+        self::get_zip_files();
     }
 
     /**
