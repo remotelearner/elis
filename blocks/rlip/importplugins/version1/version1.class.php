@@ -286,7 +286,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //no problems found
-        return true;        
+        return true;
     }
 
     /**
@@ -457,7 +457,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //apply "createorupdate" flag, if necessary
-        $action = $this->handle_user_createorupdate($record, $action);
+        if ($action == 'create' || $action == 'update') {
+            $action = $this->handle_user_createorupdate($record, $action);
+        }
         $record->action = $action;
 
         if (!$this->check_required_fields('user', $record, $filename)) {
@@ -976,7 +978,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //apply "createorupdate" flag, if necessary
-        $action = $this->handle_course_createorupdate($record, $action);
+        if ($action == 'create' || $action == 'update') {
+            $action = $this->handle_course_createorupdate($record, $action);
+        }
 
         $record->action = $action;
         if (!$this->check_required_fields('course', $record, $filename)) {
@@ -1372,11 +1376,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                       'enrol' => 'guest'))) {
                     $guest_plugin_exists = true;
                 }
-            } 
+            }
 
             if (!$guest_plugin_exists) {
                 //guest enrolment plugin specifically removed from course
-                if (isset($record->guest)) { 
+                if (isset($record->guest)) {
                     $this->fslogger->log_failure("guest enrolment plugin cannot be enabled because ".
                                                  "the guest enrolment plugin has been removed from ".
                                                  "course \"{$record->shortname}\".", 0, $filename, $this->linenumber,

@@ -239,10 +239,54 @@ class version1CreateorupdateTest extends rlip_test {
 
         return array(RLIP_LOG_TABLE => 'block_rlip',
                      'block_instances' => 'moodle',
+                     'block_positions' => 'moodle',
+                     'backup_courses' => 'moodle',
+                     'backup_log' => 'moodle',
+                     'cohort_members' => 'moodle',
+                     'comments' => 'moodle',
+                     'course_completions' => 'moodle',
+                     'course_completion_aggr_methd' => 'moodle',
+                     'course_completion_criteria' => 'moodle',
+                     'course_completion_crit_compl' => 'moodle',
+                     'course_display' => 'moodle',
+                     'course_modules' => 'moodle',
+                     'course_modules_availability' => 'moodle',
+                     'course_modules_completion' => 'moodle',
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
+                     'enrol' => 'moodle',
+                     'event' => 'moodle',
+                     'events_queue' => 'moodle',
+                     'events_queue_handlers' => 'moodle',
+                     'external_services_users' => 'moodle',
+                     'external_tokens' => 'moodle',
+                     'feedback_template' => 'moodle',
+                     'filter_active' => 'moodle',
+                     'filter_config' => 'moodle',
+                     'forum' => 'moodle',
+                     'forum_read' => 'moodle',
+                     'forum_subscriptions' => 'moodle',
+                     'grade_categories' => 'moodle',
+                     'grade_categories_history' => 'moodle',
+                     'grade_grades' => 'moodle',
+                     'grade_grades_history' => 'moodle',
+                     'grade_items' => 'moodle',
+                     'grade_items_history' => 'moodle',
+                     'grade_letters' => 'moodle',
+                     'grade_outcomes_courses' => 'moodle',
+                     'grade_settings' => 'moodle',
+                     'groupings' => 'moodle',
+                     'groupings_groups' => 'moodle',
+                     'groups' => 'moodle',
+                     'groups_members' => 'moodle',
                      'log' => 'moodle',
-                     'user_enrolments' => 'moodle');
+                     'rating' => 'moodle',
+                     'role_capabilities' => 'moodle',
+                     'role_names' => 'moodle',
+                     'user_enrolments' => 'moodle',
+                     'user_info_data' => 'moodle',
+                     'user_lastaccess' => 'moodle',
+                     'user_preferences' => 'moodle');
     }
 
     /**
@@ -640,5 +684,77 @@ class version1CreateorupdateTest extends rlip_test {
                       'firstname' => 'updatedfirst',
                       'email' => 'rlipuser@rlipdomain.com');
         $this->assert_record_exists('user', $data);
+    }
+
+    /**
+     * Validate that when the "create or update" flag is enabled, delete
+     * actions still work for a course
+     */
+    public function testVersion1CreateorupdateDeletesCourse() {
+        global $DB;
+
+        //set up initial conditions
+        set_config('createorupdate', 1, 'rlipimport_version1');
+        $this->init_contexts_and_site_course();
+
+        //validate that the standard delete action still works
+        //first create course
+        $expected_data = array('shortname' => 'rlipshortname',
+                               'fullname' => 'rlipfullname');
+        $import_data = array('entity' => 'course',
+                             'action' => 'create',
+                             'shortname' => 'rlipshortname',
+                             'fullname' => 'rlipfullname',
+                             'category' => 'rlipcategory');
+        $this->run_core_course_import($import_data);
+        $this->assert_record_exists('course', $expected_data);
+        //now delete course
+        $import_data = array('entity' => 'course',
+                             'action' => 'delete',
+                             'shortname' => 'rlipshortname');
+        $this->run_core_course_import($import_data);
+        $exists = $DB->record_exists('course', array('shortname' => 'rlipshortname'));
+        $this->assertEquals($exists, false);
+    }
+
+    /**
+     * Validate that when the "create or update" flag is enabled, delete
+     * actions still work for a course
+     */
+    public function testVersion1CreateorupdateDeletesUser() {
+        global $CFG, $DB;
+
+        //set up initial conditions
+        set_config('createorupdate', 1, 'rlipimport_version1');
+        $this->init_contexts_and_site_course();
+
+        //validate that the standard delete action still works
+        //first create the user
+        $expected_data = array('username' => 'rlipusername',
+                               'password' => hash_internal_user_password('Rlippassword!1234'),
+                               'mnethostid' => $CFG->mnet_localhost_id,
+                               'firstname' => 'rlipfirstname',
+                               'lastname' => 'rliplastname',
+                               'email' => 'rlipuser@rlipdomain.com',
+                               'city' => 'rlipcity',
+                               'country' => 'CA');
+        $import_data = array('entity' => 'user',
+                             'action' => 'create',
+                             'username' => 'rlipusername',
+                             'password' => 'Rlippassword!1234',
+                             'firstname' => 'rlipfirstname',
+                             'lastname' => 'rliplastname',
+                             'email' => 'rlipuser@rlipdomain.com',
+                             'city' => 'rlipcity',
+                             'country' => 'CA');
+        $this->run_core_user_import($import_data);
+        $this->assert_record_exists('user', $expected_data);
+        //then delete the user
+        $import_data = array('entity' => 'user',
+                             'action' => 'delete',
+                             'username' => 'rlipusername');
+        $this->run_core_user_import($import_data);
+        $exists = $DB->record_exists('user', array('username' => 'rlipusername'));
+        $this->assertEquals($exists, false);
     }
 }
