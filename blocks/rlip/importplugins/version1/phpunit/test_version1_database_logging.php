@@ -1090,7 +1090,6 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         //set the log file name to a fixed value
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
         // MUST copy file to temp area 'cause it'll be deleted after import
@@ -1121,8 +1120,6 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         //set the log file name to a fixed value
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
-
         //set up a "user" import provider, using a single fixed file
         // MUST copy file to temp area 'cause it'll be deleted after import
         $testfile = dirname(__FILE__) .'/userfile2.csv';
@@ -1151,7 +1148,6 @@ class version1DatabaseLoggingTest extends elis_database_test {
 
         //set the log file name to a fixed value
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
         // MUST copy file to temp area 'cause it'll be deleted after import
@@ -1196,11 +1192,6 @@ class version1DatabaseLoggingTest extends elis_database_test {
               $CFG->dataroot . $relimportpath . 'course.csv');
         @copy(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'enroll.csv',
               $CFG->dataroot . $relimportpath . 'enroll.csv');
-
-        // log file
-        set_config('logfilelocation',
-                   $CFG->dataroot,
-                   'rlipimport_version1');
 
         //create a scheduled job
         $data = array('plugin' => 'rlipimport_version1',
@@ -1255,9 +1246,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
 
-        //set the log file name to a fixed value
+        //set the filepath to a fixed value
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //store it at the system context
         $context = get_context_instance(CONTEXT_SYSTEM);
@@ -1466,9 +1456,8 @@ class version1DatabaseLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //set the log file name to a fixed value
+        //set the file path to a fixed value
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //store it at the system context
         $context = get_context_instance(CONTEXT_SYSTEM);

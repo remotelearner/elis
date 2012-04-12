@@ -42,13 +42,6 @@ abstract class rlip_test extends elis_database_test {
         static::cleanup_log_files();
     }
 
-    protected function setUp() {
-        global $CFG;
-        parent::setUp();
-        //make sure that the logfile location is set
-        set_config('logfilelocation', $CFG->dataroot, 'rlipimport_version1');
-        set_config('logfilelocation', $CFG->dataroot, 'rlipexport_version1');
-    }
     /**
      * Cleans up log files created whenever an import runs
      */

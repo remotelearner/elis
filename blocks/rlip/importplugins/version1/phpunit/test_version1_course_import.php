@@ -289,10 +289,6 @@ class version1CourseImportTest extends rlip_test {
     }
 
     protected function setUp() {
-        global $CFG;
-        //make sure that the logfile location is set
-        set_config('logfilelocation', $CFG->dataroot, 'rlipimport_version1');
-        set_config('logfilelocation', $CFG->dataroot, 'rlipexport_version1');
     }
 
     /**

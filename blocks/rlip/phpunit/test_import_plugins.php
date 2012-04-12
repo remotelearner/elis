@@ -292,7 +292,7 @@ class importPluginTest extends elis_database_test {
         $provider = new rlip_importprovider_csv(array(), array());
 
         //obtain its logging object
-        set_config('logfilelocation', $CFG->dataroot.'/bogus', 'rlipimport_version1');
+        set_config('logfilelocation', 'bogus', 'rlipimport_version1');
         $entity = '';
         $manual = false;
         $fslogger = $provider->get_fslogger('rlipimport_version1', $entity, $manual);
@@ -313,7 +313,7 @@ class importPluginTest extends elis_database_test {
         $provider = new rlip_importprovider_moodlefile(array(), array());
 
         //obtain its logging object
-        set_config('logfilelocation', $CFG->dataroot.'/bogus', 'rlipimport_version1');
+        set_config('logfilelocation', 'bogus', 'rlipimport_version1');
         $entity = '';
         $manual = true;
         $fslogger = $provider->get_fslogger('rlipimport_version1', $entity, $manual);

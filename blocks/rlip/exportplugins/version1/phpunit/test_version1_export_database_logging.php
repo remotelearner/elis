@@ -211,7 +211,6 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
 
         //set the log file location to the dataroot
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipexport_version1');
 
         //plugin for file IO
         $fileplugin = new rlip_fileplugin_memoryexport($writedelay);

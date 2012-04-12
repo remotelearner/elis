@@ -37,7 +37,7 @@ $string['configincrementaldelta'] = 'This setting is not used in a scheduled inc
 This should be specified in \*d\*h\*m format, with values representing days, hours and minutes.
 This setting only takes effect when using the incremental manual export, and is based on the time at which a user\'s course grade was
 last modified.';
-$string['configlogfilelocation'] = 'The absolute path to the log file.';
+$string['configlogfilelocation'] = 'The directory path, relative to moodledata, to the location of log files.';
 $string['confignonincremental'] = 'Include all historical data in manual exports';
 $string['configureheader'] = 'Profile Fields';
 $string['configurelink'] = 'Click here to configure which profile fields are included in this export';

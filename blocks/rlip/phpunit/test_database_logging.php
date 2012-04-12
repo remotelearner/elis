@@ -155,9 +155,6 @@ class databaseLoggingTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
-        //set up the import log path to prevent warnings
-        set_config('logfilelocation', $CFG->dataroot, 'rlipimport_version1');
-
         //store it at the system context
         $context = get_context_instance(CONTEXT_SYSTEM);
 

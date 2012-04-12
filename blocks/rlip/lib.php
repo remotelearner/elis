@@ -841,6 +841,7 @@ function rlip_log_table_html($table) {
  * @return string $logfilename The name of the log file
  */
 function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $manual = false, $timestamp = 0, $format = null, $timezone = 99) {
+    global $CFG;
 
     //if no timeformat is set, set it to logfile timestamp format
     $format = empty($format) ? get_string('logfile_timestamp','block_rlip'):$format;
@@ -848,11 +849,15 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
     $scheduling = empty($manual) ? strtolower(get_string('scheduled','block_rlip')) : strtolower(get_string('manual','block_rlip'));
     //use timestamp passed or time()
     $timestamp  = empty($timestamp) ? time():$timestamp;
-    //check for proper filepath
-    if (strrpos($filepath, '/') !== strlen($filepath) - 1) {
-        $filepath .= '/';
+echo "\n before filepath: $filepath";
+    //logfile path is relative to dataroot
+    if (!empty($filepath)) {
+        $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR .
+                    rtrim(trim($filepath, DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR). DIRECTORY_SEPARATOR;
+    } else {
+        $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
-
+echo "\n after filepath: $filepath";
     //create filename
     if ($plugin_type == 'import') { //include entity
         $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.$entity.'_'.userdate($timestamp, $format, $timezone).'.log';
@@ -877,6 +882,7 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
  *
  */
 function rlip_compress_logs_cron() {
+    global $CFG;
 
     $time = time() - 86400; //get yesterday's date
 
@@ -904,7 +910,9 @@ function rlip_compress_logs_cron() {
             //get the display name from the plugin-specific language string
             $plugin_name = "{$plugintype}_{$name}";
             $logfilelocation = get_config($plugin_name, 'logfilelocation');
-
+            $logfilelocation = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) .
+                  DIRECTORY_SEPARATOR .
+                  trim($logfilelocation, DIRECTORY_SEPARATOR);
             $logfileprefix = "{$pluginvalue}_{$plugin_name}";
             $logfiledate = "{$timestamp}";
 

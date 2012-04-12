@@ -372,7 +372,6 @@ static function get_overlay_tables() {
         //set the log file location
         $filepath = $CFG->dataroot;
         self::cleanup_log_files();
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //run the import
         $classname = "rlip_importprovider_fslog{$entitytype}";
@@ -597,7 +596,7 @@ static function get_overlay_tables() {
     /**
      * Validates that an error is logged for an empty username field on user create
      */
-    public function testVersionImportLogsEmptyUserUsernameOnCreate() {
+    public function testVersion1ImportLogsEmptyUserUsernameOnCreate() {
         //create mapping record
         $this->create_mapping_record('user', 'username', 'customusername');
 
@@ -744,7 +743,7 @@ static function get_overlay_tables() {
     /**
      * Validates that an error is logged for an empty username field on user update
      */
-    public function testVersionImportLogsEmptyUserUsernameOnUpdate() {
+    public function testVersion1ImportLogsEmptyUserUsernameOnUpdate() {
         //create mapping records
         $this->create_mapping_record('user', 'username', 'customusername');
         $this->create_mapping_record('user', 'email', 'customemail');
@@ -761,7 +760,7 @@ static function get_overlay_tables() {
     /**
      * Validates that an error is logged for an empty username field on user delete
      */
-    public function testVersionImportLogsEmptyUserUsernameOnDelete() {
+    public function testVersion1ImportLogsEmptyUserUsernameOnDelete() {
         //create mapping records
         $this->create_mapping_record('user', 'username', 'customusername');
         $this->create_mapping_record('user', 'email', 'customemail');
@@ -3048,7 +3047,7 @@ static function get_overlay_tables() {
     /**
      * Validates log message for assigning a role that doesn't exist
      */
-    public function testVersionImportLogsInvalidRoleOnRoleAssignmentCreate() {
+    public function testVersion1ImportLogsInvalidRoleOnRoleAssignmentCreate() {
         //set up dependencies
         $this->create_test_user();
 
@@ -3775,7 +3774,7 @@ static function get_overlay_tables() {
     /**
      * Validates log message for unassigning a role that doesn't exist
      */
-    public function testVersionImportLogsInvalidRoleOnRoleAssignmentDelete() {
+    public function testVersion1ImportLogsInvalidRoleOnRoleAssignmentDelete() {
         //set up dependencies
         $this->create_test_user();
         $this->create_test_role();
@@ -5557,7 +5556,7 @@ static function get_overlay_tables() {
     /**
      * Validate that a manual import log file generates the proper name
      */
-    function testVersionImportLogName() {
+    function testVersion1ImportLogName() {
         global $CFG;
 
         //pass manual and then scheduled and a timestamp and verify that the name is correct
@@ -5570,7 +5569,7 @@ static function get_overlay_tables() {
         $format = get_string('logfile_timestamp','block_rlip');
         $entity = 'user';
 
-        $filename = rlip_log_file_name($plugin_type, $plugin, $filepath, $entity, $manual, $timestamp);
+        $filename = rlip_log_file_name($plugin_type, $plugin, '', $entity, $manual, $timestamp);
         $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($timestamp, $format).'.log';
         //get most recent logfile +1 as that is what is returned by rlip_log_file_name
         $testfilename = self::get_next_logfile($testfilename);
@@ -5579,15 +5578,43 @@ static function get_overlay_tables() {
     }
 
     /**
+     * Test an invalid log file path
+     */
+    function testVersion1ImportInvalidLogPath() {
+echo "\n in invalidlogpath";
+         global $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        $filepath = $CFG->dataroot;
+//        set_config('logfilelocation', 'invalidlogpath', 'rlipimport_version1');
+
+        $plugin_type = 'import';
+        $plugin = 'rlipimport_version1';
+        $format = get_string('logfile_timestamp','block_rlip');
+
+        // create a log file to be zipped by the cron job
+        $starttime = time(); //yesterday
+        $filename = rlip_log_file_name($plugin_type,$plugin, 'invalidlogpath', 'user', false, $starttime);
+
+        //write out a line to the logfile
+        $logfile = new rlip_fileplugin_log($filename);
+        $logfile->open(RLIP_FILE_WRITE);
+echo "\n with filename: ".$filename;
+        $this->assertEquals(file_exists($filename), true);
+        $logfile->write(array('test entry'));
+    }
+
+    /**
      * Validate that a manual import log file generates the correct log file
      */
-    function testVersionImportLogManual() {
+    function testVersion1ImportLogManual() {
         global $CFG, $DB, $USER;
+
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
-        //set the log file location to the dataroot
+        //set the file path to the dataroot
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         $USER->id = 9999;
         self::cleanup_log_files();
@@ -5627,13 +5654,12 @@ static function get_overlay_tables() {
     /**
      * Validate that a scheduled import log file exists with the proper name
      */
-    function testVersionImportLogScheduled() {
+    function testVersion1ImportLogScheduled() {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
 
-        //set the log file location to the dataroot
+        //set the file path to the dataroot
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //file path and name
         $file_name = 'userscheduledimport.csv';
@@ -5696,13 +5722,12 @@ static function get_overlay_tables() {
      /**
      * Validate that a manual import log file generates the correct log file
      */
-    function testVersionImportLogSequentialLogFiles() {
+    function testVersion1ImportLogSequentialLogFiles() {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
-        //set the log file location to the dataroot
+        //set the file path to the dataroot
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         $USER->id = 9999;
         self::cleanup_log_files();
@@ -5760,9 +5785,8 @@ static function get_overlay_tables() {
     public function testVersion1ImportLogsRuntimeError() {
         global $CFG, $DB;
 
-        //set the log file location to the dataroot
+        //set the file path to the dataroot
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
         $file_name = 'userfile2.csv';
@@ -5909,7 +5933,7 @@ static function get_overlay_tables() {
     /**
      * Validate that field length validation works on user update
      */
-    public function testVersionImportLogsUserFieldLengthErrorOnUpdate() {
+    public function testVersion1ImportLogsUserFieldLengthErrorOnUpdate() {
         //create mapping record
         $this->create_mapping_record('user', 'username', 'customusername');
 
@@ -5923,7 +5947,7 @@ static function get_overlay_tables() {
     /**
      * Validate that field length validation works on user delete
      */
-    public function testVersionImportLogsUserFieldLengthErrorOnDelete() {
+    public function testVersion1ImportLogsUserFieldLengthErrorOnDelete() {
         //create mapping record
         $this->create_mapping_record('user', 'username', 'customusername');
 
@@ -5975,7 +5999,7 @@ static function get_overlay_tables() {
     /**
      * Validate that field length validation works on course update
      */
-    public function testVersionImportLogsCourseFieldLengthErrorOnUpdate() {
+    public function testVersion1ImportLogsCourseFieldLengthErrorOnUpdate() {
         //create mapping record
         $this->create_mapping_record('course', 'shortname', 'customshortname');
 
@@ -5989,7 +6013,7 @@ static function get_overlay_tables() {
     /**
      * Validate that field length validation works on course delete
      */
-    public function testVersionImportLogsCourseFieldLengthErrorOnDelete() {
+    public function testVersion1ImportLogsCourseFieldLengthErrorOnDelete() {
         //create mapping record
         $this->create_mapping_record('course', 'shortname', 'customshortname');
 
@@ -6044,7 +6068,7 @@ static function get_overlay_tables() {
     /**
      * Validate that field length validation works on enrolment delete
      */
-    public function testVersionImportLogsEnrolmentFieldLengthErrorOnDelete() {
+    public function testVersion1ImportLogsEnrolmentFieldLengthErrorOnDelete() {
         //create mapping record
         $this->create_mapping_record('enrolment', 'username', 'customusername');
 
@@ -6276,15 +6300,12 @@ static function get_overlay_tables() {
      * Validate that all log files from the previous day are bundled into a zip file
      * and named with the previous day's date
      */
-    function testVersionImportLogZipsDaily() {
+    function testVersion1ImportLogZipsDaily() {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         $filepath = $CFG->dataroot;
-        //set logfilelocation for import and export plugins
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
-        set_config('logfilelocation', $filepath, 'rlipexport_version1');
 
         $plugin_type = 'import';
         $plugin = 'rlipimport_version1';
@@ -6292,11 +6313,13 @@ static function get_overlay_tables() {
 
         // create a log file to be zipped by the cron job
         $starttime = time()-86500; //yesterday
-        $filename = rlip_log_file_name($plugin_type,$plugin, $filepath, 'user', false, $starttime);
+        $filename = rlip_log_file_name($plugin_type,$plugin, '', 'user', false, $starttime);
 
         //write out a line to the logfile
         $logfile = new rlip_fileplugin_log($filename);
         $logfile->open(RLIP_FILE_WRITE);
+
+        $this->assertEquals(file_exists($filename), true);
         $logfile->write(array('test entry'));
 
         //call cron job that zips the previous day's log files

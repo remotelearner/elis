@@ -93,9 +93,8 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
         $this->load_csv_data();
         set_config('nonincremental', 1, 'rlipexport_version1');
 
-        //set the log file location to the dataroot
+        //set the filepath to the dataroot
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipexport_version1');
 
         //no writing actually happens
         $file = $CFG->dataroot.'/bogus';

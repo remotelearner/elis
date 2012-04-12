@@ -30,10 +30,10 @@ $settings->add(new admin_setting_configcheckbox('rlipexport_version1/export_file
 // Log file location
 $settings->add(new admin_setting_configtext('rlipexport_version1/logfilelocation',
                                             get_string('logfilelocation', 'rlipexport_version1'),
-                                            get_string('configlogfilelocation', 'rlipexport_version1'), $CFG->dataroot .'/rlip/logs/rlipexport_version1/export.log'));
+                                            get_string('configlogfilelocation', 'rlipexport_version1'), ''));
 
 /**
- * Time period settings 
+ * Time period settings
  */
 
 //header
