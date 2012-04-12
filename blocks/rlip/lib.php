@@ -361,7 +361,7 @@ function rlip_time_string_to_offset($time_string) {
  */
 function rlip_get_scheduled_jobs($plugin, $userid = 0) {
     global $DB;
-    $taskname =  $DB->sql_concat("'ipjob_'", 'ipjob.id');
+    $taskname = $DB->sql_concat("'ipjob_'", 'ipjob.id');
     $params = array('plugin' => $plugin);
     $sql = "SELECT ipjob.*, usr.username, usr.firstname, usr.lastname,
                    usr.timezone, task.lastruntime, task.nextruntime

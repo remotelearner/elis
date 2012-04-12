@@ -332,7 +332,7 @@ class utilityMethodTest extends elis_database_test {
      * Validate that scheduled jobs are retrieved via API call
      */
     public function testGetScheduledJobs() {
-        global $CFG;
+        global $CFG, $DB;
 
         //create a user
         require_once($CFG->dirroot.'/user/lib.php');
@@ -355,7 +355,7 @@ class utilityMethodTest extends elis_database_test {
                       'type' => 'rlipexport',
                       'userid' => $userid);
         $starttime = time();
-        rlip_schedule_add_job($data);
+        $ipid = rlip_schedule_add_job($data);
         $endtime = time();
 
         //fetch jobs
