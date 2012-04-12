@@ -958,3 +958,27 @@ function rlip_get_maxruntime() {
     return $maxruntime;
 }
 
+/**
+ * Initialise the ELIS scheduled tasks system for us, only if scheduled tasks is present and setup on the system.
+ *
+ * @param none
+ * @return none
+ */
+function rlip_schedulding_init() {
+    global $CFG, $DB;
+
+    // Check whether the scheduled tasks table exists
+    $dbman = $DB->get_manager();
+    $table = new xmldb_table('elis_scheduled_tasks');
+    if (!$dbman->table_exists($table)) {
+        return;
+    }
+
+    // If we haven't setup a scheduled task for the block yet, do so now
+    if (!$DB->record_exists('elis_scheduled_tasks', array('plugin' => 'block_rlip'))) {
+        require_once($CFG->dirroot.'/elis/core/lib/tasklib.php');
+
+        // Add a cron task for the RLIP block
+        elis_tasks_update_definition('block_rlip');
+    }
+}
