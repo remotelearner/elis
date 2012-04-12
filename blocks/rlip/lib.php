@@ -681,17 +681,26 @@ function run_ipjob($taskname, $maxruntime = 0) {
 
 /**
  * Obtains the number of log records currently available for viewing
+ *
+ * @param string $extrasql  Any extra SQL conditions, like filters ...
+ * @param array  $params    Any required SQL parameters
+ * @uses  $DB
  */
-function rlip_count_logs() {
+function rlip_count_logs($extrasql = '', $params = array()) {
     global $DB;
+
+    if (!empty($extrasql)) {
+        $extrasql = " WHERE {$extrasql} ";
+    }
 
     //retrieve count
     $sql = "SELECT COUNT(*)
             FROM {".RLIP_LOG_TABLE."} log
             JOIN {user} user
               ON log.userid = user.id
+            {$extrasql}
             ORDER BY log.starttime DESC";
-    return $DB->count_records_sql($sql);
+    return $DB->count_records_sql($sql, $params);
 }
 
 /**

@@ -208,6 +208,7 @@ class version1CreateorupdateTest extends rlip_test {
             'course_categories' => 'moodle',
             'context' => 'moodle',
             'role' => 'moodle',
+            'role_capabilities' => 'moodle',
             'role_context_levels' => 'moodle',
             'role_assignments' => 'moodle',
             RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',

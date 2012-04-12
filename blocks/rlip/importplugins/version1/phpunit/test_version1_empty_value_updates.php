@@ -123,6 +123,7 @@ class version1EmptyValueUpdatesTest extends rlip_test {
             'context' => 'moodle',
             'config_plugins' => 'moodle',
             'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
             RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
             field_data_int::TABLE => 'elis_core',
             field_data_char::TABLE => 'elis_core',
@@ -169,7 +170,7 @@ class version1EmptyValueUpdatesTest extends rlip_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true);
+        $this->assertTrue($exists);
     }
 
     /**
@@ -326,11 +327,14 @@ class version1EmptyValueUpdatesTest extends rlip_test {
         $user->idnumber = 'rlipidnumber';
 
         $user->id = user_create_user($user);
+        set_config('siteguest', 99999);
 
         //create role
         $context = get_context_instance(CONTEXT_COURSE, $course->id);
         $roleid = create_role('rliprole', 'rliprole', 'rliprole');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
         //create an enrolment
         $data = array(array('entity' => 'enrolment',
