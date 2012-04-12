@@ -210,6 +210,7 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         $oldconfig = get_config('rlip');
         foreach ($oldconfig as $key => $val) {
             set_config($key, $val, 'block_rlip');
+            unset_config($key, 'rlip');
         }
 
         upgrade_block_savepoint(true, 2012041200, 'rlip');
