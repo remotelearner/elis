@@ -82,8 +82,14 @@ class ip_schedule_page extends elis_page {
     }
 
     function can_do_default() {
-        return has_capability('moodle/site:config',
-                              get_context_instance(CONTEXT_SYSTEM)); // TBD
+        if (has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
+            // Ensure that scheduling is setup correctly
+            rlip_schedulding_init();
+
+            return true;
+        }
+
+        return false;
     }
 
     function display_default() {
