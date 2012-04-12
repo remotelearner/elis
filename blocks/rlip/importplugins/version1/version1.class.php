@@ -457,7 +457,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //apply "createorupdate" flag, if necessary
-        if ($action == 'create' || $action == 'update') {
+        if ($action == 'create') {
             $action = $this->handle_user_createorupdate($record, $action);
         }
         $record->action = $action;
@@ -978,11 +978,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //apply "createorupdate" flag, if necessary
-        if ($action == 'create' || $action == 'update') {
+        if ($action == 'create') {
             $action = $this->handle_course_createorupdate($record, $action);
         }
-
         $record->action = $action;
+
         if (!$this->check_required_fields('course', $record, $filename)) {
             //missing a required field
             return false;

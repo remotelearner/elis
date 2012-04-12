@@ -355,8 +355,8 @@ class version1CreateorupdateTest extends rlip_test {
     }
 
     /**
-     * Validate that when the "create or update" flag is enabled, both create
-     * and update actions can create users
+     * Validate that when the "create or update" flag is enabled, create
+     * can create users
      */
     public function testVersion1CreateorupdateCreatesUser() {
         global $CFG, $DB;
@@ -388,11 +388,6 @@ class version1CreateorupdateTest extends rlip_test {
 
         //reset state
         $DB->delete_records('user');
-
-        //validate that updates are converted to creates
-        $import_data['action'] = 'update';
-        $this->run_core_user_import($import_data);
-        $this->assert_record_exists('user', $expected_data);
     }
 
     /**
@@ -487,16 +482,11 @@ class version1CreateorupdateTest extends rlip_test {
 
         //reset state
         $DB->delete_records('user');
-
-        //validate that updates are converted to creates with the mapping set
-        $import_data['customaction'] = 'update';
-        $this->run_core_user_import($import_data);
-        $this->assert_record_exists('user', $expected_data);
     }
 
     /**
-     * Validate that when the "create or update" flag is enabled, both create
-     * and update actions can create courses
+     * Validate that when the "create or update" flag is enabled, create
+     * can create courses
      */
     public function testVersion1CreateorupdateCreatesCourse() {
         global $DB;
@@ -520,11 +510,6 @@ class version1CreateorupdateTest extends rlip_test {
         $select = 'id != ?';
         $params = array(SITEID);
         $DB->delete_records_select('course', $select, $params);
-
-        //validate that updates are converted to creates
-        $import_data['action'] = 'update';
-        $this->run_core_course_import($import_data);
-        $this->assert_record_exists('course', $expected_data);
     }
 
     /**
@@ -593,11 +578,6 @@ class version1CreateorupdateTest extends rlip_test {
         $select = 'id != ?';
         $params = array(SITEID);
         $DB->delete_records_select('course', $select, $params);
-
-        //validate that updates are converted to creates with the mapping set
-        $import_data['customaction'] = 'update';
-        $this->run_core_course_import($import_data);
-        $this->assert_record_exists('course', $expected_data);
     }
 
     /**

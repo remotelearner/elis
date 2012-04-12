@@ -1106,21 +1106,9 @@ static function get_overlay_tables() {
         $this->create_mapping_record('user', 'city', 'customcity');
         $this->create_mapping_record('user', 'country', 'customcountry');
 
-        //create validation using update
-        $data = array('action' => 'update',
-                      'customusername' => '',
-                      'custompassword' => '',
-                      'customfirstname' => '',
-                      'customlastname' => '',
-                      'customemail' => '',
-                      'customcity' => '',
-                      'customcountry' => '');
-        $expected_error = "[user.csv line 2] User could not be created. Required fields customusername, custompassword, customfirstname, customlastname, customemail, customcity, customcountry are unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
-
-        //actually create using update
+        //create a user so it can be updated
         self::cleanup_log_files();
-        $data = array('action' => 'update',
+        $data = array('action' => 'create',
                       'customusername' => 'rlipusername',
                       'custompassword' => 'Rlippassword!0',
                       'customfirstname' => 'rlipfirstname',
@@ -1194,17 +1182,9 @@ static function get_overlay_tables() {
         //set up the site course record
         $this->create_contexts_and_site_course();
 
-        //create validation using update
-        $data = array('action' => 'update',
-                      'customshortname' => '',
-                      'customfullname' => '',
-                      'customcategory' => '');
-        $expected_error = "[course.csv line 2] Course could not be created. Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-
-        //actually create using update
+        //create a course so it can be updated
         self::cleanup_log_files();
-        $data = array('action' => 'update',
+        $data = array('action' => 'create',
                       'customshortname' => 'rlipshortname',
                       'customfullname' => 'rlipfullname',
                       'customcategory' => 'rlipcategory');
@@ -1218,14 +1198,6 @@ static function get_overlay_tables() {
                       'fullname' => $data['customfullname']);
         $data['category'] = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
         $this->assert_record_exists('course', $data);
-
-        //update validation using create
-        $data = array('action' => 'update',
-                      'customshortname' => '',
-                      'customfullname' => '',
-                      'customcategory' => '');
-        $expected_error = "[course.csv line 2] Course could not be created. Required fields customshortname, customfullname, customcategory are unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
 
         //actually update using create
         self::cleanup_log_files();
@@ -5078,7 +5050,7 @@ static function get_overlay_tables() {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'customguest' => '2');
 
         $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. customguest value of \"2\" is not one of the available options (0, 1).\n";
@@ -5168,7 +5140,7 @@ static function get_overlay_tables() {
         $data = array('action' => 'create',
                       'shortname' => 'rlipshortname',
                       'fullname' => 'rlipname',
-                      'category' => 'rlipcategory',        
+                      'category' => 'rlipcategory',
                       'link' => 'bogus');
         $expected_error = "[course.csv line 2] Course with shortname \"rlipshortname\" could not be created. Template course with shortname \"bogus\" could not be found.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
