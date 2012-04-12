@@ -2857,6 +2857,16 @@ static function get_overlay_tables() {
         //set up the exact data we need
         $data = array_merge($basedata, $data);
 
+        //add general message to expected log message
+        $pos = strrpos($message, ']');
+        $prefix = substr($message, 0, $pos + 2);
+        if (isset($data['customusername'])) {
+            $general_message = 'User with username "bogus" could not be assigned role with shortname "rlipshortname" on course "rlipshortname".';
+        } else {
+            $general_message = 'Role assignment could not be created.';
+        }
+        $suffix = substr($message, $pos + 1);
+        $message = $prefix.$general_message.$suffix;
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
@@ -2891,6 +2901,16 @@ static function get_overlay_tables() {
         //set up the exact data we need
         $data = array_merge($basedata, $data);
 
+        //add general message to expected log message
+        $pos = strrpos($message, ']');
+        $prefix = substr($message, 0, $pos + 2);
+        if (isset($data['customusername'])) {
+            $general_message = 'User with username "bogus" could not be assigned role with shortname "rlipshortname" on course "rlipshortname".';
+        } else {
+            $general_message = 'Role assignment could not be created.';
+        }
+        $suffix = substr($message, $pos + 1);
+        $message = $prefix.$general_message.$suffix;
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
@@ -2929,6 +2949,16 @@ static function get_overlay_tables() {
         //set up the exact data we need
         $data = array_merge($basedata, $data);
 
+        //add general message to expected log message
+        $pos = strrpos($message, ']');
+        $prefix = substr($message, 0, $pos + 2);
+        if (isset($data['customusername'])) {
+            $general_message = 'User with username "bogus" could not be assigned role with shortname "rlipshortname" on course category "rlipname".';
+        } else {
+            $general_message = 'Role assignment could not be created.';
+        }
+        $suffix = substr($message, $pos + 1);
+        $message = $prefix.$general_message.$suffix;
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
@@ -2963,6 +2993,16 @@ static function get_overlay_tables() {
         //set up the exact data we need
         $data = array_merge($basedata, $data);
 
+        //add general message to expected log message
+        $pos = strrpos($message, ']');
+        $prefix = substr($message, 0, $pos + 2);
+        if (isset($data['customusername'])) {
+            $general_message = 'User with username "bogus" could not be assigned role with shortname "rlipshortname" on user "rlipusername2".';
+        } else {
+            $general_message = 'Role assignment could not be created.';
+        }
+        $suffix = substr($message, $pos + 1);
+        $message = $prefix.$general_message.$suffix;
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
@@ -2976,7 +3016,7 @@ static function get_overlay_tables() {
      *
      * @dataProvider roleAssignmentInvalidUserProvider
      */
-    public function testVersion1ImportLogsInvalidUserOnSystemeRoleAssignmentCreate($data, $message) {
+    public function testVersion1ImportLogsInvalidUserOnSystemRoleAssignmentCreate($data, $message) {
         //set up dependencies
         $this->create_contexts_and_site_course();
         $context = get_context_instance(CONTEXT_SYSTEM);
@@ -2995,6 +3035,16 @@ static function get_overlay_tables() {
         //set up the exact data we need
         $data = array_merge($basedata, $data);
 
+        //add general message to expected log message
+        $pos = strrpos($message, ']');
+        $prefix = substr($message, 0, $pos + 2);
+        if (isset($data['customusername'])) {
+            $general_message = 'User with username "bogus" could not be assigned role with shortname "rlipshortname" on the system context.';
+        } else {
+            $general_message = 'Role assignment could not be created.';
+        }
+        $suffix = substr($message, $pos + 1);
+        $message = $prefix.$general_message.$suffix;
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
@@ -3130,7 +3180,7 @@ static function get_overlay_tables() {
                       'custominstance' => 'bogus',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] custominstance value of \"bogus\" does not refer to a valid instance of a {$displayname} context.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on {$displayname} \"bogus\". custominstance value of \"bogus\" does not refer to a valid instance of a {$displayname} context.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3744,6 +3794,16 @@ static function get_overlay_tables() {
         //set up the exact data we need
         $data = array_merge($basedata, $data);
 
+        //add general message to expected log message
+        $pos = strrpos($message, ']');
+        $prefix = substr($message, 0, $pos + 2);
+        if (isset($data['customusername'])) {
+            $general_message = 'User with username "bogus" could not be unassigned role with shortname "rlipshortname" on the system context.';
+        } else {
+            $general_message = 'Role assignment could not be deleted.';
+        }
+        $suffix = substr($message, $pos + 1);
+        $message = $prefix.$general_message.$suffix;
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
@@ -3873,7 +3933,7 @@ static function get_overlay_tables() {
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is not enroled in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is not enroled in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3904,7 +3964,7 @@ static function get_overlay_tables() {
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3934,7 +3994,7 @@ static function get_overlay_tables() {
                       'instance' => 'rlipname',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on course category \"rlipname\".\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on course category \"rlipname\". User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on course category \"rlipname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3962,7 +4022,7 @@ static function get_overlay_tables() {
                       'instance' => 'rlipusername2',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on user \"rlipusername2\".\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on user \"rlipusername2\". User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on user \"rlipusername2\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -4023,7 +4083,7 @@ static function get_overlay_tables() {
                       'context' => 'system',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on the system context.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on the system context. User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on the system context.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -4053,7 +4113,7 @@ static function get_overlay_tables() {
                       'custominstance' => 'bogus',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] custominstance value of \"bogus\" does not refer to a valid instance of a {$displayname} context.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on {$displayname} \"bogus\". custominstance value of \"bogus\" does not refer to a valid instance of a {$displayname} context.\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');

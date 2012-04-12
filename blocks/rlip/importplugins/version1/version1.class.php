@@ -1746,7 +1746,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             //log message
             $this->fslogger->log_failure("{$user_descriptor} {$does_token} not refer to a valid user.",
-                                         0, $filename, $this->linenumber);
+                                         0, $filename, $this->linenumber, $record, 'roleassignment');
             return false;
         }
 
@@ -1772,7 +1772,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['instance'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->instance}\" does not refer ".
                                              "to a valid instance of a course context.",
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, 'roleassignment');
                 return false;
             }
 
@@ -1803,7 +1803,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['instance'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->instance}\" does not refer ".
                                              "to a valid instance of a course category context.",
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, 'roleassignment');
                 return false;
             }
 
@@ -1819,7 +1819,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['instance'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->instance}\" does not refer ".
                                              "to a valid instance of a user context.",
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, 'roleassignment');
                 return false;
             }
 
@@ -2169,12 +2169,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             if (!in_array($roleid, $studentroleids)) {
                 //nothing to delete
-                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, 'roleassignment');
                 return false;
             } else if (!$enrolment_exists) {
                 $message .= " User with {$user_descriptor} is not enroled in ".
                             "course with shortname \"{$record->instance}\".";
-                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, 'roleassignment');
                 return false;
             }
         }
