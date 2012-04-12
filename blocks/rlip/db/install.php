@@ -1,9 +1,8 @@
 <?php
 
+require_once(dirname(__FILE__).'/../lib.php');
+
 function xmldb_block_rlip_install() {
-
-    // Add a cron task for log rollover
-    elis_tasks_update_definition('block_rlip');
-
+    // Ensure that scheduling is setup correctly
+    rlip_schedulding_init();
 }
-
