@@ -35,7 +35,7 @@ require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
 
 $filename = basename(__FILE__);
-$disabledincron = get_config('rlip', 'disableincron');
+$disabledincron = get_config('block_rlip', 'disableincron');
 if (empty($disabledincron)) {
     exit(0);
 }

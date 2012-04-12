@@ -588,7 +588,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
     global $CFG, $DB;
 
     $fcnname = "run_ipjob({$taskname}, {$maxruntime})";
-    $disabledincron = get_config('rlip', 'disableincron');
+    $disabledincron = get_config('block_rlip', 'disableincron');
 
     if (empty($maxruntime)) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;

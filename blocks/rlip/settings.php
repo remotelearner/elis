@@ -8,11 +8,11 @@ require_once($CFG->dirroot . '/blocks/rlip/lib.php');
 rlip_admintree_setup($ADMIN);
 
 //start of "scheduling" section
-$settings->add(new admin_setting_heading('rlip/scheduling',
+$settings->add(new admin_setting_heading('block_rlip/scheduling',
                                          get_string('rlip_global_scheduling', 'block_rlip'),
                                          ''));
 
 //setting for disabling in Moodle cron
-$settings->add(new admin_setting_configcheckbox('rlip/disableincron',
+$settings->add(new admin_setting_configcheckbox('block_rlip/disableincron',
                                                 get_string('disableincron', 'block_rlip'),
                                                 get_string('configdisableincron', 'block_rlip'), ''));

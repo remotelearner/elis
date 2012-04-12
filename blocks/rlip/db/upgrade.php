@@ -205,5 +205,15 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         upgrade_block_savepoint(true, 2012040900, 'rlip');
     }
 
+    if ($result && $oldversion < 2012041200) {
+        // ELIS-5125: Convert old 'rlip' config setting(s) to 'block_rlip'
+        $oldconfig = get_config('rlip');
+        foreach ($oldconfig as $key => $val) {
+            set_config($key, $val, 'block_rlip');
+        }
+
+        upgrade_block_savepoint(true, 2012041200, 'rlip');
+    }
+
     return $result;
 }

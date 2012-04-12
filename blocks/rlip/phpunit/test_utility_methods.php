@@ -487,7 +487,7 @@ class utilityMethodTest extends elis_database_test {
         set_config('export_file', $filename, 'rlipexport_version1');
 
         //enable external cron
-        set_config('disableincron', 1, 'rlip');
+        set_config('disableincron', 1, 'block_rlip');
 
         //set up the tasks
         $data = array('plugin' => 'rlipexport_version1',
@@ -536,7 +536,7 @@ class utilityMethodTest extends elis_database_test {
         set_config('logfilelocation', $filepath, 'rlipexport_version1');
 
         //enable internal cron
-        set_config('disableincron', 0, 'rlip');
+        set_config('disableincron', 0, 'block_rlip');
 
         //nonincremental export
         set_config('nonincremental', 1, 'rlipexport_version1');
