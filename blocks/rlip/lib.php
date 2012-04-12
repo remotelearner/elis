@@ -761,6 +761,7 @@ function rlip_get_log_table($logs) {
                          get_string('logfilesuccesses', 'block_rlip'),
                          get_string('logfilefailures', 'block_rlip'),
                          get_string('logstatus', 'block_rlip'),
+                         get_string('logentitytype', 'block_rlip'),
                          get_string('logdownload', 'block_rlip'));
 
     $table->data = array();
@@ -775,10 +776,14 @@ function rlip_get_log_table($logs) {
             $plugintype = get_string('export', 'block_rlip');
             //can't have failures in export files
             $filefailures = get_string('na', 'block_rlip');
+
+            $entitytype = get_string('na', 'block_rlip');
         } else {
             $plugintype = get_string('import', 'block_rlip');
             //use tracked number of failures for display
             $filefailures = $log->filefailures;
+
+            $entitytype = $log->entitytype;
         }
 
         if ($log->targetstarttime == 0) {
@@ -805,6 +810,7 @@ function rlip_get_log_table($logs) {
                                $log->filesuccesses,
                                $filefailures,
                                $log->statusmessage,
+                               $entitytype,
                                $link);
     }
 

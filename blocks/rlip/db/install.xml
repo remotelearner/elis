@@ -20,7 +20,8 @@
         <FIELD NAME="statusmessage" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" COMMENT="Success / failure status message" PREVIOUS="storedfailures" NEXT="dbops"/>
         <FIELD NAME="dbops" TYPE="int" NOTNULL="true" LENGTH="10" UNSIGNED="false" DEFAULT="-1" SEQUENCE="false" COMMENT="The number of database operations used" PREVIOUS="statusmessage" NEXT="unmetdependency"/>
         <FIELD NAME="unmetdependency" TYPE="int" NOTNULL="true" LENGTH="10" UNSIGNED="true" SEQUENCE="false" DEFAULT="0" COMMENT="Flag to indicate that the record failed due to an unmet dependency" PREVIOUS="dbops" NEXT="logpath"/>
-        <FIELD NAME="logpath" TYPE="text" NOTNULL="false" LENGTH="medium" SEQUENCE="false" COMMENT="Path to the log file for download" PREVIOUS="unmetdependency"/>
+        <FIELD NAME="logpath" TYPE="text" NOTNULL="false" LENGTH="medium" SEQUENCE="false" COMMENT="Path to the log file for download" PREVIOUS="unmetdependency" NEXT="entitytype"/>
+        <FIELD NAME="entitytype" TYPE="text" NOTNULL="false" LENGTH="small" SEQUENCE="false" COMMENT="The entity type imported" PREVIOUS="logpath"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

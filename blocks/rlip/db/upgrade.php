@@ -216,5 +216,14 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         upgrade_block_savepoint(true, 2012041200, 'rlip');
     }
 
+    if ($result && $oldversion < 2012041201) {
+        $table = new xmldb_table('block_rlip_summary_logs');
+
+        $field = new xmldb_field('entitytype', XMLDB_TYPE_TEXT, 'small', null, null);
+        $dbman->add_field($table, $field);
+
+        upgrade_block_savepoint(true, 2012041201, 'rlip');
+    }
+
     return $result;
 }

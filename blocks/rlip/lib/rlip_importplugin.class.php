@@ -634,9 +634,12 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
         //set up fslogger with this starttime for this entity
         $this->fslogger = $this->provider->get_fslogger($this->dblogger->plugin, $entity, $this->manual, $starttime);
+
         if (method_exists($this->provider, 'get_file_name')) {
             $this->dblogger->set_log_path($filename);
         }
+
+        $this->dblogger->set_entity_type($entity);
 
         $this->header_read_hook($entity, $header, $fileplugin->get_filename());
 

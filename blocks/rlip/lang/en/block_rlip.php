@@ -46,6 +46,7 @@ $string['log'] = 'Log';
 $string['logdownload'] = 'Download';
 $string['logs'] = 'Integration Point logs';
 $string['logend'] = 'End time';
+$string['logentitytype'] = 'Entity Type';
 $string['logexecution'] = 'Execution';
 $string['logfilefailures'] = 'Records with error';
 $string['logfilesuccesses'] = 'Records successfully processed';
