@@ -6280,6 +6280,11 @@ static function get_overlay_tables() {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->libdir .'/filestorage/zip_archive.php');
+
+        // clean-up any existing log & zip files
+        self::cleanup_log_files();
+        self::cleanup_zip_files();
 
         $filepath = $CFG->dataroot;
         //set logfilelocation for import and export plugins
@@ -6290,29 +6295,43 @@ static function get_overlay_tables() {
         $plugin = 'rlipimport_version1';
         $format = get_string('logfile_timestamp','block_rlip');
 
-        // create a log file to be zipped by the cron job
-        $starttime = time()-86500; //yesterday
-        $filename = rlip_log_file_name($plugin_type,$plugin, $filepath, 'user', false, $starttime);
-
-        //write out a line to the logfile
-        $logfile = new rlip_fileplugin_log($filename);
-        $logfile->open(RLIP_FILE_WRITE);
-        $logfile->write(array('test entry'));
+        // create some log files to be zipped by the cron job
+        $starttime = time() - DAYSECS - 100; // earlier yesterday
+        $filenames = array();
+        for ($i = 0; $i < 10; ++$i) {
+            $filenames[$i] = rlip_log_file_name($plugin_type, $plugin, $filepath, 'user',
+                                           false, $starttime + $i);
+            //write out a line to the logfile
+            $logfile = new rlip_fileplugin_log($filenames[$i]);
+            $logfile->open(RLIP_FILE_WRITE);
+            $logfile->write(array('test entry'));
+            $logfile->close();
+        }
 
         //call cron job that zips the previous day's log files
-        rlip_compress_logs_cron();
+        $zipfiles = rlip_compress_logs_cron();
+        $this->assertTrue(!empty($zipfiles));
 
         //was a zip file created?
-        $format = get_string('logfiledaily_timestamp','block_rlip');
-        $compressed_file = $filepath.'/'.$plugin_type.'_'.$plugin.'_'.userdate($starttime, $format).'.zip';
-
         //verify that the compressed file exists
-        $exists = file_exists($compressed_file);
-        $this->assertEquals($exists, true);
+        $exists = file_exists($zipfiles[0]);
+        $this->assertTrue($exists);
 
-        //verify that the log file created is gone...
-        $exists = file_exists($filename);
-        $this->assertEquals($exists, false);
+        //open zip_archive and verify all logs included
+        $zip = new zip_archive();
+        $result = $zip->open($zipfiles[0]);
+        $this->assertTrue($result);
+        $this->assertEquals(10, $zip->count());
+        $zip->close();
+
+        //verify that the log files created are gone...
+        for ($i = 0; $i < 10; ++$i) {
+            $exists = file_exists($filenames[$i]);
+            $this->assertFalse($exists);
+        }
+
+        // delete the test zip
+        @unlink($zipfiles[0]);
     }
 
 }

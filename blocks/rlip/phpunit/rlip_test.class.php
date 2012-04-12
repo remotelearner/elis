@@ -31,15 +31,18 @@ require_once(elis::lib('testlib.php'));
  */
 abstract class rlip_test extends elis_database_test {
     static $existing_logfiles = array();
+    static $existing_zipfiles = array();
 
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();
         static::get_logfilelocation_files();
+        static::get_zip_files();
     }
 
     public static function tearDownAfterClass() {
         parent::tearDownAfterClass();
         static::cleanup_log_files();
+        static::cleanup_zip_files();
     }
 
     protected function setUp() {
@@ -49,6 +52,7 @@ abstract class rlip_test extends elis_database_test {
         set_config('logfilelocation', $CFG->dataroot, 'rlipimport_version1');
         set_config('logfilelocation', $CFG->dataroot, 'rlipexport_version1');
     }
+
     /**
      * Cleans up log files created whenever an import runs
      */
@@ -58,11 +62,7 @@ abstract class rlip_test extends elis_database_test {
         $filepath = $CFG->dataroot;
         //remove all previous log files - assuming manual
         foreach(glob("$filepath/*.log") as $file) {
-            if (is_array(self::$existing_logfiles)) {
-                if (!in_array($file, self::$existing_logfiles)) {
-                    unlink($file);
-                }
-            } else {
+            if (!in_array($file, self::$existing_logfiles)) {
                 unlink($file);
             }
         }
@@ -80,6 +80,36 @@ abstract class rlip_test extends elis_database_test {
         //remove all previous log files - assuming manual
         foreach(glob("$filepath/*.log") as $file) {
             self::$existing_logfiles[] = $file;
+        }
+    }
+
+    /**
+     * Cleans up zip files created whenever an import runs
+     */
+    public static function cleanup_zip_files() {
+        global $CFG;
+        //set the zip file location
+        $filepath = $CFG->dataroot;
+        //remove all previous log files - assuming manual
+        foreach(glob("$filepath/*.zip") as $file) {
+            if (!in_array($file, self::$existing_zipfiles)) {
+                unlink($file);
+            }
+        }
+    }
+
+    /**
+     * Gets a list of zip files to not delete
+     */
+    public static function get_zip_files() {
+        global $CFG;
+        //set the log file location
+        $filepath = $CFG->dataroot;
+
+        self::$existing_zipfiles = array();
+        //remove all previous log files - assuming manual
+        foreach(glob("$filepath/*.zip") as $file) {
+            self::$existing_zipfiles[] = $file;
         }
     }
 
