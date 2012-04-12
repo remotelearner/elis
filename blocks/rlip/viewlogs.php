@@ -44,15 +44,16 @@ admin_externalpage_setup('rliplogs');
 $PAGE->requires->css('/blocks/rlip/styles.css');
 echo $OUTPUT->header();
 
-//top paging bar
-$numrecords = rlip_count_logs();
-echo $OUTPUT->paging_bar($numrecords, $page, RLIP_LOGS_PER_PAGE, $baseurl);
-
 //filters
 $filtering = new rlip_log_filtering();
+list($extrasql, $params) = $filtering->get_sql_filter();
+
+//top paging bar
+$numrecords = rlip_count_logs($extrasql, $params);
+echo $OUTPUT->paging_bar($numrecords, $page, RLIP_LOGS_PER_PAGE, $baseurl);
+
 $filtering->display_add();
 $filtering->display_active();
-list($extrasql, $params) = $filtering->get_sql_filter();
 
 //display main table
 $logs = rlip_get_logs($extrasql, $params, $page);

@@ -890,4 +890,55 @@ class utilityMethodTest extends elis_database_test {
         $this->assertTrue(is_int($mrt));
         $this->assertGreaterThanOrEqual(RLIP_MAXRUNTIME_MIN, $mrt);
     }
+
+    /**
+     * Validate that the library function rlip_count_logs()
+     * returns properly filtered log entries
+     */
+    function test_rlip_count_logs() {
+        global $CFG, $DB, $USER;
+
+        $this->create_test_user();
+        $USER = $DB->get_record('user', array('id' => 1));
+
+        $logrec = new stdClass;
+        $logrec->userid = $USER->id;
+        $logrec->targetstarttime = 1;
+        $logrec->starttime = time() - 60;
+        $logrec->endtime = time();
+        $logrec->filesuccesses = 42;
+        $logrec->filefailures = 0;
+        $logrec->storedsuccesses = 0;
+        $logrec->storedfailures = 0;
+        $logrec->statusmessage = 'Success!';
+        $logrec->dbops = 1;
+        $logrec->unmetdependency = 0;
+        $logrec->logfilepath = $CFG->dataroot;
+        $logrec->export = 1;
+        $logrec->plugin = 'rlipexport_version1';
+        // input < 1 page of export log entries
+        for ($i = 0; $i < RLIP_LOGS_PER_PAGE - 2; ++$i) {
+            $DB->insert_record(RLIP_LOG_TABLE, $logrec);
+        }
+
+        $logrec->export = 0;
+        $logrec->plugin = 'rlipimport_version1';
+        // input > 2 pages of import log entries
+        for ($i = 0; $i <= 2 * RLIP_LOGS_PER_PAGE; ++$i) {
+            $DB->insert_record(RLIP_LOG_TABLE, $logrec);
+        }
+
+        //$recs = $DB->get_records(RLIP_LOG_TABLE);
+        //var_dump($recs);
+
+        // count total log entires
+        $count = rlip_count_logs();
+        //echo "test_rlip_count_logs(): totalcount = {$count}";
+        $this->assertGreaterThanOrEqual(3 * RLIP_LOGS_PER_PAGE - 2, $count);
+
+        // count filtered log entires
+        $count = rlip_count_logs('export = ?', array(1));
+        $this->assertLessThanOrEqual(RLIP_LOGS_PER_PAGE, $count);
+    }
+
 }
