@@ -531,6 +531,10 @@ class utilityMethodTest extends elis_database_test {
     function testRunningJobsResetsStateWhenTimeExceeded() {
         global $CFG, $DB;
 
+        //set the log file location to the dataroot
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipexport_version1');
+
         //enable internal cron
         set_config('disableincron', 0, 'rlip');
 
