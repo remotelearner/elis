@@ -47,7 +47,11 @@ class utilityMethodTest extends elis_database_test {
                      'config_plugins' => 'moodle',
                      RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
-                     'config' => 'moodle');
+                     'config' => 'moodle',
+                     'grade_grades' => 'moodle',
+                     'grade_items' => 'moodle',
+                     'course' => 'moodle',
+                     'course_categories' => 'moodle');
     }
 
     /**
@@ -64,6 +68,19 @@ class utilityMethodTest extends elis_database_test {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('user', dirname(__FILE__).'/user.csv');
         load_phpunit_data_set($dataset, true);
+    }
+
+    /**
+     * Load in our test data from CSV files
+     */
+    protected function load_export_csv_data() {
+	    $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+	    $dataset->addTable('grade_items', dirname(__FILE__).'/../exportplugins/version1/phpunit/phpunit_gradeitems.csv');
+	    $dataset->addTable('grade_grades', dirname(__FILE__).'/../exportplugins/version1/phpunit/phpunit_gradegrades.csv');
+	    $dataset->addTable('user', dirname(__FILE__).'/../exportplugins/version1/phpunit/phpunit_user.csv');
+	    $dataset->addTable('course', dirname(__FILE__).'/../exportplugins/version1/phpunit/phpunit_course.csv');
+	    $dataset->addTable('course_categories', dirname(__FILE__).'/../exportplugins/version1/phpunit/phpunit_course_categories.csv');
+        load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
     /**
@@ -322,18 +339,24 @@ class utilityMethodTest extends elis_database_test {
 
         $user = new stdClass;
         $user->username = 'rlipusername';
+        $user->firstname = 'rlipfirstname';
+        $user->lastname = 'rliplastname';
         $user->mnethostid = $CFG->mnet_localhost_id;
         $user->email = 'rlipuser@rlipdomain.com';
         $user->password = 'Rlippassword!1234';
+        $user->timezone = -5.0;
 
-        return user_create_user($user);
+        $userid = user_create_user($user);
 
         //create a scheduled job
         $data = array('plugin' => 'rlipexport_version1',
                       'period' => '5m',
                       'label' => 'bogus',
-                      'type' => 'rlipexport');
+                      'type' => 'rlipexport',
+                      'userid' => $userid);
+        $starttime = time();
         rlip_schedule_add_job($data);
+        $endtime = time();
 
         //fetch jobs
         $recordset = rlip_get_scheduled_jobs($data['plugin']);
@@ -342,10 +365,63 @@ class utilityMethodTest extends elis_database_test {
         $this->assertTrue($recordset->valid());
         
         $current = $recordset->current();
+        //ip schedule fields
         $this->assertEquals($current->plugin, $data['plugin']);
-        $this->assertEquals($current->period, $data['period']);
-        $this->assertEquals($current->label, $data['label']);
-        $this->assertEquals($current->type, $data['type']);
+        //user fields
+        $this->assertEquals($current->username, $user->username);
+        $this->assertEquals($current->firstname, $user->firstname);
+        $this->assertEquals($current->lastname, $user->lastname);
+        $this->assertEquals($current->timezone, $user->timezone);
+        $this->assertEquals($current->lastruntime, 0);
+        //elis scheduled task field
+        $this->assertGreaterThanOrEqual($starttime + 5 * MINSECS, (int)$current->nextruntime);
+        $this->assertGreaterThanOrEqual((int)$current->nextruntime, $endtime + 5 * MINSECS);
+    }
+
+    /**
+     * Validate that IP correctly updates last runtime values
+     */
+    public function testRunningJobSetsIPLastRuntime() {
+        global $CFG, $DB;
+
+        //set up the export file path
+        $filename = $CFG->dataroot.'/rliptestexport.csv';
+        set_config('export_file', $filename, 'rlipexport_version1');
+
+        set_config('disableincron', 0, 'block_rlip');
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //change the last runtime to a value that is out of range on both records
+        $task = new stdClass;
+        $task->id = $taskid;
+        //this is the value that will be transferred onto the job record after the run
+        $task->lastruntime = 1000000000;
+        $task->nextruntime = 0;
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        $job = new stdClass;
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->lastruntime = 0;
+        $job->nextruntime = 0;
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
+
+        //run the job
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname);;
+
+        //obtain both records
+        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
+        list($name, $jobid) = explode('_', $task->taskname);
+        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $jobid));
+
+        //validate that the value was obtained from the elis scheduled task
+        $this->assertEquals($job->lastruntime, 1000000000);
     }
 
     /**
@@ -358,6 +434,8 @@ class utilityMethodTest extends elis_database_test {
         //set up the export file path
         $filename = $CFG->dataroot.'/rliptestexport.csv';
         set_config('export_file', $filename, 'rlipexport_version1');
+
+        set_config('disableincron', 0, 'block_rlip');
 
         //create a scheduled job
         $data = array('plugin' => 'rlipexport_version1',
@@ -394,6 +472,115 @@ class utilityMethodTest extends elis_database_test {
         $this->assertGreaterThanOrEqual((int)$task->nextruntime, $starttime + 6 * MINSECS);
 
         //make sure both records have the same next run time
+        $this->assertEquals((int)$task->nextruntime, (int)$job->nextruntime);
+    }
+
+    /**
+     * Validate that failed run due to disabled cron correctly resets
+     * scheduling times
+     */
+    function testRunningJobsFixesELISScheduledTaskWhenExternalCronEnabled() {
+        global $CFG, $DB;
+
+        //set up the export file path
+        $filename = $CFG->dataroot.'/rliptestexport.csv';
+        set_config('export_file', $filename, 'rlipexport_version1');
+
+        //enable external cron
+        set_config('disableincron', 1, 'rlip');
+
+        //set up the tasks
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //set both tasks' times to known states
+        $task = new stdClass;
+        $task->id = $taskid;
+        $task->lastruntime = 0;
+        $task->nextruntime = 0;
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        $job = new stdClass;
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->lastruntime = 1000000000;
+        $job->nextruntime = 1000000001;
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
+
+        //run the job
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname);
+
+        //obtain both records
+        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
+        list($name, $jobid) = explode('_', $task->taskname);
+        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $jobid));
+
+        //validate all times
+        $this->assertEquals((int)$task->lastruntime, 1000000000);
+        $this->assertEquals((int)$task->nextruntime, 1000000001);
+        $this->assertEquals((int)$task->lastruntime, (int)$job->lastruntime);
+        $this->assertEquals((int)$task->nextruntime, (int)$job->nextruntime);
+    }
+
+    /**
+     * Validate that running out of time correctly resets scheduling times
+     */
+    function testRunningJobsResetsStateWhenTimeExceeded() {
+        global $CFG, $DB;
+
+        //set the log file location to the dataroot
+        $filepath = $CFG->dataroot;
+        set_config('logfilelocation', $filepath, 'rlipexport_version1');
+
+        //enable internal cron
+        set_config('disableincron', 0, 'rlip');
+
+        //nonincremental export
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
+        //load in data needed for export
+        $this->load_export_csv_data();
+
+        //set up the export file path
+        $filename = $CFG->dataroot.'/rliptestexport.csv';
+        set_config('export_file', $filename, 'rlipexport_version1');
+
+        //set up the tasks
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //set both tasks' times to known states
+        $task = new stdClass;
+        $task->id = $taskid;
+        $task->lastruntime = 0;
+        $task->nextruntime = 0;
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        $job = new stdClass;
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->lastruntime = 1000000000;
+        $job->nextruntime = 1000000001;
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
+
+        //run the job with an impossibly small time limit
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname, -1);
+
+        //obtain job record
+        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
+        list($name, $jobid) = explode('_', $task->taskname);
+        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $jobid));
+
+        //validate all times
+        $this->assertEquals((int)$task->lastruntime, 1000000000);
+        $this->assertEquals((int)$task->nextruntime, 1000000001);
+        $this->assertEquals((int)$task->lastruntime, (int)$job->lastruntime);
         $this->assertEquals((int)$task->nextruntime, (int)$job->nextruntime);
     }
 

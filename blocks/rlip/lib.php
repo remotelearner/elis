@@ -590,7 +590,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
     $fcnname = "run_ipjob({$taskname}, {$maxruntime})";
     $disabledincron = get_config('rlip', 'disableincron');
 
-    if (empty($maxruntme)) {
+    if (empty($maxruntime)) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;
     }
 

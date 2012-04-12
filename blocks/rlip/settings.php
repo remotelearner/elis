@@ -2,6 +2,8 @@
 
 require_once($CFG->dirroot . '/blocks/rlip/lib.php');
 
+//todo: convert setting to be part of block_rlip rather than rlip
+
 //add all IP-related entities to the standard Moodle admin tree
 rlip_admintree_setup($ADMIN);
 
@@ -11,7 +13,6 @@ $settings->add(new admin_setting_heading('rlip/scheduling',
                                          ''));
 
 //setting for disabling in Moodle cron
-//todo: actually use this setting's value somewhere
 $settings->add(new admin_setting_configcheckbox('rlip/disableincron',
                                                 get_string('disableincron', 'block_rlip'),
                                                 get_string('configdisableincron', 'block_rlip'), ''));
