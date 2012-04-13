@@ -379,6 +379,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * Calculates a string that specifies which fields can be used to identify
      * a user record based on the import record provided
      *
+     * Can be called statically if $value_syntax is false
+     *
      * @param object $record
      * @param boolean $value_syntax true if we want to use "field" value of
      *                              "value" syntax, otherwise use field "value"
@@ -420,7 +422,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @param object $record The object specifying the context and instance
      * @return string The descriptive string
      */
-    function get_context_descriptor($record) {
+    static function get_context_descriptor($record) {
         if ($record->context == 'system') {
             //no instance for the system context
             $context_descriptor = 'the system context';

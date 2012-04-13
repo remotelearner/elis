@@ -286,6 +286,10 @@ class rlip_import_version1_fslogger extends rlip_fslogger {
      * @param string $type Type of import
     */
     function general_validation_message($record, $message, $type) {
+        //need the plugin class for some utility functions
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
+
         // "action" is not always provided. In that case, return only the specific message
         if (empty($record->action)) {
             return $message;
@@ -294,23 +298,32 @@ class rlip_import_version1_fslogger extends rlip_fslogger {
         $msg = "";
 
         if ($type == "enrolment") {
-            $missing_required_field = empty($record->username) || empty($record->instance);
+            //determine if a user identifier was set
+            $user_identifier_set = !empty($record->username) || !empty($record->email) || !empty($record->idnumber);
+            //determine if some required field is missing
+            $missing_required_field = !$user_identifier_set || empty($record->instance);
+
+            //descriptive string for user
+            $user_descriptor = rlip_importplugin_version1::get_user_descriptor($record);
 
             switch ($record->action) {
                 case "create":
-                    // If the field data is not provided, provide the least general message
                     if ($missing_required_field) {
+                        //required field missing, so use generic failure message
                         $msg = "Enrolment could not be created. " . $message;
                     } else {
-                        $msg = "User with username \"{$record->username}\" could not be enroled in ".
+                        //more accurate failure message
+                        $msg = "User with {$user_descriptor} could not be enroled in ".
                                "course with shortname \"{$record->instance}\". " . $message;
                     }
                     break;
                 case "delete":
                     if ($missing_required_field) {
+                        //required field missing, so use generic failure message
                         $msg = "Enrolment could not be deleted. " . $message;
                     } else {
-                        $msg = "User with username \"{$record->username}\" could not be unenroled ".
+                        //more accurate failure message
+                        $msg = "User with {$user_descriptor} could not be unenroled ".
                                "in course with shortname \"{$record->instance}\". " . $message;
                     }
                     break;
@@ -335,37 +348,43 @@ class rlip_import_version1_fslogger extends rlip_fslogger {
         }
 
         if ($type == "roleassignment") {
-            $required_fields_set = !empty($record->role) && !empty($record->username) && !empty($record->context);
+            //determine if a user identifier was set
+            $user_identifier_set = !empty($record->username) || !empty($record->email) || !empty($record->idnumber);
+            //determine if all required fields were set            
+            $required_fields_set = !empty($record->role) && $user_identifier_set && !empty($record->context);
+            //list of contexts at which role assignments are allowed for specific instances
             $valid_contexts = array('coursecat', 'course', 'user');
+
+            //descriptive string for user and context
+            $user_descriptor = rlip_importplugin_version1::get_user_descriptor($record);
+            $context_descriptor = rlip_importplugin_version1::get_context_descriptor($record);
 
             switch ($record->action) {
                 case "create":
                     if ($required_fields_set && in_array($record->context, $valid_contexts) && !empty($record->instance)) {
-                        $context = $record->context;
-                        if ($context == 'coursecat') {
-                            $context = 'course category';
-                        }
-                        $msg = "User with username \"{$record->username}\" could not be assigned role ".
-                               "with shortname \"{$record->role}\" on {$context} \"$record->instance\". " . $message;
+                        //assignment on a specific context
+                        $msg = "User with {$user_descriptor} could not be assigned role ".
+                               "with shortname \"{$record->role}\" on {$context_descriptor}. " . $message;
                     } else if ($required_fields_set && $record->context == 'system') {
-                        $msg = "User with username \"{$record->username}\" could not be assigned role ".
+                        //assignment on the system context
+                        $msg = "User with {$user_descriptor} could not be assigned role ".
                                "with shortname \"{$record->role}\" on the system context. " . $message;
                     } else {
+                        //not valid
                         $msg = "Role assignment could not be created. " . $message;
                     }
                     break;
                 case "delete":
                     if ($required_fields_set && in_array($record->context, $valid_contexts) && !empty($record->instance)) {
-                        $context = $record->context;
-                        if ($context == 'coursecat') {
-                            $context = 'course category';
-                        }
-                        $msg = "User with username \"{$record->username}\" could not be unassigned role ".
-                               "with shortname \"{$record->role}\" on {$context} \"$record->instance\". " . $message;                        
+                        //unassignment from a specific context
+                        $msg = "User with {$user_descriptor} could not be unassigned role ".
+                               "with shortname \"{$record->role}\" on {$context_descriptor}. " . $message;                        
                     } else if ($required_fields_set && $record->context == 'system') {
-                        $msg = "User with username \"{$record->username}\" could not be unassigned role ".
+                        //unassignment from the system context
+                        $msg = "User with {$user_descriptor} could not be unassigned role ".
                                "with shortname \"{$record->role}\" on the system context. " . $message;
                     } else {
+                        //not valid
                         $msg = "Role assignment could not be deleted. " . $message;
                     }
                     break;
