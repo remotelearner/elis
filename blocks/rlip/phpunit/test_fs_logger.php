@@ -158,7 +158,7 @@ class fsLoggerTest extends elis_database_test {
         $fileplugin = rlip_fileplugin_factory::factory($CFG->dataroot.'/rliptest', NULL, true);
 
         //set up the logging object
-        $fslogger = rlip_fslogger_factory::factory($fileplugin, $manual);
+        $fslogger = rlip_fslogger_factory::factory('bogus_plugin', $fileplugin, $manual);
 
         return array($fslogger, $filename);
     }
@@ -677,7 +677,7 @@ class fsLoggerTest extends elis_database_test {
         $fileplugin = new rlip_fileplugin_trackopen();
 
         //set up the logging object
-        $fslogger = rlip_fslogger_factory::factory($fileplugin);
+        $fslogger = rlip_fslogger_factory::factory('bogus_plugin', $fileplugin);
 
         //write a line
         $fslogger->log_success('Teststring', 1000000000);

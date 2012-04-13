@@ -2441,4 +2441,17 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         return true;
     }
+
+    /**
+     * Obtain the file-system logger for this plugin
+     *
+     * @param object $fileplugin The file plugin used for IO in the logger
+     * @param boolean $manual True on a manual run, false on a scheduled run
+     * @return object The appropriate logging object
+     */
+    static function get_fs_logger($fileplugin, $manual) {
+        require_once(dirname(__FILE__).'/rlip_import_version1_fslogger.class.php');
+
+        return new rlip_import_version1_fslogger($fileplugin, $manual);
+    }
 }

@@ -108,7 +108,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
         $filename = rlip_log_file_name('export', $this->plugin, $filepath, '', $manual, $this->dblogger->starttime);
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true, $manual);
-            $this->fslogger = rlip_fslogger_factory::factory($fileplugin, $this->manual);
+            $this->fslogger = rlip_fslogger_factory::factory($this->plugin, $fileplugin, $this->manual);
         }
 
         $this->dblogger->set_plugin($this->plugin);

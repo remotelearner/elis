@@ -73,7 +73,7 @@ abstract class rlip_importprovider {
         $filename = rlip_log_file_name('import', $plugin, $filepath, $entity, $manual, $starttime);
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
-            return rlip_fslogger_factory::factory($fileplugin, $manual);
+            return rlip_fslogger_factory::factory($plugin, $fileplugin, $manual);
         }
         return null;
     }

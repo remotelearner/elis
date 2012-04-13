@@ -67,6 +67,20 @@ abstract class rlip_dataplugin {
     function admintree_setup(&$adminroot, $parentname) {
         //by default, do nothing
     }
+
+    /**
+     * Obtain the file-system logger for this plugin
+     *
+     * @param object $fileplugin The file plugin used for IO in the logger
+     * @param boolean $manual True on a manual run, false on a scheduled run
+     * @return object The appropriate logging object
+     */
+    static function get_fs_logger($fileplugin, $manual) {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+
+        return new rlip_fslogger_linebased($fileplugin, $manual);
+    }
 }
 
 /**
