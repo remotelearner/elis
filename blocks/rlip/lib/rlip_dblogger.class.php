@@ -70,6 +70,9 @@ abstract class rlip_dblogger {
     //path of the log file
     var $logpath = NULL;
 
+    //the type of entity
+    var $entitytype = NULL;
+
     /**
      * DB logger constructor
      *
@@ -134,6 +137,22 @@ abstract class rlip_dblogger {
      */
     function get_log_path($logpath) {
         return $this->logpath;
+    }
+
+    /**
+     * Set the entity type
+     * @param string the entity type
+     */
+    function set_entity_type($entitytype) {
+        $this->entitytype = $entitytype;
+    }
+
+    /**
+     * Get the entity type
+     * @return the entity type
+     */
+    function get_entity_type($logpath) {
+        return $this->entitytype;
     }
 
     /**
@@ -229,6 +248,7 @@ abstract class rlip_dblogger {
         $record->maxruntimeexceeded = $this->maxruntimeexceeded;
         $record->totalrecords = $this->totalrecords;
         $record->logpath = $this->logpath;
+        $record->entitytype = $this->entitytype;
 
         //perform any necessary data specialization
         $record = $this->customize_record($record, $filename);

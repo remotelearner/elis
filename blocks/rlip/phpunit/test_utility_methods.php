@@ -670,6 +670,7 @@ class utilityMethodTest extends elis_database_test {
         $record->firstname = 'Test';
         $record->lastname = 'User';
         $record->logpath = NULL;
+        $record->entitytype = NULL;
         $this->assertEquals($record, $dbrecord);
     }
 
@@ -866,6 +867,7 @@ class utilityMethodTest extends elis_database_test {
                                                 get_string('logfilesuccesses', 'block_rlip'),
                                                 get_string('logfilefailures', 'block_rlip'),
                                                 get_string('logstatus', 'block_rlip'),
+                                                get_string('logentitytype', 'block_rlip'),
                                                 get_string('logdownload', 'block_rlip')));
 
         //validate table data
@@ -881,6 +883,7 @@ class utilityMethodTest extends elis_database_test {
                                           '1',
                                           get_string('na', 'block_rlip'),
                                           'testmessage',
+                                          'N/A',
                                           '<a href="download.php?id=1">Log</a>'));
     }
 
