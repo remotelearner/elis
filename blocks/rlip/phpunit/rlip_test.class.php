@@ -24,6 +24,7 @@
  *
  */
 
+require_once(dirname(__FILE__) .'/../../../elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 
 /*
@@ -62,7 +63,9 @@ abstract class rlip_test extends elis_database_test {
         $filepath = $CFG->dataroot;
         //remove all previous log files - assuming manual
         foreach(glob("$filepath/*.log") as $file) {
+            //echo "Checking whether to clean-up {$file}\n";
             if (!in_array($file, self::$existing_logfiles)) {
+                //echo "deleting {$file}\n";
                 unlink($file);
             }
         }

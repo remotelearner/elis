@@ -35,7 +35,7 @@ $file = get_plugin_directory('rlipfile', 'csv').'/csv.class.php';
 require_once($file);
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
 
@@ -240,7 +240,7 @@ class rlip_importprovider_manual_delay
 /**
  * Class for testing database logging with the version 1 plugin
  */
-class version1DatabaseLoggingTest extends elis_database_test {
+class version1DatabaseLoggingTest extends rlip_test {
     protected $backupGlobalsBlacklist = array('DB', 'USER');
 
     /**

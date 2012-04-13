@@ -31,12 +31,13 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot .'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot .'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot .'/elis/core/lib/testlib.php');
 
 /**
  * Class for testing utility methods
  */
-class utilityMethodTest extends elis_database_test {
+class utilityMethodTest extends rlip_test {
 
     /**
      * Return the list of tables that should be overlayed.
@@ -413,7 +414,7 @@ class utilityMethodTest extends elis_database_test {
 
         //run the job
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
-        run_ipjob($taskname);;
+        run_ipjob($taskname);
 
         //obtain both records
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));

@@ -30,6 +30,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
@@ -290,7 +291,7 @@ class rlip_exportplugin_empty extends rlip_exportplugin_base {
 /**
  * Class for testing the base export plugin class
  */
-class exportPluginTest extends elis_database_test {
+class exportPluginTest extends rlip_test {
     protected $backupGlobalsBlacklist = array('DB');
 
     /**
