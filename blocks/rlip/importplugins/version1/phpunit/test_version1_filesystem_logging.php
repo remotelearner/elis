@@ -6295,12 +6295,14 @@ static function get_overlay_tables() {
         $plugin = 'rlipimport_version1';
         $format = get_string('logfile_timestamp','block_rlip');
 
+        $USER->timezone = 99;
         // create some log files to be zipped by the cron job
-        $starttime = 2 * DAYSECS; // Way earlier then any real existing files!
+        // Way earlier then any real existing files!
+        $starttime = make_timestamp(1971, 1, 3);
         $filenames = array();
         for ($i = 0; $i < 10; ++$i) {
             $filenames[$i] = rlip_log_file_name($plugin_type, $plugin, $filepath, 'user',
-                                           false, $starttime + $i);
+                                           false, $starttime + $i * 3600);
             //write out a line to the logfile
             $logfile = new rlip_fileplugin_log($filenames[$i]);
             $logfile->open(RLIP_FILE_WRITE);
@@ -6309,7 +6311,7 @@ static function get_overlay_tables() {
         }
 
         //call cron job that zips the specified day's log files
-        $zipfiles = rlip_compress_logs_cron($starttime);
+        $zipfiles = rlip_compress_logs_cron('bogus', 0, $starttime);
         $this->assertTrue(!empty($zipfiles));
 
         //was a zip file created?

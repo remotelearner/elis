@@ -875,12 +875,14 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
 /**
  * Task to create a zip file from today's log files
  *
- * @param int    $time   day to archive logs - default (0) => yesterday's logs
- *                       (mainly used for testing)
+ * @param string $taskname elis_scheduled_tasks task name (unused).
+ * @param int    $runtime  elis_scheduled tasks suggested run time (unused).
+ * @param int    $time     day to archive logs - default (0) => yesterday's logs
+ *                         (used for testing)
  * @uses $CFG
- * @return array         names of zip files created (mainly for testing)
+ * @return array           names of zip files created (used for testing)
  */
-function rlip_compress_logs_cron($time = 0) {
+function rlip_compress_logs_cron($taskname, $runtime = 0, $time = 0) {
     global $CFG;
     $zipfiles = array();
     require_once($CFG->libdir .'/filestorage/zip_archive.php');
