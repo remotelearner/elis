@@ -875,15 +875,19 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
 /**
  * Task to create a zip file from today's log files
  *
+ * @param int    $time   day to archive logs - default (0) => yesterday's logs
+ *                       (mainly used for testing)
  * @uses $CFG
- * @return array names of zip files created (mainly for testing)
+ * @return array         names of zip files created (mainly for testing)
  */
-function rlip_compress_logs_cron() {
+function rlip_compress_logs_cron($time = 0) {
     global $CFG;
     $zipfiles = array();
     require_once($CFG->libdir .'/filestorage/zip_archive.php');
 
-    $time = time() - DAYSECS; //get yesterday's date
+    if (empty($time)) {
+        $time = time() - DAYSECS; //get yesterday's date
+    }
 
     //the types of plugins we are considering
     $plugintypes = array('rlipimport' => 'import', 'rlipexport' => 'export');
