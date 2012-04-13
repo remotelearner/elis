@@ -5632,17 +5632,17 @@ static function get_overlay_tables() {
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
 
         //set the log file location to the dataroot
-        $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
+        $logpath = $CFG->dataroot;
+        set_config('logfilelocation', $logpath, 'rlipimport_version1');
 
         //file path and name
         $file_name = 'userscheduledimport.csv';
         // File WILL BE DELETED after import so must copy to moodledata area
         // Note: file_path now relative to moodledata ($CFG->dataroot)
-        $file_path = '/phpunit/rlip/importplugins/version1/';
-        @mkdir($CFG->dataroot.$file_path, 0777, true);
-        @copy(dirname(__FILE__) ."/{$file_name}",
-              $CFG->dataroot . $file_path . $file_name);
+        $file_path = '/block_rlip_phpunit/';
+        $testdir = $CFG->dataroot . $file_path;
+        @mkdir($testdir, 0777, true);
+        @copy(dirname(__FILE__) ."/{$file_name}", $testdir . $file_name);
 
         //create a scheduled job
         $data = array('plugin' => 'rlipimport_version1',
@@ -5653,22 +5653,22 @@ static function get_overlay_tables() {
         $taskid = rlip_schedule_add_job($data);
 
         //lower bound on starttime
-        $starttime = time()-100;
+        $starttime = time() - 100;
 
         //change the next runtime to a day from now
         $task = new stdClass;
         $task->id = $taskid;
-        $task->nextruntime = $starttime+86400; //tomorrow?
+        $task->nextruntime = $starttime + DAYSECS; //tomorrow?
         $DB->update_record('elis_scheduled_tasks', $task);
 
         $job = new stdClass;
         $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipimport_version1'));
-        $job->nextruntime = $starttime+86400; //tomorrow?
+        $job->nextruntime = $starttime + DAYSECS; //tomorrow?
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         //set up config for plugin so the scheduler knows about our csv file
         set_config('schedule_files_path', $file_path, 'rlipimport_version1');
-        set_config('user_schedule_file',$file_name, 'rlipimport_version1');
+        set_config('user_schedule_file', $file_name, 'rlipimport_version1');
 
         //run the import
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
@@ -5686,11 +5686,15 @@ static function get_overlay_tables() {
         $plugin = 'rlipimport_version1';
         $manual = true;
         $entity = 'user';
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.$entity.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $logpath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.$entity.'_'.userdate($starttime, $format).'.log';
         $testfilename = self::get_current_logfile($testfilename);
 
         $exists = file_exists($testfilename);
         $this->assertEquals($exists, true);
+
+        // cleanup test directory & import data file
+        @unlink($testdir . $file_name);
+        @rmdir($testdir);
     }
 
      /**
@@ -5721,7 +5725,7 @@ static function get_overlay_tables() {
         $manual = true;
 
         //loop through w/o deleting logs and see what happens
-        for($i=0;$i<=15;$i++) {
+        for($i = 0; $i <= 15; $i++) {
             $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
             //for now suppress output generated
             ob_start();
@@ -5761,17 +5765,17 @@ static function get_overlay_tables() {
         global $CFG, $DB;
 
         //set the log file location to the dataroot
-        $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipimport_version1');
+        $logpath = $CFG->dataroot;
+        set_config('logfilelocation', $logpath, 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
         $file_name = 'userfile2.csv';
         // File WILL BE DELETED after import so must copy to moodledata area
         // Note: file_path now relative to moodledata ($CFG->dataroot)
-        $file_path = '/phpunit/rlip/importplugins/version1/';
-        @mkdir($CFG->dataroot.$file_path, 0777, true);
-        @copy(dirname(__FILE__) ."/{$file_name}",
-              $CFG->dataroot . $file_path . $file_name);
+        $file_path = '/block_rlip_phpunit/';
+        $testdir = $CFG->dataroot . $file_path;
+        @mkdir($testdir, 0777, true);
+        @copy(dirname(__FILE__) ."/{$file_name}", $testdir . $file_name);
         $provider = new rlip_importprovider_userfile_delay($CFG->dataroot . $file_path . $file_name);
 
         //run the import
@@ -5796,7 +5800,7 @@ static function get_overlay_tables() {
             $starttime = $record->starttime;
             break;
         }
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $logpath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
         $filename = self::get_current_logfile($testfilename);
 
         $this->assertTrue(file_exists($filename));
@@ -5815,6 +5819,10 @@ static function get_overlay_tables() {
         $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
         $actual_error = substr($line, $prefix_length);
         $this->assertEquals($expected_error, $actual_error);
+
+        //clean-up data file & test dir
+        @unlink($testdir . $file_name);
+        @rmdir($testdir);
     }
 
     public function testUserProfileFields() {

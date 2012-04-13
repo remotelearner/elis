@@ -324,6 +324,10 @@ class exportPluginTest extends rlip_test {
         $export_filename = rlip_get_export_filename($plugin, 99);
         $target_path = $CFG->dataroot . sprintf(RLIP_EXPORT_TEMPDIR, $plugin);
         $this->assertEquals($target_path, dirname($export_filename) .'/');
+
+        //clean-up created export temp dirs for this bogus plugin
+        @rmdir(dirname($export_filename));
+        @rmdir(dirname(dirname($export_filename)));
     }
 
     /**

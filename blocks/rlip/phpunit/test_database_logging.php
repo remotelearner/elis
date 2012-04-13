@@ -209,7 +209,7 @@ class databaseLoggingTest extends rlip_test {
         $entity_types = array('user');
         $userfile = 'userfile.csv';
         $testfile = dirname(__FILE__) .'/'. $userfile;
-        $tempdir = $CFG->dataroot .'/blocks/rlip/phpunit/';
+        $tempdir = $CFG->dataroot .'/block_rlip_phpunit/';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $tempdir . $userfile);
         $files = array('user' => $tempdir . $userfile);
@@ -224,6 +224,10 @@ class databaseLoggingTest extends rlip_test {
 
         //validation
         $this->assertEquals($output, '');
+
+        // Clean-up temp directory & testfile
+        @unlink($tempdir . $userfile);
+        @rmdir($tempdir);
     }
 
     /**
