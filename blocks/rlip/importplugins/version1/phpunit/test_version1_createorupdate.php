@@ -217,7 +217,9 @@ class version1CreateorupdateTest extends rlip_test {
             field_data_int::TABLE => 'elis_core',
             field_data_char::TABLE => 'elis_core',
             field_data_text::TABLE => 'elis_core',
-            'config' => 'moodle'
+            'config' => 'moodle',
+            //prevent problems with events
+            'events_queue_handlers' => 'moodle'
         );
 
         // Detect if we are running this test on a site with the ELIS PM system in place
@@ -296,7 +298,8 @@ class version1CreateorupdateTest extends rlip_test {
                      'user_enrolments' => 'moodle',
                      'user_info_data' => 'moodle',
                      'user_lastaccess' => 'moodle',
-                     'user_preferences' => 'moodle');
+                     'user_preferences' => 'moodle',
+                     'url' => 'moodle');
     }
 
     /**
