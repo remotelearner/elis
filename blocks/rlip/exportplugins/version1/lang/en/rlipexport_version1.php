@@ -33,12 +33,11 @@ $string['config_export_file'] = 'Enter the filename template to use for exportin
 $string['config_export_file_timestamp'] = 'If enabled, adds timestamp to export filename.';
 $string['config_export_path'] = 'Enter the relative path, from moodledata, to store export files.';
 $string['configfieldstreelink'] = 'Field mapping';
-$string['configincrementaldelta'] = 'This setting is not used in a scheduled incremental backup. The scheduled incremental backup uses the schedule. The time delta representing how far back the manual export includes data from.
-This should be specified in \*d\*h\*m format, with values representing days, hours and minutes.
-This setting only takes effect when using the incremental manual export, and is based on the time at which a user\'s course grade was
-last modified.';
+$string['configincrementaldelta'] = 'The time delta specifies how far back the manual export includes data from. The time delta must be specified in \*d\*h\*m format, with values representing days, hours and minutes.
+This setting only takes effect when using the incremental manual export, and is based on the time at which a user\'s course grade was last modified.
+This setting is not used in a scheduled incremental backup. The scheduled incremental backup uses the last schedule run time.';
 $string['configlogfilelocation'] = 'The absolute path to the log file.';
-$string['confignonincremental'] = 'Include all historical data in manual exports';
+$string['confignonincremental'] = 'If enabled, includes all historical data in exports.';
 $string['configureheader'] = 'Profile Fields';
 $string['configurelink'] = 'Click here to configure which profile fields are included in this export';
 $string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Export Fields';
@@ -61,7 +60,7 @@ $string['incrementaldelta'] = 'Time delta for incremental manual export';
 $string['logfilelocation'] = 'Log file location';
 $string['movedown'] = 'Move down';
 $string['moveup'] = 'Move up';
-$string['nonincremental'] = 'Enable non-incremental manual export';
+$string['nonincremental'] = 'Enable non-incremental export';
 $string['nodatemarker'] = '-';
 $string['pluginname'] = 'Version 1 export';
 $string['profilefieldname'] = 'Profile Field Name';
