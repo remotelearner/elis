@@ -2478,4 +2478,39 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         return new rlip_import_version1_fslogger($fileplugin, $manual);
     }
+
+    /**
+     * Validates whether the "action" field is correctly set on a record,
+     * logging error to the file system, if necessary - call from child class
+     * when needed
+     *
+     * @param string $entitytype The type of entity we are performing an action on
+     * @param object $record One data import record
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if action field is set, otherwise false
+     */
+    function check_action_field($entitytype, $record, $filename) {
+        if (!isset($record->action) || $record->action === '') {
+            //not set, so error
+
+            //use helper to do any display-related field name transformation
+            $field_display = $this->get_required_field_display('action');
+            $message = "Required field {$field_display} is unspecified or empty.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $entitytype);
+
+            return false;
+        }
+
+        //feature, in the standard Moodle "plugin_supports" format
+        $feature = $entitytype.'_'.$record->action;
+
+        if (!$this->plugin_supports($feature)) {
+            //invalid action for this entity type
+            $message = "Action of \"{$record->action}\" is not supported.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $entitytype);
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -614,7 +614,7 @@ static function get_overlay_tables() {
         //validation for an empty action field
         $data = array('customaction' => '',
                       'username' => 'rlipusername');
-        $expected_error = "[user.csv line 2] Required field customaction is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User could not be processed. Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -808,7 +808,7 @@ static function get_overlay_tables() {
         //validation for an empty action field
         $data = array('customaction' => '',
                       'shortname' => 'rlipshortname');
-        $expected_error = "[course.csv line 2] Required field customaction is unspecified or empty.\n";
+        $expected_error = "[course.csv line 2] Course could not be processed. Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -906,8 +906,7 @@ static function get_overlay_tables() {
                       'context' => 'rlipcontext',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        //todo: add general message as part of ELIS-5098
-        $expected_error = "[enrolment.csv line 2] Required field customaction is unspecified or empty.\n";
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be processed. Required field customaction is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
@@ -6350,7 +6349,7 @@ static function get_overlay_tables() {
         //data
         $data = array('action' => 'bogus',
                       'username' => 'testusername');
-        $expected_message = "[user.csv line 2] Action of \"bogus\" is not supported.\n";
+        $expected_message = "[user.csv line 2] User could not be processed. Action of \"bogus\" is not supported.\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_message, 'user');
@@ -6364,7 +6363,7 @@ static function get_overlay_tables() {
         //data
         $data = array('action' => 'bogus',
                       'shortname' => 'testshortname');
-        $expected_message = "[course.csv line 2] Action of \"bogus\" is not supported.\n";
+        $expected_message = "[course.csv line 2] Course could not be processed. Action of \"bogus\" is not supported.\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_message, 'course');
@@ -6381,7 +6380,7 @@ static function get_overlay_tables() {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        $expected_message = "[enrolment.csv line 2] Action of \"bogus\" is not supported.\n";
+        $expected_message = "[enrolment.csv line 2] Enrolment could not be processed. Action of \"bogus\" is not supported.\n";
 
         //validation
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');

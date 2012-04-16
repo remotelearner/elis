@@ -87,12 +87,20 @@ class rlip_import_version1_fslogger extends rlip_fslogger_linebased {
 
         // "action" is not always provided. In that case, return only the specific message
         if (empty($record->action)) {
+            //missing action, general message will be fairly generic
+            $type_display = ucfirst($type);
+            return "{$type_display} could not be processed. {$message}";
             return $message;
         }
 
         $msg = "";
 
         if ($type == "enrolment") {
+            if ($record->action != 'create' && $record->action != 'delete') {
+                //invalid action
+                return 'Enrolment could not be processed. '.$message;
+            }
+
             if (!$this->track_role_actions && !$this->track_enrolment_actions) {
                 //error without sufficient information to properly provide details
                 if ($record->action == 'create') {
@@ -211,6 +219,10 @@ class rlip_import_version1_fslogger extends rlip_fslogger_linebased {
                         $msg = "{$type} with shortname \"{$record->shortname}\" could not be deleted. " . $message;
                     }
                     break;
+                default:
+                    //invalid action
+                    $msg = 'Course could not be processed. '.$message;
+                    break;
             }
         }
 
@@ -237,6 +249,10 @@ class rlip_import_version1_fslogger extends rlip_fslogger_linebased {
                     } else {
                         $msg = "{$type} with username \"{$record->username}\" could not be deleted. " . $message;
                     }
+                    break;
+                default:
+                    //invalid action
+                    $msg = 'User could not be processed. '.$message;
                     break;
             }
         }
