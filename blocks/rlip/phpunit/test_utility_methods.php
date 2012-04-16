@@ -385,9 +385,9 @@ class utilityMethodTest extends rlip_test {
     public function testRunningJobSetsIPLastRuntime() {
         global $CFG, $DB;
 
-        //set up the export file path
-        $filename = $CFG->dataroot.'/rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        //set up the export file & path
+        set_config('export_path', '', 'rlipexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
 
         set_config('disableincron', 0, 'block_rlip');
 
@@ -432,9 +432,9 @@ class utilityMethodTest extends rlip_test {
     function testRunningJobSetsIPNextRuntime() {
         global $CFG, $DB;
 
-        //set up the export file path
-        $filename = $CFG->dataroot.'/rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        //set up the export file & path
+        set_config('export_path', '', 'rlipexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
 
         set_config('disableincron', 0, 'block_rlip');
 
@@ -483,9 +483,9 @@ class utilityMethodTest extends rlip_test {
     function testRunningJobsFixesELISScheduledTaskWhenExternalCronEnabled() {
         global $CFG, $DB;
 
-        //set up the export file path
-        $filename = $CFG->dataroot.'/rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        //set up the export file & path
+        set_config('export_path', '', 'rlipexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
 
         //enable external cron
         set_config('disableincron', 1, 'block_rlip');
@@ -545,9 +545,9 @@ class utilityMethodTest extends rlip_test {
         //load in data needed for export
         $this->load_export_csv_data();
 
-        //set up the export file path
-        $filename = $CFG->dataroot.'/rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        //set up the export file & path
+        set_config('export_path', '', 'rlipexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
 
         //set up the tasks
         $data = array('plugin' => 'rlipexport_version1',

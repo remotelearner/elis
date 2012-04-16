@@ -353,8 +353,11 @@ static function get_overlay_tables() {
         global $DB;
         self::$origdb = $DB;
         self::$overlaydb = new overlay_course_database_fs($DB, static::get_overlay_tables(), static::get_ignored_tables());
-        static::get_logfilelocation_files();
         //self::$overlaydb = new overlay_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
+
+        static::get_csv_files();
+        static::get_logfilelocation_files();
+        static::get_zip_files();
     }
 
     /**
