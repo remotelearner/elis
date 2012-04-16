@@ -112,7 +112,7 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
         if (!empty($filename)) {
             $this->set_file_name($filename);
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
-            return rlip_fslogger_factory::factory($fileplugin, $manual);
+            return rlip_fslogger_factory::factory($plugin, $fileplugin, $manual);
         }
         return null;
     }

@@ -73,7 +73,7 @@ abstract class rlip_importprovider {
         $filename = rlip_log_file_name('import', $plugin, $filepath, $entity, $manual, $starttime);
         if (!empty($filename)) {
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
-            return rlip_fslogger_factory::factory($fileplugin, $manual);
+            return rlip_fslogger_factory::factory($plugin, $fileplugin, $manual);
         }
         return null;
     }
@@ -479,6 +479,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             if (count($messages) > 0) {
                 //combine and log
                 $message = implode(' ', $messages);
+                //todo: consider only adding these parameters in the version 1 import plugin
                 $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $entity);
                 return false;
             }

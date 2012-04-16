@@ -379,6 +379,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * Calculates a string that specifies which fields can be used to identify
      * a user record based on the import record provided
      *
+     * Can be called statically if $value_syntax is false
+     *
      * @param object $record
      * @param boolean $value_syntax true if we want to use "field" value of
      *                              "value" syntax, otherwise use field "value"
@@ -420,7 +422,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @param object $record The object specifying the context and instance
      * @return string The descriptive string
      */
-    function get_context_descriptor($record) {
+    static function get_context_descriptor($record) {
         if ($record->context == 'system') {
             //no instance for the system context
             $context_descriptor = 'the system context';
@@ -1699,7 +1701,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                          'group' => 254,
                          'grouping' => 254);
 
-        return $this->check_field_lengths('roleassignment', $record, $filename, $lengths);
+        return $this->check_field_lengths('enrolment', $record, $filename, $lengths);
     }
 
     /**
@@ -1746,7 +1748,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             //log message
             $this->fslogger->log_failure("{$user_descriptor} {$does_token} not refer to a valid user.",
-                                         0, $filename, $this->linenumber);
+                                         0, $filename, $this->linenumber, $record, 'enrolment');
             return false;
         }
 
@@ -1772,7 +1774,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['instance'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->instance}\" does not refer ".
                                              "to a valid instance of a course context.",
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, 'enrolment');
                 return false;
             }
 
@@ -1793,7 +1795,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['instance'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->instance}\" refers to ".
                                              "multiple course category contexts.",
-                                             0, $filename, $this->linenumber, $record, 'roleassignment');
+                                             0, $filename, $this->linenumber, $record, 'enrolment');
                 return false;
             }
 
@@ -1803,7 +1805,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['instance'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->instance}\" does not refer ".
                                              "to a valid instance of a course category context.",
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, 'enrolment');
                 return false;
             }
 
@@ -1819,7 +1821,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['instance'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->instance}\" does not refer ".
                                              "to a valid instance of a user context.",
-                                             0, $filename, $this->linenumber);
+                                             0, $filename, $this->linenumber, $record, 'enrolment');
                 return false;
             }
 
@@ -1833,7 +1835,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $identifier = $this->mappings['context'];
             $this->fslogger->log_failure("{$identifier} value of \"{$record->context}\" is not one of ".
                                          "the available options (system, user, coursecat, course).",
-                                         0, $filename, $this->linenumber, $record, "roleassignment");
+                                         0, $filename, $this->linenumber, $record, "enrolment");
             return false;
         }
     }
@@ -1849,6 +1851,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
+        //set initial logging state with respect to enrolments (give non-specific message for now)
+        $this->fslogger->set_enrolment_state(false, false);
+
         //field length checking
         $lengthcheck = $this->check_enrolment_field_lengths($record, $filename);
         if (!$lengthcheck) {
@@ -1860,7 +1865,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $identifier = $this->mappings['role'];
             $this->fslogger->log_failure("{$identifier} value of \"{$record->role}\" does not refer ".
                                          "to a valid role.", 0, $filename, $this->linenumber,
-                                         $record, 'roleassignment');
+                                         $record, 'enrolment');
             return false;
         }
 
@@ -1881,7 +1886,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                              'contextlevel' => $contextlevel))) {
             $this->fslogger->log_failure("The role with shortname \"{$record->role}\" is not assignable ".
                                          "on the {$record->context} context level.",
-                                         0, $filename, $this->linenumber, $record, "roleassignment");
+                                         0, $filename, $this->linenumber, $record, "enrolment");
             return false;
         }
 
@@ -1892,6 +1897,23 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                         'component' => '',
                         'itemid' => 0);
         $role_assignment_exists = $DB->record_exists('role_assignments', $params);
+
+        $studentroleids = array();
+        if (isset($CFG->gradebookroles)) {
+            $studentroleids = explode(',', $CFG->gradebookroles);
+        }
+        //track whether an enrolment exists
+        $enrolment_exists = false;
+
+        if ($contextlevel == CONTEXT_COURSE) {
+            $enrolment_exists = is_enrolled($context, $userid);
+        }
+
+        //after this point, general error messages should contain role assignment info
+        //they should also contain enrolment info if the role is a gradebook role and the context
+        //is a course
+        $track_enrolments = in_array($roleid, $studentroleids) && $record->context == 'course';
+        $this->fslogger->set_enrolment_state(true, $track_enrolments);
 
         //track the group and grouping specified
         $groupid = 0;
@@ -1915,7 +1937,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['group'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->group}\" does not refer to ".
                                              "a valid group in course with shortname \"{$record->instance}\".",
-                                             0, $filename, $this->linenumber, $record, "group");
+                                             0, $filename, $this->linenumber, $record, "enrolment");
                 return false;
             } else {
                 //exact group exists
@@ -1930,14 +1952,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     $identifier = $this->mappings['grouping'];
                     $this->fslogger->log_failure("{$identifier} value of \"{$record->grouping}\" refers to multiple ".
                                                  "groupings in course with shortname \"{$record->instance}\".",
-                                                 0, $filename, $this->linenumber, $record, "group");
+                                                 0, $filename, $this->linenumber, $record, "enrolment");
                     return false;
                 } else if ($count == 0 && empty($creategroups)) {
                     //does not exist and not creating
                     $identifier = $this->mappings['grouping'];
                     $this->fslogger->log_failure("{$identifier} value of \"{$record->grouping}\" does not refer to ".
                                                  "a valid grouping in course with shortname \"{$record->instance}\".",
-                                                 0, $filename, $this->linenumber, $record, "group");
+                                                 0, $filename, $this->linenumber, $record, "enrolment");
                     return false;
                 } else {
                     //exact grouping exists
@@ -1954,22 +1976,16 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //going to collect all messages for this action
         $logmessages = array();
 
-        $studentroleids = array();
-        if (isset($CFG->gradebookroles)) {
-            $studentroleids = explode(',', $CFG->gradebookroles);
-        }
-
         if ($record->context == 'course' && in_array($roleid, $studentroleids)) {
 
             //set enrolment start time to the course start date
             $timestart = $DB->get_field('course', 'startdate', array('id' => $context->instanceid));
 
-            $is_enrolled = is_enrolled($context, $userid);
-            if ($role_assignment_exists && !$is_enrolled) {
+            if ($role_assignment_exists && !$enrolment_exists) {
 
                 //role assignment already exists, so just enrol the user
                 enrol_try_internal_enrol($context->instanceid, $userid, null, $timestart);
-            } else if (!$is_enrolled) {
+            } else if (!$enrolment_exists) {
                 //role assignment does not exist, so enrol and assign role
                 enrol_try_internal_enrol($context->instanceid, $userid, $roleid, $timestart);
 
@@ -1987,14 +2003,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 //duplicate enrolment attempt
                 $this->fslogger->log_failure("User with {$user_descriptor} is already assigned role ".
                                              "with shortname \"{$record->role}\" on {$context_descriptor}. ".
-                                             "User with {$user_descriptor} is already enroled in course with ".
+                                             "User with {$user_descriptor} is already enrolled in course with ".
                                              "shortname \"{$record->instance}\".", 0, $filename, $this->linenumber,
-                                             $record, 'roleassignment');
+                                             $record, 'enrolment');
                 return false;
             }
 
             //collect success message for logging at end of action
-            if (!$is_enrolled) {
+            if (!$enrolment_exists) {
                 $logmessages[] = "User with {$user_descriptor} enrolled in course with shortname \"{$record->instance}\".";
             }
         } else {
@@ -2003,7 +2019,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     $this->fslogger->log_failure("Could not assign user with {$user_descriptor} to group ".
                                                  "with name \"{$record->group}\" because they are not enrolled ".
                                                  "in course with shortname \"{$record->instance}\".",
-                                                 0, $filename, $this->linenumber, $record, 'roleassignment');
+                                                 0, $filename, $this->linenumber, $record, 'enrolment');
                     return false;
                 }
             }
@@ -2013,7 +2029,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                                    'capability' => 'moodle/course:view'))) {
                     $this->fslogger->log_failure("Role with shortname \"{$record->role}\" does not have ".
                                                  "the moodle/course:view capability.", 0, $filename, $this->linenumber,
-                                                 $record, 'roleassignment');
+                                                 $record, 'enrolment');
                     return false;
                 }
             }
@@ -2022,7 +2038,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 //role assignment already exists, so this action serves no purpose
                 $this->fslogger->log_failure("User with {$user_descriptor} is already assigned role ".
                                              "with shortname \"{$record->role}\" on {$context_descriptor}.",
-                                             0, $filename, $this->linenumber, $record, 'roleassignment');
+                                             0, $filename, $this->linenumber, $record, 'enrolment');
                 return false;
             }
 
@@ -2122,6 +2138,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
+        //set initial logging state with respect to enrolments (give non-specific message for now)
+        $this->fslogger->set_enrolment_state(false, false);
+
         //field length checking
         $lengthcheck = $this->check_enrolment_field_lengths($record, $filename);
         if (!$lengthcheck) {
@@ -2132,7 +2151,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if (!$roleid = $DB->get_field('role', 'id', array('shortname' => $record->role))) {
             $identifier = $this->mappings['role'];
             $this->fslogger->log_failure("{$identifier} value of \"{$record->role}\" does not refer to a valid role.",
-                                         0, $filename, $this->linenumber, $record, 'roleassignment');
+                                         0, $filename, $this->linenumber, $record, 'enrolment');
             return false;
         }
 
@@ -2161,20 +2180,27 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                                                'userid' => $userid));
 
         $studentroleids = explode(',', $CFG->gradebookroles);
+
+        //after this point, general error messages should contain role assignment info
+        //they should also contain enrolment info if the role is a gradebook role and the context
+        //is a course
+        $track_enrolments = in_array($roleid, $studentroleids) && $record->context == 'course';
+        $this->fslogger->set_enrolment_state(true, $track_enrolments);
+
         if (!$role_assignment_exists) {
             $user_descriptor = $this->get_user_descriptor($record, false);
             $context_descriptor = $this->get_context_descriptor($record);
             $message = "User with {$user_descriptor} is not assigned role with ".
                        "shortname \"{$record->role}\" on {$context_descriptor}.";
 
-            if (!in_array($roleid, $studentroleids)) {
+            if (!in_array($roleid, $studentroleids) || $record->context != 'course') {
                 //nothing to delete
-                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, 'enrolment');
                 return false;
             } else if (!$enrolment_exists) {
-                $message .= " User with {$user_descriptor} is not enroled in ".
+                $message .= " User with {$user_descriptor} is not enrolled in ".
                             "course with shortname \"{$record->instance}\".";
-                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, 'enrolment');
                 return false;
             }
         }
@@ -2434,6 +2460,54 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
             $this->dblogger->signal_missing_columns($message);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Obtain the file-system logger for this plugin
+     *
+     * @param object $fileplugin The file plugin used for IO in the logger
+     * @param boolean $manual True on a manual run, false on a scheduled run
+     * @return object The appropriate logging object
+     */
+    static function get_fs_logger($fileplugin, $manual) {
+        require_once(dirname(__FILE__).'/rlip_import_version1_fslogger.class.php');
+
+        return new rlip_import_version1_fslogger($fileplugin, $manual);
+    }
+
+    /**
+     * Validates whether the "action" field is correctly set on a record,
+     * logging error to the file system, if necessary - call from child class
+     * when needed
+     *
+     * @param string $entitytype The type of entity we are performing an action on
+     * @param object $record One data import record
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if action field is set, otherwise false
+     */
+    function check_action_field($entitytype, $record, $filename) {
+        if (!isset($record->action) || $record->action === '') {
+            //not set, so error
+
+            //use helper to do any display-related field name transformation
+            $field_display = $this->get_required_field_display('action');
+            $message = "Required field {$field_display} is unspecified or empty.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $entitytype);
+
+            return false;
+        }
+
+        //feature, in the standard Moodle "plugin_supports" format
+        $feature = $entitytype.'_'.$record->action;
+
+        if (!$this->plugin_supports($feature)) {
+            //invalid action for this entity type
+            $message = "Action of \"{$record->action}\" is not supported.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $entitytype);
             return false;
         }
 

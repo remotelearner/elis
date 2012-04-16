@@ -252,199 +252,11 @@ class rlip_fslogger {
 }
 
 /**
- * Class for logging general entry messages to the file system.
- * These "general" messages should likely NOT have been separated from the "specific" messages,
- * but rather inserted together.
- */
-class rlip_import_version1_fslogger extends rlip_fslogger {
-
-    /**
-     * Log a failure message to the log file, and potentially the screen
-     *
-     * @param string $message The message to long
-     * @param int $timestamp The timestamp to associate the message with, or 0
-     *                       for the current time
-     * @param string $filename The name of the import / export file we are
-     *                         reporting on
-     * @param int $entitydescriptor A descriptor of which entity from an import file
-     *                              we are handling, if applicable
-     * @param Object $record Imported data
-     * @param string $type Type of import
-     */
-    function log_failure($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL, $record = NULL, $type = NULL) {
-        if (!empty($record) && !empty($type)) {
-            $this->type_validation($type);
-            $message = $this->general_validation_message($record, $message, $type);
-        }
-        parent::log_failure($message, $timestamp, $filename, $entitydescriptor);
-    }
-
-    /*
-     * Adds the general message to the specific message for a given type
-     * @param Object $record Imported data
-     * @param string $message The specific message
-     * @param string $type Type of import
-    */
-    function general_validation_message($record, $message, $type) {
-        // "action" is not always provided. In that case, return only the specific message
-        if (empty($record->action)) {
-            return $message;
-        }
-
-        $msg = "";
-
-        if ($type == "enrolment") {
-            $missing_required_field = empty($record->username) || empty($record->instance);
-
-            switch ($record->action) {
-                case "create":
-                    // If the field data is not provided, provide the least general message
-                    if ($missing_required_field) {
-                        $msg = "Enrolment could not be created. " . $message;
-                    } else {
-                        $msg = "User with username \"{$record->username}\" could not be enroled in ".
-                               "course with shortname \"{$record->instance}\". " . $message;
-                    }
-                    break;
-                case "delete":
-                    if ($missing_required_field) {
-                        $msg = "Enrolment could not be deleted. " . $message;
-                    } else {
-                        $msg = "User with username \"{$record->username}\" could not be unenroled ".
-                               "in course with shortname \"{$record->instance}\". " . $message;
-                    }
-                    break;
-            }
-        }
-
-        if ($type == "group") {
-            switch ($record->action) {
-                case "create":
-                    $msg = "Group with name \"{$record->group}\" could not be created in course ".
-                           "with shortname \"{$record->instance}\". " . $message;
-                    break;
-                case "update":
-                    $msg = "Group with name \"{$record->group}\" could not be updated in course ".
-                           "with shortname \"{$record->instance}\". " . $message;
-                    break;
-                case "delete":
-                    $msg = "Group with name \"{$record->group}\" could not be deleted in course ".
-                           "with shortname \"{$record->instance}\". " . $message;
-                    break;
-            }
-        }
-
-        if ($type == "roleassignment") {
-            $required_fields_set = !empty($record->role) && !empty($record->username) && !empty($record->context);
-            $valid_contexts = array('coursecat', 'course', 'user');
-
-            switch ($record->action) {
-                case "create":
-                    if ($required_fields_set && in_array($record->context, $valid_contexts) && !empty($record->instance)) {
-                        $context = $record->context;
-                        if ($context == 'coursecat') {
-                            $context = 'course category';
-                        }
-                        $msg = "User with username \"{$record->username}\" could not be assigned role ".
-                               "with shortname \"{$record->role}\" on {$context} \"$record->instance\". " . $message;
-                    } else if ($required_fields_set && $record->context == 'system') {
-                        $msg = "User with username \"{$record->username}\" could not be assigned role ".
-                               "with shortname \"{$record->role}\" on the system context. " . $message;
-                    } else {
-                        $msg = "Role assignment could not be created. " . $message;
-                    }
-                    break;
-                case "delete":
-                    if ($required_fields_set && in_array($record->context, $valid_contexts) && !empty($record->instance)) {
-                        $context = $record->context;
-                        if ($context == 'coursecat') {
-                            $context = 'course category';
-                        }
-                        $msg = "User with username \"{$record->username}\" could not be unassigned role ".
-                               "with shortname \"{$record->role}\" on {$context} \"$record->instance\". " . $message;                        
-                    } else if ($required_fields_set && $record->context == 'system') {
-                        $msg = "User with username \"{$record->username}\" could not be unassigned role ".
-                               "with shortname \"{$record->role}\" on the system context. " . $message;
-                    } else {
-                        $msg = "Role assignment could not be deleted. " . $message;
-                    }
-                    break;
-            }
-        }
-
-        if ($type == "course") {
-            $type = ucfirst($type);
-            switch ($record->action) {
-                case "create":
-                    if (empty($record->shortname)) {
-                        $msg = "Course could not be created. " . $message;
-                    } else {
-                        $msg =  "{$type} with shortname \"{$record->shortname}\" could not be created. " . $message;
-                    }
-                    break;
-                case "update":
-                    if (empty($record->shortname)) {
-                        $msg = "Course could not be updated. " . $message;
-                    } else {
-                        $msg = "{$type} with shortname \"{$record->shortname}\" could not be updated. " . $message;
-                    }
-                    break;
-                case "delete":
-                    if (empty($record->shortname)) {
-                        $msg = "Course could not be deleted. " . $message;
-                    } else {
-                        $msg = "{$type} with shortname \"{$record->shortname}\" could not be deleted. " . $message;
-                    }
-                    break;
-            }
-        }
-
-        if ($type == "user") {
-            $type = ucfirst($type);
-            switch ($record->action) {
-                case "create":
-                    if (empty($record->username)) {
-                        $msg = "User could not be created. " . $message;
-                    } else {
-                        $msg =  "{$type} with username \"{$record->username}\" could not be created. " . $message;
-                    }
-                    break;
-                case "update":
-                    if (empty($record->username)) {
-                        $msg = "User could not be updated. " . $message;
-                    } else {
-                        $msg = "{$type} with username \"{$record->username}\" could not be updated. " . $message;
-                    }
-                    break;
-                case "delete":
-                    if (empty($record->username)) {
-                        $msg = "User could not be deleted. " . $message;
-                    } else {
-                        $msg = "{$type} with username \"{$record->username}\" could not be deleted. " . $message;
-                    }
-                    break;
-            }
-        }
-
-        return $msg;
-    }
-
-    // Validate the provided type
-    private function type_validation($type) {
-        $types = array('course','user','roleassignment','group','enrolment');
-        if (!in_array($type, $types)) {
-            throw new Exception("\"$type\" in an invalid type. The available types are " . implode(', ', $types));
-        }
-    }
-
-}
-
-/**
  * Filesystem logging class that represents file / import types with
 tim ~/moodle.dev/rlip_plain/lib/phpunittestlib >
  * line-by-line data
  */
-class rlip_fslogger_linebased extends rlip_import_version1_fslogger {
+class rlip_fslogger_linebased extends rlip_fslogger {
     /**
      * API hook for customizing the contents for a file-system log line / record
      *
@@ -478,11 +290,33 @@ class rlip_fslogger_factory {
     /**
      * Factory method to obtain a default file system logger object
      *
+     * @param string $plugin The plugin we are running, either rlipimport_* or
+     *                       rlipexport_*
      * @param object $fileplugin The file plugin that should be used to write
      *                           out log data
+     * @param boolean $manual True on a manual run, false on a scheduled run
      */
-    static function factory($fileplugin, $manual = false) {
-        //only one type of file system logger for now
-        return new rlip_fslogger_linebased($fileplugin, $manual);
+    static function factory($plugin, $fileplugin, $manual = false) {
+        global $CFG;
+
+        //determine the components of the plugin (type and instance)
+        list($type, $instance) = explode('_', $plugin);
+
+        //try to load in the appropriate file
+        $file = get_plugin_directory($type, $instance).'/'.$instance.'.class.php';
+        if (!file_exists($file)) {
+            //this should only happen during unit tests
+            require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+            return new rlip_fslogger_linebased($fileplugin, $manual);
+        }
+        require_once($file);
+
+        //determine classname
+        $classname = $plugin;
+        $classname = str_replace('rlipexport_', 'rlip_exportplugin_', $classname);
+        $classname = str_replace('rlipimport_', 'rlip_importplugin_', $classname);
+
+        //ask the plugin to provide the logger
+        return $classname::get_fs_logger($fileplugin, $manual);
     }
 }
