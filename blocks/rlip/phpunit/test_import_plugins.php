@@ -300,6 +300,7 @@ class importPluginTest extends rlip_test {
 
         //validation
         $this->assertFalse($fslogger->get_manual());
+        @rmdir($CFG->dataroot . DIRECTORY_SEPARATOR . 'bogus');
     }
 
     /**
@@ -321,5 +322,6 @@ class importPluginTest extends rlip_test {
 
         //validation
         $this->assertTrue($fslogger->get_manual());
+        @rmdir($CFG->dataroot . DIRECTORY_SEPARATOR . 'bogus');
     }
 }
