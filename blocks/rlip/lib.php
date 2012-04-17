@@ -849,7 +849,7 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
     $scheduling = empty($manual) ? strtolower(get_string('scheduled','block_rlip')) : strtolower(get_string('manual','block_rlip'));
     //use timestamp passed or time()
     $timestamp  = empty($timestamp) ? time():$timestamp;
-echo "\n before filepath: $filepath";
+
     //logfile path is relative to dataroot
     if (!empty($filepath)) {
         $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR .
@@ -857,7 +857,7 @@ echo "\n before filepath: $filepath";
     } else {
         $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
-echo "\n after filepath: $filepath";
+
     //create filename
     if ($plugin_type == 'import') { //include entity
         $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.$entity.'_'.userdate($timestamp, $format, $timezone).'.log';

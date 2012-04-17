@@ -5577,35 +5577,7 @@ static function get_overlay_tables() {
         $this->assertEquals($filename, $testfilename);
     }
 
-    /**
-     * Test an invalid log file path
-     */
-    function testVersion1ImportInvalidLogPath() {
-echo "\n in invalidlogpath";
-         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
-        $filepath = $CFG->dataroot;
-//        set_config('logfilelocation', 'invalidlogpath', 'rlipimport_version1');
-
-        $plugin_type = 'import';
-        $plugin = 'rlipimport_version1';
-        $format = get_string('logfile_timestamp','block_rlip');
-
-        // create a log file to be zipped by the cron job
-        $starttime = time(); //yesterday
-        $filename = rlip_log_file_name($plugin_type,$plugin, 'invalidlogpath', 'user', false, $starttime);
-
-        //write out a line to the logfile
-        $logfile = new rlip_fileplugin_log($filename);
-        $logfile->open(RLIP_FILE_WRITE);
-echo "\n with filename: ".$filename;
-        $this->assertEquals(file_exists($filename), true);
-        $logfile->write(array('test entry'));
-    }
-
-    /**
+     /**
      * Validate that a manual import log file generates the correct log file
      */
     function testVersion1ImportLogManual() {
