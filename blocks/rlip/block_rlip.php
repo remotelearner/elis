@@ -24,6 +24,9 @@
  *
  */
 
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+
 /**
  * The main Integration Point block class
  */
@@ -71,4 +74,25 @@ class block_rlip extends block_base {
 
         return $this->content;
     }
+
+    // Removes RLIP tables and data on uninstall
+    public function before_delete() {
+        global $DB;
+
+        $dbman = $DB->get_manager();
+
+        $rlipexporttbl = new xmldb_table(RLIPEXPORT_VERSION1_FIELD_TABLE);
+        if ($dbman->table_exists($rlipexporttbl)) {
+            $dbman->drop_table($rlipexporttbl);
+        }
+
+        $rlipimporttbl = new xmldb_table(RLIPIMPORT_VERSION1_MAPPING_TABLE);
+        if ($dbman->table_exists($rlipimporttbl)) {
+            $dbman->drop_table($rlipimporttbl);
+        }
+
+        $rlipplugins = array('rlipexport_version1', 'block_rlip', 'rlipimport_version1');
+        $DB->delete_records_select('config_plugins', "plugin = ? OR plugin = ? OR plugin = ?", $rlipplugins);
+    }
+
 }

@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
@@ -147,7 +148,7 @@ class rlip_importprovider_multiple extends rlip_importprovider {
 /**
  * Class for testing the base import plugin class
  */
-class importPluginTest extends elis_database_test {
+class importPluginTest extends rlip_test {
     protected $backupGlobalsBlacklist = array('DB');
 
     /**

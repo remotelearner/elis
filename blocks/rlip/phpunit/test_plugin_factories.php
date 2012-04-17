@@ -73,10 +73,17 @@ class pluginFactoriesTest extends PHPUnit_Framework_TestCase {
     public function testFsloggerFactoryInstantiatesCorrectClass() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/rlip_import_version1_fslogger.class.php';
+        require_once($file);
 
         //setup
-        $fslogger = rlip_fslogger_factory::factory(NULL);
+        $fslogger = rlip_fslogger_factory::factory('rlipexport_version1', NULL);
         //validation
         $this->assertInstanceOf('rlip_fslogger_linebased', $fslogger);
+
+        //setup
+        $fslogger = rlip_fslogger_factory::factory('rlipimport_version1', NULL);
+        //validation
+        $this->assertInstanceOf('rlip_import_version1_fslogger', $fslogger);
     }
 }

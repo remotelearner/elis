@@ -35,7 +35,7 @@ $file = get_plugin_directory('rlipfile', 'csv').'/csv.class.php';
 require_once($file);
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
 
@@ -240,7 +240,7 @@ class rlip_importprovider_manual_delay
 /**
  * Class for testing database logging with the version 1 plugin
  */
-class version1DatabaseLoggingTest extends elis_database_test {
+class version1DatabaseLoggingTest extends rlip_test {
     protected $backupGlobalsBlacklist = array('DB', 'USER');
 
     /**
@@ -1094,7 +1094,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //set up a "user" import provider, using a single fixed file
         // MUST copy file to temp area 'cause it'll be deleted after import
         $testfile = dirname(__FILE__) .'/userfile.csv';
-        $tempdir = $CFG->dataroot .'/blocks/rlip/importplugins/version1/phpunit/';
+        $tempdir = $CFG->dataroot .'/block_rlip_phpunit/';
         $file = $tempdir .'userfile.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
@@ -1110,6 +1110,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $params = array('message' => 'All lines from import file userfile.csv were successfully processed.');
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertEquals($exists, true);
+
+        // clean-up data file & tempdir
+        @unlink($file);
+        @rmdir($tempdir);
     }
 
     /**
@@ -1123,7 +1127,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //set up a "user" import provider, using a single fixed file
         // MUST copy file to temp area 'cause it'll be deleted after import
         $testfile = dirname(__FILE__) .'/userfile2.csv';
-        $tempdir = $CFG->dataroot .'/blocks/rlip/importplugins/version1/phpunit/';
+        $tempdir = $CFG->dataroot .'/block_rlip_phpunit/';
         $file = $tempdir .'userfile2.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
@@ -1138,6 +1142,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertNotNull($result);
         $expected_ui = "/.*errorbox.*Failed importing all lines from import file.*due to time limit exceeded.*/";
         $this->assertRegExp($expected_ui, $ui);
+
+        // clean-up data file & tempdir
+        @unlink($file);
+        @rmdir($tempdir);
     }
 
     /**
@@ -1152,7 +1160,7 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //set up a "user" import provider, using a single fixed file
         // MUST copy file to temp area 'cause it'll be deleted after import
         $testfile = dirname(__FILE__) .'/userfile2.csv';
-        $tempdir = $CFG->dataroot .'/blocks/rlip/importplugins/version1/phpunit/';
+        $tempdir = $CFG->dataroot .'/block_rlip_phpunit/';
         $file = $tempdir .'userfile2.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
@@ -1169,6 +1177,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
             $this->assertEquals($result->filelines, 4);
             $this->assertEquals($result->linenumber, 1);
         }
+
+        //clean-up data file & test dir
+        @unlink($file);
+        @rmdir($tempdir);
     }
 
     /**
@@ -1181,17 +1193,18 @@ class version1DatabaseLoggingTest extends elis_database_test {
         //set up the import file path & entities filenames
         // Note: schedule_files_path now relative to $CFG->dataroot
         //       must copy them there.
-        $relimportpath = '/phpunit/rlip/importplugins/version1/';
+        $relimportpath = '/block_rlip_phpunit/';
+        $testdir = $CFG->dataroot . $relimportpath;
         set_config('schedule_files_path', $relimportpath, 'rlipimport_version1');
         set_config('user_schedule_file', 'userfile2.csv', 'rlipimport_version1');
         set_config('course_schedule_file', 'course.csv', 'rlipimport_version1');
         set_config('enrolment_schedule_file', 'enroll.csv', 'rlipimport_version1');
         @copy(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'userfile2.csv',
-              $CFG->dataroot . $relimportpath . 'userfile2.csv');
+              $testdir . 'userfile2.csv');
         @copy(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'course.csv',
-              $CFG->dataroot . $relimportpath . 'course.csv');
+              $testdir . 'course.csv');
         @copy(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'enroll.csv',
-              $CFG->dataroot . $relimportpath . 'enroll.csv');
+              $testdir . 'enroll.csv');
 
         //create a scheduled job
         $data = array('plugin' => 'rlipimport_version1',
@@ -1235,6 +1248,12 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $this->assertFalse($notexists2);
         $exists = $DB->record_exists('user', array('username' => 'testusername3'));
         $this->assertTrue($exists);
+
+        // clean-up data files
+        @unlink($testdir . 'userfile2.csv');
+        @unlink($testdir . 'course.csv');
+        @unlink($testdir . 'enroll.csv');
+        // TBD: @rmdir($testdir);
     }
 
     /**
@@ -1466,10 +1485,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $file_name = 'userscheduledimport.csv';
         // File WILL BE DELETED after import so must copy to moodledata area
         // Note: file_path now relative to moodledata ($CFG->dataroot)
-        $file_path = '/phpunit/rlip/importplugins/version1/';
-        @mkdir($CFG->dataroot.$file_path, 0777, true);
-        @copy(dirname(__FILE__) ."/{$file_name}",
-              $CFG->dataroot . $file_path . $file_name);
+        $file_path = '/block_rlip_phpunit/';
+        $testdir = $CFG->dataroot . $file_path;
+        @mkdir($testdir, 0777, true);
+        @copy(dirname(__FILE__) ."/{$file_name}", $testdir . $file_name);
 
         //create a scheduled job
         $data = array('plugin' => 'rlipimport_version1',
@@ -1540,6 +1559,10 @@ class version1DatabaseLoggingTest extends elis_database_test {
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertEquals($exists, true);
         // Verify completed import deletes input csv file
-        $this->assertFalse(file_exists($file_path . $file_name));
+        $this->assertFalse(file_exists($testdir . $file_name));
+
+        //clean-up data file & test dir
+        @unlink($testdir . $file_name);
+        @rmdir($testdir);
     }
 }

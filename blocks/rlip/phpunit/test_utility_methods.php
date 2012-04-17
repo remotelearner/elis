@@ -31,12 +31,13 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot .'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot .'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot .'/elis/core/lib/testlib.php');
 
 /**
  * Class for testing utility methods
  */
-class utilityMethodTest extends elis_database_test {
+class utilityMethodTest extends rlip_test {
 
     /**
      * Return the list of tables that should be overlayed.
@@ -384,9 +385,9 @@ class utilityMethodTest extends elis_database_test {
     public function testRunningJobSetsIPLastRuntime() {
         global $CFG, $DB;
 
-        //set up the export file path
-        $filename = $CFG->dataroot.'/rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        //set up the export file & path
+        set_config('export_path', '', 'rlipexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
 
         set_config('disableincron', 0, 'block_rlip');
 
@@ -413,7 +414,7 @@ class utilityMethodTest extends elis_database_test {
 
         //run the job
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
-        run_ipjob($taskname);;
+        run_ipjob($taskname);
 
         //obtain both records
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
@@ -431,9 +432,9 @@ class utilityMethodTest extends elis_database_test {
     function testRunningJobSetsIPNextRuntime() {
         global $CFG, $DB;
 
-        //set up the export file path
-        $filename = $CFG->dataroot.'/rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        //set up the export file & path
+        set_config('export_path', '', 'rlipexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
 
         set_config('disableincron', 0, 'block_rlip');
 
@@ -482,9 +483,9 @@ class utilityMethodTest extends elis_database_test {
     function testRunningJobsFixesELISScheduledTaskWhenExternalCronEnabled() {
         global $CFG, $DB;
 
-        //set up the export file path
-        $filename = $CFG->dataroot.'/rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        //set up the export file & path
+        set_config('export_path', '', 'rlipexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
 
         //enable external cron
         set_config('disableincron', 1, 'block_rlip');
@@ -544,9 +545,9 @@ class utilityMethodTest extends elis_database_test {
         //load in data needed for export
         $this->load_export_csv_data();
 
-        //set up the export file path
-        $filename = $CFG->dataroot.'/rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        //set up the export file & path
+        set_config('export_path', '', 'rlipexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
 
         //set up the tasks
         $data = array('plugin' => 'rlipexport_version1',
@@ -670,6 +671,7 @@ class utilityMethodTest extends elis_database_test {
         $record->firstname = 'Test';
         $record->lastname = 'User';
         $record->logpath = NULL;
+        $record->entitytype = NULL;
         $this->assertEquals($record, $dbrecord);
     }
 
@@ -866,6 +868,7 @@ class utilityMethodTest extends elis_database_test {
                                                 get_string('logfilesuccesses', 'block_rlip'),
                                                 get_string('logfilefailures', 'block_rlip'),
                                                 get_string('logstatus', 'block_rlip'),
+                                                get_string('logentitytype', 'block_rlip'),
                                                 get_string('logdownload', 'block_rlip')));
 
         //validate table data
@@ -881,6 +884,7 @@ class utilityMethodTest extends elis_database_test {
                                           '1',
                                           get_string('na', 'block_rlip'),
                                           'testmessage',
+                                          'N/A',
                                           '<a href="download.php?id=1">Log</a>'));
     }
 

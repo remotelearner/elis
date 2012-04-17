@@ -28,11 +28,12 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
     define('CLI_SCRIPT', true);
 }
 
-require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+require_once(dirname(dirname(dirname(dirname(__FILE__)))) .'/config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_fslogger.class.php');
+require_once($CFG->dirroot .'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot .'/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 
 /**
@@ -113,7 +114,7 @@ class rlip_fileplugin_trackopen extends rlip_fileplugin_base {
 /**
  * Class for testing the file-system logger
  */
-class fsLoggerTest extends elis_database_test {
+class fsLoggerTest extends rlip_test {
     protected $backupGlobals = array('CFG');
 
     /**
@@ -121,6 +122,7 @@ class fsLoggerTest extends elis_database_test {
      */
     static protected function get_overlay_tables() {
         return array('config' => 'moodle',
+                     'config_plugins' => 'moodle',
                      'timezone' => 'moodle');
     }
 
@@ -154,11 +156,11 @@ class fsLoggerTest extends elis_database_test {
         global $CFG;
 
         //set up the file plugin for IO
-        $filename = $CFG->dataroot.'/rliptest';
-        $fileplugin = rlip_fileplugin_factory::factory($CFG->dataroot.'/rliptest', NULL, true);
+        $filename = $CFG->dataroot .'/rliptest.log';
+        $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
 
         //set up the logging object
-        $fslogger = rlip_fslogger_factory::factory($fileplugin, $manual);
+        $fslogger = rlip_fslogger_factory::factory('bogus_plugin', $fileplugin, $manual);
 
         return array($fslogger, $filename);
     }
@@ -221,8 +223,8 @@ class fsLoggerTest extends elis_database_test {
         global $CFG;
 
         //set up the file plugin for IO
-        $filename = $CFG->dataroot.'/rliptest';
-        unlink($filename);
+        $filename = $CFG->dataroot .'/rliptest.log';
+        @unlink($filename);
 
         //set up the logging object
         list($fslogger, $filename) = $this->get_fs_logger();
@@ -677,7 +679,7 @@ class fsLoggerTest extends elis_database_test {
         $fileplugin = new rlip_fileplugin_trackopen();
 
         //set up the logging object
-        $fslogger = rlip_fslogger_factory::factory($fileplugin);
+        $fslogger = rlip_fslogger_factory::factory('bogus_plugin', $fileplugin);
 
         //write a line
         $fslogger->log_success('Teststring', 1000000000);

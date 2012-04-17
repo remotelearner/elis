@@ -207,6 +207,8 @@ class version1CreateorupdateTest extends rlip_test {
             'course' => 'moodle',
             'course_categories' => 'moodle',
             'context' => 'moodle',
+            'grade_categories' => 'moodle',
+            'grade_items' => 'moodle',
             'role' => 'moodle',
             'role_capabilities' => 'moodle',
             'role_context_levels' => 'moodle',
@@ -215,7 +217,9 @@ class version1CreateorupdateTest extends rlip_test {
             field_data_int::TABLE => 'elis_core',
             field_data_char::TABLE => 'elis_core',
             field_data_text::TABLE => 'elis_core',
-            'config' => 'moodle'
+            'config' => 'moodle',
+            //prevent problems with events
+            'events_queue_handlers' => 'moodle'
         );
 
         // Detect if we are running this test on a site with the ELIS PM system in place
@@ -271,11 +275,9 @@ class version1CreateorupdateTest extends rlip_test {
                      'forum_posts' => 'moodle',
                      'forum_read' => 'moodle',
                      'forum_subscriptions' => 'moodle',
-                     'grade_categories' => 'moodle',
                      'grade_categories_history' => 'moodle',
                      'grade_grades' => 'moodle',
                      'grade_grades_history' => 'moodle',
-                     'grade_items' => 'moodle',
                      'grade_items_history' => 'moodle',
                      'grade_letters' => 'moodle',
                      'grade_outcomes_courses' => 'moodle',
@@ -296,7 +298,8 @@ class version1CreateorupdateTest extends rlip_test {
                      'user_enrolments' => 'moodle',
                      'user_info_data' => 'moodle',
                      'user_lastaccess' => 'moodle',
-                     'user_preferences' => 'moodle');
+                     'user_preferences' => 'moodle',
+                     'url' => 'moodle');
     }
 
     /**

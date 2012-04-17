@@ -502,7 +502,7 @@ function rlip_get_export_filename($plugin, $tz = 99) {
             $export .= "_{$timestamp}.csv";
         }
     }
-    if (!file_exists($tempexportdir) && !mkdir($tempexportdir, 0777, true)) {
+    if (!file_exists($tempexportdir) && !@mkdir($tempexportdir, 0777, true)) {
         error_log("/blocks/rlip/lib.php::rlip_get_export_filename('{$plugin}', {$tz}) - Error creating directory: '{$tempexportdir}'");
     }
     return $tempexportdir . $export;
@@ -761,6 +761,7 @@ function rlip_get_log_table($logs) {
                          get_string('logfilesuccesses', 'block_rlip'),
                          get_string('logfilefailures', 'block_rlip'),
                          get_string('logstatus', 'block_rlip'),
+                         get_string('logentitytype', 'block_rlip'),
                          get_string('logdownload', 'block_rlip'));
 
     $table->data = array();
@@ -775,10 +776,14 @@ function rlip_get_log_table($logs) {
             $plugintype = get_string('export', 'block_rlip');
             //can't have failures in export files
             $filefailures = get_string('na', 'block_rlip');
+
+            $entitytype = get_string('na', 'block_rlip');
         } else {
             $plugintype = get_string('import', 'block_rlip');
             //use tracked number of failures for display
             $filefailures = $log->filefailures;
+
+            $entitytype = $log->entitytype;
         }
 
         if ($log->targetstarttime == 0) {
@@ -805,6 +810,7 @@ function rlip_get_log_table($logs) {
                                $log->filesuccesses,
                                $filefailures,
                                $log->statusmessage,
+                               $entitytype,
                                $link);
     }
 
@@ -880,14 +886,24 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
 /**
  * Task to create a zip file from today's log files
  *
+ * @param string $taskname elis_scheduled_tasks task name (unused).
+ * @param int    $runtime  elis_scheduled tasks suggested run time (unused).
+ * @param int    $time     day to archive logs - default (0) => yesterday's logs
+ *                         (used for testing)
+ * @uses $CFG
+ * @return array           names of zip files created (used for testing)
  */
-function rlip_compress_logs_cron() {
+function rlip_compress_logs_cron($taskname, $runtime = 0, $time = 0) {
     global $CFG;
+    $zipfiles = array();
+    require_once($CFG->libdir .'/filestorage/zip_archive.php');
 
-    $time = time() - 86400; //get yesterday's date
+    if (empty($time)) {
+        $time = time() - DAYSECS; //get yesterday's date
+    }
 
     //the types of plugins we are considering
-    $plugintypes = array('rlipimport'=>'import', 'rlipexport'=>'export');
+    $plugintypes = array('rlipimport' => 'import', 'rlipexport' => 'export');
     //lookup for the directory paths for plugins
     $directories = get_plugin_types();
     //Loop through all plugins...
@@ -914,40 +930,40 @@ function rlip_compress_logs_cron() {
                   DIRECTORY_SEPARATOR .
                   trim($logfilelocation, DIRECTORY_SEPARATOR);
             $logfileprefix = "{$pluginvalue}_{$plugin_name}";
-            $logfiledate = "{$timestamp}";
+            $logfiledate = $timestamp;
 
             //do a glob of all log files of this plugin name and of the previous day's date
             $files = array();
-            foreach(glob("$logfilelocation/$logfileprefix*$logfiledate*.log") as $file) {
+            foreach (glob("{$logfilelocation}/{$logfileprefix}*{$logfiledate}*.log") as $file) {
                 $files[] = $file;
             }
 
             //create a zip file if there are files to archive
             if (!empty($files)) {
                 $zipfile = "{$logfilelocation}/{$logfileprefix}_{$timestamp}.zip";
-
                 //create the archive
-                $zip = new ZipArchive();
-                if($zip->open($zipfile, ZIPARCHIVE::OVERWRITE) !== true) {
-                    return false;
+                $zip = new zip_archive();
+                if (!$zip->open($zipfile)) {
+                    continue;
                 }
+                $zipfiles[] = $zipfile;
 
                 foreach ($files as $file) {
                     //add the file
-                    $zip->addFile($file,$file);
+                    $zip->add_file_from_pathname(basename($file), $file);
                 }
                 //close the zip -- done!
                 $zip->close();
 
-                //remove the file(s) from the system
+                //remove the archived file(s) from the system
                 foreach ($files as $file) {
-                    //add the file
-                    unlink($file);
+                    @unlink($file);
                 }
             }
         }
     }
 
+    return $zipfiles;
 }
 
 /**
@@ -966,3 +982,27 @@ function rlip_get_maxruntime() {
     return $maxruntime;
 }
 
+/**
+ * Initialise the ELIS scheduled tasks system for us, only if scheduled tasks is present and setup on the system.
+ *
+ * @param none
+ * @return none
+ */
+function rlip_schedulding_init() {
+    global $CFG, $DB;
+
+    // Check whether the scheduled tasks table exists
+    $dbman = $DB->get_manager();
+    $table = new xmldb_table('elis_scheduled_tasks');
+    if (!$dbman->table_exists($table)) {
+        return;
+    }
+
+    // If we haven't setup a scheduled task for the block yet, do so now
+    if (!$DB->record_exists('elis_scheduled_tasks', array('plugin' => 'block_rlip'))) {
+        require_once($CFG->dirroot.'/elis/core/lib/tasklib.php');
+
+        // Add a cron task for the RLIP block
+        elis_tasks_update_definition('block_rlip');
+    }
+}

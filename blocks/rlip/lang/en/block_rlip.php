@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['automatic'] = 'Automatic';
 $string['confirm_delete_ipjob'] = 'Are you sure to delete IP job #{$a}?';
-$string['configdisableincron'] = 'When configured, the setting disables this plugin from running in the Moodle cron. Use this setting when running imports via a separate system-level cron.';
+$string['configdisableincron'] = 'If enabled, this setting disables this plugin from running in the Moodle cron. Use this setting when running imports & exports via a separate system-level cron.';
 $string['dateformat'] = 'M/d/Y';
 $string['disableincron'] = 'Disable in Moodle cron';
 $string['displaytimeformat'] = '%b/%d/%Y, %I:%M:%S %P';
@@ -46,6 +46,7 @@ $string['log'] = 'Log';
 $string['logdownload'] = 'Download';
 $string['logs'] = 'Integration Point logs';
 $string['logend'] = 'End time';
+$string['logentitytype'] = 'Entity Type';
 $string['logexecution'] = 'Execution';
 $string['logfilefailures'] = 'Records with error';
 $string['logfilesuccesses'] = 'Records successfully processed';

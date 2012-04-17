@@ -31,6 +31,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 global $CFG;
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
@@ -64,7 +65,7 @@ class rlip_dblogger_test extends rlip_dblogger {
 /**
  * Class for validating generic database logging functionality
  */
-class databaseLoggingTest extends elis_database_test {
+class databaseLoggingTest extends rlip_test {
    /**
      * Return the list of tables that should be overlayed.
      */
@@ -205,7 +206,7 @@ class databaseLoggingTest extends elis_database_test {
         $entity_types = array('user');
         $userfile = 'userfile.csv';
         $testfile = dirname(__FILE__) .'/'. $userfile;
-        $tempdir = $CFG->dataroot .'/blocks/rlip/phpunit/';
+        $tempdir = $CFG->dataroot .'/block_rlip_phpunit/';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $tempdir . $userfile);
         $files = array('user' => $tempdir . $userfile);
@@ -220,6 +221,10 @@ class databaseLoggingTest extends elis_database_test {
 
         //validation
         $this->assertEquals($output, '');
+
+        // Clean-up temp directory & testfile
+        @unlink($tempdir . $userfile);
+        @rmdir($tempdir);
     }
 
     /**
