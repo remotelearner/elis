@@ -6419,7 +6419,7 @@ static function get_overlay_tables() {
         $starttime = make_timestamp(1971, 1, 3);
         $filenames = array();
         for ($i = 0; $i < 10; ++$i) {
-            $filenames[$i] = rlip_log_file_name($plugin_type, $plugin, $filepath, 'user',
+            $filenames[$i] = rlip_log_file_name($plugin_type, $plugin, '', 'user',
                                            false, $starttime + $i * 3600);
             //write out a line to the logfile
             $logfile = new rlip_fileplugin_log($filenames[$i]);
