@@ -5789,7 +5789,7 @@ static function get_overlay_tables() {
         $plugin = 'rlipimport_version1';
         $manual = true;
         $entity = 'user';
-        $testfilename = $logpath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.$entity.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.$entity.'_'.userdate($starttime, $format).'.log';
         $testfilename = self::get_current_logfile($testfilename);
 
         $exists = file_exists($testfilename);
@@ -5901,7 +5901,7 @@ static function get_overlay_tables() {
             $starttime = $record->starttime;
             break;
         }
-        $testfilename = $logpath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
         $filename = self::get_current_logfile($testfilename);
 
         $this->assertTrue(file_exists($filename));
