@@ -5903,7 +5903,7 @@ static function get_overlay_tables() {
         $plugin = 'rlipimport_version1';
         $manual = true;
         $entity = 'user';
-        $testfilename = $logpath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.$entity.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.$entity.'_'.userdate($starttime, $format).'.log';
         $testfilename = self::get_current_logfile($testfilename);
 
         $exists = file_exists($testfilename);
@@ -6015,7 +6015,7 @@ static function get_overlay_tables() {
             $starttime = $record->starttime;
             break;
         }
-        $testfilename = $logpath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
         $filename = self::get_current_logfile($testfilename);
 
         $this->assertTrue(file_exists($filename));
@@ -6539,7 +6539,7 @@ static function get_overlay_tables() {
         $starttime = make_timestamp(1971, 1, 3);
         $filenames = array();
         for ($i = 0; $i < 10; ++$i) {
-            $filenames[$i] = rlip_log_file_name($plugin_type, $plugin, $filepath, 'user',
+            $filenames[$i] = rlip_log_file_name($plugin_type, $plugin, '', 'user',
                                            false, $starttime + $i * 3600);
             //write out a line to the logfile
             $logfile = new rlip_fileplugin_log($filenames[$i]);
@@ -6672,6 +6672,97 @@ static function get_overlay_tables() {
                       'role' => 'rlipshortname');
         $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
+    }
+
+    /**
+     * Validate that import update action matching multiple users
+     * fails with message(s)
+     */
+    public function testVersion1ImportFailsWithMessageWhenMatchingMultipleUsers() {
+        //setup
+        $this->create_contexts_and_site_course();
+
+        $userid = $this->create_test_user();
+        $courseid = $this->create_test_course();
+        $roleid = $this->create_test_role();
+
+        // Create required test users
+        $data = array('action'    => 'create',
+                      'username'  => 'testuser5162a',
+                      'idnumber'  => 'testuser5162a',
+                      'email'     => 'tu5162a@noreply.com',
+                      'password'  => 'TestPassword!0',
+                      'firstname' => 'Test',
+                      'lastname'  => 'User5162a',
+                      'city'      => 'Waterloo',
+                      'country'   => 'CA');
+        //run the import
+        $provider = new rlip_importprovider_fsloguser($data);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1',
+                                                     $provider, NULL, true);
+        //suppress output for now
+        ob_start();
+        $instance->run();
+
+        $data = array('action'    => 'create',
+                      'username'  => 'testuser5162b',
+                      'idnumber'  => 'testuser5162b',
+                      'email'     => 'tu5162b@noreply.com',
+                      'password'  => 'TestPassword!0',
+                      'firstname' => 'Test',
+                      'lastname'  => 'User5162b',
+                      'city'      => 'Waterloo',
+                      'country'   => 'CA');
+        //run the import
+        $provider = new rlip_importprovider_fsloguser($data);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1',
+                                                     $provider, NULL, true);
+        $instance->run();
+
+        $data = array('action'    => 'create',
+                      'username'  => 'testuser5162c',
+                      'idnumber'  => 'testuser5162c',
+                      'email'     => 'tu5162c@noreply.com',
+                      'password'  => 'TestPassword!0',
+                      'firstname' => 'Test',
+                      'lastname'  => 'User5162c',
+                      'city'      => 'Waterloo',
+                      'country'   => 'CA');
+        //run the import
+        $provider = new rlip_importprovider_fsloguser($data);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1',
+                                                     $provider, NULL, true);
+        $instance->run();
+
+        // Create update error ...
+        $data = array('action'    => 'update',
+                      'username'  => 'testuser5162a',
+                      'idnumber'  => 'testuser5162b',
+                      'email'     => 'tu5162c@noreply.com',
+                      'password'  => 'TestPassword!0',
+                      'firstname' => 'Test',
+                      'lastname'  => 'User5162x',
+                      'city'      => 'Waterloo',
+                      'country'   => 'CA');
+
+        // Assert failure conditions
+        $expected_message = "[user.csv line 2] User with username \"testuser5162a\" could not be updated. username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber \"testuser5162b\" matches multiple users.\n";
+        $this->assert_data_produces_error($data, $expected_message, 'user');
+
+        // Create delete error ...
+        $data = array('action'    => 'delete',
+                      'username'  => 'testuser5162a',
+                      'idnumber'  => 'testuser5162b',
+                      'email'     => 'tu5162c@noreply.com',
+                      'password'  => 'TestPassword!0',
+                      'firstname' => 'Test',
+                      'lastname'  => 'User5162x',
+                      'city'      => 'Waterloo',
+                      'country'   => 'CA');
+
+        // Assert failure conditions
+        $expected_message = "[user.csv line 2] User with username \"testuser5162a\" could not be deleted. username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber \"testuser5162b\" matches multiple users.\n";
+        $this->assert_data_produces_error($data, $expected_message, 'user');
     }
 
 }
