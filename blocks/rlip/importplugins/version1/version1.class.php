@@ -756,6 +756,28 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
+     * Generate "Username matches different user than [idnumber] [or] [email]"
+     * @params array  $params     record parameters
+     * @params int    $usernameid user id of username param
+     * @params int    $idnumberid user id of idnumber param
+     * @params int    $emailid    user id of email param
+     * @return string the error string
+     */
+    function user_matches_multiple_string($params, $usernameid, $idnumberid, $emailid) {
+        $msg = array();
+        if (!empty($params['username']) && !empty($usernameid)) {
+            $msg[] = "username \"{$params['username']}\"";
+        }
+        if (!empty($params['email']) && !empty($emailid)) {
+            $msg[] = "email \"{$params['email']}\"";
+        }
+        if (!empty($params['idnumber']) && !empty($idnumberid)) {
+            $msg[] = "idnumber \"{$params['idnumber']}\"";
+        }
+        return implode(', ', $msg) .' matches multiple users.';
+    }
+
+    /**
      * Update a user
      *
      * @param object $record One record of import data
@@ -788,38 +810,47 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //find existing user record
         $params = array();
+        $usernameid = 0;
         if (isset($record->username)) {
             $params['username'] = $record->username;
             $updateusername = $DB->get_record('user', array('username' => $params['username']));
-            if(!$updateusername) {
+            if (!$updateusername) {
                 $identifier = $this->mappings['username'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$params['username']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
+            $usernameid = $updateusername->id;
         }
 
+        $eamilid = 0;
         if (isset($record->email)) {
             $params['email'] = $record->email;
             $updateemail = $DB->get_record('user', array('email' => $params['email']));
-            if(!$updateemail) {
+            if (!$updateemail) {
                 $identifier = $this->mappings['email'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$params['email']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
+            $emailid = $updateemail->id;
         }
 
+        $idnumberid = 0;
         if (isset($record->idnumber)) {
             $params['idnumber'] = $record->idnumber;
             $updateidnumber = $DB->get_record('user', array('idnumber' => $params['idnumber']));
-            if(!$updateidnumber) {
+            if (!$updateidnumber) {
                 $identifier = $this->mappings['idnumber'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$params['idnumber']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
+            $idnumberid = $updateidnumber->id;
         }
 
         $record->id = $DB->get_field('user', 'id', $params);
         if (empty($record->id)) {
+            $msg = $this->user_matches_multiple_string($params, $usernameid, $idnumberid, $emailid);
+            $this->fslogger->log_failure($msg, 0, $filename, $this->linenumber,
+                                         $record, "user");
             return false;
         }
 
@@ -868,34 +899,40 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //find existing user record
         $params = array();
+        $usernameid = 0;
         if (isset($record->username)) {
             $params['username'] = $record->username;
             $updateusername = $DB->get_record('user', array('username' => $params['username']));
-            if(!$updateusername) {
+            if (!$updateusername) {
                 $identifier = $this->mappings['username'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$params['username']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
+            $usernameid = $updateusername->id;
         }
 
+        $emailid = 0;
         if (isset($record->email)) {
             $params['email'] = $record->email;
-            $updateusername = $DB->get_record('user', array('email' => $params['email']));
-            if(!$updateusername) {
+            $updateemail = $DB->get_record('user', array('email' => $params['email']));
+            if (!$updateemail) {
                 $identifier = $this->mappings['email'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$params['email']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
+            $emailid = $updateemail->id;
         }
 
+        $idnumberid = 0;
         if (isset($record->idnumber)) {
             $params['idnumber'] = $record->idnumber;
-            $updateusername = $DB->get_record('user', array('idnumber' => $params['idnumber']));
-            if(!$updateusername) {
+            $updateidnumber = $DB->get_record('user', array('idnumber' => $params['idnumber']));
+            if (!$updateidnumber) {
                 $identifier = $this->mappings['idnumber'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$params['idnumber']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
+            $idnumberid = $updateidnumber->id;
         }
 
         //make the appropriate changes
@@ -909,6 +946,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $this->fslogger->log_success("User with {$user_descriptor} successfully deleted.", 0, $filename, $this->linenumber);
 
             return true;
+        } else {
+            // paramters point to different users
+            $msg = $this->user_matches_multiple_string($params, $usernameid, $idnumberid, $emailid);
+            $this->fslogger->log_failure($msg, 0, $filename, $this->linenumber,
+                                         $record, "user");
         }
 
         return false;
