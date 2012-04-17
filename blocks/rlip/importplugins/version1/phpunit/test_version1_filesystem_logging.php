@@ -6746,7 +6746,7 @@ static function get_overlay_tables() {
                       'country'   => 'CA');
 
         // Assert failure conditions
-        $expected_message = "[user.csv line 2] User with username \"testuser5162a\" could not be updated. username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber \"testuser5162b\" matches multiple users.\n";
+        $expected_message = "[user.csv line 2] User with username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber \"testuser5162b\" could not be updated. username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber \"testuser5162b\" matches multiple users.\n";
         $this->assert_data_produces_error($data, $expected_message, 'user');
 
         // Create delete error ...
@@ -6761,7 +6761,7 @@ static function get_overlay_tables() {
                       'country'   => 'CA');
 
         // Assert failure conditions
-        $expected_message = "[user.csv line 2] User with username \"testuser5162a\" could not be deleted. username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber \"testuser5162b\" matches multiple users.\n";
+        $expected_message = "[user.csv line 2] User with username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber \"testuser5162b\" could not be deleted. username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber \"testuser5162b\" matches multiple users.\n";
         $this->assert_data_produces_error($data, $expected_message, 'user');
     }
 
