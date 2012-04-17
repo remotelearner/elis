@@ -850,24 +850,36 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
     global $CFG;
 
     //if no timeformat is set, set it to logfile timestamp format
-    $format = empty($format) ? get_string('logfile_timestamp','block_rlip'):$format;
+    if (empty($format)) {
+        $format = get_string('logfile_timestamp','block_rlip');
+    }
+
     //add scheduled/manual to the logfile name
-    $scheduling = empty($manual) ? strtolower(get_string('scheduled','block_rlip')) : strtolower(get_string('manual','block_rlip'));
+    $scheduling = empty($manual) ? strtolower(get_string('scheduled','block_rlip'))
+                                 : strtolower(get_string('manual','block_rlip'));
     //use timestamp passed or time()
-    $timestamp  = empty($timestamp) ? time():$timestamp;
+    if (empty($timestamp)) {
+        $timestamp = time();
+    }
 
     //logfile path is relative to dataroot
     if (!empty($filepath)) {
         $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR .
-                    rtrim(trim($filepath, DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR). DIRECTORY_SEPARATOR;
+                    trim($filepath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     } else {
         $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
+    // create directory if it doesn't exist
+    if (!file_exists($filepath) && !@mkdir($filepath, 0777, true)) {
+        // TBD: log this error to UI and/or elsewhere
+        error_log("/blocks/rlip/lib.php::rlip_log_file_name('{$plugin_type}', '{$plugin}', '{$filepath}', '{$entity}', {$manual}, {$timestamp}, {$format}, {$timezone}) - Error creating directory: '{$filepath}'");
     }
 
     //create filename
     if ($plugin_type == 'import') { //include entity
         $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.$entity.'_'.userdate($timestamp, $format, $timezone).'.log';
-    } else if ($plugin_type == 'export') {
+    } else { // default 'export'
         $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.userdate($timestamp, $format, $timezone).'.log';
     }
 

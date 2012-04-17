@@ -1132,4 +1132,40 @@ class utilityMethodTest extends rlip_test {
         $this->assertLessThanOrEqual(RLIP_LOGS_PER_PAGE, $count);
     }
 
+    /*
+     * Helper function to delete $path including parent dirs upto $basedir
+     */
+    function delete_full_path($basedir, $path) {
+        $todel = $basedir . $path;
+        do {
+            //echo "delete_full_path(): about to delete '", $todel, "'\n";
+            //sleep(5);
+            @rmdir($todel);
+            $todel = dirname($todel);
+        } while (strcmp($basedir, $todel));
+    }
+
+    /**
+     * Validate that the library function rlip_log_file_name()
+     * creates log files directories
+     */
+    function test_rlip_log_file_name() {
+        global $CFG;
+
+        $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
+        $exportpath = '/phpunit/rlip/exportlogpath';
+        $importpath = '/phpunit/rlip/importlogpath';
+
+        $logfile = rlip_log_file_name('bogus', 'bogus', $exportpath);
+        $this->assertTrue(file_exists($dataroot . $exportpath));
+        //@unlink($logfile);
+
+        $logfile = rlip_log_file_name('bogus', 'bogus', $importpath);
+        $this->assertTrue(file_exists($dataroot . $importpath));
+        //@unlink($logfile);
+
+        $this->delete_full_path($dataroot, $exportpath);
+        $this->delete_full_path($dataroot, $importpath);
+    }
 }
+
