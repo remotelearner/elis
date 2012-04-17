@@ -398,7 +398,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                  'idnumber');
 
         foreach ($possible_fields as $field) {
-            if (isset($record->$field)) {
+            if (isset($record->$field) && $record->$field !== '') {
                 //data for that field
                 $value = $record->$field;
 

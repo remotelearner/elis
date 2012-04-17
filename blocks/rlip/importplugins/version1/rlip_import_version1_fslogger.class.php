@@ -230,24 +230,30 @@ class rlip_import_version1_fslogger extends rlip_fslogger_linebased {
             $type = ucfirst($type);
             switch ($record->action) {
                 case "create":
-                    if (empty($record->username)) {
+                    //make sure all required fields are specified
+                    if (empty($record->username) || empty($record->email)) {
                         $msg = "User could not be created. " . $message;
                     } else {
-                        $msg =  "{$type} with username \"{$record->username}\" could not be created. " . $message;
+                        $user_descriptor = rlip_importplugin_version1::get_user_descriptor($record);
+                        $msg =  "{$type} with {$user_descriptor} could not be created. " . $message;
                     }
                     break;
                 case "update":
-                    if (empty($record->username)) {
+                    //make sure all required fields are specified
+                    if (empty($record->username) && empty($record->email) && empty($record->idnumber)) {
                         $msg = "User could not be updated. " . $message;
                     } else {
-                        $msg = "{$type} with username \"{$record->username}\" could not be updated. " . $message;
+                        $user_descriptor = rlip_importplugin_version1::get_user_descriptor($record);
+                        $msg = "{$type} with {$user_descriptor} could not be updated. " . $message;
                     }
                     break;
                 case "delete":
-                    if (empty($record->username)) {
+                    //make sure all required fields are specified
+                    if (empty($record->username) && empty($record->email) && empty($record->idnumber)) {
                         $msg = "User could not be deleted. " . $message;
                     } else {
-                        $msg = "{$type} with username \"{$record->username}\" could not be deleted. " . $message;
+                        $user_descriptor = rlip_importplugin_version1::get_user_descriptor($record);
+                        $msg = "{$type} with {$user_descriptor} could not be deleted. " . $message;
                     }
                     break;
                 default:

@@ -658,7 +658,7 @@ static function get_overlay_tables() {
                       'city' => 'Rlipcity',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field custompassword is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" could not be created. Required field custompassword is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -679,7 +679,7 @@ static function get_overlay_tables() {
                       'city' => 'Rlipcity',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field customfirstname is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" could not be created. Required field customfirstname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -700,7 +700,7 @@ static function get_overlay_tables() {
                       'city' => 'Rlipcity',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field customlastname is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" could not be created. Required field customlastname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -721,7 +721,7 @@ static function get_overlay_tables() {
                       'city' => 'Rlipcity',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field customemail is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User could not be created. Required field customemail is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -742,7 +742,7 @@ static function get_overlay_tables() {
                       'customcity' => '',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field customcity is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" could not be created. Required field customcity is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -763,7 +763,32 @@ static function get_overlay_tables() {
                       'city' => 'Rlipcity',
                       'customcountry' => '');
 
-        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. Required field customcountry is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" could not be created. Required field customcountry is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that general user messages include the idnumber when specified
+     * on a create action
+     */
+    public function testVersion1ImportLogsCreateMessageWithUserIdnumber() {
+        //create mapping record
+        $this->create_mapping_record('user', 'country', 'customcountry');
+
+        //validation for an empty country field
+        $data = array('action' => 'create',
+                      'username' => 'rlipusername',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'Rlipfirstname',
+                      'lastname' => 'Rliplastname',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'city' => 'Rlipcity',
+                      'customcountry' => '',
+                      'idnumber' => 'rlipidnumber');
+
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", ".
+                          "idnumber \"rlipidnumber\" could not be created. Required field customcountry is unspecified ".
+                          "or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -785,6 +810,59 @@ static function get_overlay_tables() {
     }
 
     /**
+     * Validate that general user messages include the idnumber when not
+     * specified on an update action
+     */
+    public function testVersion1ImportLogsUpdateMessageWithoutUserIdnumber() {
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
+        $data = array('action' => 'update',
+                      'customusername' => 'rlipusername',
+                      'email' => 'rlipuser@rlipdomain.com');
+
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" ".
+                          "could not be updated. customusername value of \"rlipusername\" does not refer to a valid ".
+                          "user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that general user messages include the idnumber when specified
+     * on an update action
+     */
+    public function testVersion1ImportLogsUpdateMessageWithUserIdnumber() {
+        $data = array('action' => 'update',
+                      'username' => 'rlipusername',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'idnumber' => 'rlipidnumber');
+
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", ".
+                          "idnumber \"rlipidnumber\" could not be updated. username value of \"rlipusername\" does not ".
+                          "refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that general user messages work without username specified on
+     * an update action
+     */
+    public function testVersion1ImportLogsUserMessageWithoutUsername() {
+        //create mapping record
+        $this->create_mapping_record('user', 'email', 'customemail');
+
+        //validation for an empty country field
+        $data = array('action' => 'update',
+                      'customemail' => 'rlipuser@rlipdomain.com',
+                      'idnumber' => 'rlipidnumber');
+
+        $expected_error = "[user.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" ".
+                          "could not be updated. customemail value of \"rlipuser@rlipdomain.com\" does not refer to a ".
+                          "valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
      * Validates that an error is logged for an empty username field on user delete
      */
     public function testVersion1ImportLogsEmptyUserUsernameOnDelete() {
@@ -797,6 +875,42 @@ static function get_overlay_tables() {
         $data = array('action' => 'delete',
                       'customusername' => '');
         $expected_error = "[user.csv line 2] User could not be deleted. One of customusername, customemail, customidnumber is required but all are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that general user messages do not include the idnumber when
+     * not specified on a delete action
+     */
+    public function testVersion1ImportLogsDeleteMessageWithoutUserIdnumber() {
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
+        $data = array('action' => 'delete',
+                      'customusername' => 'rlipusername',
+                      'email' => 'rlipuser@rlipdomain.com');
+
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" ".
+                          "could not be deleted. customusername value of \"rlipusername\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that general user messages include the idnumber when specified
+     * on a delete action
+     */
+    public function testVersion1ImportLogsDeleteMessageWithUserIdnumber() {
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
+        $data = array('action' => 'delete',
+                      'customusername' => 'rlipusername',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'idnumber' => 'rlipidnumber');
+
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", ".
+                          "idnumber \"rlipidnumber\" could not be deleted. customusername value of \"rlipusername\" ".
+                          "does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4249,7 +4363,7 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'customauth' => 'bogus');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customauth value of \"bogus\" is not a valid auth plugin.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. customauth value of \"bogus\" is not a valid auth plugin.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4279,7 +4393,7 @@ static function get_overlay_tables() {
                       'city' => 'Waterloo',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customusername value of \"testusername\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"rlipuser@rlipdomain.com\" could not be created. customusername value of \"testusername\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4299,12 +4413,12 @@ static function get_overlay_tables() {
                       'city' => 'Waterloo',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customemail value of \"bogusemail\" is not a valid email address.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"bogusemail\" could not be created. customemail value of \"bogusemail\" is not a valid email address.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $this->load_csv_data();
         $data['customemail'] = 'test@user.com';
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customemail value of \"test@user.com\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\" could not be created. customemail value of \"test@user.com\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4327,7 +4441,7 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'customidnumber' => 'idnumber');
 
-        $expected_error = "[user.csv line 2] User with username \"uniqueusername\" could not be created. customidnumber value of \"idnumber\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] User with username \"uniqueusername\", email \"rlipuser@rlipdomain.com\", idnumber \"idnumber\" could not be created. customidnumber value of \"idnumber\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4351,7 +4465,7 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'idnumber' => 'idnumber');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. custompassword value of \"invalidpassword\" does not conform to your site's password policy.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"bogusemail\", idnumber \"idnumber\" could not be created. custompassword value of \"invalidpassword\" does not conform to your site's password policy.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4372,7 +4486,7 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'custommaildigest' => '3');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. custommaildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. custommaildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4393,7 +4507,7 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'customautosubscribe' => '2');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customautosubscribe value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. customautosubscribe value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4416,12 +4530,12 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'customtrackforums' => '1');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. Tracking unread posts is currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. Tracking unread posts is currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('forum_trackreadposts', 1);
         $data['customtrackforums'] = 2;
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customtrackforums value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. customtrackforums value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4442,7 +4556,7 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'customscreenreader' => '2');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customscreenreader value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. customscreenreader value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4462,7 +4576,7 @@ static function get_overlay_tables() {
                       'city' => 'Waterloo',
                       'customcountry' => 'bogus');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customcountry value of \"bogus\" is not a valid country or country code.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. customcountry value of \"bogus\" is not a valid country or country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4485,7 +4599,7 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'customtimezone' => 'bogus');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customtimezone value of \"bogus\" is not a valid timezone.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. customtimezone value of \"bogus\" is not a valid timezone.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('forcetimezone', '-5.0');
@@ -4500,7 +4614,7 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'customtimezone' => '-4.0');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customtimezone value of \"-4.0\" is not consistent with forced timezone value of \"-5.0\" on your site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. customtimezone value of \"-4.0\" is not consistent with forced timezone value of \"-5.0\" on your site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4523,12 +4637,12 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'customtheme' => 'bartik');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. User themes are currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. User themes are currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         set_config('allowuserthemes', 1);
         $data['customtheme'] = 'bogus';
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customtheme value of \"bogus\" is not a valid theme.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. customtheme value of \"bogus\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4549,7 +4663,7 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'customlang' => 'bogus');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. customlang value of \"bogus\" is not a valid language code.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be created. customlang value of \"bogus\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4632,17 +4746,17 @@ static function get_overlay_tables() {
                       'customprofile_field_checkbox' => 2);
 
 
-        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. \"2\" is not one of the available options for a checkbox profile field checkbox (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" could not be created. \"2\" is not one of the available options for a checkbox profile field checkbox (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         unset($data['customprofile_field_checkbox']);
         $data['customprofile_field_menu'] = 'option2';
-        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" could not be created. \"option2\" is not one of the available options for a menu of choices profile field menu.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         unset($data['customprofile_field_menu']);
         $data['customprofile_field_date'] = 'bogus';
-        $expected_error = "[user.csv line 2] User with username \"rlipusername\" could not be created. customprofile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
+        $expected_error = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" could not be created. customprofile_field_date value of \"bogus\" is not a valid date in MMM/DD/YYYY or MM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4664,7 +4778,7 @@ static function get_overlay_tables() {
                       'customemail' => 'testinvalid@user.com',
                       'city' => 'Waterloo');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. customemail value of \"testinvalid@user.com\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be updated. customemail value of \"testinvalid@user.com\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4678,7 +4792,7 @@ static function get_overlay_tables() {
                       'customemail' => 'testinvalid@user.com',
                       'city' => 'Waterloo');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be deleted. customemail value of \"testinvalid@user.com\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be deleted. customemail value of \"testinvalid@user.com\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4693,7 +4807,7 @@ static function get_overlay_tables() {
                       'city' => 'Waterloo',
                       'custommaildigest' => 3);
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. custommaildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be updated. custommaildigest value of \"3\" is not one of the available options (0, 1, 2).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4709,7 +4823,7 @@ static function get_overlay_tables() {
                       'maildigest' => 2,
                       'customautosubscribe' => 2);
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. customautosubscribe value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be updated. customautosubscribe value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4723,7 +4837,7 @@ static function get_overlay_tables() {
                       'maildigest' => 2,
                       'autosubscribe' => 1,
                       'trackforums' => 0);
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. Tracking unread posts is currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\" could not be updated. Tracking unread posts is currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4741,7 +4855,7 @@ static function get_overlay_tables() {
                       'autosubscribe' => 1,
                       'customtrackforums' => 2);
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. customtrackforums value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\" could not be updated. customtrackforums value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4760,7 +4874,7 @@ static function get_overlay_tables() {
                       'trackforums' => 1,
                       'customscreenreader' => 2);
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. customscreenreader value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\" could not be updated. customscreenreader value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4775,7 +4889,7 @@ static function get_overlay_tables() {
                       'idnumber' => 'idnumber',
                       'city' => 'Waterloo');
 
-        $expected_error = "[user.csv line 2] User with username \"invalidusername\" could not be updated. customusername value of \"invalidusername\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"invalidusername\", email \"test@user.com\", idnumber \"idnumber\" could not be updated. customusername value of \"invalidusername\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4790,7 +4904,7 @@ static function get_overlay_tables() {
                       'idnumber' => 'idnumber',
                       'city' => 'Waterloo');
 
-        $expected_error = "[user.csv line 2] User with username \"invalidusername\" could not be deleted. customusername value of \"invalidusername\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"invalidusername\", email \"test@user.com\", idnumber \"idnumber\" could not be deleted. customusername value of \"invalidusername\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4805,7 +4919,7 @@ static function get_overlay_tables() {
                       'customidnumber' => 'invalidid',
                       'city' => 'Waterloo');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. customidnumber value of \"invalidid\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"invalidid\" could not be updated. customidnumber value of \"invalidid\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4820,7 +4934,7 @@ static function get_overlay_tables() {
                       'customidnumber' => 'invalidid',
                       'city' => 'Waterloo');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be deleted. customidnumber value of \"invalidid\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"invalidid\" could not be deleted. customidnumber value of \"invalidid\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4837,7 +4951,7 @@ static function get_overlay_tables() {
                       'city' => 'Waterloo',
                       'customauth' => 'invalidauth');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. customauth value of \"invalidauth\" is not a valid auth plugin.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"idnumber\" could not be updated. customauth value of \"invalidauth\" is not a valid auth plugin.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4853,7 +4967,7 @@ static function get_overlay_tables() {
                       'custompassword' => '1234567',
                       'city' => 'Waterloo');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. custompassword value of \"1234567\" does not conform to your site's password policy.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"idnumber\" could not be updated. custompassword value of \"1234567\" does not conform to your site's password policy.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4899,7 +5013,7 @@ static function get_overlay_tables() {
                       'country' => 'CA',
                       'theme' => 'invalidtheme',
                      );
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. User themes are currently disabled on this site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"idnumber\" could not be updated. User themes are currently disabled on this site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4919,7 +5033,7 @@ static function get_overlay_tables() {
                       'customtheme' => 'invalidtheme',
                      );
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. customtheme value of \"invalidtheme\" is not a valid theme.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"idnumber\" could not be updated. customtheme value of \"invalidtheme\" is not a valid theme.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4942,7 +5056,7 @@ static function get_overlay_tables() {
                       'customtimezone' => 98,
                      );
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. customtimezone value of \"98\" is not consistent with forced timezone value of \"{$CFG->forcetimezone}\" on your site.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"idnumber\" could not be updated. customtimezone value of \"98\" is not consistent with forced timezone value of \"{$CFG->forcetimezone}\" on your site.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4964,7 +5078,7 @@ static function get_overlay_tables() {
                       'customtimezone' => 'invalidtimezone',
                      );
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. customtimezone value of \"invalidtimezone\" is not a valid timezone.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"idnumber\" could not be updated. customtimezone value of \"invalidtimezone\" is not a valid timezone.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -6008,10 +6122,16 @@ static function get_overlay_tables() {
         $value = str_repeat('x', $maxlength + 1);
         $data['custom'.$field] = $value;
         $username = 'rlipusername';
+        $email = 'rlipuser@rlipdomain.com';
+        $idnumber_display = '';
         if ($field == 'username') {
             $username = $value;
+        } else if ($field == 'email') {
+            $email = $value;
+        } else if ($field == 'idnumber') {
+            $idnumber_display = ', idnumber "'.$value.'"';
         }
-        $expected_error = "[user.csv line 2] User with username \"{$username}\" could not be created. custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $expected_error = "[user.csv line 2] User with username \"{$username}\", email \"{$email}\"{$idnumber_display} could not be created. custom{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
