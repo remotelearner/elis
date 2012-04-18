@@ -58,7 +58,20 @@ if ($data = $form->get_data()) {
     //indicate to the factory class that this is a manual run
     $manual = true;
     $instance = rlip_dataplugin_factory::factory($plugin, NULL, $fileplugin, $manual);
-    $instance->run(0, 0, rlip_get_maxruntime());
+    ob_start();
+    $result = $instance->run(0, 0, rlip_get_maxruntime());
+    $errors = ob_get_contents();
+    ob_end_clean();
+    if ($result != null) {
+        // Error running export (probably time limit exceeded)
+        echo $OUTPUT->header();
+        echo $errors;
+        echo $OUTPUT->footer();
+    } else {
+        $fileplugin->send_headers();
+        $fileplugin->output_file();
+        $fileplugin->delete();
+    }
 
     //stop page output so that HTML isn't included in the export file
     die;

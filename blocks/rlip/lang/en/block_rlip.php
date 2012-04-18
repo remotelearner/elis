@@ -61,6 +61,7 @@ $string['logtimeformat'] = '%b/%d/%Y:%H:%M:%S';
 $string['loguser'] = 'User';
 $string['managesched'] = 'Manage';
 $string['manual'] = 'Manual';
+$string['manualexportexceedstimelimit'] = 'Export processing aborted due to time restrictions.';
 $string['manualimportexceedstimelimit'] = 'Failed importing all lines from import file {$a->filename} due to time limit exceeded. Processed {$a->filesuccesses} of {$a->totalrecords} records.';
 $string['manualstatus'] = '{$a->statusmessage} ({$a->filesuccesses} of {$a->total})';
 $string['na'] = 'N/A';

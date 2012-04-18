@@ -30,6 +30,7 @@ define('RLIP_FILE_WRITE', 2);
 
 abstract class rlip_fileplugin_base {
     var $filename;
+    var $tempfile; // used when sendtobrowser = true
     var $fileid;
     //track whether we're sending to the browser, for writes
     var $sendtobrowser;
@@ -49,12 +50,19 @@ abstract class rlip_fileplugin_base {
         $this->sendtobrowser = $sendtobrowser;
     }
 
-	/**
-	 * Hook for opening the file
-	 *
-	 * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
-	 *                  the mode in which the file should be opened
-	 */
+    /**
+     * Hook for sending required HTTP headers to browser for direct download
+     */
+    function send_headers() {
+        // nothing by default
+    }
+
+    /**
+     * Hook for opening the file
+     *
+     * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
+     *                  the mode in which the file should be opened
+     */
     abstract function open($mode);
 
     /**
@@ -94,6 +102,25 @@ abstract class rlip_fileplugin_base {
      * @return string The file name.
      */
     abstract function get_filename($withpath = false);
+
+    /**
+     * Output file contents
+     * @param bool $return  true to return file contents as string,
+     *                      false to output directly to stdout
+     */
+    function output_file($return = false) {
+        // todo: support Moodle fileids
+        $filename = $this->get_filename(true);
+        if ($return) {
+            return file_get_contents($filename);
+        }
+        if (($fptr = fopen($filename, 'r'))) {
+            while (($fline = fgets($fptr)) !== false) {
+                echo $fline;
+            }
+            fclose($fptr);
+        }
+    }
 }
 
 /**
