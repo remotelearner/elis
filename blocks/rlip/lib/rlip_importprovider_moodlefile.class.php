@@ -33,7 +33,9 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 class rlip_importprovider_moodlefile extends rlip_importprovider {
     var $entity_types;
     var $fileids;
-    var $filename;
+    //full path of the log file, including its filename, NOT relative to the
+    //moodledata directory
+    var $logpath;
 
     /**
      * Constructor
@@ -83,12 +85,22 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
         return new rlip_dblogger_import(true);
     }
 
-    public function set_file_name($filename) {
-        $this->filename = $filename;
+    /**
+     * Set the full path of the log file, including its filename
+     *
+     * @param string $logpath The appropriate path and filename
+     */
+    public function set_log_path($logpath) {
+        $this->logpath = $logpath;
     }
 
-    public function get_file_name() {
-        return $this->filename;
+    /**
+     * Obtains the full path of the log file, including its filename
+     *
+     * @return string $logpath The appropriate path and filename
+     */
+    public function get_log_path() {
+        return $this->logpath;
     }
 
     /**
@@ -110,7 +122,7 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
         //get filename
         $filename = rlip_log_file_name('import', $plugin, $filepath, $entity, $manual, $starttime);
         if (!empty($filename)) {
-            $this->set_file_name($filename);
+            $this->set_log_path($filename);
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
             return rlip_fslogger_factory::factory($plugin, $fileplugin, $manual);
         }
