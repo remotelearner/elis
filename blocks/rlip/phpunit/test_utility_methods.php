@@ -35,6 +35,32 @@ require_once($CFG->dirroot .'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot .'/elis/core/lib/testlib.php');
 
 /**
+ * An overlay database that allows for deleted tables
+ */
+class overlay_utility_database extends overlay_database {
+    /**
+     * Clean up the temporary tables.  You'd think that if this method was
+     * called dispose, then the cleanup would happen automatically, but it
+     * doesn't.
+     */
+    public function cleanup() {
+        $manager = $this->get_manager();
+        foreach ($this->overlaytables as $tablename => $component) {
+            $xmldb_file = $this->xmldbfiles[$component];
+            $structure = $xmldb_file->getStructure();
+            $table = $structure->getTable($tablename);
+            // FIXME: when http://bugs.mysql.com/bug.php?id=10327 gets fixed,
+            // we can switch this back to drop_temp_table
+            try {
+                $manager->drop_table($table);
+            } catch (Exception $ex) {
+                ; // ignore - table probably already dropped
+            }
+        }
+    }
+}
+
+/**
  * Class for testing utility methods
  */
 class utilityMethodTest extends rlip_test {
@@ -43,7 +69,12 @@ class utilityMethodTest extends rlip_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
+        global $CFG;
+        require_once($CFG->dirroot .'/blocks/rlip/exportplugins/version1/lib.php');
+        require_once($CFG->dirroot .'/blocks/rlip/importplugins/version1/lib.php');
         return array(RLIP_SCHEDULE_TABLE => 'block_rlip',
+                     RLIPEXPORT_VERSION1_FIELD_TABLE => 'rlipexport_version1',
+                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      'elis_scheduled_tasks' => 'elis_core',
                      'config_plugins' => 'moodle',
                      RLIP_LOG_TABLE => 'block_rlip',
@@ -60,6 +91,18 @@ class utilityMethodTest extends rlip_test {
      */
     static protected function get_ignored_tables() {
         return array('context' => 'moodle');
+    }
+
+    public static function setUpBeforeClass() {
+        // called before each test function
+        global $DB;
+        self::$origdb = $DB;
+        self::$overlaydb = new overlay_utility_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
+        //self::$overlaydb = new overlay_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
+
+        static::get_csv_files();
+        static::get_logfilelocation_files();
+        static::get_zip_files();
     }
 
     /**
@@ -1167,5 +1210,64 @@ class utilityMethodTest extends rlip_test {
         $this->delete_full_path($dataroot, $exportpath);
         $this->delete_full_path($dataroot, $importpath);
     }
+
+    /**
+     * Validate that the block method before_delete()
+     * deletes all block_rlip tables & data
+     */
+    function test_block_rlip_before_delete() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot .'/blocks/moodleblock.class.php');
+        require_once($CFG->dirroot .'/blocks/rlip/block_rlip.php');
+
+        // setup some bogus config_plugins settings and elis_scheduled_tasks
+        set_config('bogus1', 1, 'block_rlip');
+        set_config('bogus2', 1, 'rlipexport_version1');
+        set_config('bogus3', 1, 'rlipimport_version1');
+
+        // add some bogus RLIP scheduled tasks
+        $est_data = array('type'   => 'rlipimport',
+                          'plugin' => 'rlipimport_version1',
+                          'period' => '15m',
+                          'label'  => 'bogus');
+        rlip_schedule_add_job($est_data);
+        rlip_schedule_add_job($est_data);
+        $est_data['type'] = 'rlipexport';
+        $est_data['plugin'] = 'rlipexport_version1';
+        rlip_schedule_add_job($est_data);
+        rlip_schedule_add_job($est_data);
+
+        // call the RLIP block before_delete() method
+        $blockobj = new block_rlip;
+        $blockobj->before_delete();
+
+        // test RLIP tables were deleted ...
+        // Notes: $dbman->generator not overlay
+        //        ... so ->table_exists() calls work on real 'mdl_' tables!?!
+        // Found another method to test tables don't exist!
+        try {
+            $DB->count_records(RLIPEXPORT_VERSION1_FIELD_TABLE);
+            $this->assertTrue(false);
+        } catch (Exception $e) {
+            ; // expected exception table not found!
+        }
+        try {
+            $DB->count_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
+            $this->assertTrue(false);
+        } catch (Exception $e) {
+            ; // expected exception table not found!
+        }
+
+        // test RLIP elis schedule task deleted
+        $iprecs = $DB->get_records_select('elis_scheduled_tasks',
+                           "taskname LIKE 'ipjob_%'");
+        $this->assertTrue(empty($iprecs));
+
+        // test RLIP config settings deleted
+        $this->assertFalse(get_config('block_rlip', 'bogus1'));
+        $this->assertFalse(get_config('rlipexport_version1', 'bogus2'));
+        $this->assertFalse(get_config('rlipimport_version1', 'bogus3'));
+    }
+
 }
 
