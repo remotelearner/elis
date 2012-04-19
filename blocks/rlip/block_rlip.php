@@ -81,6 +81,10 @@ class block_rlip extends block_base {
 
         $dbman = $DB->get_manager();
 
+        // delete any elis_scheduled_tasks for block
+        $DB->delete_records('elis_scheduled_tasks',
+                            array('plugin' => 'block/rlip'));
+
         $rlipexporttbl = new xmldb_table(RLIPEXPORT_VERSION1_FIELD_TABLE);
         if ($dbman->table_exists($rlipexporttbl)) {
             $dbman->drop_table($rlipexporttbl);
@@ -91,8 +95,21 @@ class block_rlip extends block_base {
             $dbman->drop_table($rlipimporttbl);
         }
 
-        $rlipplugins = array('rlipexport_version1', 'block_rlip', 'rlipimport_version1');
-        $DB->delete_records_select('config_plugins', "plugin = ? OR plugin = ? OR plugin = ?", $rlipplugins);
+        $rliptypes = array('rlipimport', 'rlipexport');
+        $rlipplugins = array('block_rlip');
+        foreach ($rliptypes as $rliptype) {
+            $subplugins = array_keys(get_plugin_list($rliptype));
+            array_walk($subplugins, 'array_prepend_to_values', $rliptype);
+            $rlipplugins = array_merge($rlipplugins, $subplugins);
+        }
+        //echo "block_rlip::before_delete(): plugin IN ('". implode("', '", $rlipplugins) ."')";
+        $DB->delete_records_select('config_plugins',
+                "plugin IN ('". implode("', '", $rlipplugins) ."')");
     }
 
 }
+
+function array_prepend_to_values(&$item, $key, $prefix) {
+    $item = $prefix .'_'. $item;
+}
+

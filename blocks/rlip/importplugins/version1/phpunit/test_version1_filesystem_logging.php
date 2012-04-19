@@ -226,7 +226,7 @@ class version1FilesystemLoggingTest extends rlip_test {
     /**
      * Return the list of tables that should be overlayed.
      */
-static function get_overlay_tables() {
+    static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';

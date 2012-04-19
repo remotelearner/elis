@@ -247,7 +247,11 @@ abstract class rlip_dblogger {
         $record->unmetdependency = $this->unmetdependency;
         $record->maxruntimeexceeded = $this->maxruntimeexceeded;
         $record->totalrecords = $this->totalrecords;
-        $record->logpath = $this->logpath;
+        if (file_exists($this->logpath)) {
+            $record->logpath = $this->logpath;
+        } else {
+            $record->logpath = NULL;
+        }
         $record->entitytype = $this->entitytype;
 
         //perform any necessary data specialization

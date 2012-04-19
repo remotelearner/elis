@@ -31,6 +31,10 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
  * for a particular import entity type
  */
 abstract class rlip_importprovider {
+    //full path of the log file, including its filename, NOT relative to the
+    //moodledata directory
+    var $logpath = NULL;
+
     /**
      * Hook for providing a file plugin for a particular
      * import entity type
@@ -72,10 +76,29 @@ abstract class rlip_importprovider {
         //get filename
         $filename = rlip_log_file_name('import', $plugin, $filepath, $entity, $manual, $starttime);
         if (!empty($filename)) {
+            $this->set_log_path($filename);
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
             return rlip_fslogger_factory::factory($plugin, $fileplugin, $manual);
         }
         return null;
+    }
+
+    /**
+     * Set the full path of the log file, including its filename
+     *
+     * @param string $logpath The appropriate path and filename
+     */
+    public function set_log_path($logpath) {
+        $this->logpath = $logpath;
+    }
+
+    /**
+     * Obtains the full path of the log file, including its filename
+     *
+     * @return string $logpath The appropriate path and filename
+     */
+    public function get_log_path() {
+        return $this->logpath;
     }
 }
 
@@ -636,9 +659,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //set up fslogger with this starttime for this entity
         $this->fslogger = $this->provider->get_fslogger($this->dblogger->plugin, $entity, $this->manual, $starttime);
 
-        if (method_exists($this->provider, 'get_file_name')) {
-            $this->dblogger->set_log_path($filename);
-        }
+        $this->dblogger->set_log_path($this->provider->get_log_path());
 
         $this->dblogger->set_entity_type($entity);
 
