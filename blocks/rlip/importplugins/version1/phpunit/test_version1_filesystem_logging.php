@@ -398,7 +398,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $plugin_type = 'import';
         $plugin = 'rlipimport_version1';
         $format = get_string('logfile_timestamp','block_rlip');
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_version1_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         //get most recent logfile
         $filename = self::get_current_logfile($testfilename);
         if (!file_exists($filename)) {
@@ -5789,7 +5789,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $entity = 'user';
 
         $filename = rlip_log_file_name($plugin_type, $plugin, '', $entity, $manual, $timestamp);
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($timestamp, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_version1_manual_'.$entity.'_'.userdate($timestamp, $format).'.log';
         //get most recent logfile +1 as that is what is returned by rlip_log_file_name
         $testfilename = self::get_next_logfile($testfilename);
 
@@ -5835,7 +5835,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $format = get_string('logfile_timestamp','block_rlip');
         $entity = 'user';
         $starttime = $DB->get_field(RLIP_LOG_TABLE,'starttime',array('id'=>'1'));
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_version1_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
         $testfilename = self::get_current_logfile($testfilename);
 
         $exists = file_exists($testfilename);
@@ -5903,7 +5903,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $plugin = 'rlipimport_version1';
         $manual = true;
         $entity = 'user';
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_scheduled_'.$entity.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_version1_scheduled_'.$entity.'_'.userdate($starttime, $format).'.log';
         $testfilename = self::get_current_logfile($testfilename);
 
         $exists = file_exists($testfilename);
@@ -5962,7 +5962,7 @@ class version1FilesystemLoggingTest extends rlip_test {
             }
 
             //get base filename
-            $basefilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
+            $basefilename = $filepath.'/'.$plugin_type.'_version1_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
             //get calculated filename
             $testfilename = self::get_current_logfile($basefilename);
 
@@ -6016,7 +6016,7 @@ class version1FilesystemLoggingTest extends rlip_test {
             $starttime = $record->starttime;
             break;
         }
-        $testfilename = $plugin_type .'_'. $plugin .'_manual_'. $entity .'_'.
+        $testfilename = $plugin_type .'_version1_manual_'. $entity .'_'.
                         userdate($starttime, $format) .'.log';
         $filename = self::get_current_logfile($testfilename);
         //echo "testVersion1ImportLogsRuntimeError(): logfile ?=> {$filename}\n";

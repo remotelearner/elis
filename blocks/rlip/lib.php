@@ -876,12 +876,16 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
         error_log("/blocks/rlip/lib.php::rlip_log_file_name('{$plugin_type}', '{$plugin}', '{$filepath}', '{$entity}', {$manual}, {$timestamp}, {$format}, {$timezone}) - Error creating directory: '{$filepath}'");
     }
 
-    //create filename
-    if ($plugin_type == 'import') { //include entity
-        $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.$entity.'_'.userdate($timestamp, $format, $timezone).'.log';
-    } else { // default 'export'
-        $filename = $filepath.$plugin_type.'_'.$plugin.'_'.$scheduling.'_'.userdate($timestamp, $format, $timezone).'.log';
+    $pluginparts = explode('_', $plugin);
+    if (empty($pluginparts[1])) {
+        $pluginparts[1] = 'unknown';
     }
+    //create filename
+    $filename = $filepath . $plugin_type .'_'. $pluginparts[1] .'_'. $scheduling .'_';
+    if ($plugin_type == 'import') { //include entity
+        $filename .= $entity .'_';
+    }
+    $filename .= userdate($timestamp, $format, $timezone) .'.log';
 
     //make sure the filename is unique
     $count = 0;
@@ -921,7 +925,7 @@ function rlip_compress_logs_cron($taskname, $runtime = 0, $time = 0) {
     //Loop through all plugins...
     $timestamp = userdate($time, get_string('logfiledaily_timestamp','block_rlip'), 99);
 
-    foreach ($plugintypes as $plugintype=>$pluginvalue) {
+    foreach ($plugintypes as $plugintype => $pluginvalue) {
         //base directory
         $directory = $directories[$plugintype];
 
@@ -941,7 +945,7 @@ function rlip_compress_logs_cron($taskname, $runtime = 0, $time = 0) {
             $logfilelocation = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) .
                   DIRECTORY_SEPARATOR .
                   trim($logfilelocation, DIRECTORY_SEPARATOR);
-            $logfileprefix = "{$pluginvalue}_{$plugin_name}";
+            $logfileprefix = "{$pluginvalue}_{$name}";
             $logfiledate = $timestamp;
 
             //do a glob of all log files of this plugin name and of the previous day's date
