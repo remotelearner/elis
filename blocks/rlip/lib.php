@@ -766,9 +766,12 @@ function rlip_get_log_table($logs) {
 
     $table->data = array();
 
+    $logstr = get_string('log', 'block_rlip');
+
     //fill in table data
     foreach ($logs as $log) {
-        $user = $DB->get_record('user', array('id' => $log->userid));
+        // TODO: cache user records here so we aren't constantly fetching records from the DB?
+        $user = $DB->get_record('user', array('id' => $log->userid), 'firstname, lastname');
 
         if ($log->export == 1) {
             //export case
@@ -796,22 +799,28 @@ function rlip_get_log_table($logs) {
             $targetstarttime = userdate($log->targetstarttime, $timeformat, 99, false);
         }
 
-        $logstr = get_string('log', 'block_rlip');
-        $link = "<a href=\"download.php?id=$log->id\">$logstr</a>";
+        // ELIS-5199 Only display a link to the file if a viable file exists
+        if (rlip_log_file_exists($log)) {
+            $link = "<a href=\"download.php?id=$log->id\">$logstr</a>";
+        } else {
+            $link = '';
+        }
 
         //construct data row
-        $table->data[] = array($plugintype,
-                               get_string('pluginname', $log->plugin),
-                               $executiontype,
-                               fullname($user),
-                               $targetstarttime,
-                               userdate($log->starttime, $timeformat, 99, false),
-                               userdate($log->endtime, $timeformat, 99, false),
-                               $log->filesuccesses,
-                               $filefailures,
-                               $log->statusmessage,
-                               $entitytype,
-                               $link);
+        $table->data[] = array(
+            $plugintype,
+            get_string('pluginname', $log->plugin),
+            $executiontype,
+            fullname($user),
+            $targetstarttime,
+            userdate($log->starttime, $timeformat, 99, false),
+            userdate($log->endtime, $timeformat, 99, false),
+            $log->filesuccesses,
+            $filefailures,
+            $log->statusmessage,
+            $entitytype,
+            $link
+        );
     }
 
     return $table;
@@ -1017,4 +1026,29 @@ function rlip_schedulding_init() {
         // Add a cron task for the RLIP block
         elis_tasks_update_definition('block_rlip');
     }
+}
+
+
+/**
+ * Determine if a given log record has a log present on the filesystem (handles both
+ *
+ * @uses $CFG
+ * @param object|integer $logorid The log record from the DB or the record ID to detect a file for
+ * @return boolean True if a viable file exists, False otherwise
+ */
+function rlip_log_file_exists($logorid) {
+    global $CFG;
+
+    // Check whether a record or record ID was passed in, also return false if neither was specified
+    if (is_integer($logorid)) {
+        $log = $DB->get_record('block_rlip_summary_log', array('id' => $logorid));
+    } else if (is_object($logorid)) {
+        $log = $logorid;
+    } else {
+        return false;
+    }
+
+    //
+
+    return false;
 }
