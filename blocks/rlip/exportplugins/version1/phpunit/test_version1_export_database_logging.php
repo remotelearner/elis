@@ -453,4 +453,56 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }
+
+    /**
+     * Validate that when a log file is created, its path is stored in the
+     * database summary log record
+     */
+    public function testVersion1ExportDBLoggingStoresLogpathForExistingLogFile() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //set up the export file path
+        set_config('export_file', '', 'rlipexport_version1');
+        //set up the log file location
+        set_config('logfilelocation', '', 'rlipexport_version1');
+        //make sure the export is insensitive to time values
+        set_config('nonincremental', 1, 'rlipexport_version1');
+        //set up data for one course and one enroled user
+        $this->load_csv_data2();
+
+        //run the export
+        $result = $this->run_export(1000000000, 3, 0, 1);
+
+        //validation
+        $select = $DB->sql_like('logpath', ':logpath');
+        $params = array('logpath' => $CFG->dataroot.'/export_rlipexport_version1_%');
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate that when a log file is not created, a value of null is stored
+     * in the database summary log record
+     */
+    public function testVersion1ExportDBLoggingDoesNotStoreLogpathForNonexistentLogFile() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //set up the export file path
+        set_config('export_file', '', 'rlipexport_version1');
+        //set up the log file location
+        set_config('logfilelocation', '', 'rlipexport_version1');
+        //make sure the export is insensitive to time values
+        set_config('nonincremental', 1, 'rlipexport_version1');
+        //set up data for one course and one enroled user
+        $this->load_csv_data2();
+
+        //run the export
+        $result = $this->run_export(1000000000, 0, 0, 0);
+
+        //validation
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, "logpath IS NULL");
+        $this->assertTrue($exists);
+    }
 }
