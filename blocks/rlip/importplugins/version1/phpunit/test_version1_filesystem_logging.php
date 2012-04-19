@@ -5981,7 +5981,8 @@ class version1FilesystemLoggingTest extends rlip_test {
         global $CFG, $DB;
 
         //set the file path to the dataroot
-        $filepath = $CFG->dataroot;
+        $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
+        set_config('logfilelocation', '', 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
         $file_name = 'userfile2.csv';
@@ -6015,9 +6016,10 @@ class version1FilesystemLoggingTest extends rlip_test {
             $starttime = $record->starttime;
             break;
         }
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $plugin_type .'_'. $plugin .'_manual_'. $entity .'_'.
+                        userdate($starttime, $format) .'.log';
         $filename = self::get_current_logfile($testfilename);
-
+        //echo "testVersion1ImportLogsRuntimeError(): logfile ?=> {$filename}\n";
         $this->assertTrue(file_exists($filename));
 
         //fetch log line
