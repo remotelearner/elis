@@ -132,11 +132,13 @@ abstract class rlip_test extends elis_database_test {
      * @return string newest_file The most current filename
      */
     public static function get_current_logfile($filename) {
+        global $CFG;
+
         $filename_prefix = explode('.',$filename);
         //get newest file
         $newest_file = $filename;
         $versions = array();
-        foreach (glob("$filename_prefix[0]*.log") as $fn) {
+        foreach (glob("{$CFG->dataroot}/{$filename_prefix[0]}*.log") as $fn) {
             if (($fn != $filename) &&
                 ((is_array(self::$existing_logfiles) && !in_array($fn, self::$existing_logfiles)) ||
                  !is_array(self::$existing_logfiles))) {
