@@ -1140,7 +1140,7 @@ class version1DatabaseLoggingTest extends rlip_test {
         $ui = ob_get_contents();
         ob_end_clean();
         $this->assertNotNull($result);
-        $expected_ui = "/.*errorbox.*Failed importing all lines from import file.*due to time limit exceeded.*/";
+        $expected_ui = "/.*generalbox.*Failed importing all lines from import file.*due to time limit exceeded.*/";
         $this->assertRegExp($expected_ui, $ui);
 
         // clean-up data file & tempdir
@@ -1528,6 +1528,9 @@ class version1DatabaseLoggingTest extends rlip_test {
         //upper bound on endtime
         $endtime = time();
 
+        //condition for the logpath
+        $like = $DB->sql_like('logpath', ':logpath');
+
         //data validation
         $select = "export = :export AND
                    plugin = :plugin AND
@@ -1542,7 +1545,9 @@ class version1DatabaseLoggingTest extends rlip_test {
                    storedfailures = :storedfailures AND
                    {$DB->sql_compare_text('statusmessage')} = :statusmessage AND
                    dbops = :dbops AND
-                   unmetdependency = :unmetdependency";
+                   unmetdependency = :unmetdependency AND
+                   {$like} AND
+                   entitytype = :entitytype";
         $params = array('export' => 0,
                         'plugin' => 'rlipimport_version1',
                         'userid' => $USER->id,
@@ -1555,7 +1560,9 @@ class version1DatabaseLoggingTest extends rlip_test {
                         'storedfailures' => 0,
                         'statusmessage' => $message,
                         'dbops' => -1,
-                        'unmetdependency' => 0);
+                        'unmetdependency' => 0,
+                        'logpath' => "{$CFG->dataroot}/%",
+                        'entitytype' => 'user');
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertEquals($exists, true);
         // Verify completed import deletes input csv file

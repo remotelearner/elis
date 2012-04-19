@@ -247,7 +247,11 @@ abstract class rlip_dblogger {
         $record->unmetdependency = $this->unmetdependency;
         $record->maxruntimeexceeded = $this->maxruntimeexceeded;
         $record->totalrecords = $this->totalrecords;
-        $record->logpath = $this->logpath;
+        if (file_exists($this->logpath)) {
+            $record->logpath = $this->logpath;
+        } else {
+            $record->logpath = NULL;
+        }
         $record->entitytype = $this->entitytype;
 
         //perform any necessary data specialization
@@ -357,7 +361,7 @@ class rlip_dblogger_import extends rlip_dblogger {
                                      array('filename' => $filename,
                                      'filesuccesses' => $record->filesuccesses,
                                      'totalrecords' => $record->totalrecords));
-                $css = 'errorbox manualstatusbox';
+                $css = 'generalbox warning manualstatusbox';
             } else {
                 //total rows = successes + failures
                 $record->total = $record->filesuccesses + $record->filefailures;
@@ -415,7 +419,7 @@ class rlip_dblogger_export extends rlip_dblogger {
     function display_log($record, $filename) {
         if ($this->manual && $this->maxruntimeexceeded) {
             global $OUTPUT;
-            echo $OUTPUT->box("Export file {$filename} not created - time limit exceeded!", 'errorbox manualstatusbox'); // TBD
+            echo $OUTPUT->box("Export file {$filename} not created - time limit exceeded!", 'generalbox manualstatusbox'); // TBD
         }
     }
 }

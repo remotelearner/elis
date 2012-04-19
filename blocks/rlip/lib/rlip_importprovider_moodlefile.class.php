@@ -33,7 +33,6 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 class rlip_importprovider_moodlefile extends rlip_importprovider {
     var $entity_types;
     var $fileids;
-    var $filename;
 
     /**
      * Constructor
@@ -81,39 +80,5 @@ class rlip_importprovider_moodlefile extends rlip_importprovider {
 
         //for now, this is only used in manual runs
         return new rlip_dblogger_import(true);
-    }
-
-    public function set_file_name($filename) {
-        $this->filename = $filename;
-    }
-
-    public function get_file_name() {
-        return $this->filename;
-    }
-
-    /**
-     * Provides the object used to log information to the file system logfile
-     *
-     * @param  string $plugin  the plugin
-     * @param  string $entity  the entity type
-     * @param boolean $manual  Set to true if a manual run
-     * @param  integer $starttime the time used in the filename
-     * @return object the fslogger
-     */
-    function get_fslogger($plugin, $entity, $manual = false, $starttime = 0) {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
-
-        //set up the file-system logger
-        $filepath = get_config($plugin, 'logfilelocation');
-
-        //get filename
-        $filename = rlip_log_file_name('import', $plugin, $filepath, $entity, $manual, $starttime);
-        if (!empty($filename)) {
-            $this->set_file_name($filename);
-            $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
-            return rlip_fslogger_factory::factory($plugin, $fileplugin, $manual);
-        }
-        return null;
     }
 }
