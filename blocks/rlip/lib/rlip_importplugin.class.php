@@ -618,6 +618,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      *                             or null for success.
      */
     function process_import_file($entity, $maxruntime = 0, $state = null) {
+        global $CFG;
+
         if (!$state) {
             $state = new stdClass;
         }
@@ -658,6 +660,20 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
         //set up fslogger with this starttime for this entity
         $this->fslogger = $this->provider->get_fslogger($this->dblogger->plugin, $entity, $this->manual, $starttime);
+
+        //check that the file directory is valid
+        $filepath = get_config($this->dblogger->plugin, 'logfilelocation');
+        if (!$writable = is_writable($CFG->dataroot.'/'.$filepath)) {
+            //invalid folder specified for the logfile
+            //log this message...
+            $this->fslogger->set_logfile_status(false);
+            $this->dblogger->set_logfile_status(false);
+            $this->dblogger->flush($filename);
+            return null;
+        } else {
+            $this->fslogger->set_logfile_status(true);
+            $this->dblogger->set_logfile_status(true);
+        }
 
         $this->dblogger->set_log_path($this->provider->get_log_path());
 
@@ -706,6 +722,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             //track return value
             //todo: change second parameter when in the cron
             $result = $this->process_record($entity, $record, $filename);
+
             $this->dblogger->track_success($result, true);
         }
 

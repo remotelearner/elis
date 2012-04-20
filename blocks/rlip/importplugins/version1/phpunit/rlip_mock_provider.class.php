@@ -75,7 +75,7 @@ class rlip_importprovider_mock extends rlip_importprovider {
      * @return object The fslogger instance
      */
     function get_fslogger($plugin) {
-        $fileplugin = rlip_fileplugin_factory::factory('', NULL, true);
+        $fileplugin = rlip_fileplugin_factory::factory('/dev/null', NULL, true);
         $entity = '';
         return rlip_fslogger_factory::factory($plugin, $fileplugin, $entity);
     }
@@ -169,7 +169,7 @@ class rlip_importprovider_multi_mock extends rlip_importprovider {
      * @return object The fslogger instance
      */
     function get_fslogger($plugin) {
-        $fileplugin = rlip_fileplugin_factory::factory('', NULL, true);
+        $fileplugin = rlip_fileplugin_factory::factory('/dev/null', NULL, true);
         $entity = '';
         return rlip_fslogger_factory::factory($plugin, $fileplugin, $entity);
     }

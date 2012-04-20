@@ -34,8 +34,10 @@ class rlip_fileplugin_log extends rlip_fileplugin_base {
      *
      * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
      *                  the mode in which the file should be opened
+     * @return boolean $open True if the file successfully opened
      */
     function open($mode) {
+
     	if ($mode == RLIP_FILE_WRITE) {
   	        //todo: determine if we need to make a change to unit tests to
   	        //remove this check
@@ -59,6 +61,13 @@ class rlip_fileplugin_log extends rlip_fileplugin_base {
                 $this->filepointer = $file->get_content_file_handle();
             }
     	}
+
+        if ($this->filepointer === false) {
+            $open = false;
+        } else {
+            $open = true;
+        }
+        return $open;
     }
 
     /**

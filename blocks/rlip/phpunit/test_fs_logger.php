@@ -51,10 +51,13 @@ class rlip_fileplugin_trackopen extends rlip_fileplugin_base {
 	 *
 	 * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
 	 *                  the mode in which the file should be opened
+	 * @return boolean successful open
 	 */
     function open($mode) {
         $this->open = true;
         $this->was_opened = true;
+
+        return true;
     }
 
     /**
@@ -89,7 +92,7 @@ class rlip_fileplugin_trackopen extends rlip_fileplugin_base {
      * @return string The file name.
      */
     function get_filename($withpath = false) {
-        return '';
+        return '/dev/null';
     }
 
     /**
@@ -155,6 +158,7 @@ class fsLoggerTest extends rlip_test {
     protected function get_fs_logger($manual = false) {
         global $CFG;
 
+        set_config('logfilelocation',$CFG->dataroot,'bogus_plugin');
         //set up the file plugin for IO
         $filename = $CFG->dataroot .'/rliptest.log';
         $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true);
@@ -682,7 +686,7 @@ class fsLoggerTest extends rlip_test {
         $fslogger = rlip_fslogger_factory::factory('bogus_plugin', $fileplugin);
 
         //write a line
-        $fslogger->log_success('Teststring', 1000000000);
+        $result = $fslogger->log_success('Teststring', 1000000000);
 
         //clean up
         $fslogger->close();

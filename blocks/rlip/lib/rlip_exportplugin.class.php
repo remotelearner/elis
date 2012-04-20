@@ -130,11 +130,26 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      *         ->result            false on error, i.e. time limit exceeded.
      */
     function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
+        global $CFG;
+
+        //check that the file directory is valid
+        $filepath = get_config($this->dblogger->plugin, 'logfilelocation');
+        if (!$writable = is_writable($CFG->dataroot.'/'.$filepath)) {
+            //invalid folder specified for the logfile
+            $this->fslogger->set_logfile_status(false);
+            $this->dblogger->set_logfile_status(false);
+            $this->dblogger->flush($this->fileplugin->get_filename());
+            return false;
+        } else {
+            $this->fslogger->set_logfile_status(true);
+            $this->dblogger->set_logfile_status(true);
+        }
         //track the provided target start time
         $this->dblogger->set_targetstarttime($targetstarttime);
 
         //open the output file for writing
         $this->fileplugin->open(RLIP_FILE_WRITE);
+
 
         //perform any necessary setup
         $this->init($targetstarttime, $lastruntime);

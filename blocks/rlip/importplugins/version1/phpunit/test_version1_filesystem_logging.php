@@ -401,6 +401,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $testfilename = $filepath.'/'.$plugin_type.'_version1_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         //get most recent logfile
         $filename = self::get_current_logfile($testfilename);
+
         if (!file_exists($filename)) {
             echo "\n can't find logfile: $filename for \n$testfilename";
         }
@@ -5796,7 +5797,59 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->assertEquals($filename, $testfilename);
     }
 
-     /**
+    /**
+     * Test an invalid log file path
+     */
+    function testVersion1ImportInvalidLogPath() {
+        global $CFG, $DB, $USER;
+
+        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        $filepath = $CFG->dataroot.'/invalidloglocation';
+
+        //create a folder and make it executable only
+        mkdir($filepath);
+        chmod($filepath,'0100');
+        set_config('logfilelocation', 'invalidloglocation', 'rlipimport_version1');
+
+        // do a fake import that should create an error in the database
+        // check for that error
+        $USER->id = 9999;
+        self::cleanup_log_files();
+
+        $data = array('entity' => 'user',
+                      'action' => 'create',
+                      'username' => 'rlipusername',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'city' => 'rlipcity',
+                      'country' => 'CA');
+
+        $provider = new rlip_importprovider_fsloguser($data);
+        $manual = true;
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
+        //for now suppress output generated
+        ob_start();
+        $instance->run();
+        ob_end_clean();
+
+        //data validation
+        $select = "{$DB->sql_compare_text('statusmessage')} = :message";
+        $params = array('message' => 'Log file access failed while importing lines from import file user.csv due to invalid logfile path.'.
+                                      ' Change \'invalidloglocation\' to a valid logfile location on the settings page. Processed 0 of 2 records.');
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+
+        //cleanup the new folder
+        if (file_exists($CFG->dataroot.'/invalidloglocation')) {
+            rmdir($CFG->dataroot.'/invalidloglocation');
+        }
+        $this->assertEquals($exists, true);
+    }
+
+    /**
      * Validate that a manual import log file generates the correct log file
      */
     function testVersion1ImportLogManual() {
@@ -6062,6 +6115,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $expected_error = array();
         $expected_error[] = "[user.csv line 1] Import file contains the following invalid user profile field(s): invalid_user_profile_field_1, invalid_user_profile_field_2\n";
         $expected_error[] = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" successfully created.\n";
+
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 

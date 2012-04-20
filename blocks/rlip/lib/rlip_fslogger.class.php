@@ -31,6 +31,7 @@ class rlip_fslogger {
     var $fileplugin;
     var $manual;
     var $opened = false;
+    var $logfile_status = false;
 
     /**
      * Filesystem logger constructor
@@ -131,7 +132,7 @@ class rlip_fslogger {
      */
     function log_success($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL) {
         //re-delegate to the main logging function
-        $this->log($message, $timestamp, $filename, $entitydescriptor, true);
+        return $this->log($message, $timestamp, $filename, $entitydescriptor, true);
     }
 
     /**
@@ -147,7 +148,7 @@ class rlip_fslogger {
      */
     function log_failure($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL) {
         //re-delegate to the main logging function
-        $this->log($message, $timestamp, $filename, $entitydescriptor, false);
+        return $this->log($message, $timestamp, $filename, $entitydescriptor, false);
     }
 
     /**
@@ -170,10 +171,17 @@ class rlip_fslogger {
 
         $message = $this->customize_record($message, $timestamp, $filename, $entitydescriptor, $success);
 
-        if (!$this->opened) {
+//        if ($this->fileplugin && !$this->opened) {
+        if ($this->opened !== true) {
             //open the file for writing if it hasn't been opened yet
-            $this->fileplugin->open(RLIP_FILE_WRITE);
-            $this->opened = true;
+            $open = $this->fileplugin->open(RLIP_FILE_WRITE);
+//            if ($this->fileplugin->open(RLIP_FILE_WRITE)) {
+            if ($open === true) {
+                $this->opened = true;
+            } else {
+                $this->set_logfile_status(false);
+                return false;
+            }
         }
 
         if ($timestamp == 0) {
@@ -214,11 +222,13 @@ class rlip_fslogger {
 
         //construct and write the log line
         $line = '['.$date.' '.$offset.'] '.$message;
-        $this->fileplugin->write(array($line));
-
+//        if ($this->fileplugin) {
+            $this->fileplugin->write(array($line));
+//        }
         if (!$success && $this->manual) {
             echo $OUTPUT->box($message, 'generalbox warning manualstatusbox');
         }
+        return true;
     }
 
     /**
@@ -248,6 +258,21 @@ class rlip_fslogger {
             $this->fileplugin->close();
             $this->opened = false;
         }
+    }
+    /**
+     * Set logfile status
+     * @param boolean $state the status of the logfile/logfile path - false if not accessible
+     */
+    function set_logfile_status($state) {
+        $this->logfile_status = $state;
+    }
+
+    /**
+     * Get logfile status
+     * @return boolean $state the status of the logfile/logfile path - false if not accessible
+     */
+    function get_logfile_status() {
+        return $this->logfile_status;
     }
 }
 

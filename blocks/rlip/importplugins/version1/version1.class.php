@@ -700,7 +700,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         if (isset($record->idnumber)) {
             if ($DB->record_exists('user', array('idnumber' => $record->idnumber))) {
-                $identifier = $this->mappings['idnumber'];
+            $identifier = $this->mappings['idnumber'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->idnumber}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
@@ -740,6 +740,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //log success
         $this->fslogger->log_success("User with {$user_descriptor} successfully created.", 0, $filename, $this->linenumber);
 
+        if (!$this->fslogger->get_logfile_status()) {
+            return false;
+        }
         return true;
     }
 
@@ -877,6 +880,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //log success
         $this->fslogger->log_success("User with {$user_descriptor} successfully updated.", 0, $filename, $this->linenumber);
 
+        if (!$this->fslogger->get_logfile_status()) {
+            return false;
+        }
         return true;
     }
 
@@ -945,6 +951,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //log success
             $this->fslogger->log_success("User with {$user_descriptor} successfully deleted.", 0, $filename, $this->linenumber);
 
+            if (!$this->fslogger->get_logfile_status()) {
+                return false;
+            }
             return true;
         } else {
             // paramters point to different users
@@ -1565,6 +1574,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $this->fslogger->log_success("Course with shortname \"{$record->shortname}\" successfully created.", 0, $filename, $this->linenumber);
         }
 
+        if (!$this->fslogger->get_logfile_status()) {
+            return false;
+        }
         return true;
     }
 
@@ -1651,6 +1663,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //log success
         $this->fslogger->log_success("Course with shortname \"{$record->shortname}\" successfully updated.", 0, $filename, $this->linenumber);
 
+        if (!$this->fslogger->get_logfile_status()) {
+            return false;
+        }
         return true;
     }
 
@@ -1677,6 +1692,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //log success
             $this->fslogger->log_success("Course with shortname \"{$record->shortname}\" successfully deleted.", 0, $filename, $this->linenumber);
 
+            if (!$this->fslogger->get_logfile_status()) {
+                return false;
+            }
             return true;
         }
 
@@ -2154,6 +2172,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //log success
         $this->fslogger->log_success(implode(' ', $logmessages), 0, $filename, $this->linenumber);
 
+        if (!$this->fslogger->get_logfile_status()) {
+            return false;
+        }
         return true;
     }
 
@@ -2278,6 +2299,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //log success
         $this->fslogger->log_success(implode(' ', $logmessages), 0, $filename, $this->linenumber);
 
+        if (!$this->fslogger->get_logfile_status()) {
+            return false;
+        }
         return true;
     }
 

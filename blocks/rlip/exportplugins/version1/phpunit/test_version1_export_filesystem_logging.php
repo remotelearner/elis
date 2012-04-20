@@ -141,4 +141,42 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
         $actual_error = substr($line, $prefix_length);
         $this->assertEquals($expected_error, $actual_error);
     }
+
+    /**
+     * Test an invalid log file path
+     */
+    function testVersion1ExportInvalidLogPath() {
+        global $CFG, $DB, $USER;
+
+        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        set_config('logfilelocation', 'invalidlogpath', 'rlipexport_version1');
+
+        //setup
+        $this->load_csv_data();
+        set_config('nonincremental', 1, 'rlipexport_version1');
+
+        //set the filepath to the dataroot
+        $filepath = $CFG->dataroot;
+
+        //no writing actually happens
+        $file = $CFG->dataroot.'/bogus';
+        $fileplugin = new rlip_fileplugin_csv_delay($file);
+
+        //obtain plugin
+        $manual = true;
+        $plugin = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin, $manual);
+        ob_start();
+        $plugin->run(0, 0, 1);
+        $ui = ob_get_contents(); // TBD: test this UI string!
+        ob_end_clean();
+
+        //data validation
+        $select = "{$DB->sql_compare_text('statusmessage')} = :message";
+        $params = array('message' => 'Log file access failed during export due to invalid logfile path: invalidlogpath.');
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $log_records = $DB->get_records(RLIP_LOG_TABLE);
+        $this->assertEquals($exists, true);
+    }
 }
