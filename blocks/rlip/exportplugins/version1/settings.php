@@ -8,12 +8,10 @@ require_once(dirname(__FILE__).'/lib.php');
  * Profile field settings
  */
 
-//header and link for configuring export fields
-$url = $CFG->wwwroot.'/blocks/rlip/exportplugins/version1/config_fields.php';
-$attributes = array('href' => $url,
-                    'target' => '_blank');
-$headerstring = get_string('configureheader', 'rlipexport_version1');
-$settings->add(new admin_setting_heading('rlipexport_version1_profilefields', $headerstring, null));
+//start of "scheduling" section
+$settings->add(new admin_setting_heading('rlipexport_version1/scheduling',
+                                         get_string('scheduling', 'rlipexport_version1'),
+                                         ''));
 
 // Export filename settings
 $settings->add(new admin_setting_configtext('rlipexport_version1/export_path',
@@ -27,10 +25,20 @@ $settings->add(new admin_setting_configtext('rlipexport_version1/export_file',
 // timestamp export file
 $settings->add(new admin_setting_configcheckbox('rlipexport_version1/export_file_timestamp', get_string('export_file_timestamp_label', 'rlipexport_version1'), get_string('config_export_file_timestamp', 'rlipexport_version1'), 1));
 
+//start of "logging" section
+$settings->add(new admin_setting_heading('rlipexport_version1/logging',
+                                         get_string('logging', 'rlipexport_version1'),
+                                         ''));
+
 // Log file location
 $settings->add(new admin_setting_configtext('rlipexport_version1/logfilelocation',
                                             get_string('logfilelocation', 'rlipexport_version1'),
                                             get_string('configlogfilelocation', 'rlipexport_version1'), ''));
+
+//email notification
+$settings->add(new admin_setting_configtext('rlipexport_version1/emailnotification',
+                                            get_string('emailnotification', 'rlipexport_version1'),
+                                            get_string('configemailnotification', 'rlipexport_version1'), ''));
 
 /**
  * Time period settings

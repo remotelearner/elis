@@ -33,6 +33,7 @@ $string['config_user_schedule_file'] = 'The filename of the \'user\' IP import f
 $string['configcreategroupsandgroupings'] = 'If enabled, groups and groupings can be created in the enrolment import.';
 $string['configcreateorupdate'] = 'If enabled, all create or update actions on users and courses are converted to create
 actions if the entity does not already exist, or update actions if the entity exists.';
+$string['configemailnotification'] = 'A comma-separated list of email addresses to send import log files to.';
 $string['configfieldstreelink'] = 'Field mapping';
 $string['configlogfilelocation'] = 'The directory path, relative to moodledata, to the location of log files.';
 $string['configurelink'] = 'Click here to configure field mappings to use for importing data';
@@ -43,6 +44,7 @@ $string['coursetab'] = 'Course fields';
 $string['creategroupsandgroupings'] = 'Create groups and groupings';
 $string['createorupdate'] = 'Create or update';
 $string['datahandling'] = 'Data handling';
+$string['emailnotification'] = 'Email notification';
 $string['enrolment_schedule_file'] = 'Enrolment import filename';
 $string['enrolmentfile'] = 'Enrolment file';
 $string['enrolmenttab'] = 'Enrolment fields';

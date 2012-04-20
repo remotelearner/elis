@@ -355,4 +355,30 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         $adminroot->add($parentname, $page);
     }
 
+    /**
+     * Mainline for export processing
+     *
+     * @param int $targetstarttime The timestamp representing the theoretical
+     *                             time when this task was meant to be run
+     * @param int $lastruntime     The last time the export was run
+     *                             (required for incremental scheduled export)
+     * @param int $maxruntime      The max time in seconds to complete export
+     *                             default: 0 => unlimited
+     * @param object $state        Previous ran state data to continue from
+     *                             (currently not used for export)
+     * @return mixed object        Current state of export processing
+     *                             or null on success!
+     *         ->result            false on error, i.e. time limit exceeded.
+     */
+    function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
+        $result = parent::run($targetstarttime, $lastruntime, $maxruntime, $state);
+
+        if (!defined('PHPUnit_MAIN_METHOD')) {
+            //not in a unit test, so send out log files in a zip
+            $logids = $this->dblogger->get_log_ids();
+            rlip_send_log_emails('rlipexport_version1', $logids, $this->manual);
+        }
+
+        return $result;
+    }
 }

@@ -76,6 +76,9 @@ abstract class rlip_dblogger {
     //whether the logfile/logfilepath is valid
     var $logfile_status = true;
 
+    //the list of log ids created since this object was constructed
+    var $logids = array();
+
     /**
      * DB logger constructor
      *
@@ -250,18 +253,23 @@ abstract class rlip_dblogger {
         $record->unmetdependency = $this->unmetdependency;
         $record->maxruntimeexceeded = $this->maxruntimeexceeded;
         $record->totalrecords = $this->totalrecords;
-        if (file_exists($this->logpath)) {
+
+        //this handles the special case where runtime is exceeded and the the
+        //file-system log record has not yet been created because it's
+        //handled generically in the base class
+        if (file_exists($this->logpath) || $this->maxruntimeexceeded) {
             $record->logpath = $this->logpath;
         } else {
             $record->logpath = NULL;
         }
+
         $record->entitytype = $this->entitytype;
 
         //perform any necessary data specialization
         $record = $this->customize_record($record, $filename);
 
         //persist
-        $DB->insert_record(RLIP_LOG_TABLE, $record);
+        $this->logids[] = $DB->insert_record(RLIP_LOG_TABLE, $record);
 
         //display, if appropriate
         $this->display_log($record, $filename);
@@ -303,6 +311,7 @@ abstract class rlip_dblogger {
     }
 
     /**
+<<<<<<< HEAD
      * Set logfile status
      * @param boolean $state the status of the logfile/logfile path - false if not accessible
      */
@@ -316,6 +325,15 @@ abstract class rlip_dblogger {
      */
     function get_logfile_status() {
         return $this->logfile_status;
+    }
+
+    /**
+     * Obtain the list of log record ids created since this object was constructed
+     *
+     * @return array The list of ids
+     */
+    function get_log_ids() {
+        return $this->logids;
     }
 }
 

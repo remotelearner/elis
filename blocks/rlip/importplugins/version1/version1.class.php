@@ -2585,4 +2585,34 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         return true;
     }
+
+    /**
+     * Mainline for running the import
+     *
+     * @param int $targetstarttime The timestamp representing the theoretical
+     *                             time when this task was meant to be run
+     * @param int $lastruntime     The last time the export was run
+     *                             (N/A for import)
+     * @param int $maxruntime      The max time in seconds to complete import
+     *                             default: 0 => unlimited time
+     * @param object $state        Previous ran state data to continue from
+     *
+     * @return object              State data to pass back on re-entry,
+     *                             null on success!
+     *         ->result            false on error, i.e. time limit exceeded.
+     */
+    function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        $result = parent::run($targetstarttime, $lastruntime, $maxruntime, $state);
+
+        if (!defined('PHPUnit_MAIN_METHOD')) {
+            //not in a unit test, so send out log files in a zip
+            $logids = $this->dblogger->get_log_ids();
+            rlip_send_log_emails('rlipimport_version1', $logids, $this->manual);
+        }
+
+        return $result;
+    }
 }

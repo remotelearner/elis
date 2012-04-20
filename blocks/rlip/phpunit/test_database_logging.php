@@ -340,4 +340,46 @@ class databaseLoggingTest extends rlip_test {
         //validation
         $this->assertEquals($output, '');
     }
+
+    /**
+     * Validate that database loggers store db log record ids
+     * for later retrieval
+     */
+    public function testDBLoggerObjectAccumulatesLogIds() {
+        //obtain the logging object
+        $dblogger = new rlip_dblogger_import();
+
+        for ($i = 0; $i < 3; $i++) {
+            //create some database logs
+            $dblogger->flush('test');
+        }
+
+        //validate that all ids were stored and can be retrieved
+        $logids = $dblogger->get_log_ids();
+        $this->assertEquals($logids, array(1, 2, 3));
+    }
+
+    /**
+     * Validate that, in the special case where runtime is exceeded, the
+     * database logger stores the log file path, even if it does not yet exist
+     */
+    public function testDBLoggerObjectStoresPathWhenRuntimeExceeded() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //obtain the logging object
+        $dblogger = new rlip_dblogger_import();
+
+        //set the right logging state
+        $dblogger->set_log_path('/parentdir/childdir');
+        $dblogger->signal_maxruntime_exceeded();
+
+        //write out the database record
+        $dblogger->flush('filename');
+
+        //validation
+        $select = $DB->sql_compare_text('logpath').' = :logpath';
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, array('logpath' => '/parentdir/childdir'));
+        $this->assertTrue($exists);
+    }
 }
