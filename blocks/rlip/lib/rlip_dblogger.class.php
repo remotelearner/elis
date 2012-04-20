@@ -345,9 +345,7 @@ class rlip_dblogger_import extends rlip_dblogger {
      * @return object The customized version of the record
      */
     function customize_record($record, $filename) {
-        if ($this->missingcolumns) {
-            $record->statusmessage = $this->missingcolumnsmessage;
-        } else if (!$this->get_logfile_status()) {
+        if (!$this->get_logfile_status()) {
             $logfilepath = get_config($this->plugin,'logfilelocation');
             $record->statusmessage = get_string('importinvalidlogfilepath',
                                  'block_rlip',
@@ -355,6 +353,8 @@ class rlip_dblogger_import extends rlip_dblogger {
                                  'filesuccesses' => $record->filesuccesses,
                                  'logfilepath' => $logfilepath,
                                  'totalrecords' => $record->totalrecords));
+        } else if ($this->missingcolumns) {
+            $record->statusmessage = $this->missingcolumnsmessage;
         } else if ($this->maxruntimeexceeded) {
             // maxruntime exceeded message
             $record->statusmessage = get_string('manualimportexceedstimelimit',
