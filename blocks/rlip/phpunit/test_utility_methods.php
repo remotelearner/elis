@@ -909,34 +909,39 @@ class utilityMethodTest extends rlip_test {
         $table = rlip_get_log_table($logs);
 
         //validate table header
-        $this->assertEquals($table->head, array(get_string('logtasktype', 'block_rlip'),
-                                                get_string('logplugin', 'block_rlip'),
-                                                get_string('logexecution', 'block_rlip'),
-                                                get_string('loguser', 'block_rlip'),
-                                                get_string('logscheduledstart', 'block_rlip'),
-                                                get_string('logstart', 'block_rlip'),
-                                                get_string('logend', 'block_rlip'),
-                                                get_string('logfilesuccesses', 'block_rlip'),
-                                                get_string('logfilefailures', 'block_rlip'),
-                                                get_string('logstatus', 'block_rlip'),
-                                                get_string('logentitytype', 'block_rlip'),
-                                                get_string('logdownload', 'block_rlip')));
+        $this->assertEquals($table->head, array(
+            get_string('logtasktype', 'block_rlip'),
+            get_string('logplugin', 'block_rlip'),
+            get_string('logexecution', 'block_rlip'),
+            get_string('loguser', 'block_rlip'),
+            get_string('logscheduledstart', 'block_rlip'),
+            get_string('logstart', 'block_rlip'),
+            get_string('logend', 'block_rlip'),
+            get_string('logfilesuccesses', 'block_rlip'),
+            get_string('logfilefailures', 'block_rlip'),
+            get_string('logstatus', 'block_rlip'),
+            get_string('logentitytype', 'block_rlip'),
+            get_string('logdownload', 'block_rlip')
+        ));
 
         //validate table data
         $this->assertEquals(count($table->data), 1);
         $datum = reset($table->data);
-        $this->assertEquals($datum, array(get_string('export', 'block_rlip'),
-                                          get_string('pluginname', 'rlipexport_version1'),
-                                          get_string('automatic', 'block_rlip'),
-                                          'Test User',
-                                          userdate(1000000001, $timeformat, 99, false),
-                                          userdate(1000000002, $timeformat, 99, false),
-                                          userdate(1000000003, $timeformat, 99, false),
-                                          '1',
-                                          get_string('na', 'block_rlip'),
-                                          'testmessage',
-                                          'N/A',
-                                          '<a href="download.php?id=1">Log</a>'));
+        $this->assertEquals($datum, array(
+            get_string('export', 'block_rlip'),
+            get_string('pluginname', 'rlipexport_version1'),
+            get_string('automatic', 'block_rlip'),
+            'Test User',
+            userdate(1000000001, $timeformat, 99, false),
+            userdate(1000000002, $timeformat, 99, false),
+            userdate(1000000003, $timeformat, 99, false),
+            '1',
+            get_string('na', 'block_rlip'),
+            'testmessage',
+            'N/A',
+            // ELIS-5199 The download link only appears when there is a valid file present on the filesystem
+            //'<a href="download.php?id=1">Log</a>'));
+            ''));
     }
 
     /**

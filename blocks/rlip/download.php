@@ -33,18 +33,64 @@ require_once($file);
 
 $id = required_param('id', PARAM_INT);
 
-if (!($rec = $DB->get_record(RLIP_LOG_TABLE, array('id' => $id)))) {
+if (!($log = $DB->get_record(RLIP_LOG_TABLE, array('id' => $id)))) {
     print_error('filenotfound', 'error', $CFG->wwwroot.'/');
 }
 
-if (!file_exists($rec->logpath)) {
-    print_error('filenotfound', 'error', $CFG->wwwroot.'/');
+
+$logfilename = '';
+
+// Check if the log file still exists on the filesystem
+if (!empty($log->logpath) && file_exists($log->logpath)) {
+    $logfilename = $log->logpath;
 }
 
-$filein = new rlip_fileplugin_log($rec->logpath);
+// Check if a zip archive exists for the date the job was started on
+if ($logfilename == '') {
+    $archivelog = rlip_get_archive_log_filename($log);
+
+    if (!empty($archivelog) && file_exists($archivelog)) {
+        // Create a directory for temporary unzipping the log archive
+        do {
+            $path = $CFG->dirroot.'/temp/rlip_download'.mt_rand(0, 9999999);
+        } while (file_exists($path));
+
+        check_dir_exists($path);
+
+        // Unzip the log archive file
+        $fp = get_file_packer('application/zip');
+        if (!$fp->extract_to_pathname($archivelog, $path)) {
+            @remove_dir($path);
+        } else {
+            // Look for to see if the specific file we want exists in the unarchive zip file
+            if ($dh = opendir($path)) {
+                while (false !== ($item = readdir($dh))) {
+                    if ($item != '.' && $item != '..') {
+                        if (is_file($path.'/'.$item)) {
+                            // If we've found the file, record the full filesystem path to this file
+                            if ($item == basename($log->logpath)) {
+                                $logfilename = $path.'/'.$item;
+                            }
+                        }
+                    }
+                }
+
+                closedir($dh);
+            }
+        }
+    }
+}
+
+// If we haven't found a valid archive file by now, make sure that we display an appropriate error
+if ($logfilename == '') {
+    print_error('filenotfound', 'error', $CFG->wwwroot.'/blocks/rlip/viewlogs.php');
+}
+
+$filein = new rlip_fileplugin_log($logfilename);
 $filein->open(RLIP_FILE_READ);
 
-$fileout = new rlip_fileplugin_log($rec->logpath);
+// ELIS-5199 only use the filename part of the log file path when creating the filename for download
+$fileout = new rlip_fileplugin_log(basename($logfilename));
 $fileout->sendtobrowser = true;
 $fileout->open(RLIP_FILE_WRITE);
 
@@ -57,5 +103,3 @@ while ($entry = $filein->read()) {
 
 $filein->close();
 $fileout->close();
-
-?>
