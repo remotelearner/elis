@@ -121,9 +121,9 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
             $starttime = $record->starttime;
             break;
         }
-        $testfilename = $filepath.'/'.$plugin_type.'_'.$plugin.'_manual_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath .'/' .$plugin_type .'_version1_manual_'.
+                        userdate($starttime, $format) .'.log';
         $filename = self::get_current_logfile($testfilename);
-
         $this->assertTrue(file_exists($filename));
 
         //fetch log line
