@@ -174,7 +174,7 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
         $manual = true;
         $plugin = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin, $manual);
         ob_start();
-        $plugin->run(0, 0, 1);
+        $plugin->run();
         $ui = ob_get_contents(); // TBD: test this UI string!
         ob_end_clean();
 
