@@ -250,11 +250,16 @@ abstract class rlip_dblogger {
         $record->unmetdependency = $this->unmetdependency;
         $record->maxruntimeexceeded = $this->maxruntimeexceeded;
         $record->totalrecords = $this->totalrecords;
-        if (file_exists($this->logpath)) {
+
+        //this handles the special case where runtime is exceeded and the the
+        //file-system log record has not yet been created because it's
+        //handled generically in the base class
+        if (file_exists($this->logpath) || $this->maxruntimeexceeded) {
             $record->logpath = $this->logpath;
         } else {
             $record->logpath = NULL;
         }
+
         $record->entitytype = $this->entitytype;
 
         //perform any necessary data specialization
