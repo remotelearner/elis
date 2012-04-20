@@ -38,7 +38,6 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
      *
      * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
      *                  the mode in which the file should be opened
-     * @return boolean $open True if the file successfully opened
      */
     function open($mode) {
     	global $CFG;
@@ -66,13 +65,6 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
 
     	$this->first = true;
     	$this->header = NULL;
-
-        if ($this->filepointer === false) {
-            $open = false;
-        } else {
-            $open = true;
-        }
-        return $open;
     }
 
     /**
