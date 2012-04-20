@@ -457,9 +457,7 @@ class utilityMethodTest extends rlip_test {
 
         //run the job
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
-        ob_start();
         run_ipjob($taskname);
-        ob_end_clean();
 
         //obtain both records
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
@@ -505,9 +503,7 @@ class utilityMethodTest extends rlip_test {
         //run the job
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
         $starttime = time();
-        ob_start();
         run_ipjob($taskname);
-        ob_end_clean();
 
         //obtain both records
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
@@ -559,9 +555,7 @@ class utilityMethodTest extends rlip_test {
 
         //run the job
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
-        ob_start();
         run_ipjob($taskname);
-        ob_end_clean();
 
         //obtain both records
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
@@ -620,9 +614,7 @@ class utilityMethodTest extends rlip_test {
 
         //run the job with an impossibly small time limit
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
-        ob_start();
         run_ipjob($taskname, -1);
-        ob_end_clean();
 
         //obtain job record
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
