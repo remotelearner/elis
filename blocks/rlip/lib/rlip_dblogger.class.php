@@ -347,13 +347,6 @@ class rlip_dblogger_import extends rlip_dblogger {
     function customize_record($record, $filename) {
         if ($this->missingcolumns) {
             $record->statusmessage = $this->missingcolumnsmessage;
-        } else if ($this->maxruntimeexceeded) {
-            // maxruntime exceeded message
-            $record->statusmessage = get_string('manualimportexceedstimelimit',
-                                        'block_rlip',
-                                        array('filename' => $filename,
-                                        'filesuccesses' => $record->filesuccesses,
-                                        'totalrecords' => $record->totalrecords));
         } else if (!$this->get_logfile_status()) {
             $logfilepath = get_config($this->plugin,'logfilelocation');
             $record->statusmessage = get_string('importinvalidlogfilepath',
@@ -362,6 +355,13 @@ class rlip_dblogger_import extends rlip_dblogger {
                                  'filesuccesses' => $record->filesuccesses,
                                  'logfilepath' => $logfilepath,
                                  'totalrecords' => $record->totalrecords));
+        } else if ($this->maxruntimeexceeded) {
+            // maxruntime exceeded message
+            $record->statusmessage = get_string('manualimportexceedstimelimit',
+                                        'block_rlip',
+                                        array('filename' => $filename,
+                                        'filesuccesses' => $record->filesuccesses,
+                                        'totalrecords' => $record->totalrecords));
         } else if ($this->filefailures == 0) {
             //success message
             $record->statusmessage = "All lines from import file {$filename} were successfully processed.";
@@ -382,17 +382,7 @@ class rlip_dblogger_import extends rlip_dblogger {
         global $OUTPUT;
 
         $logfile_status = $this->get_logfile_status();
-        if (!$logfile_status) {
-            $logfilepath = get_config($this->plugin,'logfilelocation');
-            $displaystring = get_string('importinvalidlogfilepath',
-                                 'block_rlip',
-                                 array('filename' => $filename,
-                                 'filesuccesses' => $record->filesuccesses,
-                                 'logfilepath' => $logfilepath,
-                                 'totalrecords' => $record->totalrecords));
-            $css = 'errorbox manualstatusbox';
-            echo $OUTPUT->box($displaystring, $css);
-        } else if ($this->manual) {
+        if ($this->manual) {
             if ($this->maxruntimeexceeded) {
                 $displaystring = get_string('manualimportexceedstimelimit',
                                      'block_rlip',
@@ -400,15 +390,29 @@ class rlip_dblogger_import extends rlip_dblogger {
                                      'filesuccesses' => $record->filesuccesses,
                                      'totalrecords' => $record->totalrecords));
                 $css = 'generalbox warning manualstatusbox';
-            } else {
+                echo $OUTPUT->box($displaystring, $css);
+            }
+            if (!$logfile_status) {
+                $logfilepath = get_config($this->plugin,'logfilelocation');
+                $displaystring = get_string('importinvalidlogfilepath',
+                                     'block_rlip',
+                                     array('filename' => $filename,
+                                     'filesuccesses' => $record->filesuccesses,
+                                     'logfilepath' => $logfilepath,
+                                     'totalrecords' => $record->totalrecords));
+                $css = 'errorbox manualstatusbox';
+                echo $OUTPUT->box($displaystring, $css);
+            }
+            //only display the success message if the above two tests are ok
+            if ($logfile_status && !$this->maxruntimeexceeded) {
                 //total rows = successes + failures
                 $record->total = $record->filesuccesses + $record->filefailures;
 
                 //display status message with successes and total records
                 $displaystring = get_string('manualstatus', 'block_rlip', $record);
                 $css = 'generalbox manualstatusbox';
+                echo $OUTPUT->box($displaystring, $css);
             }
-            echo $OUTPUT->box($displaystring, $css);
         }
     }
 
@@ -438,7 +442,6 @@ class rlip_dblogger_export extends rlip_dblogger {
         $record->export = 1;
         //message
         if (!$this->get_logfile_status()) {
-            global $OUTPUT;
             $logfilepath = get_config($this->plugin,'logfilelocation');
             $record->filesuccesses = 0; // TBD
             $record->statusmessage = get_string('exportinvalidlogfilepath',
@@ -462,17 +465,18 @@ class rlip_dblogger_export extends rlip_dblogger {
      * @uses  $OUTPUT
      */
     function display_log($record, $filename) {
-        if (!$this->get_logfile_status()) {
+        if ($this->manual) {
             global $OUTPUT;
-            $logfilepath = get_config($this->plugin,'logfilelocation');
-            $displaystring = get_string('exportinvalidlogfilepath',
-                                     'block_rlip',
-                                     array('logfilepath' => $logfilepath));
-            $css = 'errorbox manualstatusbox';
-            echo $OUTPUT->box($displaystring, 'errorbox manualstatusbox');
-        } else if ($this->manual && $this->maxruntimeexceeded) {
-            global $OUTPUT;
-            echo $OUTPUT->box("Export file {$filename} not created - time limit exceeded!", 'generalbox manualstatusbox'); // TBD
+            if (!$this->get_logfile_status()) {
+                $logfilepath = get_config($this->plugin,'logfilelocation');
+                $displaystring = get_string('exportinvalidlogfilepath',
+                                             'block_rlip',
+                                             array('logfilepath' => $logfilepath));
+                $css = 'errorbox manualstatusbox';
+                echo $OUTPUT->box($displaystring, 'errorbox manualstatusbox');
+            } else if ($this->manual && $this->maxruntimeexceeded) {
+                echo $OUTPUT->box("Export file {$filename} not created - time limit exceeded!", 'generalbox manualstatusbox'); // TBD
+            }
         }
     }
 }

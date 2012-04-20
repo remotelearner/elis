@@ -202,7 +202,7 @@ class utilityMethodTest extends rlip_test {
 
     /**
      * Validate that time string sanitization removes non-portion characters
-     * from all parts of a time string 
+     * from all parts of a time string
      */
     function testSanitizeTimeStringRemovesNonPortionCharacters() {
         $result = rlip_sanitize_time_string('1d, 2h, 3m');
@@ -324,7 +324,7 @@ class utilityMethodTest extends rlip_test {
     }
 
     /**
-     * Validate that the "add job" method also supports updates 
+     * Validate that the "add job" method also supports updates
      */
     function testUpdatingJob() {
         global $DB;
@@ -407,7 +407,7 @@ class utilityMethodTest extends rlip_test {
 
         //data validation
         $this->assertTrue($recordset->valid());
-        
+
         $current = $recordset->current();
         //ip schedule fields
         $this->assertEquals($current->plugin, $data['plugin']);
@@ -457,7 +457,9 @@ class utilityMethodTest extends rlip_test {
 
         //run the job
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        ob_start();
         run_ipjob($taskname);
+        ob_end_clean();
 
         //obtain both records
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
@@ -470,7 +472,7 @@ class utilityMethodTest extends rlip_test {
 
     /**
      * Validate that running a job sets the right next runtime on the IP
-     * schedule record 
+     * schedule record
      */
     function testRunningJobSetsIPNextRuntime() {
         global $CFG, $DB;
@@ -503,7 +505,9 @@ class utilityMethodTest extends rlip_test {
         //run the job
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
         $starttime = time();
+        ob_start();
         run_ipjob($taskname);
+        ob_end_clean();
 
         //obtain both records
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
@@ -555,7 +559,9 @@ class utilityMethodTest extends rlip_test {
 
         //run the job
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        ob_start();
         run_ipjob($taskname);
+        ob_end_clean();
 
         //obtain both records
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
@@ -614,7 +620,9 @@ class utilityMethodTest extends rlip_test {
 
         //run the job with an impossibly small time limit
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        ob_start();
         run_ipjob($taskname, -1);
+        ob_end_clean();
 
         //obtain job record
         $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
@@ -823,7 +831,7 @@ class utilityMethodTest extends rlip_test {
 
         //calculate the start time of the current day
         $starttime = mktime(0, 0, 0);
-        
+
         //create log records
         $this->create_db_log(array('starttime' => 0));
         $this->create_db_log(array('starttime' => $starttime + 12 * HOURSECS));
