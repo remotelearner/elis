@@ -153,6 +153,12 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
 
         set_config('logfilelocation', 'invalidlogpath', 'rlipexport_version1');
 
+        $filepath = $CFG->dataroot.'/invalidlogpath';
+
+        //create a folder and make it executable only
+        mkdir($filepath);
+        chmod($filepath,'0100');
+
         //setup
         $this->load_csv_data();
         set_config('nonincremental', 1, 'rlipexport_version1');
@@ -176,8 +182,11 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
         $params = array('message' => 'Log file access failed during export due to invalid logfile path: invalidlogpath.');
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
-        $log_records = $DB->get_records(RLIP_LOG_TABLE);
-        foreach ($log_records as $log_record) print_object($log_record);
+
+        //cleanup the new folder
+        if (file_exists($CFG->dataroot.'/invalidloglocation')) {
+            rmdir($CFG->dataroot.'/invalidloglocation');
+        }
         $this->assertEquals($exists, true);
     }
 }
