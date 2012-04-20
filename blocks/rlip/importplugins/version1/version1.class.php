@@ -138,6 +138,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         if ($errors) {
             $this->fslogger->log_failure("Import file contains the following invalid user profile field(s): " . implode(', ', $shortnames), 0, $filename, $this->linenumber);
+            if (!$this->fslogger->get_logfile_status()) {
+                return false;
+            }
         }
     }
 
@@ -956,10 +959,13 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
             return true;
         } else {
-            // paramters point to different users
+            // parameters point to different users
             $msg = $this->user_matches_multiple_string($params, $usernameid, $idnumberid, $emailid);
             $this->fslogger->log_failure($msg, 0, $filename, $this->linenumber,
                                          $record, "user");
+            if (!$this->fslogger->get_logfile_status()) {
+                return false;
+            }
         }
 
         return false;
