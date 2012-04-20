@@ -1052,8 +1052,10 @@ function rlip_get_archive_log_filename($logorid) {
         return false;
     }
 
+    $pluginname = str_replace(array('rlipimport_', 'rlipexport_'), '', $log->plugin);
+
     $timestamp  = userdate($log->starttime, get_string('logfiledaily_timestamp','block_rlip'), 99);;
-    $archivelog = ($log->export == 1 ? 'export' : 'import').'_'.$log->plugin.'_'.$timestamp.'.zip';
+    $archivelog = ($log->export == 1 ? 'export' : 'import').'_'.$pluginname.'_'.$timestamp.'.zip';
 
     $logflielocation  = '';
     $logfilelocation = get_config($log->plugin, 'logfilelocation');
