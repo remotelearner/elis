@@ -52,7 +52,7 @@ if ($logfilename == '') {
     if (!empty($archivelog) && file_exists($archivelog)) {
         // Create a directory for temporary unzipping the log archive
         do {
-            $path = $CFG->dirroot.'/temp/rlip_download'.mt_rand(0, 9999999);
+            $path = $CFG->dataroot.'/temp/rlip_download'.mt_rand(0, 9999999);
         } while (file_exists($path));
 
         check_dir_exists($path);
