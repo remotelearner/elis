@@ -1140,7 +1140,7 @@ class version1DatabaseLoggingTest extends rlip_test {
         $ui = ob_get_contents();
         ob_end_clean();
         $this->assertNotNull($result);
-        $expected_ui = "/.*errorbox.*Failed importing all lines from import file.*due to time limit exceeded.*/";
+        $expected_ui = "/.*generalbox.*Failed importing all lines from import file.*due to time limit exceeded.*/";
         $this->assertRegExp($expected_ui, $ui);
 
         // clean-up data file & tempdir

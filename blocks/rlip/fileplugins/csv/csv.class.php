@@ -44,15 +44,10 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
     	$fs = get_file_storage();
     	if ($mode == RLIP_FILE_WRITE) {
             if ($this->sendtobrowser) {
-    	        //send directly to the browser
-    	        //todo: config
-                $filename = basename($this->filename);
-
-                //CSV header
-                header("Content-Transfer-Encoding: ascii");
-                header("Content-Disposition: attachment; filename={$filename}");
-                header("Content-Type: text/comma-separated-values");
-                $this->filepointer = fopen('php://output', 'w');
+                // must buffer output in case of errors
+                $this->tempfile = tempnam(sys_get_temp_dir(),
+                                          basename($this->filename));
+                $this->filepointer = fopen($this->tempfile, 'w');
     	    } else {
                 //we are only writing to files on the file-system
                 $this->filepointer = fopen($this->filename, 'w');
@@ -70,6 +65,22 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
 
     	$this->first = true;
     	$this->header = NULL;
+    }
+
+    /**
+     * Send required headers when outputing directly to browser
+     */
+    function send_headers() {
+        if ($this->sendtobrowser) {
+            //send directly to the browser
+            //todo: config
+            $filename = basename($this->filename);
+
+            //CSV header
+            header("Content-Transfer-Encoding: ascii");
+            header("Content-Disposition: attachment; filename={$filename}");
+            header("Content-Type: text/comma-separated-values");
+        }
     }
 
     /**
@@ -125,7 +136,7 @@ class rlip_fileplugin_csv extends rlip_fileplugin_base {
         if (!empty($this->filename)) {
             //physical file, so obtain filename from full path
             if ($withpath) {
-                return $this->filename;
+                return $this->sendtobrowser ? $this->tempfile : $this->filename;
             }
             $parts = explode(DIRECTORY_SEPARATOR, $this->filename);
             $count = count($parts);

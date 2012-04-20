@@ -172,7 +172,9 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
                 // time limit exceeded - abort with log message
                 $this->dblogger->signal_maxruntime_exceeded();
                 if ($this->fslogger) {
-                    $msg = get_string('exportexceedstimelimit', 'block_rlip');
+                    $msg = get_string($this->fileplugin->sendtobrowser
+                                      ? 'manualexportexceedstimelimit'
+                                      : 'exportexceedstimelimit', 'block_rlip');
                     $this->fslogger->log_failure($msg);
                 }
                 return false;

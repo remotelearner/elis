@@ -131,30 +131,26 @@ abstract class rlip_test extends elis_database_test {
      * @param string filename The base filename to find the most recent file
      * @return string newest_file The most current filename
      */
-    public static function get_current_logfile($filename) {
+    public static function get_current_logfile($filename, $dbugdump = false) {
         global $CFG;
 
-        $filename_prefix = explode('.',$filename);
-        //get newest file
+        $filename_prefix = explode('.', $filename);
         $newest_file = $filename;
         $versions = array();
         foreach (glob("{$CFG->dataroot}/{$filename_prefix[0]}*.log") as $fn) {
-            if (($fn != $filename) &&
-                ((is_array(self::$existing_logfiles) && !in_array($fn, self::$existing_logfiles)) ||
-                 !is_array(self::$existing_logfiles))) {
-                //extract count
-                $fn_prefix = explode('.',$fn);
-                $fn_part = explode('_',$fn_prefix[0]);
-                $count = end($fn_part);
-                //store version number in an array
-                $versions[] = $count;
+            if ($fn == $filename || !in_array($fn, self::$existing_logfiles)) {
+                $versions[$fn] = filemtime($fn);
             }
         }
 
         //get latest version of the log file if there is more than one version
         if (!empty($versions)) {
-            sort($versions,SORT_NUMERIC);
-            $newest_file = $filename_prefix[0].'_'.end($versions).'.log';
+            arsort($versions, SORT_NUMERIC);
+            if ($dbugdump) {
+                echo "get_current_logfile({$filename}, {$dbugdump}): versions => ";
+                var_dump($versions);
+            }
+            $newest_file = key($versions);
         }
         return $newest_file;
     }
@@ -166,17 +162,17 @@ abstract class rlip_test extends elis_database_test {
      */
     public static function get_next_logfile($filename) {
         $newest_file = self::get_current_logfile($filename);
-        $filename_prefix = explode('.',$filename);
+        $filename_prefix = explode('.', $filename);
 
         // generate the 'next' filename
         if (!file_exists($filename)) {
             $next_file = $filename;
         } else if ($newest_file == $filename) {
-            $next_file = $filename_prefix[0].'_0.log';
+            $next_file = $filename_prefix[0] .'_0.log';
         } else {
-            $filename_part = explode('_',$filename_prefix[0]);
+            $filename_part = explode('_', $filename_prefix[0]);
             $count = end($filename_part);
-            $next_file = $filename_prefix[0].'_'.$count++.'.log';
+            $next_file = $filename_prefix[0] .'_'. $count++ .'.log';
         }
         return $next_file;
     }

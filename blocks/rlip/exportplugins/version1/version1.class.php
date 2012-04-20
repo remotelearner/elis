@@ -307,6 +307,10 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         global $CFG;
         $obj = null;
         if ($result) {
+            if ($this->fileplugin->sendtobrowser) {
+                // nothing to do here ...
+                return null;
+            }
             // Export successfull, move temp. file (if exists) to export path
             $tempfile = $this->fileplugin->get_filename(true);
             if (file_exists($tempfile)) {
