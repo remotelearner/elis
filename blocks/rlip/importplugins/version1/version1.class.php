@@ -2577,7 +2577,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         $result = parent::run($targetstarttime, $lastruntime, $maxruntime, $state);
 
-        if(!defined('PHPUnit_MAIN_METHOD')) {
+        if (!defined('PHPUnit_MAIN_METHOD')) {
             //not in a unit test, so send out log files in a zip
             $logids = $this->dblogger->get_log_ids();
             rlip_send_log_emails('rlipimport_version1', $logids, $this->manual);

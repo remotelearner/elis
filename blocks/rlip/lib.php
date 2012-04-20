@@ -1005,14 +1005,25 @@ function rlip_compress_logs_email($plugin, $logids, $manual = false) {
     list($sql, $params) = $DB->get_in_or_equal($logids);
     $select = "id {$sql}"; 
 
-    //add files from log records
+    //add files from log records, tracking whether a valid log path was found
+    $found = false;
+
     if ($records = $DB->get_records_select(RLIP_LOG_TABLE, $select, $params)) {
         foreach ($records as $record) {
-            $archive->add_file_from_pathname(basename($record->logpath), $record->logpath);
+            if ($record->logpath != NULL) {
+                $archive->add_file_from_pathname(basename($record->logpath), $record->logpath);
+                //have at least one file in the zip
+                $found = true;
+            }
         }
     }
 
     $archive->close();
+
+    if (!$found) {
+        //no logs, so signal that we don't need to send the email
+        return false;
+    }
 
     return $archive_name;
 }

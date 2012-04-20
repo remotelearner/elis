@@ -1531,5 +1531,34 @@ class utilityMethodTest extends rlip_test {
 
         $this->assertFalse($zipfilename);
     }
+
+    /**
+     * Validate that the compression method is handles a lack of valid log files
+     */
+    function testCompressLogsForEmailReturnsFalseWhenNoLogFileIsValid() {
+        global $DB;
+
+        //create a summary log with an empty log file path 
+        $summary_log = new stdClass;
+        $summary_log->logpath = $newpath;
+        $summary_log->plugin = 'rlipimport_version1';
+        $summary_log->userid = 9999;
+        $summary_log->targetstarttime = 0;
+        $summary_log->starttime = 0;
+        $summary_log->endtime = 0;
+        $summary_log->filesuccesses = 0;
+        $summary_log->filefailures = 0;
+        $summary_log->storedsuccesses = 0;
+        $summary_log->storedfailures = 0;
+        $summary_log->statusmessage = '';
+        $summary_log->logpath = NULL;
+        $logid = $DB->insert_record(RLIP_LOG_TABLE, $summary_log);
+
+        //obtian the zip file name
+        $zipfilename = rlip_compress_logs_email('rlipimport_version1', array($logid));
+
+        //validate that the scenario was handled
+        $this->assertFalse($zipfilename);
+    }
 }
 
