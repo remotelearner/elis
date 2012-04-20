@@ -5839,7 +5839,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         //data validation
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
         $params = array('message' => 'Log file access failed while importing lines from import file user.csv due to invalid logfile path.'.
-                                      ' Change \'invalidloglocation\' to a valid logfile location on the settings page. Processed 0 of 2 records.');
+                                      ' Change \'invalidlogpath\' to a valid logfile location on the settings page. Processed 0 of 2 records.');
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
 
         //cleanup the new folder
