@@ -5806,12 +5806,12 @@ class version1FilesystemLoggingTest extends rlip_test {
         require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        $filepath = $CFG->dataroot.'/invalidloglocation';
+        $filepath = $CFG->dataroot.'/invalidlogpath';
 
         //create a folder and make it executable only
-        mkdir($filepath);
-        chmod($filepath,'0100');
-        set_config('logfilelocation', 'invalidloglocation', 'rlipimport_version1');
+        mkdir($filepath, 0100);
+
+        set_config('logfilelocation', 'invalidlogpath', 'rlipimport_version1');
 
         // do a fake import that should create an error in the database
         // check for that error
@@ -5843,8 +5843,8 @@ class version1FilesystemLoggingTest extends rlip_test {
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
 
         //cleanup the new folder
-        if (file_exists($CFG->dataroot.'/invalidloglocation')) {
-            rmdir($CFG->dataroot.'/invalidloglocation');
+        if (file_exists($filepath)) {
+            rmdir($filepath);
         }
         $this->assertEquals($exists, true);
     }

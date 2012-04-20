@@ -475,7 +475,7 @@ class rlip_dblogger_export extends rlip_dblogger {
                 $css = 'errorbox manualstatusbox';
                 echo $OUTPUT->box($displaystring, 'errorbox manualstatusbox');
             }
-            if ($$this->maxruntimeexceeded) {
+            if ($this->maxruntimeexceeded) {
                 echo $OUTPUT->box("Export file {$filename} not created - time limit exceeded!", 'generalbox manualstatusbox'); // TBD
             }
         }

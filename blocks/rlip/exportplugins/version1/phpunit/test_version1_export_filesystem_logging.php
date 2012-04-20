@@ -156,15 +156,11 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
         $filepath = $CFG->dataroot.'/invalidlogpath';
 
         //create a folder and make it executable only
-        mkdir($filepath);
-        chmod($filepath,'0100');
+        mkdir($filepath, 0100);
 
         //setup
         $this->load_csv_data();
         set_config('nonincremental', 1, 'rlipexport_version1');
-
-        //set the filepath to the dataroot
-        $filepath = $CFG->dataroot;
 
         //no writing actually happens
         $file = $CFG->dataroot.'/bogus';
@@ -184,8 +180,8 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
 
         //cleanup the new folder
-        if (file_exists($CFG->dataroot.'/invalidloglocation')) {
-            rmdir($CFG->dataroot.'/invalidloglocation');
+        if (file_exists($filepath)) {
+            rmdir($filepath);
         }
         $this->assertEquals($exists, true);
     }
