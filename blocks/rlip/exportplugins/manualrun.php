@@ -62,7 +62,8 @@ if ($data = $form->get_data()) {
     $result = $instance->run(0, 0, rlip_get_maxruntime());
     $errors = ob_get_contents();
     ob_end_clean();
-    if ($result != null) {
+
+    if ($result !== null) {
         // Error running export (probably time limit exceeded)
         echo $OUTPUT->header();
         echo $errors;

@@ -441,7 +441,9 @@ class rlip_dblogger_export extends rlip_dblogger {
         //flag as export
         $record->export = 1;
         //message
+        echo "\n in customize record with logfile status: ".$this->get_logfile_status()."*";
         if (!$this->get_logfile_status()) {
+            echo "\n bad logfile status";
             $logfilepath = get_config($this->plugin,'logfilelocation');
             $record->filesuccesses = 0; // TBD
             $record->statusmessage = get_string('exportinvalidlogfilepath',
@@ -454,6 +456,7 @@ class rlip_dblogger_export extends rlip_dblogger {
         } else {
             $record->statusmessage = "Export file {$filename} successfully created.";
         }
+        die();
         return $record;
     }
 

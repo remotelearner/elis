@@ -177,6 +177,7 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
         $params = array('message' => 'Log file access failed during export due to invalid logfile path: invalidlogpath.');
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $log_records = $DB->get_records(RLIP_LOG_TABLE);
+        foreach ($log_records as $log_record) print_object($log_record);
         $this->assertEquals($exists, true);
     }
 }

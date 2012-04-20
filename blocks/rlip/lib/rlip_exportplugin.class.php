@@ -104,7 +104,8 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
         $this->dblogger->set_starttime(time());
 
         //set up the file-system logger, if exists
-        $filename = rlip_log_file_name('export', $this->plugin, '', $manual, $this->dblogger->starttime);
+        $filepath = get_config($this->plugin, 'logfilelocation');
+        $filename = rlip_log_file_name('export', $this->plugin, $filepath, $manual, $this->dblogger->starttime);
         if (!empty($filename)) {
             $this->dblogger->set_log_path($filename);
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true, $manual);

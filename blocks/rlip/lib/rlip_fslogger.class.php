@@ -171,11 +171,9 @@ class rlip_fslogger {
 
         $message = $this->customize_record($message, $timestamp, $filename, $entitydescriptor, $success);
 
-//        if ($this->fileplugin && !$this->opened) {
         if ($this->opened !== true) {
             //open the file for writing if it hasn't been opened yet
             $open = $this->fileplugin->open(RLIP_FILE_WRITE);
-//            if ($this->fileplugin->open(RLIP_FILE_WRITE)) {
             if ($open === true) {
                 $this->opened = true;
             } else {
@@ -222,9 +220,8 @@ class rlip_fslogger {
 
         //construct and write the log line
         $line = '['.$date.' '.$offset.'] '.$message;
-//        if ($this->fileplugin) {
-            $this->fileplugin->write(array($line));
-//        }
+        $this->fileplugin->write(array($line));
+
         if (!$success && $this->manual) {
             echo $OUTPUT->box($message, 'generalbox warning manualstatusbox');
         }
