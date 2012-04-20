@@ -979,6 +979,45 @@ function rlip_compress_logs_cron($taskname, $runtime = 0, $time = 0) {
 }
 
 /**
+ * Compress logs for emailing
+ *
+ * @param string $plugin The plugin for which we are sending logs
+ * @param array $logids The list of database record ids pointing to log files
+ * @param boolean $manual True if manual, false if scheduled
+ * @return string The name of the appropriate zip file
+ */
+function rlip_compress_logs_email($plugin, $logids, $manual = false) {
+    global $CFG, $DB;
+    require_once($CFG->libdir.'/filestorage/zip_archive.php');
+
+    if (empty($logids)) {
+        //nothing to compress
+        return false;
+    }
+
+    //set up the archive
+    $archive_name = rlip_email_archive_name($plugin, 0, $manual);
+    $path = $CFG->dataroot.'/'.$archive_name;
+    $archive = new zip_archive();
+    $result = $archive->open($path, file_archive::CREATE);
+
+    //sql fragments to get the logs
+    list($sql, $params) = $DB->get_in_or_equal($logids);
+    $select = "id {$sql}"; 
+
+    //add files from log records
+    if ($records = $DB->get_records_select(RLIP_LOG_TABLE, $select, $params)) {
+        foreach ($records as $record) {
+            $archive->add_file_from_pathname(basename($record->logpath), $record->logpath);
+        }
+    }
+
+    $archive->close();
+
+    return $archive_name;
+}
+
+/**
  * Get the maxruntime for MANUAL import/export runs
  *
  * @return int  The allowed maxruntime (php.ini::max_execution_time - 2)
@@ -1017,4 +1056,147 @@ function rlip_schedulding_init() {
         // Add a cron task for the RLIP block
         elis_tasks_update_definition('block_rlip');
     }
+}
+
+/**
+ * Obtains the list of email addresses to send zipped logs to
+ *
+ * @param string $plugin The plugin for which we are sending logs
+ * @return array The list of email addresses
+ */
+function rlip_get_notification_emails($plugin) {
+    //obtain the config setting that signals who to send logs to
+    $setting = get_config($plugin, 'emailnotification');
+    $setting = trim($setting);
+
+    if (empty($setting)) {
+        //not set
+        return array();
+    }
+
+    $result = explode(',', $setting);
+
+    //parse and create a clean array with no extra whitespace in emails, etc
+    foreach ($result as $key => $value) {
+        $trimmed = trim($value);
+        if ($trimmed != '' && validate_email($trimmed)) {
+            $result[$key] = $trimmed;
+        } else {
+            unset($result[$key]);
+        }
+    }
+
+    //need to re-index for exact comparrison in unit tests
+    return array_values($result);
+}
+
+/**
+ * Obtain an object that we can use as the target user in email_to_user
+ *
+ * @param string $email Email of the target recipient
+ * @return object A user object, either from the db, or a simulated user record
+ *                for non-moodle emails
+ */
+function rlip_get_email_recipient($email) {
+    global $DB;
+
+    if ($result = $DB->get_record('user', array('email' => $email))) {
+        //user exists, so use their user record
+        return $result;
+    }
+
+    //fake user record for non-moodle recipient
+    $result = new stdClass;
+    $result->email = $email;
+
+    return $result;
+}
+
+/**
+ * Send a log email to a specific recipient
+ *
+ * @param string $plugin The plugin for which we are sending logs
+ * @param object $recipient User record containing email of recipient
+ * @param string $archive_name The name of the zip file
+ */
+function rlip_send_log_email($plugin, $recipient, $archive_name) {
+    global $CFG;
+
+    $admin = get_admin();
+
+    //obtain email contents
+    $plugindisplay = get_string('pluginname', $plugin);
+    $subject = get_string('notificationemailsubject', 'block_rlip', $plugindisplay);
+    $message = get_string('notificationemailmessage', 'block_rlip'); 
+
+    //send the email
+    email_to_user($recipient, $admin, $subject, $message, '', $archive_name, $archive_name);
+}
+
+/**
+ * Send log emails to all appropriate users for one plugin run
+ *
+ * @param string $plugin The plugin for which we are sending logs
+ * @param array $logids The list of database record ids pointing to log files
+ * @param boolean $manual True if manual, false if scheduled
+ */
+function rlip_send_log_emails($plugin, $logids, $manual = false) {
+    global $CFG;
+
+    //obtain the sanitized list of emails
+    $emails = rlip_get_notification_emails($plugin);
+
+    //create the zip file
+    $archive_name = rlip_compress_logs_email($plugin, $logids, $manual);
+    if ($archive_name === false) {
+        //no logs to send
+        return false;
+    }
+
+    //send to all appropriate users
+    foreach ($emails as $email) {
+        $recipient = rlip_get_email_recipient($email);
+        rlip_send_log_email($plugin, $recipient, $archive_name);
+    }
+
+    @unlink($CFG->dataroot.'/'.$archive_name);
+
+    return true;
+}
+
+/**
+ * Obtain the standardized name of a log archive file to be included in an email
+ *
+ * @param string $plugin The plugin for which we are sending logs
+ * @param int $time A fixed time to user for naming (use current time if zero)
+ * @param boolean $manual True if manual, false if scheduled
+ */
+function rlip_email_archive_name($plugin, $time = 0, $manual = false) {
+    if ($time == 0) {
+        //default ot using default time
+        $time = time();
+    }
+
+    //convert plugin name to prefix
+    $plugin_display = $plugin;
+    $importpos = strpos($plugin_display, 'rlipimport_');
+    $exportpos = strpos($plugin_display, 'rlipexport_'); 
+
+    if ($importpos === 0) {
+       $plugin_display = 'import_'.substr($plugin_display, strlen('rlipimport_'));
+    } else if ($exportpos === 0) {
+        $plugin_display = 'export_'.substr($plugin_display, strlen('rlipexport_'));
+    }
+
+    //execution type logic
+    if ($manual) {
+        $executiontype = 'manual';
+    } else {
+        $executiontype = 'scheduled';
+    }
+
+    //date component of the file anme
+    $date_display = date('M_d_Y_His', $time);
+
+    return $plugin_display.'_'.$executiontype.'_'.$date_display.'.zip';
 }

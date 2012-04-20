@@ -73,6 +73,9 @@ abstract class rlip_dblogger {
     //the type of entity
     var $entitytype = NULL;
 
+    //the list of log ids created since this object was constructed
+    var $logids = array();
+
     /**
      * DB logger constructor
      *
@@ -258,7 +261,7 @@ abstract class rlip_dblogger {
         $record = $this->customize_record($record, $filename);
 
         //persist
-        $DB->insert_record(RLIP_LOG_TABLE, $record);
+        $this->logids[] = $DB->insert_record(RLIP_LOG_TABLE, $record);
         
         //display, if appropriate
         $this->display_log($record, $filename);
@@ -297,6 +300,15 @@ abstract class rlip_dblogger {
      */
     function signal_maxruntime_exceeded() {
         $this->maxruntimeexceeded = true;
+    }
+
+    /**
+     * Obtain the list of log record ids created since this object was constructed
+     *
+     * @return array The list of ids
+     */
+    function get_log_ids() {
+        return $this->logids;
     }
 }
 

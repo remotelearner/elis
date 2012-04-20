@@ -340,4 +340,22 @@ class databaseLoggingTest extends rlip_test {
         //validation
         $this->assertEquals($output, '');
     }
+
+    /**
+     * Validate that database loggers store db log record ids
+     * for later retrieval
+     */
+    public function testDBLoggerObjectAccumulatesLogIds() {
+        //obtain the logging object
+        $dblogger = new rlip_dblogger_import();
+
+        for ($i = 0; $i < 3; $i++) {
+            //create some database logs
+            $dblogger->flush('test');
+        }
+
+        //validate that all ids were stored and can be retrieved
+        $logids = $dblogger->get_log_ids();
+        $this->assertEquals($logids, array(1, 2, 3));
+    }
 }

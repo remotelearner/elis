@@ -115,6 +115,15 @@ class utilityMethodTest extends rlip_test {
     }
 
     /**
+     * Create complete test user record
+     */
+    protected function create_complete_test_user() {
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('user', dirname(__FILE__).'/completeuser.csv');
+        load_phpunit_data_set($dataset, true);
+    }
+
+    /**
      * Load in our test data from CSV files
      */
     protected function load_export_csv_data() {
@@ -1211,6 +1220,38 @@ class utilityMethodTest extends rlip_test {
         $this->delete_full_path($dataroot, $importpath);
     }
 
+    private function recreate_table($component, $tablename) {
+        global $DB;
+        unset($DB->donesetup);
+
+        $manager = $DB->get_manager();
+
+        $filename = get_component_directory($component)."/db/install.xml";
+        $xmldb_file = new xmldb_file($filename);
+
+        if (!$xmldb_file->fileExists()) {
+            throw new ddl_exception('ddlxmlfileerror', null, 'File does not exist');
+        }
+
+        $loaded = $xmldb_file->loadXMLStructure();
+        if (!$loaded || !$xmldb_file->isLoaded()) {
+            /// Show info about the error if we can find it
+            if ($structure =& $xmldb_file->getStructure()) {
+                if ($errors = $structure->getAllErrors()) {
+                    throw new ddl_exception('ddlxmlfileerror', null, 'Errors found in XMLDB file: '. implode (', ', $errors));
+                }
+            }
+            throw new ddl_exception('ddlxmlfileerror', null, 'not loaded??');
+        }
+
+        $structure = $xmldb_file->getStructure();
+        $table = $structure->getTable($tablename);
+
+        $manager->create_table($table);
+
+        $DB->donesetup = true;
+    }
+
     /**
      * Validate that the block method before_delete()
      * deletes all block_rlip tables & data
@@ -1250,12 +1291,14 @@ class utilityMethodTest extends rlip_test {
             $this->assertTrue(false);
         } catch (Exception $e) {
             ; // expected exception table not found!
+            $this->recreate_table('rlipexport_version1', RLIPEXPORT_VERSION1_FIELD_TABLE);
         }
         try {
             $DB->count_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
             $this->assertTrue(false);
         } catch (Exception $e) {
             ; // expected exception table not found!
+            $this->recreate_table('rlipimport_version1', RLIPIMPORT_VERSION1_MAPPING_TABLE);
         }
 
         // test RLIP elis schedule task deleted
@@ -1269,5 +1312,224 @@ class utilityMethodTest extends rlip_test {
         $this->assertFalse(get_config('rlipimport_version1', 'bogus3'));
     }
 
+    /**
+     * Validate that we can get notification emails configured for an import plugin
+     */
+    function testGetNotificationEmailsForImport() {
+        set_config('emailnotification', 'user1@domain1.com,user2@domain2.com', 'rlipimport_version1');
+
+        $emails = rlip_get_notification_emails('rlipimport_version1');
+
+        $expected_result = array('user1@domain1.com',
+                                 'user2@domain2.com');
+
+        $this->assertEquals($emails, $expected_result);
+    }
+
+    /**
+     * Validate that we can get notification emails configured for an export plugin
+     */
+    function testGetNotificationEmailsForExport() {
+        set_config('emailnotification', 'user1@domain1.com,user2@domain2.com', 'rlipexport_version1');
+
+        $emails = rlip_get_notification_emails('rlipexport_version1');
+
+        $expected_result = array('user1@domain1.com',
+                                 'user2@domain2.com');
+
+        $this->assertEquals($emails, $expected_result);
+    }
+
+    /**
+     * Validate that notification email retrieval handles empty case
+     */
+    function testGetNotificationEmailsReturnsEmptyArrayForEmptySetting() {
+        set_config('emailnotification', '', 'rlipimport_version1');
+
+        $emails = rlip_get_notification_emails('rlipimport_version1');
+        $this->assertEquals($emails, array());
+    }
+
+    /**
+     * Validate that notification email retrieval trims emails
+     */
+    function testGetNotificationEmailsTrimsWhitespaceBetweenEmails() {
+        set_config('emailnotification', 'user1@domain1.com , user2@domain2.com', 'rlipimport_version1');
+
+        $emails = rlip_get_notification_emails('rlipimport_version1');
+
+        $expected_result = array('user1@domain1.com',
+                                 'user2@domain2.com');
+
+        $this->assertEquals($emails, $expected_result);
+    }
+
+    /**
+     * Validate that notification email retrieval removes empty email addresses
+     */
+    function testGetNotificationEmailsRemovesEmptyEmails() {
+        set_config('emailnotification', 'user1@domain1.com, ,user2@domain2.com', 'rlipimport_version1');
+
+        $emails = rlip_get_notification_emails('rlipimport_version1');
+
+        $expected_result = array('user1@domain1.com',
+                                 'user2@domain2.com');
+
+        $this->assertEquals($emails, $expected_result);
+    }
+
+    /**
+     * Validate that notification email retrieval removes improperly formatted email addresses
+     */
+    function testGetNoficiationEmailsRemovesInvalidEmails() {
+        set_config('emailnotification', 'user1@domain1.com,bogus,user2@domain2.com', 'rlipimport_version1');
+
+        $emails = rlip_get_notification_emails('rlipimport_version1');
+
+        $expected_result = array('user1@domain1.com',
+                                 'user2@domain2.com');
+
+        $this->assertEquals($emails, $expected_result);
+    }
+
+    /**
+     * Validate that email recipient retrieval creates a mock user record for
+     * an email address that is not within Moodle
+     */
+    function testGetEmailRecipientReturnsMockUserForNonexistentEmailAddress() {
+        $recipient = rlip_get_email_recipient('test@user.com');
+
+        $expected_result = new stdClass;
+        $expected_result->email = 'test@user.com';
+
+        $this->assertEquals($recipient, $expected_result);
+    }
+
+    /**
+     * Validate that the email recipient retrieval uses an existing user record
+     * for an email address that is within Moodle
+     */
+    function testGetEmailRecipientReturnsValidUserForExistingEmailAddress() {
+        global $DB;
+
+        $this->create_complete_test_user();
+
+        $recipient = rlip_get_email_recipient('rlipuser@rlipdomain.com');
+
+        $expected_result = $DB->get_record('user', array('username' => 'rlipusername'));
+        $this->assertEquals($recipient, $expected_result);
+    }
+
+    /**
+     * Validate zip file name construction for logging emails related to an
+     * import plugin
+     */
+    function testGetEmailArchiveFileNameForImport() {
+        $time = time();
+        $zipname = rlip_email_archive_name('rlipimport_version1', $time);
+
+        $date_display = date('M_d_Y_His', $time);
+        $expected_filename = 'import_version1_scheduled_'.$date_display.'.zip';
+        $this->assertEquals($zipname, $expected_filename);
+    }
+
+    /**
+     * Validate zip file name construction for logging emails related to an
+     * export plugin
+     */
+    function testGetEmailArchiveFileNameForExport() {
+        $time = time();
+        $zipname = rlip_email_archive_name('rlipexport_version1', $time);
+
+        $date_display = date('M_d_Y_His', $time);
+        $expected_filename = 'export_version1_scheduled_'.$date_display.'.zip';
+        $this->assertEquals($zipname, $expected_filename);
+    }
+
+    /**
+     * Validate zip file name construction for logging emails related to an
+     * import plugin
+     */
+    function testGetEmailArchiveFileNameForManual() {
+        $time = time();
+        $zipname = rlip_email_archive_name('rlipimport_version1', $time, true);
+
+        $date_display = date('M_d_Y_His', $time);
+        $expected_filename = 'import_version1_manual_'.$date_display.'.zip';
+        $this->assertEquals($zipname, $expected_filename);
+    }
+
+    /**
+     * Validate compression of log files into a zip file
+     */
+    function testCompressLogsForEmail() {
+        global $CFG, $DB;
+
+        $logids = array();
+
+        for ($i = 1; $i <= 3; $i++) {
+            //create summary records
+            $filename = 'compress_log_'.$i.'.txt';
+            $oldpath = dirname(__FILE__).'/'.$filename;
+            $newpath = $CFG->dataroot.'/'.$filename;
+            copy($oldpath, $newpath);
+
+            $summary_log = new stdClass;
+            $summary_log->logpath = $newpath;
+            $summary_log->plugin = 'rlipimport_version1';
+            $summary_log->userid = 9999;
+            $summary_log->targetstarttime = 0;
+            $summary_log->starttime = 0;
+            $summary_log->endtime = 0;
+            $summary_log->filesuccesses = 0;
+            $summary_log->filefailures = 0;
+            $summary_log->storedsuccesses = 0;
+            $summary_log->storedfailures = 0;
+            $summary_log->statusmessage = '';
+            $summary_log->logpath = $newpath;
+            $logids[] = $DB->insert_record(RLIP_LOG_TABLE, $summary_log);
+        }
+
+        $zipfilename = rlip_compress_logs_email('rlipimport_version1', $logids);
+
+        for ($i = 1; $i <= 3; $i++) {
+            //clean up copies
+            $filename = 'compress_log_'.$i.'.txt';
+            @unlink($CFG->dataroot.'/'.$filename);
+        }
+
+        //open zip_archive and verify all logs included
+        $zip = new zip_archive();
+        $result = $zip->open($CFG->dataroot.'/'.$zipfilename, file_archive::OPEN);
+        $this->assertTrue($result);
+        $this->assertEquals(3, $zip->count());
+
+        $files = $zip->list_files();
+        //validate zip contents
+        for ($i = 1; $i <= 3; $i++) {
+            $filename = 'compress_log_'.$i.'.txt';
+
+            $found = false;
+            foreach ($files as $file) {
+                if ($file->pathname == $filename) {
+                    $found = true;
+                    break;
+                }
+            }
+
+            $this->assertTrue($found);
+        }
+
+        $zip->close();
+    }
+
+    /**
+     * Validate edge case for log compression method
+     */
+    function testCompressLogsForEmailReturnsFalseForEmptyList() {
+        $zipfilename = rlip_compress_logs_email('rlipimport_version1', array());
+
+        $this->assertFalse($zipfilename);
+    }
 }
 
