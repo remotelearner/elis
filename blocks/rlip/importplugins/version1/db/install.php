@@ -46,7 +46,10 @@ function xmldb_rlipimport_version1_install() {
             $fieldmaps = $DB->get_records('block_rlip_fieldmap', array('context' => $entitytype));
 
             foreach ($fieldmaps as $fieldmap) {
-                if ($fieldname == $fieldmap->fieldname) {
+                // Handle special case when field names are synonymous but have different names
+                if ($fieldname == $fieldmap->fieldname || ($fieldname == "lang" && $fieldmap->fieldname == "language") ||
+                   ($fieldname == "action" && $fieldmap->fieldname == "execute")) {
+
                     $entity = $entitytype;
                     // Handle special case for different terminology
                     if ($entitytype == "student") {

@@ -1018,3 +1018,28 @@ function rlip_schedulding_init() {
         elis_tasks_update_definition('block_rlip');
     }
 }
+
+/**
+ * Given an absolute data root path, extract the relative path
+ *
+ * @param config The config object
+ * @return mixed False when no data root path found; otherwise, returns the relative path
+ */
+function rlip_data_root_path_translation($config) {
+    global $CFG;
+
+    $dataroot = $CFG->dataroot;
+
+    if (strpos($config->value, $dataroot) === 0) {
+        $relativepath = substr($config->value, strlen($dataroot));
+        // Remove trailing slash
+        if (substr($relativepath, -1) == '/') {
+            $relativepath = substr($relativepath, 0, -1);
+        }
+        if (!empty($relativepath)) {
+            return $relativepath;
+        }
+    }
+
+    return false;
+}

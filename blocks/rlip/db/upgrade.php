@@ -30,7 +30,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
 function xmldb_block_rlip_upgrade($oldversion=0) {
-    global $DB;
+    global $DB, $CFG;
 
     $result = true;
 
@@ -243,23 +243,39 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
             $creategroups = $DB->get_record('config', array('name' => 'block_rlip_creategroups'));
             set_config('creategroupsandgroupings', $creategroups->value, 'rlipimport_version1');
 
-            $creategroups = $DB->get_record('config', array('name' => 'block_rlip_exportfiletimestamp'));
-            set_config('export_file_timestamp', $creategroups->value, 'rlipexport_version1');
+            $exporttimestamp = $DB->get_record('config', array('name' => 'block_rlip_exportfiletimestamp'));
+            set_config('export_file_timestamp', $exporttimestamp->value, 'rlipexport_version1');
 
-            $creategroups = $DB->get_record('config', array('name' => 'block_rlip_exportallhistorical'));
-            set_config('nonincremental', $creategroups->value, 'rlipexport_version1');
+            $exporthistorical = $DB->get_record('config', array('name' => 'block_rlip_exportallhistorical'));
+            set_config('nonincremental', $exporthistorical->value, 'rlipexport_version1');
 
-            $creategroups = $DB->get_record('config', array('name' => 'block_rlip_impcourse_filename'));
-            set_config('course_schedule_file', $creategroups->value, 'rlipimport_version1');
+            $importcourse = $DB->get_record('config', array('name' => 'block_rlip_impcourse_filename'));
+            set_config('course_schedule_file', $importcourse->value, 'rlipimport_version1');
 
-            $creategroups = $DB->get_record('config', array('name' => 'block_rlip_impuser_filename'));
-            set_config('user_schedule_file', $creategroups->value, 'rlipimport_version1');
+            $importuser = $DB->get_record('config', array('name' => 'block_rlip_impuser_filename'));
+            set_config('user_schedule_file', $importuser->value, 'rlipimport_version1');
 
-            $creategroups = $DB->get_record('config', array('name' => 'block_rlip_impenrolment_filename'));
-            set_config('enrolment_schedule_file', $creategroups->value, 'rlipimport_version1');
+            $importenrolment = $DB->get_record('config', array('name' => 'block_rlip_impenrolment_filename'));
+            set_config('enrolment_schedule_file', $importenrolment->value, 'rlipimport_version1');
 
-            $creategroups = $DB->get_record('config', array('name' => 'block_rlip_nocron'));
-            set_config('disableincron', $creategroups->value, 'block_rlip');
+            $nocron = $DB->get_record('config', array('name' => 'block_rlip_nocron'));
+            set_config('disableincron', $nocron->value, 'block_rlip');
+
+            $importlocation = $DB->get_record('config', array('name' => 'block_rlip_filelocation'));
+            if ($relativepath = rlip_data_root_path_translation($importlocation)) {
+                set_config('schedule_files_path', $relativepath, 'rlipimport_version1');
+            }
+
+            $exportlocation = $DB->get_record('config', array('name' => 'block_rlip_exportfilelocation'));
+            if ($relativepath = rlip_data_root_path_translation($exportlocation)) {
+                set_config('export_path', $relativepath, 'rlipexport_version1');
+            }
+
+            $loglocation = $DB->get_record('config', array('name' => 'block_rlip_logfilelocation'));
+            if ($relativepath = rlip_data_root_path_translation($loglocation)) {
+                set_config('logfilelocation', $relativepath, 'rlipimport_version1');
+                set_config('logfilelocation', $relativepath, 'rlipexport_version1');
+            }
 
             /* RLIP 1.9 uses ID numbers for sending emails while RLIP 2 uses actual email addresses
              * ID numbers will be used to retrieve an corresponding email
