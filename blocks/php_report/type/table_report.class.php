@@ -1457,6 +1457,7 @@ abstract class table_report extends php_report {
 
         //used to track whether we're in the main report flow or not
         $in_main_report_flow = false;
+
         //query from the report implementation
         if ($sql === null) {
             list($sql, $params) = $this->get_report_sql($columns);
