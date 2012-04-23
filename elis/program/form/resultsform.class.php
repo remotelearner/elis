@@ -167,20 +167,18 @@ class cmEngineForm extends cmform {
         $mform->addElement('hidden', 'rid', $this->_customdata['rid']);
         $mform->addElement('hidden', 'contextid', $this->_customdata['contextid']);
 
-        $attributes = array('onchange' => 'toggleform(this);');
+        $attributes = array('onchange' => 'toggleform(this);', 'group' => null);
         $active= array();
         $active[] = $mform->createElement('advcheckbox', 'active', '', $activaterule, $attributes);
         $mform->addGroup($active, '', '', ' ', false);
         $mform->setType('active', PARAM_BOOL);
 
-        $attributes = array();
-
+        $attributes = array('group' => null);
         if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
-            $attributes = array('disabled' => 'disabled');
+            $attributes = array('disabled' => 'disabled', 'group' => null);
         }
 
         $exists = array_key_exists('eventtriggertype', $this->_customdata);
-
         if ($exists && ($this->_customdata['eventtriggertype'] == RESULTS_ENGINE_MANUAL)) {
             $settings = 'height=200,width=500,top=0,left=0,menubar=0,location=0,scrollbars,'
                       . 'resizable,toolbar,status,directories=0,fullscreen=0,dependent';
@@ -358,12 +356,12 @@ class cmEngineForm extends cmform {
         $ranges = array();
         $parsed = array();
 
-        $prefix = $this->types[$actiontype] .'_';
+        $langsuffix = $this->types[$actiontype];
+        $prefix = $langsuffix .'_';
 
         // Fallback check, if add another range button pushed skip vaidation.
         // Otherwise validate and make sure all rows have been filled correctly out
-        if (! array_key_exists($prefix .'add', $data)) {
-
+        if (!array_key_exists($prefix .'add', $data)) {
             // Iterate through the submitted values.
             // Existing data has the key track_<number>_min/max/etc.
             foreach ($data as $key => $value) {
@@ -373,11 +371,9 @@ class cmEngineForm extends cmform {
                     continue;
                 }
 
-
                 // Extract the element unique id
                 $parts      = explode('_', $key);
                 $id         = $parts[1];
-
                 if (array_key_exists($id, $parsed)) {
                     continue;
                 }
@@ -391,21 +387,20 @@ class cmEngineForm extends cmform {
                 // Skip over empty score ranges.
                 if (empty($data[$keymin]) && empty($data[$keymax])) {
                     // Skip
-                } else if (empty($data[$keymin]) || empty($data[$keymax]) || empty($data[$keyselect])) {
+                } else if (empty($data[$keymin]) || empty($data[$keymax])) {
                     $error = get_string('results_error_incomplete_score_range', self::LANG_FILE);
 
                 } else if ((int) $data[$keymin] >= (int) $data[$keymax]) {
                     $error = get_string('results_error_min_larger_than_max', self::LANG_FILE);
 
                 } else if (empty($data[$keyselect])) {
-                    $error = get_string('results_error_no_'. $prefix, self::LANG_FILE);
+                    $error = get_string('results_error_no_'. $langsuffix,
+                                        self::LANG_FILE);
                 }
 
                 // Only check the ranges if no other error has been found yet.
                 if (empty($error) && !(empty($data[$keymin]) || empty($data[$keymax]))) {
-
                     foreach ($ranges as $range) {
-
                         if (($range['min'] <= $data[$keymin]) && ($data[$keymin] <= $range['max'])) {
                             $error = get_string('results_error_range_overlap_min', self::LANG_FILE);
 
