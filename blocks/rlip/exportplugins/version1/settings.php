@@ -33,7 +33,7 @@ $settings->add(new admin_setting_heading('rlipexport_version1/logging',
 // Log file location
 $settings->add(new admin_setting_configtext('rlipexport_version1/logfilelocation',
                                             get_string('logfilelocation', 'rlipexport_version1'),
-                                            get_string('configlogfilelocation', 'rlipexport_version1'), ''));
+                                            get_string('configlogfilelocation', 'rlipexport_version1'), '/rlip/rlipexport_version1/log'));
 
 //email notification
 $settings->add(new admin_setting_configtext('rlipexport_version1/emailnotification',

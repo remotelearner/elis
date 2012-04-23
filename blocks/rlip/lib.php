@@ -1036,7 +1036,10 @@ function rlip_data_root_path_translation($config) {
         if (substr($relativepath, -1) == '/') {
             $relativepath = substr($relativepath, 0, -1);
         }
-        if (!empty($relativepath)) {
+
+        $leadingslash = substr($relativepath, 0, 1);
+
+        if (!empty($relativepath) && $leadingslash == '/') {
             return $relativepath;
         }
     }

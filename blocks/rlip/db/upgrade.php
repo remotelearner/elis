@@ -268,7 +268,8 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
 
             $exportlocation = $DB->get_record('config', array('name' => 'block_rlip_exportfilelocation'));
             if ($relativepath = rlip_data_root_path_translation($exportlocation)) {
-                set_config('export_path', $relativepath, 'rlipexport_version1');
+                set_config('export_path', dirname($relativepath), 'rlipexport_version1');
+                set_config('export_file', basename($relativepath), 'rlipexport_version1');
             }
 
             $loglocation = $DB->get_record('config', array('name' => 'block_rlip_logfilelocation'));

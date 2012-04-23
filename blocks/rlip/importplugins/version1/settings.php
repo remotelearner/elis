@@ -51,7 +51,7 @@ $settings->add(new admin_setting_heading('rlipimport_version1/logging',
 //log file location
 $settings->add(new admin_setting_configtext('rlipimport_version1/logfilelocation',
                                             get_string('logfilelocation', 'rlipimport_version1'),
-                                            get_string('configlogfilelocation', 'rlipimport_version1'), ''));
+                                            get_string('configlogfilelocation', 'rlipimport_version1'), '/rlip/rlipimport_version1/log'));
 
 //email notification
 $settings->add(new admin_setting_configtext('rlipimport_version1/emailnotification',
