@@ -330,6 +330,34 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2012022401, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2012040200) {
+        // The "crlm_class_enrolment.endtime" field might not exist in the current DB, so we need to check if it's missing and add it
+        $table = new xmldb_table('crlm_class_enrolment');
+        $field = new xmldb_field('endtime', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'completetime');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // The "crlm_cluster_track.enrolmenttime" field might not exist in the current DB, so we need to check if it's missing and add it
+        $table = new xmldb_table('crlm_cluster_track');
+        $field = new xmldb_field('enrolmenttime', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'autounenrol');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // The "crlm_wait_list.enrolmenttime" field might not exist in the current DB, so we need to check if it's missing and add it
+        $table = new xmldb_table('crlm_wait_list');
+        $field = new xmldb_field('enrolmenttime', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'autounenrol');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint($result, 2012040200, 'elis', 'program');
+    }
+
     return $result;
 }
 
