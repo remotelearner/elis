@@ -37,7 +37,6 @@ if (!($log = $DB->get_record(RLIP_LOG_TABLE, array('id' => $id)))) {
     print_error('filenotfound', 'error', $CFG->wwwroot.'/');
 }
 
-
 $logfilename = '';
 
 // Check if the log file still exists on the filesystem
@@ -48,7 +47,7 @@ if (!empty($log->logpath) && file_exists($log->logpath)) {
 // Check if a zip archive exists for the date the job was started on
 if ($logfilename == '') {
     $archivelog = rlip_get_archive_log_filename($log);
-
+    //error_log("download.php: checking for log archive: {$archivelog}");
     if (!empty($archivelog) && file_exists($archivelog)) {
         // Create a directory for temporary unzipping the log archive
         do {
@@ -63,19 +62,9 @@ if ($logfilename == '') {
             @remove_dir($path);
         } else {
             // Look for to see if the specific file we want exists in the unarchive zip file
-            if ($dh = opendir($path)) {
-                while (false !== ($item = readdir($dh))) {
-                    if ($item != '.' && $item != '..') {
-                        if (is_file($path.'/'.$item)) {
-                            // If we've found the file, record the full filesystem path to this file
-                            if ($item == basename($log->logpath)) {
-                                $logfilename = $path.'/'.$item;
-                            }
-                        }
-                    }
-                }
-
-                closedir($dh);
+            $logfilename = $path .'/'. basename($log->logpath);
+            if (!file_exists($logfilename)) {
+                $logfilename = '';
             }
         }
     }
@@ -103,3 +92,12 @@ while ($entry = $filein->read()) {
 
 $filein->close();
 $fileout->close();
+
+// ELIS-5224: delete the temp log files & directory
+if (!empty($path)) {
+    foreach(glob("{$path}/*") as $logfile) {
+        @unlink($logfile);
+    }
+    @rmdir($path);
+}
+
