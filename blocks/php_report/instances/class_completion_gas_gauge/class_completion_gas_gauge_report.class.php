@@ -301,6 +301,14 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
      * @return  string            The report's main sql statement
      */
     function get_report_sql($columns) {
+        // ELIS-5143: Ugly hack, but, was defaulting to show inactive users
+        $sql_filter = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(), $this->allow_configured_filters());
+        if (empty($sql_filter[0])) {
+            $sql_filter[0] = 'u.inactive = 0';
+        } else {
+            $sql_filter[0] = '';
+        }
+
         //calculates the condition imposed by the current top-level page
         $page_value_condition = $this->get_page_value_condition('cls.id');
 
@@ -342,6 +350,13 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
             $sql .= 'WHERE '. $page_value_condition[0];
             $params = $page_value_condition[1];
         }
+
+        // ELIS-5143
+        if (!empty($sql_filter[0])) {
+            $op = (stripos($sql, 'WHERE') === false) ? 'WHERE' : 'AND';
+            $sql .= " {$op} {$sql_filter[0]}";
+        }
+
         return array($sql, $params);
     }
 
@@ -477,6 +492,9 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         if (!empty($sql_filter[0])) {
             $base_sql .= " AND ({$sql_filter[0]})";
             $params += $sql_filter[1];
+        } else {
+            // ELIS-5143: Ugly hack, but, was defaulting to show inactive users
+            $base_sql .= ' AND u.inactive = 0';
         }
 
         //number of completed users
