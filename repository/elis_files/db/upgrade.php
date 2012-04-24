@@ -75,6 +75,15 @@ function xmldb_repository_elis_files_upgrade($oldversion = 0) {
 
             //rename fields
             $organization = new xmldb_field('organizationid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, '0');
+
+            //drop the keys
+            $original_uuid_index = new xmldb_index('elisfileorgastor_orguu_uix', XMLDB_INDEX_UNIQUE, array('organizationid', 'uuid'));
+            $original_index = new xmldb_index('elisfileorgastor_org_ix', XMLDB_INDEX_NOTUNIQUE, array('organizationid'));
+            $dbman->drop_index($new_table, $original_uuid_index);
+            $dbman->drop_index($new_table, $original_index);
+
+            //rename fields
+            $organization = new xmldb_field('organizationid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0);
             $dbman->rename_field($new_table, $organization, 'usersetid');
 
             //add the keys
