@@ -65,7 +65,7 @@ function xmldb_repository_elis_files_upgrade($oldversion = 0) {
             //rename table
             $dbman->rename_table($original_table,'elis_files_userset_store');
 
-            $new_table = new xmldb_table('elis_userset_store');
+            $new_table = new xmldb_table('elis_files_userset_store');
 
             //drop the keys
             $original_uuid_index = new xmldb_index('elisfileorgastor_orguu_uix', XMLDB_INDEX_UNIQUE, array('organizationid', 'uuid'));
