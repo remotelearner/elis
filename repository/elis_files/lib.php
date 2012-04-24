@@ -297,13 +297,14 @@ class repository_elis_files extends repository {
     /**
      * Return file URL
      *
+     * @uses $CFG
      * @param string $url the url of file
      * @return string
      */
     public function get_link($uuid) {
-        $node = $this->elis_files->get_info($uuid);
-        $url = $this->get_url($node);
-        return $url;
+        global $CFG;
+
+        return $CFG->wwwroot.'/repository/elis_files/openfile.php?uuid='.$uuid;
     }
 
     /*
