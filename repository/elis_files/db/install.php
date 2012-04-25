@@ -58,8 +58,7 @@ function xmldb_repository_elis_files_install() {
         $valid_values = array(ELIS_FILES_BROWSE_SITE_FILES,
                               ELIS_FILES_BROWSE_SHARED_FILES,
                               ELIS_FILES_BROWSE_COURSE_FILES,
-                              ELIS_FILES_BROWSE_USER_FILES,
-                              ELIS_FILES_BROWSE_USERSET_FILES);
+                              ELIS_FILES_BROWSE_USER_FILES);
         if (!in_array($int_value, $valid_values)) {
             $record->value = ELIS_FILES_BROWSE_USER_FILES;
             $DB->update_record('config_plugins', $record);
