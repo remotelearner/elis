@@ -198,11 +198,11 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      */
     function get_columns() {
         //query that calculates number completed as a percentage
-        $percent_complete_sql = $this->get_report_sql('COUNT(ccg.id) / COUNT(cc.id) * 100');
+        $percent_complete_sql = $this->get_report_sql('COUNT(ccg.id) / COUNT(cc.id) * 100', true);
         //query that calculates total number completed
-        $num_complete_sql = $this->get_report_sql('COUNT(ccg.id)');
+        $num_complete_sql = $this->get_report_sql('COUNT(ccg.id)', true);
         //query that calculates average final course grade
-        $avg_score_sql = $this->get_report_sql('AVG(stu.grade)');
+        $avg_score_sql = $this->get_report_sql('AVG(stu.grade)', true);
 
         //CM class idnumber
         $class_heading = get_string('column_class', 'rlreport_course_completion_gas_gauge');
@@ -307,11 +307,13 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
      * Method to be implemented, which should return
      * the report's main SQL statement
      *
-     * @param   array   $columns  The list of columns automatically calculated
+     * @param   array  $columns   The list of columns automatically calculated
      *                            by get_select_columns()
-     * @return  array   The report's main sql statement with optional params
+     * @param   bool   $addfilter if true manually adds filter SQL to query,
+     *                            false (default) doesn't include filter SQL.
+     * @return  array  The report's main sql statement with optional params
      */
-    function get_report_sql($columns) {
+    function get_report_sql($columns, $addfilter = false) {
         //calculates the condition imposed by the current top-level page
         $page_value_condition = $this->get_page_value_condition('crs.id');
 
@@ -354,6 +356,17 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
             $sql .= 'WHERE '. $page_value_condition[0];
             $params = $page_value_condition[1];
         }
+
+        if ($addfilter) {
+            $sql_filter = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(), $this->allow_configured_filters());
+            if (!empty($sql_filter[0])) {
+                $op = (stripos($sql, 'WHERE') === false) ? 'WHERE' : 'AND';
+                $sql .= " {$op} ({$sql_filter[0]})";
+                $params = array_merge($params, $sql_filter[1]);
+            }
+        }
+        //error_log("course_completion_gas_guage::get_report_ssql({$columns}, {$addfilter}); SQL => {$sql}");
+
         return array($sql, $params);
     }
 
