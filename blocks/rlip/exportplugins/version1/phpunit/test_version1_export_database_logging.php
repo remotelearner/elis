@@ -476,7 +476,7 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
 
         //validation
         $select = $DB->sql_like('logpath', ':logpath');
-        $params = array('logpath' => $CFG->dataroot .'/export_version1_%');
+        $params = array('logpath' => $CFG->dataroot . RLIP_DEFAULT_LOG_PATH . '/export_version1_%');
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }

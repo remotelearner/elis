@@ -373,7 +373,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
         //set the log file location
-        $filepath = $CFG->dataroot;
+        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
         self::cleanup_log_files();
 
         //run the import
@@ -400,6 +400,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $format = get_string('logfile_timestamp','block_rlip');
         $testfilename = $filepath.'/'.$plugin_type.'_version1_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         //get most recent logfile
+
         $filename = self::get_current_logfile($testfilename);
 
         if (!file_exists($filename)) {
@@ -5780,7 +5781,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         global $CFG;
 
         //pass manual and then scheduled and a timestamp and verify that the name is correct
-        $filepath = $CFG->dataroot;
+        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
         $plugin_type = 'import';
         $plugin = 'rlipimport_version1';
         $manual = true;
@@ -5858,7 +5859,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
         //set the file path to the dataroot
-        $filepath = $CFG->dataroot;
+        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
 
         $USER->id = 9999;
         self::cleanup_log_files();
@@ -5893,6 +5894,9 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         $exists = file_exists($testfilename);
         $this->assertEquals($exists, true);
+
+        // cleanup data file
+        @unlink($testfilename);
     }
 
     /**
@@ -5903,7 +5907,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
 
         //set the file path to the dataroot
-        $filepath = $CFG->dataroot;
+        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
 
         //file path and name
         $file_name = 'userscheduledimport.csv';
@@ -5975,7 +5979,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
         //set the file path to the dataroot
-        $filepath = $CFG->dataroot;
+        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
 
         $USER->id = 9999;
         self::cleanup_log_files();
@@ -6024,7 +6028,10 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         }
         $this->assertEquals($i, 16);
-}
+
+        // cleanup data file
+        @unlink($testfilename);
+    }
 
     /**
      * Validate that the correct error message is logged when an import runs
@@ -6034,7 +6041,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         global $CFG, $DB;
 
         //set the file path to the dataroot
-        $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
+        $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) . RLIP_DEFAULT_LOG_PATH;
         set_config('logfilelocation', '', 'rlipimport_version1');
 
         //set up a "user" import provider, using a single fixed file
@@ -6069,12 +6076,12 @@ class version1FilesystemLoggingTest extends rlip_test {
             $starttime = $record->starttime;
             break;
         }
-        $testfilename = $plugin_type .'_version1_manual_'. $entity .'_'.
-                        userdate($starttime, $format) .'.log';
+        $testfilename = $filepath . '/' . $plugin_type . '_version1_manual_' . $entity . '_' .
+                        userdate($starttime, $format) . '.log';
+
         $filename = self::get_current_logfile($testfilename);
         //echo "testVersion1ImportLogsRuntimeError(): logfile ?=> {$filename}\n";
         $this->assertTrue(file_exists($filename));
-
         //fetch log line
         $pointer = fopen($filename, 'r');
         $line = fgets($pointer);
@@ -6583,7 +6590,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         self::cleanup_log_files();
         self::cleanup_zip_files();
 
-        $filepath = $CFG->dataroot;
+        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
 
         $plugin_type = 'import';
         $plugin = 'rlipimport_version1';

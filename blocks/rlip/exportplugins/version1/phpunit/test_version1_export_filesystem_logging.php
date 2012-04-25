@@ -94,7 +94,7 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
         set_config('nonincremental', 1, 'rlipexport_version1');
 
         //set the filepath to the dataroot
-        $filepath = $CFG->dataroot;
+        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
 
         //no writing actually happens
         $file = $CFG->dataroot.'/bogus';

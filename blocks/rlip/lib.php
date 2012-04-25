@@ -40,6 +40,9 @@ define('RLIP_SCHEDULE_TABLE', 'block_rlip_schedule');
 define('RLIP_EXPORT_TEMPDIR', '/rlip/%s/temp/');
 define('RLIP_IMPORT_TEMPDIR', '/rlip/%s/temp/');
 
+//the default log path
+define('RLIP_DEFAULT_LOG_PATH', '/rlip/log');
+
 require_once($CFG->dirroot.'/lib/adminlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
@@ -876,7 +879,7 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
         $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR .
                     trim($filepath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     } else {
-        $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) . RLIP_DEFAULT_LOG_PATH . DIRECTORY_SEPARATOR;
     }
 
     // create directory if it doesn't exist
@@ -951,9 +954,8 @@ function rlip_compress_logs_cron($taskname, $runtime = 0, $time = 0) {
             //get the display name from the plugin-specific language string
             $plugin_name = "{$plugintype}_{$name}";
             $logfilelocation = get_config($plugin_name, 'logfilelocation');
-            $logfilelocation = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) .
-                  DIRECTORY_SEPARATOR .
-                  trim($logfilelocation, DIRECTORY_SEPARATOR);
+            $logfilelocation = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR)  . RLIP_DEFAULT_LOG_PATH .
+                               DIRECTORY_SEPARATOR . trim($logfilelocation, DIRECTORY_SEPARATOR);
             $logfileprefix = "{$pluginvalue}_{$name}";
             $logfiledate = $timestamp;
 
