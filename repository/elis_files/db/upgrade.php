@@ -29,7 +29,7 @@ require_once($CFG->dirroot . '/repository/elis_files/lib/eventlib.php');
 require_once($CFG->dirroot . '/repository/elis_files/lib/ELIS_files.php');
 
 function xmldb_repository_elis_files_upgrade($oldversion = 0) {
-    global $DB;
+    global $CFG, $DB;
     $result = true;
 
     if ($oldversion < 2011110301) {
