@@ -55,7 +55,7 @@ function xmldb_repository_elis_files_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint(true, 2011110301, 'repository', 'elis_files');
     }
 
-    if ($oldversion < 2012042300) {
+    if ($result && $oldversion < 2012042300) {
         //check that elis_files_organization_store exists and elis_files_userset_store does not exist
         $dbman = $DB->get_manager();
         if ($dbman->table_exists('elis_files_organization_store') && !$dbman->table_exists('elis_files_userset_store')) {
@@ -88,7 +88,7 @@ function xmldb_repository_elis_files_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint(true, 2012042300, 'repository', 'elis_files');
     }
 
-    if ($oldversion < 2012042500) {
+    if ($result && $oldversion < 2012042500) {
         defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_FILES',   60);
 
         // ELIS-4676 ELIS UserSet Files is no longer valid, so change to default of ELIS User Files
