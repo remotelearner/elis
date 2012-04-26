@@ -72,6 +72,13 @@ if ($logfilename == '') {
 
 // If we haven't found a valid archive file by now, make sure that we display an appropriate error
 if ($logfilename == '') {
+    // ELIS-5224: delete the temp log files & directory
+    if (!empty($path)) {
+        foreach(glob("{$path}/*") as $logfile) {
+            @unlink($logfile);
+        }
+        @rmdir($path);
+    }
     print_error('filenotfound', 'error', $CFG->wwwroot.'/blocks/rlip/viewlogs.php');
 }
 
