@@ -78,6 +78,11 @@ class block_repository extends block_base {
             // If the Moodle user's user name has an '@' symbol, then replace it with '_AT_' for Alfresco compatibility
             if (($tenantname = strpos($USER->username, '@')) > 0) {
                 $username = $repo->get_alfresco_username_fix();
+            }
+
+            // We must include the tenant portion of the username here.
+            if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
+                $username .= substr(elis::$config->elis_files->server_username, $tenantname);
                 $hastenant = true;
             }
 
