@@ -750,4 +750,29 @@ class version1CreateorupdateTest extends rlip_test {
         $exists = $DB->record_exists('user', array('username' => 'rlipusername'));
         $this->assertEquals($exists, false);
     }
+
+    /**
+     * Validate legacy support using "add" for action with create or update
+     */
+    public function testVersion1CreateorupdateAddAction() {
+        set_config('createorupdate', 1, 'rlipimport_version1');
+
+        $this->create_test_user();
+
+        $import_data = array('entity' => 'user',
+                             'action' => 'add',
+                             'username' => 'rlipusername',
+                             'firstname' => 'updatedfirst',
+                             'email' => '');
+
+        $this->run_core_user_import($import_data);
+
+        $data = array('username' => 'rlipusername',
+                      'firstname' => 'updatedfirst',
+                      'email' => 'rlipuser@rlipdomain.com');
+
+        //validate that the record was updated
+        $this->assert_record_exists('user', $data);
+    }
+
 }

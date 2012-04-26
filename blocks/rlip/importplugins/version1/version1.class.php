@@ -462,7 +462,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //apply "createorupdate" flag, if necessary
-        if ($action == 'create') {
+        //using "add" for legacy support
+        if ($action == 'create' || $action == 'add') {
             $action = $this->handle_user_createorupdate($record, $action);
         }
         $record->action = $action;
