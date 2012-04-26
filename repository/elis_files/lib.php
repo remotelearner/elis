@@ -780,7 +780,7 @@ class repository_elis_files extends repository {
         if (repository_elis_files::is_repo_visible('ELIS_files')) {
             if ($repo = repository_factory::factory()) {
                 if (elis_files_get_home_directory($adminusername) == false) {
-                    $mform->addElement('text', 'admin_username', get_string('configadminusername', 'repository_elis_files'), array('size' => '30'));
+                    $mform->addElement('text', 'admin_username', get_string('adminusername', 'repository_elis_files'), array('size' => '30'));
                     $mform->addElement('static', 'admin_username_default', '', get_string('elis_files_default_admin_username', 'repository_elis_files'));
                     $mform->addElement('static', 'admin_username_intro', '', get_string('configadminusername', 'repository_elis_files'));
                 } else {
