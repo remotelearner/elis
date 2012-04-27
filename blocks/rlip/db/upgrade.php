@@ -26,8 +26,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+
 function xmldb_block_rlip_upgrade($oldversion=0) {
-    global $DB;
+    global $DB, $CFG;
 
     $result = true;
 
@@ -188,7 +191,7 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         $dbman->rename_table(new xmldb_table('block_rlip_summary_log'), 'block_rlip_summary_logs');
         $dbman->rename_table(new xmldb_table('ip_schedule'), 'block_rlip_schedule');
     }
-    
+
     if ($result && $oldversion < 2012040500) {
         $table = new xmldb_table('block_rlip_summary_logs');
 
@@ -223,6 +226,106 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         $dbman->add_field($table, $field);
 
         upgrade_block_savepoint(true, 2012041201, 'rlip');
+    }
+
+    // This performs the RLIP 1.9 upgrade to RLIP 2
+    if ($result && $oldversion < 2012041700) {
+
+	    $rlipexporttbl = new xmldb_table('block_rlip_export_fieldmap');
+
+        /* One way to determine if this is an RLIP 1.9 upgrade is to check for tables that only
+         * exist in that version. block_rlip_export_fieldmap is one such table that only exists
+         * in RLIP 1.9
+         */
+	    if ($dbman->table_exists($rlipexporttbl)) {
+
+            // Using get_config will not work
+            $creategroups = $DB->get_record('config', array('name' => 'block_rlip_creategroups'));
+            set_config('creategroupsandgroupings', $creategroups->value, 'rlipimport_version1');
+
+            $exporttimestamp = $DB->get_record('config', array('name' => 'block_rlip_exportfiletimestamp'));
+            set_config('export_file_timestamp', $exporttimestamp->value, 'rlipexport_version1');
+
+            $exporthistorical = $DB->get_record('config', array('name' => 'block_rlip_exportallhistorical'));
+            set_config('nonincremental', $exporthistorical->value, 'rlipexport_version1');
+
+            $importcourse = $DB->get_record('config', array('name' => 'block_rlip_impcourse_filename'));
+            set_config('course_schedule_file', $importcourse->value, 'rlipimport_version1');
+
+            $importuser = $DB->get_record('config', array('name' => 'block_rlip_impuser_filename'));
+            set_config('user_schedule_file', $importuser->value, 'rlipimport_version1');
+
+            $importenrolment = $DB->get_record('config', array('name' => 'block_rlip_impenrolment_filename'));
+            set_config('enrolment_schedule_file', $importenrolment->value, 'rlipimport_version1');
+
+            $nocron = $DB->get_record('config', array('name' => 'block_rlip_nocron'));
+            set_config('disableincron', $nocron->value, 'block_rlip');
+
+            $importlocation = $DB->get_record('config', array('name' => 'block_rlip_filelocation'));
+            if ($relativepath = rlip_data_root_path_translation($importlocation)) {
+                set_config('schedule_files_path', $relativepath, 'rlipimport_version1');
+            }
+
+            $exportlocation = $DB->get_record('config', array('name' => 'block_rlip_exportfilelocation'));
+            if ($relativepath = rlip_data_root_path_translation($exportlocation)) {
+                set_config('export_path', dirname($relativepath), 'rlipexport_version1');
+                set_config('export_file', basename($relativepath), 'rlipexport_version1');
+            }
+
+            $loglocation = $DB->get_record('config', array('name' => 'block_rlip_logfilelocation'));
+            if ($relativepath = rlip_data_root_path_translation($loglocation)) {
+                set_config('logfilelocation', $relativepath, 'rlipimport_version1');
+                set_config('logfilelocation', $relativepath, 'rlipexport_version1');
+            }
+
+            /* RLIP 1.9 uses ID numbers for sending emails while RLIP 2 uses actual email addresses
+             * ID numbers will be used to retrieve an corresponding email
+             */
+            $config = $DB->get_record('config', array('name' => 'block_rlip_emailnotification'));
+            $emailids = explode(',', $config->value);
+            $emails = array();
+
+            foreach ($emailids as $id) {
+                if ($moodleuser = $DB->get_record('user', array('idnumber' => $id))) {
+                    $emails[] = $moodleuser->email;
+                }
+            }
+
+            $configemails = implode(',', $emails);
+            /* Save the emails in both the import and export configuration
+             * RLIP 1.9 only has email notifications in its import configuration
+             */
+            set_config('emailnotification', $configemails, 'rlipimport_version1');
+            set_config('emailnotification', $configemails, 'rlipexport_version1');
+
+            $admin = get_admin();
+
+            // Handle import scheduling
+            $config = $DB->get_record('config', array('name' => 'block_rlip_importperiod'));
+            $value = rlip_sanitize_time_string($config->value, '1d');
+            /* RLIP 1.9 has no label for scheduling so the plugin name will be used instead
+             * More plugins other than version1 may need to be handled for updates in the future
+             */
+            $data = array('plugin' => 'rlipimport_version1',
+                          'period' => $value,
+                          'userid' => $admin->id,
+                          'label'  => 'rlipimport_version1',
+                          'type'   => 'rlipimport');
+            rlip_schedule_add_job($data);
+
+            // Handle export scheduling
+            $config = $DB->get_record('config', array('name' => 'block_rlip_exportperiod'));
+            $value = rlip_sanitize_time_string($config->value, '1d');
+            $data = array('plugin' => 'rlipexport_version1',
+                          'period' => $value,
+                          'userid' => $admin->id,
+                          'label'  => 'rlipexport_version1',
+                          'type'   => 'rlipexport');
+            rlip_schedule_add_job($data);
+
+	    }
+
+        upgrade_block_savepoint(true, 2012041700, 'rlip');
     }
 
     return $result;

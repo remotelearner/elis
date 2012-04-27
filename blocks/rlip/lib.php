@@ -1299,3 +1299,31 @@ function rlip_log_file_exists($logorid) {
     return false;
 }
 
+/*
+ * Given an absolute data root path, extract the relative path
+ *
+ * @param config The config object
+ * @return mixed False when no data root path found; otherwise, returns the relative path
+ */
+function rlip_data_root_path_translation($config) {
+    global $CFG;
+
+    $dataroot = $CFG->dataroot;
+
+    if (strpos($config->value, $dataroot) === 0) {
+        $relativepath = substr($config->value, strlen($dataroot));
+        // Remove trailing slash
+        if (substr($relativepath, -1) == '/') {
+            $relativepath = substr($relativepath, 0, -1);
+        }
+
+        $leadingslash = substr($relativepath, 0, 1);
+
+        if (!empty($relativepath) && $leadingslash == '/') {
+            return $relativepath;
+        }
+    }
+
+    return false;
+}
+
