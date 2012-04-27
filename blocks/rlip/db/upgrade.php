@@ -270,6 +270,17 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
             if ($relativepath = rlip_data_root_path_translation($exportlocation)) {
                 set_config('export_path', dirname($relativepath), 'rlipexport_version1');
                 set_config('export_file', basename($relativepath), 'rlipexport_version1');
+            } else {
+                //try to validate that the setting resembles a path
+                $separator_pos = strrpos($exportlocation->value, DIRECTORY_SEPARATOR);
+                if ($separator_pos !== false) {
+                    //not using basename because it handles trailing slashes strangely
+                    $export_filename = substr($exportlocation->value, $separator_pos + 1);
+                    if ($export_filename !== '' && $export_filename !== false) {
+                        //set just the filename and use the default path
+                        set_config('export_file', $export_filename, 'rlipexport_version1');
+                    }
+                }
             }
 
             $loglocation = $DB->get_record('config', array('name' => 'block_rlip_logfilelocation'));
