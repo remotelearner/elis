@@ -690,7 +690,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
 function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin = true) {
     global $CFG, $USER;
 
-    require_once($CFG->libdir . '/filelib.php');
+    require_once($CFG->libdir.'/filelib.php');
 
     if (!empty($upload)) {
         if (!isset($_FILES[$upload]) || !empty($_FILES[$upload]->error)) {
@@ -722,6 +722,35 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         $uuid = $repo->get_root()->uuid;
 
     }
+
+    switch (get_config('elis_files', 'file_transfer_method')) {
+        case ELIS_FILES_XFER_WS:
+            return elis_files_upload_ws($upload, $path, $uuid, $useadmin);
+            break;
+
+        case ELIS_FILES_XFER_FTP:
+            return elis_files_upload_ftp($upload, $path, $uuid, $useadmin);
+            break;
+
+        default:
+            return false;
+    }
+}
+
+
+/**
+ * Upload a file into the repository via web services.
+ *
+ * @uses $CFG
+ * @uses $USER
+ * @param string $upload   The array index of the uploaded file.
+ * @param string $path     The full path to the file on the local filesystem.
+ * @param string $uuid     The UUID of the folder where the file is being uploaded to.
+ * @param bool   $useadmin Set to false to make sure that the administrative user configured in
+ *                         the plug-in is not used for this operation (default: true).
+ * @return object Node values for the uploaded file.
+ */
+function elis_files_upload_file_ws($upload = '', $path = '', $uuid = '', $useadmin = true) {
     $chunksize = 8192;
 
 /// We need to write the XML structure for the upload out to a file on disk to accomdate large files
@@ -764,7 +793,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         /// Copy the uploaded file into the temporary file (usng the base64 encode stream filter)
         /// in 8K chunks to conserve memory.
             while (!feof($fi)) {
-                $encodedbytes += fwrite($fo, fread($fi, 8192));
+                $encodedbytes += fwrite($fo, fread($fi, $chunksize));
             }
             fclose($fi);
 
@@ -787,8 +816,12 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     } else if (ELIS_files::is_version('3.4')) {
         $serviceuri = '/cmis/i/' . $uuid . '/children';
     }
-    $url        = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);
-    $uri        = parse_url($url);
+
+    // Initialize the object that return/result data is stored with
+    $result = new stdClass;
+
+    $url = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);
+    $uri = parse_url($url);
 
     switch ($uri['scheme']) {
         case 'http':
@@ -840,7 +873,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 
 /// Write the XML request (which contains the base64-encoded uploaded file contents) into the socket.
     while (!feof($fo)) {
-        fwrite($fp, fread($fo, 8192));
+        fwrite($fp, fread($fo, $chunksize));
     }
 
     fclose($fo);
@@ -848,7 +881,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 
 /// Fetch response.
     $response = '';
-    while (!feof($fp) && $chunk = fread($fp, 8192)) {
+    while (!feof($fp) && $chunk = fread($fp, $chunksize)) {
         $response .= $chunk;
     }
     fclose($fp);
@@ -918,6 +951,22 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     }
 
     return $properties;
+}
+
+
+/**
+ * Upload a file into the repository via FTP.
+ *
+ * @uses $CFG
+ * @uses $USER
+ * @param string $upload   The array index of the uploaded file.
+ * @param string $path     The full path to the file on the local filesystem.
+ * @param string $uuid     The UUID of the folder where the file is being uploaded to.
+ * @param bool   $useadmin Set to false to make sure that the administrative user configured in
+ *                         the plug-in is not used for this operation (default: true).
+ * @return object Node values for the uploaded file.
+ */
+function elis_files_upload_file_ftp($upload = '', $path = '', $uuid = '', $useadmin = true) {
 }
 
 

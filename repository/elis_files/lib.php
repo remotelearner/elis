@@ -40,6 +40,10 @@ defined('ELIS_FILES_SELECT_ALFRESCO_VERSION') or define('ELIS_FILES_SELECT_ALFRE
 defined('ELIS_FILES_ALFRESCO_30') or define('ELIS_FILES_ALFRESCO_30',   '3.2');
 defined('ELIS_FILES_ALFRESCO_34') or define('ELIS_FILES_ALFRESCO_34',   '3.4');
 
+// Setup options for the method to transfer files into Alfresco from Moodle
+defined('ELIS_FILES_XFER_WS') || define('ELIS_FILES_XFER_WS', 'webservices');
+defined('ELIS_FILES_XFER_FTP') || define('ELIS_FILES_XFER_FTP', 'ftp');
+
 
 class repository_elis_files extends repository {
     private $ticket = null;
@@ -668,6 +672,21 @@ class repository_elis_files extends repository {
         $mform->addElement('static', 'server_password_intro', '', get_string('elis_files_server_password', 'repository_elis_files'));
         $mform->addRule('server_password', get_string('required'), 'required', null, 'client');
 
+        $options = array(
+            ELIS_FILES_XFER_WS  => get_string('webservices', 'repository_elis_files'),
+            ELIS_FILES_XFER_FTP => get_string('ftp', 'repository_elis_files')
+        );
+
+        $mform->addElement('select', 'file_transfer_method', get_string('filetransfermethod', 'repository_elis_files'), $options);
+        $mform->setDefault('file_transfer_method', ELIS_FILES_XFER_FTP);
+        $mform->addElement('static', 'file_transfer_method_default', '', get_string('filetransfermethoddefault', 'repository_elis_files'));
+        $mform->addElement('static', 'file_transfer_method_desc', '', get_string('filetransfermethoddesc', 'repository_elis_files'));
+
+        $mform->addElement('text', 'ftp_port', get_string('ftpport', 'repository_elis_files'), array('size' => '30'));
+        $mform->setDefault('ftp_port', '21');
+        $mform->addElement('static', 'ftp_port_default', '', get_string('ftpportdefault', 'repository_elis_files'));
+        $mform->addElement('static', 'ftp_port_desc', '', get_string('ftpportdesc', 'repository_elis_files'));
+
         // Check for installed categories table or display 'plugin not yet installed'
         if ($DB->get_manager()->table_exists('elis_files_categories')) {
         // Need to check for settings to be saved
@@ -686,7 +705,7 @@ class repository_elis_files extends repository {
 
         $popup_settings = "height=480,width=640,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
 
-        $root_folder = get_config('ELIS_files', 'root_folder');
+        $root_folder = get_config('elis_files', 'root_folder');
         $button = repository_elis_files::output_root_folder_html($root_folder);
 
         $rootfolderarray=array();

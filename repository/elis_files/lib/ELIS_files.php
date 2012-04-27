@@ -85,6 +85,10 @@ defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FI
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
 
+// Setup options for the method to transfer files into Alfresco from Moodle
+defined('ELIS_FILES_XFER_WS') || define('ELIS_FILES_XFER_WS', 'webservices');
+defined('ELIS_FILES_XFER_FTP') || define('ELIS_FILES_XFER_FTP', 'ftp');
+
 
 class ELIS_files {
 
