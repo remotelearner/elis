@@ -70,9 +70,26 @@ function generate_temp_file($mbs) {
 }
 
 
-class file_uploadTest extends PHPUnit_Framework_TestCase {
+class file_uploadTest extends elis_database_test {
+
+    protected static function get_overlay_tables() {
+        return array(
+            'config_plugins' => 'moodle'
+        );
+}
 
     protected function setUp() {
+        parent::setUp();
+
+        $rs = self::$origdb->get_recordset('config_plugins', array('plugin' => 'elis_files'));
+
+        if ($rs->valid()) {
+            foreach ($rs as $setting) {
+                self::$overlaydb->import_record('config_plugins', $setting);
+            }
+            $rs->close();
+        }
+
         $USER = get_admin();
         $GLOBALS['USER'] = $USER;
     }
@@ -85,6 +102,8 @@ class file_uploadTest extends PHPUnit_Framework_TestCase {
                 }
             }
         }
+
+        parent::tearDown();
     }
 
     public function fileSizeProvider() {
@@ -96,15 +115,16 @@ class file_uploadTest extends PHPUnit_Framework_TestCase {
             array(128),
             array(256),
             array(512),
-            array(1024)
+            array(1024),
+            array(2048),
         );
     }
 
-    /**
-     * This test validates that the test file generator is creating files of the correct size
-     *
-     * @dataProvider fileSizeProvider
-     */
+//     /**
+//      * This test validates that the test file generator is creating files of the correct size
+//      *
+//      * @dataProvider fileSizeProvider
+//      */
 /*
     public function testGenerateTempFile($mb) {
         $filesize = $mb * ONE_MB_BYTES;
@@ -116,13 +136,11 @@ class file_uploadTest extends PHPUnit_Framework_TestCase {
     }
 */
     /**
-     * Test uploading files
+     * Test uploading of files with progressively larger sizes
      *
      * @dataProvider fileSizeProvider
      */
-    public function testUploadFile($mb) {
-        global $CFG;
-
+    public function testUploadIncrementalFileSizes($mb) {
         $filesize = $mb * ONE_MB_BYTES;
         $filename = generate_temp_file($mb);
 
@@ -130,7 +148,41 @@ class file_uploadTest extends PHPUnit_Framework_TestCase {
 
         unlink($filename);
 
+        $this->assertNotEquals(false, $response);
         $this->assertObjectHasAttribute('uuid', $response);
     }
 
+    /**
+     * Test uploading a file to Alfresco explicitly using the web services method
+     */
+    public function testUploadFileViaWs() {
+        // Explicitly set the file transfer method to Web Services
+        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elis_files');
+
+        $filename = generate_temp_file(1);
+
+        $response = elis_files_upload_file('', $filename);
+
+        unlink($filename);
+
+        $this->assertNotEquals(false, $response);
+        $this->assertObjectHasAttribute('uuid', $response);
+    }
+
+    /**
+     * Test uploading a file to Alfresco explicitly using the web services method
+     */
+    public function testUploadFileViaFTP() {
+        // Explicitly set the file transfer method to FTP
+        set_config('file_transfer_method', ELIS_FILES_XFER_FTP, 'elis_files');
+
+        $filename = generate_temp_file(1);
+
+        $response = elis_files_upload_file('', $filename);
+
+        unlink($filename);
+
+        $this->assertNotEquals(false, $response);
+        $this->assertObjectHasAttribute('uuid', $response);
+    }
 }
