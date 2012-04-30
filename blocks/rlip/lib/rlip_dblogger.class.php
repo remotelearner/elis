@@ -76,6 +76,9 @@ abstract class rlip_dblogger {
     //whether the logfile/logfilepath is valid
     var $logfile_status = true;
 
+    //error on the export path
+    var $exportpath_error = NULL;
+
     //the list of log ids created since this object was constructed
     var $logids = array();
 
@@ -311,7 +314,6 @@ abstract class rlip_dblogger {
     }
 
     /**
-<<<<<<< HEAD
      * Set logfile status
      * @param boolean $state the status of the logfile/logfile path - false if not accessible
      */
@@ -327,6 +329,21 @@ abstract class rlip_dblogger {
         return $this->logfile_status;
     }
 
+    /**
+     * Set export path error
+     * @param string $error sets an error for the export path
+     */
+    function set_exportpath_error($error) {
+        $this->exportpath_error = $error;
+    }
+
+    /**
+     * Get export path error
+     * @return string $state gets the error for the export path
+     */
+    function get_exportpath_error() {
+        return $this->exportpath_error;
+    }
     /**
      * Obtain the list of log record ids created since this object was constructed
      *
@@ -458,6 +475,7 @@ class rlip_dblogger_export extends rlip_dblogger {
     function customize_record($record, $filename) {
         //flag as export
         $record->export = 1;
+
         //message
         if (!$this->get_logfile_status()) {
             $logfilepath = get_config($this->plugin,'logfilelocation');
@@ -465,6 +483,8 @@ class rlip_dblogger_export extends rlip_dblogger {
             $record->statusmessage = get_string('exportinvalidlogfilepath',
                                      'block_rlip',
                                      array('logfilepath' => $logfilepath));
+        } else if ($error = $this->get_exportpath_error()) {
+            $record->statusmessage = $error;
         } else if ($this->maxruntimeexceeded) {
             $record->filesuccesses = 0; // TBD
             // maxruntime exceeded message
@@ -492,6 +512,10 @@ class rlip_dblogger_export extends rlip_dblogger {
                                              array('logfilepath' => $logfilepath));
                 $css = 'errorbox manualstatusbox';
                 echo $OUTPUT->box($displaystring, 'errorbox manualstatusbox');
+            }
+            if ($error = $this->get_exportpath_error()) {
+                $css = 'errorbox manualstatusbox';
+                echo $OUTPUT->box($error, 'errorbox manualstatusbox');
             }
             if ($this->maxruntimeexceeded) {
                 echo $OUTPUT->box("Export file {$filename} not created - time limit exceeded!", 'generalbox manualstatusbox'); // TBD

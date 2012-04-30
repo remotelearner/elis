@@ -31,9 +31,9 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-require_once($CFG->dirroot . '/elis/core/lib/setup.php');
 
 /**
  * File plugin that just stores read records in memory
@@ -214,6 +214,9 @@ class version1ExportTest extends rlip_test {
                         'user_info_category' => 'moodle',
                         'user_info_field' => 'moodle',
                         RLIPEXPORT_VERSION1_FIELD_TABLE => 'rlipexport_version1',
+                        'elis_scheduled_tasks' => 'elis_core',
+                        RLIP_SCHEDULE_TABLE => 'block_rlip',
+                        RLIP_LOG_TABLE => 'block_rlip',
                         'config_plugins' => 'moodle'
                      );
 
@@ -1528,5 +1531,168 @@ class version1ExportTest extends rlip_test {
             $this->assertLessThanOrEqual($parts[5], $date_parts[3]); // hhmmss
             // TBD^^^ intval($parts[5]), intval($date_parts[3])
         }
+    }
+
+    /**
+     * Test that the export path is created
+     */
+    public function testVersion1ExportPathCreated() {
+        global $CFG, $DB, $USER;
+
+        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        set_config('export_path', 'exportpath/deeper', 'rlipexport_version1');
+
+        $filepath = $CFG->dataroot.'/exportpath/deeper';
+        //cleanup filepath if it exists at beginning of test
+        if (file_exists($filepath)) {
+            rmdir($filepath);
+        }
+
+        //set up the export file path
+        $filename = 'rliptestexport.csv';
+        set_config('export_file', $filename, 'rlipexport_version1');
+
+        //set up data for one course and one enroled user
+        $this->load_csv_data();
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //change the next runtime to a known value in the past
+        $task = new stdClass;
+        $task->id = $taskid;
+        $task->nextruntime = 99;
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        $job = new stdClass;
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->nextruntime = 99;
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
+
+        //lower bound on starttime
+        $starttime = time();
+        //run the export
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname);
+
+        $records = $DB->get_records(RLIP_LOG_TABLE);
+//        foreach ($records as $record) {
+//            print_object($record);
+//        }
+//
+//        echo "\n looking for file: $filepath/$filename";
+        $exists = file_exists($filepath.'/'.$filename);
+        //cleanup the new file and folder
+        if ($exists) {
+            unlink($filepath.'/'.$filename);
+            rmdir($filepath);
+        }
+        $this->assertEquals($exists, true);
+
+    }
+
+    /**
+     * Test for an export path
+     */
+    public function testVersion1InvalidExportPath() {
+        global $CFG, $DB, $USER;
+
+        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        set_config('export_path', 'invalidexportpath', 'rlipexport_version1');
+
+        $filepath = $CFG->dataroot.'/invalidexportpath';
+
+        //create a folder and make it executable only
+        mkdir($filepath, 0100);
+
+        //set up the export file path
+        $filename = 'rliptestexport.csv';
+        set_config('export_file', $filename, 'rlipexport_version1');
+
+
+
+        //set up data for one course and one enroled user
+        $this->load_csv_data();
+
+        //create a scheduled job
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'label' => 'bogus',
+                      'type' => 'rlipexport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //change the next runtime to a known value in the past
+        $task = new stdClass;
+        $task->id = $taskid;
+        $task->nextruntime = 99;
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        $job = new stdClass;
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->nextruntime = 99;
+        $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
+
+        //lower bound on starttime
+        $starttime = time();
+        //run the export
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname);
+
+        //database error log validation
+        $select = "{$DB->sql_compare_text('statusmessage')} = :message";
+        $params = array('message' => 'Export file rliptestexport.csv cannot be processed because the folder: /home/moodledata/elis2-dev/invalidexportpath/ is not accessible. Please fix the export path.');
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+
+        $records = $DB->get_records(RLIP_LOG_TABLE);
+//        foreach ($records as $record) {
+//            print_object($record);
+//        }
+
+        //cleanup the folder
+        if (file_exists($filepath)) {
+            rmdir($filepath);
+        }
+        $this->assertEquals($exists, true);
+
+        //fs logger error log validation
+        //expected error
+        $expected_error = 'Export file rliptestexport.csv cannot be processed because the folder: /home/moodledata/elis2-dev/invalidexportpath/ is not accessible. Please fix the export path.'."\n";
+
+        //validate that a log file was created
+        $plugin_type = 'export';
+        $plugin = 'rlipexport_version1';
+        $format = get_string('logfile_timestamp','block_rlip');
+        //get most recent record
+        $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
+        foreach ($records as $record) {
+            $logfile = $record->logpath;
+            break;
+        }
+        $testfilename = $logfile;;
+        $filename = self::get_current_logfile($testfilename);
+        $this->assertTrue(file_exists($filename));
+
+        //fetch log line
+        $pointer = fopen($filename, 'r');
+        $line = fgets($pointer);
+        fclose($pointer);
+
+        if ($line == false) {
+            //no line found
+            $this->assertEquals(0, 1);
+        }
+
+        //data validation
+        $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
+        $actual_error = substr($line, $prefix_length);
+        $this->assertEquals($expected_error, $actual_error);
     }
 }

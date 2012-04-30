@@ -145,6 +145,27 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
             $this->fslogger->set_logfile_status(true);
             $this->dblogger->set_logfile_status(true);
         }
+
+        //check that the export file and filepath are valid
+        $exportbase = get_config($this->plugin, 'export_file');
+        $exportpath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) .
+                      DIRECTORY_SEPARATOR;
+        if (get_config($this->plugin, 'export_path')) {
+            $exportpath .= rtrim(trim(get_config($this->plugin, 'export_path'),
+                           DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        }
+        $outfile = $exportpath . $exportbase;
+
+        if ((!file_exists($exportpath) && !@mkdir($exportpath, 0777, true))
+            || (file_exists($exportpath) && !is_writable($exportpath))) {
+            $message = "Export file {$exportbase} cannot be processed because the folder: {$exportpath} is not accessible. ".
+            "Please fix the export path.";
+            $this->fslogger->log_failure($message, 0, $outfile);
+            $this->dblogger->set_exportpath_error($message);
+            $this->dblogger->flush($this->fileplugin->get_filename());
+            return null;
+        }
+
         //track the provided target start time
         $this->dblogger->set_targetstarttime($targetstarttime);
 
