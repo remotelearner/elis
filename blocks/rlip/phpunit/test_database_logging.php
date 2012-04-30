@@ -34,6 +34,7 @@ global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
 /**
  * DB logging class used to test the bare minimum functionality of the DB
@@ -380,6 +381,42 @@ class databaseLoggingTest extends rlip_test {
         //validation
         $select = $DB->sql_compare_text('logpath').' = :logpath';
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, array('logpath' => '/parentdir/childdir'));
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate that the version 1 import plugin logs the exact message required to the
+     * database when the import runs for too long on a manual run
+     */
+    public function testVersion1ManualImportLogsRuntimeDatabaseError() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //our import data
+        $data = array(array('action', 'username', 'password', 'firstname', 'lastname', 'email', 'city', 'country'),
+                      array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'),
+                      array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'),
+                      array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'));
+
+        //import provider that creates an instance of a file plugin that delays two seconds
+        //between reading the third and fourth entry
+        $provider = new rlip_importprovider_delay_after_three_users($data);
+        $manual = true;
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
+
+        //we should run out of time after processing the second real entry
+        ob_start();
+        //using three seconds to allow for one slow read when counting lines
+        $importplugin->run(0, 0, 3);
+        ob_end_clean();
+
+        $expected_message = "Failed importing all lines from import file bogus due to time limit exceeded. ".
+                            "Processed 2 of 3 records.";
+
+        //validation
+        $select = "{$DB->sql_compare_text('statusmessage')} = :message";
+        $params = array('message' => $expected_message);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }
 }

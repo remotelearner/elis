@@ -643,7 +643,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         }
 
         //track the total number of records to process
-        $this->dblogger->set_totalrecords($filelines);
+        //todo: find a way to get this number more generically, e.g.
+        //for non-flat formats like CSV
+        $this->dblogger->set_totalrecords($filelines - 1);
         $fileplugin->close();
 
         $fileplugin->open(RLIP_FILE_READ);
@@ -781,7 +783,13 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             if (($result = $this->process_import_file($entity, $maxruntime,
                                                       $state)) !== null) {
                 if ($this->fslogger) {
-                    $msg = get_string('importexceedstimelimit_b', 'block_rlip', $result);
+                    //todo: look at a better way to do this for non-flat
+                    //file formats like XML
+                    $a = new stdClass;
+                    $a->entity = $result->entity;
+                    $a->recordsprocessed = $result->linenumber - 1;
+                    $a->totalrecords = $result->filelines - 1;
+                    $msg = get_string('importexceedstimelimit_b', 'block_rlip', $a);
                     $this->fslogger->log_failure($msg);
                 }
                 return $result;

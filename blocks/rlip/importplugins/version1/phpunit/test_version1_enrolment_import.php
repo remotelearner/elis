@@ -128,6 +128,8 @@ class version1EnrolmentImportTest extends rlip_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         return array('log' => 'moodle',
+                     'grade_grades' => 'moodle',
+                     'grade_grades_history' => 'moodle',
                      RLIP_LOG_TABLE => 'block_rlip');
     }
 
