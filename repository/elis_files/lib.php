@@ -67,7 +67,7 @@ class repository_elis_files extends repository {
 
         /// ELIS files class
         $this->elis_files = repository_factory::factory();
-        $this->config = get_config('ELIS_files');
+        $this->config = get_config('elis_files');
         $this->current_node = null;
 
         // jQuery files required for file picker - just for this repository
@@ -627,16 +627,19 @@ class repository_elis_files extends repository {
      * They can then be accessed in the construct with $this->
      */
     public static function get_type_option_names() {
-        $option_names = array('pluginname',         //This is for an optional plugin name change
-                              'server_host',        // URL for Alfresco server
-                              'server_port',        // Alfresco server port
-                              'server_username',    // Alfresco server username
-                              'server_password',    // Alfresco server password
-                              'root_folder',        // Moodle root folder
-                              'user_quota',         // User quota N.B. cache is now pulled from general Repository options
-                              'deleteuserdir',      // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
-                              'default_browse'      // Where to start the file browsing session
-                            );
+        $option_names = array(
+            'pluginname',           // This is for an optional plugin name change
+            'server_host',          // URL for Alfresco server
+            'server_port',          // Alfresco server port
+            'server_username',      // Alfresco server username
+            'server_password',      // Alfresco server password
+            'file_transfer_method', // Defines how we are sending files to Alfresco
+            'ftp_port',             // Defines the port used for sending files via FTP
+            'root_folder',          // Moodle root folder
+            'user_quota',           // User quota N.B. cache is now pulled from general Repository options
+            'deleteuserdir',        // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
+            'default_browse'        // Where to start the file browsing session
+        );
 
         return $option_names;
     }
@@ -894,17 +897,22 @@ class repository_elis_files extends repository {
     }
 
     /**
-     * Check if SOAP extension enabled
+     * Check for required PHP extensions depending on the file transfer method
      *
      * @return bool
      */
     public static function plugin_init() {
-        if (!class_exists('SoapClient')) {
-            print_error('soapmustbeenabled', 'repository_elis_files');
+        if ($this->config->file_transfer_method == ELIS_FILES_XFER_FTP && !function_exists('ftp_connect')) {
+            print_error('ftpmustbeenabled', 'repository_elis_files');
             return false;
-        } else {
-            return true;
         }
+
+        if ($this->config->file_transfer_method == ELIS_FILES_XFER_WS && !function_exists('curl_init')) {
+            print_error('curlmustbeenabled', 'repository_elis_files');
+            return false;
+        }
+
+        return true;
     }
 
     /**

@@ -67,7 +67,7 @@ class repository_factory {
             $class = "ELIS_files";
             if (isset($SESSION->repo) && is_siteadmin($USER->id) &&
                 !get_config(ELIS_files::$plugin_name, 'initialized')) {
-                error_log("repository_factory::factory(): unsetting SESSION->repo");
+//                 error_log("repository_factory::factory(): unsetting SESSION->repo");
                 unset($SESSION->repo);
             }
 
