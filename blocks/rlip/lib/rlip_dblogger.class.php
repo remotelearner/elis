@@ -488,7 +488,7 @@ class rlip_dblogger_export extends rlip_dblogger {
         } else if ($this->maxruntimeexceeded) {
             $record->filesuccesses = 0; // TBD
             // maxruntime exceeded message
-            $record->statusmessage = "Export file {$filename} not created - time limit exceeded!";
+            $record->statusmessage = "Export file {$filename} not created due to time limit exceeded!";
         } else {
             $record->statusmessage = "Export file {$filename} successfully created.";
         }
@@ -518,7 +518,7 @@ class rlip_dblogger_export extends rlip_dblogger {
                 echo $OUTPUT->box($error, 'errorbox manualstatusbox');
             }
             if ($this->maxruntimeexceeded) {
-                echo $OUTPUT->box("Export file {$filename} not created - time limit exceeded!", 'generalbox manualstatusbox'); // TBD
+                echo $OUTPUT->box("Export file {$filename} not created due to time limit exceeded!", 'generalbox manualstatusbox'); // TBD
             }
         }
     }

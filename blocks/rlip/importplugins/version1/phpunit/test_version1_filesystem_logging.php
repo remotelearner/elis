@@ -6156,7 +6156,7 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         //obtain the line we care about
         $line = $contents[2];
-        $expected_error = 'Import processing of entity \'user\' aborted due to time restrictions. '.
+        $expected_error = 'Import processing of entity \'user\' partially processed due to time restrictions. '.
                           'Processed 2 of 3 total records.';
 
         //data validation
