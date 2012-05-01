@@ -2354,8 +2354,6 @@ class version1UserImportTest extends elis_database_test {
         $DB->insert_record('user_lastaccess', $lastaccess);
 
         //assert data condition before delete
-        $this->assertEquals($DB->count_records('context', array('contextlevel' => CONTEXT_USER,
-                                                                'instanceid' => $userid)), 1);
         $this->assertEquals($DB->count_records('message_read'), 0);
         $this->assertEquals($DB->count_records('tag_instance'), 1);
         $this->assertEquals($DB->count_records('grade_grades'), 1);
@@ -2372,8 +2370,6 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import($data, false);
 
         //assert data condition after delete
-        $this->assertEquals($DB->count_records('context', array('contextlevel' => CONTEXT_USER,
-                                                                'instanceid' => $userid)), 0);
         $this->assertEquals($DB->count_records('message_read'), 1);
         $this->assertEquals($DB->count_records('grade_grades'), 0);
         $this->assertEquals($DB->count_records('tag_instance'), 0);
