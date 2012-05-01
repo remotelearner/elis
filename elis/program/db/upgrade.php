@@ -326,11 +326,17 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         // Add the new 'certificatecode' field to the curriculum_assignment table
         $table = new xmldb_table('crlm_curriculum_assignment');
         $field = new xmldb_field('certificatecode', XMLDB_TYPE_CHAR, '40', null, null, null, null, 'locked');
-        $dbman->add_field($table, $field);
+
+        if (!$dbman->table_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
 
         // Add a new non-uniue index for the new field
         $index = new xmldb_index('certificatecode_ix', XMLDB_INDEX_NOTUNIQUE, array('certificatecode'));
-        $dbman->add_index($table, $index);
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
 
         upgrade_plugin_savepoint($result, 2012022401, 'elis', 'program');
     }
