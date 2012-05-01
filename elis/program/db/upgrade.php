@@ -280,6 +280,12 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $table = new xmldb_table('crlm_notification_log');
         $field = new xmldb_field('fromuserid');
 
+        if (!$dbman->field_exists($table, $field)) {
+            $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'userid');
+            $field->comment = 'PM user id that triggered the notification.';
+            $dbman->add_field($table, $field);
+        }
+
         //field may already exist from 1.9 install / upgrade
         if (!$dbman->field_exists($table, $field)) {
             $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'userid');
@@ -314,9 +320,12 @@ function xmldb_elis_program_upgrade($oldversion=0) {
     if ($result && $oldversion < 2011121501) {
         $table = new xmldb_table('crlm_notification_log');
         $index = new xmldb_index('event_inst_fuser_ix');
-        $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('fromuserid', 'instance', 'event'));
+        $index->set_attributes(XMLDB_INDEX_NOTUNIQUE, array('fromuserid', 'instance', 'event'));
 
-        $dbman->add_index($table, $index);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
         upgrade_plugin_savepoint($result, 2011121501, 'elis', 'program');
     }
 
