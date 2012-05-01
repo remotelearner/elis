@@ -392,7 +392,7 @@ class rlip_dblogger_import extends rlip_dblogger {
             $record->statusmessage = $this->missingcolumnsmessage;
         } else if ($this->maxruntimeexceeded) {
             // maxruntime exceeded message
-            $record->statusmessage = get_string('manualimportexceedstimelimit',
+            $record->statusmessage = get_string('dblogimportexceedstimelimit',
                                         'block_rlip',
                                         array('filename' => $filename,
                                         'recordsprocessed' => $record->filesuccesses + $record->filefailures,
@@ -419,7 +419,7 @@ class rlip_dblogger_import extends rlip_dblogger {
         $logfile_status = $this->get_logfile_status();
         if ($this->manual) {
             if ($this->maxruntimeexceeded) {
-                $displaystring = get_string('manualimportexceedstimelimit',
+                $displaystring = get_string('dblogimportexceedstimelimit',
                                      'block_rlip',
                                      array('filename' => $filename,
                                      'recordsprocessed' => $record->filesuccesses + $record->filefailures,

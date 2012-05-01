@@ -1607,7 +1607,6 @@ class version1ExportTest extends rlip_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         set_config('export_path', 'invalidexportpath', 'rlipexport_version1');
-
         $filepath = $CFG->dataroot.'/invalidexportpath';
 
         //create a folder and make it executable only
@@ -1616,8 +1615,6 @@ class version1ExportTest extends rlip_test {
         //set up the export file path
         $filename = 'rliptestexport.csv';
         set_config('export_file', $filename, 'rlipexport_version1');
-
-
 
         //set up data for one course and one enroled user
         $this->load_csv_data();
@@ -1647,8 +1644,9 @@ class version1ExportTest extends rlip_test {
         run_ipjob($taskname);
 
         //database error log validation
+        $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
-        $params = array('message' => 'Export file rliptestexport.csv cannot be processed because the folder: /home/moodledata/elis2-dev/invalidexportpath/ is not accessible. Please fix the export path.');
+        $params = array('message' => "Export file rliptestexport.csv cannot be processed because the folder: {$dataroot}/invalidexportpath/ is not accessible. Please fix the export path.");
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
 
         $records = $DB->get_records(RLIP_LOG_TABLE);
@@ -1663,8 +1661,8 @@ class version1ExportTest extends rlip_test {
         $this->assertEquals($exists, true);
 
         //fs logger error log validation
-        //expected error
-        $expected_error = 'Export file rliptestexport.csv cannot be processed because the folder: /home/moodledata/elis2-dev/invalidexportpath/ is not accessible. Please fix the export path.'."\n";
+        $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
+        $expected_error = "Export file rliptestexport.csv cannot be processed because the folder: {$dataroot}/invalidexportpath/ is not accessible. Please fix the export path.\n";
 
         //validate that a log file was created
         $plugin_type = 'export';

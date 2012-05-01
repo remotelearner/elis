@@ -6068,7 +6068,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $a->entity = $result->entity;
         $a->recordsprocessed = $result->linenumber - 1;
         $a->totalrecords = $result->filelines - 1;
-        $expected_error = get_string('importexceedstimelimit_b', 'block_rlip', $a)."\n";
+        $expected_error = get_string('manualimportexceedstimelimit_b', 'block_rlip', $a)."\n";
 
         //validate that a log file was created
         $plugin_type = 'import';
@@ -6157,7 +6157,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         //obtain the line we care about
         $line = $contents[2];
         $expected_error = 'Import processing of entity \'user\' aborted due to time restrictions. '.
-                          'Processed 2 of 3 total records. Import will continue at next cron.';
+                          'Processed 2 of 3 total records.';
 
         //data validation
         $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');

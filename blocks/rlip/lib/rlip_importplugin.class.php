@@ -789,7 +789,11 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                     $a->entity = $result->entity;
                     $a->recordsprocessed = $result->linenumber - 1;
                     $a->totalrecords = $result->filelines - 1;
-                    $msg = get_string('importexceedstimelimit_b', 'block_rlip', $a);
+                    $strid = 'importexceedstimelimit_b';
+                    if ($this->manual) {
+                        $strid = 'manualimportexceedstimelimit_b';
+                    }
+                    $msg = get_string($strid, 'block_rlip', $a);
                     $this->fslogger->log_failure($msg);
                 }
                 return $result;
@@ -813,7 +817,11 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                     $state->result = false;
                     $state->entity = $nextentity;
                     if ($this->fslogger) {
-                        $msg = get_string('importexceedstimelimit', 'block_rlip', $state);
+                        $strid = 'importexceedstimelimit';
+                        if ($this->manual) {
+                            $strid = 'manualimportexceedstimelimit';
+                        }
+                        $msg = get_string($strid, 'block_rlip', $state);
                         $this->fslogger->log_failure($msg);
                     }
                     return $state;
