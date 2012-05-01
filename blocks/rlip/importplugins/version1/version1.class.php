@@ -97,6 +97,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     //store mappings for the current entity type
     var $mappings = array();
 
+    //cache the list of themes within the lifespan of this plugin
+    var $themes = array();
+
     /**
      * Hook run after a file header is read
      *
@@ -594,8 +597,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //make sure theme refers to a valid theme
-        $themes = get_list_of_themes();
-        if (!$this->validate_fixed_list($record, 'theme', array_keys($themes))) {
+        if ($this->themes == array()) {
+            //lazy-loading of themes, store to save time
+            $this->themes = get_list_of_themes();
+        }
+
+        if (!$this->validate_fixed_list($record, 'theme', array_keys($this->themes))) {
             $identifier = $this->mappings['theme'];
             $this->fslogger->log_failure("{$identifier} value of \"{$record->theme}\" is not a valid theme.", 0, $filename, $this->linenumber, $record, "user");
             return false;
@@ -1269,8 +1276,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //make sure theme refers to a valid theme
-        $themes = get_list_of_themes();
-        if (!$this->validate_fixed_list($record, 'theme', array_keys($themes))) {
+        if ($this->themes == array()) {
+            //lazy-loading of themes, store to save time
+            $this->themes = get_list_of_themes();
+        }
+
+        if (!$this->validate_fixed_list($record, 'theme', array_keys($this->themes))) {
             $identifier = $this->mappings['theme'];
             $this->fslogger->log_failure("{$identifier} value of \"{$record->theme}\" is not a valid theme.", 0, $filename, $this->linenumber, $record, "course");
             return false;
