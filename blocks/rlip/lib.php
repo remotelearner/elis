@@ -1299,20 +1299,20 @@ function rlip_log_file_exists($logorid) {
     return false;
 }
 
-/*
+/**
  * Given an absolute data root path, extract the relative path
  *
- * @param config The config object
- * @return mixed False when no data root path found; returns the relative path
- *               or an empty string when data root path is matched
+ * @param string $path The pre-upgrade filesystem path (relative to root:/)
+ * @return boolean|string False when no data root path found; returns the relative path or an empty string when data root
+ *                        path is matched
  */
-function rlip_data_root_path_translation($config) {
+function rlip_data_root_path_translation($path) {
     global $CFG;
 
     $dataroot = $CFG->dataroot;
 
-    if (strpos($config->value, $dataroot) === 0) {
-        $relativepath = substr($config->value, strlen($dataroot));
+    if (strpos($path, $dataroot) === 0) {
+        $relativepath = substr($path, strlen($dataroot));
         // Remove trailing slash
         if (substr($relativepath, -1) == DIRECTORY_SEPARATOR) {
             $relativepath = substr($relativepath, 0, -1);

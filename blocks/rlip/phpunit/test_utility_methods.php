@@ -1543,7 +1543,7 @@ class utilityMethodTest extends rlip_test {
     function testCompressLogsForEmailReturnsFalseWhenNoLogFileIsValid() {
         global $DB;
 
-        //create a summary log with an empty log file path 
+        //create a summary log with an empty log file path
         $summary_log = new stdClass;
         $summary_log->logpath = 'testpath';
         $summary_log->plugin = 'rlipimport_version1';
@@ -1564,6 +1564,29 @@ class utilityMethodTest extends rlip_test {
 
         //validate that the scenario was handled
         $this->assertFalse($zipfilename);
+    }
+
+
+    public function data_root_paths_provider() {
+        global $CFG;
+
+        return array(
+            array($CFG->dataroot.'/myexport/', '/myexport'),
+            array($CFG->dataroot.'/rlip/import', '/rlip/import'),
+            array('/some/bad/path/on/the/filesystem', ''),
+            array('/', ''),
+            array('', '')
+        );
+    }
+
+
+    /**
+     * Validate that the function to translate an IP 1.9 path configuration value during the IP 2.0 upgrade works correctly.
+     *
+     * @dataProvider data_root_paths_provider
+     */
+    public function testDataRootPathTranslation($a, $b) {
+        $this->assertEquals($b, rlip_data_root_path_translation($a));
     }
 }
 
