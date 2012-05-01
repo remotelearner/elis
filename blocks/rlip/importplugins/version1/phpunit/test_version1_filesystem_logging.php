@@ -38,6 +38,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -5840,7 +5841,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         //data validation
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
         $params = array('message' => 'Log file access failed while importing lines from import file user.csv due to invalid logfile path.'.
-                                      ' Change \'invalidlogpath\' to a valid logfile location on the settings page. Processed 0 of 2 records.');
+                                      ' Change \'invalidlogpath\' to a valid logfile location on the settings page. Processed 0 of 1 records.');
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
 
         //cleanup the new folder
@@ -6063,7 +6064,11 @@ class version1FilesystemLoggingTest extends rlip_test {
         ob_end_clean();
 
         //expected error
-        $expected_error = get_string('importexceedstimelimit_b', 'block_rlip', $result)."\n";
+        $a = new stdClass;
+        $a->entity = $result->entity;
+        $a->recordsprocessed = $result->linenumber - 1;
+        $a->totalrecords = $result->filelines - 1;
+        $expected_error = get_string('importexceedstimelimit_b', 'block_rlip', $a)."\n";
 
         //validate that a log file was created
         $plugin_type = 'import';
@@ -6100,6 +6105,64 @@ class version1FilesystemLoggingTest extends rlip_test {
         //clean-up data file & test dir
         @unlink($testdir . $file_name);
         @rmdir($testdir);
+    }
+
+    /**
+     * Validate that the verison 1 import plugin logs the exact message required to the
+     * file system when the import runs for too long on a manual run
+     */
+    public function testVersion1ManualImportLogsRuntimeFilesystemError() {
+        global $CFG, $DB;
+
+        //set up the log file location
+        set_config('logfilelocation', '', 'rlipimport_version1');
+
+        //our import data
+        $data = array(array('action', 'username', 'password', 'firstname', 'lastname', 'email', 'city', 'country'),
+                      array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'),
+                      array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'),
+                      array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'));
+
+        //import provider that creates an instance of a file plugin that delays two seconds
+        //between reading the third and fourth entry 
+        $provider = new rlip_importprovider_delay_after_three_users($data);
+        $manual = true;
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
+
+        //we should run out of time after processing the second real entry
+        ob_start();
+        //using three seconds to allow for one slow read when counting lines
+        $importplugin->run(0, 0, 3);
+        ob_end_clean();
+
+        //get most recent record
+        $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
+        $filename = '';
+        foreach ($records as $record) {
+            //$starttime = $record->starttime;
+            $filename = $record->logpath;
+            break;
+        }
+
+        //validate that the right log file was created
+        $this->assertTrue(file_exists($filename));
+
+        //obtain log file lines
+        $contents = file_get_contents($filename);
+        $contents = explode("\n", $contents);
+
+        //validate line count, accounting for blank line at end
+        $this->assertEquals(count($contents), 4);
+
+        //obtain the line we care about
+        $line = $contents[2];
+        $expected_error = 'Import processing of entity \'user\' aborted due to time restrictions. '.
+                          'Processed 2 of 3 total records. Import will continue at next cron.';
+
+        //data validation
+        $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
+        $actual_error = substr($line, $prefix_length);
+        $this->assertEquals($expected_error, $actual_error);
     }
 
     public function testUserProfileFields() {

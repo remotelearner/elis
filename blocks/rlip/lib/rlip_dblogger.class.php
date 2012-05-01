@@ -385,7 +385,7 @@ class rlip_dblogger_import extends rlip_dblogger {
             $record->statusmessage = get_string('importinvalidlogfilepath',
                                  'block_rlip',
                                  array('filename' => $filename,
-                                 'filesuccesses' => $record->filesuccesses,
+                                 'recordsprocessed' => $record->filesuccesses + $record->filefailures,
                                  'logfilepath' => $logfilepath,
                                  'totalrecords' => $record->totalrecords));
         } else if ($this->missingcolumns) {
@@ -395,7 +395,7 @@ class rlip_dblogger_import extends rlip_dblogger {
             $record->statusmessage = get_string('manualimportexceedstimelimit',
                                         'block_rlip',
                                         array('filename' => $filename,
-                                        'filesuccesses' => $record->filesuccesses,
+                                        'recordsprocessed' => $record->filesuccesses + $record->filefailures,
                                         'totalrecords' => $record->totalrecords));
         } else if ($this->filefailures == 0) {
             //success message
@@ -422,7 +422,7 @@ class rlip_dblogger_import extends rlip_dblogger {
                 $displaystring = get_string('manualimportexceedstimelimit',
                                      'block_rlip',
                                      array('filename' => $filename,
-                                     'filesuccesses' => $record->filesuccesses,
+                                     'recordsprocessed' => $record->filesuccesses + $record->filefailures,
                                      'totalrecords' => $record->totalrecords));
                 $css = 'generalbox warning manualstatusbox';
                 echo $OUTPUT->box($displaystring, $css);
@@ -432,7 +432,7 @@ class rlip_dblogger_import extends rlip_dblogger {
                 $displaystring = get_string('importinvalidlogfilepath',
                                      'block_rlip',
                                      array('filename' => $filename,
-                                     'filesuccesses' => $record->filesuccesses,
+                                     'recordsprocessed' => $record->filesuccesses + $record->filefailures,
                                      'logfilepath' => $logfilepath,
                                      'totalrecords' => $record->totalrecords));
                 $css = 'errorbox manualstatusbox';
