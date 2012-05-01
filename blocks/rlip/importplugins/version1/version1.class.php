@@ -737,8 +737,6 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         $record->id = $DB->insert_record('user', $record);
 
-        get_context_instance(CONTEXT_USER, $record->id);
-
         profile_save_data($record);
 
         //sync to PM is necessary
