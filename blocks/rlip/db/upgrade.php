@@ -262,14 +262,19 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
             set_config('disableincron', $nocron->value, 'block_rlip');
 
             $importlocation = $DB->get_record('config', array('name' => 'block_rlip_filelocation'));
-            if ($relativepath = rlip_data_root_path_translation($importlocation)) {
+            if (($relativepath = rlip_data_root_path_translation($importlocation)) !== false) {
                 set_config('schedule_files_path', $relativepath, 'rlipimport_version1');
             }
 
             $exportlocation = $DB->get_record('config', array('name' => 'block_rlip_exportfilelocation'));
             if ($relativepath = rlip_data_root_path_translation($exportlocation)) {
-                set_config('export_path', dirname($relativepath), 'rlipexport_version1');
-                set_config('export_file', basename($relativepath), 'rlipexport_version1');
+                $path_parts = pathinfo($relativepath);
+                //just want an empty path if there is no parent folder
+                if ($path_parts['dirname'] == '.' || $path_parts['dirname'] == DIRECTORY_SEPARATOR) {
+                    $path_parts['dirname'] = '';
+                }
+                set_config('export_path', $path_parts['dirname'], 'rlipexport_version1');
+                set_config('export_file', $path_parts['basename'], 'rlipexport_version1');
             } else {
                 //try to validate that the setting resembles a path
                 $separator_pos = strrpos($exportlocation->value, DIRECTORY_SEPARATOR);
@@ -284,7 +289,7 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
             }
 
             $loglocation = $DB->get_record('config', array('name' => 'block_rlip_logfilelocation'));
-            if ($relativepath = rlip_data_root_path_translation($loglocation)) {
+            if (($relativepath = rlip_data_root_path_translation($loglocation)) !== false) {
                 set_config('logfilelocation', $relativepath, 'rlipimport_version1');
                 set_config('logfilelocation', $relativepath, 'rlipexport_version1');
             }

@@ -1018,7 +1018,7 @@ function rlip_compress_logs_email($plugin, $logids, $manual = false) {
 
     //sql fragments to get the logs
     list($sql, $params) = $DB->get_in_or_equal($logids);
-    $select = "id {$sql}"; 
+    $select = "id {$sql}";
 
     //add files from log records, tracking whether a valid log path was found
     $found = false;
@@ -1153,7 +1153,7 @@ function rlip_send_log_email($plugin, $recipient, $archive_name) {
     //obtain email contents
     $plugindisplay = get_string('pluginname', $plugin);
     $subject = get_string('notificationemailsubject', 'block_rlip', $plugindisplay);
-    $message = get_string('notificationemailmessage', 'block_rlip'); 
+    $message = get_string('notificationemailmessage', 'block_rlip');
 
     //send the email
     email_to_user($recipient, $admin, $subject, $message, '', $archive_name, $archive_name);
@@ -1206,7 +1206,7 @@ function rlip_email_archive_name($plugin, $time = 0, $manual = false) {
     //convert plugin name to prefix
     $plugin_display = $plugin;
     $importpos = strpos($plugin_display, 'rlipimport_');
-    $exportpos = strpos($plugin_display, 'rlipexport_'); 
+    $exportpos = strpos($plugin_display, 'rlipexport_');
 
     if ($importpos === 0) {
        $plugin_display = 'import_'.substr($plugin_display, strlen('rlipimport_'));
@@ -1303,7 +1303,8 @@ function rlip_log_file_exists($logorid) {
  * Given an absolute data root path, extract the relative path
  *
  * @param config The config object
- * @return mixed False when no data root path found; otherwise, returns the relative path
+ * @return mixed False when no data root path found; returns the relative path
+ *               or an empty string when data root path is matched
  */
 function rlip_data_root_path_translation($config) {
     global $CFG;
@@ -1313,14 +1314,17 @@ function rlip_data_root_path_translation($config) {
     if (strpos($config->value, $dataroot) === 0) {
         $relativepath = substr($config->value, strlen($dataroot));
         // Remove trailing slash
-        if (substr($relativepath, -1) == '/') {
+        if (substr($relativepath, -1) == DIRECTORY_SEPARATOR) {
             $relativepath = substr($relativepath, 0, -1);
         }
 
         $leadingslash = substr($relativepath, 0, 1);
 
-        if (!empty($relativepath) && $leadingslash == '/') {
+        if (!empty($relativepath) && $leadingslash == DIRECTORY_SEPARATOR) {
             return $relativepath;
+        } else if (empty($relativepath)) {
+            //relativepath is dataroot - return an empty string
+            return '';
         }
     }
 
