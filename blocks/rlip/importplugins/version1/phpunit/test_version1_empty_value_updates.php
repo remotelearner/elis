@@ -174,11 +174,38 @@ class version1EmptyValueUpdatesTest extends rlip_test {
     }
 
     /**
+     * Set up the course and context records needed for many of the
+     * unit tests
+     */
+    private static function init_contexts_and_site_course() {
+        global $DB;
+
+        $prefix = self::$origdb->get_prefix();
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
+        //set up the site course record
+        if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
+            self::$overlaydb->import_record('course', $record);
+        }
+
+        build_context_path();
+    }
+
+    /**
      * Validates that the version 1 update ignores empty values and does not
      * blank out fields for users
      */
     function testVersion1UserUpdateIgnoresEmptyValues() {
         global $CFG;
+
+        //not doing this causes problems in CM with user sync
+        $this->init_contexts_and_site_course();
 
         set_config('createorupdate', 0, 'rlipimport_version1');
 
