@@ -67,6 +67,8 @@ if ($data = $form->get_data()) {
         // Error running export (probably time limit exceeded)
         echo $OUTPUT->header();
         echo $errors;
+        //display the form
+        $form->display();
         echo $OUTPUT->footer();
     } else {
         $fileplugin->send_headers();
