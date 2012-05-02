@@ -579,6 +579,24 @@ function rlip_get_run_instance($prefix, $plugin, $type, $userid, $state) {
 }
 
 /**
+* Calculate the next runtime
+*
+* @param    int    $targetstarttime Ideal start time for a job
+* @param    string $period          How often a job runs
+* @param    int    $currenttime     Optional current time
+* @return   int                     The next runtime
+*/
+function rlip_calc_next_runtime($targetstarttime, $period, $currenttime = 0) {
+    $time = ($currenttime == 0) ? time() : $currenttime;
+
+    $period = (int)rlip_schedule_period_minutes($period) * 60;
+    $iterations = ceil(($time - $targetstarttime + 59) / $period);
+    $nextruntime = ($iterations * $period) + $targetstarttime;
+
+    return $nextruntime;
+}
+
+/**
  *  Callback function for elis_scheduled_tasks IP jobs
  *
  * @param  string  $taskname  The task name, in the form ipjob_{id}, where id
@@ -623,15 +641,8 @@ function run_ipjob($taskname, $maxruntime = 0) {
         if (empty($disabledincron)) {
             //record last runtime
             $lastruntime = (int)($ipjob->lastruntime);
-
-            //update next runtime on the scheduled task record
-            $nextruntime = $ipjob->nextruntime;
-            $timenow = time();
-            do {
-                $nextruntime += (int)rlip_schedule_period_minutes($data['period']) * 60;
-            } while ($nextruntime <= ($timenow + 59));
+            $nextruntime = rlip_calc_next_runtime($targetstarttime, $data['period']);
             $task->nextruntime = $nextruntime;
-
             //update the next runtime on the ip schedule record
             $ipjob->nextruntime = $task->nextruntime;
             $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);

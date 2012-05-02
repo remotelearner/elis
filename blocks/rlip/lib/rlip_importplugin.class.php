@@ -114,6 +114,10 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     var $linenumber = 0;
     //type of import, true if manual
     var $manual = false;
+    //stores entity type
+    var $tmp_entity = '';
+    //stores import actions
+    var $tmp_import_actions = array();
 
     /**
      * Import plugin constructor
@@ -174,11 +178,20 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      */
     function plugin_supports_entity($entity) {
         $methods = get_class_methods($this);
-
         //look for a method named [entity]_action
         $method = "{$entity}_action";
+
         if (method_exists($this, $method)) {
-            return $this->get_import_actions($entity);
+            /* for performance, retrieve the temporary stored import actions
+             * from the previous entity; otherwise, retrieve new import actions
+             */
+            if ($this->tmp_entity == $entity) {
+                return $this->tmp_import_actions;
+            } else {
+                $this->tmp_entity = $entity;
+                $this->tmp_import_actions = $this->get_import_actions($entity);
+                return $this->tmp_import_actions;
+            }
         }
 
         return false;
