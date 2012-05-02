@@ -1284,6 +1284,7 @@ class utilityMethodTest extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot .'/blocks/moodleblock.class.php');
         require_once($CFG->dirroot .'/blocks/rlip/block_rlip.php');
+        require_once($CFG->dirroot .'/blocks/rlip/db/tasks.php');
 
         // setup some bogus config_plugins settings and elis_scheduled_tasks
         set_config('bogus1', 1, 'block_rlip');
@@ -1301,6 +1302,10 @@ class utilityMethodTest extends rlip_test {
         $est_data['plugin'] = 'rlipexport_version1';
         rlip_schedule_add_job($est_data);
         rlip_schedule_add_job($est_data);
+
+        //add compress logs cron job
+        $tasks[0]['plugin'] = 'block_rlip';
+        $DB->insert_record('elis_scheduled_tasks', $tasks[0]);
 
         // call the RLIP block before_delete() method
         $blockobj = new block_rlip;
@@ -1328,6 +1333,12 @@ class utilityMethodTest extends rlip_test {
         // test RLIP elis schedule task deleted
         $iprecs = $DB->get_records_select('elis_scheduled_tasks',
                            "taskname LIKE 'ipjob_%'");
+        $this->assertTrue(empty($iprecs));
+
+        $iprecs = $DB->get_records('elis_scheduled_tasks', array('plugin' => 'block_rlip'));
+        $this->assertTrue(empty($iprecs));
+
+        $iprecs = $DB->get_records('elis_scheduled_tasks', array('plugin' => 'block/rlip'));
         $this->assertTrue(empty($iprecs));
 
         // test RLIP config settings deleted

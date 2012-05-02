@@ -449,7 +449,7 @@ function rlip_schedule_add_job($data) {
     }
 
     $task = new stdClass;
-    $task->plugin        = 'block/rlip';
+    $task->plugin        = 'block_rlip';
     $task->taskname      = 'ipjob_'. $ipjob->id;
     $task->callfile      = '/blocks/rlip/lib.php';
     $task->callfunction  = serialize('run_ipjob'); // TBD

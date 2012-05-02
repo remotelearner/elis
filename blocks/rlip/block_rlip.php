@@ -83,7 +83,7 @@ class block_rlip extends block_base {
 
         // delete any elis_scheduled_tasks for block
         $DB->delete_records('elis_scheduled_tasks',
-                            array('plugin' => 'block/rlip'));
+                            array('plugin' => 'block_rlip'));
 
         $rlipexporttbl = new xmldb_table(RLIPEXPORT_VERSION1_FIELD_TABLE);
         if ($dbman->table_exists($rlipexporttbl)) {

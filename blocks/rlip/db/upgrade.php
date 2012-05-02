@@ -392,5 +392,17 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         upgrade_block_savepoint(true, 2012041700, 'rlip');
     }
 
+    //rename block/rlip to block_rlip in elis_scheduled_tasks
+    if ($result && $oldversion < 2012050200) {
+        $tasks = $DB->get_recordset('elis_scheduled_tasks', array('plugin' => 'block/rlip'));
+        if (!empty($tasks)) {
+            foreach ($tasks as $task) {
+                $task->plugin = 'block_rlip';
+                $DB->update_record('elis_scheduled_tasks', $task);
+            }
+        }
+
+        upgrade_block_savepoint(true, 2012050200, 'rlip');
+    }
     return $result;
 }
