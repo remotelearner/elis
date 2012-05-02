@@ -46,6 +46,9 @@ $plugin = required_param('plugin', PARAM_CLEAN);
 $plugin_display = get_string('pluginname', $plugin);
 rlip_manualrun_page_setup($baseurl, $plugin_display);
 
+//javascript library needed by the form
+$PAGE->requires->js('/blocks/rlip/js/lib.js');
+
 //create our basic form
 $form = new rlip_manualexport_form();
 $form->set_data(array('plugin' => $plugin));
@@ -66,7 +69,9 @@ if ($data = $form->get_data()) {
     if ($result !== null) {
         // Error running export (probably time limit exceeded)
         echo $OUTPUT->header();
-        echo $errors;
+        //display errors in a span so we can clear it using javascript when needed
+        $attributes = array('id' => 'rlipexporterrors');
+        echo html_writer::tag('span', $errors, $attributes);
         //display the form
         $form->display();
         echo $OUTPUT->footer();
