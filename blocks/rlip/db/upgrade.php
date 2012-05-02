@@ -239,36 +239,45 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         if ($dbman->table_exists($rlipexporttbl)) {
             if (isset($CFG->block_rlip_creategroups)) {
                 set_config('creategroupsandgroupings', $CFG->block_rlip_creategroups, 'rlipimport_version1');
+                unset_config('block_rlip_creategroups');
             }
 
             if (isset($CFG->block_rlip_exportfiletimestamp)) {
                 set_config('export_file_timestamp', $CFG->block_rlip_exportfiletimestamp, 'rlipexport_version1');
+                unset_config('block_rlip_exportfiletimestamp');
             }
 
 	        if (isset($CFG->block_rlip_exportallhistorical)) {
                 set_config('export_file_timestamp', $CFG->block_rlip_exportallhistorical, 'rlipexport_version1');
+                unset_config('block_rlip_exportallhistorical');
             }
 
             if (isset($CFG->block_rlip_impcourse_filename)) {
                 set_config('course_schedule_file', $CFG->block_rlip_impcourse_filename, 'rlipimport_version1');
+                unset_config('block_rlip_impcourse_filename');
             }
 
             if (isset($CFG->block_rlip_impuser_filename)) {
                 set_config('user_schedule_file', $CFG->block_rlip_impuser_filename, 'rlipimport_version1');
+                unset_config('block_rlip_impuser_filename');
             }
 
             if (isset($CFG->block_rlip_impenrolment_filename)) {
                 set_config('enrolment_schedule_file', $CFG->block_rlip_impenrolment_filename, 'rlipimport_version1');
+                unset_config('block_rlip_impenrolment_filename');
             }
 
             if (isset($CFG->block_rlip_nocron)) {
                 set_config('disableincron', $CFG->block_rlip_nocron, 'block_rlip');
+                unset_config('block_rlip_nocron');
             }
 
             if (isset($CFG->block_rlip_filelocation)) {
                 if (($relativepath = rlip_data_root_path_translation($CFG->block_rlip_filelocation)) !== false) {
                     set_config('schedule_files_path', $relativepath, 'rlipimport_version1');
                 }
+
+                unset_config('block_rlip_filelocation');
             }
 
             if (isset($CFG->block_rlip_exportfilelocation)) {
@@ -292,6 +301,8 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
                         }
                     }
                 }
+
+                unset_config('block_rlip_exportfilelocation');
             }
 
             if (isset($CFG->block_rlip_logfilelocation)) {
@@ -299,6 +310,8 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
                     set_config('logfilelocation', $relativepath, 'rlipimport_version1');
                     set_config('logfilelocation', $relativepath, 'rlipexport_version1');
                 }
+
+                unset_config('block_rlip_logfilelocation');
             }
 
             /* RLIP 1.9 uses ID numbers for sending emails while RLIP 2 uses actual email addresses
@@ -320,6 +333,8 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
                  */
                 set_config('emailnotification', $configemails, 'rlipimport_version1');
                 set_config('emailnotification', $configemails, 'rlipexport_version1');
+
+                unset_config('block_rlip_emailnotification');
             }
 
             $admin = get_admin();
@@ -337,7 +352,9 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
                     'label'  => 'rlipimport_version1',
                     'type'   => 'rlipimport'
                 );
+
                 rlip_schedule_add_job($data);
+                unset_config('block_rlip_importperiod');
             }
 
             // Handle export scheduling
@@ -352,6 +369,23 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
                 );
 
                 rlip_schedule_add_job($data);
+                unset_config('block_rlip_exportperiod');
+            }
+
+            // Remove any potential config values that may be set in the DB from RLIP 1.9 as well
+            $fields = array(
+                'block_rlip_dateformat',
+                'block_rlip_impcourse_filetype',
+                'block_rlip_impenrolment_filetype',
+                'block_rlip_impuser_filetype',
+                'block_rlip_last_export_cron',
+                'block_rlip_last_import_cron'
+            );
+
+            foreach ($fields as $field) {
+                if (isset($CFG->$field)) {
+                    unset_config($field);
+                }
             }
 	    }
 
