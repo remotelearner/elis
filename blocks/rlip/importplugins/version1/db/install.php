@@ -33,6 +33,13 @@ function xmldb_rlipimport_version1_install() {
 
     global $DB;
 
+    $dbman = $DB->get_manager();
+    if (!$dbman->table_exists('block_rlip_fieldmap')) {
+        //this is a fresh install with no previous 1.9-version IP set up
+        //so no need to migrate data
+        return true;
+    }
+
     $plugin = new rlip_importplugin_version1(NULL, false);
 
     $fields = array();
