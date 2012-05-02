@@ -73,10 +73,14 @@ class databaseLoggingTest extends rlip_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        require_once($file);
 
         return array(RLIP_LOG_TABLE => 'block_rlip',
                      'files' => 'moodle',
-                     'config_plugins' => 'moodle');
+                     'config_plugins' => 'moodle',
+                     //prevent unexpected errors due to field re-mappings
+                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1');
     }
 
     /**

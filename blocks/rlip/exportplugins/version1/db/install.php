@@ -32,6 +32,13 @@ require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/version1.class.p
 function xmldb_rlipexport_version1_install() {
     global $DB;
 
+    $dbman = $DB->get_manager();
+    if (!$dbman->table_exists('block_rlip_export_fieldmap')) {
+        //this is a fresh install with no previous 1.9-version IP set up
+        //so no need to migrate data
+        return true;
+    }
+
     $export_fieldmap = $DB->get_records('block_rlip_export_fieldmap');
 
     // This will copy the profile fields from RLIP 1.9 into the new table

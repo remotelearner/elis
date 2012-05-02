@@ -333,6 +333,25 @@ class utilityMethodTest extends rlip_test {
     }
 
     /**
+     * Test that the next runtime is aligned to the correct boundary
+     */
+    function testNextRuntimeBoundry() {
+        $targetstarttime = mktime(12, 0, 0, 1, 1, 2012);    //12:00
+        $lowerboundtime = mktime(12, 2, 0, 1, 1, 2012);     //12:02
+        $middleboundtime = mktime(12, 4, 30, 1, 1, 2012);   //12:04:30
+        $upperboundtime = mktime(12, 7, 0, 1, 1, 2012);     //12:07
+
+        $nextruntime =  rlip_calc_next_runtime($targetstarttime, '5m', $lowerboundtime);
+        $this->assertEquals($nextruntime, $targetstarttime + (60 * 5)); //12:05
+
+        $nextruntime =  rlip_calc_next_runtime($targetstarttime, '5m', $middleboundtime);
+        $this->assertEquals($nextruntime, $targetstarttime + (60 * 10)); //12:10
+
+        $nextruntime =  rlip_calc_next_runtime($targetstarttime, '5m', $upperboundtime);
+        $this->assertEquals($nextruntime, $targetstarttime + (60 * 10)); //12:10
+    }
+
+    /**
      * Validate that the "add job" method also supports updates
      */
     function testUpdatingJob() {

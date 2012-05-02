@@ -101,13 +101,7 @@ if ($tasks && $tasks->valid()) {
 
         $data = unserialize($ipjob->config);
         $state = isset($data['state']) ? $data['state'] : null;
-
-        //update next runtime on the scheduled task record
-        $nextruntime = $ipjob->nextruntime;
-        $timenow = time();
-        do {
-            $nextruntime += (int)rlip_schedule_period_minutes($data['period']) * 60;
-        } while ($nextruntime <= ($timenow + 59));
+        $nextruntime = rlip_calc_next_runtime($targetstarttime, $data['period']);
         $task->nextruntime = $nextruntime;
         $task->lastruntime = $timenow;
         $DB->update_record('elis_scheduled_tasks', $task);

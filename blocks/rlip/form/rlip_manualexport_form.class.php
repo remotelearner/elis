@@ -37,7 +37,10 @@ class rlip_manualexport_form extends moodleform {
         //used to store the plugin between form submits
         $mform->addElement('hidden', 'plugin');
 
-        //add submit button
-        $this->add_action_buttons(false, get_string('runnow', 'block_rlip'));
+        //add submit button (can't use add_action_buttons due to javascript usage)
+        //note that the manualrun script includes lib.js for us right now
+        $attributes = array('onclick' => 'rlip_clear_export_ui()');
+        $mform->addElement('submit', 'submitbutton', get_string('runnow', 'block_rlip'), $attributes);
+        $mform->closeHeaderBefore('submitbutton');
     }
 }
