@@ -1420,12 +1420,12 @@ function pm_fix_duplicate_class_enrolments() {
 
                     // Look for the earliest locked grade record for this user and keep that (if any are locked)
                     $sql2 = "SELECT id, grade, locked, timegraded
-                             FROM mdl_crlm_class_graded
+                             FROM {crlm_class_graded}
                              WHERE classid = $classid
                              AND userid = $userid
                              ORDER BY timegraded ASC";
 
-                    if ($rs2 = $DB->get_recordset_sql($sql2)) {
+                    if (($rs2 = $DB->get_recordset_sql($sql2)) && $rs2->valid()) {
                         foreach ($rs2 as $rec) {
                             // Store the last record ID just in case we need it for cleanup
                             $lastid = $rec->id;
