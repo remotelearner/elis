@@ -638,7 +638,8 @@ class repository_elis_files extends repository {
             'root_folder',          // Moodle root folder
             'user_quota',           // User quota N.B. cache is now pulled from general Repository options
             'deleteuserdir',        // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
-            'default_browse'        // Where to start the file browsing session
+            'default_browse',       // Where to start the file browsing session
+            'admin_username'        // The override for a Moodle account using the 'admin' username
         );
 
         return $option_names;
@@ -790,16 +791,16 @@ class repository_elis_files extends repository {
         $hasadmin = $DB->record_exists('user', array('username'   => 'admin',
                                                      'mnethostid' => $CFG->mnet_localhost_id));
 
-        $admin_username = trim(get_config('admin_username','ELIS_files'));
+        $admin_username = trim(get_config('admin_username','elis_files'));
         if (empty($admin_username)) {
             $adminusername = 'moodleadmin';
-            set_config('admin_username', $adminusername, 'ELIS_files');
+            set_config('admin_username', $adminusername, 'elis_files');
         } else {
             $adminusername = $admin_username;
         }
 
         // Only proceed here if the Alfresco plug-in is actually enabled.
-        if (repository_elis_files::is_repo_visible('ELIS_files')) {
+        if (repository_elis_files::is_repo_visible('elis_files')) {
             if ($repo = repository_factory::factory()) {
                 if (elis_files_get_home_directory($adminusername) == false) {
                     $mform->addElement('text', 'admin_username', get_string('adminusername', 'repository_elis_files'), array('size' => '30'));

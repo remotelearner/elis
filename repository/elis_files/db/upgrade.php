@@ -110,6 +110,18 @@ function xmldb_repository_elis_files_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint(true, 2012042500, 'repository', 'elis_files');
     }
 
+    if ($result && $oldversion < 2012050200)  {
+        // Check for any plug-in settings using an incorrect plug-in name "ELIS_files" instead of "elis_files"
+        if ($pcfgs = $DB->get_records('config_plugins', array('plugin' => 'ELIS_files'))) {
+            foreach ($pcfgs as $pcfg) {
+                $pcfg->plugin = 'elis_files';
+                $DB->update_record('config_plugins', $pcfg);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2012050200, 'repository', 'elis_files');
+    }
+
     return $result;
 }
 
