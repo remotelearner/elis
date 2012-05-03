@@ -237,22 +237,25 @@ function dhtml_table(formid, prefix, fields) {
         var frame_regex  = new RegExp("[A-Za-z0-9_]*_frame");
         var oldprefix    = '';
         var newprefix    = this.table_prefix +'_'+ this.table.newRowIndex +'_';
-        
+
         for (var i =0; i < template.length; i += 1) {
             oldprefix = prefix_regex.exec(template[i].innerHTML);
             if (oldprefix != null) {
                 break;
             }
         }
-        
+
         prefix_regex = new RegExp(oldprefix, "g");
-        
-        for (var i =0; i < template.length; i += 1) {
+
+        for (var i = 0; i < template.length; i += 1) {
             cell = row.insertCell(-1);
+            if (i < 2) {
+                cell.align = 'center';
+            }
             html = template[i].innerHTML.replace(prefix_regex, newprefix);
             html = html.replace(/selected=\"selected\"/g, " ");
             html = html.replace(/ selected /g, " ");
-            if (html.match(/input/i) != null) {
+            if (html.match(/<input/i) != null) {
                 html = html.replace(/value=\"?[^\" >]+\"?/g, "value=\"\"");
             }
             cell.innerHTML=html;
