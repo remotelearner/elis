@@ -294,7 +294,7 @@
         <FIELD NAME="email2" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="email" NEXT="address"/>
         <FIELD NAME="address" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="email2" NEXT="address2"/>
         <FIELD NAME="address2" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="address" NEXT="city"/>
-        <FIELD NAME="city" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="address2" NEXT="state"/>
+        <FIELD NAME="city" TYPE="char" LENGTH="120" NOTNULL="false" SEQUENCE="false" PREVIOUS="address2" NEXT="state"/>
         <FIELD NAME="state" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="city" NEXT="postalcode"/>
         <FIELD NAME="postalcode" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" PREVIOUS="state" NEXT="country"/>
         <FIELD NAME="country" TYPE="char" LENGTH="2" NOTNULL="false" SEQUENCE="false" PREVIOUS="postalcode" NEXT="phone"/>

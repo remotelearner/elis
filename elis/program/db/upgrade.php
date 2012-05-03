@@ -542,5 +542,14 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2012040200, 'elis', 'program');
     }
 
+     if ($result && $oldversion < 2012050300) {
+         $table = new xmldb_table('crlm_user');
+         $field = new xmldb_field('city', XMLDB_TYPE_CHAR, '120',null, null, null, null, 'address2');
+
+         $dbman->change_field_precision($table, $field);
+
+         upgrade_plugin_savepoint($result, 2012050300, 'elis', 'program');
+     }
+
     return $result;
 }
