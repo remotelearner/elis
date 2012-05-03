@@ -10,8 +10,7 @@ require_once(dirname(__FILE__).'/lib.php');
 
 //start of "scheduling" section
 $settings->add(new admin_setting_heading('rlipexport_version1/scheduling',
-                                         get_string('scheduling', 'rlipexport_version1'),
-                                         ''));
+                                         get_string('exportfilesheading', 'rlipexport_version1'), ''));
 
 // Export filename settings
 $settings->add(new admin_setting_configtext('rlipexport_version1/export_path',
