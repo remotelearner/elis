@@ -1759,3 +1759,39 @@ function pm_display_grade($grade) {
     return $grade; // This probably isn't a float value
 }
 
+/**
+ * Determines whether, on the "My Moodle" page, we should instead redirect to
+ * the Program Management Daskboard
+ *
+ * @param boolean $editing True if we are currently editing the page, otherwise
+ *                         false
+ * @return boolean True if we should redirect, otherwise false
+ */
+function pm_mymoodle_redirect($editing = false) {
+    global $USER, $DB;
+
+    if ($editing) {
+        //editing, so do not redirect
+        return false;
+    }
+
+    if (!isloggedin()) {
+        //the page typically handles this but worth sanity checking
+        return false;
+    }
+
+    if (!$DB->record_exists('user', array('id' => $USER->id))) {
+        //require_login handles this but worth sanity checking
+        return false;
+    }
+
+    if (has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
+        //don't force admins to redirect
+        return false;
+    }
+
+    //check the setting
+    return (!empty(elis::$config->elis_program->mymoodle_redirect) &&
+            elis::$config->elis_program->mymoodle_redirect == 1);
+}
+
