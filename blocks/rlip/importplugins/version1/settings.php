@@ -20,12 +20,11 @@ $settings->add(new admin_setting_configcheckbox('rlipimport_version1/createorupd
 
 //start of "scheduling" section
 $settings->add(new admin_setting_heading('rlipimport_version1/scheduling',
-                                         get_string('scheduling', 'rlipimport_version1'),
-                                         ''));
+                                         get_string('importfilesheading', 'rlipimport_version1'), ''));
 
 //setting for schedule_files_path
 $settings->add(new admin_setting_configtext('rlipimport_version1/schedule_files_path',
-                                            get_string('schedule_files_path', 'rlipimport_version1'),
+                                            get_string('import_files_path', 'rlipimport_version1'),
                                             get_string('config_schedule_files_path', 'rlipimport_version1'), '/rlip/rlipimport_version1'));
 
 //setting for user_schedule_file

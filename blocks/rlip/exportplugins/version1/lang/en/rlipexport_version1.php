@@ -50,6 +50,7 @@ $string['export_file_timestamp'] = '%b_%d_%Y_%H%M%S';
 $string['export_file_timestamp_label'] = 'Timestamp export file';
 $string['export_path'] = 'Export path';
 $string['exportfields'] = 'Version 1 export fields';
+$string['exportfilesheading'] = 'Scheduled Export File Locations';
 $string['header_courseidnumber'] = 'Course Idnumber';
 $string['header_enddate'] = 'End Date';
 $string['header_firstname'] = 'First Name';
