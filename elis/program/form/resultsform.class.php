@@ -386,7 +386,9 @@ class cmEngineForm extends cmform {
 
                 // Skip over empty score ranges.
                 if (empty($data[$keymin]) && empty($data[$keymax])) {
-                    // Skip
+                    if (!empty($data[$keyselect])) {
+                        $error = get_string('results_error_incomplete_score_range', self::LANG_FILE);
+                    }
                 } else if (empty($data[$keymin]) || empty($data[$keymax])) {
                     $error = get_string('results_error_incomplete_score_range', self::LANG_FILE);
 
@@ -486,15 +488,17 @@ class cmEngineForm extends cmform {
         $results   = array('' => get_string('results_select_profile', self::LANG_FILE));
         $userlevel = context_level_base::get_custom_context_level('user', 'elis_program');
 
-        $sql = 'SELECT f.id, f.name'
-             .' FROM '. $CFG->prefix . field::TABLE .' f'
-             .' RIGHT JOIN '. $CFG->prefix . field_contextlevel::TABLE .' fc ON fc.fieldid = f.id '
-             .' WHERE fc.contextlevel = '. $userlevel;
+        $sql = 'SELECT f.id, f.name
+                  FROM {'. field::TABLE .'} f
+            RIGHT JOIN {'. field_contextlevel::TABLE .'} fc
+                    ON fc.fieldid = f.id
+                 WHERE fc.contextlevel = '. $userlevel;
 
         $rows = $DB->get_records_sql($sql);
-
         foreach ($rows as $row) {
-            $results[$row->id] = $row->name;
+            if (!empty($row->id)) {
+                $results[$row->id] = $row->name;
+            }
         }
 
         return $results;
@@ -548,9 +552,9 @@ class cmEngineForm extends cmform {
         $attributes = array('border' => '1', 'id' => "{$typename}_selection_table");
         $tablehtml = html_writer::start_tag('table', $attributes);
         $tablehtml .= html_writer::start_tag('tr');
-        $tablehtml .= html_writer::tag('th', $scoreheader);
-        $tablehtml .= html_writer::tag('th', $assigntype);
-        $tablehtml .= html_writer::tag('th', $valueheader);
+        $tablehtml .= html_writer::tag('th', $scoreheader, array('width' => '25%'));
+        $tablehtml .= html_writer::tag('th', $assigntype, array('width' => '40%'));
+        $tablehtml .= html_writer::tag('th', $valueheader, array('width' => '30%'));
         $tablehtml .= html_writer::end_tag('tr');
 
         $funcname = "get_assign_to_{$typename}_data";
@@ -621,7 +625,7 @@ class cmEngineForm extends cmform {
 
             // Start a table row and column
             $tablehtml = html_writer::start_tag('tr');
-            $tablehtml .= html_writer::start_tag('td',array('style'=>'text-align:center'));
+            $tablehtml .= html_writer::start_tag('td', array('style' => 'text-align:center;'));
 
             $mform->addElement('html', $tablehtml);
 
@@ -653,7 +657,7 @@ class cmEngineForm extends cmform {
             $mform->addGroup($group, "{$prefix}{$i}_score", '', '', false);
 
             $tablehtml = html_writer::end_tag('td');
-            $tablehtml .= html_writer::start_tag('td',array('style'=>'text-align:center'));
+            $tablehtml .= html_writer::start_tag('td', array('style' => 'text-align:center;'));
             $mform->addElement('html', $tablehtml);
 
             if ($this->rowtypes[$type] == 'picklist') {

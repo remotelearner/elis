@@ -48,8 +48,8 @@
  * has been deprecated and is not valid XHTML and thus is not used for that reason.
  */
 function dhtml_table(formid, prefix, fields) {
-	this.header_rows  = 0;
-	this.footer_rows  = 1;
+    this.header_rows  = 0;
+    this.footer_rows  = 1;
     this.table_prefix = prefix;
     this.preview      = null;
     this.table        = null;
@@ -64,16 +64,16 @@ function dhtml_table(formid, prefix, fields) {
      */
     this.set_add_button = function(add_button) {
         var add = document.getElementById(add_button);
-        
+
         if (add != null) {
-        	add.table_prefix = this.table_prefix;
-        	add.onclick = this.addRow;
-        	add.header_rows = this.header_rows;
-        	add.footer_rows = this.footer_rows;
+            add.table_prefix = this.table_prefix;
+            add.onclick = this.addRow;
+            add.header_rows = this.header_rows;
+            add.footer_rows = this.footer_rows;
             if (this.table != null) {
                 add.table = this.table;
             }
-        	this.add = add;
+            this.add = add;
         }
     }
     
@@ -82,25 +82,25 @@ function dhtml_table(formid, prefix, fields) {
      */
     this.set_enable_field = function(enable_field) {
         var enable   = document.getElementById(enable_field);
-        
+
         if (enable != null) {
-        	enable.table_prefix = this.table_prefix;
-        	enable.onchange = this.toggle;
-        	enable.fields = this.fields;
-        	this.enable = enable;
+            enable.table_prefix = this.table_prefix;
+            enable.onchange = this.toggle;
+            enable.fields = this.fields;
+            this.enable = enable;
         }
     }
-    
+
     /**
      * Set footer rows
      */
     this.set_footer_rows = function(rows) {
     	this.footer_rows = rows;
     	if (this.add != null) {
-    		this.add.footer_rows = rows;
+            this.add.footer_rows = rows;
     	}
     }
-    
+
     /**
      * Set header rows
      */
@@ -117,14 +117,14 @@ function dhtml_table(formid, prefix, fields) {
     this.set_id_prefix = function(id_prefix) {
     	this.id_prefix = id_prefix;
     }
-    
+
     /**
      * Set preview
      */
     this.set_preview = function(previewid, previewurl) {
-        this.preview = document.getElementById(previewid);   	
+        this.preview = document.getElementById(previewid);
     }
-    
+
     /**
      * Set table
      */
@@ -132,13 +132,13 @@ function dhtml_table(formid, prefix, fields) {
 
         var table = document.getElementById(tableid);
         if (table != null) {
-        	table.newRowIndex = table.rows.length-1;
-        	this.table = table;
-        	
+            table.newRowIndex = table.rows.length-1;
+            this.table = table;
+
             if (this.add != null) {
-        	    this.add.table = this.table;
+                this.add.table = this.table;
             }
-        
+
             // The form needs to know about the table.
             this.form.table   = this.table;
         }
@@ -148,38 +148,38 @@ function dhtml_table(formid, prefix, fields) {
      * Setup the form
      */
     this.setup_form = function() {
-        
+
         if (this.form != null) {
-        	if (this.form.cachelist == null) {
-        		this.form.cachelist = [];
-        	}
-       		this.form.cachelist[this.form.cachelist.length] = this;
+            if (this.form.cachelist == null) {
+                this.form.cachelist = [];
+            }
+            this.form.cachelist[this.form.cachelist.length] = this;
             this.form.table_prefix = this.table_prefix;
             this.form.fields  = fields;
-    	    
+
             // Only setup the onsubmit once.
             if (this.form.setup_done == null) {
-            	
-            	if (this.form.onsubmit != null) {
-            		this.form.oldsubmit = this.form.onsubmit;
-            	} else {
-            		this.form.oldsubmit = function(event) {
-            			return true;
-            		};
-            	}
-                
+
+                if (this.form.onsubmit != null) {
+                    this.form.oldsubmit = this.form.onsubmit;
+                } else {
+                    this.form.oldsubmit = function(event) {
+                        return true;
+                    };
+                }
+
                 this.form.onsubmit = function(event) {
-                  	for (var i=0; i<this.cachelist.length; i += 1) {
-                   		this.cachelist[i].cacheBuild();
-                   	}
+                    for (var i=0; i<this.cachelist.length; i += 1) {
+                        this.cachelist[i].cacheBuild();
+                    }
                     return this.oldsubmit(event);
                 };
-                
+
                 this.form.setup_done = 1;
             }
         }
     }
-    
+
     /**
      * Process the settings and produce the submitted value for the table
      */
@@ -203,24 +203,24 @@ function dhtml_table(formid, prefix, fields) {
             if (value == null) {
                 continue;
             }
-    
+
             values[0] = value.value;
 
             for (var h = 1; h < fields.length; h += 1) {
-            	field = document.getElementById(prefix + fields[h]);
-            	
-            	values[h] = '';
-            	if (field != null) {
-            		values[h]  = field.value;
-            	}
+                field = document.getElementById(prefix + fields[h]);
+
+                values[h] = '';
+                if (field != null) {
+                    values[h]  = field.value;
+                }
             }
-            
+
             data = data + values.join(',') +',';
         }
-        
+
         cache.value = data;
     }
-    
+
     /**
      * Add a row from the table
      */
@@ -237,32 +237,35 @@ function dhtml_table(formid, prefix, fields) {
         var frame_regex  = new RegExp("[A-Za-z0-9_]*_frame");
         var oldprefix    = '';
         var newprefix    = this.table_prefix +'_'+ this.table.newRowIndex +'_';
-        
+
         for (var i =0; i < template.length; i += 1) {
             oldprefix = prefix_regex.exec(template[i].innerHTML);
             if (oldprefix != null) {
                 break;
             }
         }
-        
+
         prefix_regex = new RegExp(oldprefix, "g");
-        
-        for (var i =0; i < template.length; i += 1) {
+
+        for (var i = 0; i < template.length; i += 1) {
             cell = row.insertCell(-1);
+            if (i < 2) {
+                cell.align = 'center';
+            }
             html = template[i].innerHTML.replace(prefix_regex, newprefix);
             html = html.replace(/selected=\"selected\"/g, " ");
             html = html.replace(/ selected /g, " ");
-            if (html.match(/input/i) != null) {
-            	html = html.replace(/value=\"?[^\" >]+\"?/g, "value=\"\"");
+            if (html.match(/<input/i) != null) {
+                html = html.replace(/value=\"?[^\" >]+\"?/g, "value=\"\"");
             }
             cell.innerHTML=html;
-            
+
             frameid = frame_regex.exec(html);
             if (frameid != null) {
-            	frame = document.getElementById(frameid)
-            	if (frame != null) {
-            		frame.innerHTML = '&nbsp;';
-            	}
+                frame = document.getElementById(frameid)
+                if (frame != null) {
+                    frame.innerHTML = '&nbsp;';
+                }
             }
         }
         this.table.newRowIndex += 1;
@@ -285,8 +288,13 @@ function dhtml_table(formid, prefix, fields) {
                 break;
             }
         }
-        
+
         if (parent != null) {
+            var count = this.table.rows.length - this.footer_rows;
+            if (count <= 2) {
+                // About to delete the only remaining score row, so add new one
+                this.addRow();
+            }
             this.table.deleteRow(parent.rowIndex);
         } else {
             alert("Couldn't find row!")
@@ -335,7 +343,7 @@ function dhtml_table(formid, prefix, fields) {
             if (field == null) {
                 continue;
             }
-        
+
             field.disabled = this.enable.checked;
 
             for (var h = 1; h < fields.length; h += 1) {
