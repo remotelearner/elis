@@ -37,7 +37,6 @@ class generalized_filter_simpleselect extends generalized_filter_type {
      */
     var $_field;
 
-    var $_options  = array();  // Select options
     var $_numeric  = false;    // TBD: obsolete - set true if field is numeric
     var $_anyvalue = null;     // The "any value" entry
     var $_noany    = false;    // Whether to hide the "any value" entry

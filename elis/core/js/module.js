@@ -221,6 +221,14 @@ function cf_delete(index) {
     //cf_show_values();
 }
 
+function cf_reset() {
+    // ELIS-4622: clear custom fields on filter form reset
+    window.customfieldpickerinstance.values = [];
+    //cf_show_values();
+    window.customfieldpickerinstance.update_values();
+    window.customfieldpickerinstance.refresh_picker();
+}
+
 M.elis_core.init_custom_field_multiselect = function(Y, options) {
     var container = Y.one('#'+options.id+'_container');
 
