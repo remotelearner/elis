@@ -334,7 +334,7 @@ class pmclass extends data_object_with_custom_fields {
      */
     function update_enrolment_status() {
         //information about which course this belongs to may not have been
-        //loaded due to lazy-loading        
+        //loaded due to lazy-loading
         $this->load();
 
 //        if (isset($this->course) && (get_class($this->course) == 'course')) {
@@ -826,12 +826,18 @@ class pmclass extends data_object_with_custom_fields {
         if (isset($options['targetcourse'])) {
             $clone->courseid = $options['targetcourse'];
         }
+        $idnumber = $clone->idnumber;
         if (isset($userset)) {
             // if cluster specified, append cluster's name to class
-            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
+            $idnumber .= ' - '.$userset->name;
         }
+
+        //get a unique idnumber
+        $clone->idnumber = generate_unique_identifier(pmclass::TABLE, 'idnumber', $idnumber, array('idnumber' => $idnumber));
+
         $clone->autocreate = false; // avoid warnings
         $clone->save();
+
         $objs['classes'] = array($this->id => $clone->id);
 
         $cmc = $this->_db->get_record(classmoodlecourse::TABLE, array('classid'=>$this->id));
@@ -894,7 +900,6 @@ class pmclass extends data_object_with_custom_fields {
         if (isset($this->track) && is_array($this->track)) {
             $param['classid'] = $this->id;
             $param['courseid'] = $this->courseid;
-
             foreach ($this->track as $t) {
                 if (trackassignment::exists(array(new field_filter('classid', $this->id),
                                                   new field_filter('trackid', $t)))) {
