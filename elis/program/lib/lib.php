@@ -1003,7 +1003,7 @@ function usermanagement_get_users($sort = 'name', $dir = 'ASC', $startrec = 0,
 
     if ($contexts !== null) { // TBV
         $user_obj = $contexts->get_filter('id', 'user');
-        $filter_array = $user_obj->get_sql(false, 'usr');
+        $filter_array = $user_obj->get_sql(false, NULL, SQL_PARAMS_NAMED);
         if (isset($filter_array['where'])) {
             $where[] = '('. $filter_array['where'] .')';
             $params = array_merge($params, $filter_array['where_parameters']);
@@ -1054,7 +1054,7 @@ function usermanagement_count_users($extrasql = array(), $contexts = null) {
 
     if ($contexts !== null) { // TBV
         $user_obj = $contexts->get_filter('id', 'user');
-        $filter_array = $user_obj->get_sql(false, 'usr');
+        $filter_array = $user_obj->get_sql(false, NULL, SQL_PARAMS_NAMED);
         if (isset($filter_array['where'])) {
             $where[] = '('. $filter_array['where'] .')';
             $params = array_merge($params, $filter_array['where_parameters']);
@@ -1084,10 +1084,10 @@ function usermanagement_get_users_recordset($sort = 'name', $dir = 'ASC',
     global $CFG, $DB;
     require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
 
-    $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-    $select = 'SELECT usr.id, usr.idnumber as idnumber, usr.country, usr.language, usr.timecreated, '.
+    $FULLNAME = $DB->sql_concat('firstname', "' '", 'lastname');
+    $select = 'SELECT id, idnumber as idnumber, country, language, timecreated, '.
                $FULLNAME .' as name ';
-    $tables = 'FROM {'. user::TABLE .'} usr ';
+    $tables = 'FROM {'. user::TABLE .'} ';
     $where = array();
     $params = array();
 
@@ -1100,7 +1100,7 @@ function usermanagement_get_users_recordset($sort = 'name', $dir = 'ASC',
 
     if ($contexts !== null) { // TBV
         $user_obj = $contexts->get_filter('id', 'user');
-        $filter_array = $user_obj->get_sql(false, 'usr');
+        $filter_array = $user_obj->get_sql(false, NULL, SQL_PARAMS_NAMED);
         if (isset($filter_array['where'])) {
             $where[] = '('. $filter_array['where'] .')';
             $params = array_merge($params, $filter_array['where_parameters']);
