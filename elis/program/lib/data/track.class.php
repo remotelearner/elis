@@ -26,19 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
-
-/* Add these back in as they are migrated
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
-
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/usertrack.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/student.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php';
-*/
 require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('data/clustertrack.class.php');
 require_once elispm::lib('data/course.class.php');
@@ -47,11 +37,7 @@ require_once elispm::lib('data/curriculum.class.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/usertrack.class.php');
-
 require_once elispm::lib('deprecatedlib.php');
-
-//define ('TABLE', 'crlm_track');
-//define ('CLASSTABLE', 'crlm_track_class');
 
 class track extends data_object_with_custom_fields {
     const TABLE = 'crlm_track';
