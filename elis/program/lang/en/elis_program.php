@@ -265,7 +265,7 @@ $string['crlm_expire_setting'] = 'Enable program expiration';
 $string['cron_notrun'] = '<b>Never!</b>';
 $string['currentcourses'] = 'Current Classes';
 $string['curricula'] = 'Programs';
-$string['curriculaform:curriculum_description'] = 'Long description';
+$string['curriculaform:curriculum_description'] = 'Description';
 $string['curriculaform:curriculum_description_help'] = '<p>Description information about the program. A complete and thorough
 description will help administrators, teachers and students know if this program is correct for them.</p>';
 $string['curriculaform:curriculum_idnumber'] = 'ID Number';
@@ -319,7 +319,6 @@ $string['curriculum_role_help'] = 'This is the default role to assign to a Progr
 This type of role assignment will not take place for a particular program if that user is already permitted to edit that program.
 To disable this functionality, select "N/A" from the list.';
 $string['curriculum_role_setting'] = 'Default Program Role';
-$string['curriculum_shortdescription'] = 'Short description';
 $string['curriculum_userid_mismatch'] = 'Your current user ID does not match the user ID for this program completion.';
 $string['customfields'] = 'Custom fields';
 
