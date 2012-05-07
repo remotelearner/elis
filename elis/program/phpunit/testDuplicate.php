@@ -30,32 +30,34 @@ require_once($CFG->dirroot . '/elis/program/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 require_once(elispm::lib('data/curriculum.class.php'));
+require_once(elispm::lib('data/course.class.php'));
 require_once(elispm::lib('data/pmclass.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 
-class classTest extends elis_database_test {
+class duplicateTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
     /**
      * Return the list of tables that should be ignored for writes.
      */
-//    static protected function get_ignored_tables() {
-//        global $CFG;
-//        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-//
-////        return array('context' => 'moodle',
-////                     'context_levels' => 'moodle',
-////                     'elis_field' => 'elis_program',
-////                     'elis_field_categories' => 'elis_program',
-////                     'elis_field_contextlevels' => 'elis_program'
-////                      );
-////                     'crlm_user' => 'elis_program',
-////                     'crlm_user_moodle' => 'elis_program',
-////                     RLIP_LOG_TABLE => 'block_rlip',
-////                     'files' => 'moodle',
-////                     'external_tokens' => 'moodle',
-////                     'external_services_users' => 'moodle');
-//    }
+    static protected function get_ignored_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        return array('crlm_coursetemplate' => 'elis_program');
+//        return array('context' => 'moodle',
+//                     'context_levels' => 'moodle',
+//                     'elis_field' => 'elis_program',
+//                     'elis_field_categories' => 'elis_program',
+//                     'elis_field_contextlevels' => 'elis_program'
+//                      );
+//                     'crlm_user' => 'elis_program',
+//                     'crlm_user_moodle' => 'elis_program',
+//                     RLIP_LOG_TABLE => 'block_rlip',
+//                     'files' => 'moodle',
+//                     'external_tokens' => 'moodle',
+//                     'external_services_users' => 'moodle');
+    }
 
 	protected static function get_overlay_tables() {
 		return array('course' => 'moodle',
@@ -84,7 +86,7 @@ class classTest extends elis_database_test {
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
 //        $dataset->addTable(clustercurriculum::TABLE, elis::component_file('program', 'phpunit/duplicateclustercurriculum.csv'));
-//        $dataset->addTable(course::TABLE, elis::component_file('program', 'phpunit/duplicatecurriculum_course.csv'));
+        $dataset->addTable(course::TABLE, elis::component_file('program', 'phpunit/duplicatecourse.csv'));
         $dataset->addTable(pmclass::TABLE, elis::component_file('program', 'phpunit/duplicateclass.csv'));
         $dataset->addTable(curriculum::TABLE, elis::component_file('program', 'phpunit/duplicatecurriculum.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);
@@ -211,6 +213,41 @@ class classTest extends elis_database_test {
 
         $id = $return['curricula'][''];
         $record = $DB->get_record('crlm_curriculum', array('id'=>$id));
+        $expectedvalue = "test - test.3";
+
+       //we want to validate that the  unique idnumber is "test - test.3"
+       $this->assertEquals($expectedvalue, $record->idnumber);
+       //the name is also to be unique
+       $this->assertEquals($expectedvalue, $record->name);
+    }
+
+    /**
+     * Test validation of duplicate course descriptions
+     */
+    public function testCourseDescriptionValidationPreventsDuplicates() {
+        global $DB;
+
+        $this->load_csv_data();
+
+        //need course and userset
+        $userset = new stdClass();
+        $userset->id = 1;
+        $userset->name = 'test';
+
+        $course = new course(array('idnumber' => 'test', 'name' => 'test', 'syllabus' => 1));
+        $options = array();
+        $options['targetcluster'] = $userset;
+        $options['targetcurriculum'] = 5;
+        $options['moodlecourses'] = 'copyalways';
+        $options['courses'] = 1;
+
+        $return = $course->duplicate($options);
+
+        //make sure that a we get a program returned
+        $this->assertTrue(is_array($return['courses']));
+
+        $id = $return['courses'][''];
+        $record = $DB->get_record('crlm_course', array('id'=>$id));
         $expectedvalue = "test - test.3";
 
        //we want to validate that the  unique idnumber is "test - test.3"
