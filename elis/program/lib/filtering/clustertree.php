@@ -504,6 +504,35 @@ class generalized_filter_clustertree extends generalized_filter_type {
     }
 
     /**
+     * Gets the cluster listing for the drop-down menu
+     * @param mixed  $contexts
+     * @return array cluster listing
+     */
+    function cluster_dropdown_get_listing($contexts = null) {
+        global $DB;
+
+        //ob_start();
+        //var_dump($contexts);
+        //$tmp = ob_get_contents();
+        //ob_end_clean();
+        $sql = 'SELECT * FROM {'. userset::TABLE .'}';
+        $params = array();
+
+        if ($contexts) {
+            $filter_obj = $contexts->get_filter('id', 'cluster');
+            $filter_sql = $filter_obj->get_sql();
+            if (isset($filter_sql['where'])) {
+                $sql .= " WHERE {$filter_sql['where']}";
+                $params = $filter_sql['where_parameters'];
+            }
+        }
+
+        $sql .= ' ORDER BY depth ASC, name ASC';
+        //error_log("cluster_dropdown_get_listing(); SQL => {$sql}; contextset = {$tmp}");
+        return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
      * Adds controls specific to this filter in the form.
      * @param object $mform a MoodleForm object to setup
      * @uses  $CFG
@@ -514,10 +543,26 @@ class generalized_filter_clustertree extends generalized_filter_type {
     function setupForm(&$mform) {
         global $CFG, $OUTPUT, $PAGE, $USER;
 
+        // Javascript for cluster dropdown onchange event
+        $cluster_group_separator = '------------------------------';
+        $js = '
+<script type="text/javascript">
+//<![CDATA[
+    function dropdown_separator(selectelem) {
+        /* alert("dropdown_separator(" + selectelem.selectedIndex + ")"); */
+        if (selectelem.options[selectelem.selectedIndex].value < 0) {
+            return 0;
+        }
+        return selectelem.selectedIndex;
+    }
+//]]>
+</script>
+';
+
         /**
          * CSS includes
          */
-        $mform->addElement('html', '<style>@import url("'. $CFG->wwwroot .'/lib/yui/2.8.2/build/treeview/assets/skins/sam/treeview-skin.css");</style>');
+        $mform->addElement('html', '<style>@import url("'. $CFG->wwwroot .'/lib/yui/2.8.2/build/treeview/assets/skins/sam/treeview-skin.css");</style>'. $js);
 
         /**(use "git add" and/or "git commit -a")
          * JavaScript includes
@@ -544,8 +589,6 @@ class generalized_filter_clustertree extends generalized_filter_type {
         }
 
         $context_result = pm_context_set::for_user_with_capability('cluster', $capability, $USER->id);
-        $extrafilters = array('contexts' => $context_result, 'parent' => 0);
-        $num_records = cluster_count_records('', '', $extrafilters);
 
         /**
          * TreeView-related work
@@ -588,14 +631,22 @@ class generalized_filter_clustertree extends generalized_filter_type {
         $choices_array = array(0 => get_string('anyvalue', 'filters'));
 
         //set up cluster listing
-        if ($recordset = cluster_get_listing('name', 'ASC', 0, 0, '', '',
-                             array('contexts' => $context_result))) {
-            $records = $recordset->to_array();
+        if ($records = $this->cluster_dropdown_get_listing($context_result)) {
             foreach ($records as $record) {
-                if ($record->parent == 0) {
+                if (empty($choices_array[$record->id])) {
+                    if (count($choices_array) > 1) {
+                        $choices_array[-$record->id] = $cluster_group_separator;
+                    }
+                    $ancestors = $record->depth - 1;
+                    // shorten really long cluster names
+                    $name = (strlen($record->name) > 100)
+                            ? substr($record->name, 0, 100) .'...'
+                            : $record->name;
+                    $choices_array[$record->id] = $ancestors
+                            ? str_repeat('- ', $ancestors) . $name
+                            : $name;
                     //merge in child clusters
-                    $choices_array[$record->id] = $record->name;
-                    $child_array = $this->find_child_clusters($records, $record->id);
+                    $child_array = $this->find_child_clusters($records, $record->id, $ancestors);
                     $choices_array = $this->merge_array_keep_keys($choices_array, $child_array);
                 }
             }
@@ -629,7 +680,10 @@ class generalized_filter_clustertree extends generalized_filter_type {
         $mform->addElement('static', $this->_uniqueid .'_help', '');
 
         //cluster select dropdown
-        $mform->addElement('select', $this->_uniqueid .'_dropdown', $title, $choices_array);
+        $mform->addElement('select', $this->_uniqueid .'_dropdown', $title,
+                           $choices_array,
+                           array('onchange' =>
+                             'this.selectedIndex = dropdown_separator(this);'));
         //dropdown / cluster tree state storage
         $mform->addElement('hidden', $this->_uniqueid .'_usingdropdown');
         // Must use addHelpButton() to NOT open help link on page, but in popup!
