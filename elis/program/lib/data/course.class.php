@@ -733,10 +733,25 @@ class course extends data_object_with_custom_fields {
         // clone main course object
         $clone = new course($this);
         unset($clone->id);
+
+        $idnumber = $clone->idnumber;
+        $name = $clone->name;
         if (isset($userset)) {
-            // if cluster specified, append cluster's name to course
-            $clone->name = $clone->name.' - '.$userset->name;
-            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
+            // if cluster specified, append cluster's name to curriculum
+            $idnumber .= ' - '.$userset->name;
+            $name .= ' - '.$userset->name;
+        }
+
+        //get a unique idnumber
+        $clone->idnumber = generate_unique_identifier(course::TABLE, 'idnumber', $idnumber, array('idnumber' => $idnumber));
+
+        if ($clone->idnumber != $idnumber) {
+            //get the suffix appended and add it to the name
+            $parts = explode('.', $clone->idnumber);
+            $suffix = end($parts);
+            $clone->name = $name.'.'.$suffix;
+        } else {
+            $clone->name = $name;
         }
         $clone->save();
 
