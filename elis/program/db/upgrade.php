@@ -279,9 +279,12 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         //to store the user who triggered the notification
         $table = new xmldb_table('crlm_notification_log');
         $field = new xmldb_field('fromuserid');
-        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'userid');
-        $field->comment = 'PM user id that triggered the notification.';
-        $dbman->add_field($table, $field);
+
+        if (!$dbman->field_exists($table, $field)) {
+            $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'userid');
+            $field->comment = 'PM user id that triggered the notification.';
+            $dbman->add_field($table, $field);
+        }
 
         //populate data, assuming that the user who received the notification is the one whose
         //criteria spawned it
@@ -310,9 +313,11 @@ function xmldb_elis_program_upgrade($oldversion=0) {
     if ($result && $oldversion < 2011121501) {
         $table = new xmldb_table('crlm_notification_log');
         $index = new xmldb_index('event_inst_fuser_ix');
-        $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('fromuserid', 'instance', 'event'));
+        $index->set_attributes(XMLDB_INDEX_NOTUNIQUE, array('fromuserid', 'instance', 'event'));
 
-        $dbman->add_index($table, $index);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
 
         upgrade_plugin_savepoint($result, 2011121501, 'elis', 'program');
     }
@@ -321,11 +326,17 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         // Add the new 'certificatecode' field to the curriculum_assignment table
         $table = new xmldb_table('crlm_curriculum_assignment');
         $field = new xmldb_field('certificatecode', XMLDB_TYPE_CHAR, '40', null, null, null, null, 'locked');
-        $dbman->add_field($table, $field);
+
+        if (!$dbman->table_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
 
         // Add a new non-uniue index for the new field
         $index = new xmldb_index('certificatecode_ix', XMLDB_INDEX_NOTUNIQUE, array('certificatecode'));
-        $dbman->add_index($table, $index);
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
 
         upgrade_plugin_savepoint($result, 2012022401, 'elis', 'program');
     }
