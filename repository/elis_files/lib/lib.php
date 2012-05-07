@@ -339,11 +339,11 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
         $type = '';
         $contentNode = elis_files_process_node($dom, $node, $type);
 
-        if ($type == ELIS_FILES_TYPE_FOLDER) {
+        if ($type == ELIS_files::$type_folder) {
             $return->folders[] = $contentNode;
 
         // Only include a file in the list if it's title does not start with a period '.'
-        } else if ($type == ELIS_FILES_TYPE_DOCUMENT && !empty($contentNode->title) && $contentNode->title[0] !== '.') {
+        } else if ($type == ELIS_files::$type_document && !empty($contentNode->title) && $contentNode->title[0] !== '.') {
             $return->files[] = $contentNode;
         }
     }
@@ -559,7 +559,7 @@ function elis_files_delete($uuid, $recursive = false, $repo = NULL) {
         // Get node type and use descendants delete for folders
         $node_type = elis_files_get_type($uuid);
 
-        if (!(strstr($node_type,ELIS_FILES_TYPE_FOLDER) === FALSE)) {
+        if (!(strstr($node_type,ELIS_files::$type_folder) === FALSE)) {
             if (elis_files_send('/cmis/i/' . $uuid.'/descendants', array(), 'DELETE') === false) {
                 return false;
             }
@@ -601,7 +601,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
                     <cmis:object>
                       <cmis:properties>
                         <cmis:propertyString cmis:name="ObjectTypeId">
-                          <cmis:value>'.ELIS_FILES_TYPE_FOLDER.'</cmis:value>
+                          <cmis:value>'.ELIS_files::$type_folder.'</cmis:value>
                         </cmis:propertyString>
                       </cmis:properties>
                     </cmis:object>
@@ -623,7 +623,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
                    <cmisra:object>
                      <cmis:properties>
                        <cmis:propertyId propertyDefinitionId="cmis:objectTypeId">
-                         <cmis:value>'.ELIS_FILES_TYPE_FOLDER.'</cmis:value>
+                         <cmis:value>'.ELIS_files::$type_folder.'</cmis:value>
                        </cmis:propertyId>
                      </cmis:properties>
                    </cmisra:object>
@@ -690,7 +690,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
 function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin = true) {
     global $CFG, $USER;
 
-    require_once($CFG->libdir . '/filelib.php');
+    require_once($CFG->libdir.'/filelib.php');
 
     if (!empty($upload)) {
         if (!isset($_FILES[$upload]) || !empty($_FILES[$upload]->error)) {
@@ -722,6 +722,38 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         $uuid = $repo->get_root()->uuid;
 
     }
+
+    switch (get_config('elis_files', 'file_transfer_method')) {
+        case ELIS_FILES_XFER_WS:
+            return elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid, $useadmin);
+            break;
+
+        case ELIS_FILES_XFER_FTP:
+            return elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid, $useadmin);
+            break;
+
+        default:
+            return false;
+    }
+}
+
+
+/**
+ * Upload a file into the repository via web services.
+ *
+ * @uses $USER
+ * @param string $filename The name of the file being uploaded.
+ * @param string $filepath The full path to the file being uploaded on the local filesystem.
+ * @param string $filemime The MIME/type of the file being uploaded.
+ * @param int    $filesize The size in bytes of the file being uploaded.
+ * @param string $uuid     The UUID of the folder where the file is being uploaded to.
+ * @param bool   $useadmin Set to false to make sure that the administrative user configured in
+ *                         the plug-in is not used for this operation (default: true).
+ * @return object Node values for the uploaded file.
+ */
+function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid = '', $useadmin = true) {
+    global $USER;
+
     $chunksize = 8192;
 
 /// We need to write the XML structure for the upload out to a file on disk to accomdate large files
@@ -764,13 +796,17 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         /// Copy the uploaded file into the temporary file (usng the base64 encode stream filter)
         /// in 8K chunks to conserve memory.
             while (!feof($fi)) {
-                $encodedbytes += fwrite($fo, fread($fi, 8192));
+                $encodedbytes += fwrite($fo, fread($fi, $chunksize));
             }
             fclose($fi);
 
         /// Write the end of the XML document to the temporary file.
             $encodedbytes += fwrite($fo, $data2, strlen($data2));
+        } else {
+            return false;
         }
+    } else {
+        return false;
     }
 
     rewind($fo);
@@ -787,8 +823,12 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     } else if (ELIS_files::is_version('3.4')) {
         $serviceuri = '/cmis/i/' . $uuid . '/children';
     }
-    $url        = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);
-    $uri        = parse_url($url);
+
+    // Initialize the object that return/result data is stored with
+    $result = new stdClass;
+
+    $url = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);
+    $uri = parse_url($url);
 
     switch ($uri['scheme']) {
         case 'http':
@@ -840,7 +880,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 
 /// Write the XML request (which contains the base64-encoded uploaded file contents) into the socket.
     while (!feof($fo)) {
-        fwrite($fp, fread($fo, 8192));
+        fwrite($fp, fread($fo, $chunksize));
     }
 
     fclose($fo);
@@ -848,7 +888,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 
 /// Fetch response.
     $response = '';
-    while (!feof($fp) && $chunk = fread($fp, 8192)) {
+    while (!feof($fp) && $chunk = fread($fp, $chunksize)) {
         $response .= $chunk;
     }
     fclose($fp);
@@ -922,6 +962,68 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 
 
 /**
+ * Upload a file into the repository via FTP.
+ *
+ * @uses $USER
+ * @param string $filename The name of the file being uploaded.
+ * @param string $filepath The full path to the file being uploaded on the local filesystem.
+ * @param string $filemime The MIME/type of the file being uploaded.
+ * @param int    $filesize The size in bytes of the file being uploaded.
+ * @param string $uuid     The UUID of the folder where the file is being uploaded to.
+ * @param bool   $useadmin Set to false to make sure that the administrative user configured in
+ *                         the plug-in is not used for this operation (default: true).
+ * @return object Node values for the uploaded file.
+ */
+function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid = '', $useadmin = true) {
+    global $USER;
+
+    $config = get_config('elis_files');
+
+    // We need to get just the hostname out of the configured host URL
+    $uri = parse_url($config->server_host);
+
+    if (!($ftp = ftp_connect($uri['host'], $config->ftp_port, 5))) {
+        error_log('Could not connect to Alfresco FTP server '.$uri['host'].$config->ftp_port);
+        return false;
+    }
+
+    if (!ftp_login($ftp, $config->server_username, $config->server_password)) {
+        error_log('Could not authenticate to Alfresco FTP server');
+        ftp_close($ftp);
+        return false;
+    }
+
+    $repo_path = elis_files_node_path($uuid);
+
+    // The FTP server represents "Company Home" as "Alfresco" so we need to change that now:
+    $repo_path = str_replace("/Company Home", "Alfresco", $repo_path);
+
+    $res = ftp_put($ftp, $repo_path.'/'.$filename, $filepath, FTP_BINARY);
+
+    if ($res != FTP_FINISHED) {
+        error_log('Could not upload file '.$filepath.' to Alfresco: '.$repo_path.'/'.$filename);
+        mtrace('$res = '.$res);
+        ftp_close($ftp);
+        return false;
+    }
+
+    ftp_close($ftp);
+
+    $dir = elis_files_read_dir($uuid, $useadmin);
+
+    if (!empty($dir->files)) {
+        foreach ($dir->files as $file) {
+            if ($file->title == $filename) {
+                return $file;
+            }
+        }
+    }
+
+    return false;
+}
+
+
+/**
  * Perform a string search on the filenames and contents of files within the repository.
  *
  * @param string $query   The search string to use.
@@ -969,9 +1071,9 @@ function elis_files_search($query, $page = 1, $perpage = 9999) {
 
             $type = elis_files_get_type($node->uuid);
 
-            if ($type == ELIS_FILES_TYPE_FOLDER) {
+            if ($type == ELIS_files::$type_folder) {
                 $return->folders[] = $node;
-            } else if ($type == ELIS_FILES_TYPE_DOCUMENT) {
+            } else if ($type == ELIS_files::$type_document) {
                 $return->files[] = $node;
             }
         }
@@ -1072,9 +1174,9 @@ function elis_files_category_search($categories) {
             $node = elis_files_node_properties($uuid);
             $type = elis_files_get_type($node->uuid);
 
-            if ($type == ELIS_FILES_TYPE_FOLDER) {
+            if ($type == ELIS_files::$type_folder) {
                 $return->folders[] = $node;
-            } else if ($type == ELIS_FILES_TYPE_DOCUMENT) {
+            } else if ($type == ELIS_files::$type_document) {
                 $return->files[] = $node;
             }
         }
@@ -1219,7 +1321,7 @@ function elis_files_process_folder_structure($sxml) {
  * Get a hierarchical folder structure from the Alfresco server.
  *
  * @param none
- * @return array A nested array of category information.
+ * @return array A nested array of folder node data.
  */
 function elis_files_folder_structure() {
     $response = elis_files_request('/moodle/folders');
@@ -1555,9 +1657,9 @@ function elis_files_process_node($dom, $node, &$type) {
                         break;
 
                     case 'BaseType':
-                        if ($prop->nodeValue == ELIS_FILES_TYPE_FOLDER) {
+                        if ($prop->nodeValue == ELIS_files::$type_folder) {
                             $type = $prop->nodeValue;
-                        } else if ($prop->nodeValue == ELIS_FILES_TYPE_DOCUMENT) {
+                        } else if ($prop->nodeValue == ELIS_files::$type_document) {
                             $type = $prop->nodeValue;
                         }
 
@@ -1585,12 +1687,10 @@ function elis_files_process_node($dom, $node, &$type) {
                 }
             }
 
-            if (isset($prop->nodeValue) && $prop->nodeValue == ELIS_FILES_TYPE_FOLDER) { // Added for Moodle 2.1 as this seems to be the only way to find folders
+            if (isset($prop->nodeValue) && $prop->nodeValue == ELIS_files::$type_folder) { // Added for Moodle 2.1 as this seems to be the only way to find folders
                 $type = $prop->nodeValue;
-//                $isfolder = true;
-            } else if (isset($prop->nodeValue) && $prop->nodeValue == ELIS_FILES_TYPE_DOCUMENT) { // Added for Moodle 2.1 as this seems to be the only way to find folders
+            } else if (isset($prop->nodeValue) && $prop->nodeValue == ELIS_files::$type_document) { // Added for Moodle 2.1 as this seems to be the only way to find folders
                 $type = $prop->nodeValue;
-//                $isdocument = true;
             }
         }
     }
@@ -2599,4 +2699,41 @@ function elis_files_transform_username($username) {
         }
     }
     return $username;
+}
+
+/**
+ * Recursively get the path to a specific node (folder or document) from the root of the repository down.
+ *
+ * @param string $uuid The UUID of the node we are processing
+ * @param string $path The assmebled path we are building (empty to start)
+ * @return string The path to the requested location from the root of the repository
+ */
+function elis_files_node_path($uuid, $path = '') {
+    // If we're starting out and the current node is a folder, include it in the path
+    if (empty($path)) {
+        $node = elis_files_node_properties($uuid);
+        if ($node->type == ELIS_files::$type_folder) {
+            $path = $node->title;
+        }
+    }
+
+    // Get the parents for the given node
+    $response = elis_files_request('/cmis/i/'.$uuid.'/parents');
+
+    $dom = new DOMDocument();
+    $dom->preserveWhiteSpace = false;
+    $dom->loadXML($response);
+
+    $nodes = $dom->getElementsByTagName('entry');
+
+    if ($nodes->length > 0) {
+        // This node has parents so add this node title to the path and recurse on the parent node
+        $type = '';
+        $node = elis_files_process_node($dom, $nodes->item(0), $type);
+        $path = $node->title.(!empty($path) ? '/'.$path : '');
+        return elis_files_node_path($node->uuid, $path);
+    } else {
+        // This node has no parents, we're at the root so prepend a slash and return everything
+        return '/'.$path;
+    }
 }

@@ -40,6 +40,10 @@ defined('ELIS_FILES_SELECT_ALFRESCO_VERSION') or define('ELIS_FILES_SELECT_ALFRE
 defined('ELIS_FILES_ALFRESCO_30') or define('ELIS_FILES_ALFRESCO_30',   '3.2');
 defined('ELIS_FILES_ALFRESCO_34') or define('ELIS_FILES_ALFRESCO_34',   '3.4');
 
+// Setup options for the method to transfer files into Alfresco from Moodle
+defined('ELIS_FILES_XFER_WS') || define('ELIS_FILES_XFER_WS', 'webservices');
+defined('ELIS_FILES_XFER_FTP') || define('ELIS_FILES_XFER_FTP', 'ftp');
+
 
 class repository_elis_files extends repository {
     private $ticket = null;
@@ -63,7 +67,7 @@ class repository_elis_files extends repository {
 
         /// ELIS files class
         $this->elis_files = repository_factory::factory();
-        $this->config = get_config('ELIS_files');
+        $this->config = get_config('elis_files');
         $this->current_node = null;
 
         // jQuery files required for file picker - just for this repository
@@ -623,16 +627,20 @@ class repository_elis_files extends repository {
      * They can then be accessed in the construct with $this->
      */
     public static function get_type_option_names() {
-        $option_names = array('pluginname',         //This is for an optional plugin name change
-                              'server_host',        // URL for Alfresco server
-                              'server_port',        // Alfresco server port
-                              'server_username',    // Alfresco server username
-                              'server_password',    // Alfresco server password
-                              'root_folder',        // Moodle root folder
-                              'user_quota',         // User quota N.B. cache is now pulled from general Repository options
-                              'deleteuserdir',      // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
-                              'default_browse'      // Where to start the file browsing session
-                            );
+        $option_names = array(
+            'pluginname',           // This is for an optional plugin name change
+            'server_host',          // URL for Alfresco server
+            'server_port',          // Alfresco server port
+            'server_username',      // Alfresco server username
+            'server_password',      // Alfresco server password
+            'file_transfer_method', // Defines how we are sending files to Alfresco
+            'ftp_port',             // Defines the port used for sending files via FTP
+            'root_folder',          // Moodle root folder
+            'user_quota',           // User quota N.B. cache is now pulled from general Repository options
+            'deleteuserdir',        // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
+            'default_browse',       // Where to start the file browsing session
+            'admin_username'        // The override for a Moodle account using the 'admin' username
+        );
 
         return $option_names;
     }
@@ -668,6 +676,21 @@ class repository_elis_files extends repository {
         $mform->addElement('static', 'server_password_intro', '', get_string('elis_files_server_password', 'repository_elis_files'));
         $mform->addRule('server_password', get_string('required'), 'required', null, 'client');
 
+        $options = array(
+            ELIS_FILES_XFER_WS  => get_string('webservices', 'repository_elis_files'),
+            ELIS_FILES_XFER_FTP => get_string('ftp', 'repository_elis_files')
+        );
+
+        $mform->addElement('select', 'file_transfer_method', get_string('filetransfermethod', 'repository_elis_files'), $options);
+        $mform->setDefault('file_transfer_method', ELIS_FILES_XFER_FTP);
+        $mform->addElement('static', 'file_transfer_method_default', '', get_string('filetransfermethoddefault', 'repository_elis_files'));
+        $mform->addElement('static', 'file_transfer_method_desc', '', get_string('filetransfermethoddesc', 'repository_elis_files'));
+
+        $mform->addElement('text', 'ftp_port', get_string('ftpport', 'repository_elis_files'), array('size' => '30'));
+        $mform->setDefault('ftp_port', '21');
+        $mform->addElement('static', 'ftp_port_default', '', get_string('ftpportdefault', 'repository_elis_files'));
+        $mform->addElement('static', 'ftp_port_desc', '', get_string('ftpportdesc', 'repository_elis_files'));
+
         // Check for installed categories table or display 'plugin not yet installed'
         if ($DB->get_manager()->table_exists('elis_files_categories')) {
         // Need to check for settings to be saved
@@ -686,7 +709,7 @@ class repository_elis_files extends repository {
 
         $popup_settings = "height=480,width=640,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
 
-        $root_folder = get_config('ELIS_files', 'root_folder');
+        $root_folder = get_config('elis_files', 'root_folder');
         $button = repository_elis_files::output_root_folder_html($root_folder);
 
         $rootfolderarray=array();
@@ -768,16 +791,16 @@ class repository_elis_files extends repository {
         $hasadmin = $DB->record_exists('user', array('username'   => 'admin',
                                                      'mnethostid' => $CFG->mnet_localhost_id));
 
-        $admin_username = trim(get_config('admin_username','ELIS_files'));
+        $admin_username = trim(get_config('admin_username','elis_files'));
         if (empty($admin_username)) {
             $adminusername = 'moodleadmin';
-            set_config('admin_username', $adminusername, 'ELIS_files');
+            set_config('admin_username', $adminusername, 'elis_files');
         } else {
             $adminusername = $admin_username;
         }
 
         // Only proceed here if the Alfresco plug-in is actually enabled.
-        if (repository_elis_files::is_repo_visible('ELIS_files')) {
+        if (repository_elis_files::is_repo_visible('elis_files')) {
             if ($repo = repository_factory::factory()) {
                 if (elis_files_get_home_directory($adminusername) == false) {
                     $mform->addElement('text', 'admin_username', get_string('adminusername', 'repository_elis_files'), array('size' => '30'));
@@ -875,17 +898,22 @@ class repository_elis_files extends repository {
     }
 
     /**
-     * Check if SOAP extension enabled
+     * Check for required PHP extensions depending on the file transfer method
      *
      * @return bool
      */
     public static function plugin_init() {
-        if (!class_exists('SoapClient')) {
-            print_error('soapmustbeenabled', 'repository_elis_files');
+        if ($this->config->file_transfer_method == ELIS_FILES_XFER_FTP && !function_exists('ftp_connect')) {
+            print_error('ftpmustbeenabled', 'repository_elis_files');
             return false;
-        } else {
-            return true;
         }
+
+        if ($this->config->file_transfer_method == ELIS_FILES_XFER_WS && !function_exists('curl_init')) {
+            print_error('curlmustbeenabled', 'repository_elis_files');
+            return false;
+        }
+
+        return true;
     }
 
     /**

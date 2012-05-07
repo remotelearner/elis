@@ -257,7 +257,19 @@ class qqFileUploader {
         if ($this->file->save($uploadDirectory . $filename)) {
             return array('success'=>true);
         } else {
-            return array('error'=>get_string('errorupload', 'repository_elis_files'));
+            $config = get_config('elis_files');
+
+            // ELIS-4982 -- If FTP is enabled, check that the port is set correctly
+            if ($config->file_transfer_method == ELIS_FILES_XFER_FTP) {
+                // Attempt to make a connection to the FTP server
+                $uri = parse_url($config->server_host);
+                if (ftp_connect($uri['host'], $config->ftp_port, 5) === false) {
+                    return array('error' => get_string('errorftpinvalidport', 'repository_elis_files', $uri['host'].':'.$config->ftp_port));
+                }
+            }
+
+            // Unknown error occurred
+            return array('error' => get_string('errorupload', 'repository_elis_files'));
         }
 
     }
