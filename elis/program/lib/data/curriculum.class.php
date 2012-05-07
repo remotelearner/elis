@@ -464,10 +464,25 @@ class curriculum extends data_object_with_custom_fields {
         // clone main curriculum object
         $clone = new curriculum($this);
         unset($clone->id);
+
+        $idnumber = $clone->idnumber;
+        $name = $clone->name;
         if (isset($userset)) {
             // if cluster specified, append cluster's name to curriculum
-            $clone->name = $clone->name.' - '.$userset->name;
-            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
+            $idnumber .= ' - '.$userset->name;
+            $name .= ' - '.$userset->name;
+        }
+
+        //get a unique idnumber
+        $clone->idnumber = generate_unique_identifier(curriculum::TABLE, 'idnumber', $idnumber, array('idnumber' => $idnumber));
+
+        if ($clone->idnumber != $idnumber) {
+            //get the suffix appended and add it to the name
+            $parts = explode('.', $clone->idnumber);
+            $suffix = end($parts);
+            $clone->name = $name.'.'.$suffix;
+        } else {
+            $clone->name = $name;
         }
 
         $clone = new curriculum($clone);
