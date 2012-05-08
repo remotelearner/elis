@@ -184,7 +184,10 @@ class curriculumcoursepage extends curriculumcoursebasepage {
 
         $this->print_list_view($items, $columns);
 
-        $this->print_add_button(array('id' => $id), get_string('curriculumcourse_assigncourse','elis_program'));
+        if (has_capability('elis/program:associate', $this->_get_page_context()) ||
+            has_capability('elis/program:manage', $this->_get_page_context())) { //manage is deprecated but kept for consistency
+            $this->print_add_button(array('id' => $id), get_string('curriculumcourse_assigncourse','elis_program'));
+        }
     }
 
     function display_prereqedit() {
@@ -393,13 +396,18 @@ class coursecurriculumpage extends curriculumcoursebasepage {
 
         $this->print_list_view($items, $columns);
 
-        $this->print_add_button(array('id' => $id), get_string('course_assigncurriculum', 'elis_program'));
+        if (has_capability('elis/program:associate', $this->_get_page_context()) ||
+            has_capability('elis/program:manage', $this->_get_page_context())) {
+            $this->print_add_button(array('id' => $id), get_string('course_assigncurriculum', 'elis_program'));
+        }
 
-        echo '<div align="center">';
-        $options = array_merge(array('s' => 'cfc', 'id' => $id));
-        $button = new single_button(new moodle_url('index.php', $options), get_string('makecurcourse','elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('makecurcourse','elis_program'), 'id'=>''));
-        echo $OUTPUT->render($button);
-        echo '</div>';
+        if (has_capability('elis/program:program_create', $this->_get_page_context())) {
+            echo '<div align="center">';
+            $options = array_merge(array('s' => 'cfc', 'id' => $id));
+            $button = new single_button(new moodle_url('index.php', $options), get_string('makecurcourse','elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('makecurcourse','elis_program'), 'id'=>''));
+            echo $OUTPUT->render($button);
+            echo '</div>';
+        }
     }
 
     // disable prereq/coreq editing from the course page
