@@ -46,18 +46,6 @@ class duplicateTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         return array('crlm_coursetemplate' => 'elis_program');
-//        return array('context' => 'moodle',
-//                     'context_levels' => 'moodle',
-//                     'elis_field' => 'elis_program',
-//                     'elis_field_categories' => 'elis_program',
-//                     'elis_field_contextlevels' => 'elis_program'
-//                      );
-//                     'crlm_user' => 'elis_program',
-//                     'crlm_user_moodle' => 'elis_program',
-//                     RLIP_LOG_TABLE => 'block_rlip',
-//                     'files' => 'moodle',
-//                     'external_tokens' => 'moodle',
-//                     'external_services_users' => 'moodle');
     }
 
 	protected static function get_overlay_tables() {
@@ -69,9 +57,6 @@ class duplicateTest extends elis_database_test {
             'elis_field_contextlevels' => 'elis_core',
             'elis_field_owner' => 'elis_core',
             'elis_field_data_text' => 'elis_core',
-//               'context_levels' => 'moodle',
-//            user::TABLE => 'elis_program',
-//            student::TABLE => 'elis_program',
             pmclass::TABLE => 'elis_program',
             course::TABLE => 'elis_program',
             curriculum::TABLE => 'elis_program',
