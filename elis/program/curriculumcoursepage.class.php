@@ -352,7 +352,7 @@ class coursecurriculumpage extends curriculumcoursebasepage {
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
 
-        if (coursepage::_has_capability('elis/program:course_view', $id)) {
+        if (coursepage::_has_capability('elis/program:program_view', $id)) {
             //allow viewing but not managing associations
         	return true;
         }
