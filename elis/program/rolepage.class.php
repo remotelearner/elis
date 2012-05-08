@@ -726,7 +726,10 @@ class cluster_rolepage extends rolepage {
                                     AND {".user::TABLE."}.id = um.cuserid)
                       AND EXISTS (SELECT 'x'
                                   FROM {".usermoodle::TABLE."} um
-                                  WHERE {".user::TABLE."}.id = um.cuserid)";
+                                  JOIN {".clusterassignment::TABLE."} ca
+                                    ON um.cuserid = ca.userid 
+                                  WHERE {".user::TABLE."}.id = um.cuserid
+                                    AND ca.clusterid = :clusterid)";
 
             $params = array('contextid' => $context->id,
                             'roleid' => $roleid,
