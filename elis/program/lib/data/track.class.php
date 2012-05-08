@@ -134,15 +134,21 @@ class track extends data_object_with_custom_fields {
         // For every course of the curricula determine which ones need -
         // to have their auto enrol flag set
         foreach ($curcourse as $recid => $curcourec) {
-            $suffix = 0;
-            do {
-                $idnumber = (!empty($curcourec->idnumber) ? $curcourec->idnumber .'-' : '') . $this->idnumber . ($suffix ? $suffix : '');
-                ++$suffix;
-                $classojb = new pmclass(array('courseid' => $curcourec->courseid,
-                                              'idnumber' => $idnumber));
-            } while ($this->_db->record_exists(pmclass::TABLE,
-                                     array('courseid' => $curcourec->courseid,
-                                           'idnumber' => $idnumber)));
+
+            //get a unique idnumber
+            $idnumber = $this->idnumber;
+            if (!empty($curcourec->idnumber)) {
+                // if cluster specified, append cluster's name to class
+                $idnumber = $curcourec->idnumber.'-'.$idnumber;
+            }
+
+            generate_unique_identifier(pmclass::TABLE,
+                                      'idnumber',
+                                       $idnumber,
+                                       array('idnumber' => $idnumber),
+                                      'pmclass', $classojb,
+                                       array('courseid' => $curcourec->courseid,
+                                             'idnumber' => $idnumber));
 
             // Course is required
             if ($curcourec->required) {
@@ -470,10 +476,25 @@ class track extends data_object_with_custom_fields {
         if (isset($options['targetcurriculum'])) {
             $clone->curid = $options['targetcurriculum'];
         }
+
+        $idnumber = $clone->idnumber;
+        $name = $clone->name;
         if (isset($userset)) {
-            // if cluster specified, append cluster's name to track
-            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
-            $clone->name = $clone->name.' - '.$userset->name;
+            // if cluster specified, append cluster's name to curriculum
+            $idnumber .= ' - '.$userset->name;
+            $name .= ' - '.$userset->name;
+        }
+
+        //get a unique idnumber
+        $clone->idnumber = generate_unique_identifier(track::TABLE, 'idnumber', $idnumber, array('idnumber' => $idnumber));
+
+        if ($clone->idnumber != $idnumber) {
+            //get the suffix appended and add it to the name
+            $parts = explode('.', $clone->idnumber);
+            $suffix = end($parts);
+            $clone->name = $name.'.'.$suffix;
+        } else {
+            $clone->name = $name;
         }
         $clone->autocreate = false; // avoid warnings
         $clone->save();

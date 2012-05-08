@@ -3,3 +3,5 @@ id,courseid,idnumber,startdate,enddate,duration,starttimehour,starttimeminute,en
 2,1,"test - test",0,0,0,61,61,61,61,0,0,0
 3,1,"test - test.1",0,0,0,61,61,61,61,0,0,0
 4,2,"test - test.2",0,0,0,61,61,61,61,0,0,0
+5,1,"test-test",0,0,0,61,61,61,61,0,0,0
+6,2,"test-test.1",0,0,0,61,61,61,61,0,0,0

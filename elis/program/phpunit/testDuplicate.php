@@ -33,6 +33,7 @@ require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elispm::lib('data/course.class.php'));
 require_once(elispm::lib('data/pmclass.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
+require_once(elispm::lib('data/track.class.php'));
 
 class duplicateTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
@@ -45,18 +46,6 @@ class duplicateTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         return array('crlm_coursetemplate' => 'elis_program');
-//        return array('context' => 'moodle',
-//                     'context_levels' => 'moodle',
-//                     'elis_field' => 'elis_program',
-//                     'elis_field_categories' => 'elis_program',
-//                     'elis_field_contextlevels' => 'elis_program'
-//                      );
-//                     'crlm_user' => 'elis_program',
-//                     'crlm_user_moodle' => 'elis_program',
-//                     RLIP_LOG_TABLE => 'block_rlip',
-//                     'files' => 'moodle',
-//                     'external_tokens' => 'moodle',
-//                     'external_services_users' => 'moodle');
     }
 
 	protected static function get_overlay_tables() {
@@ -68,9 +57,6 @@ class duplicateTest extends elis_database_test {
             'elis_field_contextlevels' => 'elis_core',
             'elis_field_owner' => 'elis_core',
             'elis_field_data_text' => 'elis_core',
-//               'context_levels' => 'moodle',
-//            user::TABLE => 'elis_program',
-//            student::TABLE => 'elis_program',
             pmclass::TABLE => 'elis_program',
             course::TABLE => 'elis_program',
             curriculum::TABLE => 'elis_program',
@@ -85,12 +71,14 @@ class duplicateTest extends elis_database_test {
 
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-//        $dataset->addTable(clustercurriculum::TABLE, elis::component_file('program', 'phpunit/duplicateclustercurriculum.csv'));
         $dataset->addTable(course::TABLE, elis::component_file('program', 'phpunit/duplicatecourse.csv'));
         $dataset->addTable(pmclass::TABLE, elis::component_file('program', 'phpunit/duplicateclass.csv'));
         $dataset->addTable(curriculum::TABLE, elis::component_file('program', 'phpunit/duplicatecurriculum.csv'));
+        $dataset->addTable(curriculumcourse::TABLE, elis::component_file('program', 'phpunit/duplicatecurriculum_course.csv'));
+        $dataset->addTable(track::TABLE, elis::component_file('program', 'phpunit/duplicatetrack.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
+
     /**
      * Set up the course and context records needed for many of the
      * unit tests
@@ -115,7 +103,8 @@ class duplicateTest extends elis_database_test {
 
         build_context_path();
     }
-/**
+
+    /**
      * Test generate unique identifier function
      */
     public function testGenerateUniqueIdentifier() {
@@ -150,6 +139,19 @@ class duplicateTest extends elis_database_test {
 
         //we want to validate that the  unique idnumber is "test - test.2"
         $this->assertEquals($expectedvalue, $newidnumber);
+
+        //test with passing an object and object parameters
+        $idnumber = "test - test";
+        $courseid = 1;
+        $classobj = new stdClass();
+
+        generate_unique_identifier(pmclass::TABLE, 'idnumber', $idnumber, array('courseid'=> $courseid, 'idnumber' => $idnumber),
+                                  'pmclass', $classobj, array('idnumber' => $idnumber));
+
+        $expectedvalue = "test - test.2";
+
+        //we want to validate that the  unique idnumber is "test - test.3"
+        $this->assertEquals($expectedvalue, $classobj->idnumber);
     }
 
     /**
@@ -254,5 +256,71 @@ class duplicateTest extends elis_database_test {
        $this->assertEquals($expectedvalue, $record->idnumber);
        //the name is also to be unique
        $this->assertEquals($expectedvalue, $record->name);
+    }
+
+    /**
+     * Test validation of duplicate tracks
+     */
+    public function testTrackValidationPreventsDuplicates() {
+        global $DB;
+
+        $this->load_csv_data();
+
+        //need track and userset
+        $userset = new stdClass();
+        $userset->id = 1;
+        $userset->name = 'test';
+
+        $track = new track(array('curid' => 5, 'name' => 'test', 'idnumber' => 'test'));
+        $options = array();
+        $options['targetcluster'] = $userset;
+        $options['targetcurriculum'] = 5;
+        $options['moodlecourses'] = 'copyalways';
+        $options['tracks'] = 1;
+        $options['classmap'] = array();
+
+        $return = $track->duplicate($options);
+
+        //make sure that a we get a program returned
+        $this->assertTrue(is_array($return['tracks']));
+
+        $id = $return['tracks'][''];
+        $record = $DB->get_record('crlm_track', array('id'=>$id));
+        $expectedvalue = "test - test.3";
+
+        //we want to validate that the  unique idnumber is "test - test.3"
+        $this->assertEquals($expectedvalue, $record->idnumber);
+        //the name is also to be unique
+        $this->assertEquals($expectedvalue, $record->name);
+    }
+
+    /**
+     * Test validation of duplicate auto created tracks
+     */
+    public function testTrackAutoCreateValidationPreventsDuplicates() {
+        global $DB;
+
+        $this->load_csv_data();
+
+        //need track and userset
+        $userset = new stdClass();
+        $userset->id = 1;
+        $userset->name = 'test';
+
+        //set values required for auto create
+        $track = new track(array('id' => 1, 'curid' => 1, 'name' => 'test', 'idnumber' => 'test'));
+        //testing track auto create
+        $track->track_auto_create();
+
+        //nothing is returned, so get most recent class created
+        $records = $DB->get_records('crlm_class', null, "id DESC");
+        foreach($records as $record) {
+            $return = $record;
+            break;
+        }
+        $expectedvalue = "test-test.2";
+
+       //we want to validate that the  unique idnumber is "test-test.2"
+       $this->assertEquals($expectedvalue, $return->idnumber);
     }
 }
