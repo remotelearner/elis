@@ -799,8 +799,10 @@ class cluster_rolepage extends rolepage {
             require_once(elispm::lib('data/clusterassignment.class.php'));
 
             $sql .= " AND EXISTS (SELECT *
-                                  FROM {".clusterassignment::TABLE."} clstass
-                                  WHERE u.id = clstass.userid
+                                  FROM {".usermoodle::TABLE."} um
+                                  JOIN {".clusterassignment::TABLE."} clstass
+                                    ON um.cuserid = clstass.userid
+                                  WHERE u.id = um.muserid
                                   AND clstass.clusterid = ?
                       )";
             $params[] = $context->instanceid;

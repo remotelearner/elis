@@ -48,6 +48,9 @@ class accessible_cluster_rolepage extends cluster_rolepage {
     }
 }
 
+/**
+ * Test class for testing special ELIS roles functionality
+ */
 class testRoles extends elis_database_test {
     /**
      * Return the list of tables that should be overlayed.
@@ -65,6 +68,7 @@ class testRoles extends elis_database_test {
                      user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program',
                      userset::TABLE => 'elis_program',
+                     'config_plugins' => 'moodle',
                      'context' => 'moodle',
                      'role' => 'moodle',
                      'role_assignments' => 'moodle',
@@ -83,13 +87,17 @@ class testRoles extends elis_database_test {
 
     /**
      * Validate that the cluster role page respects non-admin privileges when
-     * obtaining hte list of users
+     * obtaining the list of users
      */
     public function testClusterRolepageAvailableRecordsRespectUsersetPermissions() {
-        global $CFG, $_GET, $USER, $DB;
+        global $CFG, $_GET, $USER, $DB, $UNITTEST;
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
+
+        $UNITTEST->running = true;
+        accesslib_clear_all_caches_for_unit_testing();
+        unset($UNITTEST->running);
 
         //create our test userset
         $userset = new userset(array('name' => 'testuserset'));
@@ -151,5 +159,89 @@ class testRoles extends elis_database_test {
 
         $user = reset($available_users);
         $this->assertEquals('assigned', $user->idnumber);
+    }
+
+    /**
+     * Validate that counting the number of role assignments on a particular
+     * cluster for a particular role respects special userset permissions
+     */
+    public function testClusterRolepageCountRoleUsersRespectsUsersetPermissions() {
+        global $CFG, $_GET, $USER, $DB, $UNITTEST;
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/userset.class.php'));
+
+        $UNITTEST->running = true;
+        accesslib_clear_all_caches_for_unit_testing();
+        unset($UNITTEST->running);
+
+        //create a user record so that Moodle and PM ids don't match by fluke
+        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        elis::$config = new elis_config();
+        create_user_record('bogususer', 'Bogususer!0');
+
+        //create our test userset
+        $userset = new userset(array('name' => 'testuserset'));
+        $userset->save();
+
+        //the user who is assigned to the user set
+        $assigned_user = new user(array('idnumber' => 'assigned',
+                                        'username' => 'assigned',
+                                        'firstname' => 'assigned',
+                                        'lastname' => 'assigned',
+                                        'email' => 'assigned@assigned.com',
+                                        'country' => 'CA'));
+        $assigned_user->save();
+
+        //userset assignment
+        $cluster_assignment = new clusterassignment(array('clusterid' => $userset->id,
+                                                          'userid' => $assigned_user->id));
+        $cluster_assignment->save();
+
+        //user who is potentially assigning the userset member a new role
+        //within the userset
+        $assigning_user = new user(array('idnumber' => 'assigning',
+                                         'username' => 'assigning',
+                                         'firstname' => 'assigning',
+                                         'lastname' => 'assigning',
+                                         'email' => 'assigning@assigning.com',
+                                         'country' => 'CA'));
+        $assigning_user->save();
+
+        //need the system context for role assignments
+        $system_context = get_context_instance(CONTEXT_SYSTEM);
+
+        //set up the role that allows a user to assign roles but only to userset
+        //members
+        $permissions_roleid = create_role('permissionsrole', 'permissionsrole', 'permissionsrole');
+        //enable the appropriate capabilities
+        assign_capability('moodle/role:assign', CAP_ALLOW, $permissions_roleid, $system_context->id);
+        assign_capability('elis/program:userset_role_assign_userset_users', CAP_ALLOW, $permissions_roleid,
+                          $system_context->id);
+
+        //perform the role assignment
+        $moodle_userid = $DB->get_field('user', 'id', array('username' => 'assigning'));
+        role_assign($permissions_roleid, $moodle_userid, $system_context->id);
+
+        //imitate the user assigned the role which allows for further role
+        //assignments only on userset members
+        $USER = $DB->get_record('user', array('id' => $moodle_userid));
+
+        //test role for potential assignment to userset members
+        $roleid = create_role('targetrole', 'targetrole', 'targetrole');
+
+        //assign the both users to the userset role
+        $userset_contextlevel = context_level_base::get_custom_context_level('cluster', 'elis_program');
+        $userset_context = get_context_instance($userset_contextlevel, $userset->id);
+        role_assign($roleid, $moodle_userid, $userset_context->id);
+        $moodle_userid = $DB->get_field('user', 'id', array('username' => 'assigned'));
+        role_assign($roleid, $moodle_userid, $userset_context->id);
+
+        //obtain the count of assigned users
+        $page = new cluster_rolepage(array('id' => $userset->id));
+        $count = $page->count_role_users($roleid, $userset_context);
+
+        //list should only contain the userset member
+        $this->assertEquals(1, $count);
     }
 }
