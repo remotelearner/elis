@@ -1457,13 +1457,12 @@ abstract class table_report extends php_report {
 
         //used to track whether we're in the main report flow or not
         $in_main_report_flow = false;
-        error_log("/blocks/php_report/type/table_report.class.php::get_complete_sql_query(use_limit = {$use_limit}, sql = {$sql}, params = Array)");
+
         //query from the report implementation
         if ($sql === null) {
             list($sql, $params) = $this->get_report_sql($columns);
             $in_main_report_flow = true;
         }
-        error_log("/blocks/php_report/type/table_report.class.php::get_complete_sql_query(); sql = {$sql}");
 
         //determine if the special wildcard for adding filter sql is included
         $parameter_token_pos = strpos($sql, table_report::PARAMETER_TOKEN);
@@ -1474,6 +1473,7 @@ abstract class table_report extends php_report {
             $has_where_clause = php_report::sql_has_where_clause($sql);
 
             $conditional_symbol = 'WHERE';
+
             if ($has_where_clause) {
                 $conditional_symbol = 'AND';
             }
@@ -1488,30 +1488,9 @@ abstract class table_report extends php_report {
             //report to include those in this case because parsing pieces of queries
             //is complex and error-prone
             list($filter_clause, $filter_params) = $this->get_filter_condition('');
-            if (empty($filter_clause)) {
-                $filter_clause = 'TRUE';
-            }
-
             //replace the wildcard with the filter clause
             $sql = str_replace(table_report::PARAMETER_TOKEN, $filter_clause, $sql);
-            // Check for duplicate named parameters
-            foreach ($filter_params as $key => $value) {
-                if (substr_count($sql, ":{$key}") > 1) {
-                    $cnt = 0;
-                    $sql_parts = explode(":{$key}", $sql);
-                    foreach($sql_parts as $sql_part) {
-                        if ($cnt++) {
-                            $newkey = ($cnt == 1) ? $key : "{$key}_{$cnt}";
-                            $new_sql .= ":{$newkey}{$sql_part}";
-                            $filter_params[$newkey] = $value;
-                        } else {
-                            $new_sql = $sql_part;
-                        }
-                    }
-                    $sql = $new_sql;
-                }
-            }
-            $params = array_merge($params, $filter_params);
+            $params = array_merge($params, $filter_params); // TBD
         }
 
         if ($in_main_report_flow) {

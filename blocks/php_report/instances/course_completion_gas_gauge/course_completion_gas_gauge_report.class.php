@@ -266,6 +266,8 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
                 $inactive_yes_label => array(0, 1),
                 $inactive_no_label => array(0));
         $inactive_options = array('choices' => $choices,
+                                  'default'  => array(0),
+                                  //'anyvalue' => array(0, 1),
                                   'numeric' => true);
         // Need help text
         $inactive_options['help'] = array('course_completion_gas_gauge_inactive',
