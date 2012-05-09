@@ -133,6 +133,17 @@ class userpage extends managementpage {
         parent::__construct($params);
     }
 
+    /**
+     * Defaults for new user add
+     *
+     * @return  stdClass  Form data, or null if none
+     */
+    function get_default_object_for_add() {
+        $obj = new stdClass;
+        $obj->language = 'en';
+        return $obj;
+    }
+
     function can_do_view() {
         return $this->_has_capability('elis/program:user_view');
     }
