@@ -47,7 +47,20 @@ class generalized_filter_selectany extends generalized_filter_selectall {
      * @param array $options select options
      */
     function generalized_filter_selectany($uniqueid, $alias, $name, $label, $advanced, $field, $options = array()) {
-        parent::__construct($uniqueid, $alias, $name, $label, $advanced, $field, $options);
+        $new_options = $options;
+        $new_options['choices'] = array();
+        if (empty($options['noany'])) {
+            unset($options['choices']['']); // TBD?!?
+            $new_options['choices'][0] = empty($options['anyvalue'])
+                                         ? get_string('report_filter_all', 'elis_core')
+                                         : $options['anyvalue'];
+            $new_options['noany'] = true;
+        }
+        if (!empty($options['choices'])) {
+            $new_options['choices'] += $options['choices'];
+        }
+
+        parent::__construct($uniqueid, $alias, $name, $label, $advanced, $field, $new_options);
     }
 
     /**
@@ -74,7 +87,6 @@ class generalized_filter_selectany extends generalized_filter_selectall {
         }
 
         $value = $data['value'];
-
         if (is_numeric($value) && $value == 0) { // TBD: is_numeric ?
             return array("{$full_fieldname} IS NOT NULL", array());
         }
