@@ -1040,11 +1040,21 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
     $join   = " JOIN {" . track::TABLE ."} trk ON trkassign.trackid = trk.id
                 JOIN {". pmclass::TABLE ."} cls ON trkassign.classid = cls.id
                 JOIN {". curriculumcourse::TABLE . "} curcrs ON curcrs.curriculumid = trk.curid AND curcrs.courseid = cls.courseid ";
+
+    //calculate an appropriate condition if we need to filter out inactive users
+    $inactive_condition = '';
+    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        $inactive_condition = ' AND u.inactive = 0';
+    }
+
     // get number of users from track who are enrolled
     $join  .= "LEFT JOIN (SELECT s.classid, COUNT(s.userid) AS enrolments
                             FROM {". student::TABLE ."} s
                             JOIN {". usertrack::TABLE ."} t USING(userid)
-                           WHERE t.trackid = :trackid
+                            JOIN {".user::TABLE."} u
+                              ON t.userid = u.id
+                              {$inactive_condition}
+                           WHERE t.trackid = :trackid                             
                         GROUP BY s.classid) enr ON enr.classid = cls.id ";
     $params['trackid'] = $trackid;
 
