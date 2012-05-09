@@ -191,7 +191,7 @@ class curriculumpage extends managementpage {
         // Define columns
         $columns = array(
             'name'        => array('header' => get_string('curriculum_name', 'elis_program')),
-            'description' => array('header' => get_string('curriculum_shortdescription', 'elis_program')),
+            'description' => array('header' => get_string('description', 'elis_program')),
             'reqcredits'  => array('header' => get_string('curriculum_reqcredits', 'elis_program')),
             'courses'     => array('header' => get_string('courses', 'elis_program')),
             'priority'    => array('header' => get_string('priority', 'elis_program'))

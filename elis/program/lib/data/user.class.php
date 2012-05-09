@@ -26,6 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/clusterassignment.class.php');
 require_once elispm::lib('data/student.class.php');
@@ -33,12 +35,6 @@ require_once elispm::lib('data/waitlist.class.php');
 require_once elispm::lib('data/instructor.class.php');
 require_once elispm::lib('data/curriculumstudent.class.php');
 require_once elispm::lib('data/usertrack.class.php');
-/*
-require_once CURMAN_DIRLOCATION . '/lib/cluster.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/cmclass.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-require_once CURMAN_DIRLOCATION . '/form/userform.class.php';
-*/
 require_once $CFG->dirroot . '/user/filters/text.php';
 require_once $CFG->dirroot . '/user/filters/date.php';
 require_once $CFG->dirroot . '/user/filters/select.php';
