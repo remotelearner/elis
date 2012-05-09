@@ -291,15 +291,14 @@ function pm_synchronize_moodle_class_grades() {
             $relatedcontextsstring = get_related_contexts_string($context);
             $sql = "SELECT DISTINCT u.id AS muid, u.username, cu.id AS cmid, stu.*
                       FROM {user} u
-                INNER JOIN {role_assignments} ra ON u.id = ra.userid
-                INNER JOIN {".user::TABLE."} cu ON cu.idnumber = u.idnumber
-                INNER JOIN {".student::TABLE."} stu on stu.userid = cu.id AND stu.classid = :classid
-                     WHERE ra.roleid in (:roles)
+                      JOIN {role_assignments} ra ON u.id = ra.userid
+                LEFT JOIN {".user::TABLE."} cu ON cu.idnumber = u.idnumber
+                LEFT JOIN {".student::TABLE."} stu on stu.userid = cu.id AND stu.classid = {$pmclass->id}
+                     WHERE ra.roleid in ({$CFG->gradebookroles})
                        AND ra.contextid {$relatedcontextsstring}
                   ORDER BY muid ASC";
 
-            $causers = $DB->get_recordset_sql($sql, array('classid' => $pmclass->id,
-                                                          'roles' => $CFG->gradebookroles));
+            $causers = $DB->get_recordset_sql($sql);
 
             if (empty($causers)) {
                 // nothing to see here, move on
