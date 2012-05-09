@@ -254,15 +254,39 @@ function php_report_filtering_get_user_preferences($report_shortname) {
         if (!isset($SESSION->php_report_default_params)) {
             $SESSION->php_report_default_params = array();
         }
+        $urlparams = array();
         foreach ($_GET as $key => $val) {
             if ($key != 'report') {
-                //error_log("/blocks/php_report/lib/filtering.php::php_report_filtering_get_user_preferences($report_shortname, $force_persistent) over-riding filter values with URL param: {$key}={$val}");
-                $SESSION->php_report_default_params[$reportid.'/'.$key] = $val;
-                set_user_preferences(array($reportid.'/'.$key => $val)); // let's save URL params as persistent to avoid random session craziness issues
-
-                //flag this report as having custom parameters set up
-                php_report_filtering_flag_report_as_overridden($report_shortname);
+                if (($grppos = strpos($key, ':')) !== false) {
+                    // moodle urls no longer support arrays, new ':' syntax
+                    $idx = substr($key, $grppos + 1);
+                    $key = substr($key, 0, $grppos);
+                    if (!isset($urlparams[$key])) {
+                        $urlparams[$key] = array($idx => $val);
+                    } else {
+                        $urlparams[$key] = array_merge($urlparams[$key],
+                                                       array($idx => $val));
+                    }
+                } else {
+                    $urlparams[$key] = $val;
+                }
             }
+        }
+        foreach ($urlparams as $key => $val) {
+           /*
+            ob_start();
+            var_dump($val);
+            $tmp = ob_get_contents();
+            ob_end_clean();
+            error_log("/blocks/php_report/lib/filtering.php::php_report_filtering_get_user_preferences($report_shortname) over-riding filter values with URL param: {$key} = {$tmp}");
+           */
+            $SESSION->php_report_default_params[$reportid.'/'.$key] = $val;
+            //TBD: Must serialize arrays before storing in user preferences
+            //     and unserialize when reading back values!
+            //set_user_preferences(array($reportid.'/'.$key => $val)); // let's save URL params as persistent to avoid random session craziness issues
+
+            //flag this report as having custom parameters set up
+            php_report_filtering_flag_report_as_overridden($report_shortname);
         }
         $user_prefs = array_merge($user_prefs, $SESSION->php_report_default_params);
     } else if (!empty($SESSION->php_report_default_override[$report_shortname])) {
@@ -541,6 +565,7 @@ class php_report_default_capable_filtering extends generalized_filtering {
         if (!empty($this->preferences_source_data)) {
             //using a pre-defined pool of preferences for API-related reasons,
             //so just convert them to the necessary format
+            //error_log("/blocks/php_report/lib/filtering.php::get_preferences() ... !empty(this->preferences_source_data) -> returning");
             return php_report_filtering_get_per_filter_data($this, $this->preferences_source_data);
         }
 
@@ -551,6 +576,7 @@ class php_report_default_capable_filtering extends generalized_filtering {
 
         //go through and group accordingly
         foreach ($user_preferences as $key => $value) {
+            //error_log("/blocks/php_report/lib/filtering.php::get_preferences(); {$key} => {$value}");
 
             $parts = explode('/', $key);
             //is preference php-report related?
@@ -559,9 +585,8 @@ class php_report_default_capable_filtering extends generalized_filtering {
             $preference_prefix = 'php_report_' . $this->reportname;
 
             //is preference related to this report?
-            if (strpos($parts[0], $preference_prefix) === 0) {
+            if ($parts[0] == $preference_prefix) {
                 $element_name = $parts[1];
-
                 //calculate the group name
                 if (strpos($element_name, '_') !== FALSE) {
                     //multi-element group
@@ -578,7 +603,6 @@ class php_report_default_capable_filtering extends generalized_filtering {
                 //append the data to the current group
                 $per_filter_data[$group_name][$element_name] = $value;
             }
-
         }
 
         return $per_filter_data;
@@ -599,9 +623,12 @@ class php_report_default_capable_filtering extends generalized_filtering {
             return $this->secondary_filterings[$secondary_filtering_key]->get_sql_filter($extra, $exceptions, $allow_interactive_filters, $allow_configured_filters);
         }
 
+        //parameter values
+        $params = array();
+
         //interactive filters, if applicable
         if ($allow_interactive_filters) {
-            $result = parent::get_sql_filter($extra, $exceptions);
+            list($result, $params) = parent::get_sql_filter($extra, $exceptions);
         } else {
             $result = '';
         }
@@ -614,15 +641,12 @@ class php_report_default_capable_filtering extends generalized_filtering {
 
         $per_filter_data = array();
 
-        //resulting query
-        $result = ''; // TBD: overwrites parent::get_sql_filter() above!?!?
         //sql fragments
         $sqls = array();
-        //parameter values
-        $params = array();
 
         //obtain the pool of attributes to pull preferences from
         $per_filter_data = $this->get_preferences();
+        //print_object($per_filter_data);
 
         //grab the SQL filters
         foreach ($this->_fields as $shortname => $field) {
@@ -642,7 +666,7 @@ class php_report_default_capable_filtering extends generalized_filtering {
         //combine SQL conditions
         if (!empty($sqls)) {
             $sql_piece = implode(' AND ', $sqls);
-            if ($result === '') {
+            if ($result == '') {
                 $result = $sql_piece;
             } else {
                 $result .= ' AND ' . $sql_piece;
