@@ -36,7 +36,7 @@ class userform extends cmform {
         global $USER, $CFG, $COURSE;
 
         //determine if this is a create or a view / edit
-        if ($this->_customdata['obj']) {
+        if ($this->_customdata['obj'] && isset($this->_customdata['obj']->id)) {
             //view / edit
             $disabled = true;
             if (!empty($this->_customdata['obj']->birthdate)) {
