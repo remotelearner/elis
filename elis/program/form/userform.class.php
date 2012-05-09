@@ -182,9 +182,12 @@ class userform extends cmform {
         $radioarray[] = &$mform->createElement('radio', 'gender', '', get_string('female', 'elis_program'), 'F');
         $mform->addGroup($radioarray, 'gender', get_string('usergender', 'elis_program'), ' ', false);
 
-        $language = get_string_manager()->get_list_of_languages(); // TBD: get_list_of_translations(true)
+        $language = get_string_manager()->get_list_of_translations(true);
         $mform->addElement('select', 'language', get_string('language'), $language);
-        $mform->setDefault('language', 'en');
+        //$mform->setDefault('language', 'en');
+        // ELIS-4041: ^^^ had to remove setDefault('language', 'en')
+        //            'cause it never showed real language value always default?
+        //            added method to userpage::get_default_object_for_add()
         $mform->addHelpButton('language', 'user_language', 'elis_program');
 
         $mform->addElement('text', 'transfercredits', get_string('user_transfercredits', 'elis_program'));
