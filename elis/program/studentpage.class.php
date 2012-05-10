@@ -422,9 +422,12 @@ class studentpage extends associationpage {
     }
 
     /**
+     * Confirm saving a user to the wait list
      *
+     * @param boolean $redirect Redirect to next destination page if true
+     *                          (needed to prevent redirects in unit testing)
      */
-    public function do_waitlistconfirm() { // action_waitlistconfirm
+    public function do_waitlistconfirm($redirect = true) { // action_waitlistconfirm
         $id = $this->required_param('userid', PARAM_INT);
 
         $form_url = new moodle_url(null, array('s'       => $this->pagename,
@@ -443,8 +446,10 @@ class studentpage extends associationpage {
                         $wait_record = new object();
                         $wait_record->userid = $uid;
                         $wait_record->classid = $data->classid[$uid];
+                        //todo: remove? (not an actual db field)
                         $wait_record->enrolmenttime = $data->enrolmenttime[$uid];
                         $wait_record->timecreated = $now;
+                        $wait_record->timemodified = $now;
                         $wait_record->position = 0;
 
                         $wait_list = new waitlist($wait_record);
@@ -474,14 +479,17 @@ class studentpage extends associationpage {
             }
         }
 
-        if (is_array($id)) {
-            $target_id = array_shift($id);
-        } else {
-            $target_id = $id;
+        if ($redirect) {
+            //todo: remove?
+            if (is_array($id)) {
+                $target_id = array_shift($id);
+            } else {
+                $target_id = $id;
+            }
+    
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $this->required_param('id', PARAM_INT)));
+            redirect($target->url);
         }
-
-        $target = $this->get_new_page(array('action' => 'default', 'id' => $this->required_param('id', PARAM_INT)));
-        redirect($target->url);
     }
 
     /**

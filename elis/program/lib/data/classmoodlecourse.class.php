@@ -445,6 +445,21 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 
     return true;
 }
+/**
+ * Detach the Moodle course from this class record.
+ *
+ * @param int    $clsid           The class ID.
+ * @param int    $mdlid           The Moodle course ID.
+ * @return bool True on success, False otherwise.
+ */
+function moodle_detach_class($clsid, $mdlid) {
+    global $DB;
+
+    /// Delete the crlm_class_moodle record
+    $select = 'classid = ? AND moodlecourseid = ?';
+    $params = array($clsid, $mdlid);
+    return $DB->delete_records_select('crlm_class_moodle', $select, $params);
+}
 
 function moodle_get_classes() {
     return classmoodlecourse::find(array(new join_filter('moodlecourseid', 'course', 'id'),

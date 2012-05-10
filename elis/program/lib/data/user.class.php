@@ -369,14 +369,15 @@ class user extends data_object_with_custom_fields {
         if ($tomoodle) {
             // map PM user fields to Moodle user fields
             $mdlfieldmap = array(
-                'idnumber' => 'idnumber',
-                'username' => 'username',
+                'idnumber'  => 'idnumber',
+                'username'  => 'username',
                 'firstname' => 'firstname',
-                'lastname' => 'lastname',
-                'email' => 'email',
-                'address' => 'address',
-                'city' => 'city',
-                'country' => 'country',
+                'lastname'  => 'lastname',
+                'email'     => 'email',
+                'address'   => 'address',
+                'city'      => 'city',
+                'country'   => 'country',
+                'language'  => 'lang'
             );
 
             // determine if the user is already noted as having been associated to a PM user
