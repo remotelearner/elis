@@ -362,6 +362,9 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
  * @return string The base URL.
  */
 function elis_files_base_url() {
+    if (!isset(elis::$config->elis_files->server_host)) {
+        return '';
+    }
 
     $repourl = elis::$config->elis_files->server_host;
 
@@ -2404,6 +2407,10 @@ function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
         $user = $username;
         $pass = 'password';
     } else {
+        if (!isset(elis::$config->elis_files->server_username) || !isset(elis::$config->elis_files->server_password)) {
+            return false;
+        }
+
         $user = elis::$config->elis_files->server_username;
         $pass = elis::$config->elis_files->server_password;
     }

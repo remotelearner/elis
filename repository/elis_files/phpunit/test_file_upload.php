@@ -141,6 +141,11 @@ class file_uploadTest extends elis_database_test {
      * @dataProvider fileSizeProvider
      */
     public function testUploadIncrementalFileSizes($mb) {
+        // Check if Alfresco is enabled, configured and running first
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped();
+        }
+
         $filesize = $mb * ONE_MB_BYTES;
         $filename = generate_temp_file($mb);
 
@@ -156,6 +161,11 @@ class file_uploadTest extends elis_database_test {
      * Test uploading a file to Alfresco explicitly using the web services method
      */
     public function testUploadFileViaWs() {
+        // Check if Alfresco is enabled, configured and running first
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped();
+        }
+
         // Explicitly set the file transfer method to Web Services
         set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elis_files');
 
@@ -173,6 +183,11 @@ class file_uploadTest extends elis_database_test {
      * Test uploading a file to Alfresco explicitly using the web services method
      */
     public function testUploadFileViaFTP() {
+        // Check if Alfresco is enabled, configured and running first
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped();
+        }
+
         // Explicitly set the file transfer method to FTP
         set_config('file_transfer_method', ELIS_FILES_XFER_FTP, 'elis_files');
 

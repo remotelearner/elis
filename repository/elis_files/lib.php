@@ -851,6 +851,8 @@ class repository_elis_files extends repository {
         require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
         if ($repo = repository_factory::factory()) {
             $repoisup = $repo->is_configured() && $repo->verify_setup();
+        } else {
+            $repoisup = false;
         }
 
         $id = "id_root_folder";
@@ -903,12 +905,12 @@ class repository_elis_files extends repository {
      * @return bool
      */
     public static function plugin_init() {
-        if ($this->config->file_transfer_method == ELIS_FILES_XFER_FTP && !function_exists('ftp_connect')) {
+        if (get_config('elis_files', 'file_transfer_method') == ELIS_FILES_XFER_FTP && !function_exists('ftp_connect')) {
             print_error('ftpmustbeenabled', 'repository_elis_files');
             return false;
         }
 
-        if ($this->config->file_transfer_method == ELIS_FILES_XFER_WS && !function_exists('curl_init')) {
+        if (get_config('elis_files', 'file_transfer_method') == ELIS_FILES_XFER_WS && !function_exists('curl_init')) {
             print_error('curlmustbeenabled', 'repository_elis_files');
             return false;
         }
@@ -1187,7 +1189,7 @@ class repository_elis_files extends repository {
         $fulltree = $DB->get_records('elis_files_categories');
 
         // fetch the selected categories from config
-        $catfilter_serialized = get_config('ELIS_files', 'catfilter');
+        $catfilter_serialized = get_config('elis_files', 'catfilter');
 
         if ($catfilter = unserialize($catfilter_serialized)) {
             // build the new filtered tree

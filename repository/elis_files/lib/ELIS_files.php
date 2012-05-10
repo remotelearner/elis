@@ -115,7 +115,7 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('ELIS_files()');
 
-        $this->process_config(get_config('ELIS_files'));
+        $this->process_config(get_config('elis_files'));
 
         if (!$this->is_configured()) {
             return false;
@@ -2794,17 +2794,14 @@ class ELIS_files {
     function migrate_user($userorusername, $password = '') {
         global $CFG, $DB;
 
-        // Prevent modifying Moodle's user name
-        $cloned_userorusername = clone $userorusername;
+        if (ELIS_FILES_DEBUG_TRACE) mtrace('migrate_user(' . (is_object($userorusername) ? 'object' : $userorusername) . ')');
 
-        if (ELIS_FILES_DEBUG_TRACE) mtrace('migrate_user(' . (is_object($cloned_userorusername) ? 'object' : $cloned_userorusername) . ')');
-
-        if (is_string($cloned_userorusername)) {
-            if (!$user = $DB->get_record('user', array('username'=> $cloned_userorusername, 'mnethostid'=> $CFG->mnet_localhost_id))) {
+        if (is_string($userorusername)) {
+            if (!$user = $DB->get_record('user', array('username' => $userorusername, 'mnethostid'=> $CFG->mnet_localhost_id))) {
                 return false;
             }
-        } else if (is_object($cloned_userorusername)) {
-            $user = $cloned_userorusername;
+        } else if (is_object($userorusername)) {
+            $user = clone $userorusername;
         } else {
             return false;
         }
