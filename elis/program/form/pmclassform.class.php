@@ -34,7 +34,7 @@ MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/elis/prog
 
 class pmclassform extends cmform {
     function definition() {
-        global $USER, $CFG, $DB;
+        global $USER, $CFG, $DB, $PAGE;
 
         parent::definition();
 
@@ -168,9 +168,21 @@ class pmclassform extends cmform {
         if (empty($this->_customdata['obj']->moodlecourseid)) {
             $this->add_moodle_course_select();
         } else {
+            $PAGE->requires->js('/elis/program/js/classform.js');
+            $courseSelected = array();
             $coursename = $DB->get_field('course', 'fullname', array('id'=>$this->_customdata['obj']->moodlecourseid));
-            $mform->addElement('static', 'class_attached_course', get_string('class_attached_course', 'elis_program') . ':',  "<a href=\"$CFG->wwwroot/course/view.php?id={$this->_customdata['obj']->moodlecourseid}\">$coursename</a>");
-            $mform->addHelpButton('class_attached_course', 'pmclassform:moodlecourse', 'elis_program');
+            $courseSelected[] = $mform->createElement('static', 'class_attached_course', get_string('class_attached_course', 'elis_program') . ':',  "<a href=\"$CFG->wwwroot/course/view.php?id={$this->_customdata['obj']->moodlecourseid}\">$coursename</a>");
+            //only show checkbox if current action is edit
+            $current_action    = optional_param('action','view',PARAM_ALPHA);
+            if ($current_action == 'edit') {
+                $options = array();
+                //set group to null
+                $options['group']=null;
+                $options['onclick'] = "return class_confirm_unlink(this,'".get_string('class_unlink_confirm', 'elis_program')."')";
+                $courseSelected[] = $mform->createElement('advcheckbox', 'unlink_attached_course', get_string('class_unlink_attached_course', 'elis_program') . ':', get_string('class_unlink_attached_course', 'elis_program'), $options);
+            }
+            $mform->addGroup($courseSelected, 'courseSelected', get_string('class_attached_course', 'elis_program') . ':');
+            $mform->addHelpButton('courseSelected', 'pmclassform:moodlecourse', 'elis_program');
             $mform->addElement('hidden', 'moodlecourseid');
         }
 
