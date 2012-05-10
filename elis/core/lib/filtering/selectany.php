@@ -50,7 +50,6 @@ class generalized_filter_selectany extends generalized_filter_selectall {
         $new_options = $options;
         $new_options['choices'] = array();
         if (empty($options['noany'])) {
-            unset($options['choices']['']); // TBD?!?
             $new_options['choices'][0] = empty($options['anyvalue'])
                                          ? get_string('report_filter_all', 'elis_core')
                                          : $options['anyvalue'];
@@ -89,6 +88,8 @@ class generalized_filter_selectany extends generalized_filter_selectall {
         $value = $data['value'];
         if (is_numeric($value) && $value == 0) { // TBD: is_numeric ?
             return array("{$full_fieldname} IS NOT NULL", array());
+        } else if ($value == 'null') {
+            return array("{$full_fieldname} IS NULL", array());
         }
 
         return parent::get_sql_filter($data);
