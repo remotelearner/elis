@@ -328,11 +328,11 @@ class curricula_report extends table_report {
                          ON curass.userid = crlmu.id
                        JOIN {'. curriculum::TABLE .'} cc
                          ON curass.curriculumid = cc.id
-                       JOIN {'. curriculumcourse::TABLE .'} ccc
+                  LEFT JOIN {'. curriculumcourse::TABLE .'} ccc
                          ON ccc.curriculumid = cc.id
-                       JOIN {'. pmclass::TABLE .'} ccl
+                  LEFT JOIN {'. pmclass::TABLE .'} ccl
                          ON ccl.courseid = ccc.courseid
-                       JOIN {'. student::TABLE .'} cce
+                  LEFT JOIN {'. student::TABLE .'} cce
                          ON (cce.classid = ccl.id) AND (cce.userid = curass.userid)
                        JOIN {user} u
                          ON u.idnumber = crlmu.idnumber
@@ -367,13 +367,17 @@ class curricula_report extends table_report {
         require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
         $incomplete_status = STUSTATUS_NOTCOMPLETE;
 
-        if($record->completed == $incomplete_status) {
+        if ($record->completed == $incomplete_status) {
             $new_record->completiondate = get_string('not_completed', 'rlreport_curricula');
         } else {
             $new_record->completiondate = $this->userdate($new_record->completiondate, get_string('date_format', 'rlreport_curricula'));
         }
 
-        if($record->timeexpires == '0') {
+        if ($record->numcredits == NULL) {
+            $new_record->numcredits = get_string('na', 'rlreport_curricula');
+        }
+
+        if ($record->timeexpires == '0') {
             $new_record->timeexpires = get_string('na', 'rlreport_curricula');
         } else {
             $new_record->timeexpires = $this->userdate($new_record->timeexpires,
