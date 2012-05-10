@@ -93,6 +93,8 @@ class pmclass extends data_object_with_custom_fields {
     protected $_dbfield_maxstudents;
     protected $_dbfield_environmentid;
     protected $_dbfield_enrol_from_waitlist;
+    protected $_dbfield_moodlecourseid;
+    protected $_dbfield_unlink_attached_course;
 
     static $delete_is_complex = true;
 
@@ -226,6 +228,9 @@ class pmclass extends data_object_with_custom_fields {
 
         if (!empty($data->moodleCourses['moodlecourseid']) && !$this->autocreate) {
             $this->moodlecourseid = $data->moodleCourses['moodlecourseid'];
+        } else if (!empty($data->courseSelected['unlink_attached_course']) && !empty($data->moodlecourseid)) {
+            $this->unlink_attached_course = $data->courseSelected['unlink_attached_course'];
+            $this->moodlecourseid = $data->moodlecourseid;
         } else {
             $this->moodlecourseid = 0;
         }
@@ -911,6 +916,12 @@ class pmclass extends data_object_with_custom_fields {
                 $trackassignobj = new trackassignment($param);
                 $trackassignobj->save();
             }
+        }
+
+        if (isset($this->unlink_attached_course) && isset($this->moodlecourseid)) {
+            // process unlink moodle course id request
+            $return = moodle_detach_class($this->id, $this->moodlecourseid);
+            $this->moodlecourseid = 0;
         }
 
         if ($this->moodlecourseid || $this->autocreate) {
