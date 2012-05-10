@@ -94,14 +94,18 @@ class generalized_filter_checkboxes extends generalized_filter_type {
     }
 
     /**
-     * Returns an array of checked checkboxes
+     * Returns an array of checkbox defaults
      * @param array
      * @return array
      */
     function get_default_values($filter_data) {
         $checkbox_filter = array();
+        $no_defaults = empty($this->_options['checked']);
         foreach ($filter_data as $key => $value) {
-            $checkbox_filter[$key] = 1;
+            // Remove the prefix to match the id's of the arrays in order to determine the checkbox default
+            $checkbox_filter[$key] = $no_defaults
+                                     ? 0
+                                     : in_array(substr($key, strlen($this->_uniqueid) + 1), $this->_options['checked']);
         }
         return $checkbox_filter;
     }
