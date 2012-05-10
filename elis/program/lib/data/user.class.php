@@ -707,7 +707,7 @@ class user extends data_object_with_custom_fields {
                                     $data[] = array(
                                         $coursename,
                                         $coursedesc,
-                                        $classdata->grade,
+                                        pm_display_grade($classdata->grade),
                                         $classdata->completestatusid == STUSTATUS_PASSED ? get_string('yes') : get_string('no'),
                                         $classdata->completestatusid == STUSTATUS_PASSED && !empty($classdata->completetime) ?
                                         date('M j, Y', $classdata->completetime) : get_string('na','elis_program')
