@@ -213,6 +213,7 @@ function manual_field_save_form_data($form, $field, $data) {
  */
 function manual_field_add_form_element($form, $mform, $context, $customdata, $field, $check_required = true) {
     //$mform = $form->_form;
+    $elem = "field_{$field->shortname}";
     $manual = new field_owner($field->owners['manual']);
     if (!empty($manual->param_edit_capability)) {
         $capability = $manual->param_edit_capability;
@@ -223,17 +224,52 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
                     return;
                 }
             }
-            $mform->addElement('static', "field_{$field->shortname}", $field->name);
+            $mform->addElement('static', $elem, $field->name);
             return;
         }
     }
     $control = $manual->param_control;
     require_once elis::plugin_file('elisfields_manual',"field_controls/{$control}.php");
     call_user_func("{$control}_control_display", $form, $mform, $customdata, $field);
+
+    // set default data if no over-riding value set!
+    if (!isset($customdata['obj']->$elem)) {
+        $defaultdata = field_data::get_for_context_and_field(NULL, $field);
+        if (!empty($defaultdata)) {
+            if ($field->multivalued) {
+                $values = array();
+                // extract the data
+                foreach ($defaultdata as $data) {
+                    $values[] = $data->data;
+                }
+                // represent as a CSV string
+                $fh = fopen("php://memory", "rw");
+                fputcsv($fh, $values);
+                rewind($fh);
+                $defaultdata = fgets($fh);
+                fclose($fh);
+            } else {
+                foreach ($defaultdata as $defdata) {
+                    $defaultdata = $defdata->data;
+                    break;
+                }
+            }
+        }
+
+        // Format decimal numbers
+        if (strcmp($field->datatype,'num') == 0) {
+            $defaultdata = $field->format_number($defaultdata);
+        }
+
+        if (isset($defaultdata) && !is_object($defaultdata) && $defaultdata) {
+            $mform->setDefault($elem, $defaultdata);
+        }
+    }
+
     if ($check_required) {
         $manual_params = unserialize($manual->params);
         if (!empty($manual_params['required'])) {
-            $mform->addRule("field_{$field->shortname}", null, 'required', null, 'client'); // TBD
+            $mform->addRule($elem, null, 'required', null, 'client'); // TBD
         }
     }
 }
