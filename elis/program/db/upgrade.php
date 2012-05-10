@@ -424,7 +424,7 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $table = new xmldb_table('crlm_curriculum_assignment');
         $field = new xmldb_field('certificatecode', XMLDB_TYPE_CHAR, '40', null, null, null, null, 'locked');
 
-        if (!$dbman->table_exists($table, $field)) {
+        if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
 
