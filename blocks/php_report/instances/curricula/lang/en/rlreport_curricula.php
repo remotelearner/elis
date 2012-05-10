@@ -27,7 +27,7 @@ $string['grouping_curriculum'] = 'Program';
 $string['grouping_completed'] = 'Completed';
 $string['grouping_not_completed'] = 'Not Completed';
 
-$string['na'] = 'NA';
+$string['na'] = 'N/A';
 $string['not_completed'] = 'Not Completed';
 
 $string['pluginname'] = 'Programs Report';
