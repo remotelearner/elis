@@ -195,6 +195,14 @@ class course_completion_by_cluster_report extends table_report {
 
         //cluster tree / dropdown filter
         $cluster_heading = get_string('filter_cluster', 'rlreport_course_completion_by_cluster');
+
+        //add a bit of spacing
+        $br = html_writer::empty_tag('br');
+        $cluster_heading .= $br.$br;
+
+        //include a descriptive message about how to use the tree view
+        $cluster_heading .= get_string('filter_cluster_description', 'rlreport_course_completion_by_cluster');
+
         $cluster_filter = new generalized_filter_entry('cluster', '', 'clusterid', $cluster_heading,
                                                        false, 'clustertree', $clustertree_options);
 
