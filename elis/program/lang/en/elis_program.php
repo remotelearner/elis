@@ -353,6 +353,7 @@ $string['deletesubs'] = 'Delete user subsets';
 $string['description'] = 'Description';
 $string['detail'] = 'Detail';
 $string['disable_cert_setting'] = 'Disable Certificates';
+$string['done'] = 'done';
 $string['duration'] = 'Duration';
 
 $string['edit'] = 'Edit';
@@ -497,6 +498,13 @@ $string['health_cron_title'] = 'Last cron run times';
 $string['health_curriculum'] = 'Stale ELIS Course Description - Moodle Program record';
 $string['health_curriculumdesc'] = 'There are {$a->count} records in the {$a->table} table referencing nonexistent ELIS course descriptions';
 $string['health_curriculumsoln'] = 'These records need to be removed from the database.<br/>Suggested SQL:';
+$string['health_dangling_check'] = 'Checking for unlocked dangling learning objective grades';
+$string['health_dangling_fixed_counts'] = 'Locked {$a->fixed} / {$a->total} learning objective grades';
+$string['health_dangling_recalculate'] = 'Forcing recalculation of student class instance grades ... ';
+$string['health_danglingcompletionlocks'] = 'Dangling learning objective locks';
+$string['health_danglingcompletionlocksdesc'] = 'There are {$a} learning objective grades that should be locked but will never be updated automatically.';
+$string['health_danglingcompletionlockssoln'] = '<p>Run the script fix_dangling_completion_locks.php to automatically lock the learning objective grades '.
+                                                'that will not be automatically locked.</p>';
 $string['health_duplicate'] = 'Duplicate enrolment records';
 $string['health_duplicatedesc'] = 'There were {$a} duplicate enrolments records in the ELIS enrolments table.';
 $string['health_duplicatesoln'] = '<p>Run the script fix_duplicate_enrolments.php to remove all duplicate enrolment records.</p>';
