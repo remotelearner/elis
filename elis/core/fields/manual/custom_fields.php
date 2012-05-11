@@ -257,11 +257,11 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
         }
 
         // Format decimal numbers
-        if (strcmp($field->datatype,'num') == 0) {
+        if (strcmp($field->datatype, 'num') == 0) {
             $defaultdata = $field->format_number($defaultdata);
         }
 
-        if (isset($defaultdata) && !is_object($defaultdata) && $defaultdata) {
+        if (!is_null($defaultdata) && !is_object($defaultdata) && $defaultdata !== false) {
             $mform->setDefault($elem, $defaultdata);
         }
     }
