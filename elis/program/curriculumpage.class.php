@@ -136,7 +136,7 @@ class curriculumpage extends managementpage {
         parent::__construct($params);
 
         $id = $this->optional_param('id', 0, PARAM_INT);
-        $track_params = ($id) ? array('curid' => $id) : array();
+        $track_params = ($id) ? array('parent' => $id) : array();
         $this->tabs = array(
         array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
         array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
