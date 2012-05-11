@@ -769,7 +769,7 @@ Program Administration &gt; Information Elements &gt; Environments.</p>';
 $string['pmclassform:moodlecourse'] = 'Moodle course';
 $string['pmclassform:moodlecourse_help'] = '<p>The Moodle course that this class instance is attached to and is an instance of.</p>';
 $string['pmclassform:waitlistenrol'] = 'Auto enrol from waitlist';
-$string['pmclassform:waitlistenrol_help'] = '<p>on to automatically enrol students from the waitlist into the course description when an erolled student completes (passes or fails) the course description.</p>';
+$string['pmclassform:waitlistenrol_help'] = '<p>Check this box to automatically enrol students from the waitlist into the course description when an erolled student completes (passes or fails) the course description.</p>';
 $string['pmclass_delete_warning'] = 'Warning!  Deleting this class instance will also delete all stored enrolment information for the class instance.';
 $string['pmclass_delete_warning_continue'] = 'I understand all enrolments for the class instance will be deleted, continue ...';
 $string['position'] = 'Position';
