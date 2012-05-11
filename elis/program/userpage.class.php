@@ -107,16 +107,8 @@ class userpage extends managementpage {
     }
 
     public function __construct(array $params=null) {
-        //tab for the Individual User report
-        //todo: check availability and permissions
-        $report_tab = array('tab_id' => 'report',
-                            'page' => 'linkpage',
-                            'params' => array('linkurl' => 'blocks/php_report/render_report_page.php',
-                                              'linkparams'=>'report,userid',
-                                              'report'=>'individual_user', 'userid'=>'=id'),
-                            'name' => get_string('report', 'elis_program'),
-                            'showbutton' => true,
-                            'image' => 'report');
+        global $CFG;
+
         $this->tabs = array(
             array('tab_id' => 'view', 'page' => 'userpage', 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
             array('tab_id' => 'edit', 'page' => 'userpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
@@ -127,8 +119,23 @@ class userpage extends managementpage {
             array('tab_id' => 'user_rolepage', 'page' => 'user_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
 
             array('tab_id' => 'delete', 'page' => 'userpage', 'params' => array('action' => 'delete'), 'name' => get_string('delete', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
-            $report_tab,
         );
+
+        //tab for the Individual User report
+        //todo: check permissions
+        if (file_exists($CFG->dirroot.'/blocks/php_report/render_report_page.php')) {
+            //script for rendering report pages exists in report block, so reports
+            //are at least installed
+            $report_tab = array('tab_id' => 'report',
+                                'page' => 'linkpage',
+                                'params' => array('linkurl' => 'blocks/php_report/render_report_page.php',
+                                                  'linkparams'=>'report,userid',
+                                                  'report'=>'individual_user', 'userid'=>'=id'),
+                                'name' => get_string('report', 'elis_program'),
+                                'showbutton' => true,
+                                'image' => 'report');
+            $this->tabs[] = $report_tab;
+        }
 
         parent::__construct($params);
     }
