@@ -165,7 +165,8 @@ class curricula_report extends table_report {
                  array(
                      new generalized_filter_entry('curr', 'curass', 'curriculumid',
                          get_string('filter_program', 'rlreport_curricula'),
-                         false, 'selectall', array('choices' => $cms)
+                         false, 'selectall', array('choices'  => $cms,
+                                                   'multiple' => true)
                      ),
                      new generalized_filter_entry('cluster', 'crlmu', 'id',
                          get_string('filter_cluster', 'rlreport_curricula'),
@@ -317,7 +318,7 @@ class curricula_report extends table_report {
     function get_report_sql($columns) {
         global $DB;
 
-        //obtain all course contexts where this user can view reports
+        //obtain all user contexts where this user can view reports
         $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
 
         //make sure we only count courses within those contexts
