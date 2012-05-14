@@ -165,8 +165,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
 
         if (is_array($value)) {
             foreach ($value as $key => $subvalue) {
-                $value[$key] = '"'. s($subvalue) .'"';
-                // TBD: $this->_options[$subvalue] ???
+                $value[$key] = '"'. s($this->_options[$subvalue]) .'"';
             }
             $a->value = implode(get_string('or', 'elis_core'), $value);
         } else {
