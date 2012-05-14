@@ -199,11 +199,11 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
      */
     function get_columns() {
         //query that calculates number completed as a percentage
-        $percent_complete_sql = $this->get_report_sql('COUNT(ccg.id) / COUNT(cc.id) * 100');
+        $percent_complete_sql = $this->get_report_sql('COUNT(ccg.id) / COUNT(cc.id) * 100', true);
         //query that calculates total number completed
-        $num_complete_sql = $this->get_report_sql('COUNT(ccg.id)');
+        $num_complete_sql = $this->get_report_sql('COUNT(ccg.id)', true);
         //query that calculates average final course grade
-        $avg_score_sql = $this->get_report_sql('AVG(stu.grade)');
+        $avg_score_sql = $this->get_report_sql('AVG(stu.grade)', true);
 
         return array(new table_report_column('stu.completestatusid AS completestatus',
                                              get_string('column_completestatus', $this->lang_file),
@@ -298,9 +298,20 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
      *
      * @param   array   $columns  The list of columns automatically calculated
      *                            by get_select_columns()
+     * @param   bool  $addfilter  true if manually adding inactive filter
+     *                            false (default) if not manually adding filter
      * @return  string            The report's main sql statement
      */
-    function get_report_sql($columns) {
+    function get_report_sql($columns, $addfilter = false) {
+        // ELIS-5143: Ugly hack, but, was defaulting to show inactive users
+        $sql_filter = $this->filter->get_sql_filter('', array(), $this->allow_interactive_filters(), $this->allow_configured_filters());
+        if (empty($sql_filter[0])) {
+            $sql_filter[0] = 'u.inactive = 0';
+            $sql_filter[1] = array();
+        } else if (!$addfilter) {
+            $sql_filter[0] = '';
+        }
+
         //calculates the condition imposed by the current top-level page
         $page_value_condition = $this->get_page_value_condition('cls.id');
 
@@ -342,6 +353,14 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
             $sql .= 'WHERE '. $page_value_condition[0];
             $params = $page_value_condition[1];
         }
+
+        // ELIS-5143
+        if (!empty($sql_filter[0])) {
+            $op = (stripos($sql, 'WHERE') === false) ? 'WHERE' : 'AND';
+            $sql .= " {$op} {$sql_filter[0]}";
+            $params = array_merge($params, $sql_filter[1]);
+        }
+
         return array($sql, $params);
     }
 
@@ -477,6 +496,9 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         if (!empty($sql_filter[0])) {
             $base_sql .= " AND ({$sql_filter[0]})";
             $params += $sql_filter[1];
+        } else {
+            // ELIS-5143: Ugly hack, but, was defaulting to show inactive users
+            $base_sql .= ' AND u.inactive = 0';
         }
 
         //number of completed users
