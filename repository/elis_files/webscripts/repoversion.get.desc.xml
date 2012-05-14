@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Repository Version</shortname>
+  <description>Get the current version of the Alfresco software</description>
+  <url>/moodle/repoversion</url>
+  <format default="xml" />
+  <authentication>none</authentication>
+  <transaction>required</transaction>
+</webscript>

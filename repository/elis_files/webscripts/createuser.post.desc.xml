@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Create User</shortname>
+  <description>Create a new repository user</description>
+  <url>/moodle/createuser</url>
+  <format default="xml" />
+  <authentication>admin</authentication>
+  <transaction>required</transaction>
+</webscript>

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Category Search</shortname>
+  <description>Sample that finds all nodes tagged with a specific category</description>
+  <url>/moodle/categorysearch/{category}</url>
+  <format default="xml" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>
