@@ -94,8 +94,8 @@ The filter has the following options:</p>
 <li>ends with - this option allows only Email addresses that end with the text entered (if no text is entered, then the filter is disabled)</li>
 <li>is empty - this option allows only Email addresses that are equal to the empty string (the text entered is ignored)</li>
 </ul>';
-$string['fld_environment'] = 'Environment';
 $string['fld_enddate'] = 'End date';
+$string['fld_environment'] = 'Environment';
 $string['fld_environmentid'] = 'Environment';
 $string['fld_firstaccess'] = 'First access';
 $string['fld_firstaccess_help'] = '<h1>First access filter</h1>
@@ -139,6 +139,7 @@ The filter has the following options:</p>
 $string['fld_inactive'] = 'Inactive filter';
 $string['fld_inactive_help'] = '<h1>Inactive filter</h1>
 <p>This filter allows you to filter users\' status as active, inactive or both.</p>';
+$string['fld_iscustom'] = 'Custom';
 $string['fld_lang'] = 'Preferred language';
 $string['fld_lang_help'] = '<h1>Language filter</h1>
 <p>This filter allows you to filter users\' preferred language based on a drop down list of available languages. This filter does not have any other options.</p>';
