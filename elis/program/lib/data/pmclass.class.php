@@ -855,7 +855,11 @@ class pmclass extends data_object_with_custom_fields {
             if (empty($options['moodlecourses']) || $options['moodlecourses'] == 'copyalways'
                 || ($options['moodlecourses'] == 'copyautocreated' && $cmc->autocreated)) {
                 // create a new Moodle course based on the current class's Moodle course
-                $moodlecourseid   = course_rollover($cmc->moodlecourseid, $clone->startdate);
+                $moodlecourseid   = course_rollover($cmc->moodlecourseid);
+                //check that the course has rolled over successfully
+                if (!$moodlecourseid) {
+                    return false;
+                }
                 // Rename the fullname, shortname and idnumber of the restored course
                 $restore->id = $moodlecourseid;
                 // ELIS-2941: Don't prepend course name if already present ...

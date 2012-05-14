@@ -404,7 +404,11 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 
             //perform the rollover
             require_once(elis::lib('rollover/lib.php'));
-            $moodlecourseid   = course_rollover($courseid, $cls->startdate);
+            $moodlecourseid   = course_rollover($courseid);
+            //check that the course has rolled over successfully
+            if (!$moodlecourseid) {
+                return false;
+            }
 
             //set the Moodle course name as expected
             $restoredcourse = new stdClass;
