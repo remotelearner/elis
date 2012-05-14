@@ -65,8 +65,8 @@ abstract class rolepage extends associationpage2 {
         //add a link to the first role screen where you select a role
         $id = $this->required_param('id', PARAM_INT);
         $params = array('id' => $id);
-        if ($curid = $this->optional_param('curid', 0, PARAM_INT)) {
-            $params['curid'] = $curid;
+        if ($parentid = $this->optional_param('parent', 0, PARAM_INT)) {
+            $params['parent'] = $parentid;
         }
         $page = $this->get_new_page($params, true);
         $this->navbar->add(get_string('roles', 'role'), $page->url);
@@ -504,8 +504,8 @@ class track_rolepage extends rolepage {
             require_once elispm::file('trackpage.class.php');
             $id = $this->required_param('id');
             $params = array('id' => $id, 'action' => 'view');
-            if ($curid = $this->optional_param('curid', 0, PARAM_INT)) { // this?
-                $params['curid'] = $curid;
+            if ($parentid = $this->optional_param('parent', 0, PARAM_INT)) { // this?
+                $params['parent'] = $parentid;
             }
             $this->parent_page = new trackpage($params);
         }
