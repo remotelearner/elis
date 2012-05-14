@@ -111,6 +111,7 @@ $string['breadcrumb_curriculumstudentpage'] = 'Assign Students';
 $string['breadcrumb_curriculumstudentpage_unassign'] = 'Unassign Students';
 $string['breadcrumb_waitlistpage'] = 'Waiting List';
 $string['browse'] = 'Browse';
+$string['btn_waitlist_add'] = 'Add me to the waitlist';
 $string['bulkedit_select_all'] = 'Select All';
 
 $string['cert_border_help'] = 'The certificate border image is what gets displayed as the background for certificates in the program.
