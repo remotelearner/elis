@@ -127,7 +127,7 @@ class userpage extends managementpage {
             //script for rendering report pages exists in report block, so reports
             //are at least installed
             $report_tab = array('tab_id' => 'report',
-                                'page' => 'linkpage',
+                                'page' => 'induserlinkpage',
                                 'params' => array('linkurl' => 'blocks/php_report/render_report_page.php',
                                                   'linkparams'=>'report,userid',
                                                   'report'=>'individual_user', 'userid'=>'=id'),
@@ -248,4 +248,33 @@ class userpage extends managementpage {
 
         $this->print_delete_button($obj);
     }
+}
+
+/**
+ * Page for linking to the individual user report, which handles permission
+ * checking for that link as well
+ */
+class induserlinkpage extends linkpage {
+
+    /**
+     * Determine whether the current user has permissions to view the link to a
+     * user's individual user report page
+     */
+    function can_do_default() {
+        global $USER;
+
+        //obtain the target user's PM user id
+        $id = $this->required_param('userid', PARAM_INT);
+        //obtain the target user's PM user id
+        $cmuserid = cm_get_crlmuserid($USER->id);
+
+        if ($cmuserid != 0 && ($cmuserid == $id)) {
+            //looking at your own report, and you have a PM user id
+            return true;
+        }
+
+        //regular permissions check
+        return userpage::_has_capability('block/php_report:view', $id);
+    }
+    
 }
