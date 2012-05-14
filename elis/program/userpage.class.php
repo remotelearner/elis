@@ -122,7 +122,7 @@ class userpage extends managementpage {
         );
 
         //tab for the Individual User report
-        //todo: check permissions
+        //permissions checking happens in the link page
         if (file_exists($CFG->dirroot.'/blocks/php_report/render_report_page.php')) {
             //script for rendering report pages exists in report block, so reports
             //are at least installed
