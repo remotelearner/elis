@@ -105,7 +105,7 @@ class course_progress_summary_report extends table_report {
         global $CFG;
 
         $cms = array();
-        $contexts = get_contexts_by_capability_for_user('course', $this->access_capability, $this->userid);
+        $contexts = get_contexts_by_capability_for_user('curriculum', $this->access_capability, $this->userid);
         $cms_objects = curriculum_get_listing('name', 'ASC', 0, 0, '', '', $contexts);
         if (!empty($cms_objects)) {
             foreach ($cms_objects as $curriculum) {

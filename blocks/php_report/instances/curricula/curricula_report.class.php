@@ -135,6 +135,14 @@ class curricula_report extends table_report {
      * @return  array                The list of available filters
      */
     function get_filters($init_data = true) {
+        $cms = array();
+        $contexts = get_contexts_by_capability_for_user('curriculum', $this->access_capability, $this->userid);
+        $cms_objects = curriculum_get_listing('name', 'ASC', 0, 0, '', '', $contexts);
+        if (!empty($cms_objects)) {
+            foreach ($cms_objects as $curriculum) {
+                $cms[$curriculum->id] = $curriculum->name;
+            }
+        }
 
         // Create all requested User Profile field filters
         $upfilter =
@@ -155,6 +163,11 @@ class curricula_report extends table_report {
 
         $filters = array_merge($filters,
                  array(
+                     new generalized_filter_entry('curr', 'curass', 'curriculumid',
+                         get_string('filter_program', 'rlreport_curricula'),
+                         false, 'selectall', array('choices'  => $cms,
+                                                   'multiple' => true)
+                     ),
                      new generalized_filter_entry('cluster', 'crlmu', 'id',
                          get_string('filter_cluster', 'rlreport_curricula'),
                          false, 'clusterselect', array('default' => null)
@@ -164,6 +177,7 @@ class curricula_report extends table_report {
 
         return $filters;
     }
+
     /**
      * Method that specifies the report's columns
      * (specifies various user-oriented fields)
@@ -221,7 +235,7 @@ class curricula_report extends table_report {
                      );
     }
 
-/**
+    /**
      * Specifies string of sort columns and direction to
      * order by if no other sorting is taking place (either because
      * manual sorting is disallowed or is not currently being used)
@@ -233,6 +247,7 @@ class curricula_report extends table_report {
         global $DB;
         return $DB->sql_concat('u.lastname',"' '",'u.firstname', "' '", 'u.idnumber');
     }
+
     /**
      * Specifies a field to sort by default
      *
@@ -303,7 +318,7 @@ class curricula_report extends table_report {
     function get_report_sql($columns) {
         global $DB;
 
-        //obtain all course contexts where this user can view reports
+        //obtain all user contexts where this user can view reports
         $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
 
         //make sure we only count courses within those contexts
