@@ -78,6 +78,9 @@ abstract class gas_gauge_table_report extends table_report {
     //if no get_gas_gauge_max_value is not properly implemented
     var $static_max_value = 100;
 
+    //total field to indicate when no enrolments => 0
+    var $total_field;
+
     /**
      * Contructor.
      *
@@ -357,19 +360,17 @@ abstract class gas_gauge_table_report extends table_report {
      * @param $id
      */
     function print_gas_gauge($id) {
-        global $CFG;
+        if (!empty($this->total_field)) {
+            global $CFG;
+            $radius = PHP_REPORT_GAS_GAUGE_MAXIMUM_WIDTH;
 
-        $radius = PHP_REPORT_GAS_GAUGE_MAXIMUM_WIDTH;
+            //load up the color palette
+            $palette = $this->get_gas_gauge_color_palette();
 
-        //load up the color palette
-        $palette = $this->get_gas_gauge_color_palette();
-
-        //image tag points to a php script that uses the necessary measures are parameters
-        return '<img src="' . $CFG->wwwroot . '/blocks/php_report/gas_gauge_output.php?value=' . $this->gas_gauge_value .
-                                                                                     '&total=' . $this->gas_gauge_max_value .
-                                                                                     '&radius=' . $radius .
-                                                                                     '&palette=' . urlencode(base64_encode(serialize($palette))) .
-                                                                                     '" class="php_report_gas_gauge_image"/>';
+            //image tag points to a php script that uses the necessary measures are parameters
+            return '<img src="'. $CFG->wwwroot .'/blocks/php_report/gas_gauge_output.php?value='. $this->gas_gauge_value .'&total='. $this->gas_gauge_max_value . '&radius='. $radius .'&palette='. urlencode(base64_encode(serialize($palette))) .'" class="php_report_gas_gauge_image"/>';
+        }
+        return '<br/>';
     }
 
     /**
