@@ -84,18 +84,24 @@ class user_class_completion_details_report extends user_class_completion_report 
         }
 
         // Add curriculum custom fields
-        $curriculum_custom_field_columns = $this->get_custom_field_columns($cols);
+        $curriculum_custom_field_columns = $this->get_custom_field_columns($cols, 'curriculum');
         $result = array_merge($result, $curriculum_custom_field_columns);
 
         // Course name
         $coursename_heading = get_string('column_coursename', $this->languagefile);
         $coursename_column = new table_report_column('crs.name AS coursename', $coursename_heading, 'coursename');
         $result[] = $coursename_column;
+        // Add Course custom fields
+        $course_custom_field_columns = $this->get_custom_field_columns($cols, 'course');
+        $result = array_merge($result, $course_custom_field_columns);
 
         // Class idnumber
         $classidnumber_heading = get_string('column_classidnumber', $this->languagefile);
         $classidnumber_column = new table_report_column('cls.idnumber AS classidnumber', $classidnumber_heading, 'classidnumber');
         $result[] = $classidnumber_column;
+        // Add Class custom fields
+        $class_custom_field_columns = $this->get_custom_field_columns($cols, 'class');
+        $result = array_merge($result, $class_custom_field_columns);
 
         // Environment name
         $environment_heading = get_string('column_environment', $this->languagefile);
@@ -202,7 +208,8 @@ class user_class_completion_details_report extends user_class_completion_report 
             $params = array_merge($params, $filter_sql['where_parameters']);
         }
 
-        $instancefields = array('curriculum' => 'cur.id', 'class' => 'cls.id');
+        $instancefields = array('curriculum' => 'cur.id', 'class' => 'pmcls.id',
+                                'course' => 'curcrs.courseid'); // TBD
 
         $curriculum_custom_field_join = '';
         $class_custom_field_join = '';
@@ -254,7 +261,7 @@ class user_class_completion_details_report extends user_class_completion_report 
         $filters = php_report_filtering_get_active_filter_values($this->get_report_shortname(),
                        'filter-detailcolumns', $this->filter);
 
-        $has_fields = $this->curriculum_fields_included($filters);
+        $has_fields = $this->custom_fields_included($filters);
 
         $curriculum_select  = '';
         $curriculum_join    = '';
@@ -263,6 +270,8 @@ class user_class_completion_details_report extends user_class_completion_report 
             $curriculum_select = ' cur.id AS curid,';
             $curriculum_join   = ' LEFT JOIN (
                                       {'. curriculumcourse::TABLE .'} curcrs
+                                      JOIN {'. pmclass::TABLE .'} pmcls
+                                        ON curcrs.courseid = pmcls.courseid
                                       JOIN {'. curriculum::TABLE ."} cur
                                         ON curcrs.curriculumid = cur.id
                                       {$curriculum_custom_field_join}
@@ -270,6 +279,7 @@ class user_class_completion_details_report extends user_class_completion_report 
                                         ON curass.curriculumid = cur.id)
                                    ON crs.id = curcrs.courseid
                                   AND curass.userid = u.id
+                                  AND pmcls.id = cls.id
                                   {$class_custom_field_join} ";
         }
 
@@ -1116,12 +1126,19 @@ class user_class_completion_details_report extends user_class_completion_report 
      * @uses   $DB
      * @return boolean - false if no custom curriculum fields are included
      */
-    protected function curriculum_fields_included($filters) {
+    protected function custom_fields_included($filters) {
         global $DB;
 
-        $level = context_level_base::get_custom_context_level('curriculum', 'elis_program');
-        if (!$level) {
-            error_log("UCCDR::curriculum_fields_included(); NO custom curriculum context level!");
+        $no_custom_fields = true;
+        foreach (array('curriculum', 'course', 'class') as $level) {
+            if (context_level_base::get_custom_context_level($level, 'elis_program')) {
+                $no_custom_fields = false;
+                break;
+            } else {
+                error_log("UCCDR::custom_fields_included(); NO custom field context level for '{$level}'!");
+            }
+        }
+        if ($no_custom_fields) {
             return false;
         }
 
@@ -1138,7 +1155,7 @@ class user_class_completion_details_report extends user_class_completion_report 
                             $custom_field_id = substr($field_alias, $pos + 1);
 
                             // Check if the custom field is a curriculum custom field
-                            if ($DB->record_exists('crlm_field_contextlevel',
+                            if ($DB->record_exists('elis_field_contextlevels',
                                        array('fieldid'      => $custom_field_id,
                                              'contextlevel' => $level))) {
                                 return true;
