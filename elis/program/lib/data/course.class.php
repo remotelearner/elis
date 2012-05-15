@@ -250,6 +250,13 @@ class course extends data_object_with_custom_fields {
     }
 
     /*
+     * @return int The Course id
+     */
+    function get_course_id() {
+        return $this->id;
+    }
+
+    /*
      * Returns an aggregate of enrolment completion statuses for all classes created from this course.
      */
     public function get_completion_counts() {

@@ -476,6 +476,7 @@ If this setting is unset, ELIS will only unenrol users who were originally enrol
 $string['form_error'] = 'Selection page form error - expecting array!';
 $string['frequency'] = 'Frequency';
 
+$string['grade'] = 'Grade';
 $string['grade_element'] = 'Grade Element';
 $string['grade_update_warning'] = '<div><strong>Note:</strong> updating grades for individual learning objectives on this screen will not automatically update the class instance grade or completion status.</div>';
 

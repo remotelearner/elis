@@ -625,9 +625,9 @@ class studentpage extends associationpage {
         echo $newstu->edit_classid_html($cmclass->id, $type, $sort, $dir, $page, $perpage, $namesearch, $alpha);
     }
 
-    function print_edit_form($stu, $cls) {
+    function print_edit_form($stu, $cls, $sort, $dir) {
         $stu->classid = $cls->id; // TBD
-        echo $stu->edit_student_html($stu->id);
+        echo $stu->edit_student_html($stu->id, '', $sort, $dir);
     }
 
     /**
