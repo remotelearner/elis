@@ -195,7 +195,7 @@ class curriculumcoursepage extends curriculumcoursebasepage {
         $this->print_alpha();
         $this->print_search();
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'courses');
 
         if (parent::has_associate_and_manage_capability()) {
             $this->print_add_button(array('id' => $id), get_string('curriculumcourse_assigncourse','elis_program'));
@@ -406,7 +406,7 @@ class coursecurriculumpage extends curriculumcoursebasepage {
         $this->print_alpha();
         $this->print_search();
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'curricula');
 
         if (parent::has_associate_and_manage_capability()) {
             $this->print_add_button(array('id' => $id), get_string('course_assigncurriculum', 'elis_program'));
