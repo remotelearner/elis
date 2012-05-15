@@ -662,6 +662,11 @@ class user extends data_object_with_custom_fields {
                  WHERE curstu.userid = ?
               ORDER BY cur.priority ASC, cur.name ASC';
 
+        //mapping of completion status to display string
+        $status_mapping = array(STUSTATUS_PASSED => get_string('passed', 'elis_program'),
+                                STUSTATUS_FAILED => get_string('failed', 'elis_program'),
+                                STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'elis_program'));
+
         if ($usercurs = $DB->get_records_sql($sql, array($this->id))) {
             //^pre-ELIS-3615 WAS: if ($usercurs = curriculumstudent::get_curricula($this->id)) {
             foreach ($usercurs as $usercur) {
@@ -707,7 +712,7 @@ class user extends data_object_with_custom_fields {
                                         $coursename,
                                         $coursedesc,
                                         $classdata->grade,
-                                        $classdata->completestatusid == STUSTATUS_PASSED ? get_string('yes') : get_string('no'),
+                                        $status_mapping[$classdata->completestatusid],
                                         $classdata->completestatusid == STUSTATUS_PASSED && !empty($classdata->completetime) ?
                                         date('M j, Y', $classdata->completetime) : get_string('na','elis_program')
                                         );
@@ -717,7 +722,7 @@ class user extends data_object_with_custom_fields {
                                     $course->coursename,
                                     $coursedesc,
                                     0,
-                                    get_string('no'),
+                                    get_string('not_enrolled', 'elis_program'),
                                     get_string('na','elis_program')
                                 );
                             }
@@ -794,7 +799,7 @@ class user extends data_object_with_custom_fields {
                     get_string('class', 'elis_program'),
                     get_string('description', 'elis_program'),
                     get_string('score', 'elis_program'),
-                    get_string('completed_label', 'elis_program'),
+                    get_string('student_status', 'elis_program'),
                     get_string('date', 'elis_program')
                 );
                 $table->data = $curricula['data'];
@@ -860,7 +865,7 @@ class user extends data_object_with_custom_fields {
                 $table->head = array(
                     get_string('class', 'elis_program'),
                     get_string('score', 'elis_program'),
-                    get_string('completed_label', 'elis_program'),
+                    get_string('student_status', 'elis_program'),
                     get_string('date', 'elis_program')
                 );
 
@@ -877,7 +882,7 @@ class user extends data_object_with_custom_fields {
                     $table->data[] = array(
                         $coursename,
                         $class->grade,
-                        $class->completestatusid == STUSTATUS_PASSED ? get_string('yes') : get_string('no'),
+                        $status_mapping[$class->completestatusid],
                         $class->completestatusid == STUSTATUS_PASSED && !empty($class->completetime) ?
                             date('M j, Y', $class->completetime) : get_string('na','elis_program')
                     );

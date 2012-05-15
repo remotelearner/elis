@@ -647,6 +647,7 @@ $string['none'] = 'None';
 $string['noroleselected'] = 'N/A';
 $string['norolesexist'] = 'There are currently no roles that users can be assigned on this entity.';
 $string['norolespermitted'] = 'There are currently no roles you have sufficient permissions to assign users on this entity. For further details, contact a site administrator.';
+$string['not_enrolled'] = 'Not Enrolled';
 $string['notassignedtocurricula'] = 'You are not assigned to any program yet.';
 $string['notelisuser'] = 'Error: must be a valid ELIS user!';
 $string['notemplate'] = 'Could not auto-create Moodle course: no template defined in course description.  Created class instance without an associated Moodle course.';
