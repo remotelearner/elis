@@ -472,14 +472,31 @@ class associationpage extends pm_page {
      * Prints out the page that displays a list of records returned from a query.
      * @param $items array of records to print
      * @param $columns associative array of column id => column heading text
+     * @param $itemstr language string idenitifer for object - default = 'items'
      */
-    function print_list_view($items, $columns) { // TBD
+    function print_list_view($items, $columns, $itemstr = 'items') { // TBD
         global $CFG;
 
         $id = $this->required_param('id', PARAM_INT);
+        $search = optional_param('search', null, PARAM_CLEAN);
+        $alpha = optional_param('alpha', null, PARAM_ALPHA);
 
-        if (empty($items)) {
-            echo '<div>' . get_string('none', self::LANG_FILE) . '</div>';
+        //todo: make usersetassignmentpage consistent with other pages and
+        //change all pages to use recordsets
+        $empty = empty($items) || $items instanceof Iterator && !$items->valid();
+
+        if ($empty) {
+            $a = new stdClass;
+
+            //determining if we are searching
+            $is_searching = $alpha || $search;
+
+            //display the appropriate "no items found" message
+            $a->search = $is_searching ? get_string('matchingsearch', 'elis_program') : '';
+            $a->obj = get_string($itemstr, 'elis_program');
+
+            //display the appropriate message in a div
+            echo html_writer::tag('div', get_string('noitems', 'elis_program', $a));
             return;
         }
 

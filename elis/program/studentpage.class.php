@@ -536,10 +536,13 @@ class studentpage extends associationpage {
         $this->print_search();
 
         if (!$numstus) {
-            pmshowmatches($alpha, $namesearch);
+            pmshowmatches($alpha, $namesearch, null, 'no_student_matching');
         }
 
-        $this->print_list_view($stus, $columns);
+        //note: this does actually use the third parameter right now because
+        //we have customized this function - consider using standard version
+        //here an in the instructor page?
+        $this->print_list_view($stus, $columns, 'users'); // TBD: students ?
 
         $pagingbar = new paging_bar($numstus, $page, $perpage,
                          "index.php?s=stu&amp;section=curr&amp;id=$clsid&amp;sort=$sort&amp;" .

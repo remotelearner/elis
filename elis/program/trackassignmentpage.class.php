@@ -167,12 +167,8 @@ class trackassignmentpage extends associationpage {
         $this->print_alpha();
         $this->print_search();
 
-        if ($numitems > 0) {
-            $this->print_num_items($numitems);
-            $this->print_list_view($items, $columns);
-        } else {
-            print_string('no_items_matching', 'elis_program');
-        }
+        $this->print_num_items($numitems);
+        $this->print_list_view($items, $columns, 'track_classes');
 
         if (empty($items) && empty($namesearch) && empty($alpha)) {
             echo '<div align="center">';
