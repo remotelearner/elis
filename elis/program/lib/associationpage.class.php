@@ -210,6 +210,8 @@ class associationpage extends pm_page {
         $id             = $this->required_param('id', PARAM_INT);
         $obj            = new $this->data_class($association_id);
         $parent_obj     = new $this->parent_data_class($id);
+        $sort           = optional_param('sort', 'idnumber', PARAM_ALPHA);
+        $dir            = optional_param('dir', 'ASC', PARAM_ALPHA);
 
         /*if(!$obj->get_dbloaded()) { // TBD
             $sparam = new stdClass;
@@ -218,7 +220,7 @@ class associationpage extends pm_page {
         }*/
         $obj->load();
         //error_log("associationpage::display_edit(): obj->id = {$obj->id}");
-        $this->print_edit_form($obj, $parent_obj);
+        $this->print_edit_form($obj, $parent_obj, $sort, $dir);
     }
 
     /**
