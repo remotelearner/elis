@@ -174,6 +174,11 @@ To disable this functionality, select "N/A" from the list.';
 $string['cluster_role_setting'] = 'Default User Set Role';
 $string['cluster_subcluster_prompt'] = 'Assign existing user set as a user subset';
 $string['cluster_tree_na'] = 'N/A';
+$string['completed_courses_help'] = 'Enabling this setting allows students to view their completed courses on the dashboard.
+When this setting is enabled, completed courses will still be hidden until a student toggles their visibility on their dashboard.
+
+When this setting is disabled, students will be unable to see completed courses.';
+$string['completed_courses_setting'] = 'Allow students to view completed courses on the dashboard';
 $string['completed_label'] = 'Completed';
 $string['completionform:completion_grade'] = 'Completion grade';
 $string['completionform:completion_grade_help'] = '<p>Minimum grade the learner must received to identify the element as &ldquo;completed&rdquo;.</p>';
