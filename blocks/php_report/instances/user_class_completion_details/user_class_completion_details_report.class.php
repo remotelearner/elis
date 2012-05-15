@@ -1129,13 +1129,15 @@ class user_class_completion_details_report extends user_class_completion_report 
     protected function custom_fields_included($filters) {
         global $DB;
 
+        $levels = array();
         $no_custom_fields = true;
-        foreach (array('curriculum', 'course', 'class') as $level) {
-            if (context_level_base::get_custom_context_level($level, 'elis_program')) {
+        foreach (array('curriculum', 'course', 'class') as $entity) {
+            $level = context_level_base::get_custom_context_level($entity, 'elis_program');
+            if ($level) {
+                $levels[] = $level;
                 $no_custom_fields = false;
-                break;
             } else {
-                error_log("UCCDR::custom_fields_included(); NO custom field context level for '{$level}'!");
+                error_log("UCCDR::custom_fields_included(); NO custom field context level for '{$entity}'!");
             }
         }
         if ($no_custom_fields) {
@@ -1154,10 +1156,10 @@ class user_class_completion_details_report extends user_class_completion_report 
                             // Only get the last part of the field name as it contains the custom field id
                             $custom_field_id = substr($field_alias, $pos + 1);
 
-                            // Check if the custom field is a curriculum custom field
-                            if ($DB->record_exists('elis_field_contextlevels',
-                                       array('fieldid'      => $custom_field_id,
-                                             'contextlevel' => $level))) {
+                            //TBD: Check the custom field
+                            if ($DB->record_exists_select('elis_field_contextlevels',
+                                       "fieldid = {$custom_field_id} AND contextlevel IN (". implode(', ', $levels) .')')) {
+                                //error_log("UCCDR::custom_fields_included(): fieldid {$custom_field_id} exists for an ELIS contextlevel!");
                                 return true;
                             }
                         } else if (0 == strcmp($field_alias, 'cur_name')) {
