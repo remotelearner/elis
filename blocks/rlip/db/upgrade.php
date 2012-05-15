@@ -157,7 +157,10 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
                   FROM {elis_scheduled_tasks} task
                   WHERE task.taskname = {$taskname}
                 )";
-        $DB->execute($sql);
+
+        if ($dbman->table_exists('elis_scheduled_tasks')) {
+            $DB->execute($sql);
+        }
 
         // block rlip savepoint reached
         upgrade_block_savepoint(true, 2012031900, 'rlip');
@@ -179,7 +182,10 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
                   FROM {elis_scheduled_tasks} task
                   WHERE task.taskname = {$taskname}
                 )";
-        $DB->execute($sql);
+
+        if ($dbman->table_exists('elis_scheduled_tasks')) {
+            $DB->execute($sql);
+        }
 
         // block rlip savepoint reached
         upgrade_block_savepoint(true, 2012032300, 'rlip');
@@ -203,7 +209,9 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
 
     if ($result && $oldversion < 2012040900) {
         // Add a cron task for log rollover
-        elis_tasks_update_definition('block_rlip');
+        if ($dbman->table_exists('elis_scheduled_tasks')) {
+            elis_tasks_update_definition('block_rlip');
+        }
 
         upgrade_block_savepoint(true, 2012040900, 'rlip');
     }
@@ -353,7 +361,9 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
                     'type'   => 'rlipimport'
                 );
 
-                rlip_schedule_add_job($data);
+                if ($dbman->table_exists('elis_scheduled_tasks')) {
+                    rlip_schedule_add_job($data);
+                }
                 unset_config('block_rlip_importperiod');
             }
 
@@ -368,7 +378,9 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
                     'type'   => 'rlipexport'
                 );
 
-                rlip_schedule_add_job($data);
+                if ($dbman->table_exists('elis_scheduled_tasks')) {
+                    rlip_schedule_add_job($data);
+                }
                 unset_config('block_rlip_exportperiod');
             }
 
@@ -394,14 +406,15 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
 
     //rename block/rlip to block_rlip in elis_scheduled_tasks
     if ($result && $oldversion < 2012050200) {
-        $tasks = $DB->get_recordset('elis_scheduled_tasks', array('plugin' => 'block/rlip'));
-        if (!empty($tasks)) {
-            foreach ($tasks as $task) {
-                $task->plugin = 'block_rlip';
-                $DB->update_record('elis_scheduled_tasks', $task);
+        if ($dbman->table_exists('elis_scheduled_tasks')) {
+            $tasks = $DB->get_recordset('elis_scheduled_tasks', array('plugin' => 'block/rlip'));
+            if (!empty($tasks)) {
+                foreach ($tasks as $task) {
+                    $task->plugin = 'block_rlip';
+                    $DB->update_record('elis_scheduled_tasks', $task);
+                }
             }
         }
-
         upgrade_block_savepoint(true, 2012050200, 'rlip');
     }
     return $result;
