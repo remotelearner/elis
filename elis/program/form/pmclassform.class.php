@@ -319,7 +319,7 @@ class pmclassform extends cmform {
 
         $cselect = array(get_string('none', 'elis_program'));
 
-        $crss = $DB->get_records_select('course', $select, null, 'fullname');
+        $crss = $DB->get_recordset_select('course', $select, null, 'fullname', 'id, fullname');
         if(!empty($crss)) {
             foreach ($crss as $crs) {
                 $cselect[$crs->id] = $crs->fullname;
