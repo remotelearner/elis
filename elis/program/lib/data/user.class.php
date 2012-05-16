@@ -632,12 +632,15 @@ class user extends data_object_with_custom_fields {
      *                               archived courses (ignored if tab_sensitive is false)
      * @param boolean $showcompleted specifies whether we're showing passed and failed
      *                               courses in addition to ones in progress
+     * @param mixed $programid a specific program id to look for data related to, or
+     *                         NULL for all
      * @return array a list of values, where the first entry is the user's course list,
      *               the second is a mapping of programs to a course listing, the third
      *               is a list of classes handled, and the fourth is the number of programs
      *               handled
      */
-    function get_dashboard_program_data($tab_sensitive, $show_archived, $showcompleted = false) {
+    function get_dashboard_program_data($tab_sensitive, $show_archived, $showcompleted = false,
+                                        $programid = NULL) {
         global $DB;
 
         $archive_var     = '_elis_program_archive';
@@ -648,11 +651,21 @@ class user extends data_object_with_custom_fields {
         //todo: remove? (not used anymore)
         $completecourses = 0;
 
+        $params = array($this->id);
+
+        //set up a condition for when handling a specific program
+        $program_condition = '';
+        if ($programid !== NULL) {
+            $program_condition = 'AND cur.id = ?';
+            $params[] = $programid;
+        }
+
         $sql = 'SELECT curstu.id, curstu.curriculumid as curid, cur.name as name
                   FROM {'. curriculumstudent::TABLE .'} curstu
                   JOIN {'. curriculum::TABLE .'} cur
                     ON cur.id = curstu.curriculumid
                  WHERE curstu.userid = ?
+                 '.$program_condition.'
               ORDER BY cur.priority ASC, cur.name ASC';
 
         //mapping of completion status to display string
@@ -660,7 +673,7 @@ class user extends data_object_with_custom_fields {
                                 STUSTATUS_FAILED => get_string('failed', 'elis_program'),
                                 STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'elis_program'));
 
-        if ($usercurs = $DB->get_records_sql($sql, array($this->id))) {
+        if ($usercurs = $DB->get_records_sql($sql, $params)) {
             //^pre-ELIS-3615 WAS: if ($usercurs = curriculumstudent::get_curricula($this->id)) {
             foreach ($usercurs as $usercur) {
                 // Check if this curricula is set as archived and whether we want to display it

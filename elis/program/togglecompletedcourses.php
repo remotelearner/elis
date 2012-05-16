@@ -48,8 +48,11 @@ if ($cmuid = cm_get_crlmuserid($USER->id)) {
         }
     } else {
         //program courses
-        list($userprograms, $programs, $classids, $totalprograms) = $user->get_dashboard_program_data(false, false, $showcompleted);
+        list($userprograms, $programs, $classids, $totalprograms) = $user->get_dashboard_program_data(false, false, $showcompleted,
+                                                                                                      (int)$programid);
 
+        //the above call only retrieves data for one program, but data is still
+        //structured as though handling multiple programs
         if (isset($programs[$programid])) {
             $program = $programs[$programid];
             //send back the table to display
