@@ -522,6 +522,7 @@ $string['health_user_syncsoln'] = 'Users need to be synchronized by running the 
                 This process can take a long time, we recommend you run it during non-peak hours, and leave this window open until you see a success message.
                 If the script times out (stops loading before indicating success), please open a support ticket to have this run for you.<br/><br/>
                 <a href="{$a}/elis/program/scripts/migrate_moodle_users.php">Fix this now</a>';
+$string['hidecompletedcourses'] = 'Hide Completed Courses';
 $string['hidecourses'] = 'Hide Courses';
 
 $string['icon_collapse_help'] = 'This setting determines the number of icons of each type to display in the Program Administration block.
@@ -958,6 +959,7 @@ $string['selectedonly'] = 'Show selected items only';
 $string['selecttemplate'] = 'No template course selected.  In order to browse ID numbers, you must select a course template in the "Edit" tab.';
 $string['showallitems'] = 'Show all items';
 $string['show_all_users'] = 'Show All Users';
+$string['showcompletedcourses'] = 'Show Completed Courses';
 $string['showcourses'] = 'Show Courses';
 $string['showinactive'] = 'Show inactive';
 $string['site_not_defined'] = 'Site is not defined';

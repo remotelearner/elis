@@ -622,38 +622,31 @@ class user extends data_object_with_custom_fields {
     }
 
     /**
-     * Get the user dashboard report view.
+     * Obtain the appropriate information regarding program courses as needed
+     * by the dashboard
      *
-     * @uses $CFG
-     * @uses $OUTPUT
-     * @param none
-     * @return string The HTML for the dashboard report.
-     * @todo move out of this class
+     * @param boolean $tab_sensitive true if we need to be concerned about whether
+     *                               we are on the current or archived tab, otherwise
+     *                               false 
+     * @param boolean $show_archived specifies whether we're showing archived or non-
+     *                               archived courses (ignored if tab_sensitive is false)
+     * @param boolean $showcompleted specifies whether we're showing passed and failed
+     *                               courses in addition to ones in progress
+     * @return array a list of values, where the first entry is the user's course list,
+     *               the second is a mapping of programs to a course listing, the third
+     *               is a list of classes handled, and the fourth is the number of programs
+     *               handled
      */
-    function get_dashboard() {
-        global $CFG, $OUTPUT, $DB, $PAGE;
+    function get_dashboard_program_data($tab_sensitive, $show_archived, $showcompleted = false) {
+        global $DB;
 
-        require_once elispm::lib('data/curriculumstudent.class.php');
-
-        $PAGE->requires->yui2_lib(array('dom', 'event', 'connection'));
-        $PAGE->requires->js('/elis/program/js/util.js');
-        $PAGE->requires->js('/elis/program/js/dashboard.js');
-
-        $content         = '';
         $archive_var     = '_elis_program_archive';
-        $totalcourses    = 0;
-        $totalcurricula  = 0;
+        $classids = array();
+        $totalcurricula = 0;
+        //todo: remove? (not used anymore)
+        $totalcourses = 0;
+        //todo: remove? (not used anymore)
         $completecourses = 0;
-        $curriculas      = array();
-        $classids        = array();
-
-        if (optional_param('tab','',PARAM_CLEAN) == 'archivedlp') {
-            $tab = 'archivedlp';
-            $show_archived = 1;
-        } else {
-            $tab = 'currentlp';
-            $show_archived = 0;
-        }
 
         $sql = 'SELECT curstu.id, curstu.curriculumid as curid, cur.name as name
                   FROM {'. curriculumstudent::TABLE .'} curstu
@@ -678,7 +671,8 @@ class user extends data_object_with_custom_fields {
                     $crlm_archived = !empty($data_array->rs->current()->data) ? 1 : 0;
                 }
 
-                if ($show_archived == $crlm_archived) {
+                //being insensitive to which tab we're on gets us this listing "for free"
+                if (!$tab_sensitive || $show_archived == $crlm_archived) {
                     $totalcurricula++;
                     $curriculas[$usercur->curid]['id'] = $usercur->curid;
                     $curriculas[$usercur->curid]['name'] = $usercur->name;
@@ -699,6 +693,12 @@ class user extends data_object_with_custom_fields {
 
                                     if ($classdata->completestatusid == STUSTATUS_PASSED) {
                                         $completecourses++;
+                                    }
+
+                                    if (!$showcompleted && ($classdata->completestatusid == STUSTATUS_PASSED ||
+                                                            $classdata->completestatusid == STUSTATUS_FAILED)) {
+                                        //not showing completed courses, so skip this course
+                                        continue;
                                     }
 
                                     if ($mdlcrs = moodle_get_course($classdata->id)) {
@@ -750,6 +750,161 @@ class user extends data_object_with_custom_fields {
             }
         }
 
+        return array($usercurs, $curriculas, $classids, $totalcurricula);
+    }
+
+    /**
+     * Convert a listing of a particular program's courses to a data table
+     *
+     * @param array $curricula A listing of table entries for a particular program
+     * @return object the table that can be used to display this information 
+     */
+    function get_dashboard_program_table($curricula) {
+        $table = new html_table();
+        $table->head = array(
+            get_string('class', 'elis_program'),
+            get_string('description', 'elis_program'),
+            get_string('score', 'elis_program'),
+            get_string('student_status', 'elis_program'),
+            get_string('date', 'elis_program')
+        );
+        $table->data = $curricula['data'];
+
+        return $table;
+    }
+
+    /**
+     * Obtain the appropriate information regarding program courses as needed
+     * by the dashboard
+     *
+     * @param array $classids a list of class ids we want to specifically
+     *                        ignore in this listing (i.e. classes already
+     *                        accounted for within programs)
+     * @param boolean $showcompleted specifies whether we're showing passed and failed
+     *                               courses in addition to ones in progress
+     * @return mixed a recordset containing the course listing, or false if none found
+     */
+    function get_dashboard_nonprogram_data($classids, $showcompleted = false) {
+        global $DB;
+
+        $status_condition = '';
+        $params = array($this->id);
+        if (!$showcompleted) {
+            list($status_condition, $status_params) = $DB->get_in_or_equal(array(STUSTATUS_NOTCOMPLETE));
+            $params = array_merge($params, $status_params);
+            $status_condition = 'AND stu.completestatusid '.$status_condition;
+        }
+
+        if (!empty($classids)) {
+            $sql = 'SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+                    FROM {'.student::TABLE.'} stu
+                    INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
+                    INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
+                    WHERE userid = ?
+                    AND classid '. (count($classids) == 1 ? '!= '. current($classids) :
+                    'NOT IN ('. implode(', ', $classids) .')') .'
+                    '.$status_condition.'
+                    ORDER BY crs.name ASC, stu.completetime ASC';
+        } else {
+            $sql = 'SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+                    FROM {'.student::TABLE.'} stu
+                    INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
+                    INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
+                    WHERE userid = ?
+                    AND NOT EXISTS (
+                      SELECT *
+                      FROM {'.curriculumstudent::TABLE.'} ca
+                      JOIN {'.curriculumcourse::TABLE.'} cc
+                        ON ca.curriculumid = cc.curriculumid
+                      WHERE ca.userid = stu.userid
+                        AND crs.id = cc.courseid
+                    )
+                    '.$status_condition.'
+                    ORDER BY crs.name ASC, stu.completetime ASC';
+        }
+
+        $classes = $DB->get_recordset_sql($sql, $params);
+
+        if (!$classes->valid()) {
+            return false;
+        }
+
+        return $classes;
+    }
+
+    /**
+     * Convert a listing of non-program courses to a data table
+     *
+     * @param array $classes A listing of table entries for non-program courses
+     * @return object the table that can be used to display this information 
+     */
+    function get_dashboard_nonprogram_table($classes) {
+        $status_mapping = array(STUSTATUS_PASSED => get_string('passed', 'elis_program'),
+                                STUSTATUS_FAILED => get_string('failed', 'elis_program'),
+                                STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'elis_program'));
+
+        $table = new html_table();
+        $table->head = array(
+            get_string('class', 'elis_program'),
+            get_string('score', 'elis_program'),
+            get_string('student_status', 'elis_program'),
+            get_string('date', 'elis_program')
+        );
+
+        $table->data = array();
+
+        foreach ($classes as $class) {
+            if ($mdlcrs = moodle_get_course($class->classid)) {
+                $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
+                              $mdlcrs . '">' . $class->coursename . '</a>';
+            } else {
+                $coursename = $class->coursename;
+            }
+
+            $table->data[] = array(
+                $coursename,
+                $class->grade,
+                $status_mapping[$class->completestatusid],
+                $class->completestatusid == STUSTATUS_PASSED && !empty($class->completetime) ?
+                    date('M j, Y', $class->completetime) : get_string('na','elis_program')
+            );
+        }
+
+        return $table;
+    }
+
+    /**
+     * Get the user dashboard report view.
+     *
+     * @uses $CFG
+     * @uses $OUTPUT
+     * @param none
+     * @return string The HTML for the dashboard report.
+     * @todo move out of this class
+     */
+    function get_dashboard() {
+        global $CFG, $OUTPUT, $DB, $PAGE;
+
+        require_once elispm::lib('data/curriculumstudent.class.php');
+
+        $PAGE->requires->yui2_lib(array('dom', 'event', 'connection'));
+        $PAGE->requires->js('/elis/program/js/util.js');
+        $PAGE->requires->js('/elis/program/js/dashboard.js');
+
+        $content         = '';
+        $archive_var     = '_elis_program_archive';
+
+        if (optional_param('tab','',PARAM_CLEAN) == 'archivedlp') {
+            $tab = 'archivedlp';
+            $show_archived = 1;
+        } else {
+            $tab = 'currentlp';
+            $show_archived = 0;
+        }
+
+        //obtain all of our core program-specific data
+        list($usercurs, $curriculas, $classids, $totalcurricula) = $this->get_dashboard_program_data(true, $show_archived);
+
         // Show different css for IE below version 8
         if (check_browser_version('MSIE',7.0) && !check_browser_version('MSIE',8.0)) {
             // IEs that are lower than version 8 do not get the float because it messes up the tabs at the top of the page for some reason
@@ -786,6 +941,8 @@ class user extends data_object_with_custom_fields {
             $collapsed_array = array();
         }
 
+        //use a div to track which programs have completed elements displayed
+        $content .= '<input type="hidden" name="displayedcompleted" id="displayedcompleted" value="">';
         $content .= '<input type="hidden" name="collapsed" id="collapsed" value="' . $collapsed . '">';
 
         if (!empty($usercurs)) {
@@ -794,21 +951,23 @@ class user extends data_object_with_custom_fields {
                     continue;
                 }
                 $curricula = $curriculas[$usercur->curid];
-                $table = new html_table();
-                $table->head = array(
-                    get_string('class', 'elis_program'),
-                    get_string('description', 'elis_program'),
-                    get_string('score', 'elis_program'),
-                    get_string('student_status', 'elis_program'),
-                    get_string('date', 'elis_program')
-                );
-                $table->data = $curricula['data'];
+                //convert our data to an output table
+                $table = $this->get_dashboard_program_table($curricula);
 
                 $curricula_name = empty(elis::$config->elis_program->disablecoursecatalog)
                                 ? ('<a href="index.php?s=crscat&section=curr&showcurid=' . $curricula['id'] . '">' . $curricula['name'] . '</a>')
                                 : $curricula['name'];
 
                 $header_curr_name = get_string('learningplanname', 'elis_program', $curricula_name);
+
+                //javascript code for toggling display of completed courses
+                $jscode = 'toggleCompletedInit("curriculum'.$curricula['id'].'script", '
+                        . '"curriculum'.$curricula['id'].'completedbutton", "'
+                        . get_string('showcompletedcourses', 'elis_program').'", "'
+                        . get_string('hidecompletedcourses', 'elis_program').'", "'
+                        . get_string('showcompletedcourses', 'elis_program').'", "curriculum-'.$curricula['id'].'");';
+                $PAGE->requires->js_init_code($jscode, true);
+
                 if (in_array($curricula['id'],$collapsed_array)) {
                     $button_label = get_string('showcourses','elis_program');
                     $extra_class = ' hide';
@@ -842,53 +1001,20 @@ class user extends data_object_with_custom_fields {
 
         /// Completed non-curricula course data
         if ($tab != 'archivedlp') {
-            if (!empty($classids)) {
-                $sql = 'SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
-                        FROM {'.student::TABLE.'} stu
-                        INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
-                        INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
-                        WHERE userid = ?
-                        AND classid '. (count($classids) == 1 ? '!= '. current($classids) :
-                        'NOT IN ('. implode(', ', $classids) .')') .'
-                        ORDER BY crs.name ASC, stu.completetime ASC';
-            } else {
-                $sql = 'SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
-                        FROM {'.student::TABLE.'} stu
-                        INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
-                        INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
-                        WHERE userid = ?
-                        ORDER BY crs.name ASC, stu.completetime ASC';
-            }
-
-            if ($classes = $DB->get_recordset_sql($sql, array($this->id)) and $classes->valid()) {
-                $table = new html_table();
-                $table->head = array(
-                    get_string('class', 'elis_program'),
-                    get_string('score', 'elis_program'),
-                    get_string('student_status', 'elis_program'),
-                    get_string('date', 'elis_program')
-                );
-
-                $table->data = array();
-
-                foreach ($classes as $class) {
-                    if ($mdlcrs = moodle_get_course($class->classid)) {
-                        $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
-                                      $mdlcrs . '">' . $class->coursename . '</a>';
-                    } else {
-                        $coursename = $class->coursename;
-                    }
-
-                    $table->data[] = array(
-                        $coursename,
-                        $class->grade,
-                        $status_mapping[$class->completestatusid],
-                        $class->completestatusid == STUSTATUS_PASSED && !empty($class->completetime) ?
-                            date('M j, Y', $class->completetime) : get_string('na','elis_program')
-                    );
-                }
+            //obtain all of our core non-program course data
+            if ($classes = $this->get_dashboard_nonprogram_data($classids)) {
+                //convert this data to a display table
+                $table = $this->get_dashboard_nonprogram_table($classes);
 
                 $header_curr_name = get_string('noncurriculacourses', 'elis_program');
+
+                //javascript code for toggling display of completed courses
+                $js = 'toggleCompletedInit("noncurriculascript", "noncurriculacompletedbutton", "'
+                       .get_string('showcompletedcourses', 'elis_program').'", "'
+                       .get_string('hidecompletedcourses', 'elis_program').'", "'
+                       .get_string('showcompletedcourses', 'elis_program').'", "curriculum-na");';
+                $PAGE->requires->js_init_code($js, true);
+
                 if (in_array('na',$collapsed_array)) {
                     $button_label = get_string('showcourses','elis_program');
                     $extra_class = ' hide';

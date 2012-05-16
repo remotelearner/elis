@@ -79,6 +79,127 @@ function saveLearningPlanVisibilityState(e, data) {
     return false;
 }
 
+/**
+ * Ajax callback for toggling the display of completed courses
+ * 
+ * @param object o the data provided back from the Ajax request
+ */
+function toggleCompletedCoursesCallback(o) {
+    //obtain the container div
+    div = document.getElementById('curriculum-'+o.argument.programid);
+    //fill in with HTML content from the PHP script
+    div.innerHTML = o.responseText;
+}
+
+/**
+ * Method that toggles the state of whether completed courses are being displayed
+ * (called when the appropriate button is clicked)
+ *
+ * @param object e the event that triggered this method call
+ * @param string data curriculum-#, where # is either the program id or na
+ */
+function toggleCompletedCourses(e, data) {
+    //find the list of enabled programs via the hidden field
+    var hiddenfield = 'displayedcompleted';
+    var hiddenelement = document.getElementById(hiddenfield);
+
+    //convert hidden value to an array of program ids
+    if (hiddenelement.value == '') {
+	    var enabled = Array();
+    } else { 
+        var enabled = hiddenelement.value.split(',');
+    }
+
+    //determine which program we're currently toggling
+    var programid = data.split('-')[1];
+
+    //determine whether that program has already been selected
+    var position = -1;
+    for (i = 0; i < enabled.length; i++) {
+        if (enabled[i] == programid) {
+            //already selected
+            position = i;
+            break;
+        }
+    }
+
+    //obtain the button element so we can change its text
+    var button = e.target ? e.target : e.srcElement;
+
+    //parameter to pass to PHP script
+    var showcompleted;
+
+    if (position > -1) {
+    	//already selected, so current action is hide
+    	enabled.splice(position, 1);
+        showcompleted = 0;
+    	//next action for this program will be a "show"
+        button.value = button.moodle.showLabel;
+    } else {
+        //not already selected, so current action is show
+        enabled[enabled.length] = programid;
+        showcompleted = 1;
+        //next action for this program will be a "hide"
+        button.value = button.moodle.hideLabel;
+    }
+
+    //update hidden element with new state
+    hiddenelement.value = enabled.join(',');
+
+    //path to our PHP script
+    var requestURL = M.cfg.wwwroot + '/elis/program/togglecompletedcourses.php?programid='+
+                     programid + '&showcompleted=' + showcompleted;
+
+    //Ajax callback object
+    callback = {
+        success: toggleCompletedCoursesCallback,
+        failure: false,
+        //pass the program id along
+        argument: {programid: programid},
+    }
+
+    //make the Ajax request
+    YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, programid);
+}
+
+/**
+ * Set up a button for a particular program, or non-program courses, that toggles
+ * whether completed courses are displayed
+ *
+ * @param string addBefore the id value of the element we are adding the button
+ *                         before
+ * @param string nameAttr a name value to give the toggle button
+ * @param string buttonLabel the label to display on the toggle button, in its
+ *               initial state
+ * @param string hideText the label to display on the toggle button when clicking
+ *                        on it would hide completed courses
+ * @param string showText the label to display on the toggle button when clicking
+ *                        on it would show completed courses
+ * @param string element the id of the container we are displaying information in 
+ */
+function toggleCompletedInit(addBefore, nameAttr, buttonLabel, hideText, showText, element) {
+	//create the element
+    var showHideCompletedButton = document.createElement("input");
+
+    //set its main attributes 
+    showHideCompletedButton.type = 'button';
+    showHideCompletedButton.value = buttonLabel;
+    showHideCompletedButton.name = nameAttr;
+
+    //pass along extra data for use in event handler
+    showHideCompletedButton.moodle = {
+        hideLabel: hideText,
+        showLabel: showText
+    };
+
+    //set up the click handler
+    YAHOO.util.Event.addListener(showHideCompletedButton, 'click', toggleCompletedCourses, element);
+
+    //add the button to the DOM
+	el = document.getElementById(addBefore);
+    el.parentNode.insertBefore(showHideCompletedButton, el);
+}
+
 function toggleVisibleInitWithState(addBefore, nameAttr, buttonLabel, hideText, showText, element) {
     var showHideButton = document.createElement("input");
     showHideButton.type = 'button';
