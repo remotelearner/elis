@@ -582,7 +582,6 @@ class elis_data_object {
         } else {
             $trace = debug_backtrace();
             $classname = get_class($this);
-            echo '<br>looking for class:'.$classname;
             trigger_error(
                 "Undefined property via __get(): $classname::\${$name} in {$trace[1]['file']} on line {$trace[1]['line']}",
                 E_USER_NOTICE);
