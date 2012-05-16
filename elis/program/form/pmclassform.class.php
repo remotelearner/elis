@@ -387,6 +387,8 @@ class pmclassform extends cmform {
             }
         }
 
+        $errors += parent::validate_custom_fields($data, 'class');
+
         return $errors;
     }
 

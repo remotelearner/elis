@@ -236,7 +236,7 @@ class userform extends cmform {
         $errors = parent::validation($data, $files);
 
         // Use a default for 'id' if we're doing an add
-        if(!$data['id']) {
+        if (!$data['id']) {
             $data['id'] = 0;
         }
 
@@ -282,40 +282,7 @@ class userform extends cmform {
             }
         }
 
-        // validate custom profile fields
-        $usercontextlevel = context_level_base::get_custom_context_level('user', 'elis_program');
-        $fields = field::get_for_context_level($usercontextlevel);
-        $fields = $fields ? $fields : array();
-        if ($data['id']) {
-            $context = get_context_instance($usercontextlevel, $data['id']);
-            $contextid = $context->id;
-        } else {
-            $contextid = 0;
-        }
-
-        /**
-         * TBD: Move the following code into an ELIS custom field/formslib
-         *      validation rule, which would work for all unqiue custom fields
-         */
-        foreach ($fields as $field) {
-            if ($field->forceunique) {
-                $datafield = 'data';
-                if ($field->data_type() == 'text') {
-                    //error_log("userform.class.php::field({$field->id}), datafield = {$datafield}, type = " . $field->data_type() );
-                    $datafield = $DB->sql_compare_text('data', 255); // TBV
-                }
-                $where = "fieldid = ? AND {$datafield} = ?";
-                $fielddata = $DB->get_recordset_select($field->data_table(), $where, array($field->id, $data["field_{$field->shortname}"]));
-                $fcount = $DB->count_records_select($field->data_table(), $where, array($field->id, $data["field_{$field->shortname}"]));
-                if (!empty($fielddata) && $fielddata->valid()) {
-                    $fdata = $fielddata->current();
-                    if ($fcount > 1 || $fdata->contextid != $contextid) {
-                        $errors["field_{$field->shortname}"] = get_string('valuealreadyused');
-                    }
-                    $fielddata->close();
-                }
-            }
-        }
+        $errors += parent::validate_custom_fields($data, 'user');
 
         return $errors;
     }

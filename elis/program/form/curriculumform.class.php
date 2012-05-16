@@ -155,6 +155,8 @@ class cmCurriculaForm extends cmform {
             }
         }
 
+        $errors += parent::validate_custom_fields($data, 'curriculum');
+
         return $errors;
     }
 
