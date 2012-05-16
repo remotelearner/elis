@@ -396,7 +396,7 @@ class coursecurriculumpage extends curriculumcoursebasepage {
         $this->print_add_button(array('id' => $id), get_string('course_assigncurriculum', 'elis_program'));
 
         echo '<div align="center">';
-        $options = array_merge(array('s' => 'cfc', 'id' => $id));
+        $options = array_merge(array('s' => 'cfc', 'id' => $id, 'cfccourseid' => $id));
         $button = new single_button(new moodle_url('index.php', $options), get_string('makecurcourse','elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('makecurcourse','elis_program'), 'id'=>''));
         echo $OUTPUT->render($button);
         echo '</div>';

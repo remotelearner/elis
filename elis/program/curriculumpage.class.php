@@ -317,12 +317,18 @@ class curriculumforcoursepage extends curriculumpage {
     }
 
     function display_savenew() {
-        $target = $this->get_new_page(array('action' => 'add'));
+        $courseid = $this->optional_param('cfccourseid', 0, PARAM_INT);
+
+        $target = $this->get_new_page(array('action' => 'savenew', 'cfccourseid' => $courseid));
 
         $form = new $this->form_class($target->url);
 
         if ($form->is_cancelled()) {
-            $this->display_default();
+            //go back to course and list programs
+            $target = new coursecurriculumpage(array('id'     => $courseid,
+                                         'action' => 'default',
+                                         's' => 'crscurr'));
+            redirect($target->url);
             return;
         }
 
@@ -336,13 +342,16 @@ class curriculumforcoursepage extends curriculumpage {
             $course = new course($data->courseid);
             $course->add_course_to_curricula(array($obj->id));
 
-            $coursepage = new coursepage();
+            $page = new coursecurriculumpage();
+            $params = array('action' => 'default', 'id' => $data->courseid);
 
-            $target = $coursepage->get_new_page(array('action' => 'view', 'id' => $course->id));
+            $target = $page->get_new_page($params);
+
             redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' saved.');
         } else {
             // Validation must have failed, redisplay form
             $form->display();
         }
     }
+
 }
