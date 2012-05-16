@@ -377,7 +377,7 @@ class curriculum extends data_object_with_custom_fields {
         $text = empty(elis::$config->elis_program->notify_curriculumrecurrence_message) ?
                     get_string('notifycurriculumrecurrencemessagedef', 'elis_program') :
                     elis::$config->elis_program->notify_curriculumrecurrence_message;
-        $search = array('%%userenrolname%%', '%%curriculumname%%');
+        $search = array('%%userenrolname%%', '%%programname%%');
         $pmuser = $DB->get_record(user::TABLE, array('id' => $user->userid));
         $student = new user($pmuser);
 
