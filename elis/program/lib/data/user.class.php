@@ -958,6 +958,11 @@ class user extends data_object_with_custom_fields {
         $content .= '<input type="hidden" name="displayedcompleted" id="displayedcompleted" value="">';
         $content .= '<input type="hidden" name="collapsed" id="collapsed" value="' . $collapsed . '">';
 
+        //determine whether we are allow students to view completed courses
+        //(value default to enabled)
+        $allow_show_completed = !isset(elis::$config->elis_program->display_completed_courses) ||
+                                !empty(elis::$config->elis_program->display_completed_courses);
+
         if (!empty($usercurs)) {
             foreach ($usercurs as $usercur) {
                 if (!isset($curriculas[$usercur->curid])) {
@@ -973,13 +978,16 @@ class user extends data_object_with_custom_fields {
 
                 $header_curr_name = get_string('learningplanname', 'elis_program', $curricula_name);
 
-                //javascript code for toggling display of completed courses
-                $jscode = 'toggleCompletedInit("curriculum'.$curricula['id'].'script", '
-                        . '"curriculum'.$curricula['id'].'completedbutton", "'
-                        . get_string('showcompletedcourses', 'elis_program').'", "'
-                        . get_string('hidecompletedcourses', 'elis_program').'", "'
-                        . get_string('showcompletedcourses', 'elis_program').'", "curriculum-'.$curricula['id'].'");';
-                $PAGE->requires->js_init_code($jscode, true);
+                //only show toggle if enabled via PM config
+                if ($allow_show_completed) {
+                    //javascript code for toggling display of completed courses
+                    $jscode = 'toggleCompletedInit("curriculum'.$curricula['id'].'script", '
+                            . '"curriculum'.$curricula['id'].'completedbutton", "'
+                            . get_string('showcompletedcourses', 'elis_program').'", "'
+                            . get_string('hidecompletedcourses', 'elis_program').'", "'
+                            . get_string('showcompletedcourses', 'elis_program').'", "curriculum-'.$curricula['id'].'");';
+                    $PAGE->requires->js_init_code($jscode, true);
+                }
 
                 if (in_array($curricula['id'],$collapsed_array)) {
                     $button_label = get_string('showcourses','elis_program');
@@ -1021,12 +1029,15 @@ class user extends data_object_with_custom_fields {
 
                 $header_curr_name = get_string('noncurriculacourses', 'elis_program');
 
-                //javascript code for toggling display of completed courses
-                $js = 'toggleCompletedInit("noncurriculascript", "noncurriculacompletedbutton", "'
-                       .get_string('showcompletedcourses', 'elis_program').'", "'
-                       .get_string('hidecompletedcourses', 'elis_program').'", "'
-                       .get_string('showcompletedcourses', 'elis_program').'", "curriculum-na");';
-                $PAGE->requires->js_init_code($js, true);
+                //only show toggle if enabled via PM config
+                if ($allow_show_completed) {
+                    //javascript code for toggling display of completed courses
+                    $js = 'toggleCompletedInit("noncurriculascript", "noncurriculacompletedbutton", "'
+                           .get_string('showcompletedcourses', 'elis_program').'", "'
+                           .get_string('hidecompletedcourses', 'elis_program').'", "'
+                           .get_string('showcompletedcourses', 'elis_program').'", "curriculum-na");';
+                    $PAGE->requires->js_init_code($js, true);
+                }
 
                 if (in_array('na',$collapsed_array)) {
                     $button_label = get_string('showcourses','elis_program');
