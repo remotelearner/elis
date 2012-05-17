@@ -39,6 +39,7 @@ class usersetTest extends elis_database_test {
             'context'      => 'moodle',
             'course'       => 'moodle',
             userset::TABLE => 'elis_program',
+            'crlm_cluster_profile' => 'elis_program',
         );
     }
 
@@ -50,6 +51,7 @@ class usersetTest extends elis_database_test {
             clustertrack::TABLE => 'elis_program',
             clusterassignment::TABLE => 'elis_program',
             userset_profile::TABLE => 'elis_program',
+            'elis_field' => 'elis_core',
             field_data_int::TABLE => 'elis_core',
             field_data_num::TABLE => 'elis_core',
             field_data_char::TABLE => 'elis_core',
@@ -151,18 +153,35 @@ class usersetTest extends elis_database_test {
      * Test that you can delete and promote user subsets
      */
     public function testDeletingRecordCanPromoteUserSubsets() {
+        global $UNITTEST;
+        $UNITTEST->running = true;
         $this->load_csv_data();
 
+        accesslib_clear_all_caches_for_unit_testing();
         // make sure all the contexts are created, so that we can find the children
         $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
+        //echo "cluster_context_level = {$cluster_context_level}";
         for ($i = 1; $i <= 4; $i++) {
             $cluster_context_instance = get_context_instance($cluster_context_level, $i);
         }
+
+      /*
+        global $DB;
+        echo "\ncontext::TABLE => ";
+        var_dump($DB->get_records('context'));
+        echo "\nuserset::TABLE (pre-delete)=> ";
+        var_dump($DB->get_records(userset::TABLE));
+      */
 
         // delete a record
         $src = new userset(2, null, array(), false, array(), self::$overlaydb);
         $src->deletesubs = false;
         $src->delete();
+
+      /*
+        echo "\nuserset::TABLE (post_delete)=> ";
+        var_dump($DB->get_records(userset::TABLE));
+      */
 
         // read it back
         $result = new moodle_recordset_phpunit_datatable(userset::TABLE, userset::find(null, array(), 0, 0, self::$overlaydb));
@@ -175,8 +194,11 @@ class usersetTest extends elis_database_test {
      * Test that you can delete a user set and all its user subsets
      */
     public function testDeleteRecordCanDeleteUserSubsets() {
+        global $UNITTEST;
+        $UNITTEST->running = true;
         $this->load_csv_data();
 
+        accesslib_clear_all_caches_for_unit_testing();
         // make sure all the contexts are created, so that we can find the children
         $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
         for ($i = 1; $i <= 4; $i++) {
@@ -191,7 +213,7 @@ class usersetTest extends elis_database_test {
         // read it back
         $result = new moodle_recordset_phpunit_datatable(userset::TABLE, userset::find(null, array(), 0, 0, self::$overlaydb));
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset_delete_subset_test_result.csv'));
+        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset_delete_subset_b_test_result.csv'));
         $this->assertTablesEqual($dataset->getTable(userset::TABLE), $result);
     }
 }

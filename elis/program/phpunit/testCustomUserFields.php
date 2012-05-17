@@ -36,7 +36,7 @@ require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 require_once($CFG->dirroot . '/user/profile/lib.php');
 
-class userTest extends elis_database_test {
+class userCustomFieldsTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
     protected static function get_overlay_tables() {
