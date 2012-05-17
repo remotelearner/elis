@@ -58,15 +58,6 @@ class healthpage extends pm_page {
     /**
      * Initialize the page variables needed for display.
      */
-    protected function _init_display() {
-        global $PAGE;
-
-        //needed for item coloring and layout
-        $PAGE->requires->css('/elis/program/styles.css');
-
-        parent::_init_display();
-    }
-
     function get_page_title_default() {
         return get_string('healthcenter');
     }
