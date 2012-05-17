@@ -155,7 +155,7 @@ function toggleCompletedCourses(e, data) {
         success: toggleCompletedCoursesCallback,
         failure: false,
         //pass the program id along
-        argument: {programid: programid},
+        argument: {programid: programid}
     }
 
     //make the Ajax request
@@ -217,6 +217,9 @@ function toggleCompletedInit(addBefore, nameAttr, buttonLabel, hideText, showTex
     showHideCompletedButton.type = 'button';
     showHideCompletedButton.value = buttonLabel;
     showHideCompletedButton.name = nameAttr;
+    //make IE7 happy
+    showHideCompletedButton.id = nameAttr;
+
     if (displayed) {
         //allow for the button to be displayed
         showHideCompletedButton.className = '';
