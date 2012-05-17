@@ -962,7 +962,25 @@ class user extends data_object_with_custom_fields {
         $a->completecourses = $completecourses;
         $a->totalcourses = $totalcourses;
 
-        if ($completecourses > 0) {
+        //determine whether we are allow students to view completed courses
+        //(value default to enabled)
+        $allow_show_completed = !isset(elis::$config->elis_program->display_completed_courses) ||
+                                !empty(elis::$config->elis_program->display_completed_courses);
+
+        $output = '';
+
+        if (!$allow_show_completed) {
+            if ($completecourses == $totalcourses) {
+                //special message because no courses are displayed and we can't show them
+                if ($programid == false) {
+                    //nonprogram case
+                    $output = get_string('dashboard_summary_nonprogram_hidden', 'elis_program');
+                } else {
+                    //program case
+                    $output = get_string('dashboard_summary_program_hidden', 'elis_program');
+                }
+            }
+        } else if ($completecourses > 0) {
             //at least one course is hidden by default
 
             if ($programid == false) {
@@ -984,20 +1002,26 @@ class user extends data_object_with_custom_fields {
                     $output = get_string('dashboard_summary_program', 'elis_program', $a);
                 }
             }
+        }
 
-            //add some specing
-            $br_tag = html_writer::empty_tag('br');
-            $output .= $br_tag.$br_tag;
+        if ($output != '') {
 
-            //static part of the "show all" text
-            $output .= get_string('dashboard_show_all', 'elis_program');
-
-            //the link
-            $show_all_text = get_string('dashboard_show_all_link', 'elis_program');
-            $parameter = $programid == false ? 'false' : $programid;
-            $attributes = array('href' => '#',
-                                'onclick' => 'toggleCompletedCoursesViaLink('.$parameter.');return false;');
-            $output .= html_writer::tag('a', $show_all_text, $attributes);
+            //only add the link if we can actually toggle
+            if ($allow_show_completed) {
+                //add some spacing
+                $br_tag = html_writer::empty_tag('br');
+                $output .= $br_tag.$br_tag;
+    
+                //static part of the "show all" text
+                $output .= get_string('dashboard_show_all', 'elis_program');
+    
+                //the link
+                $show_all_text = get_string('dashboard_show_all_link', 'elis_program');
+                $parameter = $programid == false ? 'false' : $programid;
+                $attributes = array('href' => '#',
+                                    'onclick' => 'toggleCompletedCoursesViaLink('.$parameter.');return false;');
+                $output .= html_writer::tag('a', $show_all_text, $attributes);
+            }
 
             //display info in a nice box
             return $OUTPUT->box($output);
@@ -1135,19 +1159,17 @@ class user extends data_object_with_custom_fields {
 
                 if (empty($curricula['data']) && $totalcoursesmap[$usercur->curid] == 0) {
                     //nothing in the table, and no completed courses are being hidden
-                    $content .= get_string('nocoursedescassoc','elis_program');
+                    $content .= $OUTPUT->box(get_string('nocoursedescassoc','elis_program'));
                 } else {
                     if (!empty($table->data)) {
                         //we are showing some data
                         $content .= html_writer::table($table);
                     }
 
-                    if ($allow_show_completed) {
-                        //display the summary text
-                        $completecourses = $completecoursesmap[$usercur->curid];
-                        $totalcourses = $totalcoursesmap[$usercur->curid];
-                        $content .= $this->get_dashboard_program_summary($completecourses, $totalcourses, $usercur->curid);
-                    }
+                    //display the summary text
+                    $completecourses = $completecoursesmap[$usercur->curid];
+                    $totalcourses = $totalcoursesmap[$usercur->curid];
+                    $content .= $this->get_dashboard_program_summary($completecourses, $totalcourses, $usercur->curid);
                 }
                 $content .= '</div>';
                 $content .= '</div>';
