@@ -735,6 +735,7 @@ class user extends data_object_with_custom_fields {
 
                                     $data[] = array(
                                         $coursename,
+                                        $classdata->idnumber,
                                         $coursedesc,
                                         $classdata->grade,
                                         $status_mapping[$classdata->completestatusid],
@@ -793,6 +794,7 @@ class user extends data_object_with_custom_fields {
     function get_dashboard_program_table($curricula) {
         $table = new html_table();
         $table->head = array(
+            get_string('course', 'elis_program'),
             get_string('class', 'elis_program'),
             get_string('description', 'elis_program'),
             get_string('score', 'elis_program'),
@@ -800,6 +802,13 @@ class user extends data_object_with_custom_fields {
             get_string('date', 'elis_program')
         );
         $table->data = $curricula['data'];
+
+        //convert all records with no class idnumber to show N/A for that field
+        foreach ($table->data as $i => $row) {
+            if ($table->data[$i][1] === '') {
+                $table->data[$i][1] = get_string('dashboard_na', 'elis_program');
+            }
+        }
 
         return $table;
     }
@@ -844,7 +853,8 @@ class user extends data_object_with_custom_fields {
                            'NOT IN ('. implode(', ', $classids) .')');
 
             //query for fetching data
-            $sql = "SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+            $sql = "SELECT stu.id, stu.classid, crs.name as coursename, cls.idnumber,
+                           stu.completetime, stu.grade, stu.completestatusid
                     {$query_body}
                     {$status_condition}
                     ORDER BY crs.name ASC, stu.completetime ASC";
@@ -874,7 +884,8 @@ class user extends data_object_with_custom_fields {
                            )';
 
             //query for fetching data
-            $sql = "SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+            $sql = "SELECT stu.id, stu.classid, crs.name as coursename, cls.idnumber,
+                           stu.completetime, stu.grade, stu.completestatusid
                     {$query_body}
                     {$status_condition}
                     ORDER BY crs.name ASC, stu.completetime ASC";
@@ -914,6 +925,7 @@ class user extends data_object_with_custom_fields {
 
         $table = new html_table();
         $table->head = array(
+            get_string('course', 'elis_program'),
             get_string('class', 'elis_program'),
             get_string('score', 'elis_program'),
             get_string('student_status', 'elis_program'),
@@ -932,9 +944,10 @@ class user extends data_object_with_custom_fields {
                 } else {
                     $coursename = $class->coursename;
                 }
-    
+
                 $table->data[] = array(
                     $coursename,
+                    $class->idnumber,
                     $class->grade,
                     $status_mapping[$class->completestatusid],
                     $class->completestatusid == STUSTATUS_PASSED && !empty($class->completetime) ?
