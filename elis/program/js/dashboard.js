@@ -205,9 +205,11 @@ function toggleCompletedCoursesViaLink(programid) {
  *                        on it would hide completed courses
  * @param string showText the label to display on the toggle button when clicking
  *                        on it would show completed courses
- * @param string element the id of the container we are displaying information in 
+ * @param string element the id of the container we are displaying information in
+ * @param boolean displayed true if we are showing the button at all, otherwise false
+ * @param boolean enabled if true, button is clickable, otherwise it's greyed out
  */
-function toggleCompletedInit(addBefore, nameAttr, buttonLabel, hideText, showText, element) {
+function toggleCompletedInit(addBefore, nameAttr, buttonLabel, hideText, showText, element, displayed, enabled) {
 	//create the element
     var showHideCompletedButton = document.createElement("input");
 
@@ -215,6 +217,17 @@ function toggleCompletedInit(addBefore, nameAttr, buttonLabel, hideText, showTex
     showHideCompletedButton.type = 'button';
     showHideCompletedButton.value = buttonLabel;
     showHideCompletedButton.name = nameAttr;
+    if (displayed) {
+        //allow for the button to be displayed
+        showHideCompletedButton.className = '';
+    } else {
+        //hide the button via css
+        showHideCompletedButton.className = 'hide';
+    }
+    if (!enabled) {
+        //set the disabled attribute to grey it out
+        showHideCompletedButton.disabled = 'disabled';
+    }
 
     //pass along extra data for use in event handler
     showHideCompletedButton.moodle = {

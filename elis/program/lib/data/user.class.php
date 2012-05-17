@@ -749,6 +749,7 @@ class user extends data_object_with_custom_fields {
 
                                 $data[] = array(
                                     $course->coursename,
+                                    get_string('dashboard_na', 'elis_program'),
                                     $coursedesc,
                                     0,
                                     get_string('not_enrolled', 'elis_program'),
@@ -802,13 +803,6 @@ class user extends data_object_with_custom_fields {
             get_string('date', 'elis_program')
         );
         $table->data = $curricula['data'];
-
-        //convert all records with no class idnumber to show N/A for that field
-        foreach ($table->data as $i => $row) {
-            if ($table->data[$i][1] === '') {
-                $table->data[$i][1] = get_string('dashboard_na', 'elis_program');
-            }
-        }
 
         return $table;
     }
@@ -1139,12 +1133,18 @@ class user extends data_object_with_custom_fields {
 
                 //only show toggle if enabled via PM config
                 if ($allow_show_completed) {
+                    //do not display toggle button if program is hidden
+                    $displayed = in_array($curricula['id'], $collapsed_array) ? 'false' : 'true';
+                    //grey out toggle button if there are not hidden courses
+                    $enabled = $completecoursesmap[$curricula['id']] > 0 ? 'true' : 'false';
+
                     //javascript code for toggling display of completed courses
                     $jscode = 'toggleCompletedInit("curriculum'.$curricula['id'].'script", '
                             . '"curriculum'.$curricula['id'].'completedbutton", "'
                             . get_string('showcompletedcourses', 'elis_program').'", "'
                             . get_string('hidecompletedcourses', 'elis_program').'", "'
-                            . get_string('showcompletedcourses', 'elis_program').'", "curriculum-'.$curricula['id'].'");';
+                            . get_string('showcompletedcourses', 'elis_program').'", "curriculum-'.$curricula['id'].'", '
+                            . $displayed.', '.$enabled.');';
                     $PAGE->requires->js_init_code($jscode, true);
                 }
 
@@ -1203,11 +1203,17 @@ class user extends data_object_with_custom_fields {
 
                 //only show toggle if enabled via PM config
                 if ($allow_show_completed) {
+                    //do not display toggle button if non-program courses are hidden
+                    $displayed = in_array('na', $collapsed_array) ? 'false' : 'true';
+                    //grey out toggle button if no non-program courses are hidden
+                    $enabled = $completecourses > 0 ? 'true' : 'false';
+
                     //javascript code for toggling display of completed courses
                     $js = 'toggleCompletedInit("noncurriculascript", "noncurriculacompletedbutton", "'
                            .get_string('showcompletedcourses', 'elis_program').'", "'
                            .get_string('hidecompletedcourses', 'elis_program').'", "'
-                           .get_string('showcompletedcourses', 'elis_program').'", "curriculum-na");';
+                           .get_string('showcompletedcourses', 'elis_program').'", "curriculum-na", '
+                           .$displayed.', '.$enabled.');';
                     $PAGE->requires->js_init_code($js, true);
                 }
 
