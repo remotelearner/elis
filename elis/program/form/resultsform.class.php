@@ -345,6 +345,17 @@ class cmEngineForm extends cmform {
     }
 
     /**
+     * Validate score min/max values
+     *
+     * @param  mixed  $data  The form data with score
+     * @param  string $key   The score value data key to validate
+     * @return bool   true for valid score, false for invalid
+     */
+    function valid_score($data, $key) {
+        return(isset($data[$key]) && is_numeric($data[$key]));
+    }
+
+    /**
      * Validate Fold
      *
      * @param int   $actiontype The action type of the fold we're validating
@@ -383,16 +394,20 @@ class cmEngineForm extends cmform {
                 $keymax     = $keyprefix .'_max';
                 $keyselect  = $keyprefix .'_selected';
                 $keygroup   = $keyprefix .'_score';
-
+                $skip_empty = false;
                 // Skip over empty score ranges.
-                if (empty($data[$keymin]) && empty($data[$keymax])) {
+                if (!$this->valid_score($data, $keymin) &&
+                    !$this->valid_score($data, $keymax)) {
                     if (!empty($data[$keyselect])) {
                         $error = get_string('results_error_incomplete_score_range', self::LANG_FILE);
+                    } else {
+                        $skip_empty = true;
                     }
-                } else if (empty($data[$keymin]) || empty($data[$keymax])) {
+                } else if (!$this->valid_score($data, $keymin) ||
+                           !$this->valid_score($data, $keymax)) {
                     $error = get_string('results_error_incomplete_score_range', self::LANG_FILE);
 
-                } else if ((int) $data[$keymin] >= (int) $data[$keymax]) {
+                } else if ((int)$data[$keymin] > (int)$data[$keymax]) {
                     $error = get_string('results_error_min_larger_than_max', self::LANG_FILE);
 
                 } else if (empty($data[$keyselect])) {
@@ -401,7 +416,7 @@ class cmEngineForm extends cmform {
                 }
 
                 // Only check the ranges if no other error has been found yet.
-                if (empty($error) && !(empty($data[$keymin]) || empty($data[$keymax]))) {
+                if (!$skip_empty && empty($error)) {
                     foreach ($ranges as $range) {
                         if (($range['min'] <= $data[$keymin]) && ($data[$keymin] <= $range['max'])) {
                             $error = get_string('results_error_range_overlap_min', self::LANG_FILE);
@@ -662,7 +677,7 @@ class cmEngineForm extends cmform {
 
             if ($this->rowtypes[$type] == 'picklist') {
                 $name = '';
-                if (! empty($data->selected)) {
+                if (!empty($data->selected)) {
                     $name = $this->get_label_name($typename, $data->selected);
                 } else {
                     $name = $notypeselected;
@@ -678,9 +693,12 @@ class cmEngineForm extends cmform {
                     'id'       => "id_{$prefix}{$i}_label",  // Needed for javascript call back
                     'value'    => $name,
                     'name'     => "{$prefix}{$i}_label",
-                    'type'     => 'text',
-                    'disabled' => 'disabled'
+                    'type'     => 'text'
+                    // , 'disabled' => 'disabled'
                 );
+                if (!(array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
+                    $attributes['disabled'] = 'disabled';
+                }
                 $output     = html_writer::empty_tag('input', $attributes);
 
                 $attributes     = array(
@@ -714,7 +732,7 @@ class cmEngineForm extends cmform {
                 $mform->addElement('select', "{$prefix}{$i}_selected", '', $options, $attributes);
 
                 $attributes = array();
-                if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
+                if (!(array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
                     $attributes = array('disabled' => 'disabled');
                 }
                 $tablehtml  = html_writer::end_tag('td');
