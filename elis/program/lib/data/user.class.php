@@ -637,7 +637,8 @@ class user extends data_object_with_custom_fields {
      * @return array a list of values, where the first entry is the user's course list,
      *               the second is a mapping of programs to a course listing, the third
      *               is a list of classes handled, and the fourth is the number of programs
-     *               handled
+     *               handled, the fifth is a mapping of program ids to number of compelted
+     *               courses, the sixth is a mapping of program ids to total number of courses
      */
     function get_dashboard_program_data($tab_sensitive, $show_archived, $showcompleted = false,
                                         $programid = NULL) {
@@ -645,11 +646,13 @@ class user extends data_object_with_custom_fields {
 
         $archive_var     = '_elis_program_archive';
         $classids = array();
+        //track mapping of programs to course / class listings
+        $curriculas = array();
         $totalcurricula = 0;
-        //todo: remove? (not used anymore)
-        $totalcourses = 0;
-        //todo: remove? (not used anymore)
-        $completecourses = 0;
+
+        //map program ids to appropriate counts
+        $completecoursesmap = array();
+        $totalcoursesmap = array();
 
         $params = array($this->id);
 
@@ -691,20 +694,29 @@ class user extends data_object_with_custom_fields {
                     $curriculas[$usercur->curid]['name'] = $usercur->name;
                     $data = array();
 
+                    //count our totals per-program
+                    //note that "course" is really one enrolment, so this should
+                    //count each enrolment, plus one for each unenrolled program course
+                    $totalcourses = 0;
+                    $completecourses = 0;
+
                     if ($courses = curriculumcourse_get_listing($usercur->curid, 'curcrs.position, crs.name', 'ASC')) {
                         foreach ($courses as $course) {
-                            $totalcourses++;
-
                             $course_obj = new course($course->courseid);
                             $coursedesc = $course_obj->syllabus;
 
                             if ($cdata = student_get_class_from_course($course->courseid, $this->id)) {
                                 foreach($cdata as $classdata) {
+                                    //count each enrolment as one "course"
+                                    $totalcourses++;
+
                                     if (!in_array($classdata->id, $classids)) {
                                         $classids[] = $classdata->id;
                                     }
 
-                                    if ($classdata->completestatusid == STUSTATUS_PASSED) {
+                                    if ($classdata->completestatusid == STUSTATUS_PASSED ||
+                                        $classdata->completestatusid == STUSTATUS_FAILED) {
+                                        //count completed enrolments
                                         $completecourses++;
                                     }
 
@@ -731,6 +743,9 @@ class user extends data_object_with_custom_fields {
                                         );
                                 }
                             } else {
+                                //count this unenrolled course toward the total
+                                $totalcourses++;
+
                                 $data[] = array(
                                     $course->coursename,
                                     $coursedesc,
@@ -743,6 +758,9 @@ class user extends data_object_with_custom_fields {
                     }
 
                     $curriculas[$usercur->curid]['data'] = $data;
+                    //associate this program id with the appropriate counts
+                    $completecoursesmap[$usercur->curid] = $completecourses;
+                    $totalcoursesmap[$usercur->curid] = $totalcourses;
 
                 } else {
 
@@ -763,7 +781,7 @@ class user extends data_object_with_custom_fields {
             }
         }
 
-        return array($usercurs, $curriculas, $classids, $totalcurricula);
+        return array($usercurs, $curriculas, $classids, $totalcurricula, $completecoursesmap, $totalcoursesmap);
     }
 
     /**
@@ -795,13 +813,19 @@ class user extends data_object_with_custom_fields {
      *                        accounted for within programs)
      * @param boolean $showcompleted specifies whether we're showing passed and failed
      *                               courses in addition to ones in progress
-     * @return mixed a recordset containing the course listing, or false if none found
+     * @return array an array where the first element is a recordset containing the course listing,
+     *               or false if none found, the second is the number of completed courses, the
+     *               third is the total number of courses
      */
     function get_dashboard_nonprogram_data($classids, $showcompleted = false) {
         global $DB;
 
         $status_condition = '';
+        //parameters needed by the main query
         $params = array($this->id);
+        //parameters needed by the count query
+        $count_params = array($this->id);
+
         if (!$showcompleted) {
             list($status_condition, $status_params) = $DB->get_in_or_equal(array(STUSTATUS_NOTCOMPLETE));
             $params = array_merge($params, $status_params);
@@ -809,40 +833,72 @@ class user extends data_object_with_custom_fields {
         }
 
         if (!empty($classids)) {
-            $sql = 'SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
-                    FROM {'.student::TABLE.'} stu
-                    INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
-                    INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
-                    WHERE userid = ?
-                    AND classid '. (count($classids) == 1 ? '!= '. current($classids) :
-                    'NOT IN ('. implode(', ', $classids) .')') .'
-                    '.$status_condition.'
-                    ORDER BY crs.name ASC, stu.completetime ASC';
+            //querying for specific classes
+
+            //fragment used in both queries
+            $query_body = 'FROM {'.student::TABLE.'} stu
+                           INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
+                           INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
+                           WHERE userid = ?
+                           AND classid '. (count($classids) == 1 ? '!= '. current($classids) :
+                           'NOT IN ('. implode(', ', $classids) .')');
+
+            //query for fetching data
+            $sql = "SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+                    {$query_body}
+                    {$status_condition}
+                    ORDER BY crs.name ASC, stu.completetime ASC";
+
+            //query for counting
+            $count_sql = "SELECT COUNT(*) AS totalcourses,
+                          SUM(CASE stu.completestatusid
+                                WHEN ".STUSTATUS_NOTCOMPLETE." THEN 0
+                                ELSE 1
+                              END) AS completecourses
+                          {$query_body}";
         } else {
-            $sql = 'SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
-                    FROM {'.student::TABLE.'} stu
-                    INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
-                    INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
-                    WHERE userid = ?
-                    AND NOT EXISTS (
-                      SELECT *
-                      FROM {'.curriculumstudent::TABLE.'} ca
-                      JOIN {'.curriculumcourse::TABLE.'} cc
-                        ON ca.curriculumid = cc.curriculumid
-                      WHERE ca.userid = stu.userid
-                        AND crs.id = cc.courseid
-                    )
-                    '.$status_condition.'
-                    ORDER BY crs.name ASC, stu.completetime ASC';
+            //querying for all non-program info
+
+            //fragment used in both queries
+            $query_body = 'FROM {'.student::TABLE.'} stu
+                           INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = stu.classid
+                           INNER JOIN {'.course::TABLE.'} crs ON crs.id = cls.courseid
+                           WHERE userid = ?
+                           AND NOT EXISTS (
+                             SELECT *
+                             FROM {'.curriculumstudent::TABLE.'} ca
+                             JOIN {'.curriculumcourse::TABLE.'} cc
+                               ON ca.curriculumid = cc.curriculumid
+                             WHERE ca.userid = stu.userid
+                               AND crs.id = cc.courseid
+                           )';
+
+            //query for fetching data
+            $sql = "SELECT stu.id, stu.classid, crs.name as coursename, stu.completetime, stu.grade, stu.completestatusid
+                    {$query_body}
+                    {$status_condition}
+                    ORDER BY crs.name ASC, stu.completetime ASC";
+
+            //query for counting
+            $count_sql = "SELECT COUNT(*) AS totalcourses,
+                          SUM(CASE stu.completestatusid
+                                WHEN ".STUSTATUS_NOTCOMPLETE." THEN 0
+                                ELSE 1
+                              END) AS completecourses
+                          {$query_body}";
         }
 
         $classes = $DB->get_recordset_sql($sql, $params);
+        //obtain completed and total counts
+        $counts_record = $DB->get_record_sql($count_sql, $count_params);
 
         if (!$classes->valid()) {
-            return false;
+            //return data in necessary structure
+            return array(false, $counts_record->completecourses, $counts_record->totalcourses);
         }
 
-        return $classes;
+        //return data in necessary structure
+        return array($classes, $counts_record->completecourses, $counts_record->totalcourses);
     }
 
     /**
@@ -866,24 +922,89 @@ class user extends data_object_with_custom_fields {
 
         $table->data = array();
 
-        foreach ($classes as $class) {
-            if ($mdlcrs = moodle_get_course($class->classid)) {
-                $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
-                              $mdlcrs . '">' . $class->coursename . '</a>';
-            } else {
-                $coursename = $class->coursename;
-            }
+        if ($classes != false) {
+            //have one or more classes
 
-            $table->data[] = array(
-                $coursename,
-                $class->grade,
-                $status_mapping[$class->completestatusid],
-                $class->completestatusid == STUSTATUS_PASSED && !empty($class->completetime) ?
-                    date('M j, Y', $class->completetime) : get_string('na','elis_program')
-            );
+            foreach ($classes as $class) {
+                if ($mdlcrs = moodle_get_course($class->classid)) {
+                    $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
+                                  $mdlcrs . '">' . $class->coursename . '</a>';
+                } else {
+                    $coursename = $class->coursename;
+                }
+    
+                $table->data[] = array(
+                    $coursename,
+                    $class->grade,
+                    $status_mapping[$class->completestatusid],
+                    $class->completestatusid == STUSTATUS_PASSED && !empty($class->completetime) ?
+                        date('M j, Y', $class->completetime) : get_string('na','elis_program')
+                );
+            }
         }
 
         return $table;
+    }
+
+    /**
+     * Obtains the HTML needed to show the summary / counts for a particular program
+     * or for non-program courses
+     *
+     * @param int $completecourses the number of courses completed
+     * @param int $totalcourses the total number of courses
+     * @param mixed $programid the id of the program, or false for non-program courses
+     */
+    function get_dashboard_program_summary($completecourses, $totalcourses, $programid) {
+        global $OUTPUT;
+
+        //data for lang string
+        $a = new stdClass;
+        $a->completecourses = $completecourses;
+        $a->totalcourses = $totalcourses;
+
+        if ($completecourses > 0) {
+            //at least one course is hidden by default
+
+            if ($programid == false) {
+                //nonprogram cases
+                if ($completecourses == $totalcourses) {
+                    //all courses hidden
+                    $output = get_string('dashboard_summary_nonprogram_all', 'elis_program', $a);
+                } else {
+                    //some courses hidden
+                    $output = get_string('dashboard_summary_nonprogram', 'elis_program', $a);
+                }
+            } else {
+                //program case
+                if ($completecourses == $totalcourses) {
+                    //all courses hidden
+                    $output = get_string('dashboard_summary_program_all', 'elis_program', $a);
+                } else {
+                    //some courses hidden
+                    $output = get_string('dashboard_summary_program', 'elis_program', $a);
+                }
+            }
+
+            //add some specing
+            $br_tag = html_writer::empty_tag('br');
+            $output .= $br_tag.$br_tag;
+
+            //static part of the "show all" text
+            $output .= get_string('dashboard_show_all', 'elis_program');
+
+            //the link
+            $show_all_text = get_string('dashboard_show_all_link', 'elis_program');
+            $parameter = $programid == false ? 'false' : $programid;
+            $attributes = array('href' => '#',
+                                'onclick' => 'toggleCompletedCoursesViaLink('.$parameter.');return false;');
+            $output .= html_writer::tag('a', $show_all_text, $attributes);
+
+            //display info in a nice box
+            return $OUTPUT->box($output);
+        }
+
+        //nothing to show
+        return '';
     }
 
     /**
@@ -916,7 +1037,8 @@ class user extends data_object_with_custom_fields {
         }
 
         //obtain all of our core program-specific data
-        list($usercurs, $curriculas, $classids, $totalcurricula) = $this->get_dashboard_program_data(true, $show_archived);
+        list($usercurs, $curriculas, $classids, $totalcurricula, $completecoursesmap, $totalcoursesmap) =
+             $this->get_dashboard_program_data(true, $show_archived);
 
         // Show different css for IE below version 8
         if (check_browser_version('MSIE',7.0) && !check_browser_version('MSIE',8.0)) {
@@ -1010,10 +1132,22 @@ class user extends data_object_with_custom_fields {
                 $content .= '<div class="dashboard_curricula_block">';
                 $content .= $OUTPUT->heading($heading);
                 $content .= '<div id="curriculum-' . $curricula['id'] . '" class="yui-skin-sam ' . $extra_class . '">';
-                if (empty($curricula['data'])) {
+
+                if (empty($curricula['data']) && $totalcoursesmap[$usercur->curid] == 0) {
+                    //nothing in the table, and no completed courses are being hidden
                     $content .= get_string('nocoursedescassoc','elis_program');
                 } else {
-                    $content .= html_writer::table($table);
+                    if (!empty($table->data)) {
+                        //we are showing some data
+                        $content .= html_writer::table($table);
+                    }
+
+                    if ($allow_show_completed) {
+                        //display the summary text
+                        $completecourses = $completecoursesmap[$usercur->curid];
+                        $totalcourses = $totalcoursesmap[$usercur->curid];
+                        $content .= $this->get_dashboard_program_summary($completecourses, $totalcourses, $usercur->curid);
+                    }
                 }
                 $content .= '</div>';
                 $content .= '</div>';
@@ -1023,7 +1157,10 @@ class user extends data_object_with_custom_fields {
         /// Completed non-curricula course data
         if ($tab != 'archivedlp') {
             //obtain all of our core non-program course data
-            if ($classes = $this->get_dashboard_nonprogram_data($classids)) {
+            list($classes, $completecourses, $totalcourses) = $this->get_dashboard_nonprogram_data($classids);
+
+            //if ($classes != false) {
+            if ($totalcourses > 0) {
                 //convert this data to a display table
                 $table = $this->get_dashboard_nonprogram_table($classes);
 
@@ -1059,7 +1196,13 @@ class user extends data_object_with_custom_fields {
                 $content .= '<div class="dashboard_curricula_block">';
                 $content .= $OUTPUT->heading($heading);
                 $content .= '<div id="curriculum-na" class="yui-skin-sam ' . $extra_class . '">';
-                $content .= html_writer::table($table);
+
+                if (count($table->data) > 0) {
+                    //we are showing some data
+                    $content .= html_writer::table($table);
+                }
+
+                $content .= $this->get_dashboard_program_summary($completecourses, $totalcourses, false);
                 $content .= '</div>';
                 $content .= '</div>';
             }

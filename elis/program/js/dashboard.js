@@ -163,6 +163,36 @@ function toggleCompletedCourses(e, data) {
 }
 
 /**
+ * Toggle the display of completed courses via the appropriate link
+ *
+ * @param mixed programid the id of the program being toggled, or false for the
+ *              non-program section
+ */
+function toggleCompletedCoursesViaLink(programid) {
+    //name of the button that could be used to toggle
+    var buttonname;
+    //data needed by toggleCompletedCourses
+    var data;
+
+    if (programid == false) {
+        //non-program section
+        buttonname = 'noncurriculacompletedbutton';
+        data = 'curriculum-na';
+    } else {
+        //specific program
+        buttonname = 'curriculum' + programid + 'completedbutton';
+        data = 'curriculum-' + programid;
+    }
+
+    //set an object similar to a normal event to fake out toggleCompletedCoruses
+    var e = new Object();
+    e.target = document.getElementsByName(buttonname)[0];
+
+    //call the toggle-via-button method
+    toggleCompletedCourses(e, data);
+}
+
+/**
  * Set up a button for a particular program, or non-program courses, that toggles
  * whether completed courses are displayed
  *

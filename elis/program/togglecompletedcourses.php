@@ -29,6 +29,10 @@ require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once(elispm::lib('deprecatedlib.php'));
 require_once(elispm::lib('data/user.class.php'));
 
+//needed to use $OUTPUT when displaying summary info
+$sys_context = get_context_instance(CONTEXT_SYSTEM);
+$PAGE->set_context($sys_context);
+
 //determine which program we are operating on (or 'na' for non-program courses)
 $programid = required_param('programid', PARAM_CLEAN);
 //determine which state we're in
@@ -41,15 +45,27 @@ if ($cmuid = cm_get_crlmuserid($USER->id)) {
 
     if ($programid == 'na') {
         //non-program courses
-        if ($classes = $user->get_dashboard_nonprogram_data(array(), $showcompleted)) {
+        list($classes, $completecourses, $totalcourses) = $user->get_dashboard_nonprogram_data(array(), $showcompleted);
+
+        if ($totalcourses > 0) {
             //send back the table to display
             $table = $user->get_dashboard_nonprogram_table($classes);
-            echo html_writer::table($table);
+
+            if (count($table->data) > 0) {
+                //actually have something to display
+                echo html_writer::table($table);
+            }
+
+            if (!$showcompleted) {
+                //send back the summary text to output
+                $summary = $user->get_dashboard_program_summary($completecourses, $totalcourses, false);
+                echo $summary;
+            }
         }
     } else {
         //program courses
-        list($userprograms, $programs, $classids, $totalprograms) = $user->get_dashboard_program_data(false, false, $showcompleted,
-                                                                                                      (int)$programid);
+        list($userprograms, $programs, $classids, $totalprograms, $completecoursesmap, $totalcoursesmap) =
+             $user->get_dashboard_program_data(false, false, $showcompleted, (int)$programid);
 
         //the above call only retrieves data for one program, but data is still
         //structured as though handling multiple programs
@@ -57,7 +73,19 @@ if ($cmuid = cm_get_crlmuserid($USER->id)) {
             $program = $programs[$programid];
             //send back the table to display
             $table = $user->get_dashboard_program_table($program);
-            echo html_writer::table($table);
+
+            if (!empty($table->data)) {
+                //actually have something to display
+                echo html_writer::table($table);
+            }
+
+            if (!$showcompleted) {
+                //send back the summary text to output
+                $completecourses = $completecoursesmap[$programid];
+                $totalcourses = $totalcoursesmap[$programid];
+                $summary = $user->get_dashboard_program_summary($completecourses, $totalcourses, $programid);
+                echo $summary;
+            }
         }
     }
 }

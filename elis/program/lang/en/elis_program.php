@@ -328,6 +328,12 @@ $string['curriculum_userid_mismatch'] = 'Your current user ID does not match the
 $string['customfields'] = 'Custom fields';
 
 $string['dashboard'] = 'Dashboard';
+$string['dashboard_show_all'] = 'To show all courses, click ';
+$string['dashboard_show_all_link'] = 'here';
+$string['dashboard_summary_nonprogram'] = '{$a->completecourses} of your {$a->totalcourses} non-program courses have been completed and are not being displayed.';
+$string['dashboard_summary_nonprogram_all'] = 'All {$a->totalcourses} of your non-program courses have been completed and are not being displayed.';
+$string['dashboard_summary_program'] = '{$a->completecourses} of your {$a->totalcourses} courses in this program have been completed and are not being displayed.';
+$string['dashboard_summary_program_all'] = 'All {$a->totalcourses} of your courses in this program have been completed and are not being displayed.';
 $string['date'] = 'Date';
 $string['datecompleted'] = 'Completion Date';
 $string['date_completed'] = 'Date Completed';
