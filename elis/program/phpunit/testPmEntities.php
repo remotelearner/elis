@@ -50,6 +50,7 @@ class testPmEntities extends elis_database_test {
             'role_assignments' => 'moodle',
             'role_capabilities' => 'moodle',
             'user' => 'moodle',
+            'elis_field' => 'elis_core',
             curriculum::TABLE => 'elis_program',
             track::TABLE => 'elis_program',
             course::TABLE => 'elis_program',
