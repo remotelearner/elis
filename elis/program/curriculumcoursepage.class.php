@@ -414,12 +414,13 @@ class coursecurriculumpage extends curriculumcoursebasepage {
 
         if ($this->has_program_create_capability()) {
             echo '<div align="center">';
-            $options = array_merge(array('s' => 'cfc', 'id' => $id));
+            $options = array_merge(array('s' => 'cfc', 'id' => $id, 'cfccourseid' => $id));
             $button = new single_button(new moodle_url('index.php', $options), get_string('makecurcourse','elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('makecurcourse','elis_program'), 'id'=>''));
             echo $OUTPUT->render($button);
             echo '</div>';
         }
     }
+
 
     function has_program_create_capability() {
         return has_capability('elis/program:program_create', $this->_get_page_context());

@@ -429,13 +429,13 @@ abstract class enginepage extends pm_page {
         // Check for existing data regarding track/class/profile actions
         foreach($data as $key => $value) {
 
-            if (empty($data[$key])) {
-                // If value is empty then it must be an empty score range row
-                // because form validation will catch any incomplete rows
-                continue;
-            }
-
+            //error_log("resultspage::save_data(); checking K/V {$key} => {$value}");
             if (preg_match($pattern, $key, $matches)) {
+                if (!isset($data[$key]) || !is_numeric($data[$key])) {
+                    // If value is empty then it must be an empty score range row
+                    // because form validation will catch any incomplete rows
+                    continue;
+                }
 
                 if (! array_key_exists($matches[1], $instance)) {
                     $instance[$matches[1]] = '';

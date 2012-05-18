@@ -23,7 +23,7 @@ dl.notice dt, dl.notice dd {
     background-color: #e5db36;
 }
 dt.solution, dd.solution, div#healthnoproblemsfound {
-    background-color: #5BB83E !important;
+    background-color: #5BB83E;
 }
 dl.healthissues dt, dl.healthissues dd {
     margin: 0px;

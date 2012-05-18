@@ -1023,7 +1023,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     }
 
     if ($alpha) {
-        $crslike = $DB->sql_like('crs.name', '?', FALSE);
+        $crslike = $DB->sql_like('cls.idnumber', '?', FALSE);
         $where[] = "($crslike)";
         $params[] = "$alpha%";
     }
@@ -1108,7 +1108,7 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
     }
 
     if ($alpha) {
-        $crslike = $DB->sql_like('crs.name', '?', FALSE);
+        $crslike = $DB->sql_like('cls.idnumber', '?', FALSE);
         $where[] = "($crslike)";
         $params[] = "$alpha%";
     }

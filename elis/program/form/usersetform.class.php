@@ -99,6 +99,12 @@ class usersetform extends cmform {
 
         $this->add_action_buttons();
     }
+
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        $errors += parent::validate_custom_fields($data, 'cluster');
+        return $errors;
+    }
 }
 
 /**

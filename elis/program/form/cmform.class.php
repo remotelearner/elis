@@ -42,5 +42,30 @@ class cmform extends moodleform {
     function freeze() {
         $this->_form->freeze();
     }
+
+    function validate_custom_fields($data, $eliscontext) {
+        $errors = array();
+
+        $contextlevel = context_level_base::get_custom_context_level($eliscontext, 'elis_program');
+        $fields = field::get_for_context_level($contextlevel);
+        $fields = $fields ? $fields : array();
+        if (!empty($data['id'])) {
+            $context = get_context_instance($contextlevel, $data['id']);
+            $contextid = $context->id;
+        } else {
+            $contextid = 0;
+        }
+
+        foreach ($fields as $field) {
+            $field = new field($field);
+            $key = "field_{$field->shortname}";
+            if ($errstr = manual_field_validation(isset($data[$key]) ? $data[$key] : null, $field, $contextid)) {
+                $errors[$key] = $errstr;
+            }
+            //error_log("cmform.class.php::validation(): contextid = {$contextid}, data[{$key}] = {$data[$key]}, errors[$key] = {$errstr}");
+        }
+
+        return $errors;
+    }
 }
 
