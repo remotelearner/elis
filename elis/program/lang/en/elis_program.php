@@ -177,6 +177,11 @@ To disable this functionality, select "N/A" from the list.';
 $string['cluster_role_setting'] = 'Default User Set Role';
 $string['cluster_subcluster_prompt'] = 'Assign existing user set as a user subset';
 $string['cluster_tree_na'] = 'N/A';
+$string['completed_courses_help'] = 'Enabling this setting allows students to view their completed courses on the dashboard.
+When this setting is enabled, completed courses will still be hidden until a student toggles their visibility on their dashboard.
+
+When this setting is disabled, students will be unable to see completed courses.';
+$string['completed_courses_setting'] = 'Allow students to view completed courses on the dashboard';
 $string['completed_label'] = 'Completed';
 $string['completionform:completion_grade'] = 'Completion grade';
 $string['completionform:completion_grade_help'] = '<p>Minimum grade the learner must received to identify the element as &ldquo;completed&rdquo;.</p>';
@@ -326,6 +331,15 @@ $string['curriculum_userid_mismatch'] = 'Your current user ID does not match the
 $string['customfields'] = 'Custom fields';
 
 $string['dashboard'] = 'Dashboard';
+$string['dashboard_na'] = 'N/A';
+$string['dashboard_show_all'] = 'To show all courses, click ';
+$string['dashboard_show_all_link'] = 'here';
+$string['dashboard_summary_nonprogram'] = '{$a->completecourses} of your {$a->totalcourses} non-program courses have been completed and are not being displayed.';
+$string['dashboard_summary_nonprogram_all'] = 'All {$a->totalcourses} of your non-program courses have been completed and are not being displayed.';
+$string['dashboard_summary_nonprogram_hidden'] = 'You have completed all non-program courses.';
+$string['dashboard_summary_program'] = '{$a->completecourses} of your {$a->totalcourses} courses in this program have been completed and are not being displayed.';
+$string['dashboard_summary_program_all'] = 'All {$a->totalcourses} of your courses in this program have been completed and are not being displayed.';
+$string['dashboard_summary_program_hidden'] = 'You have completed all courses in this program.';
 $string['date'] = 'Date';
 $string['datecompleted'] = 'Completion Date';
 $string['date_completed'] = 'Date Completed';
@@ -529,6 +543,7 @@ $string['health_user_syncsoln'] = 'Users need to be synchronized by running the 
                 This process can take a long time, we recommend you run it during non-peak hours, and leave this window open until you see a success message.
                 If the script times out (stops loading before indicating success), please open a support ticket to have this run for you.<br/><br/>
                 <a href="{$a}/elis/program/scripts/migrate_moodle_users.php">Fix this now</a>';
+$string['hidecompletedcourses'] = 'Hide Completed Courses';
 $string['hidecourses'] = 'Hide Courses';
 
 $string['icon_collapse_help'] = 'This setting determines the number of icons of each type to display in the Program Administration block.
@@ -663,6 +678,7 @@ $string['none'] = 'None';
 $string['noroleselected'] = 'N/A';
 $string['norolesexist'] = 'There are currently no roles that users can be assigned on this entity.';
 $string['norolespermitted'] = 'There are currently no roles you have sufficient permissions to assign users on this entity. For further details, contact a site administrator.';
+$string['not_enrolled'] = 'Not Enrolled';
 $string['notassignedtocurricula'] = 'You are not assigned to any program yet.';
 $string['notelisuser'] = 'Error: must be a valid ELIS user!';
 $string['notemplate'] = 'Could not auto-create Moodle course: no template defined in course description.  Created class instance without an associated Moodle course.';
@@ -968,6 +984,7 @@ $string['selectedonly'] = 'Show selected items only';
 $string['selecttemplate'] = 'No template course selected.  In order to browse ID numbers, you must select a course template in the "Edit" tab.';
 $string['showallitems'] = 'Show all items';
 $string['show_all_users'] = 'Show All Users';
+$string['showcompletedcourses'] = 'Show Completed Courses';
 $string['showcourses'] = 'Show Courses';
 $string['showinactive'] = 'Show inactive';
 $string['site_not_defined'] = 'Site is not defined';

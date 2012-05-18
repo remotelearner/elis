@@ -2447,15 +2447,20 @@ function student_get_student_classes($userid, $curid = 0) {
  * in for a specific course in the system.
  *
  * @param int $crsid The course ID
+ * @param int $userid The PM user id whose enrolments we are considering
+ * @param string $sort The field to sort on
+ * @param string $dir The sort direction
  * @uses $DB
  * @return
  */
-function student_get_class_from_course($crsid, $userid) {
+function student_get_class_from_course($crsid, $userid, $sort = 'cls.idnumber', $dir = 'ASC') {
     global $DB;
+
     $sql = 'SELECT cls.*, stu.enrolmenttime, stu.completetime, stu.completestatusid, stu.grade
             FROM {'. student::TABLE .'} stu
             INNER JOIN {'. pmclass::TABLE .'} cls ON stu.classid = cls.id
             WHERE stu.userid = ?
-            AND cls.courseid = ? ';
+            AND cls.courseid = ? 
+            ORDER BY '.$sort.' '.$dir;
     return $DB->get_records_sql($sql, array($userid, $crsid));
 }
