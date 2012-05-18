@@ -342,10 +342,7 @@ class sitewide_time_summary_report extends table_report {
                     'choices'     => $this->_fields,
                     'notadvanced' => array('fullname'),
                     //'langfile'   => 'filters',
-                    'extra'       => true, // include all extra profile fields
-                    'heading'     => get_string('filter_profile_match',
-                                                $this->langfile),
-                    'footer'      => get_string('footer', $this->langfile)
+                    'extra'       => true // include all extra profile fields
                 )
             );
 
