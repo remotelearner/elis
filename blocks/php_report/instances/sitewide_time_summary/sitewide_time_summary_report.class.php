@@ -497,7 +497,7 @@ class sitewide_time_summary_report extends table_report {
                                 $this->startdate);
                 if (!empty($this->enddate)) {
                     $sql .= " AND hour <= ?";
-                    $params[] = $this->endddate;
+                    $params[] = $this->enddate;
                 }
                 //print_object($sql);
                 $trecs = $DB->get_records_sql($sql, $params);
