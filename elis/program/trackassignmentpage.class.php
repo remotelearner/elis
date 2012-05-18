@@ -161,12 +161,19 @@ class trackassignmentpage extends associationpage {
             $columns[$sort]['sortable'] = $dir;
         }
 
+        $totalitems = track_assignment_get_listing($id);
         $items = track_assignment_get_listing($id, $sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha);
         $numitems = track_assignment_count_records($id, $namesearch, $alpha);
 
         $this->print_alpha();
         $this->print_search();
 
+        if ($numitems > $perpage) {
+            $pagingbar = new paging_bar($numitems, $page, $perpage,
+                             "index.php?s=trkcls&amp;id={$id}&amp;sort={$sort}&amp;dir={$dir}&amp;perpage={$perpage}&amp;alpha={$alpha}&amp;search="
+                             . urlencode($namesearch)); // .'&amp;'
+            echo $OUTPUT->render($pagingbar), '<br/>'; // TBD
+        }
         $this->print_num_items($numitems);
         $this->print_list_view($items, $columns, 'track_classes');
 
@@ -219,7 +226,7 @@ class trackassignmentpage extends associationpage {
                 echo '</div>';
             }
         } else {
-            $this->print_dropdown($classes, $items, 'trackid', 'clsid', 'add', 'idnumber');
+            $this->print_dropdown($classes, $totalitems, 'trackid', 'clsid', 'add', 'idnumber');
         }
     }
 
