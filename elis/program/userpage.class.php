@@ -107,16 +107,26 @@ class userpage extends managementpage {
     }
 
     public function __construct(array $params=null) {
+        global $CFG;
+
         //tab for the Individual User report
-        //todo: check availability and permissions
-        $report_tab = array('tab_id' => 'report',
-                            'page' => 'linkpage',
-                            'params' => array('linkurl' => 'blocks/php_report/render_report_page.php',
-                                              'linkparams'=>'report,userid',
-                                              'report'=>'individual_user', 'userid'=>'=id'),
-                            'name' => get_string('report', 'elis_program'),
-                            'showbutton' => true,
-                            'image' => 'report');
+        //permissions checking happens in the link page
+        if (file_exists($CFG->dirroot.'/blocks/php_report/render_report_page.php')) {
+            $report_tab = array(
+                'tab_id' => 'report',
+                'page' => 'linkpage',
+                'params' => array(
+                    'linkurl' => 'blocks/php_report/render_report_page.php',
+                    'linkparams' => 'report,userid',
+                    'report' => 'individual_user',
+                    'userid' => '=id'
+                ),
+                'name' => get_string('report', 'elis_program'),
+                'showbutton' => true,
+                'image' => 'report'
+            );
+        }
+
         $this->tabs = array(
             array('tab_id' => 'view', 'page' => 'userpage', 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
             array('tab_id' => 'edit', 'page' => 'userpage', 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
