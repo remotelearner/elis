@@ -144,6 +144,8 @@ class individual_user_report extends table_report {
      * @return int the user id
      */
     function get_chosen_userid() {
+        $chosen_userid = '';
+
         $report_filters = php_report_filtering_get_user_preferences($this->get_report_shortname());
         if (!empty($report_filters) && is_array($report_filters)) {
             foreach ($report_filters as $filter => $val) {
@@ -161,6 +163,32 @@ class individual_user_report extends table_report {
     }
 
     /**
+     * Gets the permissions restriction for the current user
+     *
+     * @param string $dbfield the field to restrict on
+     * @param boolean $true_if_user If true, always allow the user to view their own info
+     * @return string The SQL fragment to be used as a permissions restriction
+     */
+    public function get_user_permissions_filter($dbfield, $true_if_user = true) {
+        global $USER;
+
+        $cm_user_id   = cm_get_crlmuserid($USER->id);
+        $filter_array = php_report_filtering_get_active_filter_values($this->get_report_shortname(), 'userid',$this->filter);
+        $filter_user_id = (isset($filter_array[0]['value'])) ? $filter_array[0]['value'] : 0;
+
+        if ($filter_user_id == $cm_user_id && $this->execution_mode == php_report::EXECUTION_MODE_INTERACTIVE && $true_if_user === true) {
+            // always allow the user to see their own report but not necessarily schedule it
+            $permissions_filter = 'TRUE';
+        } else {
+            // obtain all course contexts where this user can view reports
+            $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
+            $permissions_filter = $contexts->get_filter($dbfield, 'user');
+        }
+
+        return $permissions_filter;
+    }
+
+    /**
      * Specifies available report filters
      * (empty by default but can be implemented by child class)
      *
@@ -173,7 +201,6 @@ class individual_user_report extends table_report {
         global $USER;
 
         $filters = array();
-        $users = array();
 
         // ELIS-3577 - Add the autocomplete user search filter
         $autocomplete_opts = array(
