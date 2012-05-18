@@ -1106,6 +1106,7 @@ abstract class table_report extends php_report {
         $effective_url = "{$effective_url}&amp;sort={$this->sort}&amp;dir={$this->dir}&amp;" .
                          "perpage={$this->perpage}&amp;";
         $this->print_paging_bar($this->numrecs, $this->page, $this->perpage, $effective_url);
+        echo '<br/>'; // TBD: spacing
 
         return $output;
     }
