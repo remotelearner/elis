@@ -144,10 +144,7 @@ class curricula_report extends table_report {
                 array(
                     'choices'     => $this->_fields,
                     'notadvanced' => array('fullname'),
-                    'extra'       => true, // include all extra profile fields
-                    'heading'     => get_string('filter_profile_match',
-                                                'rlreport_curricula'),
-                    'footer'      => get_string('footer', 'rlreport_curricula')
+                    'extra'       => true // include all extra profile fields
                 )
             );
 
