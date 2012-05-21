@@ -216,6 +216,8 @@ class cmCourseForm extends cmform {
             $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
         }
 
+        $errors += parent::validate_custom_fields($data, 'course');
+
         return $errors;
     }
 }

@@ -26,6 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/curriculum.class.php');
@@ -245,6 +247,13 @@ class course extends data_object_with_custom_fields {
         }
 
         return $this->_db->get_records(coursecompletion::TABLE, array('courseid'=>$this->id));
+    }
+
+    /*
+     * @return int The Course id
+     */
+    function get_course_id() {
+        return $this->id;
     }
 
     /*
@@ -731,10 +740,25 @@ class course extends data_object_with_custom_fields {
         // clone main course object
         $clone = new course($this);
         unset($clone->id);
+
+        $idnumber = $clone->idnumber;
+        $name = $clone->name;
         if (isset($userset)) {
-            // if cluster specified, append cluster's name to course
-            $clone->name = $clone->name.' - '.$userset->name;
-            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
+            // if cluster specified, append cluster's name to curriculum
+            $idnumber .= ' - '.$userset->name;
+            $name .= ' - '.$userset->name;
+        }
+
+        //get a unique idnumber
+        $clone->idnumber = generate_unique_identifier(course::TABLE, 'idnumber', $idnumber, array('idnumber' => $idnumber));
+
+        if ($clone->idnumber != $idnumber) {
+            //get the suffix appended and add it to the name
+            $parts = explode('.', $clone->idnumber);
+            $suffix = end($parts);
+            $clone->name = $name.'.'.$suffix;
+        } else {
+            $clone->name = $name;
         }
         $clone->save();
 

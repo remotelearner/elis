@@ -26,6 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/course.class.php');
@@ -375,7 +377,7 @@ class curriculum extends data_object_with_custom_fields {
         $text = empty(elis::$config->elis_program->notify_curriculumrecurrence_message) ?
                     get_string('notifycurriculumrecurrencemessagedef', 'elis_program') :
                     elis::$config->elis_program->notify_curriculumrecurrence_message;
-        $search = array('%%userenrolname%%', '%%curriculumname%%');
+        $search = array('%%userenrolname%%', '%%programname%%');
         $pmuser = $DB->get_record(user::TABLE, array('id' => $user->userid));
         $student = new user($pmuser);
 
@@ -464,10 +466,25 @@ class curriculum extends data_object_with_custom_fields {
         // clone main curriculum object
         $clone = new curriculum($this);
         unset($clone->id);
+
+        $idnumber = $clone->idnumber;
+        $name = $clone->name;
         if (isset($userset)) {
             // if cluster specified, append cluster's name to curriculum
-            $clone->name = $clone->name.' - '.$userset->name;
-            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
+            $idnumber .= ' - '.$userset->name;
+            $name .= ' - '.$userset->name;
+        }
+
+        //get a unique idnumber
+        $clone->idnumber = generate_unique_identifier(curriculum::TABLE, 'idnumber', $idnumber, array('idnumber' => $idnumber));
+
+        if ($clone->idnumber != $idnumber) {
+            //get the suffix appended and add it to the name
+            $parts = explode('.', $clone->idnumber);
+            $suffix = end($parts);
+            $clone->name = $name.'.'.$suffix;
+        } else {
+            $clone->name = $name;
         }
 
         $clone = new curriculum($clone);

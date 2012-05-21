@@ -136,7 +136,7 @@ class curriculumpage extends managementpage {
         parent::__construct($params);
 
         $id = $this->optional_param('id', 0, PARAM_INT);
-        $track_params = ($id) ? array('curid' => $id) : array();
+        $track_params = ($id) ? array('parent' => $id) : array();
         $this->tabs = array(
         array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
         array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
@@ -191,7 +191,7 @@ class curriculumpage extends managementpage {
         // Define columns
         $columns = array(
             'name'        => array('header' => get_string('curriculum_name', 'elis_program')),
-            'description' => array('header' => get_string('curriculum_shortdescription', 'elis_program')),
+            'description' => array('header' => get_string('description', 'elis_program')),
             'reqcredits'  => array('header' => get_string('curriculum_reqcredits', 'elis_program')),
             'courses'     => array('header' => get_string('courses', 'elis_program')),
             'priority'    => array('header' => get_string('priority', 'elis_program'))
@@ -233,8 +233,8 @@ class curriculumpage extends managementpage {
             context_elis_program::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
-            if(!has_capability('elis/program:program_edit', $context_instance)) {
-                role_assign(elis::$config->elis_program->default_curriculum_role_id, $USER->id, 0, $context_instance->id);
+            if (!has_capability('elis/program:program_edit', $context_instance)) {
+                role_assign(elis::$config->elis_program->default_curriculum_role_id, $USER->id, $context_instance->id);
             }
         }
     }
@@ -316,12 +316,18 @@ class curriculumforcoursepage extends curriculumpage {
     }
 
     function display_savenew() {
-        $target = $this->get_new_page(array('action' => 'add'));
+        $courseid = $this->optional_param('cfccourseid', 0, PARAM_INT);
+
+        $target = $this->get_new_page(array('action' => 'savenew', 'cfccourseid' => $courseid));
 
         $form = new $this->form_class($target->url);
 
         if ($form->is_cancelled()) {
-            $this->display_default();
+            //go back to course and list programs
+            $target = new coursecurriculumpage(array('id'     => $courseid,
+                                         'action' => 'default',
+                                         's' => 'crscurr'));
+            redirect($target->url);
             return;
         }
 
@@ -335,13 +341,16 @@ class curriculumforcoursepage extends curriculumpage {
             $course = new course($data->courseid);
             $course->add_course_to_curricula(array($obj->id));
 
-            $coursepage = new coursepage();
+            $page = new coursecurriculumpage();
+            $params = array('action' => 'default', 'id' => $data->courseid);
 
-            $target = $coursepage->get_new_page(array('action' => 'view', 'id' => $course->id));
+            $target = $page->get_new_page($params);
+
             redirect($target->url, ucwords($obj->get_verbose_name())  . ' ' . $obj->__toString() . ' saved.');
         } else {
             // Validation must have failed, redisplay form
             $form->display();
         }
     }
+
 }

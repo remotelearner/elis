@@ -258,8 +258,9 @@ class studentpage extends associationpage {
                     $waitlist[] = $newstu;
                     $status = true;
                 } catch (Exception $e) {
+                    $param = array('message' => $e->getMessage());
                     echo cm_error(get_string('record_not_created_reason',
-                                             self::LANG_FILE, $e));
+                                             self::LANG_FILE, $param));
                 }
             }
         }
@@ -421,9 +422,12 @@ class studentpage extends associationpage {
     }
 
     /**
+     * Confirm saving a user to the wait list
      *
+     * @param boolean $redirect Redirect to next destination page if true
+     *                          (needed to prevent redirects in unit testing)
      */
-    public function do_waitlistconfirm() { // action_waitlistconfirm
+    public function do_waitlistconfirm($redirect = true) { // action_waitlistconfirm
         $id = $this->required_param('userid', PARAM_INT);
 
         $form_url = new moodle_url(null, array('s'       => $this->pagename,
@@ -442,8 +446,10 @@ class studentpage extends associationpage {
                         $wait_record = new object();
                         $wait_record->userid = $uid;
                         $wait_record->classid = $data->classid[$uid];
+                        //todo: remove? (not an actual db field)
                         $wait_record->enrolmenttime = $data->enrolmenttime[$uid];
                         $wait_record->timecreated = $now;
+                        $wait_record->timemodified = $now;
                         $wait_record->position = 0;
 
                         $wait_list = new waitlist($wait_record);
@@ -465,21 +471,25 @@ class studentpage extends associationpage {
                             echo cm_error(get_string('record_not_created',
                                                      self::LANG_FILE));
                         } catch (Exception $e) {
-                            echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $e));
+                            $param = array('message' => $e->getMessage());
+                            echo cm_error(get_string('record_not_created_reason', self::LANG_FILE, $param));
                         }
                     }
                 }
             }
         }
 
-        if (is_array($id)) {
-            $target_id = array_shift($id);
-        } else {
-            $target_id = $id;
+        if ($redirect) {
+            //todo: remove?
+            if (is_array($id)) {
+                $target_id = array_shift($id);
+            } else {
+                $target_id = $id;
+            }
+    
+            $target = $this->get_new_page(array('action' => 'default', 'id' => $this->required_param('id', PARAM_INT)));
+            redirect($target->url);
         }
-
-        $target = $this->get_new_page(array('action' => 'default', 'id' => $this->required_param('id', PARAM_INT)));
-        redirect($target->url);
     }
 
     /**
@@ -534,10 +544,13 @@ class studentpage extends associationpage {
         $this->print_search();
 
         if (!$numstus) {
-            pmshowmatches($alpha, $namesearch);
+            pmshowmatches($alpha, $namesearch, null, 'no_student_matching');
         }
 
-        $this->print_list_view($stus, $columns);
+        //note: this does actually use the third parameter right now because
+        //we have customized this function - consider using standard version
+        //here an in the instructor page?
+        $this->print_list_view($stus, $columns, 'users'); // TBD: students ?
 
         $pagingbar = new paging_bar($numstus, $page, $perpage,
                          "index.php?s=stu&amp;section=curr&amp;id=$clsid&amp;sort=$sort&amp;" .
@@ -615,9 +628,9 @@ class studentpage extends associationpage {
         echo $newstu->edit_classid_html($cmclass->id, $type, $sort, $dir, $page, $perpage, $namesearch, $alpha);
     }
 
-    function print_edit_form($stu, $cls) {
+    function print_edit_form($stu, $cls, $sort, $dir) {
         $stu->classid = $cls->id; // TBD
-        echo $stu->edit_student_html($stu->id);
+        echo $stu->edit_student_html($stu->id, '', $sort, $dir);
     }
 
     /**

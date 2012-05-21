@@ -58,15 +58,6 @@ class healthpage extends pm_page {
     /**
      * Initialize the page variables needed for display.
      */
-    protected function _init_display() {
-        global $PAGE;
-
-        //needed for item coloring and layout
-        $PAGE->requires->css('/elis/program/styles.css');
-
-        parent::_init_display();
-    }
-
     function get_page_title_default() {
         return get_string('pluginname', 'tool_health');
     }
@@ -221,7 +212,8 @@ $core_health_checks = array(
     'health_user_sync',
     'cluster_orphans_check',
     'track_classes_check',
-    'completion_export_check'
+    'completion_export_check',
+    'dangling_completion_locks',
     );
 
 /**
@@ -484,21 +476,22 @@ class track_classes_check extends crlm_health_check_base {
 
         //needed for db table constants
         require_once(elispm::lib('data/track.class.php'));
+        require_once(elispm::lib('data/curriculumcourse.class.php'));
 
         $this->unattachedClasses = array();
 
-        $sql = "SELECT trkcls.id, trkcls.trackid, trkcls.courseid, trkcls.classid, trk.curid
-                FROM {".trackassignment::TABLE."} trkcls
-                JOIN {".track::TABLE."} trk ON trk.id = trkcls.trackid
-                JOIN {".pmclass::TABLE."} cls ON trkcls.classid = cls.id
+        $sql = 'SELECT trkcls.id, trkcls.trackid, trkcls.courseid, trkcls.classid, trk.curid
+                FROM {'. trackassignment::TABLE .'} trkcls
+                JOIN {'. track::TABLE .'} trk ON trk.id = trkcls.trackid
+                JOIN {'. pmclass::TABLE .'} cls ON trkcls.classid = cls.id
                 WHERE NOT EXISTS (
                     SELECT *
-                    FROM mdl_crlm_curriculum_course curcrs
+                    FROM {'. curriculumcourse::TABLE .'} curcrs
                     WHERE trk.curid = curcrs.curriculumid
                     AND cls.courseid = curcrs.courseid
-                )";
+                )';
 
-        if ($trackclasses = $DB->get_recordset_sql($sql)) {
+        if (($trackclasses = $DB->get_recordset_sql($sql)) && $trackclasses->valid()) {
             foreach ($trackclasses as $trackclass) {
                 $this->unattachedClasses[] = $trackclass->id;
             }
@@ -661,5 +654,76 @@ class duplicate_moodle_profile extends crlm_health_check_base {
     function solution() {
         global $CFG;
         return get_string('health_dupmoodleprofilesoln', 'elis_program', $CFG->dirroot);
+    }
+}
+
+/**
+ * Checks for any passing completion scores that are unlocked and linked to Moodle grade items which do not exist.
+ */
+class dangling_completion_locks extends crlm_health_check_base {
+    function __construct() {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once elispm::lib('data/student.class.php');
+
+        // Check for unlocked, passed completion scores which are not associated with a valid Moodle grade item
+        $sql = "SELECT COUNT('x')
+                FROM {".student_grade::TABLE."} ccg
+                INNER JOIN {".coursecompletion::TABLE."} ccc ON ccc.id = ccg.completionid
+                INNER JOIN {".classmoodlecourse::TABLE."} ccm ON ccm.classid = ccg.classid
+                INNER JOIN {course} c ON c.id = ccm.moodlecourseid
+                LEFT JOIN {grade_items} gi ON (gi.idnumber = ccc.idnumber AND gi.courseid = c.id)
+                WHERE ccg.locked = 0
+                AND ccc.idnumber != ''
+                AND ccg.grade >= ccc.completion_grade
+                AND gi.id IS NULL";
+
+        $this->count = $DB->count_records_sql($sql);
+
+/*
+        // Check for unlocked, passed completion scores which are associated with a valid Moodle grade item
+        // XXX - NOTE: this is not currently being done as it may be that these values were manually unlocked on purpose
+        // XXX - NOTE: this is from 1.9 so if / when using this query, update query to 2.x standard
+        $sql = "SELECT COUNT('x')
+                FROM {$CURMAN->db->prefix_table(USRTABLE)} cu
+                INNER JOIN {$CURMAN->db->prefix_table(STUTABLE)} cce ON cce.userid = cu.id
+                INNER JOIN {$CURMAN->db->prefix_table(GRDTABLE)} ccg ON (ccg.userid = cce.userid AND ccg.classid = cce.classid)
+                INNER JOIN {$CURMAN->db->prefix_table(CRSCOMPTABLE)} ccc ON ccc.id = ccg.completionid
+                INNER JOIN {$CURMAN->db->prefix_table(CLSMOODLETABLE)} ccm ON ccm.classid = ccg.classid
+                INNER JOIN {$CFG->prefix}user u ON u.idnumber = cu.idnumber
+                INNER JOIN {$CFG->prefix}course c ON c.id = ccm.moodlecourseid
+                INNER JOIN {$CFG->prefix}grade_items gi ON (gi.courseid = c.id AND gi.idnumber = ccc.idnumber)
+                INNER JOIN {$CFG->prefix}grade_grades gg ON (gg.itemid = gi.id AND gg.userid = u.id)
+                WHERE ccg.locked = 0
+                AND ccg.grade >= ccc.completion_grade
+                AND gg.finalgrade >= ccc.completion_grade
+                AND ccc.idnumber != ''
+                AND gi.itemtype != 'course'
+                AND ccg.timemodified > gg.timemodified";
+
+        $this->count += $CURMAN->db->count_records_sql($sql);
+*/
+    }
+
+    function exists() {
+        return $this->count != 0;
+    }
+
+    function severity() {
+        return healthpage::SEVERITY_SIGNIFICANT;
+    }
+
+    function title() {
+        return get_string('health_danglingcompletionlocks','elis_program');
+    }
+
+    function description() {
+        return get_string('health_danglingcompletionlocksdesc','elis_program', $this->count);
+    }
+
+    function solution() {
+        $msg = get_string('health_danglingcompletionlockssoln','elis_program');
+        return $msg;
     }
 }

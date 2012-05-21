@@ -280,6 +280,12 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $table = new xmldb_table('crlm_notification_log');
         $field = new xmldb_field('fromuserid');
 
+        if (!$dbman->field_exists($table, $field)) {
+            $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'userid');
+            $field->comment = 'PM user id that triggered the notification.';
+            $dbman->add_field($table, $field);
+        }
+
         //field may already exist from 1.9 install / upgrade
         if (!$dbman->field_exists($table, $field)) {
             $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'userid');
@@ -314,9 +320,11 @@ function xmldb_elis_program_upgrade($oldversion=0) {
     if ($result && $oldversion < 2011121501) {
         $table = new xmldb_table('crlm_notification_log');
         $index = new xmldb_index('event_inst_fuser_ix');
-        $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('fromuserid', 'instance', 'event'));
+        $index->set_attributes(XMLDB_INDEX_NOTUNIQUE, array('fromuserid', 'instance', 'event'));
 
-        $dbman->add_index($table, $index);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
 
         upgrade_plugin_savepoint($result, 2011121501, 'elis', 'program');
     }
@@ -411,15 +419,21 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2012022400, 'elis', 'program');
     }
 
-    if ($result && $oldversion < $plugin->version = 2012022401) {
+    if ($result && $oldversion < 2012022401) {
         // Add the new 'certificatecode' field to the curriculum_assignment table
         $table = new xmldb_table('crlm_curriculum_assignment');
         $field = new xmldb_field('certificatecode', XMLDB_TYPE_CHAR, '40', null, null, null, null, 'locked');
-        $dbman->add_field($table, $field);
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
 
         // Add a new non-uniue index for the new field
         $index = new xmldb_index('certificatecode_ix', XMLDB_INDEX_NOTUNIQUE, array('certificatecode'));
-        $dbman->add_index($table, $index);
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
 
         upgrade_plugin_savepoint($result, 2012022401, 'elis', 'program');
     }
@@ -525,15 +539,39 @@ function xmldb_elis_program_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        // The "crlm_wait_list.enrolmenttime" field might not exist in the current DB, so we need to check if it's missing and add it
-        $table = new xmldb_table('crlm_wait_list');
-        $field = new xmldb_field('enrolmenttime', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'autounenrol');
+        upgrade_plugin_savepoint($result, 2012040200, 'elis', 'program');
+    }
 
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+     if ($result && $oldversion < 2012050300) {
+         $table = new xmldb_table('crlm_user');
+         $field = new xmldb_field('city', XMLDB_TYPE_CHAR, '120',null, null, null, null, 'address2');
+
+         $dbman->change_field_precision($table, $field);
+
+         upgrade_plugin_savepoint($result, 2012050300, 'elis', 'program');
+     }
+
+    if ($result && $oldversion < 2012050315) {
+        //search for the following fields in the config_plugins table and change %%curriculumname%% to %%programname%%
+        //for the fields in $fields
+        $plugin = 'elis_program';
+        $name1 = 'notify_curriculumrecurrence_message';
+        $name2 = 'notify_curriculumnotcompleted_message';
+        $name3 = 'notify_curriculumcompleted_message';
+        $sqlwhere = "name IN (:name1,:name2,:name3)";
+        $params = array('name1' => $name1,'name2'=>$name2,'name3'=>$name3);
+        $rs = $DB->get_recordset_select('config_plugins', $sqlwhere, $params);
+        if (!empty($rs)) {
+            foreach ($rs as $record) {
+                if ($record->value !== null) {
+                    //update the value from curriculumname to programname
+                    $record->value = str_replace('%%curriculumname%%','%%programname%%',$record->value);
+                    $DB->set_field('config_plugins', 'value', $record->value, array('id'=>$record->id));
+                }
+            }
         }
 
-        upgrade_plugin_savepoint($result, 2012040200, 'elis', 'program');
+        upgrade_plugin_savepoint($result, 2012050315, 'elis', 'program');
     }
 
     return $result;

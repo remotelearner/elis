@@ -26,6 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/curriculum.class.php');
@@ -164,7 +166,7 @@ class curriculumstudent extends elis_data_object {
         $text = empty(elis::$config->elis_program->notify_curriculumcompleted_message) ?
                     get_string('notifycurriculumcompletedmessagedef', 'elis_program') :
                     elis::$config->elis_program->notify_curriculumcompleted_message;
-        $search = array('%%userenrolname%%', '%%curriculumname%%');
+        $search = array('%%userenrolname%%', '%%programname%%');
         $pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
         $user = new user($pmuser);
         // Get course info
@@ -269,7 +271,7 @@ class curriculumstudent extends elis_data_object {
         // Get course info
         $program = $DB->get_record(curriculum::TABLE, array('id' => $curstudent->curriculumid));
 
-        $search = array('%%userenrolname%%', '%%curriculumname%%');
+        $search = array('%%userenrolname%%', '%%programname%%');
         $replace = array(fullname($pmuser), $program->name);
         $text = str_replace($search, $replace, $text);
 

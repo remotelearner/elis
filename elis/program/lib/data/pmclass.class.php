@@ -26,6 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('data/course.class.php');
@@ -91,6 +93,8 @@ class pmclass extends data_object_with_custom_fields {
     protected $_dbfield_maxstudents;
     protected $_dbfield_environmentid;
     protected $_dbfield_enrol_from_waitlist;
+    protected $_dbfield_moodlecourseid;
+    protected $_dbfield_unlink_attached_course;
 
     static $delete_is_complex = true;
 
@@ -224,6 +228,9 @@ class pmclass extends data_object_with_custom_fields {
 
         if (!empty($data->moodleCourses['moodlecourseid']) && !$this->autocreate) {
             $this->moodlecourseid = $data->moodleCourses['moodlecourseid'];
+        } else if (!empty($data->courseSelected['unlink_attached_course']) && !empty($data->moodlecourseid)) {
+            $this->unlink_attached_course = $data->courseSelected['unlink_attached_course'];
+            $this->moodlecourseid = $data->moodlecourseid;
         } else {
             $this->moodlecourseid = 0;
         }
@@ -334,7 +341,7 @@ class pmclass extends data_object_with_custom_fields {
      */
     function update_enrolment_status() {
         //information about which course this belongs to may not have been
-        //loaded due to lazy-loading        
+        //loaded due to lazy-loading
         $this->load();
 
 //        if (isset($this->course) && (get_class($this->course) == 'course')) {
@@ -826,12 +833,18 @@ class pmclass extends data_object_with_custom_fields {
         if (isset($options['targetcourse'])) {
             $clone->courseid = $options['targetcourse'];
         }
+        $idnumber = $clone->idnumber;
         if (isset($userset)) {
             // if cluster specified, append cluster's name to class
-            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
+            $idnumber .= ' - '.$userset->name;
         }
+
+        //get a unique idnumber
+        $clone->idnumber = generate_unique_identifier(pmclass::TABLE, 'idnumber', $idnumber, array('idnumber' => $idnumber));
+
         $clone->autocreate = false; // avoid warnings
         $clone->save();
+
         $objs['classes'] = array($this->id => $clone->id);
 
         $cmc = $this->_db->get_record(classmoodlecourse::TABLE, array('classid'=>$this->id));
@@ -842,7 +855,11 @@ class pmclass extends data_object_with_custom_fields {
             if (empty($options['moodlecourses']) || $options['moodlecourses'] == 'copyalways'
                 || ($options['moodlecourses'] == 'copyautocreated' && $cmc->autocreated)) {
                 // create a new Moodle course based on the current class's Moodle course
-                $moodlecourseid   = course_rollover($cmc->moodlecourseid, $clone->startdate);
+                $moodlecourseid   = course_rollover($cmc->moodlecourseid);
+                //check that the course has rolled over successfully
+                if (!$moodlecourseid) {
+                    return false;
+                }
                 // Rename the fullname, shortname and idnumber of the restored course
                 $restore->id = $moodlecourseid;
                 // ELIS-2941: Don't prepend course name if already present ...
@@ -894,7 +911,6 @@ class pmclass extends data_object_with_custom_fields {
         if (isset($this->track) && is_array($this->track)) {
             $param['classid'] = $this->id;
             $param['courseid'] = $this->courseid;
-
             foreach ($this->track as $t) {
                 if (trackassignment::exists(array(new field_filter('classid', $this->id),
                                                   new field_filter('trackid', $t)))) {
@@ -904,6 +920,12 @@ class pmclass extends data_object_with_custom_fields {
                 $trackassignobj = new trackassignment($param);
                 $trackassignobj->save();
             }
+        }
+
+        if (isset($this->unlink_attached_course) && isset($this->moodlecourseid)) {
+            // process unlink moodle course id request
+            $return = moodle_detach_class($this->id, $this->moodlecourseid);
+            $this->moodlecourseid = 0;
         }
 
         if ($this->moodlecourseid || $this->autocreate) {
@@ -1001,7 +1023,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     }
 
     if ($alpha) {
-        $crslike = $DB->sql_like('crs.name', '?', FALSE);
+        $crslike = $DB->sql_like('cls.idnumber', '?', FALSE);
         $where[] = "($crslike)";
         $params[] = "$alpha%";
     }
@@ -1086,7 +1108,7 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
     }
 
     if ($alpha) {
-        $crslike = $DB->sql_like('crs.name', '?', FALSE);
+        $crslike = $DB->sql_like('cls.idnumber', '?', FALSE);
         $where[] = "($crslike)";
         $params[] = "$alpha%";
     }

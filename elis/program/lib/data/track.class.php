@@ -26,19 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
-
-/* Add these back in as they are migrated
-require_once CURMAN_DIRLOCATION . '/lib/datarecord.class.php';
-
-require_once CURMAN_DIRLOCATION . '/lib/curriculumcourse.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/moodlecourseurl.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/classmoodlecourse.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/usertrack.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/student.class.php';
-require_once CURMAN_DIRLOCATION . '/lib/clustercurriculum.class.php';
-*/
 require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('data/clustertrack.class.php');
 require_once elispm::lib('data/course.class.php');
@@ -47,11 +37,7 @@ require_once elispm::lib('data/curriculum.class.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/usertrack.class.php');
-
 require_once elispm::lib('deprecatedlib.php');
-
-//define ('TABLE', 'crlm_track');
-//define ('CLASSTABLE', 'crlm_track_class');
 
 class track extends data_object_with_custom_fields {
     const TABLE = 'crlm_track';
@@ -148,15 +134,21 @@ class track extends data_object_with_custom_fields {
         // For every course of the curricula determine which ones need -
         // to have their auto enrol flag set
         foreach ($curcourse as $recid => $curcourec) {
-            $suffix = 0;
-            do {
-                $idnumber = (!empty($curcourec->idnumber) ? $curcourec->idnumber .'-' : '') . $this->idnumber . ($suffix ? $suffix : '');
-                ++$suffix;
-                $classojb = new pmclass(array('courseid' => $curcourec->courseid,
-                                              'idnumber' => $idnumber));
-            } while ($this->_db->record_exists(pmclass::TABLE,
-                                     array('courseid' => $curcourec->courseid,
-                                           'idnumber' => $idnumber)));
+
+            //get a unique idnumber
+            $idnumber = $this->idnumber;
+            if (!empty($curcourec->idnumber)) {
+                // if cluster specified, append cluster's name to class
+                $idnumber = $curcourec->idnumber.'-'.$idnumber;
+            }
+
+            generate_unique_identifier(pmclass::TABLE,
+                                      'idnumber',
+                                       $idnumber,
+                                       array('idnumber' => $idnumber),
+                                      'pmclass', $classojb,
+                                       array('courseid' => $curcourec->courseid,
+                                             'idnumber' => $idnumber));
 
             // Course is required
             if ($curcourec->required) {
@@ -434,8 +426,9 @@ class track extends data_object_with_custom_fields {
                     $wait_list->save();
                     $status = true;
                 } catch (Exception $e) {
+                    $param = array('message' => $e->getMessage());
                     echo cm_error(get_string('record_not_created_reason',
-                                             self::LANG_FILE, $e));
+                                             self::LANG_FILE, $param));
                 }
             }
         }
@@ -483,10 +476,25 @@ class track extends data_object_with_custom_fields {
         if (isset($options['targetcurriculum'])) {
             $clone->curid = $options['targetcurriculum'];
         }
+
+        $idnumber = $clone->idnumber;
+        $name = $clone->name;
         if (isset($userset)) {
-            // if cluster specified, append cluster's name to track
-            $clone->idnumber = $clone->idnumber.' - '.$userset->name;
-            $clone->name = $clone->name.' - '.$userset->name;
+            // if cluster specified, append cluster's name to curriculum
+            $idnumber .= ' - '.$userset->name;
+            $name .= ' - '.$userset->name;
+        }
+
+        //get a unique idnumber
+        $clone->idnumber = generate_unique_identifier(track::TABLE, 'idnumber', $idnumber, array('idnumber' => $idnumber));
+
+        if ($clone->idnumber != $idnumber) {
+            //get the suffix appended and add it to the name
+            $parts = explode('.', $clone->idnumber);
+            $suffix = end($parts);
+            $clone->name = $name.'.'.$suffix;
+        } else {
+            $clone->name = $name;
         }
         $clone->autocreate = false; // avoid warnings
         $clone->save();
@@ -700,8 +708,9 @@ class trackassignment extends elis_data_object {
                     $wait_list = new waitlist($wait_record);
                     $wait_list->save();
                 } catch (Exception $e) {
+                    $param = array('message' => $e->getMessage());
                     echo cm_error(get_string('record_not_created_reason',
-                                             'elis_program', $e));
+                                             'elis_program', $param));
                 }
             }
         }
@@ -1052,11 +1061,21 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
     $join   = " JOIN {" . track::TABLE ."} trk ON trkassign.trackid = trk.id
                 JOIN {". pmclass::TABLE ."} cls ON trkassign.classid = cls.id
                 JOIN {". curriculumcourse::TABLE . "} curcrs ON curcrs.curriculumid = trk.curid AND curcrs.courseid = cls.courseid ";
+
+    //calculate an appropriate condition if we need to filter out inactive users
+    $inactive_condition = '';
+    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        $inactive_condition = ' AND u.inactive = 0';
+    }
+
     // get number of users from track who are enrolled
     $join  .= "LEFT JOIN (SELECT s.classid, COUNT(s.userid) AS enrolments
                             FROM {". student::TABLE ."} s
                             JOIN {". usertrack::TABLE ."} t USING(userid)
-                           WHERE t.trackid = :trackid
+                            JOIN {".user::TABLE."} u
+                              ON t.userid = u.id
+                              {$inactive_condition}
+                           WHERE t.trackid = :trackid                             
                         GROUP BY s.classid) enr ON enr.classid = cls.id ";
     $params['trackid'] = $trackid;
 

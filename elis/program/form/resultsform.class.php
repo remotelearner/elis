@@ -173,14 +173,12 @@ class cmEngineForm extends cmform {
         $mform->addGroup($active, '', '', ' ', false);
         $mform->setType('active', PARAM_BOOL);
 
-        $attributes = array();
-
+        $attributes = array('group' => null);
         if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
-            $attributes = array('disabled' => 'disabled');
+            $attributes = array('disabled' => 'disabled', 'group' => null);
         }
 
         $exists = array_key_exists('eventtriggertype', $this->_customdata);
-
         if ($exists && ($this->_customdata['eventtriggertype'] == RESULTS_ENGINE_MANUAL)) {
             $settings = 'height=200,width=500,top=0,left=0,menubar=0,location=0,scrollbars,'
                       . 'resizable,toolbar,status,directories=0,fullscreen=0,dependent';
@@ -349,6 +347,17 @@ class cmEngineForm extends cmform {
     }
 
     /**
+     * Validate score min/max values
+     *
+     * @param  mixed  $data  The form data with score
+     * @param  string $key   The score value data key to validate
+     * @return bool   true for valid score, false for invalid
+     */
+    function valid_score($data, $key) {
+        return(isset($data[$key]) && is_numeric($data[$key]));
+    }
+
+    /**
      * Validate Fold
      *
      * @param int   $actiontype The action type of the fold we're validating
@@ -360,12 +369,12 @@ class cmEngineForm extends cmform {
         $ranges = array();
         $parsed = array();
 
-        $prefix = $this->types[$actiontype] .'_';
+        $langsuffix = $this->types[$actiontype];
+        $prefix = $langsuffix .'_';
 
         // Fallback check, if add another range button pushed skip vaidation.
         // Otherwise validate and make sure all rows have been filled correctly out
-        if (! array_key_exists($prefix .'add', $data)) {
-
+        if (!array_key_exists($prefix .'add', $data)) {
             // Iterate through the submitted values.
             // Existing data has the key track_<number>_min/max/etc.
             foreach ($data as $key => $value) {
@@ -375,11 +384,9 @@ class cmEngineForm extends cmform {
                     continue;
                 }
 
-
                 // Extract the element unique id
                 $parts      = explode('_', $key);
                 $id         = $parts[1];
-
                 if (array_key_exists($id, $parsed)) {
                     continue;
                 }
@@ -389,25 +396,30 @@ class cmEngineForm extends cmform {
                 $keymax     = $keyprefix .'_max';
                 $keyselect  = $keyprefix .'_selected';
                 $keygroup   = $keyprefix .'_score';
-
+                $skip_empty = false;
                 // Skip over empty score ranges.
-                if (empty($data[$keymin]) && empty($data[$keymax])) {
-                    // Skip
-                } else if (empty($data[$keymin]) || empty($data[$keymax]) || empty($data[$keyselect])) {
+                if (!$this->valid_score($data, $keymin) &&
+                    !$this->valid_score($data, $keymax)) {
+                    if (!empty($data[$keyselect])) {
+                        $error = get_string('results_error_incomplete_score_range', self::LANG_FILE);
+                    } else {
+                        $skip_empty = true;
+                    }
+                } else if (!$this->valid_score($data, $keymin) ||
+                           !$this->valid_score($data, $keymax)) {
                     $error = get_string('results_error_incomplete_score_range', self::LANG_FILE);
 
-                } else if ((int) $data[$keymin] >= (int) $data[$keymax]) {
+                } else if ((int)$data[$keymin] > (int)$data[$keymax]) {
                     $error = get_string('results_error_min_larger_than_max', self::LANG_FILE);
 
                 } else if (empty($data[$keyselect])) {
-                    $error = get_string('results_error_no_'. $prefix, self::LANG_FILE);
+                    $error = get_string('results_error_no_'. $langsuffix,
+                                        self::LANG_FILE);
                 }
 
                 // Only check the ranges if no other error has been found yet.
-                if (empty($error) && !(empty($data[$keymin]) || empty($data[$keymax]))) {
-
+                if (!$skip_empty && empty($error)) {
                     foreach ($ranges as $range) {
-
                         if (($range['min'] <= $data[$keymin]) && ($data[$keymin] <= $range['max'])) {
                             $error = get_string('results_error_range_overlap_min', self::LANG_FILE);
 
@@ -492,15 +504,17 @@ class cmEngineForm extends cmform {
 
         $results   = array('' => get_string('results_select_profile', self::LANG_FILE));
 
-        $sql = 'SELECT f.id, f.name'
-             .' FROM '. $CFG->prefix . field::TABLE .' f'
-             .' INNER JOIN '. $CFG->prefix . field_contextlevel::TABLE .' fc ON fc.fieldid = f.id '
-             .' WHERE fc.contextlevel = '.CONTEXT_ELIS_USER;
+        $sql = 'SELECT f.id, f.name
+                  FROM {'. field::TABLE .'} f
+            RIGHT JOIN {'. field_contextlevel::TABLE .'} fc
+                    ON fc.fieldid = f.id
+                 WHERE fc.contextlevel = '. $userlevel;
 
         $rows = $DB->get_records_sql($sql);
-
         foreach ($rows as $row) {
-            $results[$row->id] = $row->name;
+            if (!empty($row->id)) {
+                $results[$row->id] = $row->name;
+            }
         }
 
         return $results;
@@ -554,9 +568,9 @@ class cmEngineForm extends cmform {
         $attributes = array('border' => '1', 'id' => "{$typename}_selection_table");
         $tablehtml = html_writer::start_tag('table', $attributes);
         $tablehtml .= html_writer::start_tag('tr');
-        $tablehtml .= html_writer::tag('th', $scoreheader);
-        $tablehtml .= html_writer::tag('th', $assigntype);
-        $tablehtml .= html_writer::tag('th', $valueheader);
+        $tablehtml .= html_writer::tag('th', $scoreheader, array('width' => '25%'));
+        $tablehtml .= html_writer::tag('th', $assigntype, array('width' => '40%'));
+        $tablehtml .= html_writer::tag('th', $valueheader, array('width' => '30%'));
         $tablehtml .= html_writer::end_tag('tr');
 
         $funcname = "get_assign_to_{$typename}_data";
@@ -627,7 +641,7 @@ class cmEngineForm extends cmform {
 
             // Start a table row and column
             $tablehtml = html_writer::start_tag('tr');
-            $tablehtml .= html_writer::start_tag('td',array('style'=>'text-align:center'));
+            $tablehtml .= html_writer::start_tag('td', array('style' => 'text-align:center;'));
 
             $mform->addElement('html', $tablehtml);
 
@@ -659,12 +673,12 @@ class cmEngineForm extends cmform {
             $mform->addGroup($group, "{$prefix}{$i}_score", '', '', false);
 
             $tablehtml = html_writer::end_tag('td');
-            $tablehtml .= html_writer::start_tag('td',array('style'=>'text-align:center'));
+            $tablehtml .= html_writer::start_tag('td', array('style' => 'text-align:center;'));
             $mform->addElement('html', $tablehtml);
 
             if ($this->rowtypes[$type] == 'picklist') {
                 $name = '';
-                if (! empty($data->selected)) {
+                if (!empty($data->selected)) {
                     $name = $this->get_label_name($typename, $data->selected);
                 } else {
                     $name = $notypeselected;
@@ -680,9 +694,12 @@ class cmEngineForm extends cmform {
                     'id'       => "id_{$prefix}{$i}_label",  // Needed for javascript call back
                     'value'    => $name,
                     'name'     => "{$prefix}{$i}_label",
-                    'type'     => 'text',
-                    'disabled' => 'disabled'
+                    'type'     => 'text'
+                    // , 'disabled' => 'disabled'
                 );
+                if (!(array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
+                    $attributes['disabled'] = 'disabled';
+                }
                 $output     = html_writer::empty_tag('input', $attributes);
 
                 $attributes     = array(
@@ -716,7 +733,7 @@ class cmEngineForm extends cmform {
                 $mform->addElement('select', "{$prefix}{$i}_selected", '', $options, $attributes);
 
                 $attributes = array();
-                if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
+                if (!(array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
                     $attributes = array('disabled' => 'disabled');
                 }
                 $tablehtml  = html_writer::end_tag('td');

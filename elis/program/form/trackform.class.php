@@ -170,6 +170,8 @@ class trackform extends cmform {
             }
         }
 
+        $errors += parent::validate_custom_fields($data, 'track');
+
         return $errors;
     }
 

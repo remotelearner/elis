@@ -36,7 +36,7 @@ class userform extends cmform {
         global $USER, $CFG, $COURSE;
 
         //determine if this is a create or a view / edit
-        if ($this->_customdata['obj']) {
+        if ($this->_customdata['obj'] && isset($this->_customdata['obj']->id)) {
             //view / edit
             $disabled = true;
             if (!empty($this->_customdata['obj']->birthdate)) {
@@ -182,9 +182,12 @@ class userform extends cmform {
         $radioarray[] = &$mform->createElement('radio', 'gender', '', get_string('female', 'elis_program'), 'F');
         $mform->addGroup($radioarray, 'gender', get_string('usergender', 'elis_program'), ' ', false);
 
-        $language = get_string_manager()->get_list_of_languages(); // TBD: get_list_of_translations(true)
+        $language = get_string_manager()->get_list_of_translations(true);
         $mform->addElement('select', 'language', get_string('language'), $language);
-        $mform->setDefault('language', 'en');
+        //$mform->setDefault('language', 'en');
+        // ELIS-4041: ^^^ had to remove setDefault('language', 'en')
+        //            'cause it never showed real language value always default?
+        //            added method to userpage::get_default_object_for_add()
         $mform->addHelpButton('language', 'user_language', 'elis_program');
 
         $mform->addElement('text', 'transfercredits', get_string('user_transfercredits', 'elis_program'));
@@ -236,7 +239,7 @@ class userform extends cmform {
         $errors = parent::validation($data, $files);
 
         // Use a default for 'id' if we're doing an add
-        if(!$data['id']) {
+        if (!$data['id']) {
             $data['id'] = 0;
         }
 
@@ -282,39 +285,7 @@ class userform extends cmform {
             }
         }
 
-        // validate custom profile fields
-        $fields = field::get_for_context_level(CONTEXT_ELIS_USER);
-        $fields = $fields ? $fields : array();
-        if ($data['id']) {
-            $context = context_elis_user::instance($data['id']);
-            $contextid = $context->id;
-        } else {
-            $contextid = 0;
-        }
-
-        /**
-         * TBD: Move the following code into an ELIS custom field/formslib
-         *      validation rule, which would work for all unqiue custom fields
-         */
-        foreach ($fields as $field) {
-            if ($field->forceunique) {
-                $datafield = 'data';
-                if ($field->data_type() == 'text') {
-                    //error_log("userform.class.php::field({$field->id}), datafield = {$datafield}, type = " . $field->data_type() );
-                    $datafield = $DB->sql_compare_text('data', 255); // TBV
-                }
-                $where = "fieldid = ? AND {$datafield} = ?";
-                $fielddata = $DB->get_recordset_select($field->data_table(), $where, array($field->id, $data["field_{$field->shortname}"]));
-                $fcount = $DB->count_records_select($field->data_table(), $where, array($field->id, $data["field_{$field->shortname}"]));
-                if (!empty($fielddata) && $fielddata->valid()) {
-                    $fdata = $fielddata->current();
-                    if ($fcount > 1 || $fdata->contextid != $contextid) {
-                        $errors["field_{$field->shortname}"] = get_string('valuealreadyused');
-                    }
-                    $fielddata->close();
-                }
-            }
-        }
+        $errors += parent::validate_custom_fields($data, 'user');
 
         return $errors;
     }

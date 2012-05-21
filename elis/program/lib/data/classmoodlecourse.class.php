@@ -26,6 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
@@ -33,8 +35,6 @@ require_once elispm::lib('data/coursetemplate.class.php');
 require_once elispm::lib('data/student.class.php');
 require_once elispm::lib('data/instructor.class.php');
 require_once elispm::lib('moodlecourseurl.class.php');
-
-//require_once CURMAN_DIRLOCATION . '/lib/rollover/sharelib.php';     // missing
 
 define ('CLSMDLENROLAUTO', 0);          // Automatically assign roles in Moodle course.
 define ('CLSMDLENROLCHOICE', 1);        // Allow user to choose at time of assignment.
@@ -400,7 +400,11 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 
             //perform the rollover
             require_once(elis::lib('rollover/lib.php'));
-            $moodlecourseid   = course_rollover($courseid, $cls->startdate);
+            $moodlecourseid   = course_rollover($courseid);
+            //check that the course has rolled over successfully
+            if (!$moodlecourseid) {
+                return false;
+            }
 
             //set the Moodle course name as expected
             $restoredcourse = new stdClass;
@@ -440,6 +444,21 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
     events_trigger('pm_classinstance_associated', $clsmdl);
 
     return true;
+}
+/**
+ * Detach the Moodle course from this class record.
+ *
+ * @param int    $clsid           The class ID.
+ * @param int    $mdlid           The Moodle course ID.
+ * @return bool True on success, False otherwise.
+ */
+function moodle_detach_class($clsid, $mdlid) {
+    global $DB;
+
+    /// Delete the crlm_class_moodle record
+    $select = 'classid = ? AND moodlecourseid = ?';
+    $params = array($clsid, $mdlid);
+    return $DB->delete_records_select('crlm_class_moodle', $select, $params);
 }
 
 function moodle_get_classes() {

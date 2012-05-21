@@ -316,7 +316,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         $sort_clause = $sort.' '.$dir;
         $items = clustercurriculum::get_curricula($id, 0, 0, $sort_clause);
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'curricula');
 
         // find the curricula that the user can associate with this cluster
         $contexts = curriculumpage::get_contexts('elis/program:associate');
@@ -725,7 +725,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
 
         $items = clustercurriculum::get_clusters($id, $parent_clusterid, $sort, $dir);
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'clusters');
 
         $contexts = usersetpage::get_contexts('elis/program:associate');
         $clusters = cluster_get_listing('name', 'ASC', 0, 0, '', '', array('contexts' =>$contexts));
