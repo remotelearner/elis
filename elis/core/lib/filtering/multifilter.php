@@ -320,18 +320,18 @@ class generalized_filter_multifilter {
                     break;
 
                 case 'menu':
-                    if (empty($params['options_source'])) {
-                        if (! empty($params['options'])) {
-                            $choices = explode("\n", $params['options']);
-                            foreach ($choices as $key => $choice) {
-                                $choices[$key] = trim($choice);
-                            }
-                            $this->_choices[$field_identifier] = array_combine($choices, $choices);
-                        } else {
-                            $this->_choices[$field_identifier] = $yesno;
+                    $choices = $owner->get_menu_options();
+                    if (!empty($choices)) {
+                        $this->_choices[$field_identifier] = array();
+                        foreach ($choices as $key => $choice) {
+                            $choice = trim($choice);
+                            // preserve anyvalue key => ''
+                            //$key = ($key === '') ? $key : $choice;
+                            $this->_choices[$field_identifier][$key] = $choice;
                         }
                     } else {
-                        unset($options[$field_identifier]);
+                        error_log("multifilter::get_custom_fields() - empty menu options for fieldid = {$field->id} ... using: Yes, No");
+                        $this->_choices[$field_identifier] = $yesno;
                     }
                     break;
 
@@ -441,8 +441,13 @@ class generalized_filter_multifilter {
             } else {
                 $options['dbfield'] = $this->_outerfield['default'];
             }
-            $options['talias'] = '';
             $options['tables'] = $this->tables[$group];
+            // ELIS-5295: elisuserprofile filter requires talias & contextlevel
+            $options['talias'] = 'u'; // TBD: default?
+            if (!empty($this->tables[$group]['crlm_user'])) {
+                $options['talias'] = $this->tables[$group]['crlm_user'];
+            }
+            $options['contextlevel'] = $this->sections[$group]['contextlevel'];
 
             if (array_key_exists($name, $this->_fields[$group])) {
                 if (isset($this->_fields[$group][$name]->id) &&
@@ -474,6 +479,9 @@ class generalized_filter_multifilter {
 
         if (array_key_exists($name, $this->_choices)) {
             $options['choices'] = $this->_choices[$name];
+            if (isset($options['choices'][''])) {
+                $options['noany'] = true;
+            }
         }
 
         $options = $this->make_filter_options_custom($options, $group, $name);

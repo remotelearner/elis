@@ -394,6 +394,7 @@ class field extends elis_data_object {
                                      'contextid IS NULL AND fieldid = ?',
                                      array($this->id));
     }
+
 }
 
 class elis_field_filter extends field_filter {
@@ -483,7 +484,7 @@ class field_owner extends elis_data_object {
         if (strncmp($name, 'param_', 6) == 0) {
             $paramname = substr($name, 6);
             $params = unserialize($this->params);
-            return $params[$paramname];
+            return isset($params[$paramname]) ? $params[$paramname] : null;
         }
 
         return parent::__get($name);
@@ -558,6 +559,44 @@ class field_owner extends elis_data_object {
         $owner->params = serialize($params);
         $owner->save();
     }
+
+    /**
+     * Get the menu options for field.
+     * Only valid for 'menu' datatypes
+     *
+     * @param  object $data   optional data for menu options source class
+     * @return array          the menu options for the field (empty if N/A)
+     */
+    public function get_menu_options($data = array()) {
+        global $DB;
+        $menu_options = array();
+        $params = unserialize($this->params);
+        if (!empty($params['control']) && $params['control'] == field::MENU) {
+            if (!empty($params['options_source'])) {
+                $menu_options_src = $params['options_source'];
+                require_once elis::plugin_file('elisfields_manual','sources.php');
+                $basedir = elis::plugin_file('elisfields_manual','sources');
+                $src_file = $basedir .'/'. $menu_options_src .'.php';
+                if (file_exists($src_file)) {
+                    require_once($src_file);
+                    $classname = "manual_options_{$menu_options_src}";
+                    $plugin = new $classname();
+                    $menu_options = $plugin->get_options($data);
+                } else {
+                    error_log("field_owner::get_menu_options() - ERROR: no source file {$src_file} for fieldid = {$this->fieldid}");
+                }
+            } else if (!empty($params['options'])) {
+                $options = explode("\n", $params['options']);
+                if (!empty($options)) {
+                    $menu_options = array_combine($options, $options);
+                }
+            } else {
+                error_log("field_owner::get_menu_options() - no menu options found for fieldid = {$this->fieldid}");
+            }
+        }
+        return $menu_options;
+    }
+
 }
 
 /**

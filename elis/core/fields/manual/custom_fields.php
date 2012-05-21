@@ -213,6 +213,7 @@ function manual_field_save_form_data($form, $field, $data) {
  */
 function manual_field_add_form_element($form, $mform, $context, $customdata, $field, $check_required = true) {
     //$mform = $form->_form;
+    $elem = "field_{$field->shortname}";
     $manual = new field_owner($field->owners['manual']);
     if (!empty($manual->param_edit_capability)) {
         $capability = $manual->param_edit_capability;
@@ -223,17 +224,52 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
                     return;
                 }
             }
-            $mform->addElement('static', "field_{$field->shortname}", $field->name);
+            $mform->addElement('static', $elem, $field->name);
             return;
         }
     }
     $control = $manual->param_control;
     require_once elis::plugin_file('elisfields_manual',"field_controls/{$control}.php");
     call_user_func("{$control}_control_display", $form, $mform, $customdata, $field);
+
+    // set default data if no over-riding value set!
+    if (!isset($customdata['obj']->$elem)) {
+        $defaultdata = field_data::get_for_context_and_field(NULL, $field);
+        if (!empty($defaultdata)) {
+            if ($field->multivalued) {
+                $values = array();
+                // extract the data
+                foreach ($defaultdata as $data) {
+                    $values[] = $data->data;
+                }
+                // represent as a CSV string
+                $fh = fopen("php://memory", "rw");
+                fputcsv($fh, $values);
+                rewind($fh);
+                $defaultdata = fgets($fh);
+                fclose($fh);
+            } else {
+                foreach ($defaultdata as $defdata) {
+                    $defaultdata = $defdata->data;
+                    break;
+                }
+            }
+        }
+
+        // Format decimal numbers
+        if (strcmp($field->datatype, 'num') == 0) {
+            $defaultdata = $field->format_number($defaultdata);
+        }
+
+        if (!is_null($defaultdata) && !is_object($defaultdata) && $defaultdata !== false) {
+            $mform->setDefault($elem, $defaultdata);
+        }
+    }
+
     if ($check_required) {
         $manual_params = unserialize($manual->params);
         if (!empty($manual_params['required'])) {
-            $mform->addRule("field_{$field->shortname}", null, 'required', null, 'client'); // TBD
+            $mform->addRule($elem, null, 'required', null, 'client'); // TBD
         }
     }
 }
@@ -286,3 +322,105 @@ function manual_field_add_help_button($mform, $elementname, $field) {
                              array(array('id' => $id, 'url' => $url)));
     }
 }
+
+/**
+ * Validates a custom field form element
+ *
+ * @param  mixed         $data      The form elements data to validate
+ * @param  field object  $field     The custom field object to validate on
+ * @param  int           $contextid The custom field's context id
+ * @uses   $DB
+ * @return mixed         Either: the error string for the custom field data
+ *                       null for no validation errors, false for coding error.
+ */
+function manual_field_validation($data, $field, $contextid) {
+    global $DB;
+
+    if (!($field instanceof field)) {
+        error_log("manual_field_validation(): coding error - non-field object passed (contextid = {$contextid})");
+        return false;
+    }
+
+    $errstr = null;
+    if ($field->multivalued) {
+        $manual = new field_owner($field->owners['manual']);
+        if (!isset($data)) {
+            $data = array();
+        }
+        if (!is_array($data)) {
+            $data = array($data);
+        }
+        $fielddata = $data;
+        sort($fielddata);
+        if ($manual->param_required) {
+            if (empty($fielddata)) {
+                $errstr = get_string('required');
+            } else if (!empty($manual->param_options)) {
+                $options = explode("\n", $manual->param_options);
+                array_walk($options, 'trim_cr'); // TBD: defined below
+                foreach ($fielddata as $entry) {
+                    if (!in_array($entry, $options)) {
+                        $errstr = get_string('required');
+                        break;
+                    }
+                }
+            }
+        }
+        if (is_null($errstr) && $field->forceunique) {
+            $where = "contextid != {$contextid} AND fieldid = {$field->id}";
+            if ($recs = $DB->get_records_select($field->data_table(), $where,
+                                 null, '', 'id, contextid, data')) {
+                $curcontext = -1;
+                $vals = null;
+                foreach ($recs AS $rec) {
+                    if ($curcontext != $rec->contextid) {
+                        if (!empty($vals)) {
+                            sort($vals);
+                            if ($vals == $fielddata) {
+                                $errstr = get_string('valuealreadyused');
+                                // TBD^^^ "[These/This combination of] values already uesd!"
+                                $vals = null;
+                                break;
+                            }
+                        }
+                        $curcontext = $rec->contextid;
+                        $vals = array();
+                    }
+                    $vals[] = $rec->data;
+                }
+                if (!empty($vals)) {
+                    sort($vals);
+                    if ($vals == $fielddata) {
+                        $errstr = get_string('valuealreadyused');
+                        // TBD^^^ "[These/This combination of] values already uesd!"
+                    }
+                }
+            }
+        }
+    } else if ($field->forceunique) {
+        // NON-MULTIVALUED case
+        $datafield = 'data';
+        if ($field->data_type() == 'text') {
+            //error_log("manual_field_validation(): field({$field->id}), datafield = {$datafield}, type = ". $field->data_type() );
+            $datafield = $DB->sql_compare_text('data', 255); // TBV
+        }
+        $where = "fieldid = ? AND {$datafield} = ?";
+        $fielddata = $DB->get_recordset_select($field->data_table(), $where, array($field->id, $data));
+        $fcount = $DB->count_records_select($field->data_table(), $where, array($field->id, $data));
+        if (!empty($fielddata) && $fielddata->valid()) {
+            $fdata = $fielddata->current();
+            if ($fcount > 1 || $fdata->contextid != $contextid) {
+                $errstr = get_string('valuealreadyused');
+            }
+            $fielddata->close();
+        }
+    }
+
+    return $errstr;
+}
+
+// Helper function
+function trim_cr(&$item, $key) {
+    $item = trim($item, "\r\n");
+}
+
