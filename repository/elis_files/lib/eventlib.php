@@ -471,7 +471,7 @@ function elis_files_user_created($user) {
 
     // Only proceed here if the Alfresco plug-in is actually enabled.
     if (!($repo = repository_factory::factory('elis_files')) || !$repo->is_configured() || !$repo->verify_setup()) {
-//         error_log("elis_files_user_created(): Alfresco NOT enabled!");
+        //error_log("elis_files_user_created(): Alfresco NOT enabled!");
     } else {
         // create a random password for certain authentications
         $auths = elis_files_nopasswd_auths();

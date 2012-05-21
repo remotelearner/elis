@@ -79,38 +79,43 @@ define('ELIS_FILES_CAPABILITY_ALLOWED', 'ALLOWED');
 define('ELIS_FILES_CAPABILITY_DENIED',  'DENIED');
 
 // Define constants for the default file browsing location.
-defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
+defined('ELIS_FILES_BROWSE_SITE_FILES')   or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
 // Was shared, now called server files
 defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
-defined('ELIS_FILES_BROWSE_USER_FILES') or define('ELIS_FILES_BROWSE_USER_FILES',   50);
-defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_FILES', 60);
+defined('ELIS_FILES_BROWSE_USER_FILES')   or define('ELIS_FILES_BROWSE_USER_FILES',   50);
+
+// Setup options for the method to transfer files into Alfresco from Moodle
+defined('ELIS_FILES_XFER_WS')  || define('ELIS_FILES_XFER_WS', 'webservices');
+defined('ELIS_FILES_XFER_FTP') || define('ELIS_FILES_XFER_FTP', 'ftp');
 
 
 class ELIS_files {
 
-    static $plugin_name = 'repository/alfresco'; // TBD
-    static $init   = false; // Prevent recursion
-    var $errormsg  = '';  // Standard error message varible.
-    var $log       = '';  // Cron task log messages.
-    var $cmis      = null;  // CMIS service connection object.
-    var $muuid     = '';  // Moodle root folder UUID
-    var $suuid     = '';  // Shared folder UUID
-    var $cuuid     = '';  // Course folder UUID
-    var $uuuid     = '';  // User folder UUID
-    var $ouuid     = '';  // usersets folder UUID
-    var $root      = '';  // Root folder UUID
-    var $config    = '';  // Config object setting variables for Alfresco
-    var $isrunning = null;
-    var $alfresco_username_fix = ''; // The fixed username for Alfresco where @ is replaced with _AT_
-    public static $version   = null; // Alfresco version
+    static $plugin_name          = 'repository/elis_files'; // TBD
+    static $init                 = false; // Prevent recursion
+    var $errormsg                = '';  // Standard error message varible.
+    var $log                     = '';  // Cron task log messages.
+    var $cmis                    = null;  // CMIS service connection object.
+    var $muuid                   = '';  // Moodle root folder UUID
+    var $suuid                   = '';  // Shared folder UUID
+    var $cuuid                   = '';  // Course folder UUID
+    var $uuuid                   = '';  // User folder UUID
+    var $ouuid                   = '';  // usersets folder UUID
+    var $root                    = '';  // Root folder UUID
+    var $config                  = '';  // Config object setting variables for Alfresco
+    var $isrunning               = null;
+    var $alfresco_username_fix   = ''; // The fixed username for Alfresco where @ is replaced with _AT_
+    public static $version       = null; // Alfresco version
+    public static $type_document = null;
+    public static $type_folder   = null;
 
     function ELIS_files() {
         global $CFG, $USER, $DB;
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('ELIS_files()');
 
-        $this->process_config(get_config('ELIS_files'));
+        $this->process_config(get_config('elis_files'));
 
         if (!$this->is_configured()) {
             return false;
@@ -574,7 +579,7 @@ class ELIS_files {
             return false;
         }
 
-        return (elis_files_get_type($uuid) == ELIS_FILES_TYPE_FOLDER);
+        return (elis_files_get_type($uuid) == self::$type_folder);
     }
 
 
@@ -696,12 +701,12 @@ class ELIS_files {
             foreach ($result->objectsById as $child) {
                 $type = '';
 
-               $node =  elis_files_process_node_new($child, $type);
+                $node =  elis_files_process_node_new($child, $type);
 
-                if ($type == ELIS_FILES_TYPE_FOLDER) {
+                if ($type == self::$type_folder) {
                     $return->folders[] = $node;
                     // Only include a file in the list if it's title does not start with a period '.'
-                    } else if ($type == ELIS_FILES_TYPE_DOCUMENT && !empty($node->title) && $node->title[0] !== '.') {
+                    } else if ($type == self::$type_document && !empty($node->title) && $node->title[0] !== '.') {
                     $return->files[] = $node;
                 }
             }
@@ -1034,6 +1039,9 @@ class ELIS_files {
     function upload_file($upload = '', $path = '', $uuid = '', $useadmin = true) {
         global $CFG, $USER;
 
+        // TODO: Remove this method as it seems that it is not necessary anymore?
+        return false;
+
         if (ELIS_FILES_DEBUG_TRACE) mtrace('upload_file(' . $upload . ', ' . $path . ', ' . $uuid . ')');
         if (ELIS_FILES_DEBUG_TIME) $start = microtime(true);
 
@@ -1320,7 +1328,7 @@ class ELIS_files {
                     }
                 }
             } else if (is_file($path . $file)) {
-                if (!$this->upload_file('', $path . $file, $uuid)) {
+                if (!elis_files_upload_file('', $path . $file, $uuid)) {
                     return false;
                 }
             }
@@ -1862,7 +1870,7 @@ class ELIS_files {
             return false;
         }
 
-        if ($node->type == ELIS_FILES_TYPE_FOLDER) {
+        if ($node->type == self::$type_folder) {
             // Include shared and oid parameters
             $params = array('path'=>$node->uuid,
                             'shared'=>(boolean)$shared,
@@ -1877,7 +1885,7 @@ class ELIS_files {
 
                 array_push($stack, $nav);
 
-        } else if ($node->type != ELIS_FILES_TYPE_DOCUMENT) {
+        } else if ($node->type != self::$type_document) {
             return false;
         }
 
@@ -1935,9 +1943,9 @@ class ELIS_files {
             return false;
         }
 
-        if ($node->type == ELIS_FILES_TYPE_FOLDER) {
+        if ($node->type == self::$type_folder) {
             array_push($stack, $node->title);
-        } else if ($node->type !== ELIS_FILES_TYPE_DOCUMENT) {
+        } else if ($node->type !== self::$type_document) {
             return false;
         }
 
@@ -2787,17 +2795,14 @@ class ELIS_files {
     function migrate_user($userorusername, $password = '') {
         global $CFG, $DB;
 
-        // Prevent modifying Moodle's user name
-        $cloned_userorusername = clone $userorusername;
+        if (ELIS_FILES_DEBUG_TRACE) mtrace('migrate_user(' . (is_object($userorusername) ? 'object' : $userorusername) . ')');
 
-        if (ELIS_FILES_DEBUG_TRACE) mtrace('migrate_user(' . (is_object($cloned_userorusername) ? 'object' : $cloned_userorusername) . ')');
-
-        if (is_string($cloned_userorusername)) {
-            if (!$user = $DB->get_record('user', array('username'=> $cloned_userorusername, 'mnethostid'=> $CFG->mnet_localhost_id))) {
+        if (is_string($userorusername)) {
+            if (!$user = $DB->get_record('user', array('username' => $userorusername, 'mnethostid'=> $CFG->mnet_localhost_id))) {
                 return false;
             }
-        } else if (is_object($cloned_userorusername)) {
-            $user = $cloned_userorusername;
+        } else if (is_object($userorusername)) {
+            $user = clone $userorusername;
         } else {
             return false;
         }
@@ -3340,15 +3345,16 @@ class ELIS_files {
         }
 
         // Set the file and folder type
-        if (!defined('ELIS_FILES_TYPE_FOLDER')) {
+        if (!isset(self::$type_document)) {
             if (self::is_version('3.2')) {
-                define('ELIS_FILES_TYPE_FOLDER',   'folder');
-                define('ELIS_FILES_TYPE_DOCUMENT', 'document');
+                self::$type_folder   = 'folder';
+                self::$type_document = 'document';
             } else if (self::is_version('3.4')) {
-                define('ELIS_FILES_TYPE_FOLDER',   'cmis:folder');
-                define('ELIS_FILES_TYPE_DOCUMENT', 'cmis:document');
+                self::$type_folder   = 'cmis:folder';
+                self::$type_document = 'cmis:document';
             }
         }
+
         return true;
     }
 
