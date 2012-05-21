@@ -195,6 +195,14 @@ class course_completion_by_cluster_report extends table_report {
 
         //cluster tree / dropdown filter
         $cluster_heading = get_string('filter_cluster', 'rlreport_course_completion_by_cluster');
+
+        //add a bit of spacing
+        $br = html_writer::empty_tag('br');
+        $cluster_heading .= $br.$br;
+
+        //include a descriptive message about how to use the tree view
+        $cluster_heading .= get_string('filter_cluster_description', 'rlreport_course_completion_by_cluster');
+
         $cluster_filter = new generalized_filter_entry('cluster', '', 'clusterid', $cluster_heading,
                                                        false, 'clustertree', $clustertree_options);
 
@@ -364,23 +372,37 @@ class course_completion_by_cluster_report extends table_report {
 
         //filters for each of two cases, put inside the query for performance reasons
         //(use parent functionality because we are preventing filter application in the usual way)
+        ob_start(); // ELIS-4660
         $curriculum_filter = parent::get_filter_condition('WHERE');
         $noncurriculum_filter = parent::get_filter_condition('AND');
+        ob_end_clean(); // ELIS-4660
 
         //grouping for each of the two cases
         $group_by = "GROUP BY user.id, enrol.id, cluster.id, course.id, curriculum.id";
         $noncurriculum_group_by = "GROUP BY user.id, enrol.id, cluster.id, course.id";
 
+        // status of clustertree filter, drop-down menu
+        $usingdd = php_report_filtering_get_active_filter_values(
+                       $this->get_report_shortname(), 'cluster_usingdropdown',
+                       $this->filter);
+
         //check permissions
-        $contexts = get_contexts_by_capability_for_user('cluster', $this->access_capability, $this->userid);
-        //$permissions_filter = $contexts->sql_filter_for_context_level('clusterid', 'cluster');
-        $filter_obj = $contexts->get_filter('clusterid', 'cluster');
-        $filter_sql = $filter_obj->get_sql(false, null, SQL_PARAMS_NAMED);
-        $filter_params = array();
         $permissions_filter = '';
-        if (isset($filter_sql['where'])) {
-            $permissions_filter = 'WHERE '. $filter_sql['where'];
-            $filter_params = $filter_sql['where_parameters'];
+        $filter_params = array();
+        if ($usingdd === false || empty($usingdd[0]['value'])) {
+            //check permissions ONLY IF they selected dropdown: 'any value'
+            //TBD: IFF we can disable checkboxes for non-permitted tree clusters
+            //     THEN we can remove the second if condition above:
+            //     || empty($usingdd[0]['value'])
+
+            $contexts = get_contexts_by_capability_for_user('cluster', $this->access_capability, $this->userid);
+            //$permissions_filter = $contexts->sql_filter_for_context_level('clusterid', 'cluster');
+            $filter_obj = $contexts->get_filter('clusterid', 'cluster');
+            $filter_sql = $filter_obj->get_sql(false, null, SQL_PARAMS_NAMED);
+            if (isset($filter_sql['where'])) {
+                $permissions_filter = 'WHERE '. $filter_sql['where'];
+                $filter_params = $filter_sql['where_parameters'];
+            }
         }
 
         $lastname = 'user.lastname';

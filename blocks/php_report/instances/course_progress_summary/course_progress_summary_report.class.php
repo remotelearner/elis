@@ -105,13 +105,14 @@ class course_progress_summary_report extends table_report {
         global $CFG;
 
         $cms = array();
-        $contexts = get_contexts_by_capability_for_user('course', $this->access_capability, $this->userid);
+        $contexts = get_contexts_by_capability_for_user('curriculum', $this->access_capability, $this->userid);
         $cms_objects = curriculum_get_listing('name', 'ASC', 0, 0, '', '', $contexts);
         if (!empty($cms_objects)) {
             foreach ($cms_objects as $curriculum) {
                 $cms[$curriculum->id] = $curriculum->name;
             }
         }
+        $cms['null'] = get_string('filter_non_program', 'rlreport_course_progress_summary');
 
         $curricula_options = array('choices' => $cms,
                                    'numeric' => false);
@@ -300,10 +301,12 @@ class course_progress_summary_report extends table_report {
 
         // No filtering returns a value of '0'
         if ($curr_filter_array) {
-            if ($curr_filter_array[0]['value'] !== '0') {
-                $curr_filter = " AND curcrs2.curriculumid = ". $curr_filter_array[0]['value'];
-            } else {
+            if ($curr_filter_array[0]['value'] == '0') {
                 $curr_filter = " AND curcrs2.curriculumid IS NOT NULL";
+            } else if ($curr_filter_array[0]['value'] == 'null') {
+                $curr_filter = " AND curcrs2.curriculumid IS NULL";
+            } else {
+                $curr_filter = " AND curcrs2.curriculumid = ". $curr_filter_array[0]['value'];
             }
         }
 
@@ -338,14 +341,14 @@ class course_progress_summary_report extends table_report {
         //                   JOIN {$CURMAN->db->prefix_table(CURTABLE)} curr
         //                      ON currcrs.curricululmid = curr.id
         if ($curr_filter != '') {
-            $sql .= ' JOIN {'. curriculumcourse::TABLE .'} curcrs
-                        ON curcrs.courseid = crs.id';
+            $sql .= ' LEFT JOIN {'. curriculumcourse::TABLE .'} curcrs
+                             ON curcrs.courseid = crs.id';
             $where[] = 'EXISTS (SELECT * FROM {'. student::TABLE .'} enrol2
                                 JOIN {'. pmclass::TABLE .'} cls2
                                   ON cls2.id = enrol2.classid
-                                JOIN {'. curriculumcourse::TABLE .'} curcrs2
+                           LEFT JOIN {'. curriculumcourse::TABLE .'} curcrs2
                                   ON curcrs2.courseid = cls2.courseid
-                                JOIN {'. curriculumstudent::TABLE ."} curass
+                           LEFT JOIN {'. curriculumstudent::TABLE ."} curass
                                   ON curcrs2.curriculumid = curass.curriculumid
                                  AND curass.userid = enrol2.userid
                                 WHERE enrol.id = enrol2.id
@@ -501,6 +504,8 @@ class course_progress_summary_report extends table_report {
             foreach ($selected_curricula as $curricula) {
                 if ($curricula['value'] == '0') {
                     $curricula_display = get_string('header_all_assigned', 'rlreport_course_progress_summary');
+                } else if ($curricula['value'] == 'null') {
+                    $curricula_display = get_string('filter_non_program', 'rlreport_course_progress_summary');
                 } else if ($curricula = $DB->get_record(curriculum::TABLE,
                                             array('id' => $curricula['value']))) {
                     if ($count > 0) {
