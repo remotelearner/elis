@@ -913,6 +913,8 @@ class user extends data_object_with_custom_fields {
      * @return object the table that can be used to display this information 
      */
     function get_dashboard_nonprogram_table($classes) {
+        global $CFG;
+
         $status_mapping = array(STUSTATUS_PASSED => get_string('passed', 'elis_program'),
                                 STUSTATUS_FAILED => get_string('failed', 'elis_program'),
                                 STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'elis_program'));
