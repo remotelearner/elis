@@ -27,6 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
+global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/clusterassignment.class.php');
@@ -643,7 +644,7 @@ class user extends data_object_with_custom_fields {
      */
     function get_dashboard_program_data($tab_sensitive, $show_archived, $showcompleted = false,
                                         $programid = NULL) {
-        global $DB;
+        global $CFG, $DB;
 
         $archive_var     = '_elis_program_archive';
         $classids = array();
@@ -914,6 +915,8 @@ class user extends data_object_with_custom_fields {
      * @return object the table that can be used to display this information 
      */
     function get_dashboard_nonprogram_table($classes) {
+        global $CFG;
+
         $status_mapping = array(STUSTATUS_PASSED => get_string('passed', 'elis_program'),
                                 STUSTATUS_FAILED => get_string('failed', 'elis_program'),
                                 STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'elis_program'));
@@ -943,7 +946,7 @@ class user extends data_object_with_custom_fields {
                 $table->data[] = array(
                     $coursename,
                     $class->idnumber,
-                    $class->grade,
+                    pm_display_grade($class->grade),
                     $status_mapping[$class->completestatusid],
                     $class->completestatusid == STUSTATUS_PASSED && !empty($class->completetime) ?
                         date('M j, Y', $class->completetime) : get_string('na','elis_program')
