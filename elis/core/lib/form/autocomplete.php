@@ -198,12 +198,24 @@ if ($mode === 'search') {
         }
 
         $wherestr = '('.$search[0].')';
+
+        $params = array();
+
+        // obtain all course contexts where this user can view reports
+        $contexts = get_contexts_by_capability_for_user('user', $report->access_capability, $report->userid);
+        $filter_obj = $contexts->get_filter('id', 'user');
+        $filter_sql = $filter_obj->get_sql(false, '', SQL_PARAMS_NAMED);
+        if (isset($filter_sql['where'])) {
+            $wherestr .= ' AND '. $filter_sql['where'];
+            $params = $filter_sql['where_parameters'];
+        }
+
         $sql = 'SELECT id,'.implode(',',$found_filter->options['fields'])
                 .' FROM '.$CFG->prefix.$found_filter->options['table']
                 .' WHERE '.$wherestr
                 .' LIMIT 0,100';
 
-        $results = $DB->get_records_sql($sql);
+        $results = $DB->get_records_sql($sql, $params);
     }
 
     if (empty($results)) {
