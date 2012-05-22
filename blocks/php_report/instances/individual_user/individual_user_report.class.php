@@ -420,9 +420,10 @@ class individual_user_report extends table_report {
      * @return  array   The report's main sql statement with optional params
      */
     function get_report_sql($columns) {
-        global $CFG, $USER;
+        global $USER;
 
         $cm_user_id = cm_get_crlmuserid($USER->id);
+
         $filter_array = php_report_filtering_get_active_filter_values($this->get_report_shortname(), 'userid', $this->filter);
         // ELIS-4699: so not == to invalid cm/pm userid
         $filter_user_id = (isset($filter_array[0]['value'])) ? $filter_array[0]['value'] : -1;
@@ -434,14 +435,17 @@ class individual_user_report extends table_report {
             $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
             $filter_obj = $contexts->get_filter('id', 'user');
             $filter_sql = $filter_obj->get_sql(false, 'usr', SQL_PARAMS_NAMED);
-            if (isset($filter_sql['where'])) {
-                $permissions_filter = ' WHERE '. $filter_sql['where'];
-                $params += $filter_sql['where_parameters'];
-            }
-        }
 
-        if (trim($permissions_filter) == 'WHERE FALSE') {
-            return array('', array());
+            if (isset($filter_sql['where'])) {
+                // If this user does not have permission to view the requested data, print an error.
+                if ($filter_sql['where'] == 'FALSE') {
+                    print_error('invalidpermission', $this->lang_file);
+                    return false;
+                } else {
+                    $permissions_filter = ' WHERE '. $filter_sql['where'];
+                    $params += $filter_sql['where_parameters'];
+                }
+            }
         }
 
         // Figure out the number of completed credits for the curriculum
@@ -489,7 +493,7 @@ class individual_user_report extends table_report {
                     AND grd.userid = usr.id
                     AND grd.completionid = crscomp.id
                     AND grd.locked = 1
-           {$permissions_filter}
+                    {$permissions_filter}
                ";
 
         return array($sql, $params);
@@ -534,58 +538,21 @@ class individual_user_report extends table_report {
      * @return  boolean  True if permitted, otherwise false
      */
     function can_view_report() {
-        global $USER, $SESSION;
-
         //Check for report view capability
         if (!isloggedin() || isguestuser()) {
             return false;
         }
 
-        $this->require_dependencies();
-        $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
-        if (!$contexts->is_empty()) {
-            return true;
-        }
+        if ($this->execution_mode == php_report::EXECUTION_MODE_SCHEDULED) {
+            $this->require_dependencies();
 
-        $cm_user_id = cm_get_crlmuserid($USER->id);
-        $filter_array = php_report_filtering_get_active_filter_values($this->get_report_shortname(), 'userid', $this->filter);
-        // ELIS-4699: so not == to invalid cm/pm userid
-        $filter_user_id = (isset($filter_array[0]['value'])) ? $filter_array[0]['value'] : -1;
-
-        // Check to see if the parameter was specified via a URL submission and use that value instead
-        $userid = optional_param('userid', 0, PARAM_INT);
-
-        if ($userid) {
-            $filter_user_id = $userid;
-        }
-
-        if ($filter_user_id != $cm_user_id || $this->execution_mode != php_report::EXECUTION_MODE_INTERACTIVE) {
-            // obtain all course contexts where this user can view reports
+            //when scheduling, make sure the current user has the scheduling capability for SOME user
             $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
-            $filter_obj = $contexts->get_filter('id', 'user');
-            $filter_sql = $filter_obj->get_sql(false, 'usr', SQL_PARAMS_NAMED);
-            if (isset($filter_sql['where'])) {
-                if ($filter_sql['where'] != 'FALSE') {
-                    return true;
-                }
-            }
+            return !$contexts->is_empty();
         }
 
-        // You don't have permission to view this user's data
-        if ($filter_user_id > 0 && $cm_user_id != $filter_user_id) {
-            // Reset any saved userid for the filter on this report so it doesn't prevent the report
-            // from potentially correctly working with a valid userid.
-            unset($SESSION->php_report_default_params['php_report_'.$this->get_report_shortname().'/userid']);
-            return false;
-        }
-
-        // Since user is logged-in AND HAVE VALID PM/CM userid, then they should
-        // always be able to see their own courses/classes, but NOT schedule
-        if ($this->execution_mode != php_report::EXECUTION_MODE_SCHEDULED && !empty($cm_user_id)) {
-            return true;
-        }
-
-        return false;
+        // Since user is logged in they should always be able to see their own courses/classes
+        return true;
     }
 
     /**
