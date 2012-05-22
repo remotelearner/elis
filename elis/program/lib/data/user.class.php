@@ -642,7 +642,7 @@ class user extends data_object_with_custom_fields {
      */
     function get_dashboard_program_data($tab_sensitive, $show_archived, $showcompleted = false,
                                         $programid = NULL) {
-        global $DB;
+        global $CFG, $DB;
 
         $archive_var     = '_elis_program_archive';
         $classids = array();
