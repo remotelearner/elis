@@ -1131,7 +1131,9 @@ class user_class_completion_details_report extends user_class_completion_report 
         $levels = array();
         $no_custom_fields = true;
         foreach (array('curriculum', 'course', 'class') as $entity) {
-            $level = context_level_base::get_custom_context_level($entity, 'elis_program');
+            //$level = context_level_base::get_custom_context_level($entity, 'elis_program');
+            // ELIS-4089: Moodle 2.2 custom contexts
+            $level = context_elis_helper::get_level_from_name($entity);
             if ($level) {
                 $levels[] = $level;
                 $no_custom_fields = false;

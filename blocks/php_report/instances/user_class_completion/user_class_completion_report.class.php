@@ -464,9 +464,10 @@ class user_class_completion_report extends table_report {
             foreach ($cols as $field => $active) {
                 if ($active && (substr($field, 0, 7) == 'custom_')) {
                     $fieldid = substr($field, 7);
-
                     //store the context level that's represented by this field
-                    $level = context_level_base::get_custom_context_level($type, 'elis_program');
+                    //$level = context_level_base::get_custom_context_level($type, 'elis_program');
+                    // ELIS-4089: Moodle 2.2 custom contexts
+                    $level = context_elis_helper::get_level_from_name($type);
                     if (!$DB->record_exists('elis_field_contextlevels',
                                  array('fieldid'      => $fieldid,
                                        'contextlevel' => $level))) {
