@@ -944,7 +944,7 @@ class user extends data_object_with_custom_fields {
                 $table->data[] = array(
                     $coursename,
                     $class->idnumber,
-                    $class->grade,
+                    pm_display_grade($class->grade),
                     $status_mapping[$class->completestatusid],
                     $class->completestatusid == STUSTATUS_PASSED && !empty($class->completetime) ?
                         date('M j, Y', $class->completetime) : get_string('na','elis_program')
