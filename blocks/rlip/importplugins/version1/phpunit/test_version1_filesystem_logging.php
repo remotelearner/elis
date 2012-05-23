@@ -338,7 +338,9 @@ class version1FilesystemLoggingTest extends rlip_test {
                      'quiz' => 'mod_quiz',
                      'url' => 'moodle',
                      'assignment' => 'moodle',
-                     'assignment_submissions' => 'moodle');
+                     'assignment_submissions' => 'moodle',
+                     'forum_track_prefs' => 'moodle',
+                     'sessions' => 'moodle');
 
         if ($DB->record_exists("block", array("name" => "curr_admin"))) {
             $tables['crlm_user_moodle'] = 'elis_program';
@@ -480,7 +482,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $category = new stdClass;
         $category->name = 'rlipname';
         $categoryid = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $context_coursecat = get_context_instance(CONTEXT_COURSECAT, $categoryid);
 
         //create the course
         $course = new stdClass;
@@ -1573,15 +1575,21 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the role assignment create action on courses
      */
     public function testVersion1ImportLogsSuccesfulCourseRoleAssignmentCreate() {
-        global $DB;
+        global $DB, $UNITTEST;
+
+        $UNITTEST = new stdClass;
+        $UNITTEST->running = true;
+        accesslib_clear_all_caches_for_unit_testing();
+        unset($UNITTEST->running);
 
         //set up dependencies
         $this->create_contexts_and_site_course();
 
         $this->create_test_user();
         $this->create_test_course();
+        $syscontext = context_system::instance();
         $roleid = $this->create_test_role();
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+
         //make sure it can be assigned as a non-student role
         assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
@@ -1659,7 +1667,7 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         //make our role a "student" role
@@ -2314,6 +2322,8 @@ class version1FilesystemLoggingTest extends rlip_test {
      */
     public function testVersion1ImportLogsSuccesfulUserRoleAssignmentCreate() {
         global $DB;
+
+        $this->create_contexts_and_site_course();
 
         //set up dependencies
         $this->create_test_user();
