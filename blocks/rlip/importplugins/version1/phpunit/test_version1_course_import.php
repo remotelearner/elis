@@ -2743,6 +2743,8 @@ class version1CourseImportTest extends rlip_test {
         require_once($CFG->dirroot.'/backup/lib.php');
         require_once($CFG->dirroot.'/lib/conditionlib.php');
         require_once($CFG->dirroot.'/lib/enrollib.php');
+        require_once($CFG->dirroot.'/tag/lib.php');
+        require_once($CFG->dirroot.'/lib/questionlib.php');
 
         //setup
         $initial_num_contexts = $DB->count_records('context', array('contextlevel' => CONTEXT_COURSE));
@@ -2895,7 +2897,12 @@ class version1CourseImportTest extends rlip_test {
         $DB->insert_record('user_lastaccess', $lastaccess);
 
         //make a bogus backup log record
-        add_to_backup_log(1, $courseid, 'bogus', 'bogus');
+        $log = new stdClass();
+        $log->backupid = $courseid;
+        $log->timecreated = time();
+        $log->loglevel = 1;
+        $log->message = 'bogus';
+        $DB->insert_record('backup_logs', $log);
 
         //get initial counts
         $initial_num_course = $DB->count_records('course');
