@@ -2221,9 +2221,11 @@ class version1CourseImportTest extends rlip_test {
 
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'createwithoutguest'));
         //validate plugin configuration
+        //todo: change password back to NULL if the guest plugin starts using
+        //it as the default again
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
-                                                   'password' => NULL,
+                                                   'password' => '',
                                                    'status' => ENROL_INSTANCE_DISABLED));
     }
 
@@ -2240,9 +2242,11 @@ class version1CourseImportTest extends rlip_test {
                                             'guest' => 0));
         //validate plugin configuration
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'enableguestenrolment'));
+        //todo: change password back to NULL if the guest plugin starts using
+        //it as the default again
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
-                                                   'password' => NULL,
+                                                   'password' => '',
                                                    'status' => ENROL_INSTANCE_DISABLED));
 
         //update course, enabling plugin and creating a password
@@ -2397,10 +2401,12 @@ class version1CourseImportTest extends rlip_test {
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'plugintwice'));
         $this->assertEquals($DB->count_records('enrol', array('courseid' => $courseid,
                                                               'enrol' => 'guest')), 1);
+        //todo: change password back to NULL if the guest plugin starts using
+        //it as the default again
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
                                                    'status' => ENROL_INSTANCE_DISABLED,
-                                                   'password' => NULL));
+                                                   'password' => ''));
 
         //clean up category
         $DB->delete_records('course_categories');
@@ -2420,10 +2426,12 @@ class version1CourseImportTest extends rlip_test {
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'plugintwice2'));
         $this->assertEquals($DB->count_records('enrol', array('courseid' => $courseid,
                                                               'enrol' => 'guest')), 1);
+        //todo: change password back to NULL if the guest plugin starts using
+        //it as the default again
         $this->assert_record_exists('enrol', array('courseid' => $courseid,
                                                    'enrol' => 'guest',
                                                    'status' => ENROL_INSTANCE_ENABLED,
-                                                   'password' => NULL));
+                                                   'password' => ''));
     }
 
     /**
