@@ -206,7 +206,7 @@ class version1CourseImportTest extends rlip_test {
                      'config' => 'moodle',
                      'config_plugins' => 'moodle',
                      'course_display' => 'moodle',
-                     'backup_log' => 'moodle',
+                     'backup_logs' => 'moodle',
                      'backup_courses' => 'moodle',
                      'block_positions' => 'moodle',
                      'forum' => 'mod_forum',
@@ -239,6 +239,7 @@ class version1CourseImportTest extends rlip_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         return array('event'                   => 'moodle',
+                     'forum_track_prefs'       => 'mod_forum',
                      'quiz'                    => 'moodle',
                      'quiz_attempts'           => 'moodle',
                      'quiz_feedback'           => 'moodle',
@@ -2755,6 +2756,7 @@ class version1CourseImportTest extends rlip_test {
 
         //create a user record
         $record = new stdClass;
+        $record->username = 'testuser';
         $record->password = 'Testpass!0';
         $userid = user_create_user($record);
 
@@ -2923,7 +2925,7 @@ class version1CourseImportTest extends rlip_test {
         $initial_num_course_display = $DB->count_records('course_display');
         $initial_num_backup_courses = $DB->count_records('backup_courses');
         $initial_num_user_lastaccess = $DB->count_records('user_lastaccess');
-        $initial_num_backup_log = $DB->count_records('backup_log');
+        $initial_num_backup_logs = $DB->count_records('backup_logs');
 
         //delete the course
         $data = array('action' => 'delete',
@@ -2959,7 +2961,7 @@ class version1CourseImportTest extends rlip_test {
         $this->assertEquals($DB->count_records('course_display'), $initial_num_course_display - 1);
         $this->assertEquals($DB->count_records('backup_courses'), $initial_num_backup_courses - 1);
         $this->assertEquals($DB->count_records('user_lastaccess'), $initial_num_user_lastaccess - 1);
-        $this->assertEquals($DB->count_records('backup_log'), $initial_num_backup_log - 1);
+        $this->assertEquals($DB->count_records('backup_logs'), $initial_num_backup_logs - 1);
     }
 
     /**
