@@ -296,7 +296,7 @@ class version1DatabaseLoggingTest extends rlip_test {
                      'groups' => 'moodle',
                      'course_display' => 'moodle',
                      'backup_courses' => 'moodle',
-                     'backup_log' => 'moodle',
+                     'backup_logs' => 'moodle',
                      'role' => 'moodle',
                      'role_context_levels' => 'moodle',
                      'files' => 'moodle',
@@ -318,7 +318,8 @@ class version1DatabaseLoggingTest extends rlip_test {
                      //usually written to during course delete
                      'grade_grades' => 'moodle',
                      'grade_grades_history' => 'moodle',
-                     'external_services_users' => 'moodle');
+                     'external_services_users' => 'moodle',
+                     'sessions' => 'moodle');
     }
 
     /**
@@ -552,8 +553,15 @@ class version1DatabaseLoggingTest extends rlip_test {
         $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
         require_once($file);
 
-        //set up the site course context
         $prefix = self::$origdb->get_prefix();
+
+        //set up the system context
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+
+        //set up the site course context
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
                       {$prefix}context
@@ -615,8 +623,15 @@ class version1DatabaseLoggingTest extends rlip_test {
         accesslib_clear_all_caches_for_unit_testing();
         unset($UNITTEST->running);
 
-        //set up the site course context
         $prefix = self::$origdb->get_prefix();
+
+        //set up the system context
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+
+        //set up the site course context
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
                       {$prefix}context
@@ -684,6 +699,14 @@ class version1DatabaseLoggingTest extends rlip_test {
         unset($UNITTEST->running);
 
         $prefix = self::$origdb->get_prefix();
+
+        //set up the system context
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+
+        //set up the site course context
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
                       {$prefix}context
@@ -743,8 +766,15 @@ class version1DatabaseLoggingTest extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
 
-        //set up the site course context
         $prefix = self::$origdb->get_prefix();
+
+        //set up the system context
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+
+        //set up the site course context
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
                       {$prefix}context
@@ -829,8 +859,15 @@ class version1DatabaseLoggingTest extends rlip_test {
         set_config('defaultenrol', 1, 'enrol_manual');
         set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
 
-        //set up the site course context
         $prefix = self::$origdb->get_prefix();
+
+        //set up the system context
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+        
+        //set up the site course context
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
                       {$prefix}context
@@ -860,6 +897,10 @@ class version1DatabaseLoggingTest extends rlip_test {
 
         $roleid = create_role('rlipname', 'rlipshortname', 'rlipdescription');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+
+        //todo: remove this line when working on ELIS-5764
+        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
         $data = array('entity' => 'enrolment',
                       'action' => 'create',
