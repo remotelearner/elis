@@ -130,7 +130,10 @@ class version1EnrolmentImportTest extends rlip_test {
         return array('log' => 'moodle',
                      'grade_grades' => 'moodle',
                      'grade_grades_history' => 'moodle',
-                     RLIP_LOG_TABLE => 'block_rlip');
+                     RLIP_LOG_TABLE => 'block_rlip',
+                     'forum_read' => 'mod_forum',
+                     'forum_subscriptions' => 'mod_forum',
+                     'forum_track_prefs' => 'mod_forum');
     }
 
     /**
