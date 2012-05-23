@@ -32,9 +32,34 @@ require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elis::lib('data/customfield.class.php'));
 require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
+require_once elispm::file('form/cmform.class.php');
 ini_set('error_reporting',1);
 ini_set('display_errors',1);
 
+class test_moodleform extends cmform {
+    public function definition() {
+        if(!empty($this->_customdata['obj'])) {
+            if (is_object($this->_customdata['obj']) && method_exists($this->_customdata['obj'], 'to_object')) {
+                $this->_customdata['obj'] = $this->_customdata['obj']->to_object();
+            }
+            $this->set_data($this->_customdata['obj']);
+        }
+
+    }
+
+    //test-only method to give us access to _elements
+    public function get_elements() {
+        return $this->_form->_elements;
+    }
+
+    public function get_mform() {
+        return $this->_form;
+    }
+
+//function validation($data, $files) {
+//        return array();
+//    }
+}
 class curriculumCustomFieldsTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
@@ -527,5 +552,67 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
         sync_profile_field_to_moodle($field);
         sync_profile_field_from_moodle($field);
+    }
+
+
+    public function testValidateCustomFields() {
+        $this->markTestSkipped('In Development');
+        //get a form
+        $frm = new test_moodleform();
+        $mform = $frm->get_mform();
+
+        //test context in setupForm
+//        $filter->setupForm($mform);
+        $elements = $frm->get_elements();
+        echo "\n frm elements:";
+        print_object($elements);
+//        $this->assertNotEmpty($elements);
+//        $multiselect_found = false;
+//        foreach($elements as $ele) {
+//            if (is_a($ele,'elis_custom_field_multiselect')) {
+//                $this->assertNotEmpty($ele->_options['contextlevel']);
+//                $multiselect_found = true;
+//            }
+//        }
+//        $this->assertNotEmpty($multiselect_found);
+
+        $context_levels = context_elis_helper::get_legacy_levels();
+        foreach ($context_levels as $ctxname=>$ctxlvl) {
+echo "\n in testvalidatecustomfields with ctxname: $ctxname and level: $ctxlvl";
+
+            $category = $this->create_field_category($ctxlvl);
+            $field = $this->create_field($category,$ctxlvl);
+//echo "\n field? ";
+//print_object($field);
+            //get default value for custom field type
+            $field_data = field_data::get_for_context_and_field(null,$field);
+            $field_data = $field_data->current();
+//       echo "\n field data:";
+//       print_object($field_data);
+            $return = $frm->validate_custom_fields($field_data,$ctxname);
+            $this->assertTrue($return);
+
+//            $field_fetched = field::get_for_context_level($ctxlvl);
+//            $field_fetched = $field_fetched->current();
+//            $this->assertEquals($field->shortname,$field_fetched->shortname);
+//
+//            $field_fetched = field::get_for_context_level_with_name($ctxlvl, $field->shortname);
+//            $this->assertEquals($field->shortname,$field_fetched->shortname);
+//
+//            $field_fetched = field::ensure_field_exists_for_context_level($field, $ctxlvl, $category);
+//            $this->assertEquals($field->shortname,$field_fetched->shortname);
+//
+//            $cat_fetched = field_category::get_for_context_level($ctxlvl);
+//            $cat_fetched = $cat_fetched->current();
+//            $this->assertEquals($category->id,$cat_fetched->id);
+//
+//            if ($ctxlvl === CONTEXT_ELIS_PROGRAM) {
+//                $cur = $this->create_curriculum();
+//                $field_data = field_data::get_for_context_and_field(null,$field);
+//                $field_data = $field_data->current();
+//                $res = $field_data->set_for_context_from_datarecord($ctxlvl, $cur);
+//                $this->assertTrue($res);
+//            }
+        }
     }
 }

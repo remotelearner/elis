@@ -405,7 +405,7 @@ class usertrack extends elis_data_object {
 
         // find all users not enrolled in the track
         $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        
+
         $select = 'SELECT usr.*, ' . $FULLNAME . ' AS name, usr.lastname AS lastname ';
         $sql = 'FROM {' . user::TABLE . '} usr '
             . 'LEFT OUTER JOIN {' . usertrack::TABLE . '} ut ON ut.userid = usr.id AND ut.trackid = :trackid '
