@@ -68,6 +68,7 @@ class programSettingsTest extends elis_database_test {
 
         //our test user
         $user = new stdClass;
+        $user->username = "testuser";
         $userid = user_create_user($user);
         $USER = $DB->get_record('user', array('id' => $userid));
 
@@ -101,6 +102,7 @@ class programSettingsTest extends elis_database_test {
 
         //set up the current user global
         $user = new stdClass;
+        $user->username = "testuser";
         $userid = user_create_user($user);
         $USER = $DB->get_record('user', array('id' => $userid));
 
@@ -179,6 +181,7 @@ class programSettingsTest extends elis_database_test {
 
         //set up our test user
         $user = new stdClass;
+        $user->username = "testuser";
         $userid = user_create_user($user);
         $USER = $DB->get_record('user', array('id' => $userid));
 

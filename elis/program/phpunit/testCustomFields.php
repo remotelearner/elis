@@ -31,6 +31,7 @@ require_once(elis::lib('testlib.php'));
 require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elis::lib('data/customfield.class.php'));
 require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
+require_once(elis::file('core/fields/manual/custom_fields.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 require_once elispm::file('form/cmform.class.php');
 ini_set('error_reporting',1);
@@ -556,63 +557,74 @@ class curriculumCustomFieldsTest extends elis_database_test {
 
 
     public function testValidateCustomFields() {
-        $this->markTestSkipped('In Development');
         //get a form
         $frm = new test_moodleform();
-        $mform = $frm->get_mform();
-
-        //test context in setupForm
-//        $filter->setupForm($mform);
-        $elements = $frm->get_elements();
-        echo "\n frm elements:";
-        print_object($elements);
-//        $this->assertNotEmpty($elements);
-//        $multiselect_found = false;
-//        foreach($elements as $ele) {
-//            if (is_a($ele,'elis_custom_field_multiselect')) {
-//                $this->assertNotEmpty($ele->_options['contextlevel']);
-//                $multiselect_found = true;
-//            }
-//        }
-//        $this->assertNotEmpty($multiselect_found);
 
         $context_levels = context_elis_helper::get_legacy_levels();
         foreach ($context_levels as $ctxname=>$ctxlvl) {
-echo "\n in testvalidatecustomfields with ctxname: $ctxname and level: $ctxlvl";
-
             $category = $this->create_field_category($ctxlvl);
             $field = $this->create_field($category,$ctxlvl);
-//echo "\n field? ";
-//print_object($field);
-            //get default value for custom field type
-            $field_data = field_data::get_for_context_and_field(null,$field);
-            $field_data = $field_data->current();
-//       echo "\n field data:";
-//       print_object($field_data);
-            $return = $frm->validate_custom_fields($field_data,$ctxname);
-            $this->assertTrue($return);
+            switch($ctxname) {
+                case 'curriculum':
+                    //create a curriculum
+                    $cur = $this->create_curriculum($field);
+                    //set up a dummy custom field with a default value
+                    $test_value = array('id'=>$field->id,'field_'.$field->shortname=>$field->defaultvalue);
+                    break;
+                case 'track':
+                    //create a track
+                    $trk = $this->create_track($cur,$field);
+                    //set up a dummy custom field with a default value
+                    $test_value = array('id'=>$trk->id,'field_'.$field->shortname=>$field->defaultvalue);
+                    break;
+                case 'course':
+                    //create a course
+                    $crs = $this->create_course($field);
+                    //set up a dummy custom field with a default value
+                    $test_value = array('id'=>$crs->id,'field_'.$field->shortname=>$field->defaultvalue);
+                    break;
+                case 'class':
+                    //create a class
+                    $cls = $this->create_class($crs,$field);
+                    //set up a dummy custom field with a default value
+                    $test_value = array('id'=>$cls->id,'field_'.$field->shortname=>$field->defaultvalue);
+                    break;
+                case 'user':
+                    //create a user
+                    $user = $this->create_user($field);
+                    //set up a dummy custom field with a default value
+                    $test_value = array('id'=>$user->id,'field_'.$field->shortname=>$field->defaultvalue);
+                    break;
+                case 'cluster':
+                    //create a userset
+                    $userset = $this->create_userset($field);
+                    //set up a dummy custom field with a default value
+                    $test_value = array('id'=>$userset->id,'field_'.$field->shortname=>$field->defaultvalue);
+                    break;
 
-//            $field_fetched = field::get_for_context_level($ctxlvl);
-//            $field_fetched = $field_fetched->current();
-//            $this->assertEquals($field->shortname,$field_fetched->shortname);
-//
-//            $field_fetched = field::get_for_context_level_with_name($ctxlvl, $field->shortname);
-//            $this->assertEquals($field->shortname,$field_fetched->shortname);
-//
-//            $field_fetched = field::ensure_field_exists_for_context_level($field, $ctxlvl, $category);
-//            $this->assertEquals($field->shortname,$field_fetched->shortname);
-//
-//            $cat_fetched = field_category::get_for_context_level($ctxlvl);
-//            $cat_fetched = $cat_fetched->current();
-//            $this->assertEquals($category->id,$cat_fetched->id);
-//
-//            if ($ctxlvl === CONTEXT_ELIS_PROGRAM) {
-//                $cur = $this->create_curriculum();
-//                $field_data = field_data::get_for_context_and_field(null,$field);
-//                $field_data = $field_data->current();
-//                $res = $field_data->set_for_context_from_datarecord($ctxlvl, $cur);
-//                $this->assertTrue($res);
-//            }
+            }
+
+            $return = $frm->validate_custom_fields($test_value,$ctxname);
+            $this->assertEmpty($return);
         }
+    }
+
+    /**
+     * Test invalid context
+     *
+     * @expectedException coding_exception
+     */
+    public function testValidateCustomFieldsInvalidContext() {
+        //get a form
+        $frm = new test_moodleform();
+        $category = $this->create_field_category(CONTEXT_ELIS_PROGRAM);
+        $field = $this->create_field($category,CONTEXT_ELIS_PROGRAM);
+
+        //create a curriculum
+        $cur = $this->create_curriculum($field);
+        //set up a dummy custom field with a default value
+        $test_value = array('id'=>$field->id,'field_'.$field->shortname=>$field->defaultvalue);
+        //test with an invalid context using the last test value
+        $frm->validate_custom_fields($test_value,'moodle_course');
     }
 }

@@ -230,7 +230,7 @@ class curriculumpage extends managementpage {
         if(!empty(elis::$config->elis_program->default_curriculum_role_id) && $DB->record_exists('role', array('id' => elis::$config->elis_program->default_curriculum_role_id))) {
 
             //get the context instance for capability checking
-            context_elis_program::instance($cm_entity->id);
+            $context_instance = context_elis_program::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
             if (!has_capability('elis/program:program_edit', $context_instance)) {
