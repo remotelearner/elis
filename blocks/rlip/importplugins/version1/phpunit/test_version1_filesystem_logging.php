@@ -2397,6 +2397,8 @@ class version1FilesystemLoggingTest extends rlip_test {
     public function testVersion1ImportLogsSuccesfulSystemRoleAssignmentCreate() {
         global $DB;
 
+        $this->create_contexts_and_site_course();
+
         //set up dependencies
         $this->create_test_user();
         $this->create_test_role();
@@ -2792,6 +2794,10 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the role assignment delete action on users
      */
     public function testVersion1ImportLogsSuccesfulUserRoleAssignmentDelete() {
+        global $DB;
+
+        $this->create_contexts_and_site_course();
+
         //set up dependencies
         $userid = $this->create_test_user();
         $seconduserid = $this->create_test_user('rlipusername2', 'rlipuser@rlipdomain2.com', 'rlipidnumber2');
@@ -2863,6 +2869,10 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the role assignment delete action on the system context
      */
     public function testVersion1ImportLogsSuccesfulSystemRoleAssignmentDelete() {
+        global $DB;
+
+        $this->create_contexts_and_site_course();
+
         //set up dependencies
         $userid = $this->create_test_user();
         $context = get_context_instance(CONTEXT_SYSTEM);
@@ -3358,6 +3368,8 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validate log message for invalid group name
      */
     public function testVersion1ImportLogsInvalidGroupNameOnRoleAssignmentCreate() {
+        global $DB;
+
         //set up dependencies
         $this->create_contexts_and_site_course();
         $this->create_test_user();
@@ -3415,7 +3427,7 @@ class version1FilesystemLoggingTest extends rlip_test {
      * @dataProvider roleAssignmentAmbiguousGroupNameUserProvider
      */
     public function testVersion1ImportLogsAmbiguousGroupNameOnRoleAssignmentCreate($data) {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/group/lib.php');
 
         //set up dependencies
