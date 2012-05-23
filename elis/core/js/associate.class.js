@@ -151,8 +151,9 @@ function associate_link_handler(basepage, divid) {
             }
         }
 
-        //if an onclick is being used, let it handle this event
-        if (linktarget || linkclick) {
+        //if an onclick is being used, let it handle this event ...
+        //unless it's our own start_throbber() function
+        if (linktarget || (linkclick && linkclick.indexOf('start_throbber') == -1)) {
             return;
         }
         var last_character = request.substr(request.length - 1, 1);
