@@ -231,8 +231,8 @@ class testRoles extends elis_database_test {
         $roleid = create_role('targetrole', 'targetrole', 'targetrole');
 
         //assign the both users to the userset role
-        $userset_contextlevel = context_level_base::get_custom_context_level('cluster', 'elis_program');
-        $userset_context = get_context_instance($userset_contextlevel, $userset->id);
+        $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+        $userset_context     = $contextclass::instance($userset->id);
         role_assign($roleid, $moodle_userid, $userset_context->id);
         $moodle_userid = $DB->get_field('user', 'id', array('username' => 'assigned'));
         role_assign($roleid, $moodle_userid, $userset_context->id);

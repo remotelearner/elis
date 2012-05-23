@@ -338,7 +338,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
                 $full_clrunexpanded_condition = $this->get_list_condition('eclipse_context.instanceid', $data['clrunexpanded_ids']);
 
                 //needed in query to join context table
-                $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
+                $cluster_context_level = CONTEXT_ELIS_USERSET;
 
                 //$params = array();
                 $param_cpath = 'clustree_cpath_a'. $counter;

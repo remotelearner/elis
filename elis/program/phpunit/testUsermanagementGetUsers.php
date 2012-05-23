@@ -118,9 +118,9 @@ class usermanagementGetsUsersTest extends elis_database_test {
         assign_capability('elis/program:user_edit', CAP_ALLOW, $roleid, $syscontext->id);
 
         //assign the userset administrator an appropriate role on the userset
-        $userset_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-        $userset_context = get_context_instance($userset_context_level, 1);
-        role_assign($roleid, $USER->id, $userset_context->id);
+        $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+        $instance     = $contextclass::instance(1);
+        role_assign($roleid, $USER->id, $instance->id);
 
         //assign the user to the user set
         $clusterassignment = new clusterassignment(array('clusterid' => 1,

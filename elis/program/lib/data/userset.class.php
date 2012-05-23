@@ -112,7 +112,10 @@ class userset extends data_object_with_custom_fields {
             parent::delete();
 
             //delete this cluster's context
-            delete_context(CONTEXT_ELIS_USERSET, $this->id);
+            //get a new context instance,
+            $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+            $userset_context = $contextclass::instance($this->id);
+            $userset_context->delete();
 
             return;
         }
@@ -162,7 +165,7 @@ class userset extends data_object_with_custom_fields {
                 $sql = "UPDATE {context}
                         SET depth=0, path=NULL
                         WHERE contextlevel=? AND instanceid=?";
-                $this->_db->execute($sql, array($cluster_context_level, $child->id));
+                $this->_db->execute($sql, array(CONTEXT_ELIS_USERSET, $child->id));
             }
             build_context_path(); // Re-build the context table for all sub-clusters
         }
@@ -748,7 +751,7 @@ function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = ar
 
     if (isset($extrafilters['classification'])) {
         require_once(elispm::file('plugins/userset_classification/lib.php'));
-        
+
         $field = new field(field::get_for_context_level_with_name(CONTEXT_ELIS_USERSET, USERSET_CLASSIFICATION_FIELD));
 
         $filters[] = new elis_field_filter($field, 'id', CONTEXT_ELIS_USERSET, $extrafilters['classification']);

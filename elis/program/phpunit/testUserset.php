@@ -27,6 +27,7 @@
 require_once(dirname(__FILE__) . '/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot . '/elis/program/lib/setup.php');
+require_once($CFG->dirroot . '/elis/program/accesslib.php');
 require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 require_once(elis::lib('data/customfield.class.php'));
@@ -42,6 +43,7 @@ class usersetTest extends elis_database_test {
             field::TABLE => 'elis_core',
             field_contextlevel::TABLE => 'elis_core',
             userset::TABLE => 'elis_program',
+            curriculum::TABLE => 'elis_program',
             'crlm_cluster_profile' => 'elis_program',
         );
     }
@@ -162,14 +164,12 @@ class usersetTest extends elis_database_test {
 
         accesslib_clear_all_caches_for_unit_testing();
         // make sure all the contexts are created, so that we can find the children
-        $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-        //echo "cluster_context_level = {$cluster_context_level}";
+        $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
         for ($i = 1; $i <= 4; $i++) {
-            $cluster_context_instance = context_elis_userset::instance($i);
+            $cluster_context_instance     = $contextclass::instance($i);
         }
 
-      /*
-        global $DB;
+      /*  global $DB;
         echo "\ncontext::TABLE => ";
         var_dump($DB->get_records('context'));
         echo "\nuserset::TABLE (pre-delete)=> ";
