@@ -801,7 +801,7 @@ function pm_moodle_user_to_pm($mu) {
 
     // synchronize custom profile fields
     profile_load_data($mu);
-    $fields = field::get_for_context_level(context_level_base::get_custom_context_level('user', 'elis_program'));
+    $fields = field::get_for_context_level(CONTEXT_ELIS_USER);
     $fields = $fields ? $fields : array();
     require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
     foreach ($fields as $field) {
@@ -1170,7 +1170,7 @@ function pm_migrate_tags() {
     foreach ($contextlevels as $instancetype => $contextname) {
 
         //calculate the context level integer
-        $contextlevel = context_level_base::get_custom_context_level($contextname, 'elis_program');
+        $contextlevel = context_elis_helper::get_level_from_name($contextname);
 
         //make sure one or more tags are used at the current context level
         if ($DB->record_exists('crlm_tag_instance', array('instancetype' => $instancetype))) {
@@ -1210,7 +1210,10 @@ function pm_migrate_tags() {
                     foreach ($tagids as $k => $v) {
                         $tagids[$k] = $tag_lookup[$v];
                     }
-                    $context = get_context_instance($contextlevel, $record->instanceid);
+
+                    $contextlevel = context_elis_helper::get_level_from_name($contextname);
+                    $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+                    $context      = $contextclass::instance($record->instanceid);
 
                     field_data::set_for_context_and_field($context, $field, $tagids);
                 }
@@ -1248,7 +1251,10 @@ function pm_migrate_tags() {
                     if ($field = $DB->get_record(field::TABLE, array('shortname' => "_19upgrade_{$contextname}_tag_data_{$tagname}"))) {
                         $field = new field($field->id);
 
-                        $context = get_context_instance($contextlevel, $record->instanceid);
+                        $contextlevel = context_elis_helper::get_level_from_name($contextname);
+                        $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+                        $context     = $contextclass::instance($record->instanceid);
+
                         field_data::set_for_context_and_field($context, $field, $record->data);
                     }
                 }
@@ -1288,7 +1294,7 @@ function pm_migrate_environments() {
     foreach ($contextlevels as $instancetable => $contextname) {
 
         //calculate the context level integer
-        $contextlevel = context_level_base::get_custom_context_level($contextname, 'elis_program');
+        $contextlevel = context_elis_helper::get_level_from_name($contextname);
 
         //make sure one or more environments are used at the current context level
         $select = 'environmentid != 0';
@@ -1325,7 +1331,9 @@ function pm_migrate_environments() {
                     WHERE environmentid != 0";
             if ($records = $DB->get_recordset_sql($sql)) {
                 foreach ($records as $record) {
-                    $context = get_context_instance($contextlevel, $record->id);
+                    $contextlevel = context_elis_helper::get_level_from_name($contextname);
+                    $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+                    $context     = $contextclass::instance($record->id);
 
                     $environmentid = $environment_lookup[$record->environmentid];
                     field_data::set_for_context_and_field($context, $field, $environmentid);
@@ -1345,26 +1353,26 @@ function pm_migrate_environments() {
 function pm_ensure_role_assignable($role) {
     global $DB;
     if (!is_numeric($role)) {
-        if ( !($roleid = $DB->get_field('role', 'id', array('shortname' => $role)))
-            && !($roleid = create_role(get_string($role .'name', 'elis_program'),
-                               $role, get_string($role .'description', 'elis_program'),
-                               get_string($role .'archetype', 'elis_program')))) {
+        if (!($roleid = $DB->get_field('role', 'id', array('shortname' => $role)))
+            && !($roleid = create_role(get_string($role .'name', 'elis_program'), $role,
+                                       get_string($role .'description', 'elis_program'),
+                                       get_string($role .'archetype', 'elis_program')))) {
+
             mtrace("\n pm_ensure_role_assignable(): Error creating role '{$role}'\n");
         }
     } else {
         $roleid = $role;
     }
     if ($roleid) {
-        $sql = "INSERT INTO {role_context_levels}
-                       (roleid, contextlevel)
-                SELECT $roleid AS roleid, ctxlvl.id + 1000 AS contextlevel
-                  FROM {context_levels} ctxlvl
-             LEFT JOIN {role_context_levels} rcl
-                       ON rcl.contextlevel = ctxlvl.id + 1000
-                       AND rcl.roleid = $roleid
-                 WHERE ctxlvl.component='elis_program'
-                   AND rcl.id IS NULL";
-        $DB->execute($sql);
+        $rcl = new stdClass;
+        $rcl->roleid = $roleid;
+
+        foreach (context_elis_helper::get_all_levels() as $ctxlevel => $ctxclass) {
+            $rcl->contextlevel = $ctxlevel;
+            if (!$DB->record_exists('role_context_levels', array('roleid' => $roleid, 'contextlevel' => $ctxlevel))) {
+                $DB->insert_record('role_context_levels', $rcl);
+            }
+        }
     }
     return $roleid;
 }
@@ -1741,6 +1749,39 @@ function pm_migrate_certificate_files() {
 }
 
 /**
+ * As of Moodle 2.2 optional_param() calls optional_param_array() if the input data is an array but that new function
+ * can only handle single-dimensional arrays, not 2-dimensional arrays like the ones used for data submission on the
+ * ELIS PM class student enrolment / instructor assignment pages.
+ *
+ * This function basically abstracts out that process and does it manually.
+ *
+ * Expected data input:
+ *
+ *     array(
+ *         [userid] => array(array of properties from editing table)
+ *     )
+ *
+ * @param none
+ * @return array An array of sanitised user data
+ */
+function pm_process_user_enrolment_data() {
+    $users = array();
+
+    // ELIS-4089 -- Moodle 2.2 can only handle single-dimensional arrays via optional_param =(
+    if (isset($_POST['users'] )&& ($userdata = $_POST['users']) && is_array($userdata)) {
+        foreach ($userdata as $i => $userdatum) {
+            if (is_array($userdatum)) {
+                foreach ($userdatum as $key => $val) {
+                    $users[$i][$key] = clean_param($val, PARAM_CLEAN);
+                }
+            }
+        }
+    }
+
+    return $users;
+}
+
+/**
  * Given a float grade value, return a representation of the number meant for UI display
  *
  * An integer value will be returned without any decimals included and a true floating point value
@@ -1794,4 +1835,3 @@ function pm_mymoodle_redirect($editing = false) {
     return (!empty(elis::$config->elis_program->mymoodle_redirect) &&
             elis::$config->elis_program->mymoodle_redirect == 1);
 }
-

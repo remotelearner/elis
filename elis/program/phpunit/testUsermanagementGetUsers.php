@@ -44,15 +44,23 @@ class usermanagementGetsUsersTest extends elis_database_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        return array(clusterassignment::TABLE => 'elis_program',
+        return array('elis_field' => 'elis_core',
+                     clusterassignment::TABLE => 'elis_program',
+                     'crlm_class_enrolment'   => 'elis_program',
+                     'crlm_curriculum_assignment' => 'elis_program',
                      user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program',
+                     usertrack::TABLE  => 'elis_program',
                      userset::TABLE => 'elis_program',
                      'config' => 'moodle',
                      'context' => 'moodle',
+                     'course' => 'moodle',
+                     'enrol' => 'moodle',
                      'role' => 'moodle',
                      'role_assignments' => 'moodle',
-                     'user' => 'moodle');
+                     'role_capabilities' => 'moodle',
+                     'user' => 'moodle',
+                     'user_enrolments' => 'moodle');
     }
 
     /**
@@ -61,7 +69,8 @@ class usermanagementGetsUsersTest extends elis_database_test {
      * @return array The mapping of table names to componenets
      */
     static protected function get_ignored_tables() {
-        return array('cache_flags' => 'moodle');
+        return array('cache_flags' => 'moodle',
+                     'message'     => 'moodle');
     }
 
     /**
@@ -79,7 +88,7 @@ class usermanagementGetsUsersTest extends elis_database_test {
      * Set up some base user data
      */
     protected function set_up_users() {
-        global $DB, $USER; 
+        global $DB, $USER;
 
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));

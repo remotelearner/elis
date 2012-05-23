@@ -167,8 +167,8 @@ class cmCourseForm extends cmform {
 
         $lastcat = null;
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? get_context_instance(context_level_base::get_custom_context_level('course', 'elis_program'), $this->_customdata['obj']->id)
-            : get_context_instance(CONTEXT_SYSTEM);
+            ? context_elis_course::instance($this->_customdata['obj']->id)
+            : context_system::instance();
 
         require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
 
@@ -215,6 +215,8 @@ class cmCourseForm extends cmform {
         if ($DB->record_exists_select(course::TABLE, $sql, $params)) {
             $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
         }
+
+        $errors += parent::validate_custom_fields($data, 'course');
 
         return $errors;
     }

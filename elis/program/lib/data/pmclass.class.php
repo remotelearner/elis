@@ -93,11 +93,13 @@ class pmclass extends data_object_with_custom_fields {
     protected $_dbfield_maxstudents;
     protected $_dbfield_environmentid;
     protected $_dbfield_enrol_from_waitlist;
+    protected $_dbfield_moodlecourseid;
+    protected $_dbfield_unlink_attached_course;
 
     static $delete_is_complex = true;
 
     protected function get_field_context_level() {
-        return context_level_base::get_custom_context_level('class', 'elis_program');
+        return CONTEXT_ELIS_CLASS;
     }
 
     function get_start_time() {
@@ -226,6 +228,9 @@ class pmclass extends data_object_with_custom_fields {
 
         if (!empty($data->moodleCourses['moodlecourseid']) && !$this->autocreate) {
             $this->moodlecourseid = $data->moodleCourses['moodlecourseid'];
+        } else if (!empty($data->courseSelected['unlink_attached_course']) && !empty($data->moodlecourseid)) {
+            $this->unlink_attached_course = $data->courseSelected['unlink_attached_course'];
+            $this->moodlecourseid = $data->moodlecourseid;
         } else {
             $this->moodlecourseid = 0;
         }
@@ -256,8 +261,8 @@ class pmclass extends data_object_with_custom_fields {
 
             parent::delete();
 
-            $level = context_level_base::get_custom_context_level('class', 'elis_program');
-            $result = delete_context($level,$this->id);
+            $context = context_elis_class::instance($this->id);
+            $context->delete();
         }
     }
 
@@ -850,7 +855,11 @@ class pmclass extends data_object_with_custom_fields {
             if (empty($options['moodlecourses']) || $options['moodlecourses'] == 'copyalways'
                 || ($options['moodlecourses'] == 'copyautocreated' && $cmc->autocreated)) {
                 // create a new Moodle course based on the current class's Moodle course
-                $moodlecourseid   = course_rollover($cmc->moodlecourseid, $clone->startdate);
+                $moodlecourseid   = course_rollover($cmc->moodlecourseid);
+                //check that the course has rolled over successfully
+                if (!$moodlecourseid) {
+                    return false;
+                }
                 // Rename the fullname, shortname and idnumber of the restored course
                 $restore->id = $moodlecourseid;
                 // ELIS-2941: Don't prepend course name if already present ...
@@ -913,6 +922,12 @@ class pmclass extends data_object_with_custom_fields {
             }
         }
 
+        if (isset($this->unlink_attached_course) && isset($this->moodlecourseid)) {
+            // process unlink moodle course id request
+            $return = moodle_detach_class($this->id, $this->moodlecourseid);
+            $this->moodlecourseid = 0;
+        }
+
         if ($this->moodlecourseid || $this->autocreate) {
             moodle_attach_class($this->id, $this->moodlecourseid, '', true, true, $this->autocreate);
         }
@@ -935,7 +950,7 @@ class pmclass extends data_object_with_custom_fields {
             }
         }
 
-        field_data::set_for_context_from_datarecord('class', $this);
+        field_data::set_for_context_from_datarecord(CONTEXT_ELIS_CLASS, $this);
     }
 
 }
@@ -1008,7 +1023,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     }
 
     if ($alpha) {
-        $crslike = $DB->sql_like('crs.name', '?', FALSE);
+        $crslike = $DB->sql_like('cls.idnumber', '?', FALSE);
         $where[] = "($crslike)";
         $params[] = "$alpha%";
     }
@@ -1093,7 +1108,7 @@ function pmclass_count_records($namesearch = '', $alpha = '', $id = 0, $onlyopen
     }
 
     if ($alpha) {
-        $crslike = $DB->sql_like('crs.name', '?', FALSE);
+        $crslike = $DB->sql_like('cls.idnumber', '?', FALSE);
         $where[] = "($crslike)";
         $params[] = "$alpha%";
     }

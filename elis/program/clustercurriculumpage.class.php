@@ -77,7 +77,7 @@ class clustercurriculumbasepage extends associationpage {
         $action = $this->optional_param('action', 'default', PARAM_ACTION);
 
         if ($id) {
-            return get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $id);
+            return context_elis_userset::instance($id);
         } else {
             return parent::_get_page_context();
         }
@@ -258,7 +258,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         $action = $this->optional_param('action', 'default', PARAM_ACTION);
 
         if ($id) {
-            return get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $id);
+            return context_elis_userset::instance($id);
         } else {
             return parent::_get_page_context();
         }
@@ -316,7 +316,7 @@ class clustercurriculumpage extends clustercurriculumbasepage {
         $sort_clause = $sort.' '.$dir;
         $items = clustercurriculum::get_curricula($id, 0, 0, $sort_clause);
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'curricula');
 
         // find the curricula that the user can associate with this cluster
         $contexts = curriculumpage::get_contexts('elis/program:associate');
@@ -676,7 +676,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
         $action = $this->optional_param('action', 'default', PARAM_ACTION);
 
         if ($id) {
-            return get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $id);
+            return context_elis_program::instance($id);
         } else {
             return parent::_get_page_context();
         }
@@ -725,7 +725,7 @@ class curriculumclusterpage extends clustercurriculumbasepage {
 
         $items = clustercurriculum::get_clusters($id, $parent_clusterid, $sort, $dir);
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'clusters');
 
         $contexts = usersetpage::get_contexts('elis/program:associate');
         $clusters = cluster_get_listing('name', 'ASC', 0, 0, '', '', array('contexts' =>$contexts));

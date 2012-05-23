@@ -171,7 +171,7 @@ class usertrackpage extends usertrackbasepage {
 
         $items = usertrack::get_tracks($id);
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'tracks');
 
         //get the listing specifically for this user
         $this->print_dropdown(track_get_listing('name', 'ASC', 0, 0, '', '', 0, 0, $contexts, $id), $items, 'userid', 'trackid', 'savenew', 'idnumber');
@@ -273,7 +273,7 @@ class trackuserpage extends usertrackbasepage {
         $items = usertrack::get_users($id, $sort, $dir, $page, $perpage);
         echo $OUTPUT->paging_bar($count, $page, $perpage, $this->url);
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'users');
 
         if ($this->can_do_add()) {
             $this->print_assign_link();

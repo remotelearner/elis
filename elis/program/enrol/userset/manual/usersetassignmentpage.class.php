@@ -95,7 +95,7 @@ class userclusterpage extends userclusterbasepage {
     public function _get_page_context() {
         $id = $this->required_param('id', PARAM_INT);
 
-        return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
+        return context_elis_user::instance($id);
     }
 
     function can_do_default() {
@@ -171,7 +171,7 @@ class userclusterpage extends userclusterbasepage {
 
         echo html_writer::tag('h2', get_string('auto_assigned_usersets', 'usersetenrol_manual'));
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'clusters');
     }
 
     function print_manuallyassigned_table() {
@@ -216,7 +216,7 @@ class userclusterpage extends userclusterbasepage {
 
         echo html_writer::tag('h2', get_string('manually_assigned_usersets', 'usersetenrol_manual'));
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'clusters');
 
         $this->print_dropdown(cluster_get_listing('name', 'ASC', 0, 0, '', '', array(), $id), $items, 'userid', 'clusterid', 'add');
     }
@@ -232,7 +232,7 @@ class clusteruserpage extends userclusterbasepage {
     public function _get_page_context() {
         $id = $this->required_param('id', PARAM_INT);
 
-        return get_context_instance(context_level_base::get_custom_context_level('cluster', 'elis_program'), $id);
+        return context_elis_userset::instance($id);
     }
 
     function can_do_default() {
@@ -316,7 +316,7 @@ class clusteruserpage extends userclusterbasepage {
         $a->num = $count;
         echo html_writer::tag('div', get_string('items_found', 'elis_program', $a), array('style' => 'text-align:right'));
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'users');
     }
 
     function print_manuallyassigned_table() {
@@ -388,7 +388,7 @@ class clusteruserpage extends userclusterbasepage {
         $a->num = $count;
         echo html_writer::tag('div', get_string('items_found', 'elis_program', $a), array('style' => 'text-align:right'));
 
-        $this->print_list_view($items, $columns);
+        $this->print_list_view($items, $columns, 'users');
 
         $this->print_assign_link();
     }

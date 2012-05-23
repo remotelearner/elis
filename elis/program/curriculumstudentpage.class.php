@@ -60,7 +60,7 @@ class studentcurriculumpage extends associationpage2 {
     public function _get_page_context() {
         $id = $this->optional_param('id', 0, PARAM_INT);
         if ($id) {
-            return get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
+            return context_elis_user::instance($id);
         } else {
             return parent::_get_page_context();
         }
@@ -137,7 +137,7 @@ class studentcurriculumpage extends associationpage2 {
     protected function get_context() {
         if (!isset($this->context)) {
             $id = isset($this->params['id']) ? $this->params['id'] : required_param('id', PARAM_INT);
-            $this->context = get_context_instance(context_level_base::get_custom_context_level('user', 'elis_program'), $id);
+            $this->context = context_elis_user::instance($id);
         }
         return $this->context;
     }
@@ -503,7 +503,7 @@ class curriculumstudentpage extends associationpage2 {
     public function _get_page_context() {
         $id = $this->optional_param('id', 0, PARAM_INT);
         if ($id) {
-            return get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $id);
+            return context_elis_program::instance($id);
         } else {
             return parent::_get_page_context();
         }
@@ -529,7 +529,7 @@ class curriculumstudentpage extends associationpage2 {
     protected function get_context() {
         if (!isset($this->context)) {
             $id = required_param('id', PARAM_INT);
-            $this->context = get_context_instance(context_level_base::get_custom_context_level('curriculum', 'elis_program'), $id);
+            $this->context = context_elis_program::instance($id);
         }
         return $this->context;
     }

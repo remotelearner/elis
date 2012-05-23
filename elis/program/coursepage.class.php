@@ -93,7 +93,7 @@ class coursepage extends managementpage {
         $id = $this->optional_param('id', 0, PARAM_INT);
 
         if ($id) {
-            return get_context_instance(context_level_base::get_custom_context_level('course', 'elis_program'), $id);
+            return context_elis_course::instance($id);
         } else {
             return parent::_get_page_context();
         }
@@ -382,8 +382,7 @@ class coursepage extends managementpage {
         if(!empty(elis::$config->elis_program->default_course_role_id) && $DB->record_exists('role', array('id' => elis::$config->elis_program->default_course_role_id))) {
 
             //get the context instance for capability checking
-            $context_level = context_level_base::get_custom_context_level('course', 'elis_program');
-            $context_instance = get_context_instance($context_level, $cm_entity->id);
+            $context_instance = context_elis_course::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
             if (!has_capability('elis/program:course_edit', $context_instance)) {

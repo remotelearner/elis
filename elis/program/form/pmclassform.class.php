@@ -34,7 +34,7 @@ MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/elis/prog
 
 class pmclassform extends cmform {
     function definition() {
-        global $USER, $CFG, $DB;
+        global $USER, $CFG, $DB, $PAGE;
 
         parent::definition();
 
@@ -168,9 +168,21 @@ class pmclassform extends cmform {
         if (empty($this->_customdata['obj']->moodlecourseid)) {
             $this->add_moodle_course_select();
         } else {
+            $PAGE->requires->js('/elis/program/js/classform.js');
+            $courseSelected = array();
             $coursename = $DB->get_field('course', 'fullname', array('id'=>$this->_customdata['obj']->moodlecourseid));
-            $mform->addElement('static', 'class_attached_course', get_string('class_attached_course', 'elis_program') . ':',  "<a href=\"$CFG->wwwroot/course/view.php?id={$this->_customdata['obj']->moodlecourseid}\">$coursename</a>");
-            $mform->addHelpButton('class_attached_course', 'pmclassform:moodlecourse', 'elis_program');
+            $courseSelected[] = $mform->createElement('static', 'class_attached_course', get_string('class_attached_course', 'elis_program') . ':',  "<a href=\"$CFG->wwwroot/course/view.php?id={$this->_customdata['obj']->moodlecourseid}\">$coursename</a>");
+            //only show checkbox if current action is edit
+            $current_action    = optional_param('action','view',PARAM_ALPHA);
+            if ($current_action == 'edit') {
+                $options = array();
+                //set group to null
+                $options['group']=null;
+                $options['onclick'] = "return class_confirm_unlink(this,'".get_string('class_unlink_confirm', 'elis_program')."')";
+                $courseSelected[] = $mform->createElement('advcheckbox', 'unlink_attached_course', get_string('class_unlink_attached_course', 'elis_program') . ':', get_string('class_unlink_attached_course', 'elis_program'), $options);
+            }
+            $mform->addGroup($courseSelected, 'courseSelected', get_string('class_attached_course', 'elis_program') . ':');
+            $mform->addHelpButton('courseSelected', 'pmclassform:moodlecourse', 'elis_program');
             $mform->addElement('hidden', 'moodlecourseid');
         }
 
@@ -183,8 +195,8 @@ class pmclassform extends cmform {
 
         $lastcat = null;
         $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? get_context_instance(context_level_base::get_custom_context_level('class', 'elis_program'), $this->_customdata['obj']->id)
-            : get_context_instance(CONTEXT_SYSTEM);
+            ? context_elis_class::instance($this->_customdata['obj']->id)
+            : context_system::instance();
         require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
 
         foreach ($fields as $rec) {
@@ -307,7 +319,7 @@ class pmclassform extends cmform {
 
         $cselect = array(get_string('none', 'elis_program'));
 
-        $crss = $DB->get_records_select('course', $select, null, 'fullname');
+        $crss = $DB->get_recordset_select('course', $select, null, 'fullname', 'id, fullname');
         if(!empty($crss)) {
             foreach ($crss as $crs) {
                 $cselect[$crs->id] = $crs->fullname;
@@ -386,6 +398,8 @@ class pmclassform extends cmform {
                 }
             }
         }
+
+        $errors += parent::validate_custom_fields($data, 'class');
 
         return $errors;
     }

@@ -110,9 +110,7 @@ class block_curr_admin extends block_base {
 
         //make sure elis_program / custom contexts set up correctly
         //to prevent error before the upgrade to ELIS 2
-        $program_context = context_level_base::get_custom_context_level('curriculum', 'elis_program');
-
-        if (empty($access) || $this->content !== NULL || $program_context == null) {
+        if (empty($access) || $this->content !== NULL || !defined('CONTEXT_ELIS_PROGRAM')) {
             return $this->content;
         }
 
