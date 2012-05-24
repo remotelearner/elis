@@ -51,7 +51,7 @@ class cmform extends moodleform {
         $fields = $fields ? $fields : array();
         if (!empty($data['id'])) {
             $contextclass = context_elis_helper::get_class_for_level($contextlevel);
-            $instance     = $contextclass::instance($data['id']);
+            $context     = $contextclass::instance($data['id']);
             $contextid = $context->id;
         } else {
             $contextid = 0;
