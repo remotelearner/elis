@@ -430,27 +430,30 @@ class individual_user_report extends table_report {
 
         $params = array('p_completestatus' => STUSTATUS_PASSED);
         $permissions_filter = '';
-        if ($filter_user_id != $cm_user_id || $this->execution_mode != php_report::EXECUTION_MODE_INTERACTIVE) {
+
+        // ELIS-3993 -- Do not display any results if no user ID was supplied by the filter
+        if ($filter_user_id == -1) {
+            $permissions_filter = ' FALSE';
+        } else if ($filter_user_id != $cm_user_id || $this->execution_mode != php_report::EXECUTION_MODE_INTERACTIVE) {
             // obtain all course contexts where this user can view reports
             $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
             $filter_obj = $contexts->get_filter('id', 'user');
             $filter_sql = $filter_obj->get_sql(false, 'usr', SQL_PARAMS_NAMED);
 
             if (isset($filter_sql['where'])) {
-                // If this user does not have permission to view the requested data, print an error.
+                // If this user does not have permission to view the requested data, print an error during
+                // interactived mode only (i.e. not during a scheduled run).
                 if ($filter_sql['where'] == 'FALSE') {
-                    print_error('invalidpermission', $this->lang_file);
-                    return false;
+                    if ($this->execution_mode == php_report::EXECUTION_MODE_INTERACTIVE) {
+                        print_error('invalidpermission', $this->lang_file);
+                    }
+
+                    $permissions_filter = 'FALSE';
                 } else {
-                    $permissions_filter = ' WHERE '. $filter_sql['where'];
-                    $params += $filter_sql['where_parameters'];
+                    $permissions_filter = $filter_sql['where'];
+                    $params            += $filter_sql['where_parameters'];
                 }
             }
-        }
-
-        // ELIS-3993 -- Do not display any results if no user ID was supplied by the filter
-        if ($filter_user_id == -1) {
-            $permissions_filter .= (!empty($permissions_filter) ? ' AND FALSE' : ' WHERE FALSE');
         }
 
         // Figure out the number of completed credits for the curriculum
@@ -498,7 +501,7 @@ class individual_user_report extends table_report {
                     AND grd.userid = usr.id
                     AND grd.completionid = crscomp.id
                     AND grd.locked = 1
-                    {$permissions_filter}
+                    WHERE {$permissions_filter}
                ";
 
         return array($sql, $params);

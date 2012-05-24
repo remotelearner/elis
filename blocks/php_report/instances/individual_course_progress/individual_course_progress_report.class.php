@@ -499,21 +499,30 @@ class individual_course_progress_report extends table_report {
                           : -1; // ELIS-4699: so not == to invalid cm/pm userid
 
         $permissions_filter = 'TRUE';
-        if ($filter_user_id != $cm_user_id || $this->execution_mode != php_report::EXECUTION_MODE_INTERACTIVE) {
+
+        // ELIS-3993 -- Do not display any results if no user ID was supplied by the filter
+        if ($filter_user_id == -1) {
+            $permissions_filter = ' FALSE';
+        } else if ($filter_user_id != $cm_user_id || $this->execution_mode != php_report::EXECUTION_MODE_INTERACTIVE) {
             // obtain all course contexts where this user can view reports
             $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
             //$permissions_filter = $contexts->sql_filter_for_context_level('crlmuser.id', 'user');
             $filter_obj = $contexts->get_filter('crlmuser.id', 'user');
             $filter_sql = $filter_obj->get_sql(false, 'crlmuser', SQL_PARAMS_NAMED);
             if (isset($filter_sql['where'])) {
-                $permissions_filter = $filter_sql['where'];
-                $params = $filter_sql['where_parameters'];
-            }
-        }
+                // If this user does not have permission to view the requested data, print an error during
+                // interactived mode only (i.e. not during a scheduled run).
+                if ($filter_sql['where'] == 'FALSE') {
+                    if ($this->execution_mode == php_report::EXECUTION_MODE_INTERACTIVE) {
+                        print_error('invalidpermission', $this->lang_file);
+                    }
 
-        // ELIS-3993 -- Do not display any results if no user ID was supplied by the filter
-        if ($filter_user_id == -1) {
-            $permissions_filter .= (!empty($permissions_filter) ? ' AND FALSE' : ' WHERE FALSE');
+                    $permissions_filter = ' FALSE';
+                } else {
+                    $permissions_filter = $filter_sql['where'];
+                    $params             = $filter_sql['where_parameters'];
+                }
+            }
         }
 
         //tracks progress used by this user
