@@ -511,6 +511,11 @@ class individual_course_progress_report extends table_report {
             }
         }
 
+        // ELIS-3993 -- Do not display any results if no user ID was supplied by the filter
+        if ($filter_user_id == -1) {
+            $permissions_filter .= (!empty($permissions_filter) ? ' AND FALSE' : ' WHERE FALSE');
+        }
+
         //tracks progress used by this user
         $total_progress_subquery =
              'SELECT cls.id AS classid, stu.userid as userid, COUNT(*) AS numprogress, COUNT(clsgr.id) AS stucomplete

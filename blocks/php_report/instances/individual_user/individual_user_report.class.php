@@ -448,6 +448,11 @@ class individual_user_report extends table_report {
             }
         }
 
+        // ELIS-3993 -- Do not display any results if no user ID was supplied by the filter
+        if ($filter_user_id == -1) {
+            $permissions_filter .= (!empty($permissions_filter) ? ' AND FALSE' : ' WHERE FALSE');
+        }
+
         // Figure out the number of completed credits for the curriculum
         $numcomplete_subquery = "SELECT sum(innerclsenr.credits)
                                  FROM {". student::TABLE ."} innerclsenr
