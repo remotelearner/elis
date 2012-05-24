@@ -356,11 +356,11 @@ class userset extends data_object_with_custom_fields {
 
         if (isset($filtersql['join'])) {
             $cluster_permission_sql .= $filtersql['join'];
-            $params += $filtersql['join_params'];
+            $params = array_merge($params, $filtersql['join_params']);
         }
         if (isset($filtersql['where'])) {
             $cluster_permissions_sql .= ' WHERE ' . $filtersql['where'];
-            $params += $filtersql['where_parameters'];
+            $params = array_merge($params, $filtersql['where_parameters']);
         }
 
         $allowed_clusters = $DB->get_records_sql($cluster_permissions_sql, $params);
