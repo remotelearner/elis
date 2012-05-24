@@ -362,4 +362,44 @@ class customFieldPermissionsTest extends elis_database_test {
         manual_field_add_form_element($form, $mform, $course_context, array(), $field, false);
         $this->assertFalse($mform->elementExists('field_field'));
     }
+
+    /**
+     * Validate error handling for incorrectly-specified context edit capability
+     */
+    public function testFieldNotAddedWhenEditContextCapabilityNotSpecified() {
+        //setup
+        $this->init_config();
+        $this->init_key_contexts();
+        $course_context = $this->init_category_and_course();
+        $field = $this->init_field_and_owner('', 'moodle/user:viewhiddendetails');
+        $this->init_user();
+
+        //attempt to add the field
+        $form = new custom_field_permissions_form();
+        $mform = $form->get_mform();
+        manual_field_add_form_element($form, $mform, $course_context, array(), $field, false);
+
+        //validation
+        $this->assertFalse($mform->elementExists('field_field'));
+    }
+
+    /**
+     * Validate error handling for incorrectly-specified context view capability
+     */
+    public function testFieldNotAddedWhenViewContextCapabilityNotSpeciofied() {
+        //setup
+        $this->init_config();
+        $this->init_key_contexts();
+        $course_context = $this->init_category_and_course();
+        $field = $this->init_field_and_owner('moodle/user:update', '');
+        $this->init_user();
+
+        //attempt to add the field
+        $form = new custom_field_permissions_form();
+        $mform = $form->get_mform();
+        manual_field_add_form_element($form, $mform, $course_context, array(), $field, false);
+
+        //validation
+        $this->assertFalse($mform->elementExists('field_field'));
+    }
 }
