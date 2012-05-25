@@ -169,7 +169,7 @@ class usertrackpage extends usertrackbasepage {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        $items = usertrack::get_tracks($id);
+        $items = usertrack::get_tracks($id, $sort, $dir);
 
         $this->print_list_view($items, $columns, 'tracks');
 
