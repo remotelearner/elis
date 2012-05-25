@@ -30,7 +30,8 @@ require_once($CFG->dirroot .'/blocks/php_report/type/table_report.class.php');
 require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php');
 
 class individual_user_report extends table_report {
-    var $lang_file = 'rlreport_individual_user';
+    var $lang_file    = 'rlreport_individual_user';
+    var $nopermission = false;  // Set to TRUE if the user has no permission to view the request report
 
     /**
      * Gets the report category.
@@ -95,6 +96,10 @@ class individual_user_report extends table_report {
         global $CFG;
 
         $header_array = array();
+
+        if ($this->nopermission) {
+            return $header_array;
+        }
 
         $userid = php_report_filtering_get_active_filter_values($this->get_report_shortname(),
                                                                 'userid',$this->filter);
@@ -213,7 +218,7 @@ class individual_user_report extends table_report {
             'restriction_sql' => '',
             'help' => array(
                 'individual_user_report',
-                get_string('displayname', 'rlreport_individual_user'),
+                get_string('displayname', $this->lang_file),
                 'rlreport_individual_user'
             )
         );
@@ -228,7 +233,7 @@ class individual_user_report extends table_report {
             $autocomplete_opts ['defaults'] = array('label' => $USER->firstname.' '.$USER->lastname, 'id' => $cm_user_id);
         }
 
-        $filters[] = new generalized_filter_entry('userid', 'usr', 'id', get_string('filter_user', 'rlreport_individual_user'),
+        $filters[] = new generalized_filter_entry('userid', 'usr', 'id', get_string('filter_user', $this->lang_file),
                                                   false, 'autocomplete', $autocomplete_opts);
 
         return $filters;
@@ -441,13 +446,9 @@ class individual_user_report extends table_report {
             $filter_sql = $filter_obj->get_sql(false, 'usr', SQL_PARAMS_NAMED);
 
             if (isset($filter_sql['where'])) {
-                // If this user does not have permission to view the requested data, print an error during
-                // interactived mode only (i.e. not during a scheduled run).
                 if ($filter_sql['where'] == 'FALSE') {
-                    if ($this->execution_mode == php_report::EXECUTION_MODE_INTERACTIVE) {
-                        print_error('invalidpermission', $this->lang_file);
-                    }
-
+                    // This user does not have permission to view the requested data
+                    $this->nopermission = true;
                     $permissions_filter = 'FALSE';
                 } else {
                     $permissions_filter = $filter_sql['where'];
