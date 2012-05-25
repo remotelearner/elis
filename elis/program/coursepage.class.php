@@ -328,6 +328,23 @@ class coursepage extends managementpage {
         return $output;
     }
 
+    function build_navbar_view($who = null, $id_param = 'id', $extra_params = array()) {
+        if (!$who) {
+            $who = $this;
+        }
+        $this->build_navbar_default($who);
+
+        if ($id_param == 'id' || !($id = $who->optional_param($id_param, 0, PARAM_INT))) {
+            $id = $who->required_param('id', PARAM_INT);
+        }
+
+        $obj = $this->get_new_data_object($id);
+        $obj->load();
+        $params = array_merge(array('action' => 'view', 'id' => $id), $extra_params);
+        $url = $this->get_new_page($params, true)->url;
+        $who->navbar->add(htmlspecialchars($obj), $url);
+    }
+
     public function build_navbar_lelem($who = null) {
         if (!$who) {
             $who = $this;
@@ -335,7 +352,7 @@ class coursepage extends managementpage {
         $id = required_param('id', PARAM_INT);
 
         $page = $this->get_new_page(array('action' => 'lelem', 'id' => $id));
-        $this->build_navbar_default($who);
+        $this->build_navbar_view($who);
 
         $who->navbar->add(get_string('completion_elements', 'elis_program'),
                           $page->url);
