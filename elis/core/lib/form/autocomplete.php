@@ -207,7 +207,13 @@ if ($mode === 'search') {
         $filter_sql = $filter_obj->get_sql(false, '', SQL_PARAMS_NAMED);
         if (isset($filter_sql['where'])) {
             $wherestr .= ' AND '. $filter_sql['where'];
-            $params = $filter_sql['where_parameters'];
+            $params    = $filter_sql['where_parameters'];
+        }
+
+        // ELIS-5807 -- Always be sure to include the user accessing the filter in the results!
+        if ($cm_user_id = cm_get_crlmuserid($USER->id)) {
+            $wherestr .= ' OR {'.$found_filter->options['table'].'}.id = :self_user_id';
+            $params   += array('self_user_id' => $cm_user_id);
         }
 
         $sql = 'SELECT id,'.implode(',',$found_filter->options['fields'])
