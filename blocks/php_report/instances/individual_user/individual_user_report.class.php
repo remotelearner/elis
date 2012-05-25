@@ -429,7 +429,7 @@ class individual_user_report extends table_report {
         $filter_user_id = (isset($filter_array[0]['value'])) ? $filter_array[0]['value'] : -1;
 
         $params = array('p_completestatus' => STUSTATUS_PASSED);
-        $permissions_filter = '';
+        $permissions_filter = 'TRUE ';
 
         // ELIS-3993 -- Do not display any results if no user ID was supplied by the filter
         if ($filter_user_id == -1) {
