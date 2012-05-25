@@ -223,7 +223,12 @@ class userform extends cmform {
                 $lastcat = $rec->categoryid;
                 $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
             }
-            manual_field_add_form_element($this, $mform, $context, $this->_customdata, $field);
+
+            //capabilities for editing / viewing this context
+            $edit_cap = 'elis/program:user_edit';
+            $view_cap = 'elis/program:user_view'; 
+            manual_field_add_form_element($this, $mform, $context, $this->_customdata, $field,
+                                          true, $edit_cap, $view_cap);
         }
 
         $this->add_action_buttons();
