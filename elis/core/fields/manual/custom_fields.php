@@ -210,24 +210,53 @@ function manual_field_save_form_data($form, $field, $data) {
 
 /**
  * Add an element to a form for a field.
+ *
+ * @param object $form the moodle form object we are adding the element to
+ * @param object $mform the moodle quick form object belonging to the moodle form
+ * @param array $customdata any additional information to pass along to the element
+ * @param object $field the custom field we are viewing / editing
+ * @param boolean $check_required if true, add a required rule for this field
+ * @param string $context_edit_cap the edit capability to check if the field owner
+ *                                 is set up to use the "edit this context" option for editing
+ * @param string $context_view_cap the view capability to check if the field owner
+ *                                 is set up to use the "view this context" option for viewing
  */
-function manual_field_add_form_element($form, $mform, $context, $customdata, $field, $check_required = true) {
+function manual_field_add_form_element($form, $mform, $context, $customdata, $field, $check_required = true,
+                                       $context_edit_cap = NULL, $context_view_cap = NULL) {
     //$mform = $form->_form;
     $elem = "field_{$field->shortname}";
     $manual = new field_owner($field->owners['manual']);
-    if (!empty($manual->param_edit_capability)) {
-        $capability = $manual->param_edit_capability;
-        if ($capability == 'disabled' || !has_capability($capability, $context)) {
-            if (!empty($manual->param_view_capability)) {
-                $capability = $manual->param_view_capability;
-                if (!has_capability($capability, $context)) {
-                    return;
-                }
-            }
-            $mform->addElement('static', $elem, $field->name);
+
+    //determine which exact capabilities we are checking
+    $edit_cap = $manual->param_edit_capability;
+    if ($edit_cap == '') {
+        //context-specific capability
+        $edit_cap = $context_edit_cap;
+    }
+
+    $view_cap = $manual->param_view_capability;
+    if ($view_cap == '') {
+        //context-specific capability
+        $view_cap = $context_view_cap;
+    }
+
+    if ($edit_cap == NULL || $view_cap == NULL) {
+        //capabilities for editing or viewing the context were not correctly specified
+        return;
+    }
+
+    if ($edit_cap == 'disabled' || !has_capability($edit_cap, $context)) {
+
+        if (!has_capability($view_cap, $context)) {
+            //do not have view or edit permissions, so show nothing
             return;
         }
+
+        //have view but not edit, show as static
+        $mform->addElement('static', $elem, $field->name);
+        return;
     }
+
     $control = $manual->param_control;
     require_once elis::plugin_file('elisfields_manual',"field_controls/{$control}.php");
     call_user_func("{$control}_control_display", $form, $mform, $customdata, $field);
