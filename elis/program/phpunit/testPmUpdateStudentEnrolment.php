@@ -89,14 +89,29 @@ class pmUpdateStudentEnrolmentTest extends elis_database_test {
                                 'completestatusid' => STUSTATUS_PASSED,
                                 'completetime' => 1000000000,
                                 'endtime' => 1000000000);
+        $associations[] = array('classid' => 101,
+                                'userid' => 1,
+                                'completestatusid' => STUSTATUS_FAILED,
+                                'completetime' => 1000000000,
+                                'endtime' => 1000000000);
         $associations[] = array('classid' => 100,
                                 'userid' => 2,
                                 'completestatusid' => STUSTATUS_FAILED,
                                 'completetime' => 1000000000,
                                 'endtime' => 1000000000);
+        $associations[] = array('classid' => 101,
+                                'userid' => 2,
+                                'completestatusid' => STUSTATUS_NOTCOMPLETE,
+                                'completetime' => 1000000000,
+                                'endtime' => 1000000000);
         $associations[] = array('classid' => 100,
                                 'userid' => 3,
                                 'completestatusid' => STUSTATUS_NOTCOMPLETE,
+                                'completetime' => 1000000000,
+                                'endtime' => 1000000000);
+        $associations[] = array('classid' => 101,
+                                'userid' => 3,
+                                'completestatusid' => STUSTATUS_PASSED,
                                 'completetime' => 1000000000,
                                 'endtime' => 1000000000);
         return array(array($associations));
@@ -105,7 +120,7 @@ class pmUpdateStudentEnrolmentTest extends elis_database_test {
     /**
      * Validate that the method respect enrolment status
      *
-     * @param array $associations A list of enrolments/ associations to validate
+     * @param array $associations A list of enrolments / associations to validate
      *                            against
      * @dataProvider enrolmentStatusProvider
      */
@@ -149,6 +164,53 @@ class pmUpdateStudentEnrolmentTest extends elis_database_test {
     }
 
     /**
+     * Validate that the method respect enrolment status and user id, i.e. can
+     * run only for a specific user
+     *
+     * @param array $associations A list of enrolments / associations to validate
+     *                            against
+     * @dataProvider enrolmentStatusProvider
+     */
+    public function testPmUpdateStudentEnrolmentRespectsEnrolmentStatusAndUserid($associations) {
+        global $DB;
+
+        //prevent messaging emails from being sent
+        set_config('noemailever', true);
+
+        //necessary data
+        $this->load_csv_data();
+
+        //track the final data state for validation
+        $expected_associations = array();
+
+        foreach ($associations as $key => $association) {
+            //create student enrolment
+            $record = new student($association);
+            $record->save();
+
+            $expected_associations[] = $association;
+
+            if ($association['completestatusid'] == STUSTATUS_NOTCOMPLETE && $association['userid'] == 2) {
+                //enrolment will lapse
+                $expected_associations[$key]['completestatusid'] = STUSTATUS_FAILED;
+                $expected_associations[$key]['completetime'] = 0;
+            }
+        }
+
+        //fail specific expired student
+        pm_update_student_enrolment(2);
+
+        //validate count
+        $this->assertEquals(count($expected_associations), $DB->count_records(student::TABLE));
+
+        //validate records specifically
+        foreach ($expected_associations as $expected_association) {
+            $exists = $DB->record_exists(student::TABLE, $expected_association);
+            $this->assertTrue($exists);
+        }
+    }
+
+    /**
      * Data provider for testing validation condition on enrolment end times
      *
      * @return array A list of enrolments with a variety of enrolment end times
@@ -159,23 +221,40 @@ class pmUpdateStudentEnrolmentTest extends elis_database_test {
                                 'userid' => 1,
                                 'completestatusid' => STUSTATUS_NOTCOMPLETE,
                                 'completetime' => 1000000000,
-                                'endtime' => 0); 
+                                'endtime' => 0);
+        $associations[] = array('classid' => 101,
+                                'userid' => 1,
+                                'completestatusid' => STUSTATUS_NOTCOMPLETE,
+                                'completetime' => time() + 1000,
+                                'endtime' => 0);
         $associations[] = array('classid' => 100,
                                 'userid' => 2,
                                 'completestatusid' => STUSTATUS_NOTCOMPLETE,
                                 'completetime' => 1000000000,
                                 'endtime' => time() + 1000);
+        $associations[] = array('classid' => 101,
+                                'userid' => 2,
+                                'completestatusid' => STUSTATUS_NOTCOMPLETE,
+                                'completetime' => 1000000000,
+                                'endtime' => time() - 1000);
         $associations[] = array('classid' => 100,
                                 'userid' => 3,
                                 'completestatusid' => STUSTATUS_NOTCOMPLETE,
                                 'completetime' => 1000000000,
                                 'endtime' => time() - 1000);
+        $associations[] = array('classid' => 101,
+                                'userid' => 3,
+                                'completestatusid' => STUSTATUS_NOTCOMPLETE,
+                                'completetime' => 1000000000,
+                                'endtime' => 1000000000);
         return array(array($associations));
     }
 
     /**
      * Validate that the method respects end time
      *
+     * @param array $associations A list of enrolments / associations to validate
+     *                            against 
      * @dataProvider enrolmentEndtimeProvider
      */
     public function testPmUpdateStudentEnrolmentRespectsEnrolmentEndtime($associations) {
@@ -218,6 +297,53 @@ class pmUpdateStudentEnrolmentTest extends elis_database_test {
     }
 
     /**
+     * Validate that the method respects end time and user id, i.e. can run only
+     * for a specific user
+     *
+     * @param array $associations A list of enrolments / associations to validate
+     *                            against 
+     * @dataProvider enrolmentEndtimeProvider
+     */
+    public function testPmUpdateStudentEnrolmentRespectsEnrolmentEndtimeAndUserid($associations) {
+        global $DB;
+
+        //prevent messaging emails from being sent
+        set_config('noemailever', true);
+
+        //necessary data
+        $this->load_csv_data();
+
+        //track the final data state for validation
+        $expected_associations = array();
+
+        foreach ($associations as $key => $association) {
+            //create student enrolment
+            $record = new student($association);
+            $record->save();
+
+            $expected_associations[] = $association;
+
+            if ($association['endtime'] > 0 && $association['endtime'] < time() && $association['userid'] == 2) {
+                //enrolment will lapse
+                $expected_associations[$key]['completestatusid'] = STUSTATUS_FAILED;
+                $expected_associations[$key]['completetime'] = 0;
+            }
+        }
+
+        //fail specific expired student
+        pm_update_student_enrolment(2);
+
+        //validate count
+        $this->assertEquals(count($expected_associations), $DB->count_records(student::TABLE));
+
+        //validate records specifically
+        foreach ($expected_associations as $expected_association) {
+            $exists = $DB->record_exists(student::TABLE, $expected_association);
+            $this->assertTrue($exists);
+        }
+    }
+
+    /**
      * Data provider for testing successful execution of the method
      *
      * @return array A list of enrolments satisfying the necessary criteria
@@ -239,6 +365,8 @@ class pmUpdateStudentEnrolmentTest extends elis_database_test {
     /**
      * Validate the "succss" case of the method, i.e. failing students
      *
+     * @param array $associations A list of enrolments / associations to validate
+     *                            against
      * @dataProvider enrolmentFailProvider
      */
     public function testPmUpdateStudentEnrolmentFailsStudents($associations) {
@@ -266,6 +394,52 @@ class pmUpdateStudentEnrolmentTest extends elis_database_test {
 
         //fail expired students
         pm_update_student_enrolment();
+
+        //validate count
+        $this->assertEquals(count($expected_associations), $DB->count_records(student::TABLE));
+
+        //validate data specifically
+        foreach ($expected_associations as $expected_association) {
+            $exists = $DB->record_exists(student::TABLE, $expected_association);
+            $this->assertTrue($exists);
+        }
+    }
+
+    /**
+     * Validate the "succss" case of the method, i.e. failing students for a
+     * specific user id, i.e. can only for a specific user 
+     *
+     * @param array $associations A list of enrolments / associations to validate
+     *                            against
+     * @dataProvider enrolmentFailProvider
+     */
+    public function testPmUpdateStudentEnrolmentFailsStudentWithSpecificUserid($associations) {
+        global $DB;
+
+        //prevent messaging emails from being sent
+        set_config('noemailever', true);
+
+        //necessary data
+        $this->load_csv_data();
+
+        //track the final data state for validation
+        $expected_associations = array();
+
+        foreach ($associations as $key => $association) {
+            //create student enrolment
+            $record = new student($association);
+            $record->save();
+
+            if ($association['userid'] == 1) {
+                //specific student will be set to failed
+                $expected_associations[] = $association;
+                $expected_associations[$key]['completestatusid'] = STUSTATUS_FAILED;
+                $expected_associations[$key]['completetime'] = 0;
+            }
+        }
+
+        //fail specific expired students
+        pm_update_student_enrolment(1);
 
         //validate count
         $this->assertEquals(count($expected_associations), $DB->count_records(student::TABLE));

@@ -34,6 +34,8 @@ require_once(elispm::lib('data/course.class.php'));
  * Class for testing the pm_update_enrolment_status method and its ability to
  * delegate to a class instance's update_enrolment_status method for passing
  * and locking PM classenrolments
+ *
+ * TODO: Consider merging with testAutoClassCompletion.php
  */
 class pmUpdateEnrolmentStatusTest extends elis_database_test {
     /**
@@ -95,6 +97,11 @@ class pmUpdateEnrolmentStatusTest extends elis_database_test {
                               'grade' => 100,
                               'completestatusid' => STUSTATUS_NOTCOMPLETE,
                               'expect_pass' => true);
+        $enrolments[] = array('classid' => 100,
+                              'userid' => 3,
+                              'grade' => 100,
+                              'completestatusid' => STUSTATUS_NOTCOMPLETE,
+                              'expect_pass' => true);
         //learning objective grades
         $classgraded = array();
         $classgraded[] = array('completionid' => 1,
@@ -105,11 +112,20 @@ class pmUpdateEnrolmentStatusTest extends elis_database_test {
                                'classid' => 100,
                                'userid' => 2,
                                'grade' => 100);
+        $classgraded[] = array('completionid' => 1,
+                               'classid' => 100,
+                               'userid' => 3,
+                               'grade' => 100);
         //return both pieces of data
         return array(array($enrolments, $classgraded));
     }
 
     /**
+     * Validate that the method we are testing delegates appropriately to the helper
+     * method in the appropriate classes
+     *
+     * @param array $enrolments A list of class enrolment records we are processing
+     * @param array $classgraded A list of learning objective grades we are processing
      * @dataProvider updateDelegationProvider
      */
     public function testPmUpdateEnrolmentStatusDelegatesToClassMethod($enrolments, $classgraded) {
@@ -154,5 +170,48 @@ class pmUpdateEnrolmentStatusTest extends elis_database_test {
             $exists = $DB->record_exists(student::TABLE, $expected_enrolment);
             $this->assertTrue($exists);
         }
+    }
+
+    /**
+     * Validate that the pm_update_enrolment_status method respects its userid
+     * parameter, i.e. it can run only for a specific user
+     *
+     * @param array $enrolments A list of class enrolment records we are processing
+     * @param array $classgraded A list of learning objective grades we are processing
+     * @dataProvider updateDelegationProvider
+     */
+    public function testPmUpdateEnrolmentStatusRespectsUseridParameter($enrolments, $classgraded) {
+        global $DB;
+
+        //NOTE: this unit test does not test all cases because that should be specifically
+        //tested for $pmclass->update_enrolment_status
+
+        //necessary data
+        $this->load_csv_data();
+
+        foreach ($enrolments as $key => $enrolment) {
+            //create student enrolment
+            $record = new student($enrolment);
+            $record->save();
+        }
+
+        foreach ($classgraded as $lograde) {
+            //create learning objective grade
+            $record = new student_grade($lograde);
+            $record->save();
+        }
+
+        //pass the appropriate student
+        pm_update_enrolment_status(2);
+
+        //we should have one passed student in the PM class instance,
+        //and that student should be the second user
+        $enrolments = $DB->get_records(student::TABLE, array('completestatusid' => STUSTATUS_PASSED));
+        $this->assertEquals(1, count($enrolments));
+
+        $enrolment = reset($enrolments);
+        $this->assertEquals(100, $enrolment->classid);
+        $this->assertEquals(2, $enrolment->userid);
+        $this->assertEquals(100, $enrolment->grade);
     }
 }

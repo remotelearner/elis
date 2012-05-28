@@ -41,7 +41,8 @@ class pmclassCheckForMoodleCoursesTest extends elis_database_test {
      */
     static protected function get_overlay_tables() {
         return array('course' => 'moodle',
-                     classmoodlecourse::TABLE => 'elis_program');
+                     classmoodlecourse::TABLE => 'elis_program',
+                     student::TABLE => 'elis_program');
     }
 
     /**
@@ -51,6 +52,7 @@ class pmclassCheckForMoodleCoursesTest extends elis_database_test {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         //need Moodle courses for testing
         $dataset->addTable('course', elis::component_file('program', 'phpunit/mdlcourses.csv'));
+        $dataset->addTable(student::TABLE, elis::component_file('program', 'phpunit/student.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
@@ -62,19 +64,19 @@ class pmclassCheckForMoodleCoursesTest extends elis_database_test {
      */
     function checkForMoodleCoursesProvider() {
         $associations = array();
-        $associations[] = array('classid' => 1,
+        $associations[] = array('classid' => 100,
                                 'moodlecourseid' => 1,
                                 'expect_deleted' => false);
-        $associations[] = array('classid' => 1,
+        $associations[] = array('classid' => 101,
                                 'moodlecourseid' => 2,
                                 'expect_deleted' => false);
-        $associations[] = array('classid' => 1,
+        $associations[] = array('classid' => 102,
                                 'moodlecourseid' => 3,
                                 'expect_deleted' => false);
-        $associations[] = array('classid' => 1,
+        $associations[] = array('classid' => 103,
                                 'moodlecourseid' => 4,
                                 'expect_deleted' => true);
-        $associations[] = array('classid' => 1,
+        $associations[] = array('classid' => 104,
                                 'moodlecourseid' => 5,
                                 'expect_deleted' => true);
         return array(array($associations));
@@ -110,6 +112,50 @@ class pmclassCheckForMoodleCoursesTest extends elis_database_test {
 
         //delete orphaned records
         pmclass::check_for_moodle_courses();
+
+        //validate count
+        $this->assertEquals(count($remaining_associations), $DB->count_records(classmoodlecourse::TABLE));
+
+        //validate records specifically
+        foreach ($remaining_associations as $remaining_association) {
+            $params = array('classid' => $remaining_association['classid'],
+                            'moodlecourseid' => $remaining_association['moodlecourseid']);
+            $exists = $DB->record_exists(classmoodlecourse::TABLE, $params);
+            $this->assertTrue($exists);
+        }
+    }
+
+    /**
+     * Validate that the check_for_moodle_courses method deletes the
+     * correct set of orphaned associations exactly for a specific user
+     *
+     * @param array $associations The list of associations, as well as information
+     *                            regarding whether they should be cleaned up or not 
+     * @dataProvider checkForMoodleCoursesProvider
+     */
+    public function testCheckForMoodleCoursesRespectsUseridParameter($associations) {
+        global $DB;
+
+        //set up our classes
+        $this->load_csv_data();
+
+        //track which associations should remain
+        $remaining_associations = array();
+
+        foreach ($associations as $association) {
+            //persist the record
+            $record = new classmoodlecourse($association);
+            $record->save();
+
+            //test user is enrolled in class 100, so this one should be deleted
+            if ($association['classid'] != 100) {
+                //it should persist after the method is called
+                $remaining_associations[] = $association;
+            }
+        }
+
+        //delete orphaned records
+        pmclass::check_for_moodle_courses(103);
 
         //validate count
         $this->assertEquals(count($remaining_associations), $DB->count_records(classmoodlecourse::TABLE));

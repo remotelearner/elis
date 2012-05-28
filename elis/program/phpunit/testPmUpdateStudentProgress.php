@@ -136,6 +136,8 @@ class pmUpdateStudentProgressTest extends elis_database_test {
      * Validate that pm_update_student_progress syncs all necessary enrolment
      * information and "completes" a student
      *
+     * @param array $role_assignments List of role assignment records to test with
+     * @param array $item_grades List of grade item grades to test with
      * @dataProvider updateStudentProgressProvider
      */
     function testPmUpdateStudentProgressDelegateToEnrolmentSyncAndUpdate($role_assignments, $item_grades) {
@@ -173,5 +175,57 @@ class pmUpdateStudentProgressTest extends elis_database_test {
         $count_completed_elements = $DB->count_records(student_grade::TABLE, array('locked' => 1,
                                                                                    'grade' => 100));
         $this->assertEquals(2, $count_completed_elements);
+    }
+
+    /**
+     * Validate that the pm_update_student_progress method respects its userid
+     * parameter, i.e. can run only for a specific user
+     *
+     * @param array $role_assignments List of role assignment records to test with
+     * @param array $item_grades List of grade item grades to test with
+     * @dataProvider updateStudentProgressProvider
+     */
+    function testPmUpdateStudentProgressRespectsUseridParameter($role_assignments, $item_grades) {
+        global $DB;
+
+        //necessary data
+        $this->load_csv_data();
+
+        //make sure the context is set up
+        context_course::instance(1);
+
+        //set up our test role
+        create_role('gradedrole', 'gradedrole', 'gradedrole');
+        set_config('gradebookroles', '1');
+
+        //create all of our test role assignments
+        foreach ($role_assignments as $role_assignment) {
+            role_assign($role_assignment['roleid'], $role_assignment['userid'], $role_assignment['contextid']);
+        }
+
+        //assign item grades
+        foreach ($item_grades as $item_grade) {
+            $DB->insert_record('grade_grades', $item_grade);
+        }
+
+        //perform the sync for the first user
+        pm_update_student_progress(100);
+
+        //we should have one passed student in the PM class instance,
+        //and that student should be the first user
+        $completed_enrolments = $DB->get_records(student::TABLE, array('completestatusid' => STUSTATUS_PASSED));
+        $this->assertEquals(1, count($completed_enrolments));
+
+        $enrolment = reset($completed_enrolments);
+        $this->assertEquals(103, $enrolment->userid);
+        $this->assertEquals(100, $enrolment->grade);
+
+        //we should have one passed learning objective for the first user
+        $completed_elements = $DB->get_records(student_grade::TABLE, array('locked' => 1));
+        $this->assertEquals(1, count($completed_elements));
+
+        $element = reset($completed_elements);
+        $this->assertEquals(103, $element->userid);
+        $this->assertEquals(100, $element->grade);
     }
 }
