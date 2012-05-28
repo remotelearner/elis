@@ -297,6 +297,17 @@ class customfieldpage extends pm_page {
             $tmppage = new customfieldpage(array('level' => $level));
             redirect($tmppage->url, get_string('edit_cancelled', 'elis_program'));
         } else if ($data = $form->get_data()) {
+            switch ($data->manual_field_control) {
+                case 'checkbox':
+                    $data->defaultdata = $data->defaultdata_checkbox;
+                    break;
+                case 'datetime':
+                    $data->defaultdata = $data->defaultdata_datetime;
+                    break;
+                default:
+                    $data->defaultdata = $data->defaultdata_text;
+                    break;
+            }
             $field = new field($data);
             if ($id) {
                 $field->id = $id;
@@ -358,6 +369,12 @@ class customfieldpage extends pm_page {
                     switch ($moodlefield->datatype) {
                     case field::CHECKBOX:
                         $data_array['datatype'] = 'bool';
+                        break;
+                    case field::DATETIME:
+                        $data_array['datatype'] = 'datetime';
+                        $data_array['manual_field_startyear'] = $moodlefield->param1;
+                        $data_array['manual_field_stopyear'] = $moodlefield->param2;
+                        $data_array['manual_field_inctime'] = $moodlefield->param3;
                         break;
                     case field::MENU:
                         $data_array['datatype'] = 'char';
@@ -429,7 +446,11 @@ class customfieldpage extends pm_page {
                         }
                     }
                 }
-
+                if (isset($data_array['defaultdata'])) {
+                    $data_array['defaultdata_checkbox'] = !empty($data_array['defaultdata']);
+                    $data_array['defaultdata_datetime'] = $data_array['defaultdata'];
+                    $data_array['defaultdata_text'] = strval($data_array['defaultdata']);
+                }
                 $form->set_data($data_array);
             }
             $form->display();

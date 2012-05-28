@@ -31,12 +31,52 @@ require_once elispm::file('form/cmform.class.php');
 
 class customfieldform extends cmform {
     function definition() {
-        global $CFG;
+        global $CFG, $DB, $PAGE;
 
         $form =& $this->_form;
 
         $form->addElement('hidden', 'id');
+        $form->addElement('hidden', 'manual_field_startyear');
+        $form->addElement('hidden', 'manual_field_stopyear');
+        $form->addElement('hidden', 'manual_field_inctime');
         $form->setType('id', PARAM_INT);
+
+        // Include required yui javascript
+        $PAGE->requires->yui2_lib(array('yahoo',
+                                        'dom'));
+        $form->addElement('html', '<script type="text/javascript">
+            function switchDefaultData() {
+                var elem;
+                var elemid;
+                var fcontrol = document.getElementById("id_manual_field_control");
+                var dttext = document.getElementById("datatype_text");
+                var dtcheckbox = document.getElementById("datatype_checkbox");
+                var dtdatetime = document.getElementById("datatype_datetime");
+                elemid = "datatype_" + fcontrol.options[fcontrol.selectedIndex].value;
+                //alert("switchDefaultData(): elemid = " + elemid);
+                if (!(elem = document.getElementById(elemid))) {
+                    elemid = "datatype_text";
+                    elem = dttext;
+                }
+                if (elemid == "datatype_checkbox") {
+                    dtcheckbox.className = "clearfix custom_field_default_fieldset";
+                    dttext.className = "accesshide custom_field_default_fieldset";
+                    dtdatetime.className = "accesshide custom_field_default_fieldset";
+                } else if (elemid == "datatype_datetime") {
+                    dtdatetime.className = "clearfix custom_field_default_fieldset";
+                    dtcheckbox.className = "accesshide custom_field_default_fieldset";
+                    dttext.className = "accesshide custom_field_default_fieldset";
+                } else { // default: datatype_text
+                    dttext.className = "clearfix custom_field_default_fieldset";
+                    dtdatetime.className = "accesshide custom_field_default_fieldset";
+                    dtcheckbox.className = "accesshide custom_field_default_fieldset";
+                }
+            }
+        function initCustomFieldDefault() {
+            YAHOO.util.Event.addListener(window, "load", switchDefaultData());
+        }
+        YAHOO.util.Event.onDOMReady(initCustomFieldDefault);
+        </script>');
 
         // common form elements (copied from /user/profile/definelib.php)
         $form->addElement('header', '_commonsettings', get_string('profilecommonsettings', 'admin'));
@@ -68,6 +108,7 @@ class customfieldform extends cmform {
             'int' => get_string('field_datatype_int', 'elis_program'),
             'num' => get_string('field_datatype_num', 'elis_program'),
             'bool' => get_string('field_datatype_bool', 'elis_program'),
+            'datetime' => get_string('field_datatype_datetime', 'elis_program'),
             );
         $form->addElement('select', 'datatype', get_string('field_datatype', 'elis_program'), $choices);
 
@@ -76,9 +117,47 @@ class customfieldform extends cmform {
 
         $form->addElement('advcheckbox', 'multivalued', get_string('field_multivalued', 'elis_program'));
         $form->setAdvanced('multivalued');
+        $form->disabledIf('multivalued', 'datatype', 'eq', 'datetime');
 
-        $form->addElement('text', 'defaultdata', get_string('profiledefaultdata', 'admin'), array('size'=>'50'));
-        $form->setType('defaultdata', PARAM_MULTILANG);
+        // ELIS-4592: default needs to use custom field type control
+        // for checkbox OR datetime which requires javascript to update this
+        // when control type is changed!
+        $form->addElement('html', '<fieldset class="clearfix" id="datatype_text">');
+        $form->addElement('text', 'defaultdata_text', get_string('profiledefaultdata', 'admin'), array('size'=>'50'));
+        $form->setType('defaultdata', PARAM_MULTILANG); // TBD???
+
+        $form->addElement('html', '</fieldset>');
+
+        $form->addElement('html', '<fieldset class="accesshide" id="datatype_checkbox">');
+        $form->addElement('advcheckbox', 'defaultdata_checkbox', get_string('profiledefaultdata', 'admin'));
+        $form->addElement('html', '</fieldset>');
+
+        $form->addElement('html', '<fieldset class="accesshide" id="datatype_datetime">');
+
+        $fid = $this->_customdata->optional_param('id', 0, PARAM_INT);
+        $from = $this->_customdata->optional_param('from', '', PARAM_CLEAN);
+        $startyear = $stopyear = $inctime = false;
+        if ($from == 'moodle') {
+            $startyear = $DB->get_field('user_info_field', 'param1',
+                                array('id' => $fid));
+            $stopyear = $DB->get_field('user_info_field', 'param2',
+                               array('id' => $fid));
+            $inctime = $DB->get_field('user_info_field', 'param3',
+                               array('id' => $fid));
+        } else if ($fid) {
+            $fparams = $DB->get_field(field_owner::TABLE, 'params',
+                               array('fieldid' => $fid, 'plugin' => 'manual'));
+            $foptions = unserialize($fparams);
+            $startyear = !empty($foptions['startyear']) ? $foptions['startyear'] : false;
+            $stopyear = !empty($foptions['stopyear']) ? $foptions['stopyear'] : false;
+            $inctime = !empty($foptions['inctime']);
+        }
+        $form->addElement($inctime ? 'date_time_selector' : 'date_selector',
+                 'defaultdata_datetime', get_string('profiledefaultdata', 'admin'),
+                 array('startyear' => $startyear ? $startyear : 1970,
+                       'stopyear' => $stopyear ? $stopyear : 2038,
+                       'timezone' => 99, 'optional' => false)); // TBD!?!
+        $form->addElement('html', '</fieldset>');
 
         $plugins = get_list_of_plugins('elis/core/fields');
 
@@ -86,7 +165,7 @@ class customfieldform extends cmform {
             if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {
                 include_once(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'));
                 if (function_exists("{$plugin}_field_edit_form_definition")) {
-                    call_user_func("{$plugin}_field_edit_form_definition", $form);
+                    call_user_func("{$plugin}_field_edit_form_definition", $form, array('onchange' => 'switchDefaultData();'));
                 }
             }
         }
