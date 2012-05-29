@@ -106,15 +106,6 @@ class curriculumcoursepage extends curriculumcoursebasepage {
 
     var $parent_data_class = 'curriculum';
 
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-        if ($id) {
-            return context_elis_program::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }
-
     public function _get_page_params() {
         return array('id' => $this->optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
     }
@@ -347,15 +338,6 @@ class coursecurriculumpage extends curriculumcoursebasepage {
     var $section = 'curr';
 
     var $parent_data_class = 'course';
-
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-        if ($id) {
-            return context_elis_course::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }
 
     public function _get_page_params() {
         return array('id' => $this->optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();

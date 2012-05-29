@@ -96,16 +96,6 @@ class userpage extends managementpage {
         return has_capability($capability, $this->context);
     }
 
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-
-        if ($id) {
-            return context_elis_user::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }
-
     public function __construct(array $params=null) {
         global $CFG;
 
@@ -287,5 +277,5 @@ class induserlinkpage extends linkpage {
         //regular permissions check
         return userpage::_has_capability('block/php_report:view', $id);
     }
-    
+
 }

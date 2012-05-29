@@ -57,22 +57,6 @@ class trackpage extends managementpage {
         return trackpage::$contexts[$capability];
     }
 
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-        $action = $this->optional_param('action', 'default', PARAM_ACTION);
-
-        if ($id) {
-            if ($action == 'default') {
-                return context_elis_program::instance($id);
-            } else {
-                return context_elis_track::instance($id);
-            }
-        } else {
-            return parent::_get_page_context();
-        }
-    }
-
-
     /**
      * Check the cached capabilities for the current track.
      */
@@ -133,10 +117,10 @@ class trackpage extends managementpage {
     }
 
     public function __construct(array $params=null) {
+
         parent::__construct($params);
         $curid = $this->optional_param('parent', 0, PARAM_INT); // TBD: get_cm_id(empty($action));
         $curid_param = $curid ? array('parent' => $curid) : array();
-
         $this->tabs = array(
         array('tab_id' => 'view', 'page' => 'trackpage', 'params' => array('action' => 'view') + $curid_param, 'name' => get_string('detail','elis_program'), 'showtab' => true),
         array('tab_id' => 'edit', 'page' => 'trackpage', 'params' => array('action' => 'edit') + $curid_param, 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
