@@ -184,12 +184,12 @@ class repository_elis_files extends repository {
         $ret['path'] = array(array('name'=>get_string('pluginname', 'repository_elis_files'), 'path'=>''));
 
         // Get editing privileges - set canedit flag...
-        $canedit = repository_elis_files::check_editing_permissions($COURSE->id, $shared, $oid, $uuid, $uid);
+        $canedit = self::check_editing_permissions($COURSE->id, $shared, $oid, $uuid, $uid);
         $ret['canedit'] = $canedit;
         $return_path = array();
 
         // Get parent path/breadcrumb
-        repository_elis_files::get_parent_path($uuid, $return_path, $cid, $uid, $shared, $oid);
+        self::get_parent_path($uuid, $return_path, $cid, $uid, $shared, $oid);
         $return_path[]= array('name'=>get_string('pluginname', 'repository_elis_files'), 'path'=>'');
         $ret['path'] = array_reverse($return_path);
 
@@ -393,7 +393,7 @@ class repository_elis_files extends repository {
         $str .= '<div>'.get_string('deletecheckfiles','repository_elis_files').'</div>';
         $filelist = array();
 
-        $str .= repository_elis_files::printfilelist($files_array, $filelist);
+        $str .= self::printfilelist($files_array, $filelist);
         $str .= '<input type="hidden" name="fileslist" id="fileslist" value="'.implode(",",$filelist).'">';
         $resourcelist = false;
         $fs = get_file_storage();
@@ -534,7 +534,7 @@ class repository_elis_files extends repository {
             }
         }
 
-        $canedit = repository_elis_files::check_editing_permissions($COURSE->id, $shared, $oid, $uuid, $uid);
+        $canedit = self::check_editing_permissions($COURSE->id, $shared, $oid, $uuid, $uid);
 
         $ret['canedit'] = $canedit;
 
@@ -649,7 +649,7 @@ class repository_elis_files extends repository {
      * Add Plugin settings input to Moodle form
      * @param object $mform
      */
-    public function type_config_form($mform) {
+    public static function type_config_form($mform, $classname = 'repository_elis_files') {
         global $DB, $CFG, $SESSION, $OUTPUT;
 
         parent::type_config_form($mform);
@@ -710,17 +710,19 @@ class repository_elis_files extends repository {
         $popup_settings = "height=480,width=640,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
 
         $root_folder = get_config('elis_files', 'root_folder');
-        $button = repository_elis_files::output_root_folder_html($root_folder);
+        $button = self::output_root_folder_html($root_folder);
+
+
 
         $rootfolderarray=array();
-        $rootfolderarray[] = MoodleQuickForm::createElement('text', 'root_folder', get_string('rootfolder', 'repository_elis_files'), array('size' => '30'));
-        $rootfolderarray[] = MoodleQuickForm::createElement('button', 'root_folder_popup', get_string('chooserootfolder', 'repository_elis_files'), $button);
+        $rootfolderarray[] = $mform->createElement('text', 'root_folder', get_string('rootfolder', 'repository_elis_files'), array('size' => '30'));
+        $rootfolderarray[] = $mform->createElement('button', 'root_folder_popup', get_string('chooserootfolder', 'repository_elis_files'), $button);
 
         $mform->addGroup($rootfolderarray, 'rootfolderar', get_string('rootfolder', 'repository_elis_files'), array(' '), false);
         $mform->setDefault('root_folder', '/moodle');
 
         // Add checkmark if get root folder works, or whatever...
-        $valid = repository_elis_files::root_folder_is_valid($root_folder);
+        $valid = self::root_folder_is_valid($root_folder);
         $mform->addElement('static', 'root_folder_default', '', $valid.'&nbsp;'.get_string('elis_files_default_root_folder', 'repository_elis_files'));
         $mform->addElement('static', 'root_folder_intro', '', get_string('elis_files_root_folder', 'repository_elis_files'));
 
@@ -800,7 +802,7 @@ class repository_elis_files extends repository {
         }
 
         // Only proceed here if the Alfresco plug-in is actually enabled.
-        if (repository_elis_files::is_repo_visible('elis_files')) {
+        if (self::is_repo_visible('elis_files')) {
             if ($repo = repository_factory::factory()) {
                 if (elis_files_get_home_directory($adminusername) == false) {
                     $mform->addElement('text', 'admin_username', get_string('adminusername', 'repository_elis_files'), array('size' => '30'));
@@ -828,7 +830,7 @@ class repository_elis_files extends repository {
     /*
      * Get visibility of this repository
      */
-    function is_repo_visible($typename) {
+    private static function is_repo_visible($typename) {
         global $DB;
         if (!$record = $DB->get_record('repository',array('type' => $typename))) {
             return false;
@@ -838,7 +840,7 @@ class repository_elis_files extends repository {
         }
     }
 
-    function output_root_folder_html($data, $query = '') {
+    private static function output_root_folder_html($data, $query = '') {
         global $CFG, $PAGE;
 
         $PAGE->requires->js('/repository/elis_files/rootfolder.js');
@@ -870,7 +872,7 @@ class repository_elis_files extends repository {
      * Determine whether the root folder is valid
      * @return  string
      */
-    function root_folder_is_valid($data) {
+    private static function root_folder_is_valid($data) {
         $repoisup = false;
 
     /// Validate the path, if we can.
@@ -988,7 +990,7 @@ class repository_elis_files extends repository {
                     }
                 }
 
-                $str .= repository_elis_files::printfilelist($subfilelist, $filelist, false);
+                $str .= self::printfilelist($subfilelist, $filelist, false);
             } else {
 
                 $icon = $OUTPUT->pix_url(file_extension_icon($file->icon, 32));
@@ -1094,7 +1096,7 @@ class repository_elis_files extends repository {
                             'uid'=>(int)$uid);
             $encodedpath = base64_encode(serialize($params));
             $path[] = array('name'=>$parent_node->title,'path'=>$encodedpath);
-            repository_elis_files::get_parent_path($parent_node->uuid,$path, $cid, $uid, $shared, $oid);
+            self::get_parent_path($parent_node->uuid,$path, $cid, $uid, $shared, $oid);
         }
     }
 
@@ -1125,7 +1127,7 @@ class repository_elis_files extends repository {
         $this->elis_files->file_browse_options($cid, $uid, $shared, $oid, $locations, $createonly);
         $parent_path = array();
         // Get encoded parent path
-        $result = repository_elis_files::get_parent_path($uuid, $parent_path, $cid, $uid, $shared, $oid);
+        $result = self::get_parent_path($uuid, $parent_path, $cid, $uid, $shared, $oid);
         array_reverse($parent_path);
 
 
@@ -1147,11 +1149,11 @@ class repository_elis_files extends repository {
                             'path'=> $encodedpath);
         } else {
             // first check if the uuid passed in is a location
-            $parent_found = repository_elis_files::search_array($locations, 'path', $encodedpath);
+            $parent_found = self::search_array($locations, 'path', $encodedpath);
             if (empty($parent_found)) {
                 // find the closest location of the locations...
                 foreach ($parent_path as $parent) {
-                    $parent_found = repository_elis_files::search_array($locations, 'path', $parent['path']);
+                    $parent_found = self::search_array($locations, 'path', $parent['path']);
                     if (!empty($parent_found)) {
                         $parent = $parent_found[0];
                         break;
@@ -1173,7 +1175,7 @@ class repository_elis_files extends repository {
             }
 
             foreach ($array as $subarray) {
-                $results = array_merge($results, repository_elis_files::search_array($subarray, $key, $value));
+                $results = array_merge($results, self::search_array($subarray, $key, $value));
             }
         }
 

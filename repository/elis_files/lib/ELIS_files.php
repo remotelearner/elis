@@ -1663,7 +1663,7 @@ class ELIS_files {
         }
 
         // Make sure that the optional table we are about to check actually exists.
-        $table = new XMLDBTable('crlm_cluster');
+        $table = new xmldb_table('crlm_cluster');
 
         $dbman = $DB->get_manager();
         if (!$dbman->table_exists($table)) {
@@ -2590,7 +2590,7 @@ class ELIS_files {
         require_once($CFG->libdir . '/ddllib.php');
 
         // Ensure that the cluster table actually exists before we query it.
-        $table = new XMLDBTable('crlm_cluster');
+        $table = new xmldb_table('crlm_cluster');
         $manager = $DB->get_manager();
         if (!$manager->table_exists($table)) {
             return false;
@@ -3340,7 +3340,7 @@ class ELIS_files {
      */
     function get_defaults() {
         // Initialize the alfresco version
-        if (!($this->version = self::$version = elis_files_get_repository_version())) {
+        if (!(self::$version = elis_files_get_repository_version())) {
             return false;
         }
 
@@ -3434,7 +3434,7 @@ class ELIS_files {
     * @param string The Moodle user's user name.
     * @return string The modified user name.
     */
-    function alfresco_username_fix($username) {
+    public static function alfresco_username_fix($username) {
         $modified_username = str_replace('@','_AT_', $username);
         return $modified_username;
     }

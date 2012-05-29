@@ -58,7 +58,7 @@
 
 class repository_factory {
 
-    function factory() {
+    public static function factory() {
         global $SESSION, $USER;
 
         if (file_exists(dirname(__FILE__).'/lib/ELIS_files.php')) {
