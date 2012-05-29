@@ -105,6 +105,27 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
     }
 
     /**
+     * Filter records out of an array where their userid value does not
+     * match the specified value
+     *
+     * @param array $enrolments An array of elements containing enrolment data
+     * @param int $userid The userid we specifically want to deal with
+     * @return array The filtered array
+     */
+    private function filter_by_userid($enrolments, $userid) {
+        $result = array();
+
+        foreach ($enrolments as $enrolment) {
+            if ($enrolment['userid'] == $userid) {
+                //correct userid, so add to result
+                $result[] = $enrolment;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Validate that a set of enrolments exist in the provided state
      *
      * @param array $expected_enrolments The list of enrolments are are validating
@@ -133,44 +154,72 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
         $runs = array();
 
         //records that we will be re-using
-        $sufficient_grade_record = array('userid' => 1,
-                                         'classid' => 100,
+        $sufficient_grade_record = array('classid' => 100,
                                          'grade' => 100,
                                          'completestatusid' => STUSTATUS_NOTCOMPLETE,
                                          'locked' => 0);
-        $sufficient_grade_record_completed = array('userid' => 1,
-                                                   'classid' => 100,
+        $sufficient_grade_record_completed = array('classid' => 100,
                                                    'grade' => 100,
                                                    'completestatusid' => STUSTATUS_PASSED,
                                                    'locked' => 1);
-        $insufficient_grade_record = array('userid' => 2,
-                                           'classid' => 100,
+        $insufficient_grade_record = array('classid' => 101,
                                            'grade' => 0,
                                            'completestatusid' => STUSTATUS_NOTCOMPLETE,
                                            'locked' => 0);
 
-        //run with just a sufficient grade
-        $enrolments = array();
-        $enrolments[] = $sufficient_grade_record;
-        $expected_enrolments = array();
-        $expected_enrolments[] = $sufficient_grade_record_completed;
-        $runs[] = array($enrolments, $expected_enrolments, 100);
+        //arrays specifying user ids
+        $first_user = array('userid' => 1);
+        $second_user = array('userid' => 2);
 
-        //run with just an insufficient grade
-        $enrolments = array();
-        $enrolments[] = $insufficient_grade_record;
-        $expected_enrolments = array();
-        $expected_enrolments[] = $insufficient_grade_record;
-        $runs[] = array($enrolments, $expected_enrolments, 100);
+        /**
+         * run with just sufficient grades
+         */
 
-        //run with both a sufficient and a sufficient grade
+        //each user has an enrolment record with a sufficient grade on class 100
         $enrolments = array();
-        $enrolments[] = $sufficient_grade_record;
-        $enrolments[] = $insufficient_grade_record;
+        $enrolments[] = array_merge($sufficient_grade_record, $first_user);
+        $enrolments[] = array_merge($sufficient_grade_record, $second_user);
+
+        //each user has a matching expected passed and locked record
         $expected_enrolments = array();
-        $expected_enrolments[] = $sufficient_grade_record_completed;
-        $expected_enrolments[] = $insufficient_grade_record;
-        $runs[] = array($enrolments, $expected_enrolments, 100);
+        $expected_enrolments[] = array_merge($sufficient_grade_record_completed, $first_user);
+        $expected_enrolments[] = array_merge($sufficient_grade_record_completed, $second_user);
+        $runs[] = array($enrolments, $expected_enrolments, array(100, 101));
+
+        /**
+         * run with just insufficient grades
+         */
+
+        //each user has an enrolment record with an insufficient grade on class 101
+        $enrolments = array();
+        $enrolments[] = array_merge($insufficient_grade_record, $first_user);
+        $enrolments[] = array_merge($insufficient_grade_record, $second_user);
+
+        //each user has a matching expected in progress and unlocked record
+        $expected_enrolments = array();
+        $expected_enrolments[] = array_merge($insufficient_grade_record, $first_user);
+        $expected_enrolments[] = array_merge($insufficient_grade_record, $second_user);
+        $runs[] = array($enrolments, $expected_enrolments, array(100, 101));
+
+        /**
+         * run with both sufficient and an insufficient grades
+         */
+
+        //each user has one sufficient and one insufficient grade
+        $enrolments = array();
+        $enrolments[] = array_merge($sufficient_grade_record, $first_user);
+        $enrolments[] = array_merge($sufficient_grade_record, $second_user);
+        $enrolments[] = array_merge($insufficient_grade_record, $first_user);
+        $enrolments[] = array_merge($insufficient_grade_record, $second_user);
+
+        //the matching expected output
+        $expected_enrolments = array();
+        $expected_enrolments[] = array_merge($sufficient_grade_record_completed, $first_user);
+        $expected_enrolments[] = array_merge($sufficient_grade_record_completed, $second_user);
+        $expected_enrolments[] = array_merge($insufficient_grade_record, $first_user);
+        $expected_enrolments[] = array_merge($insufficient_grade_record, $second_user);
+
+        $runs[] = array($enrolments, $expected_enrolments, array(100, 101));
 
         //return all data
         return $runs;
@@ -181,19 +230,45 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
      *
      * @param array $enrolments Enrolment records to create
      * @param array $expected_enrolments Records to validate
-     * @param int $classid The id of the class we should run the method for
+     * @param array $classids The ids of the classes we should run the method for
      * @dataProvider noLearningObjectivesProvider
      */
-    public function testEnrolmentUpdatesWithNoLearningObjectives($enrolments, $expected_enrolments, $classid) {
+    public function testEnrolmentUpdatesWithNoLearningObjectives($enrolments, $expected_enrolments, $classids) {
         global $DB;
 
         $this->load_csv_data();
 
         $this->save_enrolments($enrolments);
 
-        $class = new pmclass($classid);
-        $class->update_enrolment_status();
+        foreach ($classids as $classid) {
+            $class = new pmclass($classid);
+            $class->update_enrolment_status();
+        }
 
+        $this->validate_expected_enrolments($expected_enrolments);
+    }
+
+    /**
+     * Validate that enrolments are updated appropriate when there are no LOs 
+     *
+     * @param array $enrolments Enrolment records to create
+     * @param array $expected_enrolments Records to validate
+     * @param array $classids The ids of the classes we should run the method for
+     * @dataProvider noLearningObjectivesProvider
+     */
+    public function testEnrolmentUpdatesWithNoLearningObjectivesForSpecificUserid($enrolments, $expected_enrolments, $classids) {
+        global $DB;
+
+        $this->load_csv_data();
+
+        $this->save_enrolments($enrolments);
+
+        foreach ($classids as $classid) {
+            $class = new pmclass($classid);
+            $class->update_enrolment_status(1);
+        }
+
+        $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
         $this->validate_expected_enrolments($expected_enrolments);
     }
 
@@ -203,19 +278,47 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
      *
      * @param array $enrolments Enrolment records to create
      * @param array $expected_enrolments Records to validate
-     * @param int $classid The id of the class we should run the method for
+     * @param array $classids The ids of the classes we should run the method for
      * @dataProvider noLearningObjectivesProvider
      */
-    public function testEnrolmentUpdatesWithNonrequiredLearningObjectives($enrolments, $expected_enrolments, $classid) {
+    public function testEnrolmentUpdatesWithNonrequiredLearningObjectives($enrolments, $expected_enrolments, $classids) {
         global $DB;
 
         $this->load_csv_data(true);
 
         $this->save_enrolments($enrolments);
 
-        $class = new pmclass($classid);
-        $class->update_enrolment_status();
+        foreach ($classids as $classid) {
+            $class = new pmclass($classid);
+            $class->update_enrolment_status();
+        }
 
+        $this->validate_expected_enrolments($expected_enrolments);
+    }
+
+    /**
+     * Validate that enrolments are updated appropriate when there are only
+     * non-required LOs for a specific user
+     *
+     * @param array $enrolments Enrolment records to create
+     * @param array $expected_enrolments Records to validate
+     * @param array $classids The ids of the classes we should run the method for
+     * @dataProvider noLearningObjectivesProvider
+     */
+    public function testEnrolmentUpdatesWithNonrequiredLearningObjectivesForSpecificUserid($enrolments, $expected_enrolments,
+                                                                                           $classids) {
+        global $DB;
+
+        $this->load_csv_data(true);
+
+        $this->save_enrolments($enrolments);
+
+        foreach ($classids as $classid) {
+            $class = new pmclass($classid);
+            $class->update_enrolment_status();
+        }
+
+        $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
         $this->validate_expected_enrolments($expected_enrolments);
     }
 
@@ -229,18 +332,15 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
         $runs = array();
 
         //records that we will be re-using
-        $sufficient_grade_record = array('userid' => 1,
-                                         'classid' => 100,
+        $sufficient_grade_record = array('classid' => 100,
                                          'grade' => 100,
                                          'completestatusid' => STUSTATUS_NOTCOMPLETE,
                                          'locked' => 0);
-        $sufficient_grade_record_completed = array('userid' => 1,
-                                                   'classid' => 100,
+        $sufficient_grade_record_completed = array('classid' => 100,
                                                    'grade' => 100,
                                                    'completestatusid' => STUSTATUS_PASSED,
                                                    'locked' => 1);
-        $insufficient_grade_record = array('userid' => 2,
-                                           'classid' => 100,
+        $insufficient_grade_record = array('classid' => 100,
                                            'grade' => 0,
                                            'completestatusid' => STUSTATUS_NOTCOMPLETE,
                                            'locked' => 0);
@@ -254,31 +354,70 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
                                               'grade' => 0,
                                               'locked' => 0);
 
-        //run with sufficient enrolment grade but insufficient required LO grade
+        //arrays specifying user ids
+        $first_user = array('userid' => 1);
+        $second_user = array('userid' => 2);
+
+        /**
+         * run with sufficient enrolment grade but insufficient required LO grade
+         */
+
+        //each user has an enrolment record with a sufficient grade
         $enrolments = array();
-        $enrolments[] = $sufficient_grade_record;
+        $enrolments[] = array_merge($sufficient_grade_record, $first_user);
+        $enrolments[] = array_merge($sufficient_grade_record, $second_user);
+
+        //each user has an LO grade record with an insufficient grade
         $lo_grades = array();
-        $lo_grades[] = array_merge($insufficient_lo_grade_record, array('userid' => 1));
+        $lo_grades[] = array_merge($insufficient_lo_grade_record, $first_user);
+        $lo_grades[] = array_merge($insufficient_lo_grade_record, $second_user);
+
+        //each user has a matching in progress and unlocked record
         $expected_enrolments = array();
-        $expected_enrolments[] = $sufficient_grade_record;
+        $expected_enrolments[] = array_merge($sufficient_grade_record, $first_user);
+        $expected_enrolments[] = array_merge($sufficient_grade_record, $second_user);
         $runs[] = array($enrolments, $lo_grades, $expected_enrolments, 100);
 
-        //run with insufficient enrolment grade but sufficient required LO grade
+        /**
+         * run with insufficient enrolment grade but sufficient required LO grade
+         */
+
+        //each user has an enrolment record with an insufficient grade
         $enrolments = array();
-        $enrolments[] = $insufficient_grade_record;
+        $enrolments[] = array_merge($insufficient_grade_record, $first_user);
+        $enrolments[] = array_merge($insufficient_grade_record, $second_user);
+
+        //each user has an LO grade record with a sufficient grade
         $lo_grades = array();
-        $lo_grades[] = array_merge($sufficient_lo_grade_record, array('userid' => 1));
+        $lo_grades[] = array_merge($sufficient_lo_grade_record, $first_user);
+        $lo_grades[] = array_merge($sufficient_lo_grade_record, $second_user);
+
+        //each user has a matching in progress and unlocked record
         $expected_enrolments = array();
-        $expected_enrolments[] = $insufficient_grade_record;
+        $expected_enrolments[] = array_merge($insufficient_grade_record, $first_user);
+        $expected_enrolments[] = array_merge($insufficient_grade_record, $second_user);
+
         $runs[] = array($enrolments, $lo_grades, $expected_enrolments, 100);
 
-        //run with sufficient enrolment grade and sufficient required LO grade
+        /**
+         * run with sufficient enrolment grade and sufficient required LO grade
+         */
+
+        //each user has an enrolment record with a sufficient grade
         $enrolments = array();
-        $enrolments[] = $sufficient_grade_record;
+        $enrolments[] = array_merge($sufficient_grade_record, $first_user);
+        $enrolments[] = array_merge($sufficient_grade_record, $second_user);
+
+        //each user has an LO grade record with a sufficient grade
         $lo_grades = array();
-        $lo_grades[] = array_merge($sufficient_lo_grade_record, array('userid' => 1));
+        $lo_grades[] = array_merge($sufficient_lo_grade_record, $first_user);
+        $lo_grades[] = array_merge($sufficient_lo_grade_record, $second_user);
+
+        //each user has a matching passed and locked record
         $expected_enrolments = array();
-        $expected_enrolments[] = $sufficient_grade_record_completed;
+        $expected_enrolments[] = array_merge($sufficient_grade_record_completed, $first_user);
+        $expected_enrolments[] = array_merge($sufficient_grade_record_completed, $second_user);
+
         $runs[] = array($enrolments, $lo_grades, $expected_enrolments, 100);
 
         //return all data
@@ -305,6 +444,31 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
         $class = new pmclass($classid);
         $class->update_enrolment_status();
 
+        $this->validate_expected_enrolments($expected_enrolments);
+    }
+
+    /**
+     * Validate that enrolments are updated appropriately when there are required
+     * LOs for a specific user
+     *
+     * @param array $enrolments Enrolment records to create
+     * @param array $lo_grades Learning objective grades to create
+     * @param array $expected_enrolments Records to validate
+     * @param int $classid The id of the class we should run the method for
+     * @dataProvider learningObjectivesProvider
+     */
+    public function testEnrolmentUpdatesWithRequiredLearningObjectivesForSpecificUserid($enrolments, $lo_grades,
+                                                                                        $expected_enrolments, $classid) {
+        global $DB;
+
+        $this->load_csv_data(false, true);
+
+        $this->save_enrolments($enrolments, $lo_grades);
+
+        $class = new pmclass($classid);
+        $class->update_enrolment_status();
+
+        $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
         $this->validate_expected_enrolments($expected_enrolments);
     }
 
@@ -401,6 +565,50 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
     }
 
     /**
+     * Validate that our method respects the latest time graded on any linked LO
+     * for a specific user
+     *
+     * @param array $enrolments Enrolment records to create
+     * @param array $lo_grades Learning objective grades to create
+     * @param array $expected_enrolments Records to validate
+     * @param int $classid The id of the class we should run the method for
+     * @dataProvider learningObjectiveTimeGradedProvider
+     */
+    public function testEnrolmentUpdateRespectsLatestLOTimegradedForSpecificUserid($enrolments, $lo_grades,
+                                                                                   $expected_enrolments, $classid) {
+        global $DB;
+
+        $this->load_csv_data(true);
+
+        $this->save_enrolments($enrolments, $lo_grades);
+
+        //track our time boundaries
+        $class = new pmclass($classid);
+        $mintime = time();
+        $class->update_enrolment_status(1);
+        $maxtime = time();
+
+        $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
+
+        $count = $DB->count_records(student::TABLE);
+
+        $this->assertEquals(count($expected_enrolments), $count);
+
+        foreach ($expected_enrolments as $expected_enrolment) {
+            $exists = $DB->record_exists(student::TABLE, $expected_enrolment);
+
+            $this->assertTrue($exists);
+
+            if (!isset($expected_enrolment['completetime'])) {
+                //validate a time range
+                $record = $DB->get_record(student::TABLE, $expected_enrolment);
+                $this->assertGreaterThanOrEqual($mintime, $record->completetime);
+                $this->assertLessThanOrEqual($maxtime, $record->completetime);
+            }
+        }
+    }
+
+    /**
      * Data provider that includes enrolments for several classes
      *
      * @return array An array of runs, containing sub-arrays for parameters
@@ -417,7 +625,17 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
                               'grade' => 100,
                               'completestatusid' => STUSTATUS_NOTCOMPLETE,
                               'locked' => 0);
+        $enrolments[] = array('userid' => 2,
+                              'classid' => 100,
+                              'grade' => 100,
+                              'completestatusid' => STUSTATUS_NOTCOMPLETE,
+                              'locked' => 0);
         $enrolments[] = array('userid' => 1,
+                              'classid' => 101,
+                              'grade' => 100,
+                              'completestatusid' => STUSTATUS_NOTCOMPLETE,
+                              'locked' => 0);
+        $enrolments[] = array('userid' => 2,
                               'classid' => 101,
                               'grade' => 100,
                               'completestatusid' => STUSTATUS_NOTCOMPLETE,
@@ -427,7 +645,13 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
                                        'grade' => 100,
                                        'completestatusid' => STUSTATUS_PASSED,
                                        'locked' => 1);
-        $expected_enrolments[] = $enrolments[1];
+        $expected_enrolments[] = array('userid' => 2,
+                                       'classid' => 100,
+                                       'grade' => 100,
+                                       'completestatusid' => STUSTATUS_PASSED,
+                                       'locked' => 1);
+        $expected_enrolments[] = $enrolments[2];
+        $expected_enrolments[] = $enrolments[3];
         $runs[] = array($enrolments, $expected_enrolments, 100);
         //return all data
         return $runs;
@@ -455,6 +679,29 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
     }
 
     /**
+     * Validate that the method respects that class instance is it called on
+     * as well as the specific userid parameter
+     *
+     * @param array $enrolments Enrolment records to create
+     * @param array $expected_enrolments Records to validate
+     * @param int $classid The id of the class we should run the method for
+     * @dataProvider differentClassesProvider
+     */
+    public function testEnrolmentUpdateRespectsClassidForSpecificUserid($enrolments, $expected_enrolments, $classid) {
+        global $DB;
+
+        $this->load_csv_data();
+
+        $this->save_enrolments($enrolments);
+
+        $class = new pmclass($classid);
+        $class->update_enrolment_status(1);
+
+        $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
+        $this->validate_expected_enrolments($expected_enrolments);
+    }
+
+    /**
      * Data provider that helps validate credit values in enrolments
      *
      * @return array An array of runs, containing sub-arrays for parameters
@@ -472,7 +719,19 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
                               'completestatusid' => STUSTATUS_NOTCOMPLETE,
                               'locked' => 0,
                               'credits' => 0);
+        $enrolments[] = array('userid' => 2,
+                              'classid' => 100,
+                              'grade' => 100,
+                              'completestatusid' => STUSTATUS_NOTCOMPLETE,
+                              'locked' => 0,
+                              'credits' => 0);
         $enrolments[] = array('userid' => 1,
+                              'classid' => 102,
+                              'grade' => 100,
+                              'completestatusid' => STUSTATUS_NOTCOMPLETE,
+                              'locked' => 0,
+                              'credits' => 0);
+        $enrolments[] = array('userid' => 2,
                               'classid' => 102,
                               'grade' => 100,
                               'completestatusid' => STUSTATUS_NOTCOMPLETE,
@@ -485,7 +744,19 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
                                        'completestatusid' => STUSTATUS_PASSED,
                                        'locked' => 1,
                                        'credits' => 1);
+        $expected_enrolments[] = array('userid' => 2,
+                                       'classid' => 100,
+                                       'grade' => 100,
+                                       'completestatusid' => STUSTATUS_PASSED,
+                                       'locked' => 1,
+                                       'credits' => 1);
         $expected_enrolments[] = array('userid' => 1,
+                                       'classid' => 102,
+                                       'grade' => 100,
+                                       'completestatusid' => STUSTATUS_PASSED,
+                                       'locked' => 1,
+                                       'credits' => 1);
+        $expected_enrolments[] = array('userid' => 2,
                                        'classid' => 102,
                                        'grade' => 100,
                                        'completestatusid' => STUSTATUS_PASSED,
@@ -529,5 +800,43 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
         }
 
         $this->validate_expected_enrolments($expected_enrolments);
+    }
+
+    /**
+     * Validate that credits are correctly transferred from course to enrolment
+     * for a specific user
+     *
+     * @param array $enrolments Enrolment records to create
+     * @param array $expected_enrolments Records to validate
+     * @param array $classids The ids of the classes we should run the method for
+     * @dataProvider creditsProvider
+     */
+    public function testEnrolmentUpdateSetsCreditsForSpecificUserid($enrolments, $expected_enrolments, $classids) {
+        global $DB;
+
+        $this->load_csv_data(true);
+
+        //set up a second course and class
+        $course = new course(array('name' => 'secondcourse',
+                                   'idnumber' => 'secondcourse',
+                                   'syllabus' => '',
+                                   'credits' => 1));
+        $course->save();
+
+        $pmclass = new pmclass(array('courseid' => $course->id,
+                                     'idnumber' => 'secondclass'));
+        $pmclass->save();
+
+        $this->save_enrolments($enrolments);
+
+        foreach ($classids as $classid) {
+            $pmclass = new pmclass($classid);
+            $pmclass->update_enrolment_status(1);
+        }
+
+        $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
+        $this->validate_expected_enrolments($expected_enrolments, 1);
+
+        $this->markTestIncomplete();
     }
 }
