@@ -58,6 +58,7 @@ class field extends elis_data_object {
     const MENU = 'menu';
     const TEXT = 'text';
     const TEXTAREA = 'textarea';
+    const DATETIME = 'datetime';
 
     public function __construct($src=false, $field_map=null, array $associations=array(),
                                 $from_db=false, array $extradatafields=array(),
@@ -246,6 +247,7 @@ class field extends elis_data_object {
         switch ($this->datatype) {
             case 'int':
             case 'bool':
+            case 'datetime':
                 return 'int';
                 break;
             case 'num':
@@ -275,6 +277,7 @@ class field extends elis_data_object {
      */
     public function cast_to_type($val) {
         switch ($this->datatype) {
+            case 'datetime':
             case 'int':
                 return(is_int($val) ? $val : intval($val));
             case 'num':
