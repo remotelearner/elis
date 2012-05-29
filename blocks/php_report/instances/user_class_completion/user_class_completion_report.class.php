@@ -177,10 +177,12 @@ class user_class_completion_report extends table_report {
      * Specifies available report filters
      * (allow for filtering on various user and cluster-related fields)
      *
+     * @param   boolean  $init_data  If true, signal the report to load the
+     *                               actual content of the filter objects
      * @return  generalized_filter_entry array  The list of available filters
      * @uses $CFG
      */
-    function get_filters() {
+    function get_filters($init_data = true) {
         global $CFG;
 
         //cluster tree
@@ -1813,7 +1815,7 @@ class user_class_completion_report extends table_report {
      *
      * @return array The headers for the report.
      */
-    function get_header_entries() {
+    function get_header_entries($export_format) {
         $header_array = array();
         $shortname = $this->get_report_shortname();
 
