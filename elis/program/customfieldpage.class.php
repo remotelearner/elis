@@ -301,6 +301,12 @@ class customfieldpage extends pm_page {
                 case 'checkbox':
                     $data->defaultdata = $data->defaultdata_checkbox;
                     break;
+                case 'menu':
+                    $src = $data->manual_field_options_source;
+                    $elem = !empty($src) ? "defaultdata_menu_{$src}"
+                                         : "defaultdata_menu";
+                    $data->defaultdata = $data->$elem;
+                    break;
                 case 'datetime':
                     $data->defaultdata = $data->defaultdata_datetime;
                     break;
@@ -394,6 +400,9 @@ class customfieldpage extends pm_page {
                     }
                 } else {
                     $data = new field($id);
+                    $manual = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual']);
+                    $menu_src = !empty($manual->options_source)
+                                ? $manual->options_source : 0;
                     $data_array = $data->to_array();
 
                     $field_record = $DB->get_record(field::TABLE, array('id'=>$id));
@@ -450,6 +459,9 @@ class customfieldpage extends pm_page {
                     $data_array['defaultdata_checkbox'] = !empty($data_array['defaultdata']);
                     $data_array['defaultdata_datetime'] = $data_array['defaultdata'];
                     $data_array['defaultdata_text'] = strval($data_array['defaultdata']);
+                    $data_array[empty($menu_src)
+                                ? 'defaultdata_menu'
+                                : "defaultdata_menu_{$menu_src}"] = $data_array['defaultdata'];
                 }
                 $form->set_data($data_array);
             }
