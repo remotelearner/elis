@@ -18,7 +18,7 @@
  *
  * custom_field_select.php - PHP Report filter for extra user profile menu fields
  *
- * Filter for matching user profile menu fields
+ * Filter for matching custom datetime fields
  *
  * Required options include: all text filter requirements PLUS
  *  ['tables'] => array, table names as keys => table alias as values
@@ -34,13 +34,13 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/user/filters/lib.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/simpleselect.php');
+require_once($CFG->dirroot .'/elis/core/lib/filtering/date.php');
 require_once($CFG->dirroot .'/elis/core/lib/data/customfield.class.php');
 
 /**
  * Generic filter based on a list of values.
  */
-class generalized_filter_custom_field_select extends generalized_filter_simpleselect {
+class generalized_filter_custom_field_datetime extends generalized_filter_date {
 
     /**
      * Data type for field, used to search the correct db table
@@ -97,7 +97,7 @@ class generalized_filter_custom_field_select extends generalized_filter_simplese
      * @param string $field user table filed name
      * @param array $options select options
      */
-    function generalized_filter_custom_field_select($uniqueid, $alias, $name, $label, $advanced, $field, $options = array()) {
+    function generalized_filter_custom_field_datetime($uniqueid, $alias, $name, $label, $advanced, $field, $options = array()) {
 
         //ob_start();
         //var_dump($options);
@@ -105,7 +105,7 @@ class generalized_filter_custom_field_select extends generalized_filter_simplese
         //ob_end_clean();
         //error_log("generalized_filter_custom_field_select($uniqueid, $alias, $name, $label, $advanced, $field, options = {$tmp}");
 
-        parent::generalized_filter_simpleselect($uniqueid, $alias, $name, $label, $advanced, $field, $options);
+        parent::generalized_filter_date($uniqueid, $alias, $name, $label, $advanced, $field, $options);
 
         if (!array_key_exists('datatype', $options)) {
             print_error('missing_datatype', 'elis_core');
@@ -160,36 +160,44 @@ class generalized_filter_custom_field_select extends generalized_filter_simplese
             return null;
         }
 
-        $value = $data['value'];
-        $param_id = 'ex_cfs_id'. $counter;
-        $param_value = 'ex_cfs_value'. $counter;
-        $param_clevel = 'ex_cfs_clevel'. $counter;
+        $params = array();
+        $param_id = 'ex_cfdt_id'. $counter;
+        $param_clevel = 'ex_cfdt_clevel'. $counter;
         $counter++;
 
         //the data table where we can find the data we're filtering on
         $data_table = field_data::TABLE .'_'. $this->_fieldtypes[$this->_datatype];
 
-        $cmpdata = 'data';
-        if ($this->_datatype == 'text') {
-            $cmpdata = $DB->sql_compare_text($cmpdata);
-        }
-
         $check_null = '';
         $join_type  = '';
-        $where = "fieldid = :fieldid AND contextid IS NULL
-                  AND {$cmpdata} = :data";
-        if ($DB->record_exists_select($data_table, $where,
-                        array('fieldid'   => $this->_fieldid,
-                              'data'      => $value))) {
+        $where = "fieldid = :{$param_id} AND contextid IS NULL ";
+        $params[$param_id] = $this->_fieldid;
+        if ($this->_never_included) { // TBD
+            if (!empty($data['never'])) {
+                $where .= 'AND data >= 0 ';
+            } else {
+                $where .= 'AND data > 0 ';
+            }
+        }
+
+        if (!empty($data['after'])) {
+            $param_after = 'ex_cfdt_after_'. $counter;
+            $where .= "AND data >= :{$param_after} ";
+            $params[$param_after] = $data['after'];
+        }
+
+        if (!empty($data['before'])) {
+            $param_before = 'ex_cfdt_before'. $counter;
+            $where .= "AND data >= :{$param_before} ";
+            $params[$param_before] = $data['before'];
+        }
+
+        if ($DB->record_exists_select($data_table, $where, $params)) {
             //filtering by the default value, so allow for null values
             $check_null = 'OR d.data IS NULL';
             $join_type = 'LEFT';
         }
 
-        $cmpdata = 'd.data';
-        if ($this->_datatype == 'text') {
-            $cmpdata = $DB->sql_compare_text($cmpdata);
-        }
         $sql = "{$this->_subqueryprefix}
                 (SELECT {$this->_innerfield}
                    FROM {$CFG->prefix}context c
@@ -197,18 +205,29 @@ class generalized_filter_custom_field_select extends generalized_filter_simplese
                      ON c.id = d.contextid
                     AND d.fieldid = :{$param_id}
                  {$this->_wrapper}
-                  WHERE ({$cmpdata} = :{$param_value} {$check_null})
+                  WHERE (TRUE ";
+        if ($this->_never_included) { // TBD
+            if (!empty($data['never'])) {
+                $sql .= 'AND d.data >= 0 ';
+            } else {
+                $sql .= 'AND d.data > 0 ';
+            }
+        }
+        if (!empty($data['after'])) {
+            $sql .= "AND d.data >= :{$param_after} ";
+        }
+        if (!empty($data['before'])) {
+            $sql .= "AND d.data <= :{$param_before} ";
+        }
+        $sql .= "{$check_null})
                     AND c.contextlevel = :{$param_clevel}
                  {$this->_extraconditions})";
 
-        $params = array($param_id     => $this->_fieldid,
-                        $param_value  => $value,
-                        $param_clevel => $this->_contextlevel);
         //ob_start();
         //var_dump($params);
         //$tmp = ob_get_contents();
         //ob_end_clean();
-        //error_log("custom_field_select::get_sql_filter(); sql = {$sql}, params = {$tmp}");
+        //error_log("custom_field_datetime::get_sql_filter(); sql = {$sql}, params = {$tmp}");
         return array($sql, $params);
     }
 
