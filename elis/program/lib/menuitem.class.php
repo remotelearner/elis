@@ -540,7 +540,7 @@ class treerepresentation {
     /**
      * Determines the section the user is currently in
      */
-    function get_current_section() {
+    static function get_current_section() {
         global $CURMAN, $PAGE;
         
         //return the report shortname if we are specifically on a PHP report page

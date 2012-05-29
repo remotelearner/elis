@@ -285,7 +285,10 @@ class induserlinkpage extends linkpage {
         }
 
         //regular permissions check
-        return userpage::_has_capability('block/php_report:view', $id);
+
+        // TODO: Ugly, this needs to be overhauled
+        $upage = new usersetpage();
+        return $upage->_has_capability('block/php_report:view', $id);
     }
     
 }

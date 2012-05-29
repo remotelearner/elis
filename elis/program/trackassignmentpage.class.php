@@ -77,12 +77,15 @@ class trackassignmentpage extends associationpage {
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
 
-        if (trackpage::_has_capability('elis/program:track_view', $id)) {
+        // TODO: Ugly, this needs to be overhauled
+        $tpage = new trackpage();
+
+        if ($tpage->_has_capability('elis/program:track_view', $id)) {
             //allow viewing but not managing associations
         	return true;
         }
 
-        return trackpage::_has_capability('elis/program:associate', $id);
+        return $tpage->_has_capability('elis/program:associate', $id);
     }
 
     function can_do_savenew() {
@@ -90,8 +93,12 @@ class trackassignmentpage extends associationpage {
         $trackid = $this->required_param('trackid', PARAM_INT);
         $classid = $this->required_param('classid', PARAM_INT);
 
-        return trackpage::_has_capability('elis/program:associate', $trackid)
-            && pmclasspage::_has_capability('elis/program:associate', $classid);
+        // TODO: Ugly, this needs to be overhauled
+        $tpage = new trackpage();
+        $cpage = new pmclasspage();
+
+        return $tpage->_has_capability('elis/program:associate', $trackid)
+            && $cpage->_has_capability('elis/program:associate', $classid);
     }
 
     function can_do_edit() {
@@ -102,8 +109,12 @@ class trackassignmentpage extends associationpage {
         $trackid = $record->trackid;
         $classid = $record->classid;
 
-        return trackpage::_has_capability('elis/program:associate', $trackid)
-            && pmclasspage::_has_capability('elis/program:associate', $classid);
+        // TODO: Ugly, this needs to be overhauled
+        $tpage = new trackpage();
+        $cpage = new pmclasspage();
+
+        return $tpage->_has_capability('elis/program:associate', $trackid)
+            && $cpage->_has_capability('elis/program:associate', $classid);
     }
 
     function can_do_delete() {

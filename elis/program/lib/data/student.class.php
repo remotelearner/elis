@@ -1595,7 +1595,11 @@ class student extends elis_data_object {
         $where = 'WHERE '. $where .' ';
 
         // *** TBD ***
-        if (!pmclasspage::_has_capability('elis/program:class_enrol', $this->classid)) {
+
+        // TODO: Ugly, this needs to be overhauled
+        $cpage = new pmclasspage();
+
+        if (!$cpage->_has_capability('elis/program:class_enrol', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
@@ -1687,7 +1691,11 @@ class student extends elis_data_object {
         $where = 'WHERE '. $where .' ';
 
         // *** TBD ***
-        if (!pmclasspage::_has_capability('elis/program:class_enrol', $this->classid)) {
+
+        // TODO: Ugly, this needs to be overhauled
+        $cpage = new pmclasspage();
+
+        if (!$cpage->_has_capability('elis/program:class_enrol', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
@@ -2047,10 +2055,13 @@ class student extends elis_data_object {
     public static function can_manage_assoc($userid, $classid) {
         global $DB, $USER;
 
-        if(!pmclasspage::can_enrol_into_class($classid)) {
+        // TODO: Ugly, this needs to be overhauled
+        $cpage = new pmclasspage();
+
+        if (!pmclasspage::can_enrol_into_class($classid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if (pmclasspage::_has_capability('elis/program:class_enrol', $classid)) {
+        } else if ($cpage->_has_capability('elis/program:class_enrol', $classid)) {
             //current user has the direct capability
             return true;
         }
