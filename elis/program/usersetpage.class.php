@@ -108,16 +108,6 @@ class usersetpage extends managementpage {
         return has_capability($capability, $context);
     }
 
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-
-        if ($id) {
-            return context_elis_userset::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }
-
     public function __construct(array $params=null) {
         $this->tabs = array(
         array('tab_id' => 'view', 'page' => 'usersetpage', 'params' => array('action' => 'view'), 'name' => get_string('detail','elis_program'), 'showtab' => true),

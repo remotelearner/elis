@@ -91,12 +91,6 @@ class userclusterpage extends userclusterbasepage {
 
     var $parent_data_class = 'user';
 
-    public function _get_page_context() {
-        $id = $this->required_param('id', PARAM_INT);
-
-        return context_elis_user::instance($id);
-    }
-
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
         return userpage::_has_capability('elis/program:user_view', $id);
@@ -247,12 +241,6 @@ class clusteruserpage extends userclusterbasepage {
     //var $default_tab = 'clusteruserpage';
 
     var $parent_data_class = 'userset';
-
-    public function _get_page_context() {
-        $id = $this->required_param('id', PARAM_INT);
-
-        return context_elis_userset::instance($id);
-    }
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);

@@ -237,12 +237,6 @@ class trackuserpage extends usertrackbasepage {
         $page    = $this->optional_param('page', 0, PARAM_INT);
         $perpage = $this->optional_param('perpage', 30, PARAM_INT);
 
-        if (!empty($id)) {
-            //print curriculum tabs if viewing from the curriculum view
-            $trackpage = new userpage(array('id' => $id));
-            //$trackpage->print_tabs('trackuserpage', array('id' => $id));
-        }
-
         $columns = array(
                 'idnumber' => array('header' => get_string('student_idnumber', 'elis_program'),
                                     'decorator' => array(
