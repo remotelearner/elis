@@ -69,7 +69,7 @@ abstract class elis_page extends moodle_page {
      * for calling $this->set_context().
      */
     protected function _get_page_context() {
-        return get_context_instance(CONTEXT_SYSTEM);
+        return context_system::instance();
     }
 
     /**
