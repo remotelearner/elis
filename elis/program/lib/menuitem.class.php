@@ -478,9 +478,11 @@ class treerepresentation {
     /**
      * Converts the tree representation to html markup
      *
+     * @param   string  $uniqueid        The unique id of the filter element
+     * @param   int     $execution_mode  The mode in which the report is being run
      * @return  string  The appropriate markup
      */
-    function convert_to_markup() {
+    function convert_to_markup($uniqueid = '', $execution_mode = null) {
         global $CFG;
 
         //this prevents handling an empty tree
