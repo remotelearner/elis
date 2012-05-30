@@ -30,6 +30,8 @@ global $CFG;
 require_once elispm::file('form/cmform.class.php');
 
 class customfieldform extends cmform {
+    var $defaultdata_menu = null;
+
     function definition() {
         global $CFG, $DB, $PAGE;
         $attrs = array();
@@ -232,7 +234,7 @@ class customfieldform extends cmform {
         // when control type is changed!
         $form->addElement('html', '<fieldset class="clearfix" id="datatype_text">');
         $form->addElement('text', 'defaultdata_text', get_string('profiledefaultdata', 'admin'), array('size'=>'50'));
-        $form->setType('defaultdata', PARAM_MULTILANG); // TBD???
+        $form->setType('defaultdata_text', PARAM_MULTILANG); // TBD???
 
         $form->addElement('html', '</fieldset>');
 
@@ -254,7 +256,12 @@ class customfieldform extends cmform {
                             ? explode("\n", $foptions['options'])
                             : array();
         }
-        $form->addElement('select', 'defaultdata_menu', get_string('profiledefaultdata', 'admin'), $menu_options);
+        array_walk($menu_options, array($this, 'trim_crlf'));
+        $menu_options = array_combine($menu_options, $menu_options);
+        if (($this->defaultdata_menu = $form->createElement('select', 'defaultdata_menu', get_string('profiledefaultdata', 'admin'), $menu_options))) {
+            $form->addElement($this->defaultdata_menu);
+        }
+        //$form->setType('defaultdata_menu', PARAM_TEXT);
         $form->addElement('html', '</fieldset>');
 
         // Loop thru all possible sources for menu options
@@ -332,11 +339,38 @@ class customfieldform extends cmform {
         $this->add_action_buttons(true);
     }
 
+    function trim_crlf(&$item, $key) {
+        $item = trim($item, "\r\n");
+    }
+
     function validation($data, $files) {
         // copied from /user/profile/definelib.php
         global $CFG, $USER, $DB;
 
         $err = array();
+
+        //ob_start();
+        //var_dump($this->defaultdata_menu);
+        //$tmp = ob_get_contents();
+        //ob_end_clean();
+        //error_log("customfieldform::validation(); defaultdata_menu = {$tmp}");
+
+        if ($this->defaultdata_menu && $data['manual_field_control'] == 'menu'
+            && empty($data['manual_field_options_source'])) {
+            $menu_options = explode("\n", $data['manual_field_options']);
+            array_walk($menu_options, array($this, 'trim_crlf'));
+            $select_options = array();
+            foreach ($menu_options as $menu_option) {
+                $select_options[] = array('text' => $menu_option,
+                                          'attr' => array('value' => $menu_option));
+            }
+            //ob_start();
+            //var_dump($this->defaultdata_menu->_options);
+            //$tmp = ob_get_contents();
+            //ob_end_clean();
+            //error_log("customfieldform::validation(); defaultdata_menu->_options = {$tmp}");
+            $this->defaultdata_menu->_options = $select_options;
+        }
 
         /// Check the shortname was not truncated by cleaning
         if (empty($data['shortname'])) {
