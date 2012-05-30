@@ -161,9 +161,10 @@ class generalized_filter_custom_field_datetime extends generalized_filter_date {
         }
 
         $params = array();
+        $counter++;
         $param_id = 'ex_cfdt_id'. $counter;
         $param_clevel = 'ex_cfdt_clevel'. $counter;
-        $counter++;
+        $params[$param_clevel] = $this->_contextlevel;
 
         //the data table where we can find the data we're filtering on
         $data_table = field_data::TABLE .'_'. $this->_fieldtypes[$this->_datatype];
