@@ -119,10 +119,40 @@ abstract class selectionpage extends pm_page { // TBD
         return new selectionform();
     }
 
+    // Store the checkbox selection into a session
+    function checkbox_selection_session() {
+        global $SESSION;
+        $selection = optional_param('selected_checkboxes', '', PARAM_CLEAN);
+        $selectedcheckboxes = json_decode($selection);
+
+        if (is_array($selectedcheckboxes)) {
+            if (!isset($SESSION->selectionpage)) {
+                $SESSION->selectionpage = array();
+            }
+
+            foreach($selectedcheckboxes as $id) {
+                // Store the user checkbox selection into the session if it does not exist
+                if (!array_key_exists($id, $SESSION->selectionpage)) {
+                    $SESSION->selectionpage[$id] = $id;
+                }
+            }
+
+            // Diff between the current selection and previous selection to get the removed id's
+            $selectiondiff = array_diff($SESSION->selectionpage, $selectedcheckboxes);
+
+            foreach($selectiondiff as $id) {
+                // Remove the session data
+                unset($SESSION->selectionpage[$id]);
+            }
+        }
+    }
+
     function display_default() { // action_default
         $form = $this->get_selection_form();
         $this->url->remove_params(array('mode')); // TBD
         $baseurl = htmlspecialchars_decode($this->url);
+
+        $this->checkbox_selection_session();
 
         if ($data = $form->get_data()) {
             $selection = json_decode($data->_selection);
@@ -171,7 +201,7 @@ abstract class selectionpage extends pm_page { // TBD
     }
 
     protected function print_js_selection_table($table, $filter, $count, $form, $baseurl) {
-        global $CFG, $OUTPUT, $PAGE;
+        global $CFG, $OUTPUT, $PAGE, $SESSION;
         if (!$this->is_bare()) {
             $title_sid = 'breadcrumb_'. get_class($this);
             if (method_exists($this, 'is_assigning') && !$this->is_assigning() &&
@@ -188,7 +218,7 @@ abstract class selectionpage extends pm_page { // TBD
             // ***TBD***
             //$PAGE->requires->yui2_lib(array('yahoo', 'dom', 'event', 'connection'));
             $PAGE->requires->js('/elis/core/js/associate.class.js');
-            $PAGE->requires->js('/elis/core/js/associate.js');
+            $PAGE->requires->js('/elis/core/js/checkbox_selection.js');
             echo '<div class="mform" style="width: 100%"><fieldset><legend>'.
                  $title .'</legend><div id="list_display">';
         } else {
@@ -232,9 +262,18 @@ abstract class selectionpage extends pm_page { // TBD
         $this->print_record_count($count, $label);
         echo '</div>';
 
+        if(isset($SESSION->selectionpage)) {
+            $selectedcheckboxes = $SESSION->selectionpage;
+            if (!empty($selectedcheckboxes) && is_array($selectedcheckboxes)) {
+                $selection  = implode(',', $selectedcheckboxes);
+                echo '<input type="hidden" id="selected_checkboxes" value="' . $selection .'" /> ';
+            }
+        }
+
         if ($count) {
             // select all button
-            _print_checkbox('selectall', '', false, get_string('selectall'), '', 'select_all()');
+            echo '<input type="button" onclick="checkbox_select(true)" value="'.get_string('selectall').'" /> ';
+            echo '<input type="button" onclick="checkbox_select(false)" value="'.get_string('deselectall').'" /> ';
             // table
             echo $table->get_html();
         }
@@ -369,7 +408,7 @@ class selection_table extends display_table {
     }
 
     function get_item_display__selection($column, $item) {
-        return _print_checkbox('select'.$item->id, '', isset($this->checked[$item->id]), '', '', 'select_item(&quot;'.$item->id.'&quot;)', true);
+        return html_writer::checkbox('select'.$item->id, '', isset($this->checked[$item->id]), '', array('onclick' => 'select_item("'.$item->id.'")'));
     }
 }
 

@@ -198,7 +198,7 @@ class bulkusertable extends selection_table {
 
     function __construct(&$items, $url) {
         $columns = array(
-            '_selection'  => array('header' => '', 'sortable' => false),
+            '_selection'  => array('header' => get_string('select'), 'sortable' => false),
             'idnumber'    => array('header' => get_string('id', 'elis_program')),
              'name'       => array('header' => get_string('name', 'elis_program')),
              'country'    => array('header' => get_string('country', 'elis_program')),
@@ -207,6 +207,7 @@ class bulkusertable extends selection_table {
 
         $sort = optional_param('sort', 'name', PARAM_ALPHA);
         $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
+
         if ($dir !== 'DESC') {
             $dir = 'ASC';
         }
