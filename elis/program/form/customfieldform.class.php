@@ -256,8 +256,10 @@ class customfieldform extends cmform {
                             ? explode("\n", $foptions['options'])
                             : array();
         }
-        array_walk($menu_options, array($this, 'trim_crlf'));
-        $menu_options = array_combine($menu_options, $menu_options);
+        if (!empty($menu_options)) {
+           array_walk($menu_options, array($this, 'trim_crlf'));
+           $menu_options = array_combine($menu_options, $menu_options);
+        }
         if (($this->defaultdata_menu = $form->createElement('select', 'defaultdata_menu', get_string('profiledefaultdata', 'admin'), $menu_options))) {
             $form->addElement($this->defaultdata_menu);
         }
