@@ -160,75 +160,80 @@ class version1CourseImportTest extends rlip_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        global $CFG;
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
-        return array('course_categories' => 'moodle',
-                     'course' => 'moodle',
-                     'block_instances' => 'moodle',
-                     'course_sections' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'context' => 'moodle',
-                     'context_temp' => 'moodle',
-                     'enrol' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     'user' => 'moodle',
-                     'role' => 'moodle',
-                     'role_context_levels' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'role_names' => 'moodle',
-                     'grade_items' => 'moodle',
-                     'grade_items_history' => 'moodle',
-                     'grade_grades' => 'moodle',
-                     'grade_grades_history' => 'moodle',
-                     'grade_letters' => 'moodle',
-                     'grade_settings' => 'moodle',
-                     'grade_outcomes' => 'moodle',
-                     'grade_outcomes_courses' => 'moodle',
-                     'grade_outcomes_history' => 'moodle',
-                     'grade_categories' => 'moodle',
-                     'grade_categories_history' => 'moodle',
-                     'scale' => 'moodle',
-                     'scale_history' => 'moodle',
-                     'groups' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'groupings' => 'moodle',
-                     'groupings_groups' => 'moodle',
-                     'tag' => 'moodle',
-                     'tag_instance' => 'moodle',
-                     'user_lastaccess' => 'moodle',
-                     'question_categories' => 'moodle',
-                     'question' => 'moodle',
-                     'question_answers' => 'moodle',
-                     'question_truefalse' => 'qtype_truefalse',
-                     'config' => 'moodle',
-                     'config_plugins' => 'moodle',
-                     'course_display' => 'moodle',
-                     'backup_logs' => 'moodle',
-                     'backup_courses' => 'moodle',
-                     'block_positions' => 'moodle',
-                     'forum' => 'mod_forum',
-                     'forum_subscriptions' => 'mod_forum',
-                     'forum_read' => 'mod_forum',
-                     'feedback_template' => 'mod_feedback',
-                     'course_modules' => 'moodle',
-                     'course_modules_completion' => 'moodle',
-                     'course_modules_availability' => 'moodle',
-                     'course_completion_criteria' => 'moodle',
-                     'course_completion_aggr_methd' => 'moodle',
-                     'course_completions' => 'moodle',
-                     'course_completion_crit_compl' => 'moodle',
-                     'filter_active' => 'moodle',
-                     'filter_config' => 'moodle',
-                     'comments' => 'moodle',
-                     'rating' => 'moodle',
-                     'user_preferences' => 'moodle',
-                     'question_hints' => 'moodle',
-                     'backup_controllers' => 'moodle',
-                     'log' => 'moodle',
-                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1');
+        $tables = array(
+            'course_categories' => 'moodle',
+            'course' => 'moodle',
+            'block_instances' => 'moodle',
+            'course_sections' => 'moodle',
+            'cache_flags' => 'moodle',
+            'context' => 'moodle',
+            'context_temp' => 'moodle',
+            'enrol' => 'moodle',
+            'role_assignments' => 'moodle',
+            'user_enrolments' => 'moodle',
+            'user' => 'moodle',
+            'role' => 'moodle',
+            'role_context_levels' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'role_names' => 'moodle',
+            'grade_items' => 'moodle',
+            'grade_items_history' => 'moodle',
+            'grade_grades' => 'moodle',
+            'grade_grades_history' => 'moodle',
+            'grade_letters' => 'moodle',
+            'grade_settings' => 'moodle',
+            'grade_outcomes' => 'moodle',
+            'grade_outcomes_courses' => 'moodle',
+            'grade_outcomes_history' => 'moodle',
+            'grade_categories' => 'moodle',
+            'grade_categories_history' => 'moodle',
+            'scale' => 'moodle',
+            'scale_history' => 'moodle',
+            'groups' => 'moodle',
+            'groups_members' => 'moodle',
+            'groupings' => 'moodle',
+            'groupings_groups' => 'moodle',
+            'tag' => 'moodle',
+            'tag_instance' => 'moodle',
+            'user_lastaccess' => 'moodle',
+            'question_categories' => 'moodle',
+            'question' => 'moodle',
+            'question_answers' => 'moodle',
+            'question_truefalse' => 'qtype_truefalse',
+            'config' => 'moodle',
+            'config_plugins' => 'moodle',
+            'course_display' => 'moodle',
+            'backup_logs' => 'moodle',
+            'backup_courses' => 'moodle',
+            'block_positions' => 'moodle',
+            'forum' => 'mod_forum',
+            'forum_subscriptions' => 'mod_forum',
+            'forum_read' => 'mod_forum',
+            'feedback_template' => 'mod_feedback',
+            'course_modules' => 'moodle',
+            'course_modules_completion' => 'moodle',
+            'course_modules_availability' => 'moodle',
+            'course_completion_criteria' => 'moodle',
+            'course_completion_aggr_methd' => 'moodle',
+            'course_completions' => 'moodle',
+            'course_completion_crit_compl' => 'moodle',
+            'filter_active' => 'moodle',
+            'filter_config' => 'moodle',
+            'comments' => 'moodle',
+            'rating' => 'moodle',
+            'user_preferences' => 'moodle',
+            'question_hints' => 'moodle',
+            'backup_controllers' => 'moodle',
+            'log' => 'moodle',
+            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1'
+        );
+
+        $tables = array_merge($tables, self::load_plugin_xmldb('course/format'));
+
+        return $tables;
     }
 
     /**
@@ -685,7 +690,7 @@ class version1CourseImportTest extends rlip_test {
         $select = "shortname = :shortname AND
                    fullname = :fullname AND
                    idnumber = :idnumber AND
-                   summary = :summary AND
+                   ".$DB->sql_compare_text('summary', 255)." = :summary AND
                    format = :format AND
                    numsections = :numsections AND
                    startdate = :startdate AND
@@ -697,8 +702,7 @@ class version1CourseImportTest extends rlip_test {
                    lang = :lang AND
                    category = :category";
 
-        $exists = $DB->record_exists_select('course', $select, $data);
-        $this->assertEquals($exists, true);
+        $this->assertTrue($DB->record_exists_select('course', $select, $data));
 
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'updateshortname'));
         $this->assert_record_exists('enrol', array('courseid' => $courseid,

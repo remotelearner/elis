@@ -232,6 +232,10 @@ class version1CreateorupdateTest extends rlip_test {
             $tables[usermoodle::TABLE] = 'elis_program';
         }
 
+        // We are deleting a course, so we need to add a lot of plugin tables here
+        $tables = array_merge($tables, self::load_plugin_xmldb('mod'));
+        $tables = array_merge($tables, self::load_plugin_xmldb('course/format'));
+
         return $tables;
     }
 

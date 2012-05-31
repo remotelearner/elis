@@ -177,6 +177,62 @@ abstract class rlip_test extends elis_database_test {
         return $next_file;
     }
 
+    /**
+     * Finds all of the XMLDB files within a given plugin path and sets up the overlay table array to include
+     * the tables defined within those plugins.
+     *
+     * @param string $path The path to look for modules in
+     * @return array An array of extra overlay tables
+     */
+    protected function load_plugin_xmldb($path) {
+        global $CFG;
+
+        require_once($CFG->libdir.'/ddllib.php');
+
+        $tables = array();
+
+        switch ($path) {
+            case 'mod':
+                $prefix = 'mod_';
+                break;
+
+            case 'course/format':
+                $prefix = 'format_';
+                break;
+
+            default:
+                return array();
+        }
+
+        $plugins = get_list_of_plugins($path);
+
+        if ($plugins) {
+            foreach ($plugins as $plugin) {
+                if (!file_exists($CFG->dirroot.'/'.$path.'/'.$plugin.'/db/install.xml')) {
+                    continue;
+                }
+
+                // Load the XMLDB file and pull the tables out of the XML strcture
+                $xmldb_file = new xmldb_file($CFG->dirroot.'/'.$path.'/'.$plugin.'/db/install.xml');
+
+                if (!$xmldb_file->fileExists()) {
+                    continue;
+                }
+
+                $xmldb_file->loadXMLStructure();
+                $xmldb_structure = $xmldb_file->getStructure();
+
+                if (isset($xmldb_structure->tables)) {
+                    foreach ($xmldb_structure->tables as $table) {
+                        // Add each table to the list of overlay tables
+                        $tables[$table->name] = $prefix.$plugin;
+                    }
+                }
+            }
+        }
+
+        return $tables;
+    }
 }
 
 if (!function_exists('glob_recursive'))
