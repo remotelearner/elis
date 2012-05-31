@@ -880,8 +880,10 @@ function pm_update_student_progress() {
 /**
  * Update enrolment status of users enroled in all classes, completing and locking
  * records where applicable based on class grade and required completion elements
+ *
+ * @param int $pmuserid  optional userid to update, default(0) updates all users
  */
-function pm_update_enrolment_status() {
+function pm_update_enrolment_status($pmuserid = 0) {
     global $DB;
 
     require_once(elispm::lib('data/pmclass.class.php'));
@@ -894,19 +896,23 @@ function pm_update_enrolment_status() {
 /// function that then manages the student objects. Once this is in place, add completion notice
 /// to the code.
 
-
     /// Get all classes with unlocked enrolments.
     $sql = 'SELECT cce.classid as classid, COUNT(cce.userid) as numusers
             FROM {'.student::TABLE.'} cce
             INNER JOIN {'.pmclass::TABLE.'} cls ON cls.id = cce.classid
-            WHERE cce.locked = 0
+            WHERE cce.locked = 0';
+    $params = array();
+    if ($pmuserid) {
+        $sql .= ' AND cce.userid = ?';
+        $params = array($pmuserid);
+    }
+    $sql .= '
             GROUP BY cce.classid
             ORDER BY cce.classid ASC';
-
-    $rs = $DB->get_recordset_sql($sql);
+    $rs = $DB->get_recordset_sql($sql, $params);
     foreach ($rs as $rec) {
         $pmclass = new pmclass($rec->classid);
-        $pmclass->update_enrolment_status();
+        $pmclass->update_enrolment_status($pmuserid);
         //todo: investigate as to whether ten minutes is too long for one class
         set_time_limit(600);
     }
