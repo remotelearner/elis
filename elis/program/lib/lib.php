@@ -271,14 +271,29 @@ function pm_set_config($name, $value) {
 /**
  * Synchronize Moodle enrolments over to the PM system based on associations of Moodle
  * courses to PM classes, as well as converting grade item grades to learning objective grades
+ *
+ * @param int $moodleuserid The id of the specific Moodle user to sync, or 0 for
+ *                          all users
  */
-function pm_synchronize_moodle_class_grades() {
+function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/grade/lib.php');
     require_once(elispm::lib('data/classmoodlecourse.class.php'));
 
     if ($moodleclasses = moodle_get_classes()) {
         $timenow = time();
+
+        //if we are filtering for a specific user, add the necessary SQL fragment
+        $outerusercondition = '';
+        $innerusercondition = '';
+        $userparams = array();
+
+        if ($moodleuserid != 0) {
+            $outerusercondition = "AND u.id = :userid";
+            $innerusercondition = "AND mu.id = :userid";
+            $userparams['userid'] = $moodleuserid;
+        }
+
         foreach ($moodleclasses as $class) {
             $pmclass = $class->pmclass;
 
@@ -296,9 +311,10 @@ function pm_synchronize_moodle_class_grades() {
                 LEFT JOIN {".student::TABLE."} stu on stu.userid = cu.id AND stu.classid = {$pmclass->id}
                      WHERE ra.roleid in ({$CFG->gradebookroles})
                        AND ra.contextid {$relatedcontextsstring}
+                       {$outerusercondition}
                   ORDER BY muid ASC";
 
-            $causers = $DB->get_recordset_sql($sql);
+            $causers = $DB->get_recordset_sql($sql, $userparams);
 
             if (empty($causers)) {
                 // nothing to see here, move on
@@ -347,9 +363,12 @@ function pm_synchronize_moodle_class_grades() {
                     INNER JOIN {".user::TABLE."} cu ON grades.userid = cu.id
                     INNER JOIN {user} mu ON cu.idnumber = mu.idnumber
                          WHERE grades.classid = :classid
+                         {$innerusercondition}
                       ORDER BY mu.id ASC";
 
-                $allcompelemgrades = $DB->get_recordset_sql($sql, array('classid' => $pmclass->id));
+                //apply the userid parameter for performance reasons
+                $params = array_merge(array('classid' => $pmclass->id), $userparams);
+                $allcompelemgrades = $DB->get_recordset_sql($sql, $params);
                 $last_rec = null; // will be used to store the last completion
                                   // element that we fetched from the
                                   // previous iteration (which may belong
