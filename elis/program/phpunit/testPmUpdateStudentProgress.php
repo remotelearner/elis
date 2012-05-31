@@ -209,11 +209,13 @@ class pmUpdateStudentProgressTest extends elis_database_test {
         }
 
         //perform the sync for the first user
-        pm_update_student_progress(100);
+        pm_update_student_progress(103);
 
         //we should have one passed student in the PM class instance,
         //and that student should be the first user
-        $completed_enrolments = $DB->get_records(student::TABLE, array('completestatusid' => STUSTATUS_PASSED));
+        $completed_enrolments = $DB->get_records(student::TABLE,
+                                     array('completestatusid' => STUSTATUS_PASSED,
+                                           'userid' => 103));
         $this->assertEquals(1, count($completed_enrolments));
 
         $enrolment = reset($completed_enrolments);
@@ -221,7 +223,8 @@ class pmUpdateStudentProgressTest extends elis_database_test {
         $this->assertEquals(100, $enrolment->grade);
 
         //we should have one passed learning objective for the first user
-        $completed_elements = $DB->get_records(student_grade::TABLE, array('locked' => 1));
+        $completed_elements = $DB->get_records(student_grade::TABLE,
+                                       array('locked' => 1, 'userid' => 103));
         $this->assertEquals(1, count($completed_elements));
 
         $element = reset($completed_elements);

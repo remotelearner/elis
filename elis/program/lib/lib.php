@@ -574,8 +574,10 @@ function pm_synchronize_moodle_class_grades() {
 /**
  * Notifies that students have not passed their classes via the notifications where applicable,
  * setting enrolment status to failed where applicable
+ *
+ * @param int $pmuserid  optional userid to update, default(0) updates all users
  */
-function pm_update_student_enrolment() {
+function pm_update_student_enrolment($pmuserid = 0) {
     global $DB;
 
     require_once(elispm::lib('data/student.class.php'));
@@ -583,19 +585,20 @@ function pm_update_student_enrolment() {
 
     //look for all enrolments where status is incomplete / in progress and end time has passed
     $select = 'completestatusid = :status AND endtime > 0 AND endtime < :time';
-    $students = $DB->get_recordset_select(student::TABLE, $select, array('status' => STUSTATUS_NOTCOMPLETE,
-                                                                         'time'   => time()));
-
-    if(!empty($students)) {
-        foreach($students as $s) {
+    $params = array('status' => STUSTATUS_NOTCOMPLETE,
+                    'time'   => time());
+    if ($pmuserid) {
+        $select .= ' AND userid = :userid';
+        $params['userid'] = $pmuserid;
+    }
+    $students = $DB->get_recordset_select(student::TABLE, $select, $params);
+    if (!empty($students)) {
+        foreach ($students as $s) {
             //send message
             $a = $DB->get_field(pmclass::TABLE, 'idnumber', array('id' => $s->classid));
-
             $message = get_string('incomplete_course_message', 'elis_program', $a);
-
             $user = cm_get_moodleuser($s->userid);
             $from = get_admin();
-
             notification::notify($message, $user, $from);
 
             //set status to failed
@@ -612,7 +615,7 @@ function pm_update_student_enrolment() {
  * Migrate any existing Moodle users to the Curriculum Management
  * system.
  */
-function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
+function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0, $mdluserid = 0) {
     global $CFG, $DB;
 
     require_once ($CFG->dirroot.'/elis/program/lib/setup.php');
@@ -622,28 +625,38 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
     $result  = true;
 
     // set time modified if not set, so we can keep track of "new" users
-    $sql = "UPDATE {user}
+    $sql = 'UPDATE {user}
                SET timemodified = :timenow
-             WHERE timemodified = 0";
-    $result = $result && $DB->execute($sql, array('timenow' => $timenow));
+             WHERE timemodified = 0';
+    $params = array('timenow' => $timenow);
+    if ($mdluserid) {
+        $sql .= ' AND id = :userid';
+        $params['userid'] = $mdluserid;
+    }
+    $result = $result && $DB->execute($sql, $params);
 
     if ($setidnumber || elis::$config->elis_program->auto_assign_user_idnumber) {
-        //make sure we only set idnumbers if users' usernames doint point to existing
-        //idnumbers
+        // make sure we only set idnumbers if users' usernames don't point to
+        // existing idnumbers
         $sql = "UPDATE {user}
                    SET idnumber = username
-                 WHERE idnumber=''
+                 WHERE idnumber = ''
                    AND username != 'guest'
                    AND deleted = 0
                    AND confirmed = 1
                    AND mnethostid = :hostid
-                   AND username NOT IN (SELECT idnumber FROM (SELECT idnumber
-                                                              FROM {user} inneru) innertable)";
-        $result = $result && $DB->execute($sql, array('hostid' => $CFG->mnet_localhost_id));
+                   AND username NOT IN (SELECT idnumber
+                                        FROM (SELECT idnumber
+                                              FROM {user} inneru) innertable)";
+        $params = array('hostid' => $CFG->mnet_localhost_id);
+        if ($mdluserid) {
+            $sql .= ' AND id = :userid';
+            $params['userid'] = $mdluserid;
+        }
+        $result = $result && $DB->execute($sql, $params);
     }
 
-    $rs = $DB->get_recordset_select('user',
-                  "username != 'guest'
+    $select = "username != 'guest'
                AND deleted = 0
                AND confirmed = 1
                AND mnethostid = :hostid
@@ -651,19 +664,24 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
                AND timemodified >= :time
                AND NOT EXISTS (SELECT 'x'
                                FROM {".user::TABLE."} cu
-                               WHERE cu.idnumber = {user}.idnumber)",
-                  array('hostid' => $CFG->mnet_localhost_id,
-                        'time'   => $fromtime));
-
-    if ($rs) {
+                               WHERE cu.idnumber = {user}.idnumber)";
+    $params = array('hostid' => $CFG->mnet_localhost_id,
+                    'time'   => $fromtime);
+    if ($mdluserid) {
+        $select .= ' AND id = :userid';
+        $params['userid'] = $mdluserid;
+    }
+    $rs = $DB->get_recordset_select('user', $select, $params);
+    if ($rs && $rs->valid()) {
         require_once elis::plugin_file('usersetenrol_moodle_profile', 'lib.php');
-
         foreach ($rs as $user) {
             // FIXME: shouldn't depend on cluster functionality -- should
             // be more modular
             cluster_profile_update_handler($user);
         }
+        $rs->close();
     }
+
     return $result;
 }
 
@@ -850,8 +868,9 @@ function pm_moodle_user_to_pm($mu) {
  *          - Check if they have an enrolment record in CM, and add if not.
  *          - Update grade information in the enrollment and grade tables in CM.
  *
+ * @param int $pmuserid  optional user to update, default(0) updates all users
  */
-function pm_update_student_progress() {
+function pm_update_student_progress($pmuserid = 0) {
     global $CFG;
 
     require_once ($CFG->dirroot.'/grade/lib.php');
@@ -865,14 +884,14 @@ function pm_update_student_progress() {
 
 /// Start with the Moodle classes...
     mtrace("Synchronizing Moodle class grades<br />\n");
-    pm_synchronize_moodle_class_grades();
+    pm_synchronize_moodle_class_grades($pmuserid);
 
     flush(); sleep(1);
 
 /// Now we need to check all of the student and grade records again, since data may have come from sources
 /// other than Moodle.
     mtrace("Updating all class grade completions.<br />\n");
-    pm_update_enrolment_status();
+    pm_update_enrolment_status($pmuserid);
 
     return true;
 }

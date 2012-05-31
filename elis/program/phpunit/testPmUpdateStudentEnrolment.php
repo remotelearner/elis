@@ -442,7 +442,8 @@ class pmUpdateStudentEnrolmentTest extends elis_database_test {
         pm_update_student_enrolment(1);
 
         //validate count
-        $this->assertEquals(count($expected_associations), $DB->count_records(student::TABLE));
+        $this->assertEquals(count($expected_associations),
+                   $DB->count_records(student::TABLE, array('userid' => 1)));
 
         //validate data specifically
         foreach ($expected_associations as $expected_association) {
