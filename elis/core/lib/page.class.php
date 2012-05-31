@@ -132,6 +132,12 @@ abstract class elis_page extends moodle_page {
 
     /**
      * Get required page parameters.
+     *
+     * Please note the $type parameter is now required and the value can not be array.
+     *
+     * @param string $parname the name of the page parameter we want
+     * @param string $type expected type of parameter
+     * @return mixed
      */
     public function required_param($name, $type=PARAM_CLEAN) {
         if ($this->params !== null) {
@@ -142,6 +148,37 @@ abstract class elis_page extends moodle_page {
             }
         } else {
             return required_param($name, $type);
+        }
+    }
+
+    /**
+     * Get required page parameters as an array
+     *
+     *  Note: arrays of arrays are not supported, only alphanumeric keys with _ and - are supported
+     *
+     * @param string $parname the name of the page parameter we want
+     * @param string $type expected type of parameter
+     * @return array
+     */
+    public function required_param_array($name, $type=PARAM_CLEAN) {
+        if ($this->params !== null) {
+            if (isset($this->params[$name])) {
+                $result = array();
+
+                foreach($this->params[$name] as $key=>$value) {
+                    if (!preg_match('/^[a-z0-9_-]+$/i', $key)) {
+                        debugging('Invalid key name in required_param_array() detected: '.$key.', parameter: '.$parname);
+                        continue;
+                    }
+                    $result[$key] = clean_param($value, $type);
+                }
+
+                return $result;
+            } else {
+                print_error('missingparam', '', '', $name);
+            }
+        } else {
+            return required_param_array($name, $type);
         }
     }
 
