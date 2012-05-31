@@ -90,14 +90,12 @@ class testRoles extends elis_database_test {
      * obtaining the list of users
      */
     public function testClusterRolepageAvailableRecordsRespectUsersetPermissions() {
-        global $CFG, $_GET, $USER, $DB, $UNITTEST;
+        global $CFG, $_GET, $USER, $DB;
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
 
         //create our test userset
         $userset = new userset(array('name' => 'testuserset'));
@@ -166,14 +164,12 @@ class testRoles extends elis_database_test {
      * cluster for a particular role respects special userset permissions
      */
     public function testClusterRolepageCountRoleUsersRespectsUsersetPermissions() {
-        global $CFG, $_GET, $USER, $DB, $UNITTEST;
+        global $CFG, $_GET, $USER, $DB;
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
 
         //create a user record so that Moodle and PM ids don't match by fluke
         set_config('auto_assign_user_idnumber', 0, 'elis_program');
@@ -231,8 +227,8 @@ class testRoles extends elis_database_test {
         $roleid = create_role('targetrole', 'targetrole', 'targetrole');
 
         //assign the both users to the userset role
-        $userset_contextlevel = context_level_base::get_custom_context_level('cluster', 'elis_program');
-        $userset_context = get_context_instance($userset_contextlevel, $userset->id);
+        $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+        $userset_context     = $contextclass::instance($userset->id);
         role_assign($roleid, $moodle_userid, $userset_context->id);
         $moodle_userid = $DB->get_field('user', 'id', array('username' => 'assigned'));
         role_assign($roleid, $moodle_userid, $userset_context->id);

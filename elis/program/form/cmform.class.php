@@ -46,11 +46,12 @@ class cmform extends moodleform {
     function validate_custom_fields($data, $eliscontext) {
         $errors = array();
 
-        $contextlevel = context_level_base::get_custom_context_level($eliscontext, 'elis_program');
+        $contextlevel = context_elis_helper::get_level_from_name($eliscontext);
         $fields = field::get_for_context_level($contextlevel);
         $fields = $fields ? $fields : array();
         if (!empty($data['id'])) {
-            $context = get_context_instance($contextlevel, $data['id']);
+            $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+            $context     = $contextclass::instance($data['id']);
             $contextid = $context->id;
         } else {
             $contextid = 0;

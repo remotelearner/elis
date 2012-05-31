@@ -338,28 +338,22 @@ class generalized_filter_clustertree extends generalized_filter_type {
                 $full_clrunexpanded_condition = $this->get_list_condition('eclipse_context.instanceid', $data['clrunexpanded_ids']);
 
                 //needed in query to join context table
-                $cluster_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
+                $cluster_context_level = CONTEXT_ELIS_USERSET;
 
                 //$params = array();
                 $param_cpath = 'clustree_cpath_a'. $counter;
                 $param_pcpath = 'clustree_pcpath'. $counter;
                 $param_cpath2 = 'clustree_cpath_b'. $counter;
 
-                /** NOTE:
-                 * ELIS-3685: We cannot seem to use sql_concat() in parameter array
-                 * query fails (perhaps quoting the "CONCAT( ...)" parameter?),
-                 * unfortunely this causes warnings from sql_like() ...
-                 * "Potential SQL injection detected, sql_ilike() expects bound parameters (? or :named)
-                 */
-                $cpath_like = $DB->sql_like('context.path', $DB->sql_concat('parent_context.path', "'/%'"),
-                                            false); // TBV: case insensitive?
-                //$params[$param_cpath] = $DB->sql_concat('parent_context.path', "'/%'");
-                $pcpath_like = $DB->sql_like('parent_context.path', $DB->sql_concat('grandparent_context.path', "'/%'"),
-                                             false); // TBV: case insensitive?
-                //$params[$param_pcpath] = $DB->sql_concat('grandparent_context.path', "'/%'");
-                $cpath2_like = $DB->sql_like('context.path', $DB->sql_concat('eclipse_context.path', "'/%'"),
-                                             false); // TBV: case insensitive?
-                //$params[$param_cpath2] = $DB->sql_concat('eclipse_context.path', "'/%'");
+                // ELIS-5861 -- Got named parameters working with sql_concat() -- tested in /elis/program/phpunit/testFilters
+                $cpath_like = $DB->sql_like('context.path', $DB->sql_concat('parent_context.path', ':c_path'), false); // TBV: case insensitive?
+                $params['c_path'] = '/%';
+
+                $pcpath_like = $DB->sql_like('parent_context.path', $DB->sql_concat('grandparent_context.path', ':pc_path'), false); // TBV: case insensitive?
+                $params['pc_path'] = '/%';
+
+                $cpath2_like = $DB->sql_like('context.path', $DB->sql_concat('eclipse_context.path', ':c2_path'), false); // TBV: case insensitive?
+                $params['c2_path'] = '/%';
 
                 $param_ccl1 = 'clustree_context_a'. $counter;
                 $param_ccl2 = 'clustree_context_b'. $counter;

@@ -46,6 +46,7 @@ class testTrackAssignmentGetAvailableUsers extends elis_database_test {
 
         return array(clusterassignment::TABLE => 'elis_program',
                      clustertrack::TABLE => 'elis_program',
+                     curriculum::TABLE => 'elis_program',
                      track::TABLE => 'elis_program',
                      usertrack::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
@@ -76,6 +77,7 @@ class testTrackAssignmentGetAvailableUsers extends elis_database_test {
 
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
 
+        $dataset->addTable(curriculum::TABLE, elis::component_file('program', 'phpunit/track_curriculum_available_users.csv'));
         $dataset->addTable(track::TABLE, elis::component_file('program', 'phpunit/track_trackassignment_available_users.csv'));
         $dataset->addTable(usertrack::TABLE, elis::component_file('program', 'phpunit/usertrack_trackassignment_available_users.csv'));
         $dataset->addTable(user::TABLE, elis::component_file('program', 'phpunit/user_trackassignment_available_users.csv'));
@@ -125,11 +127,12 @@ class testTrackAssignmentGetAvailableUsers extends elis_database_test {
      * Validate that including inactive users in the listing works
      */
     public function testAvailableUsersIncludesInactiveWhenIncludingInactive() {
+        global $DB;
         $this->load_csv_data();
         $this->create_sys_context();
-        $this->assign_track_enrol_permissions();
         set_config('siteguest', '');
         set_config('siteadmins', '');
+        $this->assign_track_enrol_permissions();
 
         pm_set_config('legacy_show_inactive_users', 1);
         elis::$config = new elis_config();
@@ -307,7 +310,7 @@ class testTrackAssignmentGetAvailableUsers extends elis_database_test {
      * one another and the target user is in the userset
      */
     public function testAvailableUsersRespectsIndirectUsersetPermissions() {
-        global $DB, $USER;
+        global $DB, $UNITTEST, $USER;
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/clusterassignment.class.php'));
@@ -318,6 +321,10 @@ class testTrackAssignmentGetAvailableUsers extends elis_database_test {
         set_config('siteguest', '');
         set_config('siteadmins', '');
 
+        $UNITTEST = new stdClass;
+        $UNITTEST->running = true;
+        accesslib_clear_all_caches_for_unit_testing();
+        unset($UNITTEST->running);
         //create a test user to be in the userset
         $usersetmember = new user(array('idnumber' => 'usersetmember',
                                         'username' => 'usersetmember',
@@ -330,7 +337,7 @@ class testTrackAssignmentGetAvailableUsers extends elis_database_test {
         //our test userset
         $userset = new userset(array('name' => 'userset'));
         $userset->save();
- 
+
         //assign the test user to the test userset
         $clusterassignment = new clusterassignment(array('userid' => $usersetmember->id,
                                                          'clusterid' => $userset->id));
@@ -358,9 +365,10 @@ class testTrackAssignmentGetAvailableUsers extends elis_database_test {
 
         //perform the role necessary assignment
         $moodleuser = $DB->get_record('user', array('username' => 'activeuser'));
-        $contextlevel = context_level_base::get_custom_context_level('cluster', 'elis_program');
-        $context = get_context_instance($contextlevel, $userset->id);
-        role_assign($roleid, $moodleuser->id, $context->id);
+        // make sure all the contexts are created, so that we can find the children
+        $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+        $instance     = $contextclass::instance($userset->id);
+        role_assign($roleid, $moodleuser->id, $instance->id);
 
         //assume the role of the user with the role assignment
         $USER = $moodleuser;

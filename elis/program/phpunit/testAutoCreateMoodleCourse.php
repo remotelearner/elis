@@ -133,26 +133,29 @@ class autocreatemoodlecourseTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
 	protected static function get_overlay_tables() {
-	    return array('course' => 'moodle',
-                     'config' => 'moodle',
-                     'config_plugins' => 'moodle',
-		             'context' => 'moodle',
-	                 'course_categories' => 'moodle',
-	                 'course_sections' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'elis_field_categories' => 'elis_core',
-                     'elis_field_category_contexts' => 'elis_core',
-                     'elis_field' => 'elis_core',
-                     'elis_field_contextlevels' => 'elis_core',
-                     'elis_field_owner' => 'elis_core',
-                     'elis_field_data_text' => 'elis_core',
-	                 'enrol' => 'moodle',
-	                 'backup_controllers' => 'moodle',
-                     'user' => 'moodle',
-                     classmoodlecourse::TABLE => 'elis_program',
-		             pmclass::TABLE => 'elis_program',
-		             course::TABLE => 'elis_program',
-                     coursetemplate::TABLE => 'elis_program');
+	    return array(
+            'backup_controllers' => 'moodle',
+            'course' => 'moodle',
+            'config' => 'moodle',
+            'config_plugins' => 'moodle',
+            'context' => 'moodle',
+            'course_categories' => 'moodle',
+            'course_sections' => 'moodle',
+            'cache_flags' => 'moodle',
+            'elis_field_categories' => 'elis_core',
+            'elis_field_category_contexts' => 'elis_core',
+            'elis_field' => 'elis_core',
+            'elis_field_contextlevels' => 'elis_core',
+            'elis_field_owner' => 'elis_core',
+            'elis_field_data_text' => 'elis_core',
+            'enrol' => 'moodle',
+            'groups' => 'moodle',
+            'user' => 'moodle',
+            classmoodlecourse::TABLE => 'elis_program',
+            pmclass::TABLE => 'elis_program',
+            course::TABLE => 'elis_program',
+            coursetemplate::TABLE => 'elis_program'
+        );
 	}
 
     /**

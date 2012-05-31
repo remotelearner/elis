@@ -428,7 +428,7 @@ class studentpage extends associationpage {
      *                          (needed to prevent redirects in unit testing)
      */
     public function do_waitlistconfirm($redirect = true) { // action_waitlistconfirm
-        $id = $this->required_param('userid', PARAM_INT);
+        $id = $this->required_param_array('userid', PARAM_INT);
 
         $form_url = new moodle_url(null, array('s'       => $this->pagename,
                                                'section' => $this->section,

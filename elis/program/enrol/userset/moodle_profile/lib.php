@@ -296,6 +296,9 @@ function cluster_profile_update_handler($userdata) {
     // make sure a CM user exists
     pm_moodle_user_to_pm($userdata);
 
+    if (!isset($userdata->id)) {
+        return true;
+    }
     $cuid = pm_get_crlmuserid($userdata->id);
 
     if (empty($cuid)) {

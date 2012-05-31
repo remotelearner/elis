@@ -53,6 +53,7 @@ class test_element_creation extends elis_database_test {
             track::TABLE           => 'elis_program',
             course::TABLE          => 'elis_program',
             coursetemplate::TABLE  => 'elis_program',
+            field::TABLE           => 'elis_core',
             field_data_char::TABLE => 'elis_core',
             pmclass::TABLE         => 'elis_program',
             user::TABLE            => 'elis_program',

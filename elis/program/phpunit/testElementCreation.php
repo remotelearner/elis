@@ -49,6 +49,8 @@ class test_element_creation extends elis_database_test {
             'course'               => 'moodle',
             'user'                 => 'moodle',
             field_data_char::TABLE => 'elis_core',
+            field_data_text::TABLE => 'elis_core',
+            field_data_int::TABLE => 'elis_core',
             curriculum::TABLE      => 'elis_program',
             track::TABLE           => 'elis_program',
             course::TABLE          => 'elis_program',

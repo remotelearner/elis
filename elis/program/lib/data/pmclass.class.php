@@ -49,6 +49,7 @@ class pmclass extends data_object_with_custom_fields {
     var $moodlecourseid;
     var $track;
     var $oldmax;
+    var $unlink_attached_course;
 
     static $config_default_prefix = 'clsdft';
 
@@ -93,8 +94,6 @@ class pmclass extends data_object_with_custom_fields {
     protected $_dbfield_maxstudents;
     protected $_dbfield_environmentid;
     protected $_dbfield_enrol_from_waitlist;
-    protected $_dbfield_moodlecourseid;
-    protected $_dbfield_unlink_attached_course;
 
     static $delete_is_complex = true;
 
@@ -861,6 +860,7 @@ class pmclass extends data_object_with_custom_fields {
                     return false;
                 }
                 // Rename the fullname, shortname and idnumber of the restored course
+                $restore = new stdClass;
                 $restore->id = $moodlecourseid;
                 // ELIS-2941: Don't prepend course name if already present ...
                 if (strpos($clone->idnumber, $clone->course->name) !== 0) {

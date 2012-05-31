@@ -118,9 +118,9 @@ class usermanagementGetsUsersTest extends elis_database_test {
         assign_capability('elis/program:user_edit', CAP_ALLOW, $roleid, $syscontext->id);
 
         //assign the userset administrator an appropriate role on the userset
-        $userset_context_level = context_level_base::get_custom_context_level('cluster', 'elis_program');
-        $userset_context = get_context_instance($userset_context_level, 1);
-        role_assign($roleid, $USER->id, $userset_context->id);
+        $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+        $instance     = $contextclass::instance(1);
+        role_assign($roleid, $USER->id, $instance->id);
 
         //assign the user to the user set
         $clusterassignment = new clusterassignment(array('clusterid' => 1,
@@ -133,7 +133,7 @@ class usermanagementGetsUsersTest extends elis_database_test {
      * users in relation to userset permissions
      */
     public function testUsermanagementGetsUsersRespectsUsersetPermissions() {
-        global $USER, $DB, $UNITTEST;
+        global $USER, $DB;
 
         require_once(elispm::lib('lib.php'));
 
@@ -142,9 +142,7 @@ class usermanagementGetsUsersTest extends elis_database_test {
         set_config('siteadmins', '');
 
         //prevent accesslib caching
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
 
         //need the site context
         $DB->execute("INSERT INTO {context}
@@ -175,7 +173,7 @@ class usermanagementGetsUsersTest extends elis_database_test {
      * recordset in relation to userset permissions
      */
     public function testUsermanagementGetsUsersRecordsetRespectsUsersetPermissions() {
-        global $USER, $DB, $UNITTEST;
+        global $USER, $DB;
 
         require_once(elispm::lib('lib.php'));
 
@@ -184,9 +182,7 @@ class usermanagementGetsUsersTest extends elis_database_test {
         set_config('siteadmins', '');
 
         //prevent accesslib caching
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
 
         //need the site context
         $DB->execute("INSERT INTO {context}
@@ -214,7 +210,7 @@ class usermanagementGetsUsersTest extends elis_database_test {
      * users when applying userset permissions and an appropriate SQL filter
      */
     public function testUsermanagementGetsUsersRespectsFilters() {
-        global $USER, $DB, $UNITTEST;
+        global $USER, $DB;
 
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -225,9 +221,7 @@ class usermanagementGetsUsersTest extends elis_database_test {
         set_config('siteadmins', '');
 
         //prevent accesslib caching
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
 
         //need the site context
         $DB->execute("INSERT INTO {context}
@@ -273,7 +267,7 @@ class usermanagementGetsUsersTest extends elis_database_test {
      * recordset when applying userset permissions and an appropriate SQL filter
      */
     public function testUsermanagementGetsUsersRecordsetRespectsFilters() {
-        global $USER, $DB, $UNITTEST;
+        global $USER, $DB;
 
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -284,9 +278,7 @@ class usermanagementGetsUsersTest extends elis_database_test {
         set_config('siteadmins', '');
 
         //prevent accesslib caching
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
 
         //need the site context
         $DB->execute("INSERT INTO {context}
