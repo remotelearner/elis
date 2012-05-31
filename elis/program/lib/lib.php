@@ -574,8 +574,10 @@ function pm_synchronize_moodle_class_grades() {
 /**
  * Notifies that students have not passed their classes via the notifications where applicable,
  * setting enrolment status to failed where applicable
+ *
+ * @param int $pmuserid  optional userid to update, default(0) updates all users
  */
-function pm_update_student_enrolment() {
+function pm_update_student_enrolment($pmuserid = 0) {
     global $DB;
 
     require_once(elispm::lib('data/student.class.php'));
@@ -583,19 +585,20 @@ function pm_update_student_enrolment() {
 
     //look for all enrolments where status is incomplete / in progress and end time has passed
     $select = 'completestatusid = :status AND endtime > 0 AND endtime < :time';
-    $students = $DB->get_recordset_select(student::TABLE, $select, array('status' => STUSTATUS_NOTCOMPLETE,
-                                                                         'time'   => time()));
-
-    if(!empty($students)) {
-        foreach($students as $s) {
+    $params = array('status' => STUSTATUS_NOTCOMPLETE,
+                    'time'   => time());
+    if ($pmuserid) {
+        $select .= ' AND userid = :userid';
+        $params['userid'] = $pmuserid;
+    }
+    $students = $DB->get_recordset_select(student::TABLE, $select, $params);
+    if (!empty($students)) {
+        foreach ($students as $s) {
             //send message
             $a = $DB->get_field(pmclass::TABLE, 'idnumber', array('id' => $s->classid));
-
             $message = get_string('incomplete_course_message', 'elis_program', $a);
-
             $user = cm_get_moodleuser($s->userid);
             $from = get_admin();
-
             notification::notify($message, $user, $from);
 
             //set status to failed
