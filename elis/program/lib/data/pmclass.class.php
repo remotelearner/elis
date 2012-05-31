@@ -425,7 +425,7 @@ class pmclass extends data_object_with_custom_fields {
     /////////////////////////////////////////////////////////////////////
 
 
-    public static function check_for_moodle_courses() {
+    public static function check_for_moodle_courses($pmuserid = 0) {
         global $DB;
 
         //crlm_class_moodle moodlecourseid
@@ -433,12 +433,19 @@ class pmclass extends data_object_with_custom_fields {
                 FROM {'.classmoodlecourse::TABLE.'} cm
                 LEFT JOIN {course} c ON cm.moodlecourseid = c.id
                 WHERE c.id IS NULL';
+        $params = array();
+        if ($pmuserid) {
+            $sql .= ' AND EXISTS (SELECT id FROM {'. student::TABLE .'} stu
+                                   WHERE stu.classid = cm.classid
+                                     AND stu.userid = ?)';
+            $params[] = $pmuserid;
+        }
 
-        $broken_classes = $DB->get_records_sql($sql);
-
-        if(!empty($broken_classes)) {
-            foreach($broken_classes as $class) {
-                $DB->delete_records(classmoodlecourse::TABLE, array('id'=>$class->id));
+        $broken_classes = $DB->get_records_sql($sql, $params);
+        if (!empty($broken_classes)) {
+            foreach ($broken_classes as $class) {
+                $DB->delete_records(classmoodlecourse::TABLE,
+                         array('id' => $class->id));
             }
         }
 
