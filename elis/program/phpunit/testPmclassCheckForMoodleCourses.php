@@ -42,7 +42,16 @@ class pmclassCheckForMoodleCoursesTest extends elis_database_test {
     static protected function get_overlay_tables() {
         return array('course' => 'moodle',
                      classmoodlecourse::TABLE => 'elis_program',
-                     student::TABLE => 'elis_program');
+                     course::TABLE            => 'elis_program',
+                     pmclass::TABLE           => 'elis_program',
+                     student::TABLE           => 'elis_program',
+                     user::TABLE              => 'elis_program'
+               );
+    }
+
+    static protected function get_ignored_tables() {
+        return array('context' => 'moodle'
+               );
     }
 
     /**
@@ -52,7 +61,10 @@ class pmclassCheckForMoodleCoursesTest extends elis_database_test {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         //need Moodle courses for testing
         $dataset->addTable('course', elis::component_file('program', 'phpunit/mdlcourses.csv'));
+        $dataset->addTable(course::TABLE, elis::component_file('program', 'phpunit/pmcrs.csv'));
+        $dataset->addTable(pmclass::TABLE, elis::component_file('program', 'phpunit/pmclass2.csv'));
         $dataset->addTable(student::TABLE, elis::component_file('program', 'phpunit/student.csv'));
+        $dataset->addTable(user::TABLE, elis::component_file('program', 'phpunit/user.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
@@ -139,6 +151,9 @@ class pmclassCheckForMoodleCoursesTest extends elis_database_test {
         //set up our classes
         $this->load_csv_data();
 
+        $student = new student(array('userid' => 103, 'classid' => 103));
+        $student->save();
+
         //track which associations should remain
         $remaining_associations = array();
 
@@ -147,8 +162,8 @@ class pmclassCheckForMoodleCoursesTest extends elis_database_test {
             $record = new classmoodlecourse($association);
             $record->save();
 
-            //test user is enrolled in class 100, so this one should be deleted
-            if ($association['classid'] != 100) {
+            //test user is enrolled in class 103, so this one should be deleted
+            if ($association['classid'] != 103) {
                 //it should persist after the method is called
                 $remaining_associations[] = $association;
             }
