@@ -887,9 +887,9 @@ function pm_moodle_user_to_pm($mu) {
  *          - Check if they have an enrolment record in CM, and add if not.
  *          - Update grade information in the enrollment and grade tables in CM.
  *
- * @param int $pmuserid  optional user to update, default(0) updates all users
+ * @param int $muserid  optional user to update, default(0) updates all users
  */
-function pm_update_student_progress($pmuserid = 0) {
+function pm_update_student_progress($muserid = 0) {
     global $CFG;
 
     require_once ($CFG->dirroot.'/grade/lib.php');
@@ -902,15 +902,28 @@ function pm_update_student_progress($pmuserid = 0) {
     require_once (elispm::lib('data/course.class.php'));
 
 /// Start with the Moodle classes...
-    mtrace("Synchronizing Moodle class grades<br />\n");
-    pm_synchronize_moodle_class_grades($pmuserid);
+    if ($muserid == 0) {
+        mtrace("Synchronizing Moodle class grades<br />\n");
+    }
+    pm_synchronize_moodle_class_grades($muserid);
 
     flush(); sleep(1);
 
 /// Now we need to check all of the student and grade records again, since data may have come from sources
 /// other than Moodle.
-    mtrace("Updating all class grade completions.<br />\n");
-    pm_update_enrolment_status($pmuserid);
+    if ($muserid == 0) {
+        //running for all users
+        mtrace("Updating all class grade completions.<br />\n");
+        pm_update_enrolment_status();
+    } else {
+        //attempting to run for a particular user
+        $pmuserid = pm_get_crlmuserid($muserid);
+
+        if ($pmuserid != false) {
+            //user has a matching PM user
+            pm_update_enrolment_status($pmuserid);
+        }
+    }
 
     return true;
 }

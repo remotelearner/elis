@@ -209,7 +209,7 @@ class pmUpdateStudentProgressTest extends elis_database_test {
         }
 
         //perform the sync for the first user
-        pm_update_student_progress(103);
+        pm_update_student_progress(100);
 
         //we should have one passed student in the PM class instance,
         //and that student should be the first user
