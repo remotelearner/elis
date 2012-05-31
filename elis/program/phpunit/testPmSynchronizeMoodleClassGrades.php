@@ -59,6 +59,7 @@ class pmSynchronizeMoodleClassGradesTest extends elis_database_test {
                      'role_assignments' => 'moodle',
                      'user' => 'moodle',
                      'user_enrolments' => 'moodle',
+                     'elis_field_data_num' => 'elis_core',
                      classmoodlecourse::TABLE => 'elis_program',
                      course::TABLE => 'elis_program',
                      coursecompletion::TABLE => 'elis_program',

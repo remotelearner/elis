@@ -615,7 +615,7 @@ function pm_update_student_enrolment($pmuserid = 0) {
  * Migrate any existing Moodle users to the Curriculum Management
  * system.
  */
-function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
+function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0, $mdluserid = 0) {
     global $CFG, $DB;
 
     require_once ($CFG->dirroot.'/elis/program/lib/setup.php');
@@ -625,28 +625,38 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
     $result  = true;
 
     // set time modified if not set, so we can keep track of "new" users
-    $sql = "UPDATE {user}
+    $sql = 'UPDATE {user}
                SET timemodified = :timenow
-             WHERE timemodified = 0";
-    $result = $result && $DB->execute($sql, array('timenow' => $timenow));
+             WHERE timemodified = 0';
+    $params = array('timenow' => $timenow);
+    if ($mdluserid) {
+        $sql .= ' AND id = :userid';
+        $params['userid'] = $mdluserid;
+    }
+    $result = $result && $DB->execute($sql, $params);
 
     if ($setidnumber || elis::$config->elis_program->auto_assign_user_idnumber) {
-        //make sure we only set idnumbers if users' usernames doint point to existing
-        //idnumbers
+        // make sure we only set idnumbers if users' usernames don't point to
+        // existing idnumbers
         $sql = "UPDATE {user}
                    SET idnumber = username
-                 WHERE idnumber=''
+                 WHERE idnumber = ''
                    AND username != 'guest'
                    AND deleted = 0
                    AND confirmed = 1
                    AND mnethostid = :hostid
-                   AND username NOT IN (SELECT idnumber FROM (SELECT idnumber
-                                                              FROM {user} inneru) innertable)";
-        $result = $result && $DB->execute($sql, array('hostid' => $CFG->mnet_localhost_id));
+                   AND username NOT IN (SELECT idnumber
+                                        FROM (SELECT idnumber
+                                              FROM {user} inneru) innertable)";
+        $params = array('hostid' => $CFG->mnet_localhost_id);
+        if ($mdluserid) {
+            $sql .= ' AND id = :userid';
+            $params['userid'] = $mdluserid;
+        }
+        $result = $result && $DB->execute($sql, $params);
     }
 
-    $rs = $DB->get_recordset_select('user',
-                  "username != 'guest'
+    $select = "username != 'guest'
                AND deleted = 0
                AND confirmed = 1
                AND mnethostid = :hostid
@@ -654,19 +664,24 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0) {
                AND timemodified >= :time
                AND NOT EXISTS (SELECT 'x'
                                FROM {".user::TABLE."} cu
-                               WHERE cu.idnumber = {user}.idnumber)",
-                  array('hostid' => $CFG->mnet_localhost_id,
-                        'time'   => $fromtime));
-
-    if ($rs) {
+                               WHERE cu.idnumber = {user}.idnumber)";
+    $params = array('hostid' => $CFG->mnet_localhost_id,
+                    'time'   => $fromtime);
+    if ($mdluserid) {
+        $select .= ' AND id = :userid';
+        $params['userid'] = $mdluserid;
+    }
+    $rs = $DB->get_recordset_select('user', $select, $params);
+    if ($rs && $rs->valid()) {
         require_once elis::plugin_file('usersetenrol_moodle_profile', 'lib.php');
-
         foreach ($rs as $user) {
             // FIXME: shouldn't depend on cluster functionality -- should
             // be more modular
             cluster_profile_update_handler($user);
         }
+        $rs->close();
     }
+
     return $result;
 }
 

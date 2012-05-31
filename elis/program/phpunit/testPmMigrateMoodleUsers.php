@@ -44,6 +44,7 @@ class pmMigrateMoodleUsersTest extends elis_database_test {
     static protected function get_overlay_tables() {
         return array('config_plugins' => 'moodle',
                      'user' => 'moodle',
+                     'user_info_data' => 'moodle',
                      user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program');
     }
@@ -680,7 +681,7 @@ class pmMigrateMoodleUsersTest extends elis_database_test {
         $earliest_time = time();
 
         //call the migration method, passing the boundary time
-        pm_migrate_moodle_users(true, 1300000000, 3);
+        pm_migrate_moodle_users(true, 1300000000, 1);
 
         //earliest possible time for zero to be reassigned to
         $latest_time = time();
