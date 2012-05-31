@@ -318,16 +318,17 @@ class pmclassform extends cmform {
         $select = 'id != \'' . SITEID . '\' AND fullname NOT LIKE \'.%\'';
 
         $cselect = array(get_string('none', 'elis_program'));
-
-        $crss = $DB->get_recordset_select('course', $select, null, 'fullname', 'id, fullname');
-        if(!empty($crss)) {
+        $crss = $DB->get_recordset_select('course', $select, null, 'fullname',
+                                          'id, fullname');
+        if (!empty($crss) && $crss->valid()) {
             foreach ($crss as $crs) {
                 $cselect[$crs->id] = $crs->fullname;
             }
+            $crss->close();
         }
 
         $moodleCourses = array();
-        if (count($cselect) != 1) {
+        if (count($cselect) > 1) {
             $moodleCourses[] = $mform->createElement('select', 'moodlecourseid', get_string('moodlecourse', 'elis_program'), $cselect);
         } else {
             $mform->addElement('static', 'no_moodle_courses', get_string('moodlecourse', 'elis_program') . ':', get_string('no_moodlecourse', 'elis_program'));
@@ -335,7 +336,7 @@ class pmclassform extends cmform {
         }
 
         // Add auto create checkbox if CM course uses a template
-        if(empty($this->_customdata['obj']->courseid)) {
+        if (empty($this->_customdata['obj']->courseid)) {
             $courseid = 0;
         } else {
             $courseid = $this->_customdata['obj']->courseid;
@@ -351,10 +352,14 @@ class pmclassform extends cmform {
             $moodleCourses[] = $mform->createElement('checkbox', 'autocreate', '', get_string('autocreate', 'elis_program'));
         }
 
-        if(count($cselect) != 1) {
+        if (count($cselect) > 1) {
             $mform->addGroup($moodleCourses, 'moodleCourses', get_string('moodlecourse', 'elis_program') . ':');
             $mform->disabledIf('moodleCourses', 'moodleCourses[autocreate]', 'checked');
             $mform->addHelpButton('moodleCourses', 'pmclassform:moodlecourse', 'elis_program');
+            if (!empty($template->location)) {
+                //error_log("pmclassform::add_moodle_course_select() course template = {$template->location}");
+                $mform->setDefault('moodleCourses[moodlecourseid]', $template->location);
+            }
         }
     }
 
