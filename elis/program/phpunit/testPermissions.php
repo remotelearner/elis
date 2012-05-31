@@ -64,11 +64,9 @@ class testPermissions extends elis_database_test {
 
     // Test for correct assignment of course permissions
     public function testCoursePermissions() {
-        global $DB, $CFG, $USER, $UNITTEST;
+        global $DB, $CFG, $USER;
 
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
 
         set_config('siteguest', '');
         set_config('siteadmins', '');

@@ -90,14 +90,12 @@ class testRoles extends elis_database_test {
      * obtaining the list of users
      */
     public function testClusterRolepageAvailableRecordsRespectUsersetPermissions() {
-        global $CFG, $_GET, $USER, $DB, $UNITTEST;
+        global $CFG, $_GET, $USER, $DB;
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
 
         //create our test userset
         $userset = new userset(array('name' => 'testuserset'));
@@ -166,14 +164,12 @@ class testRoles extends elis_database_test {
      * cluster for a particular role respects special userset permissions
      */
     public function testClusterRolepageCountRoleUsersRespectsUsersetPermissions() {
-        global $CFG, $_GET, $USER, $DB, $UNITTEST;
+        global $CFG, $_GET, $USER, $DB;
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
 
         //create a user record so that Moodle and PM ids don't match by fluke
         set_config('auto_assign_user_idnumber', 0, 'elis_program');

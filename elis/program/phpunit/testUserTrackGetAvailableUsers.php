@@ -321,6 +321,7 @@ class testTrackAssignmentGetAvailableUsers extends elis_database_test {
         set_config('siteguest', '');
         set_config('siteadmins', '');
 
+        $UNITTEST = new stdClass;
         $UNITTEST->running = true;
         accesslib_clear_all_caches_for_unit_testing();
         unset($UNITTEST->running);
